@@ -2,8 +2,15 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText, Table, FileSpreadsheet, CheckCircle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
+import StreamGoals from '../components/live/StreamGoals';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -55,10 +62,10 @@ function downloadPDF(title, data) {
 }
 
 const EXPORT_SETS = [
-  { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#00d4ff' },
+  { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#D4AF37' },
   { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#D4AF37' },
   { id: 'notifications', label: 'Notifications', description: 'Your notification history', entity: 'Notification', filterKey: 'user_id', accentColor: GOLD },
-  { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#00ff88' },
+  { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#6DBF7E' },
 ];
 
 export default function DataExportPage() {
@@ -137,10 +144,34 @@ export default function DataExportPage() {
         {/* Privacy note */}
         <div className="rounded-2xl p-4 flex items-start gap-3"
           style={{ background: 'rgba(13,6,24,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00ff88' }} />
+          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#6DBF7E' }} />
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
           </p>
+        </div>
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={true} />
+          <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+          {[
+            { label: '← Settings',           href: 'Settings'          },
+            { label: '📊 Analytics',          href: 'Analytics'         },
+            { label: '📈 Adv. Analytics',     href: 'AdvancedAnalytics' },
+            { label: '💰 Monetization',       href: 'Monetization'      },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <PerformanceDashboard roomId={null} sessionId={null} />
+          <AudienceInsights />
+          <EarningsBreakdown userId={null} />
         </div>
       </div>
     </div>

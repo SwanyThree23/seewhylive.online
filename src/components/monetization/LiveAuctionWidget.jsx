@@ -45,7 +45,7 @@ function CountdownTimer({ endsAt, onExpire }) {
   }, [endsAt]);
 
   return (
-    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#00d4ff' }}>
+    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#D4AF37' }}>
       <Clock className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 4 }} />{time}
     </span>
   );
@@ -189,7 +189,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
             {auction.buyout_price && (
               <button
                 onClick={() => { onBid(auction, auction.buyout_price, true); }}
-                style={{ width: '100%', border: '1px solid rgba(167,139,250,0.3)', background: 'transparent', color: '#a78bfa', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ width: '100%', border: '1px solid rgba(167,139,250,0.3)', background: 'transparent', color: '#D4AF37', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Zap className="w-3.5 h-3.5" /> Buy Now for ${auction.buyout_price}
               </button>
@@ -251,7 +251,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         qc.invalidateQueries(['live-auctions', creatorId, roomId]);
         if (event.type === 'update' && event.data?.status === 'ended') {
           toast.success(`Auction "${event.data.title}" ended — winner: ${event.data.winner_name || 'N/A'}`);
-          confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#d4af37', '#fff', '#a78bfa'] });
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#d4af37', '#fff', '#D4AF37'] });
         }
       }
     });

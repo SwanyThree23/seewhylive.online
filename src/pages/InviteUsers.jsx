@@ -3,6 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { UserPlus, Mail, Copy, Check, Users, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -72,8 +79,8 @@ export default function InviteUsersPage() {
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
-            { label: 'Slots Available', value: '∞', color: '#00ff88' },
-            { label: 'Beta Access', value: 'Free', color: '#00d4ff' },
+            { label: 'Slots Available', value: '∞', color: '#6DBF7E' },
+            { label: 'Beta Access', value: 'Free', color: '#D4AF37' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -137,11 +144,11 @@ export default function InviteUsersPage() {
             <input
               readOnly
               value={referralLink}
-              style={{ ...inp, flex: 1, fontSize: 11, color: '#00d4ff', fontFamily: 'monospace' }}
+              style={{ ...inp, flex: 1, fontSize: 11, color: '#D4AF37', fontFamily: 'monospace' }}
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"
-              style={{ ...T, background: copiedLink ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#00ff88' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              style={{ ...T, background: copiedLink ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#6DBF7E' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {copiedLink ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
             </button>
           </div>
@@ -159,7 +166,7 @@ export default function InviteUsersPage() {
                 <div key={i} className="flex items-center justify-between p-3 rounded-xl"
                   style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.15)' }}>
                   <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5" style={{ color: '#00ff88' }} />
+                    <Check className="w-3.5 h-3.5" style={{ color: '#6DBF7E' }} />
                     <span className="text-sm font-black text-white" style={T}>{inv.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -176,6 +183,16 @@ export default function InviteUsersPage() {
             </div>
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <DiscussionFeed communityId="invite" />
+          <ReferralProgram communityId={null} />
+          <AnnouncementFeed communityId={null} />
+          <AnnouncementPanel communityId={null} />
+          <ChallengeLeaderboard challengeId={null} />
+          <ZEGOMobileAppBanner />
+        </div>
 
         {/* Beta info */}
         <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>

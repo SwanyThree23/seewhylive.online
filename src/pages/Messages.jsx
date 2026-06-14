@@ -2,11 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import NotificationBell from '../components/shared/NotificationBell';
+import SuperChatRail from '../components/live/SuperChatRail';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import UnifiedChat from '../components/live/UnifiedChat';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import ShareButtons from '../components/shared/ShareButtons';
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
-const PINK    = "#FF1564";
-const CYAN    = "#00d4ff";
+const PINK    = "#C0392B";
+const CYAN    = "#D4AF37";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
@@ -491,6 +500,31 @@ export default function Messages() {
           </div>
         </div>
       )}
+
+      {user && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <NotificationBell />
+          <UnifiedChat roomId={null} currentUser={user} isHost={false} />
+          <WhisperPanel roomId={null} currentUser={user} recipientId={null} recipientName="" onClose={() => {}} />
+          <ShareButtons url={window.location.href} title="Messages" />
+          <EnhancedStreamChat roomId={null} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
+          <SuperChatRail superchats={[]} />
+          <AnnouncementFeed communityId={null} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏠 Home',        href: 'Home'        },
+          { label: '👤 Profile',     href: 'Profile'     },
+          { label: '🔔 Alerts',      href: 'Notifications' },
+          { label: '👥 Communities', href: 'Communities' },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,4 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {
@@ -879,6 +884,14 @@ export default function EnhancementSuite() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CoStreamPanel roomId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <OverlayThemeBuilder creatorId={null} />
+        <SoundboardWidget roomId={null} isHost={true} />
+        <RoomBrandingEditor roomId={null} isHost={true} />
+      </div>
     </div>
   );
 }

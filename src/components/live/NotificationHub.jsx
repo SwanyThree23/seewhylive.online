@@ -16,11 +16,11 @@ const ICON_MAP = {
   raid_incoming:         <Users className="w-4 h-4" />,
   raid_outgoing:         <Zap className="w-4 h-4" />,
   engagement_milestone:  <Trophy className="w-4 h-4" />,
-  tip:                   <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
-  love_tap:              <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  tip:                   <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
+  love_tap:              <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
   gift:                  <Gift className="w-4 h-4" style={{ color: '#D4AF37' }} />,
   subscription:          <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />,
-  live_started:          <Radio className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  live_started:          <Radio className="w-4 h-4" style={{ color: '#C0392B' }} />,
   system:                <Bell className="w-4 h-4" />,
 };
 

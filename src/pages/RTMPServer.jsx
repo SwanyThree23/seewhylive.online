@@ -6,6 +6,11 @@ import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap,
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -259,6 +264,11 @@ export default function RTMPServer() {
                 </motion.a>
               ))}
             </div>
+            <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <ZEGOStreamHealthCard roomId={null} />
+              <ZEGOConfigPanel user={user} />
+            </div>
+
             {/* OBS step-by-step */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
@@ -282,6 +292,12 @@ export default function RTMPServer() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+          <StreamHealthDashboard isLive={false} />
+          <CoStreamPanel roomId={null} />
+          <WebhookHooks roomId={null} userId={null} isHost={true} />
+        </div>
       </div>
     </div>
   );

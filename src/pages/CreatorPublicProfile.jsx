@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import SignalBars from '../components/live/SignalBars';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -518,6 +523,16 @@ export default function CreatorPublicProfile() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {creatorId && (
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <VirtualCurrencyTips roomId={null} creatorId={creatorId} currentUser={currentUser} isHost={false} />
+          <PayPerViewGate roomId={null} ppvPrice={4.99} onPurchase={() => {}} />
+          <SignalBars count={5} active={true} size="sm" />
         </div>
       )}
     </div>

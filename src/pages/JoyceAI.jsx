@@ -1,5 +1,31 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import ChatOverlay from '../components/live/ChatOverlay';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+
+function getVoiceSettings() {
+  try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
+  catch { return {}; }
+}
+function speakText(text) {
+  const vs = getVoiceSettings();
+  if (vs.enabled === false || vs.autoSpeak === false) return;
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
+  }).then(r => r.blob()).then(b => {
+    const a = new Audio(URL.createObjectURL(b));
+    a.volume = vs.volume !== undefined ? vs.volume : 0.8;
+    a.play();
+  }).catch(() => {});
+}
 
 const BG = '#080B18';
 const BG2 = '#0D0A14';
@@ -14,7 +40,7 @@ const TEXTM = '#8A7A94';
 const GREEN = '#22c55e';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#00d4ff';
+const CYAN = '#D4AF37';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -104,7 +130,9 @@ export default function JoyceAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || "Let's keep it moving — what do you need?" }]);
+      const reply = res || "Let's keep it moving — what do you need?";
+      setMessages(m => [...m, { role: 'assistant', text: reply }]);
+      speakText(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
@@ -138,7 +166,22 @@ export default function JoyceAI() {
             <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>YOUR LIVE CO-HOST · POWERED BY CLAUDE</div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(192,57,43,0.3)`, background: 'rgba(192,57,43,0.1)', color: '#C0392B', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🛡️ Guardian
+            </button>
+          </Link>
+          <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.25)`, background: 'rgba(212,175,55,0.07)', color: GOLD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚔️ SVS
+            </button>
+          </Link>
+          <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.2)`, background: 'rgba(212,175,55,0.06)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🔊 Voice
+            </button>
+          </Link>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,
@@ -283,6 +326,15 @@ export default function JoyceAI() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="hype" />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <ChatOverlay roomId={null} isVisible={false} />
+        <AICopilotSidebar roomId={null} isHost={false} />
       </div>
     </div>
   );

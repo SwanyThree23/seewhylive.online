@@ -2,8 +2,17 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Plus, Radio, Bell, Users, Mail, Trophy, Filter, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
+import StreamGoals from '../components/live/StreamGoals';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -14,9 +23,9 @@ const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, san
 
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
-  scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
-  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
-  cancelled:  { bg: 'rgba(255,21,100,0.1)',   border: 'rgba(255,21,100,0.3)',   color: '#FF1564' },
+  scheduled:  { bg: 'rgba(212,175,55,0.1)',    border: 'rgba(212,175,55,0.3)',    color: '#D4AF37' },
+  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#6DBF7E' },
+  cancelled:  { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
 };
 
 function getTypeIcon(type) {
@@ -160,12 +169,12 @@ export default function ContentCalendarPage() {
                     <div className="flex gap-2">
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'published' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer' }}>
                         Publish
                       </button>
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'cancelled' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#FF1564', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         Cancel
                       </button>
                     </div>
@@ -229,6 +238,34 @@ export default function ContentCalendarPage() {
           </div>
         </div>
       )}
+
+      {user?.id && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals roomId={null} isHost={true} />
+          <AIHighlightGenerator creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial />
+        <ContentRecommendations />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
+          { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
+          { label: '📊 Analytics',        href: 'Analytics'       },
+          { label: '🔴 Go Live',          href: 'GoLive'          },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -59,7 +59,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowChat(!showChat)}
               className={`w-12 h-12 rounded-full flex flex-col items-center justify-center gap-0.5 ${
-                showChat ? 'bg-[#00d4ff]/20 border border-[#00d4ff]/50' : 'bg-white/10 border border-white/20'
+                showChat ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50' : 'bg-white/10 border border-white/20'
               }`}
             >
               <MessageSquare className="w-5 h-5 text-white" />

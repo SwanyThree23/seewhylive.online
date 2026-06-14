@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -14,13 +21,13 @@ const BURGUNDY = '#800020';
 const VIOLATION_STYLES = {
   harassment:    { color: '#FF6B35', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
   spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
-  hate_speech:   { color: '#FF1564', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
+  hate_speech:   { color: '#C0392B', bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.3)' },
   inappropriate: { color: '#FF8C00', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
   safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
 const PRIORITY_STYLES = {
-  urgent: { color: '#FF1564', label: 'URGENT' },
+  urgent: { color: '#C0392B', label: 'URGENT' },
   high:   { color: '#FF6B35', label: 'HIGH' },
   medium: { color: GOLD,       label: 'MEDIUM' },
   low:    { color: 'rgba(255,255,255,0.3)', label: 'LOW' },
@@ -139,7 +146,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ))}
         <button onClick={() => onQuickAction(entry, 'ban')}
           className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-          style={{ background: 'rgba(255,21,100,0.1)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Ban
         </button>
       </div>
@@ -287,7 +294,7 @@ export default function ModerationDashboardPage() {
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
+              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #C0392B)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
           </div>
         </div>
       </div>
@@ -338,6 +345,27 @@ export default function ModerationDashboardPage() {
                   onAction={(r, action) => reportMut.mutate({ id: r.id, action })} />
               ))
         )}
+
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user.id} />}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🛡 AI Moderation',   href: 'AIModeration'    },
+            { label: '👮 Guardian AI',     href: 'GuardianAI'      },
+            { label: '⚙️ Admin Dashboard', href: 'AdminDashboard'  },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff9999', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AIModeration roomId={null} isHost={true} />
+          <HostAlertCenter roomId={null} hostId={null} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={null} />
+        </div>
       </div>
     </div>
   );

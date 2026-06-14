@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import VODLibrary from '../components/vod/VODLibrary';
+import ShopDashboard from '../components/merch/ShopDashboard';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -59,7 +65,7 @@ const FEATURES = [
     title: 'SwanyBot AI Guide',
     description: 'Your personal platform assistant with memory, preferences, and conversation history.',
     icon: '💬',
-    color: '#FF1564',
+    color: '#C0392B',
     highlights: ['Preference memory', 'History tracking', 'Voice I/O'],
     link: '/',
   },
@@ -104,7 +110,7 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#00d4ff',
+    color: '#D4AF37',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },
@@ -279,6 +285,15 @@ export default function PlatformShowcase() {
             Go Live Now <Radio className="w-5 h-5" />
           </motion.a>
         </motion.div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
+        <VODLibrary creatorId={null} />
+        <ShopDashboard creatorId={null} />
+        <ContentRecommendations />
+        <ActivitySidebar isOpen={false} onClose={() => {}} />
+        <QuickActionPanel isOpen={false} onClose={() => {}} />
       </div>
     </div>
   );

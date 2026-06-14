@@ -29,8 +29,8 @@ export default function StreamMetricsBar({ startTime, memberCount = 0, tipTotal 
 
       {/* Live timer */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, paddingRight: 10, borderRight: '1px solid rgba(255,255,255,0.08)', marginRight: 10 }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#FF1564', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
-        <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', color: '#FF1564', ...F, fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C0392B', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
+        <span style={{ fontSize: 12, fontWeight: 900, letterSpacing: '0.04em', color: '#C0392B', ...F, fontVariantNumeric: 'tabular-nums' }}>
           {fmt(elapsed)}
         </span>
       </div>

@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ReportsManager from '../components/admin/ReportsManager';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import ReferralConfig from '../components/admin/ReferralConfig';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -13,6 +20,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -38,7 +46,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -92,7 +100,7 @@ export default function AdminDashboard() {
   if (!user || user.role !== 'admin') return (
     <div className="min-h-screen flex items-center justify-center text-center" style={{ background: BG }}>
       <div>
-        <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#FF1564' }} />
+        <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#C0392B' }} />
         <h2 className="text-2xl font-black mb-2 text-white" style={T}>Admin Access Required</h2>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>You don't have permission to view this page.</p>
       </div>
@@ -118,8 +126,8 @@ export default function AdminDashboard() {
   const filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
 
   const roomStatusStyle = (status) => ({
-    live:      { bg: 'rgba(255,21,100,0.12)', border: 'rgba(255,21,100,0.35)', color: '#FF1564' },
-    scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
+    live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
+    scheduled: { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
 
@@ -130,7 +138,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5" style={{ color: '#FF1564' }} />
+              <Shield className="w-5 h-5" style={{ color: '#C0392B' }} />
               <div>
                 <h1 className="text-xl font-black text-white leading-none" style={T}>Admin Dashboard</h1>
                 <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Platform management & oversight</p>
@@ -158,11 +166,11 @@ export default function AdminDashboard() {
         {/* KPI grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
-          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(255,21,100,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
+          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(192,57,43,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
           <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />
           <StatCard label="Messages" value={messages.length} icon={MessageSquare} color="rgba(212,175,55,0.6)" />
-          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(255,21,100,0.7)' : 'rgba(255,255,255,0.15)'} />
+          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(192,57,43,0.7)' : 'rgba(255,255,255,0.15)'} />
         </div>
 
         {/* OVERVIEW */}
@@ -190,7 +198,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-black text-xs" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{value}</span>
-                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#6DBF7E' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#FF1564' }} />}
+                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#6DBF7E' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#C0392B' }} />}
                       </div>
                     </div>
                   ))}
@@ -223,6 +231,27 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+
+          {/* Admin quick-links grid */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {[
+              { label: '🛡 AI Moderation',     href: 'AIModeration'       },
+              { label: '📊 Stream Analytics',  href: 'StreamAnalytics'    },
+              { label: '📈 Adv. Analytics',    href: 'AdvancedAnalytics'  },
+              { label: '🤖 AI Hub',            href: 'AIHub'              },
+              { label: '🏆 Loyalty Program',   href: 'LoyaltyProgram'     },
+              { label: '👥 Community Admin',   href: 'CommunityAdmin'     },
+              { label: '⚔️ PK Battles',        href: 'PKBattle'           },
+              { label: '🔊 Voice AI',          href: 'VoiceAISettings'    },
+            ].map(item => (
+              <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl transition-all hover:brightness-110"
+                  style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', display: 'block', letterSpacing: '0.06em', cursor: 'pointer' }}>
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
           </div>
         )}
 
@@ -303,7 +332,7 @@ export default function AdminDashboard() {
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
                             className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
-                            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                            style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
                             End
                           </button>
                         )}
@@ -332,7 +361,7 @@ export default function AdminDashboard() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(109,191,126,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(109,191,126,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#00ff88' }}>{report.status}</span>
+                        <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: report.status === 'pending' ? 'rgba(255,136,0,0.12)' : 'rgba(109,191,126,0.1)', border: `1px solid ${report.status === 'pending' ? 'rgba(255,136,0,0.3)' : 'rgba(109,191,126,0.25)'}`, color: report.status === 'pending' ? '#ff8800' : '#6DBF7E' }}>{report.status}</span>
                         <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)' }}>{report.report_type}</span>
                       </div>
                       <p className="text-sm text-white" style={T}>{report.description}</p>
@@ -340,7 +369,7 @@ export default function AdminDashboard() {
                     </div>
                     {report.status === 'pending' && (
                       <button className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] shrink-0"
-                        style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer', ...T }}
+                        style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer', ...T }}
                         onClick={async () => { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries(['adminReports']); toast.success('Report resolved'); }}>
                         Resolve
                       </button>
@@ -351,6 +380,14 @@ export default function AdminDashboard() {
             </div>
           )
         )}
+
+        {activeTab === 'reports' && (
+          <div className="mt-4">
+            <ReportsManager communityId={null} userId={user?.id} />
+          </div>
+        )}
+
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -535,6 +572,14 @@ export default function AdminDashboard() {
             </DarkCard>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <ChallengeAnalytics communityId={null} />
+          <ReferralConfig communityId={null} />
+          <PerformanceDashboard roomId={null} sessionId={null} />
+          <AnnouncementScheduler communityId={null} userId={user?.id} />
+          <SpotlightBanner communityId={null} isAdmin={true} />
+        </div>
       </div>
     </div>
   );

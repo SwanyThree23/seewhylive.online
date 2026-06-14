@@ -3,7 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import AlertConfig from '../components/live/AlertConfig';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -201,6 +208,8 @@ export default function OverlayBuilderPage() {
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
         style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
+          <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>← Studio</Link>
+          <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>Editor</Link>
           <Layers className="w-4 h-4" style={{ color: GOLD }} />
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</span>
         </div>
@@ -307,6 +316,16 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
+
+      {user?.id && (
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid rgba(212,175,55,0.08)' }}>
+          <AlertConfig creatorId={user.id} />
+          <LowerThirdsBanner onBannerChange={() => {}} />
+          <OverlayThemeBuilder creatorId={user.id} />
+          <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
+          <CompositorOverlay stream={null} isHost={true} roomId={null} />
+        </div>
+      )}
     </div>
   );
 }

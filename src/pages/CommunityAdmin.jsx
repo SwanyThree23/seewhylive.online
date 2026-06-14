@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Settings, Flag, Megaphone, TrendingUp, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -82,6 +87,24 @@ export default function CommunityAdminPage() {
         {activeTab === 'reports' && <ReportsManager communityId={communityId} userId={user?.id} />}
         {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={user?.id} />}
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
+
+        <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={true} />
+          <AnnouncementFeed communityId={null} />
+          <DiscussionFeed communityId={null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityGrowth')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(109,191,126,0.07)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>📈 Growth Tools</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Settings</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

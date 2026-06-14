@@ -10,19 +10,32 @@ import {
   Percent, Calendar, Bell, Shield, Rocket, Eye, Activity
 } from 'lucide-react';
 import PayPerViewManager from '@/components/monetization/PayPerViewManager';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import TierEditor from '../components/subscriptions/TierEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import PayPerViewCard from '@/components/monetization/PayPerViewCard';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
-const TEAL    = '#00F5FF';
+const PINK    = '#C0392B';
+const TEAL    = '#D4854A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const FLYWHEEL_STAGES = [
-  { id: 'attract',  label: 'ATTRACT',  icon: Eye,         color: '#6366f1', desc: 'Free content hooks new viewers' },
+  { id: 'attract',  label: 'ATTRACT',  icon: Eye,         color: '#C0392B', desc: 'Free content hooks new viewers' },
   { id: 'engage',   label: 'ENGAGE',   icon: Heart,       color: PINK,      desc: 'Chat, reactions & live interaction' },
   { id: 'convert',  label: 'CONVERT',  icon: ArrowRight,  color: TEAL,      desc: 'Free → Subscriber upgrade' },
   { id: 'monetize', label: 'MONETIZE', icon: DollarSign,  color: G,         desc: 'Tips, PPV, subs, gifts, AI music' },
@@ -43,7 +56,7 @@ const REVENUE_STREAMS = [
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
   { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
-  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#a855f7', desc: 'Stream your AI tracks',    split: '70%' },
+  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#22c55e', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
@@ -53,7 +66,7 @@ const MILESTONES = [
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
   { subs: 500,  reward: 'Staff Pick Feature',     icon: Zap,    color: PINK },
   { subs: 1000, reward: 'Revenue Share Boost +5%',icon: Rocket, color: TEAL },
-  { subs: 5000, label: 'Partner Status',          icon: Crown,  color: '#a855f7' },
+  { subs: 5000, label: 'Partner Status',          icon: Crown,  color: '#D4854A' },
 ];
 
 function exportCSV(transactions, subscriptions) {
@@ -377,7 +390,7 @@ function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
   const convRate = viewers > 0 ? ((subs / viewers) * 100).toFixed(1) : '0.0';
 
   const stages = [
-    { label: 'Total Viewers',   val: viewers,  color: '#6366f1', pct: 100 },
+    { label: 'Total Viewers',   val: viewers,  color: '#C0392B', pct: 100 },
     { label: 'Subscribers',     val: subs,     color: TEAL,      pct: viewers > 0 ? Math.min((subs / viewers) * 100, 100) : 0 },
     { label: 'Active Tippers',  val: tippers,  color: PINK,      pct: subs > 0 ? Math.min((tippers / subs) * 100, 100) : 0 },
     { label: 'PPV Buyers',      val: ppv,      color: G,         pct: viewers > 0 ? Math.min((ppv / viewers) * 100, 100) : 0 },
@@ -465,12 +478,16 @@ const TABS = [
   { id: 'streams',     label: 'Revenue',     icon: DollarSign },
   { id: 'subscribers', label: 'Subscribers', icon: Users },
   { id: 'payouts',     label: 'Payouts',     icon: CreditCard },
+  { id: 'tiers',       label: 'Tiers',       icon: Crown },
+  { id: 'analytics',   label: 'Analytics',   icon: BarChart3 },
+  { id: 'store',       label: 'Store',       icon: DollarSign },
 ];
 
 /* ─── MAIN PAGE ─────────────────────────────────────────────────────────── */
 export default function MonetizationPage() {
   const [tab, setTab]               = useState('overview');
   const [flywheelStage, setStage]   = useState('attract');
+  const [tierEditorOpen, setTierEditorOpen] = useState(false);
   const queryClient                 = useQueryClient();
 
   const { data: user } = useQuery({
@@ -503,6 +520,12 @@ export default function MonetizationPage() {
   const { data: tips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
     queryFn: () => base44.entities.Tip.filter({ creator_id: user.id }),
+    enabled: !!user?.id,
+  });
+
+  const { data: ppvEvents = [] } = useQuery({
+    queryKey: ['ppv-events-monetization', user?.id],
+    queryFn: () => base44.entities.PayPerViewEvent.filter({ creator_id: user.id }, '-event_date', 3),
     enabled: !!user?.id,
   });
 
@@ -700,6 +723,16 @@ export default function MonetizationPage() {
                 </div>
               )}
 
+              {/* PPV Event Cards */}
+              {ppvEvents.length > 0 && (
+                <div style={card()}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Recent PPV Events</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                    {ppvEvents.map(ev => <PayPerViewCard key={ev.id} event={ev} />)}
+                  </div>
+                </div>
+              )}
+
               {/* Subscription Manager */}
               {user?.id && (
                 <div style={card()}>
@@ -750,11 +783,59 @@ export default function MonetizationPage() {
             </motion.div>
           )}
 
+          {/* ─── SUBSCRIPTIONS MANAGEMENT LINK ─── */}
+          {tab === 'subscribers' && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 16px 16px' }}>
+              <Link to={createPageUrl('CreatorSubscriptions')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                ⭐ Manage Subscription Tiers →
+              </Link>
+            </div>
+          )}
+
           {/* ─── PAYOUTS TAB ─── */}
           {tab === 'payouts' && (
             <motion.div key="payouts" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <PayoutPanel netEarnings={netEarnings} />
               {user?.id && <RevenueDashboard userId={user.id} />}
+              {user?.id && <StripeConnectButton creatorId={user.id} />}
+              {user?.id && <RewardShopEditor creatorId={user.id} />}
+              <StreamerMonetizationCenter />
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Link to={createPageUrl('MonetizationWidgets')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                  🎛 Sound Alerts & Goals Widgets →
+                </Link>
+              </div>
+            </motion.div>
+          )}
+
+          {tab === 'tiers' && user?.id && (
+            <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <CreatorTierManager creatorId={user.id} />
+              <TierEditor open={tierEditorOpen} onClose={() => setTierEditorOpen(false)} creatorId={user.id} existing={null} />
+              <SubscriptionTiers communityId={null} userId={user.id} />
+              <SubscriptionCard
+                tier="bronze"
+                price={4.99}
+                benefits={['Exclusive badges', 'Early access']}
+                communityId={null}
+                creatorId={user.id}
+                isSubscribed={false}
+              />
+            </motion.div>
+          )}
+
+          {tab === 'analytics' && (
+            <motion.div key="analytics" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+              <MonetizationDashboard roomId={room?.id || null} />
+            </motion.div>
+          )}
+
+          {tab === 'store' && user?.id && (
+            <motion.div key="store" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-8">
+              <VirtualGoodsStore userId={user.id} />
+              <ShopDashboard creatorId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>

@@ -5,6 +5,12 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -28,7 +34,7 @@ const C = {
   purple:  '#8B44B0',
   amber:   '#D4854A',
   orange:  '#FF6B35',
-  teal:    '#1ABC9C',
+  teal:    '#6DBF7E',
   warn:    '#F39C12',
   tribute: '#7B5EA7',
   tribL:   '#A07BC4',
@@ -1317,6 +1323,15 @@ export default function SeeWhyLIVEv37() {
           {TABS.find(t => t.id === activeTab)?.label}
         </div>
         {panelMap[activeTab]}
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ReactionOverlay partyId={null} currentUser={null} />
+        <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
+        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={false} currentUser={null} />
+        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={false} />
+        <GreenroomQueue roomId={null} isHost={false} />
+        <SocialLeaderboard roomId={null} />
       </div>
     </div>
   );

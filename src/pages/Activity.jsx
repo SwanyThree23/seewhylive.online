@@ -2,14 +2,22 @@ import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Activity as ActivityIcon, Radio, Users, Trophy, Gift, Award } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import PresenceDot from '../components/shared/PresenceDot';
+import OnlinePresence from '../components/shared/OnlinePresence';
+import PointsNotification from '../components/live/PointsNotification';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
-  room_created:        { icon: Radio,        color: '#FF1564' },
-  room_joined:         { icon: Radio,        color: '#FF1564' },
+  room_created:        { icon: Radio,        color: '#C0392B' },
+  room_joined:         { icon: Radio,        color: '#C0392B' },
   community_joined:    { icon: Users,        color: '#C9A84C' },
   subscription:        { icon: Users,        color: '#C9A84C' },
   tip_sent:            { icon: Gift,         color: GOLD      },
@@ -23,8 +31,11 @@ export default function ActivityPage() {
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   return (
     <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
       {/* Sticky header */}
       <div className="sticky top-0 z-20 flex items-center gap-2 px-4 py-3"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
@@ -64,6 +75,32 @@ export default function ActivityPage() {
             })}
           </div>
         )}
+
+        {user?.id && (
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <LeaderboardPanel roomId={null} />
+            <StreamGoals isHost={false} />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🏠 Home',          href: 'Home'           },
+            { label: '📊 Dashboard',     href: 'Dashboard'      },
+            { label: '👤 Profile',       href: 'Profile'        },
+            { label: '🔔 Notifications', href: 'Notifications'  },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlinePresence userId={null} showLabel />
+        <PresenceDot userId={null} />
+        <PointsNotification userId={null} />
       </div>
     </div>
   );

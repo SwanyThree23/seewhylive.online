@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import ChatOverlay from '../components/live/ChatOverlay';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
@@ -11,7 +18,7 @@ import { toast } from 'sonner';
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const TEAL    = '#C9A84C';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -635,6 +642,38 @@ export default function SceneTemplates() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <SceneSwitcher activeScene={activeTemplate} onSceneChange={setActiveTemplate} />
+        {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+        <ChatOverlay roomId={null} isVisible={true} />
+        <EvmuxWebSource isActive={false} onClose={() => {}} />
+        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎬 Studio
+          </button>
+        </Link>
+        <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎚️ Overlays
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
       </div>
     </div>
   );

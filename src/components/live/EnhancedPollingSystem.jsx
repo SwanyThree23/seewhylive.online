@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveCo
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
 
-const COLORS = ['#d4af37', '#FF1564', '#C9A84C', '#D4AF37', '#6DBF7E'];
+const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
 
 export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
   const [showCreate, setShowCreate] = useState(false);
@@ -201,7 +201,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
         <div className="flex-1">
           <h3 className="font-bold text-white mb-1">{activePoll.question}</h3>
           {timeRemaining !== null && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: timeRemaining < 10 ? '#FF1564' : '#d4af37' }}>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: timeRemaining < 10 ? '#C0392B' : '#d4af37' }}>
               <Clock className="w-3 h-3" />
               {formatTime(timeRemaining)}
             </div>
@@ -211,7 +211,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <button
             onClick={closePoll}
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
-            style={{ background: 'rgba(255,21,100,0.15)' }}
+            style={{ background: 'rgba(192,57,43,0.15)' }}
           >
             <X className="w-4 h-4 text-red-400" />
           </button>

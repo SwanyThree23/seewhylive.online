@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -12,6 +14,15 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import ClipMarker from '../components/live/ClipMarker';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import ParticipantsList from '../components/rooms/ParticipantsList';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import AudioStageTab from '../components/audio/AudioStageTab';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -354,6 +365,27 @@ export default function ControlRoomPage() {
         </div>
       </div>
 
+      {/* Quick Tools Toolbar */}
+      <div className="px-4 md:px-8 py-2 flex items-center gap-2 flex-wrap"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        {[
+          { label: '🎨 Scenes',       page: 'SceneTemplates',       color: 'rgba(212,175,55,0.12)' },
+          { label: '🔔 Alerts',       page: 'StreamAlerts',         color: 'rgba(212,133,74,0.12)' },
+          { label: '🛡️ Guardian AI',  page: 'GuardianAI',           color: 'rgba(192,57,43,0.12)' },
+          { label: '📡 Multi-Stream', page: 'MultiStreamManager',   color: 'rgba(109,191,126,0.1)' },
+          { label: '📊 Analytics',    page: 'AdvancedAnalytics',    color: 'rgba(212,175,55,0.08)' },
+          { label: '📅 Schedule',     page: 'StreamScheduler',      color: 'rgba(107,124,74,0.12)' },
+          { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
+        ].map(t => (
+          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+              {t.label}
+            </button>
+          </Link>
+        ))}
+      </div>
+
       {/* ZEGOCLOUD Health Card */}
       {roomId && (
         <div className="px-4 md:px-8 pt-4">
@@ -364,6 +396,21 @@ export default function ControlRoomPage() {
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
+      </div>
+
+      {/* Scene Switcher */}
+      <div className="px-4 md:px-8 pb-4">
+        <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+      </div>
+
+      {/* Extended control panels */}
+      <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
+        <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
+        <ClipMarker roomId={null} user={user} streamStartTs={null} />
+        <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={null} communityId={null} />
+        <RoomAnalyticsPanel roomId={null} />
+        <CollaborativeWhiteboard roomId={null} />
       </div>
 
       {/* RTMP Cards Grid */}
@@ -382,6 +429,11 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AudioStageTab roomId={null} isHost={true} />
+        <BackgroundCustomizer onBackgroundChange={() => {}} />
+      </div>
     </div>
   );
 }

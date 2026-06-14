@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AudioMixer from '../components/live/AudioMixer';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import VODCard from '../components/vod/VODCard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1195,6 +1205,15 @@ export default function PodcastStudio() {
         {tab === 'record' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+            {/* Audio Mixer */}
+            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
+            {/* Enhanced Audio Mixer */}
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+
+            {/* Soundboard */}
+            <SoundboardWidget />
+
             {/* Panel slots */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
@@ -1431,7 +1450,22 @@ export default function PodcastStudio() {
         )}
       </div>
 
+      {tab === 'library' && library.length > 0 && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+        </div>
+      )}
+
       <Toast message={toast} />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIStreamSummary roomId={null} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <CollaborationMatcher />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ClipGeneratorAI roomId={null} sessionId={null} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={null} sessionId={null} isHost={true} />
+        <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
+      </div>
     </div>
   );
 }

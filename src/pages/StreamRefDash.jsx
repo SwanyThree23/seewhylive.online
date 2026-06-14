@@ -1,4 +1,13 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ChatModeration from '../components/live/ChatModeration';
+import StreamMetadata from '../components/live/StreamMetadata';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -953,11 +962,17 @@ export default function StreamRefDash() {
               <div className="text-white/20 text-[9px] font-mono mt-1">v41 · Washington Classic 2026</div>
             </div>
           </div>
-          <div className="flex gap-3 mt-3 flex-wrap">
+          <div className="flex gap-3 mt-3 flex-wrap items-center">
             <Badge type="live">Production Live</Badge>
             <Badge type="gold">90/10 Creator Split</Badge>
             <Badge type="pending">4 keys pending</Badge>
             <Badge type="info">9 tabs</Badge>
+            <Link to={createPageUrl('StreamAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 transition-colors cursor-pointer">📊 Stream Analytics</span>
+            </Link>
+            <Link to={createPageUrl('AdvancedAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors cursor-pointer">📈 Advanced Analytics</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -987,6 +1002,16 @@ export default function StreamRefDash() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <ActiveContent />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <ZEGOConfigPanel roomId={null} />
+        <OBSBridge roomId={null} isHost={true} />
+        <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={null} userId={null} userName="" isHost={false} onStreamHealth={() => {}} />
+        <ChatModeration />
+        <StreamMetadata room={null} isHost={false} />
       </div>
 
       {/* Footer */}

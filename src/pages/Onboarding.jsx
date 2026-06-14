@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SelectSheet from '../components/shared/SelectSheet';
+import QuickTip from '../components/rooms/QuickTip';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -405,6 +411,41 @@ function CompletionScreen() {
 const lbl = { display:'block', fontFamily:'Barlow Condensed', fontSize:11, color:'#888', letterSpacing:1, textTransform:'uppercase', marginBottom:4, marginTop:12 };
 const inp = { width:'100%', padding:'9px 12px', background:'#111', border:'1px solid #2a2a2a', borderRadius:6, color:'#f0ebe0', fontSize:13, outline:'none', fontFamily:'inherit', boxSizing:'border-box', marginBottom:4 };
 
+function QuickStartSplash({ user, onFullSetup, onSkip }) {
+  return (
+    <div style={{ padding: '28px 24px', textAlign: 'center' }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>🎙</div>
+      <h2 style={{ fontFamily: 'Barlow Condensed', fontSize: 26, color: C.gold, marginBottom: 8, letterSpacing: 1 }}>
+        Welcome, {user?.full_name?.split(' ')[0] || 'Creator'}!
+      </h2>
+      <p style={{ fontFamily: 'Barlow Condensed', fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 24, lineHeight: 1.5 }}>
+        SeeWhy LIVE is your stage — live streams, PK battles, domino tournaments, podcasts & more. Set up takes 2 min.
+      </p>
+
+      {/* Feature pills */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 28 }}>
+        {['⚔️ PK Battles','💰 90% Revenue Split','🤖 AI Co-Host','🎵 AI Music','📡 Multi-Platform','🏆 Loyalty Points'].map(f => (
+          <span key={f} style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed', fontSize: 11, color: C.gold, letterSpacing: 0.5 }}>{f}</span>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button onClick={onFullSetup}
+          style={{ width: '100%', padding: '14px', background: `linear-gradient(90deg, ${C.burg}, ${C.gold})`, border: 'none', borderRadius: 10, color: '#000', fontFamily: 'Barlow Condensed', fontSize: 15, fontWeight: 700, letterSpacing: 1, cursor: 'pointer' }}>
+          🚀 SET UP MY CREATOR PROFILE
+        </button>
+        <button onClick={onSkip}
+          style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed', fontSize: 13, cursor: 'pointer' }}>
+          Explore first →
+        </button>
+      </div>
+      <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', marginTop: 16, fontFamily: 'Barlow Condensed' }}>
+        You can complete setup any time from Creator Dashboard
+      </p>
+    </div>
+  );
+}
+
 export default function OnboardingPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -418,7 +459,14 @@ export default function OnboardingPage() {
     enabled: !!user?.id,
   });
   const [step, setStep] = useState(1);
-  useEffect(() => { if (onboarding) setStep(onboarding.current_step || 1); }, [onboarding]);
+  const [flowOpen, setFlowOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+    if (onboarding) {
+      setStep(onboarding.current_step || 1);
+      setShowSplash(false); // already started setup, skip splash
+    }
+  }, [onboarding]);
 
   const updateOnboarding = useMutation({
     mutationFn: async (data) => {
@@ -442,21 +490,44 @@ export default function OnboardingPage() {
         {/* Logo bar */}
         <div style={{ padding:'14px 20px', background:`linear-gradient(90deg, ${C.burg}22, transparent)`, borderBottom:'1px solid rgba(212,175,55,0.1)', display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontSize:18 }}>📡</span>
-          <span style={{ fontFamily:'Barlow Condensed', fontSize:14, color:C.gold, letterSpacing:2 }}>SEEWHY LIVE — CREATOR SETUP</span>
+          <span style={{ fontFamily:'Barlow Condensed', fontSize:14, color:C.gold, letterSpacing:2 }}>SEEWHY LIVE</span>
         </div>
-        <ProgressBar step={step} onboarding={onboarding} />
+
         <AnimatePresence mode="wait">
-          <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.2 }}>
-            {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} />}
-            {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} />}
-            {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} />}
-            {step === 4 && <Step4 user={user} onDone={handleDone} />}
-            {step === 5 && <Step5 user={user} onDone={handleDone} />}
-            {step === 6 && <Step6 user={user} onDone={handleDone} />}
-            {step === 7 && <Step7 onDone={handleDone} />}
-          </motion.div>
+          {showSplash ? (
+            <motion.div key="splash" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.25 }}>
+              <QuickStartSplash
+                user={user}
+                onFullSetup={() => setShowSplash(false)}
+                onSkip={() => nav('/Home')}
+              />
+            </motion.div>
+          ) : (
+            <motion.div key="setup" initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-10 }} transition={{ duration:0.2 }}>
+              <ProgressBar step={step} onboarding={onboarding} />
+              <AnimatePresence mode="wait">
+                <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.2 }}>
+                  {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} />}
+                  {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} />}
+                  {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} />}
+                  {step === 4 && <Step4 user={user} onDone={handleDone} />}
+                  {step === 5 && <Step5 user={user} onDone={handleDone} />}
+                  {step === 6 && <Step6 user={user} onDone={handleDone} />}
+                  {step === 7 && <Step7 onDone={handleDone} />}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
+          )}
         </AnimatePresence>
       </motion.div>
+      <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
+      <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
+      <SelectSheet label="" value="" options={[]} onChange={() => {}} />
+      <div style={{ padding: '0 0 16px' }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
     </div>
   );
 }

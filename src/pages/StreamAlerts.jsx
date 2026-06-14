@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import StreamGoals from '../components/live/StreamGoals';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK    = '#C0392B';
 const FONT = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const OVERLAY_TYPES = [
   { type: 'new_follower',  icon: Users,    color: '#C9A84C', label: 'New Follower',   desc: 'Shown when someone follows you live',  trigger: 'Auto' },
   { type: 'new_sub',       icon: Star,     color: '#D4AF37', label: 'New Subscriber', desc: 'Banner for new paid subscribers',       trigger: 'Auto' },
   { type: 'tip_received',  icon: Gift,     color: '#6DBF7E', label: 'Tip Alert',      desc: 'Animated tip overlay with amount',      trigger: 'Auto' },
-  { type: 'love_tap',      icon: Heart,    color: '#FF1564', label: 'Love Tap',       desc: '❤️ burst animation on screen',           trigger: 'Auto' },
+  { type: 'love_tap',      icon: Heart,    color: '#C0392B', label: 'Love Tap',       desc: '❤️ burst animation on screen',           trigger: 'Auto' },
   { type: 'goal_reached',  icon: Zap,      color: '#D4AF37', label: 'Goal Reached',   desc: 'Celebration when stream goal hit',      trigger: 'Auto' },
-  { type: 'raid_incoming', icon: BellRing, color: '#FF1564', label: 'Raid Alert',     desc: 'Host raiding your stream',              trigger: 'Auto' },
+  { type: 'raid_incoming', icon: BellRing, color: '#C0392B', label: 'Raid Alert',     desc: 'Host raiding your stream',              trigger: 'Auto' },
 ];
 
 function ToggleSwitch({ enabled, onToggle }) {
@@ -308,6 +315,13 @@ export default function StreamAlerts() {
           )}
         </AnimatePresence>
 
+        {/* ── Sound Alerts Manager ── */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <SoundAlertsManager creatorId={user.id} />
+          </div>
+        )}
+
         {/* ── Footer note ── */}
         <p
           style={{
@@ -320,6 +334,37 @@ export default function StreamAlerts() {
         >
           Alerts require an active broadcast. Sound alerts play through browser audio.
         </p>
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <StreamGoals isHost={true} />
+        <PollLaunchBar roomId={null} hostId={null} activePoll={null} isHost={true} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+      </div>
+
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎚️ Overlays
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('StreamScheduler')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            📅 Scheduler
+          </button>
+        </Link>
       </div>
     </div>
   );

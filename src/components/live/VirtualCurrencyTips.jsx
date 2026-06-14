@@ -9,7 +9,7 @@ const COIN_PACKS = [
   { coins: 10,  price: 0.99,  label: '10 🪙',  color: '#d4af37' },
   { coins: 50,  price: 3.99,  label: '50 🪙',  color: '#CC7755' },
   { coins: 100, price: 6.99,  label: '100 🪙', color: '#D4AF37' },
-  { coins: 500, price: 29.99, label: '500 🪙', color: '#FF1564' },
+  { coins: 500, price: 29.99, label: '500 🪙', color: '#C0392B' },
 ];
 
 const TIP_AMOUNTS = [
@@ -17,7 +17,7 @@ const TIP_AMOUNTS = [
   { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
   { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
-  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#FF1564' },
+  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },
 ];
 
 // Floating coin animation

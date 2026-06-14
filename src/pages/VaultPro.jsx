@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.9)';
@@ -309,7 +316,7 @@ export default function VaultPro() {
         {/* Error banner */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold"
-            style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+            style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
             {error}
             <button onClick={() => setError('')} className="ml-3 underline opacity-70">Dismiss</button>
           </div>
@@ -402,7 +409,7 @@ export default function VaultPro() {
                     </div>
                     <button onClick={() => handleRevealKey(key)}
                       className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 shrink-0"
-                      style={{ background: revealedKeys[key.id] ? 'rgba(255,21,100,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#FF1564' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(255,21,100,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
+                      style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
                   </div>
@@ -595,6 +602,42 @@ export default function VaultPro() {
           </button>
         </div>
       )}
+
+      {/* Community spotlight + milestone alerts */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <MilestoneAlerts creatorId={null} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('CreatorDashboard')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            📊 Creator Dashboard
+          </button>
+        </Link>
+        <Link to={createPageUrl('Dashboard')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🏠 Dashboard
+          </button>
+        </Link>
+        <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            ⚙️ Settings
+          </button>
+        </Link>
+        <Link to={createPageUrl('Monetization')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            💰 Monetization
+          </button>
+        </Link>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <EarningsBreakdown userId={null} />
+        <RevenueDashboard userId={null} />
+        <StreamerMonetizationCenter userId={null} />
+      </div>
     </div>
   );
 }

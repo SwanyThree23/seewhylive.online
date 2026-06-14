@@ -3,7 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Trophy, Star, Flame, Gift, Clock, ChevronDown, ChevronUp, Users, MessageSquare, DollarSign, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import RewardShop from '../components/loyalty/RewardShop';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -161,6 +168,9 @@ export default function LoyaltyHubPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      {user?.id && mainLoyalty?.creator_id && (
+        <PointsEarnWidget userId={user.id} creatorId={mainLoyalty.creator_id} roomId={null} isHost={false} />
+      )}
       <div className="px-4 md:px-6 py-4" style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between mb-4">
@@ -216,6 +226,11 @@ export default function LoyaltyHubPage() {
                   ))}
                 </div>
 
+                {/* Enhanced loyalty card for primary creator */}
+                {user?.id && mainLoyalty?.creator_id && (
+                  <ViewerLoyaltyCard userId={user.id} creatorId={mainLoyalty.creator_id} />
+                )}
+
                 {/* Creator tabs */}
                 {myLoyalties.slice(1).map(l => (
                   <div key={l.id} className="rounded-xl p-3" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.07)' }}>
@@ -227,7 +242,17 @@ export default function LoyaltyHubPage() {
             )}
 
             {activeTab === 'rewards' && (
-              <div className="space-y-2">
+              <div className="space-y-4">
+                {/* Reward Shop */}
+                {user?.id && mainLoyalty?.creator_id && (
+                  <RewardShop creatorId={mainLoyalty.creator_id} roomId={null} currentUser={user} />
+                )}
+
+                {/* Redemption Queue */}
+                {user?.id && mainLoyalty?.creator_id && (
+                  <RedemptionQueue creatorId={mainLoyalty.creator_id} />
+                )}
+
                 {allRewards.length === 0
                   ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No rewards available</p>
                   : allRewards.map((r, i) => {
@@ -285,7 +310,11 @@ export default function LoyaltyHubPage() {
             )}
 
             {activeTab === 'leaderboard' && (
-              <div className="space-y-1.5">
+              <div className="space-y-4">
+                {mainLoyalty?.creator_id && (
+                  <RealtimeLeaderboard creatorId={mainLoyalty.creator_id} roomId={null} />
+                )}
+                <div className="space-y-1.5">
                 {leaderboard.map((l, i) => {
                   const tier = tierFromPoints(l.loyalty_points || 0);
                   const tc = TIER_MAP[tier];
@@ -308,10 +337,24 @@ export default function LoyaltyHubPage() {
                   );
                 })}
                 {leaderboard.length === 0 && <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No loyalty data yet</p>}
+                </div>
               </div>
             )}
           </motion.div>
         </AnimatePresence>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
+          {[
+            { label: '🏆 Loyalty Program', href: 'LoyaltyProgram' },
+            { label: '🛍 Reward Shop',     href: 'RewardShop'    },
+            { label: '🎁 Gift Shop',       href: 'Home'          },
+            { label: '🔴 Go Live',         href: 'GoLive'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: `rgba(212,175,55,0.07)`, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

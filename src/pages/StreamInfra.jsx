@@ -3,7 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
+import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamingPresets from '../components/streaming/StreamingPresets';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -48,11 +54,11 @@ function StatusDot({ active, label, pulse }) {
         className={pulse ? 'animate-pulse' : ''}
         style={{
           width: 7, height: 7, borderRadius: '50%',
-          background: active ? '#6DBF7E' : '#FF1564',
+          background: active ? '#6DBF7E' : '#C0392B',
           boxShadow: active ? '0 0 6px #6DBF7E60' : 'none'
         }}
       />
-      <span className="text-xs" style={{ color: active ? '#6DBF7E' : '#FF1564' }}>{label}</span>
+      <span className="text-xs" style={{ color: active ? '#6DBF7E' : '#C0392B' }}>{label}</span>
     </div>
   );
 }
@@ -140,14 +146,14 @@ function StreamTab({ user }) {
   }
 
   var platforms = [
-    { id: 'youtube', label: 'YouTube Live', ph: 'yt_xxxx...', color: '#FF1564' },
+    { id: 'youtube', label: 'YouTube Live', ph: 'yt_xxxx...', color: '#C0392B' },
     { id: 'twitch', label: 'Twitch', ph: 'live_xxxx...', color: '#D4AF37' },
     { id: 'facebook', label: 'Facebook Live', ph: 'FB-xxxx...', color: '#C9A84C' },
     { id: 'x', label: 'X / Twitter', ph: 'xxxx...', color: '#d4af37' },
   ];
 
   var n8nEvents = [
-    { event: 'stream.started', color: '#FF1564' },
+    { event: 'stream.started', color: '#C0392B' },
     { event: 'tip.received', color: '#d4af37' },
     { event: 'subscriber.new', color: '#C9A84C' },
     { event: 'raid.incoming', color: '#D4AF37' },
@@ -189,17 +195,17 @@ function StreamTab({ user }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
 
         {/* RTMP Ingress */}
-        <PanelCard title="RTMP Ingress — OBS Setup" icon={Radio} color="#FF1564">
+        <PanelCard title="RTMP Ingress — OBS Setup" icon={Radio} color="#C0392B">
           <div className="space-y-3">
             <CopyField label="RTMP Server URL" value={rtmpUrl} mono={true} />
             <CopyField label="Stream Key" value={streamKey} mono={true} />
             <button
               onClick={function() { setStreamKey(genKey('sw', userId)); toast.success('Key regenerated'); }}
-              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(255,21,100,0.12)', color:'#FF1564', border:'1px solid rgba(255,21,100,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(192,57,43,0.12)', color:'#C0392B', border:'1px solid rgba(192,57,43,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <RefreshCw className="w-3 h-3" /> Regenerate Key
             </button>
-            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(255,21,100,0.04)', border: '1px solid rgba(255,21,100,0.08)' }}>
+            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.08)' }}>
               <p className="text-[10px] text-white/40 font-bold uppercase">OBS Quick Config</p>
               <p className="text-[10px] text-white/25">Service: Custom RTMP</p>
               <p className="text-[10px] text-white/25">Bitrate: 4000–8000 kbps · Keyframe: 2s · H.264</p>
@@ -308,6 +314,9 @@ function StreamTab({ user }) {
         </PanelCard>
 
       </div>
+
+      {/* Stream health monitor */}
+      <StreamHealthDashboard isLive={true} />
     </div>
   );
 }
@@ -372,7 +381,7 @@ function LiveRoomTab({ user }) {
     { id: '6', name: 'Maya R.', role: 'cohost', mic: true, video: true, hand: false, speaking: false },
   ];
 
-  var roleColors = { host: '#FF1564', cohost: '#FFB800', speaker: '#d4af37', listener: '#D4AF37' };
+  var roleColors = { host: '#C0392B', cohost: '#FFB800', speaker: '#d4af37', listener: '#D4AF37' };
   var hostParticipants = mockParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
   var listenerParticipants = mockParticipants.filter(function(p) { return p.role === 'listener'; });
 
@@ -396,7 +405,7 @@ function LiveRoomTab({ user }) {
         <div className="flex items-center gap-2">
           <button
             onClick={function() { setRoomActive(!roomActive); }}
-            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#FF1564' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(255,21,100,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#C0392B' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(192,57,43,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
           >
             {roomActive ? <><Square className="w-3 h-3" /> End Room</> : <><Play className="w-3 h-3" /> Start Room</>}
           </button>
@@ -429,7 +438,7 @@ function LiveRoomTab({ user }) {
                       )}
                       <div className="absolute -bottom-1 -right-1 flex gap-0.5">
                         {p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#6DBF7E' }}><Mic className="w-2 h-2 text-black" /></div>}
-                        {!p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#FF1564' }}><MicOff className="w-2 h-2 text-white" /></div>}
+                        {!p.mic && <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: '#C0392B' }}><MicOff className="w-2 h-2 text-white" /></div>}
                       </div>
                     </div>
                     <div className="text-center">
@@ -476,6 +485,8 @@ function LiveRoomTab({ user }) {
               </div>
             </div>
           </PanelCard>
+          {/* Guest stream monitor */}
+          <GuestStreamMonitor guestName="Active Guest" isStreaming={roomActive} />
         </div>
 
         {/* Controls Panel */}
@@ -509,10 +520,10 @@ function LiveRoomTab({ user }) {
               <button
                 onClick={function() { setMicOn(!micOn); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(255,21,100,0.2)') }}
+                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(192,57,43,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(192,57,43,0.2)') }}
               >
                 {micOn ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4 text-red-400" />}
-                <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#FF1564' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
+                <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#C0392B' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
               </button>
               <button
                 onClick={function() { setVideoOn(!videoOn); }}
@@ -584,7 +595,7 @@ function StudioTab({ user }) {
     setRooms(function(prev) { return prev.filter(function(r) { return r.id !== id; }); });
   }
 
-  var statusColor = { live: '#FF1564', active: '#6DBF7E', idle: '#d4af3780' };
+  var statusColor = { live: '#C0392B', active: '#6DBF7E', idle: '#d4af3780' };
   var typeIcon = { video: Video, audio: Music };
 
   return (
@@ -594,7 +605,7 @@ function StudioTab({ user }) {
         {[
           { label: 'Active Rooms', val: String(rooms.filter(function(r) { return r.status !== 'idle'; }).length), c: '#C9A84C' },
           { label: 'Total Participants', val: String(rooms.reduce(function(a, r) { return a + r.participants; }, 0)), c: '#d4af37' },
-          { label: 'Live Rooms', val: String(rooms.filter(function(r) { return r.status === 'live'; }).length), c: '#FF1564' },
+          { label: 'Live Rooms', val: String(rooms.filter(function(r) { return r.status === 'live'; }).length), c: '#C0392B' },
           { label: 'Idle Rooms', val: String(rooms.filter(function(r) { return r.status === 'idle'; }).length), c: '#D4AF3780' },
         ].map(function(s) {
           return (
@@ -636,7 +647,7 @@ function StudioTab({ user }) {
                   </button>
                   <button
                     onClick={function() { removeRoom(room.id); }}
-                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(255,21,100,0.08)', color:'rgba(255,21,100,0.38)', border:'1px solid rgba(255,21,100,0.15)', cursor:'pointer' }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(192,57,43,0.08)', color:'rgba(192,57,43,0.38)', border:'1px solid rgba(192,57,43,0.15)', cursor:'pointer' }}
                   >
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
@@ -675,7 +686,7 @@ function StudioTab({ user }) {
       </PanelCard>
 
       {/* Recording & Clips */}
-      <PanelCard title="Recording & Clips" icon={Radio} color="#FF1564">
+      <PanelCard title="Recording & Clips" icon={Radio} color="#C0392B">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
             { label: 'Auto-Record All Live Rooms', desc: 'Saves to VOD library automatically', active: true },
@@ -683,7 +694,7 @@ function StudioTab({ user }) {
             { label: 'Auto-Clip Highlights', desc: 'AI detects peak moments', active: true },
           ].map(function(item) {
             return (
-              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(255,21,100,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)') }}>
+              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(192,57,43,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)') }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-white/80">{item.label}</p>
@@ -779,6 +790,15 @@ export default function StreamInfra() {
             {activeTab === 'studio' && <StudioTab user={user} />}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={null} isHost={false} />
+        <EnhancedIngestPanel roomId={null} isHost={false} />
+        <ZEGOConfigPanel roomId={null} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <StreamingPresets onApply={() => {}} />
       </div>
     </div>
   );

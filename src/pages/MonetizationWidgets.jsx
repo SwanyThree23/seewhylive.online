@@ -6,6 +6,10 @@ import { Target, Bell, Gavel, Zap, Info } from 'lucide-react';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -16,7 +20,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
   { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#22c55e' },
-  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#a78bfa' },
+  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#D4AF37' },
 ];
 
 export default function MonetizationWidgets() {
@@ -46,16 +50,16 @@ export default function MonetizationWidgets() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {/* Beta notice */}
         <div className="flex items-start gap-3 p-4 rounded-xl"
-          style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
-          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00d4ff' }} />
+          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#D4AF37' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#00d4ff' }}>Beta Testing</p>
+            <p className="text-sm font-black" style={{ ...T, color: '#D4AF37' }}>Beta Testing</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
-                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#00d4ff' }}>Start a live room</Link> to enable auction bidding.</span>
+                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#D4AF37' }}>Start a live room</Link> to enable auction bidding.</span>
               )}
             </p>
           </div>
@@ -116,7 +120,7 @@ export default function MonetizationWidgets() {
         {activeTab === 'auctions' && (
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(167,139,250,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#a78bfa' }}>Live Auctions</p>
+              <p className="font-black text-sm" style={{ ...T, color: '#D4AF37' }}>Live Auctions</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>
             </div>
             <div className="p-5">
@@ -124,6 +128,17 @@ export default function MonetizationWidgets() {
             </div>
           </div>
         )}
+
+        {user?.id && (
+          <div className="mt-4">
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+          </div>
+        )}
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
+          <TipAlert roomId={null} recipientId={null} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+        </div>
       </div>
     </div>
   );
