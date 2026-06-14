@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
+import PollCard from '../components/community/PollCard';
+import RaidPanelButton from '../components/live/RaidPanel';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -258,6 +260,11 @@ export default function CommunitiesPage() {
             </Link>
           </div>
         )}
+
+        <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <PollCard poll={null} />
+          <RaidPanelButton room={null} currentUser={null} isHost={false} />
+        </div>
       </div>
     </div>
   );

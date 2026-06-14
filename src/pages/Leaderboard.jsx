@@ -8,6 +8,9 @@ import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import StreamGoals from '../components/live/StreamGoals';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import TipWidget from '../components/live/TipWidget';
+import TippingOverlay from '../components/live/TippingOverlay';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
@@ -410,6 +413,9 @@ export default function LeaderboardPage() {
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
+          <TipWidget roomId={null} hostId={null} currentUser={null} />
+          <TippingOverlay roomId={null} creatorId={null} isVisible={true} />
+          <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
         </div>
       </div>
     </div>
