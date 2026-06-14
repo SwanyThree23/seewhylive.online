@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 function getVoiceSettings() {
   try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
@@ -320,6 +323,12 @@ export default function JoyceAI() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="hype" />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
       </div>
     </div>
   );

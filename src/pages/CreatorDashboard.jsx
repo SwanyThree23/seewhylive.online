@@ -11,6 +11,9 @@ import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import VODLibrary from '../components/vod/VODLibrary';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -331,6 +334,12 @@ export default function CreatorDashboardPage() {
         )}
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+            <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+            <StreamEventBus roomId={null} isHost={true} sessionId={null} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} isHost={true} />
+          </div>
+
           <Link to={createPageUrl('ContentCalendar')}>
             <div className="w-full flex items-center justify-between px-6 py-5 rounded-2xl cursor-pointer transition-all hover:brightness-110"
               style={{
