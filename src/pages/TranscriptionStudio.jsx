@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -269,6 +270,10 @@ export default function TranscriptionStudio() {
             OPEN CAPTION.NINJA ↗
           </a>
         </div>
+
+      <div style={{ padding: '0 16px 12px' }}>
+        <ShareToSocial />
+      </div>
 
       {/* Footer nav */}
       <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

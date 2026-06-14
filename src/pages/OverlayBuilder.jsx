@@ -6,6 +6,8 @@ import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import AlertConfig from '../components/live/AlertConfig';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -311,6 +313,13 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
+
+      {user?.id && (
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid rgba(212,175,55,0.08)' }}>
+          <AlertConfig creatorId={user.id} />
+          <LowerThirdsBanner onBannerChange={() => {}} />
+        </div>
+      )}
     </div>
   );
 }

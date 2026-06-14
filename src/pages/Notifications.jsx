@@ -5,6 +5,8 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
@@ -172,6 +174,13 @@ export default function NotificationsPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StreamGoals isHost={true} />
+            <LeaderboardPanel roomId={null} />
           </div>
         )}
       </div>
