@@ -8,6 +8,7 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import FollowButton from '../components/shared/FollowButton';
 import PresenceDot from '../components/shared/PresenceDot';
 import ShareButtons from '../components/shared/ShareButtons';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -29,6 +30,11 @@ export default function PublicProfile() {
     queryKey: ['public-rooms', userId],
     queryFn: () => base44.entities.Room.filter({ host_id: userId, is_public: true }, '-created_date', 6),
     enabled: !!userId,
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
   if (isLoading) return (
@@ -127,6 +133,13 @@ export default function PublicProfile() {
             </Link>
           </div>
         </div>
+
+        {/* Subscription Tiers */}
+        {userId && (
+          <div className="mb-6">
+            <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+          </div>
+        )}
 
         {/* Recent Rooms */}
         {rooms.length > 0 && (
