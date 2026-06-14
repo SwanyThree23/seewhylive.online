@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleMode from '../components/streaming/BattleMode';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import GiftShopTray from '../components/live/GiftShopTray';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -851,6 +854,12 @@ export default function StateVsState() {
             </Link>
           );
         })}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={null} hostId={null} isHost={false} />
+        <SocialLeaderboard roomId={null} />
+        <GiftShopTray roomId={null} currentUser={null} />
       </div>
     </div>
   );
