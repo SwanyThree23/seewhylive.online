@@ -28,6 +28,7 @@ import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import GiftShopTray from '../components/live/GiftShopTray';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -566,6 +567,13 @@ export default function AudioRoom() {
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />
+        </div>
+      )}
+
+      {/* Music player panel (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PanelMusicPlayer />
         </div>
       )}
 

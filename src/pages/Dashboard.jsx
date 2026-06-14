@@ -21,6 +21,7 @@ import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
 import RecordingManager from '../components/content/RecordingManager';
 import { toast } from 'sonner';
 
@@ -1083,6 +1084,7 @@ function SettingsTab({ user }) {
 /* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [activityOpen, setActivityOpen] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
@@ -1149,6 +1151,8 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
     </div>
   );
 }
