@@ -19,6 +19,8 @@ import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AIStreamSummary from '../components/live/AIStreamSummary';
+import AudioPanel from '../components/live/AudioPanel';
+import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -511,6 +513,20 @@ export default function AudioRoom() {
       {roomId && party?.host_id && !isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <SuperChatBar roomId={roomId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+        </div>
+      )}
+
+      {/* Audio mixer panel (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />
+        </div>
+      )}
+
+      {/* Chat moderation (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <ChatModerationPanel roomId={roomId} />
         </div>
       )}
 
