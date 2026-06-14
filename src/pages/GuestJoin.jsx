@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -248,6 +250,11 @@ export default function GuestJoin() {
             <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+          <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+        </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI

@@ -18,6 +18,9 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import ClipMarker from '../components/live/ClipMarker';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import ParticipantsList from '../components/rooms/ParticipantsList';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -403,6 +406,9 @@ export default function ControlRoomPage() {
         <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
         <ClipMarker roomId={null} user={user} streamStartTs={null} />
         <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={null} communityId={null} />
+        <RoomAnalyticsPanel roomId={null} />
+        <CollaborativeWhiteboard roomId={null} />
       </div>
 
       {/* RTMP Cards Grid */}
