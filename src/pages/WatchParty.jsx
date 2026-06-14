@@ -60,7 +60,7 @@ function Input({ value, onChange, placeholder, className = '', style = {}, maxLe
   return (
     <input value={value} onChange={onChange} placeholder={placeholder} maxLength={maxLength}
       className={className}
-      style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
+      style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
   );
 }
 function Badge({ children, className = '', style = {} }) {
@@ -72,7 +72,7 @@ function Badge({ children, className = '', style = {} }) {
   );
 }
 function Card({ children, className = '', style = {} }) {
-  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
+  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
 }
 function CardContent({ children, className = '', style = {} }) {
   return <div className={className} style={style}>{children}</div>;
@@ -341,6 +341,34 @@ function InviteCard({ partyUrl }) {
   );
 }
 
+function AISummaryButton({ members, elapsed, partyId }) {
+  const [loading, setLoading] = useState(false);
+  async function handleSummary() {
+    setLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Summarize this watch party in 2 sentences: ${members.length} viewers, active for ${Math.round(elapsed / 60)} minutes, party ID: ${partyId}. Be concise and engaging.`,
+        add_context_from_internet: false,
+      });
+      toast.success(result || 'No summary available.');
+    } catch (err) {
+      toast.error('AI Summary failed — try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <button
+      onClick={handleSummary}
+      disabled={loading}
+      className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
+      style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif', opacity: loading ? 0.6 : 1 }}
+    >
+      {loading ? '…' : '✨ AI Summary'}
+    </button>
+  );
+}
+
 export default function WatchPartyPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const partyId = urlParams.get('id');
@@ -536,6 +564,13 @@ export default function WatchPartyPage() {
       });
     },
     onSuccess: (p) => {
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Started watch party: ${p?.title || 'Watch Party'}`,
+        }).catch(() => {});
+      }
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
     onError: (e) => {
@@ -549,7 +584,17 @@ export default function WatchPartyPage() {
 
   const endPartyMutation = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Watch party ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Watch party ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Ended watch party: ${party?.title || 'Watch Party'}`,
+        }).catch(() => {});
+      }
+      window.location.href = window.location.pathname;
+    },
   });
 
   const copyInvite = () => {
@@ -588,7 +633,7 @@ export default function WatchPartyPage() {
           </h1>
           <p className="text-white/50 mt-1 text-sm">Watch together in sync with real-time chat</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <Input
             placeholder="Party title (e.g. Movie Night)"
             value={partyTitle}
@@ -756,11 +801,11 @@ export default function WatchPartyPage() {
       </div>
 
       {showSyncWarn && !isHost && (
-        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(255,176,0,0.15)', borderBottom: '1px solid rgba(255,176,0,0.3)' }}>
-          <span className="text-xs font-bold" style={{ color: '#FFB000' }}>⚠️ Sync lost — tap to resync</span>
+        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(212,175,55,0.15)', borderBottom: '1px solid rgba(212,175,55,0.3)' }}>
+          <span className="text-xs font-bold" style={{ color: '#D4AF37' }}>⚠️ Sync lost — tap to resync</span>
           <button onClick={function() { if (syncData) onTimeSync(syncData); else if (party) onTimeSync(party); setShowSyncWarn(false); }}
             className="ml-auto px-3 py-1 rounded-lg text-[10px] font-bold"
-            style={{ background: 'rgba(255,176,0,0.25)', color: '#FFB000', border: '1px solid rgba(255,176,0,0.4)' }}>
+            style={{ background: 'rgba(212,175,55,0.25)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)' }}>
             Resync
           </button>
         </div>
@@ -796,7 +841,7 @@ export default function WatchPartyPage() {
         {!isHost && (
           <div className="absolute top-2 right-2 text-white text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
             Live Sync
           </div>
         )}
@@ -940,9 +985,9 @@ export default function WatchPartyPage() {
                   <span style={{
                     fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
-                    background: wpGuardianOn ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)',
-                    border: `1px solid ${wpGuardianOn ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                    color: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.3)',
+                    background: wpGuardianOn ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)',
+                    border: `1px solid ${wpGuardianOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    color: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.3)',
                     textTransform: 'uppercase',
                   }}>
                     {wpGuardianOn ? 'Active' : 'Off'}
@@ -951,7 +996,7 @@ export default function WatchPartyPage() {
                     onClick={() => setWpGuardianOn(v => !v)}
                     style={{
                       width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
-                      background: wpGuardianOn ? '#22c55e' : 'rgba(255,255,255,0.12)',
+                      background: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.12)',
                       position: 'relative', transition: 'background 0.2s', flexShrink: 0,
                     }}
                   >
@@ -1019,7 +1064,7 @@ export default function WatchPartyPage() {
           />
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#080B18' }}>
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },
@@ -1052,15 +1097,7 @@ export default function WatchPartyPage() {
               <>
                 <div className="flex items-center justify-between px-1 pt-1">
                   <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
-                  <button
-                    onClick={() => {
-                      toast.success(`AI Summary: ${members.length} viewers watching. Room has been active for ${Math.round(elapsed / 60)}min. Top reaction: 🔥`);
-                    }}
-                    className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
-                    style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  >
-                    ✨ AI Summary
-                  </button>
+                  <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />

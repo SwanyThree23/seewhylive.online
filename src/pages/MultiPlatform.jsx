@@ -1,16 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import DestinationsManager from '../components/streaming/DestinationsManager';
-import OBSBridge from '../components/obs/OBSBridge';
-import WebhookHooks from '../components/live/WebhookHooks';
-import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import BitratePresets from '../components/streaming/BitratePresets';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -18,8 +14,8 @@ const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
-const GREEN  = '#5A7A4A';
+const PURPLE = '#D4854A';
+const GREEN  = '#4A9B5E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const PLATFORMS = [
@@ -28,16 +24,10 @@ const PLATFORMS = [
   { id:'twitch',   name:'Twitch',               emoji:'🟣', color:'#9146FF', desc:'Reach gaming and creative audiences with simultaneous Twitch streaming.', features:['Live stream','Clip sharing','Channel points','Raids & hosts'] },
   { id:'tiktok',   name:'TikTok LIVE',          emoji:'🎵', color:CYAN,      desc:'Go live on TikTok and tap into trending sounds and viral discovery.', features:['LIVE streaming','Trending sounds','Duet integration','Gift sync'] },
   { id:'facebook', name:'Facebook / Instagram', emoji:'📘', color:'#1877F2', desc:'Broadcast to Facebook Live and Instagram simultaneously.', features:['Facebook Live','Instagram Live','Story cross-post','Reels upload'] },
-  { id:'discord',  name:'Discord',              emoji:'💬', color:'#5865F2', desc:'Send stream notifications and events to your Discord server via webhook.', features:['Go-live notifications','Clip alerts','Community events','Bot commands'] },
+  { id:'discord',  name:'Discord',              emoji:'💬', color:'#D4854A', desc:'Send stream notifications and events to your Discord server via webhook.', features:['Go-live notifications','Clip alerts','Community events','Bot commands'] },
 ];
 
 const WEBHOOK_EVENTS = ['New Follower','New Like','New Comment','Stream Go Live','Gift Received','Milestone 100','Milestone 500','Milestone 1000'];
-
-const MOCK_EVENTS = [
-  { emoji:'👤', text:'New follower: Creator_XYZ just followed you on Fanbase', ago:'2m ago', color:GOLD },
-  { emoji:'🎁', text:'Gift received: FanUser sent a 💎 Diamond Gift on Fanbase', ago:'15m ago', color:CYAN },
-  { emoji:'🎯', text:'Milestone: 100 viewers on your Fanbase stream!', ago:'1h ago', color:GREEN },
-];
 
 const OVERLAY_PRESETS = [
   { id:'clean',    label:'Clean',        desc:'No overlay', preview:null },
@@ -52,6 +42,16 @@ const VIRTUAL_BGS = [
   { id:'gold',    label:'Gold Club',     color:'#D4AF37' },
   { id:'neon',    label:'Neon Blue',     color:'#001a2e' },
 ];
+
+function formatAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 function Toast({ message }) {
   return (
@@ -96,6 +96,19 @@ function ProgressBar({ value, max, color }) {
 export default function MultiPlatform() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('platforms');
+
+  const { data: recentActivities = [] } = useQuery({
+    queryKey: ['multiplatform-events'],
+    queryFn: () => base44.entities.Activity.list('-created_date', 20),
+    refetchInterval: 30000,
+  });
+
+  const liveEvents = recentActivities.slice(0, 10).map(a => ({
+    emoji: a.type === 'tip_sent' ? '🎁' : a.type === 'new_follower' ? '👤' : a.type === 'milestone' ? '🎯' : '📡',
+    text:  a.title || a.type,
+    ago:   a.created_date ? formatAgo(a.created_date) : '',
+    color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
+  }));
   const [connections, setConnections] = useState(() => {
     try { return JSON.parse(localStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
   });
@@ -123,6 +136,8 @@ export default function MultiPlatform() {
   const [shoutouts, setShoutouts] = useState(['Welcome Creator_XYZ to SeeWhy LIVE! 🎉','100 viewers milestone — you\'re amazing! 🔥','FanbaseUser just gifted you a 💎 Diamond!']);
   const [toast, setToast] = useState('');
   const [reactions] = useState(['🔥','❤️','🎉','💯','👏']);
+  const [customBgs, setCustomBgs] = useState([]);
+  const bgUploadRef = useRef(null);
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
@@ -278,18 +293,24 @@ export default function MultiPlatform() {
                 {/* Live event feed */}
                 <div style={{ background:BG2, borderRadius:16, border:'1px solid rgba(255,255,255,0.07)', padding:'18px 16px' }}>
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 12px' }}>📡 Live Event Feed</p>
-                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                    {MOCK_EVENTS.map((ev, i) => (
-                      <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, border:'1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize:18, flexShrink:0 }}>{ev.emoji}</span>
-                        <div style={{ flex:1 }}>
-                          <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)', margin:0, lineHeight:1.4 }}>{ev.text}</p>
-                          <p style={{ ...T, fontSize:10, color:'rgba(255,255,255,0.3)', margin:'3px 0 0' }}>{ev.ago}</p>
+                  {liveEvents.length === 0 ? (
+                    <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.25)', textAlign:'center', padding:'20px 0', margin:0 }}>
+                      No recent events — activity will appear here when viewers tip, subscribe, or follow
+                    </p>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {liveEvents.map((ev, i) => (
+                        <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, border:'1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize:18, flexShrink:0 }}>{ev.emoji}</span>
+                          <div style={{ flex:1 }}>
+                            <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)', margin:0, lineHeight:1.4 }}>{ev.text}</p>
+                            <p style={{ ...T, fontSize:10, color:'rgba(255,255,255,0.3)', margin:'3px 0 0' }}>{ev.ago}</p>
+                          </div>
+                          <span style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0, marginTop:4 }} />
                         </div>
-                        <span style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0, marginTop:4 }} />
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Webhook list */}
@@ -381,6 +402,23 @@ export default function MultiPlatform() {
                 {/* Virtual backgrounds */}
                 <div style={{ background:BG2, borderRadius:16, border:'1px solid rgba(255,255,255,0.07)', padding:'18px 16px' }}>
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 12px' }}>Virtual Background</p>
+                  <input
+                    ref={bgUploadRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display:'none' }}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = URL.createObjectURL(file);
+                      const id = `custom_${Date.now()}`;
+                      const label = file.name.replace(/\.[^.]+$/, '').slice(0, 12);
+                      setCustomBgs(prev => [...prev, { id, label, url }]);
+                      setVirtualBg(id);
+                      showToast(`Background "${label}" added`);
+                      e.target.value = '';
+                    }}
+                  />
                   <div style={{ display:'flex', gap:10, overflowX:'auto', paddingBottom:4 }} className="scrollbar-hide">
                     {VIRTUAL_BGS.map(bg => (
                       <motion.button key={bg.id} whileTap={{ scale:0.95 }} onClick={() => setVirtualBg(bg.id)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
@@ -388,7 +426,13 @@ export default function MultiPlatform() {
                         <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700 }}>{bg.label}</span>
                       </motion.button>
                     ))}
-                    <motion.button whileTap={{ scale:0.95 }} onClick={() => showToast('Upload feature coming soon!')} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                    {customBgs.map(bg => (
+                      <motion.button key={bg.id} whileTap={{ scale:0.95 }} onClick={() => setVirtualBg(bg.id)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
+                        <div style={{ width:64, height:40, borderRadius:8, backgroundImage:`url(${bg.url})`, backgroundSize:'cover', backgroundPosition:'center', border:`2px solid ${virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.08)'}` }} />
+                        <span style={{ ...T, fontSize:10, color:virtualBg===bg.id ? GOLD : 'rgba(255,255,255,0.4)', fontWeight:700, maxWidth:60, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{bg.label}</span>
+                      </motion.button>
+                    ))}
+                    <motion.button whileTap={{ scale:0.95 }} onClick={() => bgUploadRef.current?.click()} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6, background:'none', border:'none', cursor:'pointer', flexShrink:0 }}>
                       <div style={{ width:64, height:40, borderRadius:8, background:'rgba(255,255,255,0.04)', border:'2px dashed rgba(255,255,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center' }}>
                         <span style={{ fontSize:18 }}>+</span>
                       </div>
@@ -528,7 +572,7 @@ export default function MultiPlatform() {
                   <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:10 }}>When someone follows on any platform, ARIA generates a welcome automatically.</p>
                   <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
                     {shoutouts.map((s, i) => (
-                      <div key={i} style={{ padding:'8px 12px', background:'rgba(167,139,250,0.06)', borderRadius:8, border:'1px solid rgba(167,139,250,0.12)' }}>
+                      <div key={i} style={{ padding:'8px 12px', background:'rgba(212,175,55,0.06)', borderRadius:8, border:'1px solid rgba(212,175,55,0.12)' }}>
                         <span style={{ ...T, fontSize:12, color:PURPLE, fontWeight:700 }}>🎙️ ARIA: </span>
                         <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)' }}>{s}</span>
                       </div>

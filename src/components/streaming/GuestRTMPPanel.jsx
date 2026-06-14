@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Wifi, Lock, KeyRound, Trash2, Plus, RefreshCw, CheckCircle, XCircle } from 'lucide-react';
 
-const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 import { toast } from 'sonner';
 
 const PLATFORM_PRESETS = [
@@ -19,15 +19,15 @@ const PLATFORM_PRESETS = [
 ];
 
 const STATUS_CONFIG = {
-  live:       { dot: 'bg-green-400 animate-pulse',  text: 'LIVE',       textColor: 'text-green-400'  },
-  connecting: { dot: 'bg-yellow-400 animate-pulse', text: 'Connecting', textColor: 'text-yellow-400' },
+  live:       { dot: 'bg-[#6DBF7E] animate-pulse',  text: 'LIVE',       textColor: 'text-[#6DBF7E]'  },
+  connecting: { dot: 'bg-[#D4AF37] animate-pulse', text: 'Connecting', textColor: 'text-[#D4AF37]' },
   error:      { dot: 'bg-red-400',                  text: 'Error',      textColor: 'text-red-400'    },
   offline:    { dot: 'bg-white/20',                 text: 'Idle',       textColor: 'text-white/30'   },
 };
 
 function StatusPill({ status, validationState }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.offline;
-  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.2)', color:'#4ade80', border:'1px solid rgba(34,197,94,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
+  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
   if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(239,68,68,0.2)', color:'#f87171', border:'1px solid rgba(239,68,68,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
   return (
     <div className="flex items-center gap-1.5">

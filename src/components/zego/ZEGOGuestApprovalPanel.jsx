@@ -8,15 +8,11 @@ import { toast } from 'sonner';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-/**
- * Host-only panel: manage pending guest requests to co-host.
- * Approve → guest moves to "active" participants
- * Reject → participant record deleted
- */
 export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const qc = useQueryClient();
 
-  // Fetch pending participants
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: pendingGuests = [] } = useQuery({
     queryKey: ['pending-guests', roomId],
     queryFn: () => base44.entities.Participant.filter({ room_id: roomId, status: 'pending' }),
@@ -27,9 +23,16 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const approveMut = useMutation({
     mutationFn: (participantId) =>
       base44.entities.Participant.update(participantId, { status: 'active', approved_at: new Date().toISOString() }),
-    onSuccess: () => {
+    onSuccess: (_, participantId) => {
       qc.invalidateQueries(['pending-guests']);
       toast.success('Guest approved');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_joined',
+          title: 'Approved a co-host guest request',
+        }).catch(() => {});
+      }
     },
   });
 

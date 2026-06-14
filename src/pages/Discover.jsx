@@ -50,7 +50,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -58,7 +58,7 @@ function FanbaseRoomCard({ room }) {
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -69,11 +69,11 @@ function FanbaseRoomCard({ room }) {
           Join
         </span>
       </div>
-      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
         {room.thumbnail_url
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
           style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
@@ -153,7 +153,7 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div className="min-h-screen bg-[#080B18] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -167,7 +167,7 @@ export default function DiscoverPage() {
         )}
       </motion.div>
       {/* Dark header */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #0d0618 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #080B18 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
@@ -235,7 +235,7 @@ export default function DiscoverPage() {
       <div style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <div style={{ display: 'flex', gap: 8, padding: '10px 16px', width: 'max-content' }}>
           {[
-            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#1565C0' },
+            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#C0392B' },
             { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#C0392B' },
             { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#D4854A' },
             { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#D4AF37' },
@@ -261,7 +261,7 @@ export default function DiscoverPage() {
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
+          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
@@ -310,7 +310,7 @@ export default function DiscoverPage() {
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#16162A]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#0D1022]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -406,13 +406,13 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#FF8C00'];
+  const rankColors = ['#D4AF37', '#D4AF37', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
+        className="relative rounded-xl overflow-hidden border border-[#0D1022] hover:border-[#C0392B]/30 transition-all cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #0D1022 100%)' }}
       >
         {room.thumbnail_url && (
           <img src={room.thumbnail_url} alt="" className="w-full h-28 object-cover opacity-60" />
@@ -445,10 +445,10 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#16162A] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#D4AF37]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#16162A] flex items-center justify-center shrink-0">
-          <Calendar className="w-5 h-5 text-[#FFB800]" />
+        <div className="w-12 h-12 rounded-lg bg-[#0D1022] border border-[#0D1022] flex items-center justify-center shrink-0">
+          <Calendar className="w-5 h-5 text-[#D4AF37]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
@@ -471,7 +471,7 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>

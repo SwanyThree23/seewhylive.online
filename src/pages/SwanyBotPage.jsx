@@ -11,16 +11,16 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
 const AMBER = '#CC7755';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
 const PILL  = 999;
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
@@ -154,7 +154,7 @@ export default function SwanyBotPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
-            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(21,101,192,0.3)`, background: 'rgba(21,101,192,0.1)', color: '#5C8EE0', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(128,0,32,0.3)`, background: 'rgba(128,0,32,0.1)', color: AMBER, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
               ⚔️ SVS
             </button>
           </Link>
@@ -168,7 +168,7 @@ export default function SwanyBotPage() {
               🔊 Voice
             </button>
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: `rgba(34,197,94,0.12)`, border: `1px solid rgba(34,197,94,0.3)` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: `rgba(109,191,126,0.12)`, border: `1px solid rgba(109,191,126,0.3)` }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse-dot 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>AI ACTIVE</span>
           </div>

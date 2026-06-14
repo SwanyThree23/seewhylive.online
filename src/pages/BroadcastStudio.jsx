@@ -612,13 +612,30 @@ export default function BroadcastStudio() {
     },
     onSuccess: ({ party: p, mode }) => {
       setStudioMode(mode);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Started broadcast: ${p?.title || 'Broadcast Studio'}`,
+        }).catch(() => {});
+      }
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
   });
 
   const endMut = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Broadcast ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Broadcast ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended`,
+        }).catch(() => {});
+      }
+      window.location.href = window.location.pathname;
+    },
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────
@@ -1042,7 +1059,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {!canStream && (
               <div className="absolute top-2 right-2 text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
                 style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)', color: 'white' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
                 Live Sync
               </div>
             )}
@@ -1082,7 +1099,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         </div>
 
         {/* ── RIGHT: Tabbed tools panel ─────────────────────────────────── */}
-        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#0D0618' }}>
+        <div className="shrink-0 flex flex-col overflow-hidden" style={{ width: 296, borderLeft: '1px solid rgba(255,255,255,0.06)', background: '#080B18' }}>
 
           {/* Exclusive Live toggle */}
           <div className="shrink-0 flex items-center gap-2 px-3 py-2"
@@ -1317,7 +1334,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           </button>
                           <button onClick={() => dismissRaisedHand(uid)}
                             className="text-[11px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
+                            style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.15)', ...T }}>
                             ✕
                           </button>
                         </div>
@@ -1354,7 +1371,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           {isOnStage ? (
                             <button onClick={() => demoteToAudience(mem)}
                               className="text-[11px] px-1.5 py-0.5 rounded"
-                              style={{ background: 'rgba(255,68,68,0.08)', color: '#FF6666', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                              style={{ background: 'rgba(255,68,68,0.08)', color: '#D4854A', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
                               Remove
                             </button>
                           ) : (
@@ -1636,7 +1653,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Danger zone */}
                 {isHost && (
                   <div className="rounded-xl p-3" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)' }}>
-                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#FF6680', ...T }}>End Broadcast</p>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#C0392B', ...T }}>End Broadcast</p>
                     <button onClick={() => endMut.mutate()}
                       className="w-full py-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1"
                       style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>
@@ -1695,8 +1712,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 />
                 <GuestControls
                   participants={members}
-                  onMuteGuest={(guestId) => console.log('mute', guestId)}
-                  onRemoveGuest={(guestId) => console.log('remove', guestId)}
+                  onMuteGuest={(guestId) => {
+                    const m = members.find(x => x.id === guestId);
+                    if (m) toast(`${m.user_name} muted (local)`);
+                  }}
+                  onRemoveGuest={(guestId) => {
+                    const m = members.find(x => x.id === guestId);
+                    if (m) kickMember(m);
+                  }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
                 {members[0]?.user_id && (
@@ -2125,7 +2148,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                   <button onClick={copyLink}
                     className="h-9 px-3 rounded-xl text-[10px] font-black transition-all"
-                    style={{ background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#22c55e' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    style={{ background: linkCopied ? 'rgba(109,191,126,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#6DBF7E' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {linkCopied ? '✓ Copied' : 'Copy'}
                   </button>
                 </div>

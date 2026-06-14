@@ -11,8 +11,8 @@ import VODLibrary from '../components/vod/VODLibrary';
 import ShopDashboard from '../components/merch/ShopDashboard';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 
 const FEATURES = [
   {
@@ -20,7 +20,7 @@ const FEATURES = [
     title: 'Guest Destinations',
     description: 'Multi-guest co-streaming with automated camera direction via SwanAI Director.',
     icon: '🎬',
-    color: '#FF8C00',
+    color: '#D4854A',
     highlights: ['Real-time layout switching', 'AI spotlight detection', 'Multi-platform RTMP'],
     link: '/ControlRoom',
   },
@@ -74,7 +74,7 @@ const FEATURES = [
     title: 'State vs State Tournaments',
     description: 'Full bracket domino tournament system with live matches, rosters, and real-time standings.',
     icon: '⚔️',
-    color: '#1565C0',
+    color: '#C0392B',
     highlights: ['Live brackets', 'State rosters', 'Season standings'],
     link: '/StateVsState',
   },
@@ -83,7 +83,7 @@ const FEATURES = [
     title: 'Tribute Wall',
     description: 'Honor fallen domino legends with tribute posts, memorial events, and nomination system.',
     icon: '🕊️',
-    color: '#7B5EA7',
+    color: '#800020',
     highlights: ['Legend cards', 'Tribute messages', 'Memorial fund'],
     link: '/TributeWall',
   },
@@ -101,7 +101,7 @@ const FEATURES = [
     title: 'INS Forge',
     description: 'AI creative brief generator for SVS graphics, tribute cards, overlays, and promo assets.',
     icon: '⚡',
-    color: '#F59E0B',
+    color: '#D4AF37',
     highlights: ['SVS brackets', 'Stream overlays', 'Tribute cards'],
     link: '/INSForge',
   },
@@ -280,7 +280,7 @@ export default function PlatformShowcase() {
             href="/LiveRoom"
             whileHover={{ scale: 1.05 }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-            style={{ background: `linear-gradient(135deg, ${G}, #FF8C00)` }}
+            style={{ background: `linear-gradient(135deg, ${G}, #D4854A)` }}
           >
             Go Live Now <Radio className="w-5 h-5" />
           </motion.a>

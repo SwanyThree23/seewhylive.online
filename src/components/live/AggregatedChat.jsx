@@ -31,7 +31,7 @@ function ModBadge({ status, onAppeal, msgId, roomId }) {
   const isFlagged = status === 'flagged';
   return (
     <span
-      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-red-400'}`}
+      className={`ml-1 cursor-pointer ${isFlagged ? 'text-[#D4AF37]' : 'text-red-400'}`}
       title={`${isFlagged ? 'Flagged for review' : status} — click to appeal`}
       onClick={() => onAppeal?.(msgId, roomId)}
     >
@@ -351,11 +351,11 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
               <div className="flex-1 min-w-0">
                 <span className="font-semibold text-white/80 mr-1">{msg.user_name}</span>
                 {isViolation && (
-                  <span className="text-yellow-400 mr-1">
+                  <span className="text-[#D4AF37] mr-1">
                     {isAppealing
                       ? <span className="text-[11px] text-white/30">reviewing…</span>
                       : <ShieldAlert
-                          className="w-3 h-3 inline cursor-pointer hover:text-yellow-300"
+                          className="w-3 h-3 inline cursor-pointer hover:text-[#D4AF37]/80"
                           title={`Flagged: ${modStatus} — click to appeal`}
                           onClick={() => handleAppeal(msg.id, roomId)}
                         />
@@ -423,7 +423,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
           onClick={() => setLangSheetOpen(false)}
         >
           <div
-            style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
+            style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>

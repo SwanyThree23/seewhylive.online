@@ -29,13 +29,20 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
       timeout_seconds: 60,
       created_at: new Date().toISOString(),
     }),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       toast.success('Poll launched! 📊');
       setOpen(false);
       setCustom(false);
       setQuestion('');
       setOptions(['', '']);
       qc.invalidateQueries(['polls', roomId]);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched quick poll: ${poll?.question || question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -61,7 +68,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl overflow-hidden"
-            style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
+            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.25)', width: 240, boxShadow: '0 8px 32px rgba(0,0,0,0.7)' }}>
             <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <span className="text-[10px] font-black uppercase text-[#D4AF37]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Quick Poll

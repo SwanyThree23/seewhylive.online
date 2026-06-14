@@ -12,14 +12,14 @@ import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget
 import LiveTranscription from '../components/live/LiveTranscription';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const SCARL = '#C0392B';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
 
@@ -167,8 +167,8 @@ export default function TranscriptionStudio() {
           {/* Live/Stop */}
           <motion.button whileTap={{ scale: 0.94 }} onClick={live ? stopLive : startLive}
             style={{ ...T, fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: 'none', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase',
-              background: live ? `linear-gradient(135deg, ${SCARL}, #8B1A2F)` : `linear-gradient(135deg, ${GREEN}, #16a34a)`,
-              color: '#fff', boxShadow: live ? `0 2px 12px ${SCARL}55` : `0 2px 12px rgba(34,197,94,0.4)` }}>
+              background: live ? `linear-gradient(135deg, ${SCARL}, #8B1A2F)` : `linear-gradient(135deg, ${GREEN}, #4A9B5E)`,
+              color: '#fff', boxShadow: live ? `0 2px 12px ${SCARL}55` : `0 2px 12px rgba(109,191,126,0.4)` }}>
             {live ? '⏹ STOP' : '▶ GO LIVE'}
           </motion.button>
         </div>
@@ -209,7 +209,7 @@ export default function TranscriptionStudio() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {live && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, ...MONO, fontSize: 9, color: GREEN, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 99, padding: '2px 8px' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4, ...MONO, fontSize: 9, color: GREEN, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99, padding: '2px 8px' }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: GREEN, display: 'inline-block', animation: 'caretBlink 0.9s ease infinite' }} />
                     LIVE
                   </span>

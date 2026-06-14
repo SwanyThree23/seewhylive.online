@@ -44,6 +44,24 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: gift.times_sent + 1,
       });
+
+      // Log activity for both parties
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name} gift`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name} gift`,
+          amount: gift.price,
+          sender_id: user.id,
+        }),
+      ]);
     },
     onSuccess: (_, gift) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -63,9 +81,9 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
-    rare: 'bg-blue-100 text-blue-800',
-    epic: 'bg-purple-100 text-purple-800',
-    legendary: 'bg-yellow-100 text-yellow-800',
+    rare: 'bg-[#D4AF37]/12 text-[#800020]',
+    epic: 'bg-[#800020]/20 text-[#C9A84C]',
+    legendary: 'bg-[#D4AF37]/15 text-[#C9A84C]',
   };
 
   return (
@@ -148,7 +166,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50">
+        <Card className="bg-gradient-to-br from-[#0D1022] to-[#0F1428]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -160,7 +178,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Gift className="w-8 h-8 text-purple-500" />
+                    <Gift className="w-8 h-8 text-[#800020]" />
                   )}
                 </div>
                 <div>

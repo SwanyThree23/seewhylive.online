@@ -5,7 +5,7 @@ import { Heart, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const TIP_AMOUNTS = [5, 10, 50, 100];

@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Trophy, Zap, Users, TrendingUp, Crown, Flame } from 'lucide-react';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const BADGE_ICONS = {
@@ -101,7 +101,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">User {viewer.user_id?.slice(0, 8)}</p>
-                  <p className="text-[10px] text-amber-300">{viewer.tips_sent_count} tips</p>
+                  <p className="text-[10px] text-[#D4AF37]/80">{viewer.tips_sent_count} tips</p>
                 </div>
               </motion.div>
             ))}
@@ -124,7 +124,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">{raider.creator_name}</p>
-                  <p className="text-[10px] text-emerald-300">{raider.total_viewers} viewers • {raider.raid_count} raids</p>
+                  <p className="text-[10px] text-[#6DBF7E]">{raider.total_viewers} viewers • {raider.raid_count} raids</p>
                 </div>
               </motion.div>
             ))}
@@ -147,7 +147,7 @@ export default function LeaderboardPanel({ roomId }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-white truncate">User {viewer.user_id?.slice(0, 8)}</p>
-                  <p className="text-[10px] text-cyan-300">{Math.round(viewer.watch_minutes)} min • {viewer.points || 0} pts</p>
+                  <p className="text-[10px] text-[#6DBF7E]">{Math.round(viewer.watch_minutes)} min • {viewer.points || 0} pts</p>
                 </div>
               </motion.div>
             ))}

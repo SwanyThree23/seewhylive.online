@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
-  Film, FileText, Calendar, Sliders, Scissors, Bell, Star, Users, BarChart
+  Film, FileText, Calendar, Sliders, Scissors, Bell, TrendingUp, Star, Users, BarChart2, Activity as ActivityIcon
 } from 'lucide-react';
 // DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
@@ -38,33 +38,25 @@ var DRAWER_WATCH = [
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
   { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
-  { name: 'Fallen Legends',   icon: Heart,   href: '/FallenLegends' },
-  { name: 'WisperFlo',        icon: MessageSquare, href: '/WisperFlo' },
+  { name: 'SwanyBot',         icon: Bot,     href: createPageUrl('SwanyBotPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
-  { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
-  { name: 'Loyalty Hub',      icon: Star,    href: createPageUrl('LoyaltyHub') },
-  { name: 'Communities',      icon: Users,   href: createPageUrl('Communities') },
-  { name: 'Community Admin',  icon: Users,   href: createPageUrl('CommunityAdmin') },
-  { name: 'Community Growth', icon: BarChart,href: createPageUrl('CommunityGrowth') },
-  { name: 'Challenges',       icon: Trophy,  href: createPageUrl('ChallengesHub') },
-  { name: 'VOD Library',      icon: Film,    href: createPageUrl('VODLibrary') },
-  { name: 'SVS Arena',        icon: Swords,  href: '/SVSArena' },
-  { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
-  { name: 'PK Arena',         icon: Trophy,  href: createPageUrl('PKBattleArena') },
-  { name: 'PK Battle',        icon: Swords,  href: createPageUrl('PKBattlePage') },
-  { name: 'PK Manager',       icon: Swords,  href: createPageUrl('PKBattleManager') },
-  { name: 'PPV Events',       icon: Lock,    href: createPageUrl('PayPerViewEvents') },
-  { name: 'Featured Content', icon: Tv2,     href: createPageUrl('FeaturedContent') },
-  { name: 'Video Post',       icon: Video,   href: createPageUrl('VideoPost') },
+  { name: 'Leaderboard',      icon: Trophy,       href: createPageUrl('Leaderboard') },
+  { name: 'VOD Library',      icon: Film,         href: createPageUrl('VODLibrary') },
+  { name: 'Live Battles',     icon: Swords,       href: createPageUrl('LiveBattles') },
+  { name: 'PK Arena',         icon: Trophy,       href: createPageUrl('PKBattleArena') },
+  { name: 'PPV Events',       icon: Lock,         href: createPageUrl('PayPerViewEvents') },
+  { name: 'Featured Content', icon: Tv2,          href: createPageUrl('FeaturedContent') },
+  { name: 'Challenges',       icon: Star,         href: createPageUrl('ChallengesHub') },
+  { name: 'Loyalty Hub',      icon: Trophy,       href: createPageUrl('LoyaltyHub') },
+  { name: 'Communities',      icon: Users,        href: createPageUrl('Communities') },
 ];
 
 var DRAWER_CREATE = [
   { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
-  { name: 'LIVE Studio v37',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
-  { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
+  { name: 'LIVE Studio',      icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
@@ -91,21 +83,30 @@ var DRAWER_CREATE = [
   { name: 'Captions',         icon: FileText,        href: createPageUrl('TranscriptionStudio') },
   { name: 'Clips',            icon: Scissors,        href: createPageUrl('ClipsLibrary') },
   { name: 'Content Calendar', icon: Calendar,        href: createPageUrl('ContentCalendar') },
+  { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
+  { name: 'Stream Analytics', icon: TrendingUp,      href: createPageUrl('StreamAnalytics') },
+  { name: 'Advanced Analytics',icon: BarChart2,      href: createPageUrl('AdvancedAnalytics') },
+  { name: 'Poll Manager',     icon: Sliders,         href: createPageUrl('PollManager') },
+  { name: 'Multi-Stream Mgr', icon: Radio,           href: createPageUrl('MultiStreamManager') },
+  { name: 'Voice AI',         icon: Sliders,         href: createPageUrl('VoiceAISettings') },
+  { name: 'Challenges',       icon: Star,            href: createPageUrl('ChallengesHub') },
+  { name: 'Scene Templates',  icon: Layers,          href: createPageUrl('SceneTemplates') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Hybrid Room',      icon: Radio,           href: createPageUrl('HybridStreamRoom') },
+  { name: 'Enhancement Suite',icon: Sparkles,        href: createPageUrl('EnhancementSuite') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
-  { name: 'Advanced Analytics', icon: BarChart,      href: createPageUrl('AdvancedAnalytics') },
+  { name: 'Control Room',     icon: LayoutDashboard, href: createPageUrl('ControlRoom') },
+  { name: 'PK Battle Mgr',    icon: Swords,          href: createPageUrl('PKBattleManager') },
+  { name: 'Creator Subs',     icon: DollarSign,      href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Users',     icon: Users,           href: createPageUrl('InviteUsers') },
+  { name: 'Analytics',        icon: BarChart2,       href: createPageUrl('Analytics') },
+  { name: 'Creator Dashboard',icon: LayoutDashboard, href: createPageUrl('Dashboard') },
+  { name: 'Newsletter',       icon: MessageSquare,   href: createPageUrl('Newsletter') },
   { name: 'Overlay Builder',  icon: Layers,          href: createPageUrl('OverlayBuilder') },
-  { name: 'Hybrid Stream',    icon: Radio,           href: createPageUrl('HybridStreamRoom') },
-  { name: 'Voice AI',         icon: Mic2,            href: createPageUrl('VoiceAISettings') },
-  { name: 'Monetize Widgets', icon: DollarSign,      href: createPageUrl('MonetizationWidgets') },
-  { name: 'Subscriptions',    icon: Star,            href: createPageUrl('CreatorSubscriptions') },
-  { name: 'Poll Manager',     icon: BarChart,        href: createPageUrl('PollManager') },
-  { name: 'Go Live Studio',   icon: Radio,           href: '/GoLiveStudio' },
-  { name: 'Payout Center',    icon: DollarSign,      href: '/PayoutCenter' },
-  { name: 'INS Forge AI',     icon: Sparkles,        href: '/INSForgeStudio' },
-  { name: 'Fallen Legends',   icon: Heart,           href: '/FallenLegends' },
-  { name: 'SVS Arena',        icon: Swords,          href: '/SVSArena' },
-  { name: 'Creator Analytics',icon: BarChart,        href: '/CreatorAnalytics' },
-  { name: 'WisperFlo',        icon: MessageSquare,   href: '/WisperFlo' },
+  { name: 'Greenroom',        icon: Video,           href: createPageUrl('Greenroom') },
+  { name: 'PPV Events',       icon: DollarSign,      href: createPageUrl('PayPerViewEvents') },
+  { name: 'VOD Library',      icon: Video,           href: createPageUrl('VODLibrary') },
+  { name: 'Social Expo',      icon: Globe,           href: createPageUrl('SocialExpo') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -114,25 +115,29 @@ var DRAWER_ACCOUNT = [
   { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
-  { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },
-  { name: 'Payouts',    icon: DollarSign, href: createPageUrl('Payouts') },
-  { name: 'Activity',   icon: Bell,       href: createPageUrl('Activity') },
-  { name: 'Data Export', icon: FileText,  href: createPageUrl('DataExport') },
-  { name: 'Notifications', icon: Bell, href: createPageUrl('Notifications') },
+  { name: 'BetaStatus', icon: Radio,         href: createPageUrl('BetaStatus') },
+  { name: 'Payouts',    icon: DollarSign,    href: createPageUrl('Payouts') },
+  { name: 'Notifications', icon: Bell,       href: createPageUrl('Notifications') },
+  { name: 'Activity',   icon: ActivityIcon,  href: createPageUrl('Activity') },
+  { name: 'Data Export',icon: FileText,      href: createPageUrl('DataExport') },
+  { name: 'Viewer Dashboard',icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
+  { name: 'Loyalty Program',  icon: Trophy,         href: createPageUrl('LoyaltyProgram') },
+  { name: 'Loyalty Hub',      icon: Trophy,         href: createPageUrl('LoyaltyHub') },
+  { name: 'My Subscriptions', icon: Star,           href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Friends',   icon: Users,          href: createPageUrl('InviteUsers') },
+  { name: 'Communities',      icon: Users,          href: createPageUrl('Communities') },
+  { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Leaderboard',      icon: Trophy,         href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_ADMIN = [
-  { name: 'AdminDashboard',    icon: Shield,         href: createPageUrl('AdminDashboard') },
-  { name: 'Guardian AI',       icon: Shield,         href: createPageUrl('GuardianAI') },
-  { name: 'Moderation',        icon: Shield,         href: createPageUrl('ModerationDashboard') },
-  { name: 'Scene Templates',   icon: Layers,         href: createPageUrl('SceneTemplates') },
-  { name: 'Viewer Dashboard',  icon: LayoutDashboard,href: createPageUrl('ViewerDashboard') },
-  { name: 'StageCleanup',      icon: Layers,         href: createPageUrl('StageCleanup') },
-  { name: 'RTMPServer',        icon: Server,         href: createPageUrl('RTMPServer') },
-  { name: 'Infra Reference',   icon: Server,         href: createPageUrl('StreamInfraRef') },
-  { name: 'AI Moderation',     icon: Shield,         href: createPageUrl('AIModeration') },
-  { name: 'Stream Ref Dash',   icon: BarChart,       href: createPageUrl('StreamRefDash') },
-  { name: 'Loyalty Program',   icon: Star,           href: createPageUrl('LoyaltyProgram') },
+  { name: 'AdminDashboard',  icon: Shield, href: createPageUrl('AdminDashboard') },
+  { name: 'Guardian AI',     icon: Shield, href: createPageUrl('GuardianAI') },
+  { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
+  { name: 'RTMPServer',         icon: Server,  href: createPageUrl('RTMPServer') },
+  { name: 'Infra Reference',   icon: Server,  href: createPageUrl('StreamInfraRef') },
+  { name: 'Moderation',        icon: Shield,  href: createPageUrl('ModerationDashboard') },
+  { name: 'AI Moderation',     icon: Shield,  href: createPageUrl('AIModeration') },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -250,13 +255,13 @@ export default function Layout({ children, currentPageName }) {
       {!isFullscreen && <>
       {/* Brand accent line — sits below status bar on notch devices */}
       <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
-        style={{ background: 'rgba(7,7,15,0.97)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)' }}>
         <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
       </div>
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -326,7 +331,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between px-4 py-1 text-[10px] font-bold"
             style={{ background: 'rgba(180,50,30,0.12)', borderTop: '1px solid rgba(200,80,30,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}>SeeWhy LIVE</span>
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
               <span style={{ color: '#CC7755' }}>{liveCount} stream{liveCount !== 1 ? 's' : ''} live now</span>
@@ -388,8 +393,8 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
-                <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
-                  <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-orange-400/40"
+                <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(212,133,74,0.12)' }}>
+                  <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-[#D4854A]/40"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
                   <div className="space-y-0.5">
                     {DRAWER_ADMIN.map(function(item) {
@@ -397,9 +402,9 @@ export default function Layout({ children, currentPageName }) {
                       return (
                         <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                            style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
-                            <Icon className="w-4 h-4 shrink-0 text-orange-400/70" />
-                            <span className="text-sm font-bold text-orange-400/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
+                            style={{ background: 'rgba(212,133,74,0.04)', borderLeft: '2px solid rgba(212,133,74,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
+                            <Icon className="w-4 h-4 shrink-0 text-[#D4854A]/70" />
+                            <span className="text-sm font-bold text-[#D4854A]/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
                           </div>
                         </Link>
                       );
@@ -448,7 +453,7 @@ export default function Layout({ children, currentPageName }) {
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
-          style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+          style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
@@ -504,7 +509,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop footer */}
       <footer className="hidden md:block py-3 px-6 text-[10px]"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
           <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">

@@ -45,7 +45,7 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-full mt-2 right-0 bg-[#1a0a2e] border border-white/20 rounded-lg p-2 z-50 min-w-max"
+          className="absolute top-full mt-2 right-0 bg-[#0F1428] border border-white/20 rounded-lg p-2 z-50 min-w-max"
         >
           {QUICK_LANGUAGES.map(lang => (
             <button

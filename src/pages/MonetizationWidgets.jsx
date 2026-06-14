@@ -19,7 +19,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
-  { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#22c55e' },
+  { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#6DBF7E' },
   { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#D4AF37' },
 ];
 
@@ -71,7 +71,7 @@ export default function MonetizationWidgets() {
             <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
               <button onClick={() => setActiveTab(s.id)}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all"
-                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(13,6,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
+                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(8,11,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
                 <s.icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
                 <p className="text-xs font-black" style={{ ...T, color: activeTab === s.id ? s.color : 'rgba(255,255,255,0.5)' }}>{s.label}</p>
               </button>
@@ -92,7 +92,7 @@ export default function MonetizationWidgets() {
 
         {/* Goals */}
         {activeTab === 'goals' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Streamer Goals — Real-Time</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Goals update live and celebrate when reached with confetti</p>
@@ -105,9 +105,9 @@ export default function MonetizationWidgets() {
 
         {/* Sound Alerts */}
         {activeTab === 'alerts' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(34,197,94,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#22c55e' }}>Sound Alert Configuration</p>
+              <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
             </div>
             <div className="p-5">
@@ -118,7 +118,7 @@ export default function MonetizationWidgets() {
 
         {/* Auctions */}
         {activeTab === 'auctions' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(167,139,250,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: '#D4AF37' }}>Live Auctions</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>

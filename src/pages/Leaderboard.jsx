@@ -15,12 +15,12 @@ import TippingOverlay from '../components/live/TippingOverlay';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 
 const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
-  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
-  { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
-  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#4A148C', w: 2, l: 3, pts: 1380 },
-  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#BF360C', w: 1, l: 4, pts: 1120 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', w: 3, l: 1, pts: 1740 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', w: 3, l: 2, pts: 1650 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', w: 3, l: 2, pts: 1610 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', w: 2, l: 3, pts: 1380 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', w: 1, l: 4, pts: 1120 },
 ];
 
 const GOLD    = '#D4AF37';
@@ -48,7 +48,7 @@ function OctAvatar({ size = 60, src, initials, rankColor = GOLD, glow = false })
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -119,7 +119,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
       style={{
         background: isCurrentUser
           ? 'rgba(212,175,55,0.08)'
-          : isEven ? 'rgba(17,8,34,0.6)' : 'rgba(13,6,24,0.4)',
+          : isEven ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.4)',
         border: `1px solid ${isCurrentUser ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.04)'}`,
       }}>
       {/* rank number */}
@@ -289,7 +289,7 @@ export default function LeaderboardPage() {
         {activeTab === 'svs' && (
           <>
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-center gap-2 px-4 py-3"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <Swords className="w-4 h-4" style={{ color: GOLD }} />
@@ -343,7 +343,7 @@ export default function LeaderboardPage() {
         {/* ── top-3 podium ── */}
         {activeTab !== 'svs' && top3.length > 0 && (
           <div className="rounded-2xl p-5"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             {/* reorder: 2nd | 1st | 3rd */}
             <div className="flex items-end justify-center gap-4">
               {top3[1] && (
@@ -374,7 +374,7 @@ export default function LeaderboardPage() {
         {/* ── rank list (4th+) ── */}
         {activeTab !== 'svs' && list.length === 0 ? (
           <div className="rounded-2xl flex items-center justify-center py-16"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No data yet</p>
           </div>
         ) : activeTab === 'earnings' && (
@@ -384,7 +384,7 @@ export default function LeaderboardPage() {
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="flex items-center gap-2 px-4 py-3"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <Trophy className="w-4 h-4" style={{ color: 'rgba(212,175,55,0.5)' }} />

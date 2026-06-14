@@ -33,7 +33,7 @@ function PermissionPill({ label, status }) {
   const cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
-    prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
+    prompt:  { color: '#D4AF37', border: 'rgba(212,175,55,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
   return (
@@ -88,7 +88,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
         <X className="w-12 h-12 text-red-400" />
         <div>
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
           {entry?.deny_reason && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
         </div>
@@ -552,7 +552,7 @@ export default function GreenroomPage() {
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl"
                   style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
-                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <CheckCircle className="w-4 h-4 text-[#6DBF7E]" />
                   <span className="text-[10px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Device Check ✓
                   </span>

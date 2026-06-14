@@ -59,6 +59,24 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
         sender_id: me.id,
       });
 
+      // Log activity for both parties
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: me.id,
+          type: 'tip_sent',
+          title: `Tipped $${amount} to ${recipientName}`,
+          amount,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'tip_received',
+          title: `Received a $${amount} tip`,
+          amount,
+          sender_id: me.id,
+        }),
+      ]);
+
       return { transaction, pointsEarned };
     },
     onSuccess: ({ transaction, pointsEarned }) => {

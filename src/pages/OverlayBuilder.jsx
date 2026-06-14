@@ -172,6 +172,13 @@ export default function OverlayBuilderPage() {
       qc.invalidateQueries(['overlay-layouts']);
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Saved overlay layout: ${layoutName || 'Overlay'}`,
+        }).catch(() => {});
+      }
     },
   });
   const toggleActiveMut = useMutation({
@@ -206,7 +213,7 @@ export default function OverlayBuilderPage() {
     <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
           <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>← Studio</Link>
           <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>Editor</Link>

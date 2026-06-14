@@ -17,7 +17,7 @@ const CRIMSON= '#800020';
 const AMBER  = '#D4854A';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
-const BLUE   = '#1565C0';
+const BLUE   = '#C0392B';
 const RED2   = '#C62828';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -32,7 +32,7 @@ const QUICK_PROMPTS = {
 
 const FORGE_TYPES = [
   { id: 'svs_bracket',     label: 'SVS Bracket Graphic',      icon: '⚔️', color: BLUE },
-  { id: 'tribute_card',    label: 'Tribute Memorial Card',     icon: '🕊️', color: '#7B5EA7' },
+  { id: 'tribute_card',    label: 'Tribute Memorial Card',     icon: '🕊️', color: '#800020' },
   { id: 'stream_overlay',  label: 'Stream Overlay Pack',       icon: '🎥', color: GOLD },
   { id: 'podcast_cover',   label: 'Podcast Cover Art',         icon: '🎙️', color: CYAN },
   { id: 'music_promo',     label: 'Music Release Promo',       icon: '🎵', color: PURPLE },
@@ -244,7 +244,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             }}
           />
           {error && (
-            <div style={{ ...T, fontSize: 12, color: '#ff6b6b', marginBottom: 10 }}>{error}</div>
+            <div style={{ ...T, fontSize: 12, color: '#D4854A', marginBottom: 10 }}>{error}</div>
           )}
           <button onClick={generate} disabled={loading || !prompt.trim()} style={{
             width: '100%', padding: '13px 0', borderRadius: 10, border: 'none', cursor: loading || !prompt.trim() ? 'not-allowed' : 'pointer',
@@ -380,24 +380,24 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       </div>
 
       {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
         <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🤖 AI Hub
           </button>
         </Link>
         <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🎚️ Overlays
           </button>
         </Link>
         <Link to={createPageUrl('StreamAlerts')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🔔 Alerts
           </button>
         </Link>
         <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             🎬 Studio
           </button>
         </Link>

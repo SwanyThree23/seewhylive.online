@@ -58,8 +58,8 @@ export default function OctagonalVideoWindow({
       <div
         className="absolute inset-0"
         style={{
-          clipPath: OCT,
-          background: `linear-gradient(135deg, ${GOLD}, ${CRIMSON})`,
+          clipPath,
+          background: 'linear-gradient(135deg, #d4af37, #C0392B)',
           padding: '3px',
           opacity: 0.5,
           filter: 'blur(8px)',
@@ -135,49 +135,40 @@ export default function OctagonalVideoWindow({
           )}
         </div>
 
-        {/* Controls */}
-        {showControls && (
-          <div className="absolute bottom-1.5 left-0 right-0 flex gap-1 justify-center">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              onClick={onMicToggle}
-              className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
-              style={{
-                background: isMuted ? 'rgba(239,68,68,0.25)' : 'rgba(34,197,94,0.15)',
-                border: isMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(34,197,94,0.4)',
-              }}
-            >
-              {isMuted
-                ? <MicOff className="w-3 h-3 text-red-400" />
-                : <Mic className="w-3 h-3 text-green-400" />}
-            </motion.button>
+        {/* Control buttons - bottom corners */}
+        <div className="absolute bottom-2 left-2 right-2 flex gap-1 justify-center">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            onClick={onMicToggle}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              isMuted
+                ? 'bg-red-900/50 border border-red-600 text-red-400'
+                : 'bg-[#0F1428]/50 border border-[#6DBF7E]/35 text-[#6DBF7E]'
+            }`}
+          >
+            {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+          </motion.button>
 
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              onClick={onVideoToggle}
-              className="w-7 h-7 rounded-full flex items-center justify-center transition-all"
-              style={{
-                background: isVideoOff ? 'rgba(239,68,68,0.25)' : 'rgba(59,130,246,0.15)',
-                border: isVideoOff ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(59,130,246,0.4)',
-              }}
-            >
-              {isVideoOff
-                ? <VideoOff className="w-3 h-3 text-red-400" />
-                : <Video className="w-3 h-3 text-blue-400" />}
-            </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            onClick={onVideoToggle}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+              isVideoOff
+                ? 'bg-red-900/50 border border-red-600 text-red-400'
+                : 'bg-[#0F1428]/70 border border-[#D4AF37]/40 text-[#D4AF37]'
+            }`}
+          >
+            {isVideoOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+          </motion.button>
 
-            {onShareScreen && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                onClick={onShareScreen}
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.4)' }}
-              >
-                <Share2 className="w-3 h-3 text-purple-400" />
-              </motion.button>
-            )}
-          </div>
-        )}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            onClick={onShareScreen}
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#800020]/30 border border-[#800020] text-[#D4854A] transition-all"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   );

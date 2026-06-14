@@ -1,0 +1,82 @@
+# MediaMTX — SeeWhy LIVE v33
+# RTMP ingest → HLS fanout
+# Install: https://github.com/bluenviron/mediamtx/releases
+
+###############################################################################
+# Global
+###############################################################################
+logLevel: info
+logDestinations: [stdout, file]
+logFile: /var/log/seewhy/mediamtx.log
+
+readTimeout: 10s
+writeTimeout: 10s
+readBufferCount: 512
+
+###############################################################################
+# API (internal management)
+###############################################################################
+api: yes
+apiAddress: 127.0.0.1:9997
+
+###############################################################################
+# RTMP — ingest on 1935
+###############################################################################
+rtmp: yes
+rtmpAddress: :1935
+rtmpEncryption: no
+
+# Validate stream key against backend before allowing publish
+rtmpServerKey: ""
+rtmpServerCert: ""
+
+###############################################################################
+# HLS — output
+###############################################################################
+hls: yes
+hlsAddress: :8888
+hlsAlwaysRemux: yes
+hlsVariant: lowLatency
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+hlsSegmentMaxSize: 50MB
+hlsAllowOrigin: "*"
+hlsDirectory: /var/www/html/hls
+
+###############################################################################
+# Paths — per-stream config
+###############################################################################
+paths:
+  # Default: accept any stream key, call our backend to validate
+  "~^live/(.+)$":
+    source: publisher
+    publishUser: ""
+    publishPass: ""
+
+    # Notify backend when publisher connects
+    runOnPublish: >
+      curl -sf -X POST http://127.0.0.1:3001/api/rtmp/auth
+      -H "Content-Type: application/json"
+      -d '{"name":"$MTX_PATH","addr":"$MTX_QUERY"}'
+    runOnPublishRestart: no
+
+    # Notify backend when publisher disconnects
+    runOnUnpublish: >
+      curl -sf -X POST http://127.0.0.1:3001/api/rtmp/done
+      -H "Content-Type: application/json"
+      -d '{"name":"$MTX_PATH"}'
+
+    # HLS output per stream
+    hlsSegmentCount: 6
+    hlsSegmentDuration: 2s
+    hlsPartDuration: 500ms
+
+  # Well-known SeeWhy default stream key — always allowed
+  "live/sw_6991033b_n8gf2vyf":
+    source: publisher
+
+  # BRB / slate placeholder (looped MP4 on disk)
+  "brb":
+    source: file:///opt/seewhy/media/brb_slate.mp4
+    sourceOnDemand: yes

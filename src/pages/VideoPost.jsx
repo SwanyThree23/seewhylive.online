@@ -124,7 +124,7 @@ export default function VideoPost() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d0618] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#080B18] py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -200,20 +200,20 @@ export default function VideoPost() {
                     value={form.title}
                     onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Video title *"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                   <textarea
                     value={form.description}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Description (optional)"
                     rows={3}
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
                   />
                   <input
                     value={form.tags}
                     onChange={e => setForm(prev => ({ ...prev, tags: e.target.value }))}
                     placeholder="Tags (comma-separated)"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
 
                   {/* Privacy & Paywall */}
@@ -255,7 +255,7 @@ export default function VideoPost() {
                         type="number"
                         min="0.99"
                         step="0.50"
-                        style={{ width:112, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                        style={{ width:112, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                       />
                       <span className="text-white/40 text-xs">per view</span>
                     </div>
@@ -286,8 +286,8 @@ export default function VideoPost() {
 
         {step === 'published' && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-10 h-10 text-green-400" />
+            <div className="w-20 h-20 rounded-full bg-[#0F1428]/30 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-10 h-10 text-[#6DBF7E]" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Video Posted! 🎉</h2>

@@ -12,15 +12,15 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
 const PILL  = 999;
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
@@ -104,7 +104,7 @@ export default function VoiceAISettings() {
           {saved && (
             <span style={{ ...MONO, fontSize: 9, color: GREEN, letterSpacing: '0.08em' }}>✓ SAVED</span>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: vs.enabled ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${vs.enabled ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: vs.enabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${vs.enabled ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}` }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: vs.enabled ? GREEN : TEXTM }} />
             <span style={{ ...MONO, fontSize: 9, color: vs.enabled ? GREEN : TEXTM, fontWeight: 700 }}>{vs.enabled ? 'VOICE ON' : 'VOICE OFF'}</span>
           </div>

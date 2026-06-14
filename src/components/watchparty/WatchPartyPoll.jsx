@@ -49,11 +49,11 @@ function ActivePoll({ poll, currentUser, onVote }) {
     <motion.div
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
       className="rounded-xl overflow-hidden"
-      style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.3)' }}>
+      style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.3)' }}>
       {/* header */}
       <div className="flex items-center gap-2 px-3 py-2"
         style={{ background: 'rgba(212,175,55,0.08)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
-        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+        <div className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
         <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Live Poll · {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
         </span>
@@ -132,11 +132,11 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       <button className="w-full flex items-center gap-2 px-3 py-2 transition-all"
         style={{ background: 'rgba(0,0,0,0.3)', borderBottom: open ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
         onClick={() => setOpen(v => !v)}>
-        <BarChart3 className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+        <BarChart3 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
         <span className="text-[10px] font-black uppercase tracking-widest flex-1 text-left" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Create Poll
         </span>
@@ -256,7 +256,7 @@ export default function WatchPartyPoll({ partyId, roomId, currentUser, isHost })
             {isHost && (
               <button onClick={() => closeHostPoll(poll.id)}
                 className="absolute top-2 right-2 flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded"
-                style={{ background: 'rgba(180,50,30,0.2)', border: '1px solid rgba(180,50,30,0.3)', color: '#ff8866' }}>
+                style={{ background: 'rgba(180,50,30,0.2)', border: '1px solid rgba(180,50,30,0.3)', color: '#C0392B' }}>
                 <StopCircle className="w-2.5 h-2.5" /> End
               </button>
             )}

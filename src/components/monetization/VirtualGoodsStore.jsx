@@ -6,9 +6,9 @@ import { ShoppingBag, Sparkles } from 'lucide-react';
 
 const rarityStyles = {
   common:    { background: 'rgba(107,114,128,0.15)', color: '#9ca3af', border: '1px solid rgba(107,114,128,0.3)' },
-  rare:      { background: 'rgba(59,130,246,0.15)',  color: '#60a5fa', border: '1px solid rgba(59,130,246,0.3)' },
+  rare:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
   epic:      { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
-  legendary: { background: 'rgba(245,158,11,0.15)',  color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)' },
+  legendary: { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' },
 };
 
 const TABS = ['all', 'badge', 'emoji', 'theme', 'effect', 'frame'];
@@ -52,10 +52,18 @@ export default function VirtualGoodsStore({ userId }) {
         await base44.entities.VirtualGood.update(good.id, { stock: good.stock - 1 });
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { good }) => {
       toast.success('Item purchased! ✨');
       queryClient.invalidateQueries(['virtualGoods']);
       queryClient.invalidateQueries(['userInventory']);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'ppv_purchase',
+          title: `Purchased: ${good?.name || 'Virtual Item'}`,
+          amount: good?.price,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Purchase failed');
@@ -98,13 +106,13 @@ export default function VirtualGoodsStore({ userId }) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {goods.map((good) => (
-              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 16px 8px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                         <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>{good.name}</span>
-                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#f59e0b' }} />}
+                        {good.is_limited && <Sparkles style={{ width: 16, height: 16, color: '#D4AF37' }} />}
                       </div>
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>{good.description}</p>
                     </div>

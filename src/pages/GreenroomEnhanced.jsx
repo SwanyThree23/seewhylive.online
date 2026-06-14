@@ -134,7 +134,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Camera preview + source picker */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="relative aspect-video bg-black">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             {!cameraStream && (
@@ -168,7 +168,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Pre-broadcast checklist */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-black" style={{ color: GOLD }}>Pre-Broadcast Checklist</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
@@ -193,7 +193,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Room PIN (AES-encrypted) */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm">🔐</span>
             <span className="text-sm font-black" style={{ color: CRIMSON }}>Private Room PIN</span>

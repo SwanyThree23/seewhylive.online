@@ -32,8 +32,8 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
     return () => clearInterval(intervalRef.current);
   }, [isLive]);
 
-  const healthColor = health >= 80 ? '#22c55e' : health >= 50 ? '#f59e0b' : '#ef4444';
-  const latencyColor = latency < 200 ? '#22c55e' : latency < 400 ? '#f59e0b' : '#ef4444';
+  const healthColor = health >= 80 ? '#6DBF7E' : health >= 50 ? '#D4AF37' : '#ef4444';
+  const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#D4AF37' : '#ef4444';
   const networkBars = Math.ceil((health / 100) * 5);
 
   const ringCircumference = 2 * Math.PI * 20;
@@ -42,7 +42,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
   return (
     <motion.div
       layout
-      className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden"
+      className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden"
       style={{ backdropFilter: 'blur(12px)' }}
     >
       <button
@@ -93,10 +93,10 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
             <Stat label="FPS" value={`${fps} fps`} color="#D4AF37" />
             <Stat label="Latency" value={`${latency} ms`} color={latencyColor} />
             <Stat label="Bitrate" value={`${(bitrate / 1000).toFixed(1)} Mbps`} color="#d4af37" />
-            <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#ef4444' : '#22c55e'} />
+            <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#ef4444' : '#6DBF7E'} />
           </div>
           {health < 50 && (
-            <div className="bg-yellow-900/40 border border-yellow-600/40 rounded px-2 py-1 text-[10px] text-yellow-400">
+            <div className="bg-[#0F1428]/60 border border-[#D4AF37]/35 rounded px-2 py-1 text-[10px] text-[#D4AF37]">
               ⚠ Consider lowering to 720p
             </div>
           )}

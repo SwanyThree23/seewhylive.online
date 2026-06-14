@@ -60,8 +60,8 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[60vh] overflow-y-auto"
-            style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(212,175,55,0.2)` }}>
-            <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: 'rgba(13,6,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid rgba(212,175,55,0.2)` }}>
+            <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>🏆 {title}</span>
               <button onClick={onClose} className="text-[11px]" style={{ color: CREAM + '40' }}>Close</button>
             </div>
@@ -92,7 +92,7 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
   const hasJoined = !!myParticipation;
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid ${tc.color}20` }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
@@ -192,7 +192,17 @@ export default function ChallengesHubPage() {
       score: 0,
       completed: false,
     }),
-    onSuccess: () => { qc.invalidateQueries(['ch-mine']); toast.success('Joined challenge!'); },
+    onSuccess: (_, challenge) => {
+      qc.invalidateQueries(['ch-mine']);
+      toast.success('Joined challenge!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'challenge_joined',
+          title: `Joined challenge: ${challenge?.title || 'Challenge'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const myCompleted = myParticipations.filter(p => p.completed);
@@ -257,7 +267,7 @@ export default function ChallengesHubPage() {
                     const progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
                     return (
                       <div key={p.id} className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(13,6,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
+                        style={{ background: 'rgba(8,11,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="flex items-center justify-between">
                           <p className="font-bold text-[11px] text-white">{challenge?.title || `Challenge ${p.challenge_id?.slice(0,8)}`}</p>
                           <div className="flex items-center gap-1.5">
@@ -298,7 +308,7 @@ export default function ChallengesHubPage() {
                     const h = Math.floor((diff % 86400000) / 3600000);
                     return (
                       <div key={c.id} className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid ${tc.color}20` }}>
+                        style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
                         <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
                           style={{ background: `${tc.color}15`, color: tc.color, ...T }}>{tc.label}</span>
                         <p className="font-bold text-[11px] text-white">{c.title}</p>
@@ -318,7 +328,7 @@ export default function ChallengesHubPage() {
                   ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>No completed challenges yet</p>
                   : myCompleted.map(p => (
                     <div key={p.id} className="rounded-xl p-4 flex items-center gap-3"
-                      style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(109,191,126,0.2)` }}>
+                      style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid rgba(109,191,126,0.2)` }}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                         style={{ background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)' }}>
                         <Check className="w-4 h-4" style={{ color: '#6DBF7E' }} />

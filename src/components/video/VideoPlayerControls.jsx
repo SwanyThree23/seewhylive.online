@@ -103,7 +103,7 @@ export default function VideoPlayerControls({ playerRef, playerType = 'direct', 
     return syncStatus ? (
       <div className="absolute top-2 right-2 text-white text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
         style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
-        <div className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'synced' ? 'bg-green-400 animate-pulse' : 'bg-yellow-400 animate-spin'}`} />
+        <div className={`w-1.5 h-1.5 rounded-full ${syncStatus === 'synced' ? 'bg-[#6DBF7E] animate-pulse' : 'bg-[#D4AF37] animate-spin'}`} />
         {syncStatus === 'synced' ? 'Live Sync' : 'Syncing...'}
       </div>
     ) : null;

@@ -11,7 +11,7 @@ import confetti from 'canvas-confetti';
 
 const GOLD = '#D4AF37';
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
@@ -94,7 +94,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
     isEnded ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.1)';
 
   const statusBadge = () => {
-    if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#4ade80', text: '🟢 LIVE' };
+    if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#6DBF7E', text: '🟢 LIVE' };
     if (auction.status === 'ending_soon') return { bg: 'rgba(153,27,27,0.4)', color: '#f87171', text: '🔴 ENDING' };
     if (auction.status === 'ended') return { bg: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', text: '✓ ENDED' };
     return { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)', text: '⏳ SOON' };
@@ -189,7 +189,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
             {auction.buyout_price && (
               <button
                 onClick={() => { onBid(auction, auction.buyout_price, true); }}
-                style={{ width: '100%', border: '1px solid rgba(167,139,250,0.3)', background: 'transparent', color: '#D4AF37', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ width: '100%', border: '1px solid rgba(212,175,55,0.3)', background: 'transparent', color: '#D4AF37', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Zap className="w-3.5 h-3.5" /> Buy Now for ${auction.buyout_price}
               </button>
@@ -284,10 +284,19 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         ...(isBuyout ? { winner_id: currentUser.id, winner_name: currentUser.full_name || currentUser.email, final_amount: amount } : {}),
       });
     },
-    onSuccess: (_, { auction, amount }) => {
+    onSuccess: (_, { auction, amount, isBuyout }) => {
       qc.invalidateQueries(['live-auctions']);
       qc.invalidateQueries(['auction-bids']);
       toast.success(`Bid of $${amount} placed!`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: isBuyout ? 'ppv_purchase' : 'tip_sent',
+          title: isBuyout ? `Won auction: ${auction?.title || 'Auction'}` : `Bid $${amount} on: ${auction?.title || 'Auction'}`,
+          amount,
+          recipient_id: auction?.creator_id,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to place bid'),
   });

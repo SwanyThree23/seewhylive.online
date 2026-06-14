@@ -148,9 +148,9 @@ export default function OBSBridge() {
         </div>
         <span style={{
           fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif',
-          background: connected ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
-          color: connected ? '#4ade80' : 'rgba(255,255,255,0.4)',
-          border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          background: connected ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+          color: connected ? '#6DBF7E' : 'rgba(255,255,255,0.4)',
+          border: `1px solid ${connected ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}`,
           display:'flex', alignItems:'center', gap:4,
         }}>
           {connected
@@ -193,7 +193,7 @@ export default function OBSBridge() {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
               <button
                 onClick={toggleStream}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#dc2626' : '#15803d', color:'#fff' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#dc2626' : '#4A9B5E', color:'#fff' }}
               >
                 {streaming ? <><Square style={{ width:16, height:16 }} /> Stop Stream</> : <><Play style={{ width:16, height:16 }} /> Start Stream</>}
               </button>

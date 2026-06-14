@@ -13,14 +13,13 @@ import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
-const BG2    = 'rgba(13,6,24,0.9)';
+const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
-const GREEN  = '#22c55e';
-const AMBER  = '#F59E0B';
+const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -57,7 +56,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, ...T,
             fontWeight: 700, letterSpacing: '0.04em',
@@ -230,7 +229,7 @@ export default function AIHub() {
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#ef4444';
-    if (status === 'warning') return '#f59e0b';
+    if (status === 'warning') return '#D4AF37';
     return GREEN;
   }
 
@@ -687,7 +686,7 @@ export default function AIHub() {
             ].map(item => (
               <div key={item.title} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)',
+                background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)',
               }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.icon}</div>
                 <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{item.title}</p>
@@ -816,7 +815,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#1565C0">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -830,7 +829,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #1565C0, #C62828)',
+              background: 'linear-gradient(90deg, #800020, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -840,7 +839,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: Tribute Wall ── */}
-        <Card accentColor="#7B5EA7">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🕊️ Tribute Wall</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Honor the legends who built domino culture. Read bios, leave tributes, and register for the memorial gaming event.
@@ -855,7 +854,7 @@ export default function AIHub() {
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
               background: 'rgba(123,94,167,0.2)', border: '1px solid rgba(123,94,167,0.5)',
-              color: '#A07BC4', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              color: '#C9A84C', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
               Visit Tribute Wall →

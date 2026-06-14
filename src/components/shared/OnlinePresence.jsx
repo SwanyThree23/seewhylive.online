@@ -50,6 +50,6 @@ export function usePresence(roomId) {
 export default function OnlinePresenceDot({ isOnline = true, size = 'sm' }) {
   const sizes = { sm: 'w-2 h-2', md: 'w-3 h-3', lg: 'w-3.5 h-3.5' };
   return (
-    <span className={`${sizes[size]} rounded-full inline-block shrink-0 ${isOnline ? 'bg-green-500' : 'bg-slate-400'}`} />
+    <span className={`${sizes[size]} rounded-full inline-block shrink-0 ${isOnline ? 'bg-[#6DBF7E]' : 'bg-[rgba(255,255,255,0.2)]'}`} />
   );
 }

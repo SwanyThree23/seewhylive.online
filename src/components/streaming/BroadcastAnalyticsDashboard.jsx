@@ -14,7 +14,7 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
         <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
         <p className="text-xl font-bold text-white mt-1">{value}</p>
         {trend && (
-          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#6DBF7E]' : 'text-red-400'}`}>
             {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}
@@ -65,7 +65,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
     >
       <div>
         <h3 className="text-sm font-bold text-white mb-3">Stream Analytics</h3>

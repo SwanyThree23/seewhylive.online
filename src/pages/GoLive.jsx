@@ -63,7 +63,7 @@ const FORMATS = [
     title: 'Watch Party',
     subtitle: 'Sync a video. React together in real time.',
     features: ['🔗 Sync', '💬 Chat', '🖥️ Screen Share', '4K'],
-    color: '#5B6EF5',
+    color: '#D4854A',
     dest: 'WatchParty',
   },
   {
@@ -73,7 +73,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#26A69A',
+    color: '#6DBF7E',
     dest: 'AudioRoom',
   },
 ];
@@ -95,7 +95,7 @@ function FormatCard({ fmt, onSelect }) {
         width: '100%',
         padding: '16px 18px',
         borderRadius: 16,
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid rgba(255,255,255,0.08)`,
         borderLeft: `4px solid ${fmt.color}`,
         cursor: 'pointer',
@@ -400,6 +400,12 @@ export default function GoLive() {
       });
       setPartyId(party.id);
       setCountdown(true);
+      base44.entities.Activity.create({
+        user_id: user?.id,
+        type: 'room_created',
+        title: `Started streaming: ${title.trim()}`,
+        description: category || '',
+      }).catch(() => {});
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);

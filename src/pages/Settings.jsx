@@ -23,7 +23,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function Section({ icon: Icon, title, description, children }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
       <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Icon className="w-4 h-4" style={{ color: GOLD }} />
         <div>
@@ -159,9 +159,40 @@ export default function SettingsPage() {
     { label: 'Newsletter Hub',    href: 'NewsletterHub' },
     { label: 'Social Expo',       href: 'SocialExpo' },
     { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
+    { label: 'Aura AI',           href: 'AuraAI' },
+    { label: 'SwanyBot',          href: 'SwanyBotPage' },
+    { label: 'Hybrid Stream',     href: 'HybridStreamRoom' },
+    { label: 'Enhancement Suite', href: 'EnhancementSuite' },
+    { label: 'Transcription',     href: 'TranscriptionStudio' },
+    { label: 'Poll Manager',      href: 'PollManager' },
+    { label: 'Multi-Stream Mgr',  href: 'MultiStreamManager' },
     { label: 'Voice AI Settings', href: 'VoiceAISettings' },
-    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
     { label: 'Stream Analytics',  href: 'StreamAnalytics' },
+    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
+    { label: 'Challenges Hub',    href: 'ChallengesHub' },
+    { label: 'Loyalty Hub',       href: 'LoyaltyHub' },
+    { label: 'Communities',       href: 'Communities' },
+    { label: 'Overlay Builder',   href: 'OverlayBuilder' },
+    { label: 'Control Room',      href: 'ControlRoom' },
+    { label: 'PK Battle Mgr',     href: 'PKBattleManager' },
+    { label: 'Creator Subs',      href: 'CreatorSubscriptions' },
+    { label: 'Loyalty Program',   href: 'LoyaltyProgram' },
+    { label: 'Invite Users',      href: 'InviteUsers' },
+    { label: 'PPV Events',        href: 'PayPerViewEvents' },
+    { label: 'VOD Library',       href: 'VODLibrary' },
+    { label: 'Content Calendar',  href: 'ContentCalendar' },
+    { label: 'Clips Library',     href: 'ClipsLibrary' },
+    { label: 'Pre-Flight',        href: 'GreenRoomPreFlight' },
+    { label: 'Greenroom',         href: 'Greenroom' },
+    { label: 'Greenroom Enhanced',href: 'GreenroomEnhanced' },
+    { label: 'Newsletter',        href: 'Newsletter' },
+    { label: 'Dashboard',         href: 'Dashboard' },
+    { label: 'Social Expo',       href: 'SocialExpo' },
+    { label: 'Leaderboard',       href: 'Leaderboard' },
+    { label: 'Messages',          href: 'Messages' },
+    { label: 'BroadcastStudio',   href: 'BroadcastStudio' },
+    { label: 'Guardian AI',       href: 'GuardianAI' },
+    { label: 'PKBattle Arena',    href: 'PKBattleArena' },
   ];
 
   return (
@@ -295,7 +326,7 @@ export default function SettingsPage() {
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
@@ -323,8 +354,7 @@ export default function SettingsPage() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
-            {/* Step header */}
+            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
             <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>

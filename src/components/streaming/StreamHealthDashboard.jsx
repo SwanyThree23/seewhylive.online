@@ -6,7 +6,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
     excellent: '#6DBF7E',
     good: '#d4af37',
-    warning: '#FFB800',
+    warning: '#D4AF37',
     critical: '#C0392B'
   };
 
@@ -20,7 +20,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
         <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
         <div className="flex items-center gap-1">
           {trend === 'up' ? (
-            <TrendingUp className="w-3 h-3 text-green-400" />
+            <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
           ) : trend === 'down' ? (
             <TrendingDown className="w-3 h-3 text-red-400" />
           ) : null}

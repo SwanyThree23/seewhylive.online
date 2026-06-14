@@ -1,22 +1,29 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Film, Scissors } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { Film, Scissors, Sparkles, Eye, Play } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
-import VODCard from '../components/vod/VODCard';
 import RecordingManager from '../components/content/RecordingManager';
-import ChapterEditor from '../components/vod/ChapterEditor';
-import VODTrimEditor from '../components/vod/VODTrimEditor';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 
-const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = [
+  { id: 'library', label: 'VOD Library', icon: Film, color: GOLD },
+  { id: 'highlights', label: 'AI Highlights', icon: Sparkles, color: '#D4854A' },
+  { id: 'recordings', label: 'Recordings', icon: Play, color: '#6DBF7E' },
+  { id: 'embed', label: 'Embed Player', icon: Eye, color: GOLD },
+];
 
 export default function VODLibraryPage() {
+  const [activeTab, setActiveTab] = useState('library');
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -25,75 +32,121 @@ export default function VODLibraryPage() {
   const { data: stats } = useQuery({
     queryKey: ['vodStats', user?.id],
     queryFn: async () => {
-      if (!user?.id) return { vods: 0, clips: 0, totalViews: 0 };
-      const vods = await base44.entities.VODVideo.filter({ creator_id: user.id });
-      const clips = await base44.entities.StreamClip.filter({ creator_id: user.id });
-      const totalViews = (vods || []).reduce((sum, v) => sum + (v.views || 0), 0) + (clips || []).reduce((sum, c) => sum + (c.view_count || 0), 0);
-      return { vods: vods?.length || 0, clips: clips?.length || 0, totalViews };
+      if (!user?.id) return { vods: 0, clips: 0, totalViews: 0, highlights: 0 };
+      const [vods, clips] = await Promise.all([
+        base44.entities.VODVideo.filter({ creator_id: user.id }),
+        base44.entities.StreamClip.filter({ creator_id: user.id }),
+      ]);
+      const highlights = [];
+      const totalViews = (vods || []).reduce((s, v) => s + (v.views || 0), 0)
+        + (clips || []).reduce((s, c) => s + (c.view_count || 0), 0);
+      return { vods: vods?.length || 0, clips: clips?.length || 0, totalViews, highlights: highlights?.length || 0 };
     },
     enabled: !!user?.id,
   });
 
   return (
-    <div className="min-h-screen" style={{ background: BG }}>
+    <div className="min-h-screen pb-10" style={{ background: BG }}>
       {/* Header */}
-      <div className="px-4 py-8 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)' }}>
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <Film className="w-6 h-6" style={{ color: G }} />
-            <h1 className="text-3xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              VOD Library
-            </h1>
-          </div>
-          <p className="text-white/60">Manage your past streams, clips, and highlights</p>
-        </motion.div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          {[
-            { label: 'VODs', value: stats?.vods || 0, icon: '📹' },
-            { label: 'Clips', value: stats?.clips || 0, icon: '✂️' },
-            { label: 'Total Views', value: stats?.totalViews || 0, icon: '👁️' },
-          ].map((stat) => (
-            <motion.div key={stat.label} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(212,175,55,0.12)` }}>
-              <div className="text-lg mb-1">{stat.icon}</div>
-              <p className="text-[10px] text-white/60">{stat.label}</p>
-              <p className="text-lg font-black" style={{ color: G }}>
-                {stat.value}
-              </p>
-            </motion.div>
-          ))}
+      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 border-b flex items-center gap-3"
+        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        <Film className="w-5 h-5" style={{ color: GOLD }} />
+        <div>
+          <h1 className="text-xl font-black text-white leading-none" style={T}>VOD Library</h1>
+          <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Past streams, AI highlights, clips &amp; recordings</p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {user?.id && (
-          <div className="mb-8">
-            <RecordingManager userId={user.id} />
-          </div>
-        )}
-
-        {user?.id && <VODLibraryComponent creatorId={user.id} />}
-
-        {/* AI highlight generator for selected content */}
-        <div className="mt-8">
-          <AIHighlightGenerator recording={null} />
+      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-5">
+        {/* Stats row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          {[
+            { label: 'VODs', value: stats?.vods || 0, color: GOLD },
+            { label: 'Clips', value: stats?.clips || 0, color: '#D4854A' },
+            { label: 'AI Highlights', value: stats?.highlights || 0, color: '#6DBF7E' },
+            { label: 'Total Views', value: (stats?.totalViews || 0).toLocaleString(), color: GOLD },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="p-3 rounded-2xl text-center" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+              <p className="text-[10px] font-black uppercase mt-0.5" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>{label}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Embed player preview — PPV-aware with embed code generation */}
+        {/* Tab picker cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          {TABS.map((tab, i) => {
+            const Icon = tab.icon;
+            return (
+              <motion.button key={tab.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                onClick={() => setActiveTab(tab.id)}
+                className="p-3 rounded-2xl text-left transition-all"
+                style={{ background: activeTab === tab.id ? `${tab.color}10` : 'rgba(8,11,24,0.9)', border: `1px solid ${activeTab === tab.id ? tab.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
+                <Icon className="w-4 h-4 mb-1.5" style={{ color: tab.color }} />
+                <p className="font-black text-xs" style={{ ...T, color: activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.5)' }}>{tab.label}</p>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Tab bar */}
+        <div className="flex border-b mb-6 overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
+                style={{ ...T, color: active ? tab.color : 'rgba(255,255,255,0.35)', borderBottomColor: active ? tab.color : 'transparent', background: 'transparent' }}>
+                <Icon className="w-3.5 h-3.5" />{tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tab content */}
         {user?.id && (
-          <div className="mt-8">
-            <p className="text-xs font-black uppercase mb-3" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
-              Embed Player Preview
-            </p>
-            <EmbedPlayer
-              roomId={user.id}
-              creatorName={user.full_name || user.email || 'Creator'}
-              streamTitle="VOD Preview"
-              isLive={false}
-            />
-          </div>
+          <AnimatePresence mode="wait">
+            {activeTab === 'library' && (
+              <motion.div key="library" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
+                <VODLibraryComponent creatorId={user.id} />
+              </motion.div>
+            )}
+
+            {activeTab === 'highlights' && (
+              <motion.div key="highlights" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5 pb-10">
+                <AutomatedHighlightReels />
+                <AutomatedClipGenerator roomId={null} />
+              </motion.div>
+            )}
+
+            {activeTab === 'recordings' && (
+              <motion.div key="recordings" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
+                <RecordingManager userId={user.id} />
+              </motion.div>
+            )}
+
+            {activeTab === 'embed' && (
+              <motion.div key="embed" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
+                <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                    <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Embed Player Preview</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                      PPV-aware embed with code generation for your website or blog
+                    </p>
+                  </div>
+                  <div className="p-5">
+                    <EmbedPlayer
+                      roomId={user.id}
+                      creatorName={user.full_name || user.email || 'Creator'}
+                      streamTitle="VOD Preview"
+                      isLive={false}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

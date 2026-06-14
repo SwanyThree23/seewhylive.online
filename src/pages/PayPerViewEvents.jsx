@@ -14,7 +14,7 @@ import PayPerViewManager from '../components/monetization/PayPerViewManager';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 
 const BG   = '#080B18';
-const BG2  = '#0D0A14';
+const BG2  = '#0D0A08';
 const GOLD = '#D4AF37';
 const CRIM = '#800020';
 const AMB  = '#D4854A';
@@ -44,7 +44,7 @@ function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {
       style={{ background: BG2, border: `1px solid rgba(212,175,55,0.12)` }}
     >
       {/* Thumbnail */}
-      <div className="relative" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+      <div className="relative" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
         {event.thumbnail_url
           ? <img src={event.thumbnail_url} alt={event.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Tv className="w-10 h-10" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>
@@ -139,7 +139,18 @@ function CreateEventForm({ onSuccess }) {
         access_type: 'single_event',
       });
     },
-    onSuccess: () => { toast.success('PPV event created!'); onSuccess?.(); },
+    onSuccess: (event) => {
+      toast.success('PPV event created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Created PPV event: ${event?.title || 'Event'}`,
+          amount: event?.price,
+        }).catch(() => {});
+      }
+      onSuccess?.();
+    },
     onError: (e) => toast.error(e.message),
   });
 

@@ -39,13 +39,13 @@ const FLYWHEEL_STAGES = [
   { id: 'engage',   label: 'ENGAGE',   icon: Heart,       color: PINK,      desc: 'Chat, reactions & live interaction' },
   { id: 'convert',  label: 'CONVERT',  icon: ArrowRight,  color: TEAL,      desc: 'Free → Subscriber upgrade' },
   { id: 'monetize', label: 'MONETIZE', icon: DollarSign,  color: G,         desc: 'Tips, PPV, subs, gifts, AI music' },
-  { id: 'retain',   label: 'RETAIN',   icon: Repeat,      color: '#22c55e', desc: 'Perks, streaks & loyalty rewards' },
+  { id: 'retain',   label: 'RETAIN',   icon: Repeat,      color: '#6DBF7E', desc: 'Perks, streaks & loyalty rewards' },
   { id: 'grow',     label: 'GROW',     icon: TrendingUp,  color: CRIMSON,   desc: 'Word-of-mouth & referral flywheel' },
 ];
 
 const TIER_LADDER = [
   { id: 'free',    label: 'Free',   price: 0,  color: '#6b7280', icon: Eye,    perks: ['Chat access', 'Watch live & VODs', 'Community feed'] },
-  { id: 'bronze',  label: 'Bronze', price: 1,  color: '#ea580c', icon: Star,   perks: ['Bronze badge', 'Early chat access', 'Custom emote ×1', 'Monthly shoutout'] },
+  { id: 'bronze',  label: 'Bronze', price: 1,  color: '#C0392B', icon: Star,   perks: ['Bronze badge', 'Early chat access', 'Custom emote ×1', 'Monthly shoutout'] },
   { id: 'silver',  label: 'Silver', price: 5,  color: '#9ca3af', icon: Zap,    perks: ['Silver badge', 'Ad-free viewing', 'Custom emotes ×3', 'Backstage access', 'Priority queue'] },
   { id: 'gold',    label: 'Gold',   price: 15, color: G,         icon: Crown,  perks: ['Gold crown badge', 'All Silver perks', 'PPV 20% off', 'Co-host consideration', 'DM access'] },
   { id: 'elite',   label: 'Elite',  price: 50, color: PINK,      icon: Rocket, perks: ['Elite status', 'All Gold perks', 'Revenue share on collabs', 'Brand partnership priority', 'Direct Slack channel'] },
@@ -55,14 +55,14 @@ const REVENUE_STREAMS = [
   { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: G,         desc: 'Monthly recurring tiers', split: '90%' },
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
-  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
+  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#D4854A', desc: 'Animated gift shop',       split: '80%' },
   { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
-  { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#22c55e', desc: 'CPM-based display ads',    split: '65%' },
+  { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
 const MILESTONES = [
-  { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#ea580c' },
-  { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#3b82f6' },
+  { subs: 10,   reward: 'Bronze Creator Badge',   icon: Star,   color: '#C0392B' },
+  { subs: 50,   reward: 'Verified Creator Label', icon: Shield, color: '#D4AF37' },
   { subs: 100,  reward: 'Custom Channel Banner',  icon: Award,  color: G },
   { subs: 500,  reward: 'Staff Pick Feature',     icon: Zap,    color: PINK },
   { subs: 1000, reward: 'Revenue Share Boost +5%',icon: Rocket, color: TEAL },
@@ -180,7 +180,7 @@ function TierLadderPanel({ subCount }) {
             style={{
               border: `1px solid ${isHover ? tier.color : tier.color + '30'}`,
               borderRadius: 12, padding: '12px 16px',
-              background: isHover ? `${tier.color}10` : 'rgba(13,6,24,0.7)',
+              background: isHover ? `${tier.color}10` : 'rgba(8,11,24,0.7)',
               cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 12,
             }}
           >
@@ -250,7 +250,7 @@ function RevenueStreamsPanel({ transactions, subscriptions }) {
         const pct   = gross > 0 ? (stream.amount / gross) * 100 : 0;
         return (
           <div key={stream.id} style={{
-            background: 'rgba(13,6,24,0.8)', border: `1px solid ${stream.color}25`,
+            background: 'rgba(8,11,24,0.8)', border: `1px solid ${stream.color}25`,
             borderRadius: 12, padding: 16,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
@@ -287,7 +287,7 @@ function PayoutPanel({ netEarnings }) {
   })();
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${G}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${G}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Calendar style={{ width: 16, height: 16, color: G }} />
         <span style={{ fontWeight: 700, color: G, fontSize: 15, ...T }}>Payout Schedule</span>
@@ -298,9 +298,9 @@ function PayoutPanel({ netEarnings }) {
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Available Balance</p>
           <p style={{ fontSize: 24, fontWeight: 700, color: G, margin: 0, ...T }}>${netEarnings.toFixed(2)}</p>
         </div>
-        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: 14 }}>
+        <div style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 10, padding: 14 }}>
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Next Payout Date</p>
-          <p style={{ fontSize: 20, fontWeight: 700, color: '#22c55e', margin: 0, ...T }}>{nextDate}</p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#6DBF7E', margin: 0, ...T }}>{nextDate}</p>
         </div>
       </div>
 
@@ -320,9 +320,9 @@ function PayoutPanel({ netEarnings }) {
       </div>
 
       {pct >= 100 ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}>
-          <CheckCircle style={{ width: 14, height: 14, color: '#22c55e' }} />
-          <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, ...T }}>Payout eligible — auto-processed on {nextDate}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)' }}>
+          <CheckCircle style={{ width: 14, height: 14, color: '#6DBF7E' }} />
+          <span style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 700, ...T }}>Payout eligible — auto-processed on {nextDate}</span>
         </div>
       ) : (
         <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, ...T }}>
@@ -337,7 +337,7 @@ function PayoutPanel({ netEarnings }) {
 function MilestonesPanel({ subCount }) {
   const count = subCount || 0;
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${PINK}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${PINK}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Award style={{ width: 16, height: 16, color: PINK }} />
         <span style={{ fontWeight: 700, color: PINK, fontSize: 15, ...T }}>Growth Milestones</span>
@@ -397,7 +397,7 @@ function ConversionFunnel({ totalViewers, subscribers, tips, activePPV }) {
   ];
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${TEAL}20`, borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${TEAL}20`, borderRadius: 16, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
         <Activity style={{ width: 16, height: 16, color: TEAL }} />
         <span style={{ fontWeight: 700, color: TEAL, fontSize: 15, ...T }}>Conversion Funnel</span>
@@ -446,7 +446,7 @@ function StreakWidget({ transactions }) {
   const bonusPct = Math.min(streak * 2, 20);
 
   return (
-    <div style={{ background: 'rgba(13,6,24,0.8)', border: `1px solid ${CRIMSON}25`, borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+    <div style={{ background: 'rgba(8,11,24,0.8)', border: `1px solid ${CRIMSON}25`, borderRadius: 16, padding: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
       <motion.div
         animate={{ scale: [1, 1.08, 1] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -464,7 +464,7 @@ function StreakWidget({ transactions }) {
           {streak} <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)' }}>days</span>
         </p>
         {bonusPct > 0
-          ? <p style={{ fontSize: 11, color: '#22c55e', margin: 0, fontWeight: 700, ...T }}>+{bonusPct}% revenue boost active!</p>
+          ? <p style={{ fontSize: 11, color: '#6DBF7E', margin: 0, fontWeight: 700, ...T }}>+{bonusPct}% revenue boost active!</p>
           : <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, ...T }}>Stream today to start a streak</p>
         }
       </div>
@@ -548,7 +548,7 @@ export default function MonetizationPage() {
   }, [flywheelStage]);
 
   const card = (children, extra = {}) => ({
-    background: 'rgba(13,6,24,0.85)',
+    background: 'rgba(8,11,24,0.85)',
     border: '1px solid rgba(212,175,55,0.1)',
     borderRadius: 16,
     padding: 20,
@@ -631,7 +631,7 @@ export default function MonetizationPage() {
                   { label: 'Net Earnings', val: `$${netEarnings.toFixed(2)}`, icon: DollarSign, color: G },
                   { label: 'MRR',          val: `$${mrr.toFixed(2)}`,         icon: TrendingUp, color: TEAL },
                   { label: 'Subscribers',  val: subCount,                      icon: Users,      color: PINK },
-                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#f97316' },
+                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#D4854A' },
                 ].map(stat => {
                   const Icon = stat.icon;
                   return (
@@ -698,9 +698,9 @@ export default function MonetizationPage() {
                     <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 2px', ...T }}>Platform Fee</p>
                     <p style={{ color: PINK, fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${platformFee.toFixed(2)}</p>
                   </div>
-                  <div style={{ background: 'rgba(99,102,241,0.08)', borderRadius: 8, padding: 10 }}>
+                  <div style={{ background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 10 }}>
                     <p style={{ color: 'rgba(255,255,255,0.5)', margin: '0 0 2px', ...T }}>Processing</p>
-                    <p style={{ color: '#818cf8', fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${processingFee.toFixed(2)}</p>
+                    <p style={{ color: '#C9A84C', fontWeight: 700, margin: 0, fontSize: 16, ...T }}>-${processingFee.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -758,7 +758,7 @@ export default function MonetizationPage() {
                   <div style={card()}>
                     <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Tier Breakdown</p>
                     {[
-                      { name: 'Bronze', key: 'bronze', price: 1,  color: '#ea580c' },
+                      { name: 'Bronze', key: 'bronze', price: 1,  color: '#C0392B' },
                       { name: 'Silver', key: 'premium', price: 5,  color: '#9ca3af' },
                       { name: 'Gold',   key: 'elite',  price: 15, color: G },
                     ].map(tier => {

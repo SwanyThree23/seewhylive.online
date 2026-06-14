@@ -15,15 +15,15 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const CRIM  = '#800020';
 const SCARL = '#C0392B';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO  = { fontFamily: 'Space Mono, monospace' };
 
@@ -44,7 +44,7 @@ function genBattles() {
   return names.map(([a, b], i) => ({
     id: i + 1,
     a: { name: a, score: Math.floor(Math.random() * 12000) + 4000, color: SCARL },
-    b: { name: b, score: Math.floor(Math.random() * 12000) + 4000, color: '#1565C0' },
+    b: { name: b, score: Math.floor(Math.random() * 12000) + 4000, color: '#D4854A' },
     status: i === 0 ? 'live' : i === 1 ? 'live' : 'upcoming',
     timeLeft: i === 0 ? 142 : i === 1 ? 67 : null,
     category: ['Tournament', 'Exhibition', 'Championship', 'Qualifier'][i],
@@ -55,7 +55,7 @@ function ScoreBar({ battle }) {
   const total = battle.a.score + battle.b.score;
   const pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
   return (
-    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: '#1565C033', margin: '8px 0' }}>
+    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(212,133,74,0.2)', margin: '8px 0' }}>
       <motion.div
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.6, ease: 'easeOut' }}
@@ -122,7 +122,7 @@ function BattleCard({ battle, onVote, myVote }) {
         {/* Side B */}
         <div style={{ flex: 1, textAlign: 'right' }}>
           <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.b.name}</div>
-          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#5C8EE0', marginTop: 2 }}>
+          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#D4854A', marginTop: 2 }}>
             {battle.b.score.toLocaleString()}
           </div>
           <div style={{ ...T, fontSize: 10, color: TEXTM }}>{100 - pctA}%</div>
@@ -153,10 +153,10 @@ function BattleCard({ battle, onVote, myVote }) {
             whileTap={{ scale: 0.94 }}
             onClick={() => onVote(battle.id, 'b')}
             style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
-              background: myVote === 'b' ? 'linear-gradient(135deg, #1565C0, #0D47A1)' : 'rgba(21,101,192,0.15)',
-              color: myVote === 'b' ? '#fff' : '#5C8EE0',
+              background: myVote === 'b' ? 'linear-gradient(135deg, #D4854A, #CC7755)' : 'rgba(128,0,32,0.15)',
+              color: myVote === 'b' ? '#fff' : '#D4854A',
               ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer',
-              border: '1px solid rgba(21,101,192,0.3)',
+              border: '1px solid rgba(128,0,32,0.3)',
             }}
           >
             {myVote === 'b' ? '✓ VOTED' : '⚡ VOTE'}
@@ -232,7 +232,7 @@ export default function PKBattleArena() {
               ⚙️ Manage
             </button>
           </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)' }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pkPulse 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>{liveBattles.length} LIVE</span>
           </div>

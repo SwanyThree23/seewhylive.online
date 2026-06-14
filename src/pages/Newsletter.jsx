@@ -19,12 +19,12 @@ const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function DarkCard({ title, desc, children, style = {} }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20, ...style }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20, ...style }}>
       {(title || desc) && (
         <div className="mb-4">
           {title && <p className="font-black text-sm text-white" style={T}>{title}</p>}
@@ -65,10 +65,17 @@ export default function NewsletterPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create(data),
-    onSuccess: () => {
+    onSuccess: (newsletter) => {
       toast.success('Newsletter created!');
       queryClient.invalidateQueries(['newsletters']);
       setTitle(''); setContent(''); setPreviewText('');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Published newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -113,7 +120,7 @@ export default function NewsletterPage() {
         </div>
         <button onClick={generateWithAI} disabled={generating || !selectedCommunity}
           className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-          style={{ background: generating || !selectedCommunity ? 'rgba(200,255,0,0.04)' : 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
+          style={{ background: generating || !selectedCommunity ? 'rgba(212,175,55,0.04)' : 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
           <Sparkles className="w-3.5 h-3.5" />
           {generating ? 'Generating…' : 'AI Generate'}
         </button>
@@ -147,7 +154,7 @@ export default function NewsletterPage() {
               <label style={lbl}>Content</label>
               {/* Quill editor with dark wrapper */}
               <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <style>{`.ql-toolbar{background:rgba(17,8,34,0.9)!important;border-color:rgba(255,255,255,0.1)!important}.ql-container{background:rgba(17,8,34,0.85)!important;border-color:rgba(255,255,255,0.1)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif}.ql-editor{min-height:240px;color:#fff}.ql-stroke{stroke:rgba(255,255,255,0.5)!important}.ql-fill{fill:rgba(255,255,255,0.5)!important}.ql-picker-label{color:rgba(255,255,255,0.5)!important}`}</style>
+                <style>{`.ql-toolbar{background:rgba(8,11,24,0.9)!important;border-color:rgba(255,255,255,0.1)!important}.ql-container{background:rgba(8,11,24,0.85)!important;border-color:rgba(255,255,255,0.1)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif}.ql-editor{min-height:240px;color:#fff}.ql-stroke{stroke:rgba(255,255,255,0.5)!important}.ql-fill{fill:rgba(255,255,255,0.5)!important}.ql-picker-label{color:rgba(255,255,255,0.5)!important}`}</style>
                 <ReactQuill value={content} onChange={setContent} />
               </div>
 

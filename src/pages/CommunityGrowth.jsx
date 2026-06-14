@@ -120,7 +120,7 @@ export default function CommunityGrowthPage() {
                 ))}
                 {challenges.filter(c => c.status === 'active').length === 0 && (
                   <div className="text-center py-12 rounded-2xl"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                     <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                     <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No active challenges</p>
                   </div>
@@ -144,7 +144,7 @@ export default function CommunityGrowthPage() {
                 <ChallengeLeaderboard challengeId={selectedChallenge} />
               ) : (
                 <div className="text-center py-12 rounded-2xl"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                   <p className="text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Select a challenge to view leaderboard</p>
                 </div>

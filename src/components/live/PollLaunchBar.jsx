@@ -36,7 +36,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       ends_at: new Date(Date.now() + dur * 1000).toISOString(),
       created_at: new Date().toISOString(),
     }),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       toast.success('Poll launched! 📊');
       setOpen(false);
       setCustom(false);
@@ -44,6 +44,13 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       setOptions(['', '', '']);
       qc.invalidateQueries(['livepoll', roomId]);
       qc.invalidateQueries(['polls', roomId]);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -67,15 +74,15 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
         style={{
           ...T,
           background: activePoll
-            ? 'rgba(74,222,128,0.15)'
+            ? 'rgba(109,191,126,0.15)'
             : open ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)',
-          border: activePoll ? '1px solid rgba(74,222,128,0.3)' : `1px solid ${G}30`,
-          color: activePoll ? '#4ADE80' : G,
+          border: activePoll ? '1px solid rgba(109,191,126,0.3)' : `1px solid ${G}30`,
+          color: activePoll ? '#6DBF7E' : G,
         }}
       >
         <BarChart2 className="w-3 h-3" />
         {activePoll ? 'Poll Live' : 'Poll'}
-        {activePoll && <motion.div className="w-1.5 h-1.5 rounded-full bg-green-400" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />}
+        {activePoll && <motion.div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E]" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />}
       </button>
 
       <AnimatePresence>
@@ -105,7 +112,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
               {activePoll && (
                 <div className="p-3 space-y-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="flex items-start gap-2">
-                    <motion.div className="w-2 h-2 rounded-full bg-green-400 mt-1 shrink-0" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
+                    <motion.div className="w-2 h-2 rounded-full bg-[#6DBF7E] mt-1 shrink-0" animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }} />
                     <p className="text-[11px] font-bold text-white flex-1 leading-snug">{activePoll.question}</p>
                   </div>
                   <div className="flex items-center justify-between text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
@@ -115,7 +122,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                     onClick={() => endPollMutation.mutate(activePoll.id)}
                     disabled={endPollMutation.isPending}
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase transition-all disabled:opacity-50"
-                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#FF6B6B', ...T }}
+                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#C0392B', ...T }}
                   >
                     <Trash2 className="w-3 h-3" /> End Poll Now
                   </button>

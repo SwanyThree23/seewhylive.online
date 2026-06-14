@@ -8,7 +8,7 @@ const GOLD    = '#D4AF37';
 const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 
-const PARTICLE_COLORS = [PINK, GOLD, '#FF6B9D', '#FFD700', '#E8003D'];
+const PARTICLE_COLORS = [PINK, GOLD, '#C0392B', '#D4AF37', '#E8003D'];
 
 function formatAmount(cents) {
   if (cents >= 100) {

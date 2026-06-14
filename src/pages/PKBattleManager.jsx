@@ -48,8 +48,8 @@ var ET = {
   clay: '#8B6F47',
   sand: '#C4A882',
   cream: '#F5F0E8',
-  darkEarth: 'rgba(13,6,24,0.95)',
-  midEarth: 'rgba(17,8,34,0.9)',
+  darkEarth: 'rgba(8,11,24,0.95)',
+  midEarth: 'rgba(8,11,24,0.9)',
   bg: '#080B18',
 };
 
@@ -93,13 +93,13 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftName}</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftName}</span>
         <span style={{ color: rightColor || '#ef4444' }}>{rightName}</span>
       </div>
       <div className="h-4 rounded-full flex overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
         <motion.div
           className="h-full rounded-l-full transition-all duration-700"
-          style={{ width: lp + '%', background: leftColor || '#3b82f6' }}
+          style={{ width: lp + '%', background: leftColor || '#D4AF37' }}
         />
         <motion.div
           className="h-full rounded-r-full transition-all duration-700"
@@ -107,7 +107,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-black font-mono">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
         <span style={{ color: rightColor || '#ef4444' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
       </div>
     </div>
@@ -164,7 +164,7 @@ function WinnerOverlay({ battle, onClose }) {
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: 'spring', bounce: 0.55 }}
         className="relative z-10 text-center px-8 py-12 rounded-3xl max-w-md w-full mx-4"
-        style={{ background: 'rgba(7,7,15,0.98)', border: '2px solid #d4af37' }}
+        style={{ background: 'rgba(8,11,24,0.98)', border: '2px solid #d4af37' }}
       >
         <div className="text-7xl mb-3">🏆</div>
         <Crown className="w-12 h-12 mx-auto mb-3" style={{ color: '#d4af37' }} />
@@ -180,12 +180,12 @@ function WinnerOverlay({ battle, onClose }) {
 
         <div className="rounded-xl p-3 mb-6" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
           <div className="flex items-center justify-center gap-2 text-sm">
-            <Star className="w-4 h-4 text-yellow-400" />
+            <Star className="w-4 h-4 text-[#D4AF37]" />
             <span className="font-bold" style={{ color: '#d4af37' }}>+{battle.reward_points} Loyalty Points</span>
             <span className="text-white/40">awarded to {winnerName}</span>
           </div>
           <div className="flex items-center justify-center gap-2 text-xs text-white/40 mt-1">
-            <Medal className="w-3 h-3 text-yellow-600" />
+            <Medal className="w-3 h-3 text-[#C9A84C]" />
             PK Champion badge unlocked
           </div>
         </div>
@@ -241,6 +241,13 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       setInviteMessage('');
       toast.success('Battle invitation sent!');
       if (onBattleSelect) { onBattleSelect(b); }
+      if (user && user.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `PK Battle challenge sent to ${b?.challenger_name || 'challenger'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -283,8 +290,8 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       {pendingReceived.length > 0 && (
         <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.3)', background: 'rgba(212,175,55,0.04)' }}>
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
-            <AlertCircle className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <AlertCircle className="w-4 h-4 text-[#D4AF37]" />
+            <span className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
               {pendingReceived.length} Battle Challenge{pendingReceived.length > 1 ? 's' : ''} Received
             </span>
           </div>
@@ -326,13 +333,13 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       )}
 
       {/* Create invite */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
         <button
           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-all"
           onClick={function() { setShowCreateForm(!showCreateForm); }}
         >
           <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <Plus className="w-4 h-4 text-yellow-400" />
+            <Plus className="w-4 h-4 text-[#D4AF37]" />
           </div>
           <span className="text-sm font-bold text-white">Send Battle Invitation</span>
           <ChevronRight className="w-4 h-4 text-white/30 ml-auto" style={{ transform: showCreateForm ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -413,7 +420,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       </div>
 
       {/* All battles list */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-xs font-bold text-white/60 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>All Battles</span>
           <Badge style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', border: 'none' }}>{battles.length}</Badge>
@@ -574,7 +581,7 @@ function HistoryTab({ battles, user }) {
 
       {/* Win rate bar */}
       {ended.length > 0 && (
-        <div className="rounded-xl p-4" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-white/50 uppercase font-bold">Win Rate</span>
             <span className="text-sm font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#6DBF7E' }}>
@@ -591,7 +598,7 @@ function HistoryTab({ battles, user }) {
       )}
 
       {/* Battle history list */}
-      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
         <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <span className="text-xs font-bold text-white/50 uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Battle History</span>
         </div>
@@ -611,14 +618,14 @@ function HistoryTab({ battles, user }) {
                     background: isWin ? 'rgba(212,175,55,0.15)' : isParticipant ? 'rgba(192,57,43,0.1)' : 'rgba(255,255,255,0.05)',
                     border: '1px solid ' + (isWin ? 'rgba(212,175,55,0.3)' : isParticipant ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.08)')
                   }}>
-                    {isWin ? <Crown className="w-4 h-4 text-yellow-400" /> : <Swords className="w-4 h-4 text-white/30" />}
+                    {isWin ? <Crown className="w-4 h-4 text-[#D4AF37]" /> : <Swords className="w-4 h-4 text-white/30" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-white truncate">{b.title}</p>
                     <p className="text-[10px] text-white/35">{b.creator_score} vs {b.challenger_score} pts · {Math.floor(b.duration_seconds / 60)}min</p>
                   </div>
                   <div className="shrink-0 text-right">
-                    {isWin && <p className="text-[10px] font-bold text-yellow-400">+{b.reward_points} pts</p>}
+                    {isWin && <p className="text-[10px] font-bold text-[#D4AF37]">+{b.reward_points} pts</p>}
                     {b.winner_name && <p className="text-[10px] text-white/40">🏆 {b.winner_name}</p>}
                   </div>
                 </div>
@@ -781,7 +788,7 @@ export default function PKBattleManager() {
             className="rounded-xl p-4 mb-4 flex items-center gap-4"
             style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)' }}
           >
-            <Zap className="w-6 h-6 text-yellow-400 shrink-0" />
+            <Zap className="w-6 h-6 text-[#D4AF37] shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-bold text-white">Battle accepted! Ready to start?</p>
               <p className="text-xs text-white/40">{currentBattle.title}</p>

@@ -46,7 +46,7 @@ export default function RevenueDashboard({ userId }) {
   }, {});
 
   const tierData = [
-    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#ea580c' },
+    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#C0392B' },
     { name: 'Silver', price: 5, count: tierCounts.premium || 0, color: '#9ca3af' },
     { name: 'Gold', price: 15, count: tierCounts.elite || 0, color: GOLD },
   ];
@@ -84,11 +84,11 @@ export default function RevenueDashboard({ userId }) {
           <p style={{ color: '#F5E6D3', fontSize: 12, margin: '0 0 4px', ...T }}>Your Cut (90%)</p>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 32, fontWeight: 700, color: GOLD, ...T }}>${netEarnings.toFixed(2)}</span>
-            <TrendingUp className="w-6 h-6" style={{ color: '#4ade80' }} />
+            <TrendingUp className="w-6 h-6" style={{ color: '#6DBF7E' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
             <span style={{ color: '#9ca3af' }}>Available for payout</span>
-            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: '#16a34a', color: '#fff', ...T }}>Ready</span>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: '#4A9B5E', color: '#fff', ...T }}>Ready</span>
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export default function RevenueDashboard({ userId }) {
             <div style={{ padding: 16, background: '#3C2F2F', borderRadius: 8 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ color: '#F5E6D3', ...T }}>Your Earnings</span>
-                <ArrowUpRight className="w-4 h-4" style={{ color: '#4ade80' }} />
+                <ArrowUpRight className="w-4 h-4" style={{ color: '#6DBF7E' }} />
               </div>
               <p style={{ fontSize: 22, fontWeight: 700, color: GOLD, margin: '0 0 4px', ...T }}>${netEarnings.toFixed(2)}</p>
               <p style={{ fontSize: 11, color: '#9ca3af', margin: 0 }}>90% of gross</p>
