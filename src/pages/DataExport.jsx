@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import StreamGoals from '../components/live/StreamGoals';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -146,8 +147,9 @@ export default function DataExportPage() {
           </p>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={true} />
+          <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>

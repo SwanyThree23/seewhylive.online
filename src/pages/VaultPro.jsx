@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.9)';
@@ -597,6 +599,12 @@ export default function VaultPro() {
           </button>
         </div>
       )}
+
+      {/* Community spotlight + milestone alerts */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <MilestoneAlerts creatorId={null} />
+      </div>
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
