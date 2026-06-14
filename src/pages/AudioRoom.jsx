@@ -21,6 +21,8 @@ import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import AudioPanel from '../components/live/AudioPanel';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import StreamChatbot from '../components/live/StreamChatbot';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -520,6 +522,20 @@ export default function AudioRoom() {
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />
+        </div>
+      )}
+
+      {/* Soundboard (host only) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SoundboardWidget />
+        </div>
+      )}
+
+      {/* AI stream chatbot (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamChatbot roomId={roomId} isHost={isHost} hostName={party?.host_name || ''} room={party} elapsedSeconds={0} />
         </div>
       )}
 

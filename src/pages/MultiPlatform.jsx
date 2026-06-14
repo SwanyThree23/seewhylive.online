@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import OBSBridge from '../components/obs/OBSBridge';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -536,6 +537,13 @@ export default function MultiPlatform() {
 
             {/* ── OBS BRIDGE ── */}
             {tab === 'obs' && <OBSBridge />}
+
+            {/* ── WEBHOOK HOOKS ── */}
+            {tab === 'webhooks' && (
+              <div style={{ marginTop: 12 }}>
+                <WebhookHooks roomId={null} isHost={true} />
+              </div>
+            )}
 
           </motion.div>
         </AnimatePresence>
