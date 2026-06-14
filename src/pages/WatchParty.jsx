@@ -38,6 +38,11 @@ import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ChatOverlay from '../components/live/ChatOverlay';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import GiftTray from '../components/live/GiftTray';
+import TipNowModal from '../components/live/TipNowModal';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import UnifiedChat from '../components/live/UnifiedChat';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1169,6 +1174,14 @@ export default function WatchPartyPage() {
             )}
           </div>
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={partyId} currentUser={user} creatorId={null} />
+        <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
+        <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
+        <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
+        {!isHost && <TipNowModal roomId={partyId} recipientId={null} isOpen={false} onClose={() => {}} />}
       </div>
     </div>
   );

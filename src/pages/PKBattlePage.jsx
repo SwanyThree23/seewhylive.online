@@ -18,6 +18,9 @@ import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
 import PKInviteModal from '../components/pk/PKInviteModal';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import GiftTray from '../components/live/GiftTray';
+import TipNowModal from '../components/live/TipNowModal';
+import PointsNotification from '../components/live/PointsNotification';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -778,6 +781,12 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={battleId} currentUser={user} creatorId={null} />
+        <TipNowModal roomId={battleId} recipientId={null} isOpen={false} onClose={() => {}} />
+        {user?.id && <PointsNotification userId={user.id} />}
+      </div>
     </div>
   );
 }

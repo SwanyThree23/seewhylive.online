@@ -12,6 +12,9 @@ import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
 import StreamGoals from '../components/live/StreamGoals';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PrivatePanel from '../components/live/PrivatePanel';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -590,6 +593,9 @@ export default function GreenroomPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
               <ZEGOStreamHealthCard roomId={room?.id || null} />
               {isHost && <StreamGoals isHost={true} />}
+              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
+              <PrivatePanel roomId={room?.id || null} currentUser={null} isHost={isHost} />
             </div>
           </div>
         </div>
