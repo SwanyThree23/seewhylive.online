@@ -8,6 +8,9 @@ import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import OBSBridge from '../components/obs/OBSBridge';
 import WebhookHooks from '../components/live/WebhookHooks';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import BitratePresets from '../components/streaming/BitratePresets';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -550,6 +553,12 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <StreamingPresets onApply={() => {}} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+      </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>
         {[
