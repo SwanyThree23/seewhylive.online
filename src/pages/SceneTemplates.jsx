@@ -279,12 +279,19 @@ function CreateForm({ userId, onSuccess }) {
         description: description.trim(),
         layout_type: selectedBase,
       }),
-    onSuccess: () => {
+    onSuccess: (template) => {
       toast.success('Template saved!');
       qc.invalidateQueries(['scene-templates', userId]);
       setName('');
       setDesc('');
       setBase('single');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Created scene template: ${template?.name || 'Scene Template'}`,
+        }).catch(() => {});
+      }
       onSuccess?.();
     },
     onError: (err) => {
