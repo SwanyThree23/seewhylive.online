@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DirectPayments from '../components/live/DirectPayments';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -593,6 +595,11 @@ export default function PayoutsPage() {
             <DirectPayments isOpen={directPayOpen} onClose={() => setDirectPayOpen(false)} creatorName={user.full_name || 'Creator'} />
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={true} />
+          <ShareToSocial />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
           {[
