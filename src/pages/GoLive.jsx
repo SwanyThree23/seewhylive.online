@@ -16,6 +16,7 @@ import BitratePresets from '../components/streaming/BitratePresets';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -686,6 +687,10 @@ export default function GoLive() {
             )}
 
             {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+
+            {partyId && user && (
+              <PreStreamCountdown room={{ id: partyId }} currentUser={user} onGoLive={() => {}} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
