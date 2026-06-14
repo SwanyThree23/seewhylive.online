@@ -6,6 +6,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG = '#080B18';
@@ -637,6 +640,9 @@ export default function VaultPro() {
         <EarningsBreakdown userId={null} />
         <RevenueDashboard userId={null} />
         <StreamerMonetizationCenter userId={null} />
+        <MonetizationDashboard roomId={null} />
+        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={true} currentUser={null} />
+        <VirtualGoodsStore userId={null} />
       </div>
     </div>
   );
