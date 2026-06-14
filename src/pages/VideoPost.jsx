@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
 
 const GOLD = '#D4AF37';
 
@@ -315,6 +317,11 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <DiscussionFeed communityId="video-posts" />
+      </div>
     </div>
   );
 }

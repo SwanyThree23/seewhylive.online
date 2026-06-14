@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
+import StreamGoals from '../components/live/StreamGoals';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -143,6 +144,10 @@ export default function DataExportPage() {
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
           </p>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <StreamGoals isHost={true} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>

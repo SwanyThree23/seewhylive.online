@@ -7,6 +7,7 @@ import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import ChallengeCard from '../components/community/ChallengeCard';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -110,6 +111,10 @@ export default function SearchPage() {
                 {filteredChallenges.map(ch => <ChallengeCard key={ch.id} challenge={ch} />)}
               </div>
         )}
+      </div>
+
+      <div style={{ padding: '0 16px 12px' }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
