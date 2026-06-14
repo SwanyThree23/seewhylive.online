@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import DirectPayments from '../components/live/DirectPayments';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -74,6 +75,7 @@ export default function PayoutsPage() {
   const [stripeId, setStripeId]     = useState('');
   const [bank4, setBank4]           = useState('');
   const [connecting, setConnecting] = useState(false);
+  const [directPayOpen, setDirectPayOpen] = useState(false);
 
   /* ─── queries ──────────────────────────────────────────────────────── */
   const { data: user } = useQuery({
@@ -579,6 +581,16 @@ export default function PayoutsPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginBottom: 16 }}>
+            <button onClick={() => setDirectPayOpen(true)}
+              style={{ padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              💳 Manage Direct Payment Links
+            </button>
+            <DirectPayments isOpen={directPayOpen} onClose={() => setDirectPayOpen(false)} creatorName={user.full_name || 'Creator'} />
           </div>
         )}
 

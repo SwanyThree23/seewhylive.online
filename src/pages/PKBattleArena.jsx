@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -250,6 +252,11 @@ export default function PKBattleArena() {
             No {tab} battles right now
           </div>
         )}
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleProgress battleId={null} />
+        <PKBattleVotePanel battleId={null} creatorId={null} challengerId={null} creatorName="Creator" challengerName="Challenger" />
       </div>
 
       {/* Footer nav */}
