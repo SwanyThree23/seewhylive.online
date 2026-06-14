@@ -10,6 +10,9 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
 
 const PLATFORMS = [
@@ -297,6 +300,9 @@ export default function RTMPServer() {
           <StreamHealthDashboard isLive={false} />
           <CoStreamPanel roomId={null} />
           <WebhookHooks roomId={null} userId={null} isHost={true} />
+          <EnhancedIngestPanel roomId={null} isHost={true} />
+          <GuestRTMPPanel participantId={null} userId={null} />
+          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
         </div>
       </div>
     </div>
