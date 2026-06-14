@@ -6,6 +6,8 @@ import { Swords, Plus, ArrowLeft, Trophy, Clock, Users, Zap } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleScoreboard from '../components/live/BattleScoreboard';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -196,6 +198,11 @@ export default function LiveBattles() {
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleProgress battleId={battles?.[0]?.id || null} />
+        <BattleScoreboard roomId={battles?.[0]?.id || null} />
       </div>
 
       {/* Cross-nav footer */}

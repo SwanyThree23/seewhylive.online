@@ -6,6 +6,8 @@ import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-r
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
 import { Link } from 'react-router-dom';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
@@ -601,6 +603,13 @@ export default function CreatorSubscriptionsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+            <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={targetCreatorId} isHighlighted={false} />
+          </div>
+        )}
       </div>
     </div>
   );

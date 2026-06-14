@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -591,6 +593,11 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ZEGOConfigPanel user={user} />
+        <ZEGOStreamHealthCard roomId={null} />
+      </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[

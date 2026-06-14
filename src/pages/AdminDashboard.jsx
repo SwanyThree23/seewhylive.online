@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ReportsManager from '../components/admin/ReportsManager';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -373,6 +375,14 @@ export default function AdminDashboard() {
             </div>
           )
         )}
+
+        {activeTab === 'reports' && (
+          <div className="mt-4">
+            <ReportsManager communityId={null} userId={user?.id} />
+          </div>
+        )}
+
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
