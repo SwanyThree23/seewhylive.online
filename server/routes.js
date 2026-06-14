@@ -735,54 +735,5 @@ router.get('/fanout-status', function(req, res) {
   res.json({ ok: true, active_streams: active, count: active.length });
 });
 
-
-// SwanyBot proxy
-router.post('/swanybot', async function(req, res) {
-  try {
-    var body = req.body;
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
-    });
-    var data = await response.json();
-    res.json(data);
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// OpenAI TTS proxy
-router.post('/tts', async function(req, res) {
-  try {
-    var body = req.body;
-    var response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + process.env.OPENAI_API_KEY
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        voice: body.voice || 'nova',
-        input: body.input,
-        speed: body.speed || 1.0
-      })
-    });
-    if (!response.ok) {
-      var err = await response.text();
-      return res.status(500).json({ error: err });
-    }
-    var audioBuffer = await response.arrayBuffer();
-    res.set('Content-Type', 'audio/mpeg');
-    res.send(Buffer.from(audioBuffer));
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
 module.exports = router;
+

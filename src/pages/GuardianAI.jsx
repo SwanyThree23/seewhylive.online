@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import AIModeration from '../components/live/AIModeration';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -377,6 +386,40 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIModeration roomId={null} isHost={false} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} userId={null} action={null} />
+        <AnnouncementScheduler communityId={null} userId={null} />
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+        <ReportsManager communityId={null} userId={null} />
+        <ChallengeAnalytics communityId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 AI Hub
+          </button>
+        </Link>
+        <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 Joyce AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            ✨ Aura AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -45,7 +45,7 @@ function FullScreenAnimation({ gift, senderName, onDone }) {
           animate={{ x: (Math.random() - 0.5) * 300, y: -200 - Math.random() * 200, opacity: 0, rotate: Math.random() * 360 }}
           transition={{ duration: 1.5 + Math.random(), delay: 0.2 + Math.random() * 0.5 }}
           className="absolute w-3 h-3 rounded-sm"
-          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#FF1564'][i % 4] }} />
+          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#C0392B'][i % 4] }} />
       ))}
     </motion.div>
   );

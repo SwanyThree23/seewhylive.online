@@ -5,15 +5,22 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 const GOLD = '#D4AF37';
-const PINK = '#FF1564';
+const PINK    = '#C0392B';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#D4AF37' },
   subscription: { icon: Users,     color: '#C9A84C' },
-  room_invite:  { icon: Radio,     color: '#FF1564' },
+  room_invite:  { icon: Radio,     color: '#C0392B' },
   challenge:    { icon: Trophy,    color: '#D4AF37' },
   announcement: { icon: Megaphone, color: '#D4AF37' },
   referral:     { icon: Gift,      color: '#6DBF7E' },
@@ -172,6 +179,18 @@ export default function NotificationsPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StreamGoals isHost={true} />
+            <LeaderboardPanel roomId={null} />
+            <MilestoneAlerts creatorId={user.id} />
+            <AnnouncementFeed communityId={null} />
+            <PointsNotification userId={user.id} />
+            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={null} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
       </div>

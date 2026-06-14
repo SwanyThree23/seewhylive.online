@@ -15,6 +15,30 @@ import {
   Crown, Layers
 } from 'lucide-react';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import RecordingManager from '../components/content/RecordingManager';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NotificationBell from '../components/shared/NotificationBell';
+import SubscriptionManager from '@/components/monetization/SubscriptionManager';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import DirectPayments from '../components/live/DirectPayments';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PollCard from '../components/community/PollCard';
+import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -102,7 +126,7 @@ function OverviewTab({ user }) {
         <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
         <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
         <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#D4AF37" />
-        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#FF1564" sub="right now" />
+        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#C0392B" sub="right now" />
       </div>
 
       <Card>
@@ -139,13 +163,26 @@ function OverviewTab({ user }) {
         </div>
       </Card>
 
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+      {user && (
+        <div className="mb-4">
+          <CreatorBridge user={user} />
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mb-2">
+        <NotificationBell />
+        <ZEGOMobileAppBanner />
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {[
           { label: '📡 Go Live', href: createPageUrl('GoLive'), color: BURGUNDY },
           { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
-          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(255,21,100,0.08)' },
+          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
           { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
@@ -198,7 +235,7 @@ function AnalyticsTab({ user }) {
     viewers: Math.floor(Math.random() * 200 + 50),
   }));
 
-  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#FF1564', '#6DBF7E'];
+  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
 
   return (
     <div className="space-y-5">
@@ -207,7 +244,7 @@ function AnalyticsTab({ user }) {
         <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#C9A84C" />
         <StatTile label="New Followers" value={follows.length} icon={Users} color="#6DBF7E" />
         <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#D4AF37" />
-        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#FF1564" />
+        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#C0392B" />
         <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
       </div>
 
@@ -261,6 +298,33 @@ function AnalyticsTab({ user }) {
           </div>
         </Card>
       )}
+
+      {/* Analytics Overview */}
+      {user?.id && <AnalyticsOverview creatorId={user.id} />}
+
+      {/* Audience Insights */}
+      {user?.id && <AudienceInsights creatorId={user.id} />}
+
+      {/* Earnings Breakdown */}
+      {user?.id && <EarningsBreakdown creatorId={user.id} />}
+
+      {/* Monetization dashboard widget */}
+      {roomAnalytics[0]?.room_id && (
+        <MonetizationDashboard roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Room Analytics Panel (most recent stream) */}
+      {roomAnalytics[0]?.room_id && (
+        <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Streamer goals widget */}
+      {user?.id && (
+        <StreamerGoalsWidget creatorId={user.id} isCreator={true} />
+      )}
+
+      {/* AI highlight generator */}
+      <AIHighlightGenerator recording={null} />
     </div>
   );
 }
@@ -457,6 +521,13 @@ function ContentTab({ user }) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Recording Manager */}
+      {user?.id && (
+        <div className="mt-4">
+          <RecordingManager userId={user.id} />
+        </div>
+      )}
     </div>
   );
 }
@@ -523,6 +594,14 @@ function CommunityTab({ user }) {
         </div>
       </div>
 
+      {/* Spotlight banner + section */}
+      {selectedCommunity && (
+        <div className="space-y-3">
+          <SpotlightBanner communityId={selectedCommunity} isAdmin={true} />
+          <SpotlightSection communityId={selectedCommunity} />
+        </div>
+      )}
+
       {/* Polls section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -534,6 +613,9 @@ function CommunityTab({ user }) {
           </button>
         </div>
 
+        {polls.filter(p => p.status === 'active').map(poll => (
+          <PollCard key={`pc-${poll.id}`} poll={poll} />
+        ))}
         {polls.filter(p => p.status === 'active').map(poll => {
           const opts = Array.isArray(poll.options) ? poll.options : [];
           const total = poll.total_votes || 1;
@@ -764,11 +846,11 @@ function MonetizationTab({ user }) {
               <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
                   style={{ background: 'linear-gradient(90deg, #6DBF7E, #D4854A)' }} />
-                <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
+                <div className="h-full flex-1" style={{ background: 'rgba(192,57,43,0.3)' }} />
               </div>
               <div className="flex items-center justify-between text-[11px] mt-1">
-                <span style={{ color: 'rgba(255,21,100,0.7)' }}>Platform 10%</span>
-                <span style={{ color: 'rgba(255,21,100,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)' }}>Platform 10%</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
               </div>
             </div>
             <div className="pt-1 space-y-1">
@@ -804,6 +886,56 @@ function MonetizationTab({ user }) {
           })}
         </div>
       )}
+
+      {/* Subscription manager + tiers */}
+      {user?.id && (
+        <div className="mb-4 space-y-4">
+          <SubscriptionManager creatorId={user.id} />
+          <SubscriptionTiers communityId={null} userId={user.id} />
+        </div>
+      )}
+
+      {/* PPV manager */}
+      {user?.id && (
+        <div className="mb-4">
+          <PayPerViewManager roomId={null} />
+          <PayPerViewCard event={null} />
+        </div>
+      )}
+
+      {/* Virtual goods store */}
+      {user?.id && (
+        <div className="mb-4">
+          <VirtualGoodsStore userId={user.id} />
+        </div>
+      )}
+
+      {/* Monetization center */}
+      {user?.id && (
+        <div className="mb-4">
+          <StreamerMonetizationCenter />
+        </div>
+      )}
+
+      {/* Direct payments modal */}
+      <DirectPayments isOpen={false} onClose={() => {}} creatorName={user?.full_name || ''} />
+
+      {/* Deep links to monetization pages */}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {[
+          { label: '💰 Monetization',       href: 'Monetization'        },
+          { label: '⭐ Subscriptions',       href: 'CreatorSubscriptions' },
+          { label: '🎛 Widgets',             href: 'MonetizationWidgets' },
+          { label: '📊 Revenue Analytics',  href: 'Analytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1031,6 +1163,8 @@ function SettingsTab({ user }) {
 /* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
@@ -1097,6 +1231,9 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
     </div>
   );
 }

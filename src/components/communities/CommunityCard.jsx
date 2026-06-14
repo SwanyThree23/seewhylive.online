@@ -9,12 +9,12 @@ const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const CATEGORY_COLORS = {
-  music:         '#FF1564',
-  gaming:        '#00d4ff',
+  music:         '#C0392B',
+  gaming:        '#D4AF37',
   tech:          '#D4AF37',
   education:     '#4ade80',
   business:      '#fb923c',
-  entertainment: '#a78bfa',
+  entertainment: '#D4AF37',
   sports:        '#38bdf8',
   lifestyle:     '#f472b6',
   all:           '#D4AF37',
@@ -47,7 +47,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
         <div className="absolute top-2 right-2 flex gap-1.5">
           {community.verified && (
             <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
-              style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.35)', color: '#00d4ff', ...T }}>
+              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', ...T }}>
               <CheckCircle className="w-2.5 h-2.5" />Verified
             </span>
           )}

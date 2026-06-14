@@ -4,9 +4,16 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function WelcomePage() {
   const { data: user } = useQuery({
@@ -58,17 +65,15 @@ export default function WelcomePage() {
       </header>
 
       {/* Hero */}
-      <main className="relative overflow-hidden">
+      <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
-          background: `linear-gradient(180deg, 
-            rgba(10, 7, 16, 0.95) 0%,
-            rgba(20, 15, 30, 0.85) 50%,
-            rgba(10, 7, 16, 0.95) 100%)`,
-          backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
+          background: `linear-gradient(160deg, #0A0710 0%, #150820 30%, #1a0510 60%, #0A0710 100%)`,
+        }} />
+        {/* Subtle SVG grid pattern overlay */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, rgba(212,175,55,0.04) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(128,0,32,0.06) 0%, transparent 50%)`,
+          backgroundSize: '100% 100%',
         }} />
 
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-70px)] px-4 py-12 md:py-20">
@@ -177,6 +182,16 @@ export default function WelcomePage() {
           </div>
         </div>
       </section>
+
+      <div className="relative z-20 px-4 pb-4 space-y-4">
+        <FeaturedContentSection />
+        <ZEGOMobileAppBanner />
+        <ShareToSocial />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ContentRecommendations userId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        {!user && <OnboardingFlow onComplete={() => {}} />}
+      </div>
 
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"

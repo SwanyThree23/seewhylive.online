@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   LineChart, Line, BarChart, Bar,
   AreaChart, Area, PieChart, Pie, Cell,
@@ -172,7 +178,7 @@ export default function StreamAnalytics() {
           {[
             { label: 'Peak Viewers',  value: peakViewers, sub: `Avg: ${avgViewers}`,                                    color: CYAN,     icon: Users },
             { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(totalTips * 0.9).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
-            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#a78bfa', icon: MessageSquare },
+            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#D4AF37', icon: MessageSquare },
             { label: 'Engagement',    value: `${Math.round(((totalMessages + tipData.length) / Math.max(avgViewers, 1)) * 100)}%`, sub: 'vs. 12% avg', color: GREEN, icon: TrendingUp },
           ].map((kpi, i) => (
             <motion.div key={kpi.label}
@@ -333,6 +339,16 @@ export default function StreamAnalytics() {
               </ResponsiveContainer>
             </div>
           </ChartCard>
+        </div>
+
+        {/* Health + broadcast analytics panels */}
+        <div className="mt-6 space-y-4">
+          <StreamHealthDashboard />
+          <BroadcastAnalyticsDashboard />
+          <PerformanceDashboard />
+          <AudienceInsights />
+          <StreamerGoalsWidget userId={null} />
+          <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         </div>
       </div>
     </div>

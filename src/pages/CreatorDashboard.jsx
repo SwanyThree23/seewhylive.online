@@ -2,17 +2,23 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, FileText, Sliders } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import VODLibrary from '../components/vod/VODLibrary';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -70,15 +76,15 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('StreamScheduler'),
       gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
       border: 'rgba(212,175,55,0.45)',
-      iconColor: '#a78bfa',
+      iconColor: '#D4AF37',
     },
     {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
-      border: 'rgba(0,212,255,0.4)',
-      iconColor: '#00d4ff',
+      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
+      border: 'rgba(212,175,55,0.4)',
+      iconColor: '#D4AF37',
     },
     {
       icon: Scissors,
@@ -108,9 +114,41 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
-      border: 'rgba(0,212,255,0.3)',
-      iconColor: '#00d4ff',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.3)',
+      iconColor: G,
+    },
+    {
+      icon: Sliders,
+      label: 'Pre-Flight',
+      href: createPageUrl('GreenRoomPreFlight'),
+      gradient: `linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.04))`,
+      border: 'rgba(34,197,94,0.3)',
+      iconColor: '#22c55e',
+    },
+    {
+      icon: FileText,
+      label: 'Captions',
+      href: createPageUrl('TranscriptionStudio'),
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
+      border: 'rgba(109,191,126,0.3)',
+      iconColor: '#6DBF7E',
+    },
+    {
+      icon: Bot,
+      label: 'Aura AI',
+      href: createPageUrl('AuraAI'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: G,
+    },
+    {
+      icon: BarChart3,
+      label: 'Control',
+      href: createPageUrl('ControlRoom'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.32)',
+      iconColor: G,
     },
   ];
 
@@ -283,7 +321,25 @@ export default function CreatorDashboardPage() {
           </>
         )}
 
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <CollaborationMatcher />
+        </motion.div>
+
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <VODLibrary creatorId={user.id} />
+          </motion.div>
+        )}
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+            <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+            <StreamEventBus roomId={null} isHost={true} sessionId={null} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} isHost={true} />
+          </div>
+
           <Link to={createPageUrl('ContentCalendar')}>
             <div className="w-full flex items-center justify-between px-6 py-5 rounded-2xl cursor-pointer transition-all hover:brightness-110"
               style={{

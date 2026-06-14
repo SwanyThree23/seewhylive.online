@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Gift, Megaphone, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ReferralProgram from '../components/community/ReferralProgram';
 import ChallengeCard from '../components/community/ChallengeCard';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
@@ -172,6 +174,18 @@ export default function CommunityGrowthPage() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Admin</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚡ Settings</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

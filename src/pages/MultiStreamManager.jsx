@@ -2,11 +2,18 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import ShareToSocial from '../components/social/ShareToSocial';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import OBSBridge from '../components/obs/OBSBridge';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -181,7 +188,7 @@ export default function MultiStreamManager() {
             <div className="flex items-center gap-6 flex-wrap">
               <div>
                 <p className="text-[10px] text-white/40 uppercase">Active Destinations</p>
-                <p className="text-2xl font-bold text-[#00d4ff]">{enabledCount}</p>
+                <p className="text-2xl font-bold text-[#D4AF37]">{enabledCount}</p>
               </div>
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
@@ -360,7 +367,7 @@ export default function MultiStreamManager() {
                             <button
                               onClick={() => testConnection(dest)}
                               disabled={isTesting}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff] hover:border-[#00d4ff]/30 disabled:opacity-50"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 disabled:opacity-50"
                             >
                               {isTesting
                                 ? <RefreshCw className="w-3 h-3 animate-spin" />
@@ -403,6 +410,37 @@ export default function MultiStreamManager() {
             </Card>
           </motion.div>
         )}
+
+        {/* Stream health monitoring */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+          <ZEGOStreamHealthCard roomId={null} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Health</span>
+            <StreamHealthMonitor isStreaming={false} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <ShareToSocial />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+          <EnhancedIngestPanel roomId={null} isHost={true} />
+          <OBSBridge roomId={null} isHost={true} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
+          {[
+            { label: '🌐 Multi-Platform',    href: 'MultiPlatform'            },
+            { label: '🌐 Platform+',         href: 'MultiPlatformIntegration' },
+            { label: '🔴 Go Live',           href: 'GoLive'                   },
+            { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'          },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

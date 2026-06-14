@@ -74,7 +74,7 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Swords className="w-5 h-5" style={{ color: '#FF1564' }} />
+            <Swords className="w-5 h-5" style={{ color: '#C0392B' }} />
             <h2 className="text-lg font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
               Start PK Battle
             </h2>

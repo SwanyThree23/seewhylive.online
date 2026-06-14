@@ -6,6 +6,12 @@ import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, W
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -80,7 +86,7 @@ export default function GuestJoin() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0d0618' }}>
         <div style={{ ...card, maxWidth: 360, width: '100%', textAlign: 'center' }}>
-          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: '#FF1564' }} />
+          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: '#C0392B' }} />
           <h2 className="text-lg font-black mb-1" style={{ ...T, color: GOLD }}>Invalid Link</h2>
           <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>No room ID found. Ask your host for the correct join link.</p>
           <Link to={createPageUrl('Home')}>
@@ -114,13 +120,13 @@ export default function GuestJoin() {
           <div style={{ ...card, padding: 14 }}>
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full"
-                style={{ background: room.status === 'live' ? '#FF1564' : '#ffc800', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
+                style={{ background: room.status === 'live' ? '#C0392B' : '#ffc800', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
               <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                style={{ ...T, background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#FF1564' : '#ffc800' }}>
+                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#ffc800' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
             </div>
@@ -163,7 +169,7 @@ export default function GuestJoin() {
                   </div>
                   <h2 className="text-base font-black text-white" style={T}>{name}</h2>
                   <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
-                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#00ff88' : '#ffc800' }}>
+                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#6DBF7E' : '#ffc800' }}>
                     {readyState ? <><CheckCircle className="w-2.5 h-2.5" /> Ready</> : <><Clock className="w-2.5 h-2.5" /> Waiting</>}
                   </span>
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -203,13 +209,13 @@ export default function GuestJoin() {
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.1 }}
                   className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3"
                   style={{ background: 'rgba(109,191,126,0.12)', border: '2px solid rgba(109,191,126,0.5)' }}>
-                  <CheckCircle className="w-8 h-8" style={{ color: '#00ff88' }} />
+                  <CheckCircle className="w-8 h-8" style={{ color: '#6DBF7E' }} />
                 </motion.div>
-                <h2 className="text-xl font-black mb-1" style={{ ...T, color: '#00ff88' }}>You're Live!</h2>
+                <h2 className="text-xl font-black mb-1" style={{ ...T, color: '#6DBF7E' }}>You're Live!</h2>
                 <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.4)' }}>The director has admitted you to the stage</p>
                 <Link to={`${createPageUrl('LiveRoom')}?id=${roomId}`}>
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-black uppercase text-xs"
-                    style={{ ...T, background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.4)', color: '#00ff88', cursor: 'pointer' }}>
+                    style={{ ...T, background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.4)', color: '#6DBF7E', cursor: 'pointer' }}>
                     <Radio className="w-4 h-4 animate-pulse" />
                     Enter the Live Room
                   </button>
@@ -220,9 +226,9 @@ export default function GuestJoin() {
 
           {status === 'rejected' && (
             <motion.div key="rejected" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div style={{ ...card, borderColor: 'rgba(255,21,100,0.3)', textAlign: 'center' }}>
-                <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#FF1564' }} />
-                <h2 className="text-lg font-black mb-1" style={{ ...T, color: '#FF1564' }}>Removed from Queue</h2>
+              <div style={{ ...card, borderColor: 'rgba(192,57,43,0.3)', textAlign: 'center' }}>
+                <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#C0392B' }} />
+                <h2 className="text-lg font-black mb-1" style={{ ...T, color: '#C0392B' }}>Removed from Queue</h2>
                 <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>The director has removed you from the stage queue.</p>
                 <button
                   className="w-full py-2 rounded-xl font-black uppercase text-xs"
@@ -234,6 +240,25 @@ export default function GuestJoin() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Device camera/mic preview */}
+        <div style={{ marginTop: 8 }}>
+          <DevicePreview />
+        </div>
+
+        {/* Waitlist panel when waiting */}
+        {status === 'waiting' && roomId && (
+          <div style={{ marginTop: 8 }}>
+            <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+          <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
+          <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+        </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI

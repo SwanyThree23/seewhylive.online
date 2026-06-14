@@ -1,6 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import DirectPayments from '../components/live/DirectPayments';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -13,7 +21,7 @@ import {
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -72,6 +80,7 @@ export default function PayoutsPage() {
   const [stripeId, setStripeId]     = useState('');
   const [bank4, setBank4]           = useState('');
   const [connecting, setConnecting] = useState(false);
+  const [directPayOpen, setDirectPayOpen] = useState(false);
 
   /* ─── queries ──────────────────────────────────────────────────────── */
   const { data: user } = useQuery({
@@ -580,6 +589,39 @@ export default function PayoutsPage() {
           </div>
         )}
 
+        {user?.id && (
+          <div style={{ marginBottom: 16 }}>
+            <button onClick={() => setDirectPayOpen(true)}
+              style={{ padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              💳 Manage Direct Payment Links
+            </button>
+            <DirectPayments isOpen={directPayOpen} onClose={() => setDirectPayOpen(false)} creatorName={user.full_name || 'Creator'} />
+          </div>
+        )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={true} />
+          <ShareToSocial />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
+          {[
+            { label: '💰 Monetization',      href: 'Monetization'  },
+            { label: '📊 Analytics',         href: 'Analytics'     },
+            { label: '📤 Export Data',       href: 'DataExport'    },
+            { label: '📈 Adv. Analytics',   href: 'AdvancedAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <StripeConnectButton userId={null} accountId={null} />
+          <MonetizationDashboard userId={null} />
+          <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
+        </div>
       </div>
     </div>
   );

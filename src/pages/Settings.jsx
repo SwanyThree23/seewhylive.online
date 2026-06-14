@@ -5,6 +5,17 @@ import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, 
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useAuth } from '@/lib/AuthContext';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import TierEditor from '../components/subscriptions/TierEditor';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -148,6 +159,9 @@ export default function SettingsPage() {
     { label: 'Newsletter Hub',    href: 'NewsletterHub' },
     { label: 'Social Expo',       href: 'SocialExpo' },
     { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
+    { label: 'Voice AI Settings', href: 'VoiceAISettings' },
+    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
+    { label: 'Stream Analytics',  href: 'StreamAnalytics' },
   ];
 
   return (
@@ -210,6 +224,65 @@ export default function SettingsPage() {
             ))}
           </div>
         </Section>
+
+        {/* My Subscriptions */}
+        {user && (
+          <Section icon={Bell} title="My Subscriptions" description="Creators you're subscribed to">
+            <MySubscriptions userId={user.id} />
+          </Section>
+        )}
+
+        {/* Social Links */}
+        {user && (
+          <Section icon={Youtube} title="Social Links" description="Connect your YouTube and other channels">
+            <CreatorBridge user={user} />
+          </Section>
+        )}
+
+        {/* Creator Profile Setup */}
+        {user && (
+          <Section icon={User} title="Creator Profile Setup" description="Complete your creator profile">
+            <CreatorProfileSetup user={user} isOpen={true} onClose={() => {}} />
+          </Section>
+        )}
+
+        {/* Appearance */}
+        <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
+          <BackgroundCustomizer />
+        </Section>
+
+        {/* Payment Methods */}
+        {user && (
+          <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
+            <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+            <div className="pt-2">
+              <StripeConnectButton creatorId={user.id} />
+            </div>
+          </Section>
+        )}
+
+
+        {/* Subscription Tiers */}
+        {user && (
+          <Section icon={Bell} title="Subscription Tiers" description="Manage your creator subscription tiers">
+            <CreatorTierManager creatorId={user.id} />
+            <TierEditor open={false} onClose={() => {}} creatorId={user.id} existing={null} />
+          </Section>
+        )}
+
+        {/* Sound Alerts */}
+        {user && (
+          <Section icon={Bell} title="Sound Alerts" description="Customize sounds for tips, subs, and events">
+            <SoundAlertsManager creatorId={user.id} />
+          </Section>
+        )}
+
+        {/* ZEGO Settings */}
+        {user && (
+          <Section icon={SettingsIcon} title="Streaming Settings" description="Configure ZEGO stream quality and devices">
+            <ZEGOSettingsDrawer roomId={null} streamKey={null} onClose={() => {}} />
+          </Section>
+        )}
 
         {/* Data Export */}
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">

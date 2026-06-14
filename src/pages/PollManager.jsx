@@ -3,6 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
+import LivePoll from '../components/live/LivePoll';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import PollCard from '../components/community/PollCard';
+import LivePollOverlay from '../components/live/LivePollOverlay';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -86,8 +95,8 @@ export default function PollManager() {
                   <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
-                      className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
-                      <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                      className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
+                      <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
                 </div>
@@ -144,13 +153,13 @@ export default function PollManager() {
                 <div>
                   <h3 className="font-black text-sm text-white" style={T}>{template.name}</h3>
                   <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase mt-1 inline-block"
-                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#a78bfa' }}>
+                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
                     {categories[template.category]}
                   </span>
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
-                  className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
-                  <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                  className="p-1.5 rounded-lg" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', cursor: 'pointer' }}>
+                  <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>
               <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{template.question}</p>
@@ -175,6 +184,33 @@ export default function PollManager() {
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
           </div>
         )}
+
+        {user && (
+          <div className="mt-6 space-y-4">
+            <LivePoll roomId={null} isHost={true} />
+            <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
+          </div>
+        )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+          <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
+          <PollCard poll={null} />
+          <LivePollOverlay roomId={null} currentUser={null} isHost={false} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🔴 Go Live',          href: 'GoLive'           },
+            { label: '🎬 Broadcast Studio', href: 'BroadcastStudio'  },
+            { label: '🎙️ Audio Room',       href: 'AudioRoom'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

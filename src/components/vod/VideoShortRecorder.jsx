@@ -73,7 +73,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-3 h-3 rounded-full ${isRecording ? 'animate-pulse' : ''}`}
-            style={{ background: isRecording ? '#FF1564' : 'rgba(255,255,255,0.2)' }} />
+            style={{ background: isRecording ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
           <span className="text-xs font-bold text-white/70">
             {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')} / 10:00
           </span>
@@ -82,7 +82,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
           onClick={() => isRecordingSet(!isRecording)}
           disabled={maxDuration}
           className="px-3 py-1.5 rounded text-xs font-bold"
-          style={{ background: isRecording ? '#FF1564' : G, color: isRecording ? 'white' : '#000' }}
+          style={{ background: isRecording ? '#C0392B' : G, color: isRecording ? 'white' : '#000' }}
         >
           {isRecording ? 'Stop' : 'Record'}
         </button>

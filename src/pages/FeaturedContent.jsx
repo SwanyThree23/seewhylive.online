@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightSection from '../components/community/SpotlightSection';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import ViewerCount from '../components/live/ViewerCount';
+import LoveHearts from '../components/live/LoveHearts';
 
 const CHANNELS = [
   {
@@ -20,8 +27,8 @@ const CHANNELS = [
     handle: '@memoirsofashygirl',
     url: 'https://youtube.com/@memoirsofashygirl',
     description: 'Personal stories, lifestyle, and real conversations',
-    color: 'from-pink-900 to-rose-900',
-    accent: '#ff85a1',
+    color: 'from-rose-900 to-red-900',
+    accent: '#D4854A',
     emoji: '📖',
   },
   {
@@ -40,8 +47,8 @@ const CHANNELS = [
     handle: '@aiversepodcast',
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
-    color: 'from-blue-900 to-cyan-900',
-    accent: '#00d4ff',
+    color: 'from-amber-900 to-yellow-900',
+    accent: '#D4AF37',
     emoji: '🤖',
   },
 ];
@@ -195,7 +202,7 @@ export default function FeaturedContent() {
         </div>
 
         {/* Memoirs Studio Pro Link */}
-        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-pink-700/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-rose-900/50 to-red-900/50 border border-rose-800/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="text-4xl">📖</span>
             <div>
@@ -205,11 +212,21 @@ export default function FeaturedContent() {
             </div>
           </div>
           <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
-            <button style={{ background: '#FF1564', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button style={{ background: '#C0392B', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               <ExternalLink className="w-4 h-4" />
               Visit Studio Pro
             </button>
           </a>
+        </div>
+
+        <SpotlightSection communityId={null} currentUser={null} />
+        <YouTubeDiscovery />
+        <ContentRecommendations userId={null} />
+        <CollaborationMatcher />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <ViewerCount count={0} peakViewers={0} />
+          <LoveHearts roomId={null} currentUser={null} creatorId={null} />
+          <EmbedPlayer roomId={null} streamTitle="Featured Stream" viewerCount={0} />
         </div>
 
         <div className="text-center">

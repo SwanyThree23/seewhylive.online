@@ -6,6 +6,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -30,7 +36,7 @@ const C = {
   purple:  "#8B44B0",
   cyan:    "#D4854A",
   orange:  "#FF6B35",
-  teal:    "#1ABC9C",
+  teal:    "#6DBF7E",
   warn:    "#F39C12",
   tribute: "#7B5EA7",
   tribL:   "#A07BC4",
@@ -2144,6 +2150,15 @@ export default function SeeWhyLIVEv36() {
           </button>
         </div>
 
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <AudienceInsights creatorId={null} />
+        <SubscriptionManager creatorId={null} />
+        <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
+        <VirtualGoodsStore userId={null} />
+        <EarningsBreakdown creatorId={null} />
       </div>
     </>
   );

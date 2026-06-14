@@ -8,10 +8,19 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleScoreboard from '../components/live/BattleScoreboard';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import PKInviteModal from '../components/pk/PKInviteModal';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import GiftTray from '../components/live/GiftTray';
+import TipNowModal from '../components/live/TipNowModal';
+import PointsNotification from '../components/live/PointsNotification';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -98,8 +107,8 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#FF1564' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
-  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
+  var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
       key={combo}
@@ -266,6 +275,7 @@ export default function PKBattlePage() {
   const [showChat, setShowChat] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pkRound, setPkRound] = useState(1);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [leftSupporters, setLeftSupporters] = useState(new Set());
   const [rightSupporters, setRightSupporters] = useState(new Set());
 
@@ -548,6 +558,32 @@ export default function PKBattlePage() {
         {winner && <WinnerOverlay winner={winner} onClose={() => setWinner(null)} />}
       </AnimatePresence>
 
+      {/* PKBattleInterface widget — battle controls */}
+      {battleId && (
+        <div className="absolute top-2 left-2 z-30 max-w-xs">
+          <PKBattleInterface roomId={battleId} />
+        </div>
+      )}
+
+      {battleId && (
+        <div className="absolute top-2 right-2 z-30 max-w-xs space-y-2">
+          <BattleScoreboard roomId={battleId} />
+          <PKBattleSoundboard battleId={battleId} isBattleActive={!!battle} />
+          <PKBattleProgress battleId={battleId} />
+          {battle && (
+            <PKBattleVotePanel
+              battleId={battleId}
+              creatorId={battle.creator_id}
+              challengerId={battle.challenger_id}
+              creatorName={battle.creator_name || bLeftName}
+              challengerName={battle.challenger_name || bRightName}
+            />
+          )}
+        </div>
+      )}
+
+      <PKInviteModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} creators={[]} />
+
       <CountdownOverlay countdown={countdown} />
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
@@ -745,6 +781,12 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={battleId} currentUser={user} creatorId={null} />
+        <TipNowModal roomId={battleId} recipientId={null} isOpen={false} onClose={() => {}} />
+        {user?.id && <PointsNotification userId={user.id} />}
+      </div>
     </div>
   );
 }

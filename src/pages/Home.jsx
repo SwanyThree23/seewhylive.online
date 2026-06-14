@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import GridLines from '../components/home/GridLines';
+import NebulaBg from '../components/home/NebulaBg';
+import StarField from '../components/home/StarField';
+import NotificationBell from '../components/shared/NotificationBell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
@@ -91,7 +100,7 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#FF1564', Gaming: '#D4AF37', Tech: '#00d4ff',
+    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
     Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
@@ -115,7 +124,7 @@ function FanbaseRoomCard({ room }) {
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isTrending && (
@@ -200,14 +209,34 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#1565C0', page: 'StateVsState' },
-  { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
-  { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
-  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#FF1564', page: 'GuardianAI' },
-  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
-  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
-  { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
-  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#22c55e', page: 'MultiPlatform' },
+  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#1565C0', page: 'StateVsState'          },
+  { emoji: '👑', label: 'Elite League',      sub: 'Creator Rankings',    color: '#D4AF37', page: 'Leaderboard'           },
+  { emoji: '🥊', label: 'PK Battle',         sub: 'Head-to-Head',        color: '#C0392B', page: 'PKBattleManager'       },
+  { emoji: '🏟️', label: 'PK Arena',          sub: 'Live Vote Battles',   color: '#C0392B', page: 'PKBattleArena'         },
+  { emoji: '🏆', label: 'Live Battles',      sub: 'Active Matchups',     color: '#D4854A', page: 'LiveBattles'           },
+  { emoji: '🎬', label: 'VOD Library',       sub: 'Past Streams',        color: '#D4854A', page: 'VODLibrary'            },
+  { emoji: '🎞️', label: 'Clips Library',    sub: 'Viral Moments',       color: '#CC7755', page: 'ClipsLibrary'          },
+  { emoji: '🎟️', label: 'PPV Events',        sub: 'Pay-Per-View',        color: '#8B6F00', page: 'PayPerViewEvents'      },
+  { emoji: '📅', label: 'Scheduler',         sub: 'Plan Your Shows',     color: '#6B7C4A', page: 'StreamScheduler'       },
+  { emoji: '📊', label: 'Analytics',         sub: 'AI-Powered Insights', color: '#D4AF37', page: 'AdvancedAnalytics'     },
+  { emoji: '🤝', label: 'Watch Party',        sub: 'Sync Together',       color: '#CC7755', page: 'WatchParty'            },
+  { emoji: '🎛️', label: 'Control Room',      sub: 'Production HQ',       color: '#D4AF37', page: 'ControlRoom'           },
+  { emoji: '🎤', label: 'Audio Room',        sub: 'Live Audio Stage',    color: '#6DBF7E', page: 'AudioRoom'             },
+  { emoji: '🔐', label: 'Vault Pro',         sub: 'Secure Creator Tools',color: '#800020', page: 'VaultPro'              },
+  { emoji: '🎙️', label: 'AI Podcast',       sub: 'Create Episodes',     color: '#D4AF37', page: 'PodcastStudio'         },
+  { emoji: '✨', label: 'Aura AI',           sub: 'Premium Co-Host',     color: '#D4AF37', page: 'AuraAI'                },
+  { emoji: '🤖', label: 'Joyce AI',          sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI'               },
+  { emoji: '🛡️', label: 'Guardian AI',      sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI'            },
+  { emoji: '📝', label: 'Transcription',     sub: 'Live Captions & SRT', color: '#6B7C4A', page: 'TranscriptionStudio'   },
+  { emoji: '🎨', label: 'Scene Templates',  sub: '8 Layout Presets',    color: '#8B6F47', page: 'SceneTemplates'         },
+  { emoji: '🔔', label: 'Stream Alerts',    sub: 'Custom Overlays',     color: '#D4854A', page: 'StreamAlerts'           },
+  { emoji: '🎵', label: 'Music Studio',      sub: 'AI Music Creation',   color: '#6B7C4A', page: 'AIMusic'               },
+  { emoji: '⚡', label: 'INS Forge',         sub: 'AI Graphics',         color: '#D4854A', page: 'INSForge'              },
+  { emoji: '📡', label: 'Multi-Platform',    sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform'         },
+  { emoji: '🕊️', label: 'Tribute Wall',      sub: 'Honor Legends',       color: '#8B6F47', page: 'TributeWall'           },
+  { emoji: '🤖', label: 'SwanyBot',          sub: 'Domino Culture AI',   color: '#D4AF37', page: 'SwanyBotPage'          },
+  { emoji: '🗳️', label: 'Poll Manager',      sub: 'Live Audience Polls', color: '#6B7C4A', page: 'PollManager'           },
+  { emoji: '🎚️', label: 'Overlay Editor',   sub: 'Custom Overlays',     color: '#D4AF37', page: 'OverlayEditor'         },
 ];
 
 function SpotlightStrip() {
@@ -247,6 +276,91 @@ function SpotlightStrip() {
         })}
       </div>
     </div>
+  );
+}
+
+// ── Washington Classic 2026 Hero Card ─────────────────────────────────────
+function WashingtonClassicHero() {
+  return (
+    <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
+      <motion.div
+        whileTap={{ scale: 0.985 }}
+        style={{
+          margin: '0 16px',
+          borderRadius: 20,
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0A0005 0%, #1A0008 40%, #0D0A00 100%)',
+          border: '1px solid rgba(212,175,55,0.28)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(212,175,55,0.12)',
+          position: 'relative',
+        }}
+      >
+        {/* Background texture lines */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+
+        {/* Top badges row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0', position: 'relative' }}>
+          <span style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: '#D4AF37', background: 'rgba(212,175,55,0.12)',
+            border: '1px solid rgba(212,175,55,0.3)', borderRadius: 99,
+            padding: '3px 10px',
+          }}>
+            🏆 UPCOMING EVENT
+          </span>
+          <span style={{
+            fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 10,
+            color: '#6DBF7E', background: 'rgba(109,191,126,0.12)',
+            border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99,
+            padding: '3px 10px', letterSpacing: '0.06em',
+          }}>
+            WA #1 RANKED
+          </span>
+        </div>
+
+        {/* Title block */}
+        <div style={{ padding: '10px 16px 4px', position: 'relative' }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#F0E8D4', letterSpacing: '0.02em', lineHeight: 1.05 }}>
+            Washington Classic
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 22, color: '#D4AF37', letterSpacing: '0.04em', lineHeight: 1, marginTop: 2 }}>
+            2026
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 6, letterSpacing: '0.02em' }}>
+            State vs State · 7 Rock Format · Double Elimination
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(212,175,55,0.1)', margin: '10px 16px' }} />
+
+        {/* Info row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px 14px', position: 'relative' }}>
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Venue</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>Jamar's Sports Bar</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Des Moines, WA</div>
+          </div>
+          <div style={{ width: 1, height: 36, background: 'rgba(212,175,55,0.15)' }} />
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Format</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>5-pt / 150-pt Games</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Live on SeeWhy LIVE</div>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13,
+              color: '#000', background: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
+              borderRadius: 10, padding: '8px 14px', letterSpacing: '0.06em',
+              textTransform: 'uppercase', boxShadow: '0 2px 12px rgba(212,175,55,0.4)',
+            }}>
+              View →
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
@@ -412,6 +526,8 @@ function applyFilter(rooms, filter) {
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
   var [activeFilter, setActiveFilter] = useState('All');
+  var [activityOpen, setActivityOpen] = useState(false);
+  var [quickActionsOpen, setQuickActionsOpen] = useState(false);
   var qc = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
     await qc.invalidateQueries();
@@ -438,12 +554,19 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{ background: '#080B18' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
+      <StarField />
+      <NebulaBg />
+      <GridLines />
+      <ZEGOMobileAppBanner />
+      <NotificationBell />
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -485,6 +608,11 @@ export default function Home() {
         </Link>
       </div>
 
+      {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
+      <div style={{ padding: '14px 0 10px' }}>
+        <WashingtonClassicHero />
+      </div>
+
       {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
       <DominoExpoSection />
 
@@ -524,6 +652,11 @@ export default function Home() {
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
+
+      {/* ── CONTENT RECOMMENDATIONS ── */}
+      <div className="px-4 pb-4">
+        <ContentRecommendations />
+      </div>
 
       {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}
       {activeFilter === 'Communities' && (
@@ -612,6 +745,10 @@ export default function Home() {
                   Be the first → Go Live
                 </motion.div>
               </Link>
+              {/* AI recommendations when no live rooms */}
+              <div className="mt-4 w-full">
+                <SwanAIRecommendations roomId={null} currentLayout="grid" viewerCount={0} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

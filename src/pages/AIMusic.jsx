@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
@@ -12,7 +21,7 @@ const BG      = '#0E0C09';
 const BG2     = 'rgba(14,12,9,0.95)';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const AMBER   = '#D4854A';
 const ROSE    = '#C0395A';
 const GREEN   = '#6DBF7E';
@@ -148,7 +157,7 @@ const VOCAL_TYPES = [
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
   { id: 'male-singer', label: 'Male Singer', color: ROSE },
   { id: 'choir',       label: 'Choir',       color: GREEN },
-  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
+  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#D4AF37' },
 ];
 
 const MASTER_PRESETS = [
@@ -1499,6 +1508,41 @@ Return ONLY valid JSON (no markdown, no backticks):
 
       {/* ── Toast ── */}
       <Toast message={toast.message} visible={toast.visible} />
+
+      {/* Social + spotlight */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PanelMusicPlayer />
+        <SoundboardWidget />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
+        <ShareToSocial />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
+        <ContentRecommendations userId={null} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 AI Hub
+          </button>
+        </Link>
+        <Link to={createPageUrl('PodcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Podcast
+          </button>
+        </Link>
+        <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎬 Studio
+          </button>
+        </Link>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

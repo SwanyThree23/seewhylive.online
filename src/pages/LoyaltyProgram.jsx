@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -27,7 +35,7 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#00d4ff', '#a78bfa'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#D4854A', '#C0392B'];
 
 export default function LoyaltyProgram() {
   const qc = useQueryClient();
@@ -142,8 +150,8 @@ export default function LoyaltyProgram() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
-                { label: 'Active Viewers', value: leaderboard.length, color: '#00d4ff', icon: Users },
-                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#00ff88', icon: Gift },
+                { label: 'Active Viewers', value: leaderboard.length, color: GOLD, icon: Users },
+                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -340,6 +348,37 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Reward shop editor and redemption queue for admins */}
+      {isOwnProgram && user?.id && (
+        <div style={{ padding: '0 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RewardShopEditor creatorId={user.id} />
+          <RedemptionQueue creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏆 Loyalty Hub',  href: 'LoyaltyHub'    },
+          { label: '🛍 Reward Shop',  href: 'RewardShop'    },
+          { label: '🔴 Go Live',      href: 'GoLive'        },
+          { label: '📊 Analytics',    href: 'Analytics'     },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

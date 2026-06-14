@@ -10,6 +10,11 @@ import {
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PrivatePanel from '../components/live/PrivatePanel';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -390,7 +395,7 @@ export default function GreenroomPage() {
                   <p className="font-black text-sm text-white truncate">{room.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded"
-                      style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                       {room.status}
                     </span>
                     <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -584,6 +589,14 @@ export default function GreenroomPage() {
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              {isHost && <StreamGoals isHost={true} />}
+              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
+              <PrivatePanel roomId={room?.id || null} currentUser={null} isHost={isHost} />
+            </div>
           </div>
         </div>
       </div>

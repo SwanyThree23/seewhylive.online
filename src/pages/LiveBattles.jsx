@@ -6,6 +6,13 @@ import { Swords, Plus, ArrowLeft, Trophy, Clock, Users, Zap } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import LoveTap from '../components/live/LoveTap';
+import GiftShopTray from '../components/live/GiftShopTray';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -38,7 +45,7 @@ function BattleCard({ battle, index }) {
             <div>
               {isActive && (
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
-                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564' }}>
+                  style={{ ...T, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                   ⚡ LIVE
                 </span>
               )}
@@ -196,6 +203,37 @@ export default function LiveBattles() {
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleProgress battleId={battles?.[0]?.id || null} />
+        <BattleScoreboard roomId={battles?.[0]?.id || null} />
+      </div>
+
+      {/* Battle engagement tools */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleInterface roomId={null} />
+        <TournamentBracket />
+        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <LoveTap roomId={null} user={null} creatorId={null} creatorName="Creator" />
+        <GiftShopTray roomId={null} currentUser={null} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        {[
+          ['PKBattleArena',   '⚔️ Battle Arena'],
+          ['PKBattleManager', '⚙️ Manage'],
+          ['StateVsState',    '🏟️ SVS'],
+          ['Leaderboard',     '👑 Elite League'],
+          ['Home',            '🏠 Home'],
+        ].map(([page, label]) => (
+          <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
+            <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#B8AECF', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {label}
+            </button>
+          </Link>
+        ))}
       </div>
     </div>
   );
