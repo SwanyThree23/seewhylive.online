@@ -68,6 +68,13 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
       onAdded(item);
       onClose();
       toast.success(requireApproval ? 'Added — waiting for host approval' : 'Added to queue!');
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Added video to watch party queue: ${item?.title || title || 'Video'}`,
+        }).catch(() => {});
+      }
     },
   });
 
