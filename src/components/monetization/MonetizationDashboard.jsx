@@ -44,7 +44,7 @@ export default function MonetizationDashboard({ roomId }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
     >
       <p className="text-xs font-bold" style={{ color: G }}>Monetization Analytics (24h)</p>
 

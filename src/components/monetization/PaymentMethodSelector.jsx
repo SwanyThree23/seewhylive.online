@@ -44,7 +44,7 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
     >
       <div className="flex items-center gap-2">
         <Heart className="w-4 h-4" style={{ color: G }} />

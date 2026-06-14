@@ -31,7 +31,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
   }, [roomId]);
 
   return (
-    <div className="p-3 rounded-lg space-y-2" style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}20` }}>
+    <div className="p-3 rounded-lg space-y-2" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

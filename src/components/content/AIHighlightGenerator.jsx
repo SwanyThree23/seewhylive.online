@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +12,19 @@ export default function AIHighlightGenerator({ recording }) {
   const [highlights, setHighlights] = useState([]);
   const queryClient = useQueryClient();
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const createHighlightMutation = useMutation({
     mutationFn: (highlightData) => base44.entities.StreamHighlight.create(highlightData),
-    onSuccess: () => {
+    onSuccess: (highlight) => {
       queryClient.invalidateQueries({ queryKey: ['highlights'] });
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'clip_created',
+          title: `Created AI highlight: ${highlight?.title || 'Stream Highlight'}`,
+        }).catch(() => {});
+      }
     },
   });
 
