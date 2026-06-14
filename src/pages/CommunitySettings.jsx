@@ -8,6 +8,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import ReferralProgram from '../components/community/ReferralProgram';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import PollCard from '../components/community/PollCard';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -101,6 +104,9 @@ export default function CommunitySettingsPage() {
             <SpotlightBanner communityId={communityId} isAdmin={true} />
             <DiscussionFeed communityId={communityId} />
             <AnnouncementPanel communityId={communityId} />
+            <AnnouncementFeed communityId={communityId} />
+            <ChallengeLeaderboard challengeId={null} />
+            <PollCard poll={null} />
             <ReferralProgram communityId={communityId} />
           </div>
         )}

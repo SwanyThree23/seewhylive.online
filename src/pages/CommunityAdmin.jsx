@@ -8,6 +8,9 @@ import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -84,6 +87,12 @@ export default function CommunityAdminPage() {
         {activeTab === 'reports' && <ReportsManager communityId={communityId} userId={user?.id} />}
         {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={user?.id} />}
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
+
+        <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={true} />
+          <AnnouncementFeed communityId={null} />
+          <DiscussionFeed communityId={null} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>

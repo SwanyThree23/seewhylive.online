@@ -10,6 +10,9 @@ import StreamGoals from '../components/live/StreamGoals';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -244,6 +247,9 @@ export default function ContentCalendarPage() {
       )}
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial />
+        <ContentRecommendations />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
         <SpotlightBanner communityId={null} isAdmin={false} />
       </div>
