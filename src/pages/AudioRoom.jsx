@@ -26,6 +26,8 @@ import StreamChatbot from '../components/live/StreamChatbot';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import GiftShopTray from '../components/live/GiftShopTray';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -546,6 +548,20 @@ export default function AudioRoom() {
         </div>
       )}
 
+      {/* Enhanced room controls (audio + branding, host only) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EnhancedRoomControls
+            isHost={isHost}
+            roomData={party}
+            micMuted={!audioEnabled}
+            onMicToggle={toggleAudio}
+            onAudioSettingsChange={() => {}}
+            onBrandingChange={() => {}}
+          />
+        </div>
+      )}
+
       {/* Audio mixer panel (host only) */}
       {roomId && isHost && (
         <div style={{ padding: '0 16px 8px' }}>
@@ -579,6 +595,11 @@ export default function AudioRoom() {
         <div style={{ padding: '0 16px 8px' }}>
           <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title} viewerCount={memberCount} />
         </div>
+      )}
+
+      {/* Gift shop tray (viewers can send gifts) */}
+      {roomId && !isHost && (
+        <GiftShopTray roomId={roomId} currentUser={user} />
       )}
 
       {/* Merch strip */}
