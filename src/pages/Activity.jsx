@@ -8,6 +8,9 @@ import { format } from 'date-fns';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import PresenceDot from '../components/shared/PresenceDot';
+import OnlinePresence from '../components/shared/OnlinePresence';
+import PointsNotification from '../components/live/PointsNotification';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -92,6 +95,12 @@ export default function ActivityPage() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlinePresence userId={null} showLabel />
+        <PresenceDot userId={null} />
+        <PointsNotification userId={null} />
       </div>
     </div>
   );
