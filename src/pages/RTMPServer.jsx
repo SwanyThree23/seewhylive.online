@@ -8,6 +8,8 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -289,6 +291,11 @@ export default function RTMPServer() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+          <StreamHealthDashboard isLive={false} />
+          <CoStreamPanel roomId={null} />
+        </div>
       </div>
     </div>
   );

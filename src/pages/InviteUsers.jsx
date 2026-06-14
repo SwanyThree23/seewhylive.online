@@ -5,6 +5,8 @@ import { UserPlus, Mail, Copy, Check, Users, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -182,6 +184,8 @@ export default function InviteUsersPage() {
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <SpotlightBanner communityId={null} isAdmin={false} />
           <DiscussionFeed communityId="invite" />
+          <ReferralProgram communityId={null} />
+          <AnnouncementFeed communityId={null} />
         </div>
 
         {/* Beta info */}
