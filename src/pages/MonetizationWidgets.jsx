@@ -6,6 +6,7 @@ import { Target, Bell, Gavel, Zap, Info } from 'lucide-react';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -122,6 +123,12 @@ export default function MonetizationWidgets() {
             <div className="p-5">
               <LiveAuctionWidget creatorId={user?.id} roomId={activeRoom?.id} isCreator={true} currentUser={user} />
             </div>
+          </div>
+        )}
+
+        {user?.id && (
+          <div className="mt-4">
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
           </div>
         )}
       </div>

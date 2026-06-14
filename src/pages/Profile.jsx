@@ -11,6 +11,8 @@ import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -579,6 +581,11 @@ export default function ProfilePage() {
           <OnlinePresenceDot isOnline size="sm" />
         </>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
     </div>
   );
 }

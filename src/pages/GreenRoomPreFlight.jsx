@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Eye, EyeOff, Copy, Check, X } from 'lucide-react';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -168,6 +169,9 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
 
       {/* VDO.NINJA link */}
       <VdoNinjaGuestLink roomId={token} />
+
+      {/* Stream health */}
+      <ZEGOStreamHealthCard roomId={null} />
 
       {/* Session Token */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 14px' }}>

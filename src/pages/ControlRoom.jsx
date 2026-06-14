@@ -14,6 +14,7 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import SceneSwitcher from '../components/live/SceneSwitcher';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -387,6 +388,11 @@ export default function ControlRoomPage() {
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
+      </div>
+
+      {/* Scene Switcher */}
+      <div className="px-4 md:px-8 pb-4">
+        <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
       </div>
 
       {/* RTMP Cards Grid */}
