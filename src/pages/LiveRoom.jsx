@@ -62,6 +62,7 @@ import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import PrivatePanel from '../components/live/PrivatePanel';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import CreatePollModal from '../components/community/CreatePollModal';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -404,6 +405,7 @@ export default function LiveRoom() {
   const [goalOpen, setGoalOpen]     = useState(false);
   const [whisperTarget, setWhisperTarget] = useState(null);
   const [auraOpen, setAuraOpen]     = useState(false);
+  const [pollModalOpen, setPollModalOpen] = useState(false);
   const lastGiftTsRef               = useRef(0);
 
   // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
@@ -1121,6 +1123,11 @@ export default function LiveRoom() {
       {/* Viewer controls panel */}
       {!isHost && user?.id && (roomId || party?.id) && (
         <ViewerControlsPanel roomId={roomId || party?.id} currentUser={user} onClose={() => {}} />
+      )}
+
+      {/* Create poll modal (host) */}
+      {isHost && (
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={null} />
       )}
 
       {showExclusiveGate && (
