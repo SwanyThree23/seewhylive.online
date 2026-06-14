@@ -10,6 +10,9 @@ import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -339,6 +342,12 @@ export default function ChallengesHubPage() {
           {user?.id && <LoyaltyBadge userId={user.id} creatorId={null} />}
           <ChallengeLeaderboard challengeId={null} />
           <ChallengeAnalytics communityId={null} />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+          <SocialLeaderboard roomId={null} />
+          <PointsEarnWidget userId={null} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
