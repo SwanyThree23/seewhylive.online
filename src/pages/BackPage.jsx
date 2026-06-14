@@ -6,6 +6,9 @@ import { Radio, Globe, MessageSquare, Menu, Search } from 'lucide-react';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import StreamingPresets from '../components/streaming/StreamingPresets';
 import { motion } from 'framer-motion';
 
 export default function BackPage() {
@@ -158,6 +161,9 @@ export default function BackPage() {
       </section>
 
       <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ZEGOStreamHealthCard roomId={null} />
+        <StreamingPresets onApply={() => {}} />
+        <ActivitySidebar isOpen={false} onClose={() => {}} />
         <ContentRecommendations />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ZEGOMobileAppBanner />

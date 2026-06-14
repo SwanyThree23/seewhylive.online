@@ -4,6 +4,9 @@ import { createPageUrl } from '../utils';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import BitratePresets from '../components/streaming/BitratePresets';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
+import StreamMetadata from '../components/live/StreamMetadata';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -767,6 +770,9 @@ export default function StreamInfraRef() {
         <ZEGOConfigPanel roomId={null} />
         <DestinationsManager userId={null} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={null} isHost={false} />
+        <StreamMetadata room={null} isHost={false} />
       </div>
     </div>
   );
