@@ -10,6 +10,8 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -243,6 +245,20 @@ export default function SettingsPage() {
           </Section>
         )}
 
+
+        {/* Subscription Tiers */}
+        {user && (
+          <Section icon={Bell} title="Subscription Tiers" description="Manage your creator subscription tiers">
+            <CreatorTierManager creatorId={user.id} />
+          </Section>
+        )}
+
+        {/* Sound Alerts */}
+        {user && (
+          <Section icon={Bell} title="Sound Alerts" description="Customize sounds for tips, subs, and events">
+            <SoundAlertsManager creatorId={user.id} />
+          </Section>
+        )}
 
         {/* Data Export */}
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">
