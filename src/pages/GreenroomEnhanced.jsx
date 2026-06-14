@@ -9,6 +9,7 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -220,6 +221,9 @@ export default function GreenroomEnhanced() {
 
         {/* Stream metadata editor (title/category) */}
         <StreamMetadataEditor />
+
+        {/* Room branding (logo, banner colors) */}
+        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
 
         {/* Participant queue */}
         <GreenroomQueue roomId={null} isHost={true} />
