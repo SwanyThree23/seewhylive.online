@@ -124,7 +124,7 @@ function FanbaseRoomCard({ room }) {
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#D4854A', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}

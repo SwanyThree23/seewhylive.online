@@ -399,7 +399,7 @@ export default function VaultPro() {
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
-                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,136,0,0.7)', ...T }}>Auto-hides in 10s</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(212,133,74,0.7)', ...T }}>Auto-hides in 10s</p>
                       )}
                     </div>
                     <button onClick={() => handleRevealKey(key)}
