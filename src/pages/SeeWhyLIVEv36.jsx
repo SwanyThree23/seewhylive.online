@@ -248,16 +248,8 @@ function OctaCell({ slot, user, isHost, isLive, isMuted, onClick }) {
 }
 
 // ─── STAGE PANEL ─────────────────────────────────────────────────────────────
-const DEMO_STREAMS = [
-  {id:"host",name:"SwanyThree23",avatar:"👑",live:true,muted:false},
-  {id:"s2",name:"CaliBonesOG",avatar:"🎯",live:true,muted:false},
-  {id:"s3",name:"VibeNBones",avatar:"🎵",live:false,muted:true},
-  {id:"s4",name:"KingDomino",avatar:"🏆",live:true,muted:false},
-  null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
-];
-
 function StagePanel() {
-  const [streams] = useState(DEMO_STREAMS);
+  const [streams] = useState([]);
   const [chat, setChat] = useState([
     {user:"CaliBonesOG",msg:"Let's DOMINO! 🎯",time:"8:42PM",badge:"gold"},
     {user:"JoyceAI",msg:"Stream is live — 90% to creator always 🔥",time:"8:42PM",badge:"ai"},
@@ -1443,7 +1435,7 @@ function WatchPartyPanel() {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:4,maxWidth:260,margin:"0 auto"}}>
           {Array.from({length:10},(_,i)=>{
-            const u = DEMO_STREAMS[i];
+            const u = null;
             return (
               <div key={i} style={{aspectRatio:"1",background:u?C.slateL:C.bg2,borderRadius:R.sm,
                 display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,
@@ -1453,7 +1445,7 @@ function WatchPartyPanel() {
         </div>
         {active && (
           <div style={{marginTop:10,display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-            <Tag label={`${DEMO_STREAMS.filter(Boolean).length} watching`} color={C.green}/>
+            <Tag label="WATCHING" color={C.green}/>
             <Tag label="HOST SYNC" color={C.gold}/>
           </div>
         )}
