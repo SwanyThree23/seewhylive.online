@@ -70,7 +70,7 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId }) {
               <div
                 className="p-4 rounded-lg backdrop-blur-md overflow-hidden relative"
                 style={{
-                  background: `rgba(7,7,15,0.9)`,
+                  background: `rgba(8,11,24,0.9)`,
                   border: `2px solid ${badge.color}`,
                   boxShadow: `0 0 20px ${badge.color}40`,
                 }}
