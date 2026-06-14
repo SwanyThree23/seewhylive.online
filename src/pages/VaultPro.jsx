@@ -4,6 +4,9 @@ import { createPageUrl } from '../utils';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.9)';
@@ -628,6 +631,12 @@ export default function VaultPro() {
             💰 Monetization
           </button>
         </Link>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <EarningsBreakdown userId={null} />
+        <RevenueDashboard userId={null} />
+        <StreamerMonetizationCenter userId={null} />
       </div>
     </div>
   );
