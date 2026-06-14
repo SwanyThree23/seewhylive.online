@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -362,6 +364,11 @@ export default function AnalyticsPage() {
         <div className="mt-4 space-y-4">
           <RevenueDashboard />
           <StreamAnalyticsDashboard />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LeaderboardPanel roomId={null} />
+          <ShareToSocial />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>

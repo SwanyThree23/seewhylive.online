@@ -11,6 +11,7 @@ import {
 import { toast } from 'sonner';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -415,6 +416,10 @@ export default function MultiStreamManager() {
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Health</span>
             <StreamHealthMonitor isStreaming={false} />
           </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <ShareToSocial />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

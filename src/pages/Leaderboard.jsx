@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import StreamGoals from '../components/live/StreamGoals';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
@@ -405,6 +407,10 @@ export default function LeaderboardPage() {
       {/* Social Leaderboard (engagement-based) */}
       <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
         <SocialLeaderboard />
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={false} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
       </div>
     </div>
   );
