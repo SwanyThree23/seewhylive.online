@@ -15,6 +15,7 @@ import DestinationsManager from '../components/streaming/DestinationsManager';
 import BitratePresets from '../components/streaming/BitratePresets';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -683,6 +684,8 @@ export default function GoLive() {
             {partyId && user?.id && (
               <ZEGOGoLiveFlow roomId={partyId} userId={user.id} onLive={() => {}} />
             )}
+
+            {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
           </motion.div>
         )}
       </AnimatePresence>

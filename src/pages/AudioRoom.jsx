@@ -49,6 +49,8 @@ import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SceneSwitcher from '../components/live/SceneSwitcher';
 import PollLaunchBar from '../components/live/PollLaunchBar';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -615,6 +617,13 @@ export default function AudioRoom() {
         </div>
       )}
 
+      {/* Leaderboard panel (all users) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LeaderboardPanel roomId={roomId} />
+        </div>
+      )}
+
       {/* Soundboard (host only) */}
       {isHost && (
         <div style={{ padding: '0 16px 8px' }}>
@@ -735,6 +744,11 @@ export default function AudioRoom() {
 
       {/* Report modal */}
       <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={null} messageId={null} />
+
+      {/* Moderation action modal (host) */}
+      {isHost && (
+        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user?.id} />
+      )}
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
