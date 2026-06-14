@@ -8,7 +8,6 @@ import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import SceneSwitcher from '../components/live/SceneSwitcher';
-import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
 import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
 
 const G = '#D4AF37';

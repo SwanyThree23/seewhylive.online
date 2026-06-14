@@ -7,6 +7,8 @@ import { createPageUrl } from '../utils';
 import CommunityCard from '../components/communities/CommunityCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -227,6 +229,11 @@ export default function CommunitiesPage() {
             )}
           </>
         )}
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <DiscussionFeed communityId="discover" />
+        </div>
 
         {/* Community management quick links */}
         {mine.length > 0 && (

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -244,6 +245,9 @@ export default function SwanyBotPage() {
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
         <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <div style={{ marginTop: 10 }}>
+          <ShareToSocial />
+        </div>
       </div>
     </div>
   );

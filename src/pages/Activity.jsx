@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format } from 'date-fns';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -68,6 +70,13 @@ export default function ActivityPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <LeaderboardPanel roomId={null} />
+            <StreamGoals isHost={false} />
           </div>
         )}
 
