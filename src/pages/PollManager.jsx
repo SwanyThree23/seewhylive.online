@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
+import LivePoll from '../components/live/LivePoll';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -175,6 +177,13 @@ export default function PollManager() {
         {templates?.length === 0 && !showForm && (
           <div className="text-center py-12" style={{ color: 'rgba(255,255,255,0.3)' }}>
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
+          </div>
+        )}
+
+        {user && (
+          <div className="mt-6 space-y-4">
+            <LivePoll roomId={null} isHost={true} />
+            <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
           </div>
         )}
 

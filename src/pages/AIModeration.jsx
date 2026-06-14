@@ -5,6 +5,8 @@ import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Zap, RefreshCw, Messa
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -301,6 +303,11 @@ export default function AIModerationPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-6 space-y-4 px-4 pb-6">
+          <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+          <ReportsManager communityId={null} userId={null} />
+        </div>
       </div>
     </div>
   );

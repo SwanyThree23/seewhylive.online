@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightSection from '../components/community/SpotlightSection';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 
 const CHANNELS = [
   {
@@ -211,6 +213,9 @@ export default function FeaturedContent() {
             </button>
           </a>
         </div>
+
+        <SpotlightSection communityId={null} currentUser={null} />
+        <YouTubeDiscovery />
 
         <div className="text-center">
           <Link to={createPageUrl('Home')}>
