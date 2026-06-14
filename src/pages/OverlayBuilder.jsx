@@ -8,6 +8,9 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import AlertConfig from '../components/live/AlertConfig';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -318,6 +321,9 @@ export default function OverlayBuilderPage() {
         <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid rgba(212,175,55,0.08)' }}>
           <AlertConfig creatorId={user.id} />
           <LowerThirdsBanner onBannerChange={() => {}} />
+          <OverlayThemeBuilder creatorId={user.id} />
+          <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
+          <CompositorOverlay stream={null} isHost={true} roomId={null} />
         </div>
       )}
     </div>

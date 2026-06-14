@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import StreamGoals from '../components/live/StreamGoals';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -163,6 +166,12 @@ export default function DataExportPage() {
               <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <PerformanceDashboard roomId={null} sessionId={null} />
+          <AudienceInsights />
+          <EarningsBreakdown userId={null} />
         </div>
       </div>
     </div>

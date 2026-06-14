@@ -4,6 +4,9 @@ import { createPageUrl } from '../utils';
 import { motion } from 'framer-motion';
 import AlertConfig from '../components/live/AlertConfig';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -218,6 +221,12 @@ export default function VoiceAISettings() {
 
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', paddingBottom: 24 }}>
           Voice settings apply to Joyce AI · Aura AI · SwanyBot · Guardian AI
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
+          <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+          <BackgroundCustomizer onBackgroundChange={() => {}} />
+          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
         </div>
       </div>
     </div>
