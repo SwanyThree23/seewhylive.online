@@ -8,6 +8,9 @@ import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import NotificationBell from '../components/shared/NotificationBell';
 import SuperChatRail from '../components/live/SuperChatRail';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import UnifiedChat from '../components/live/UnifiedChat';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import ShareButtons from '../components/shared/ShareButtons';
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -501,6 +504,9 @@ export default function Messages() {
       {user && (
         <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <NotificationBell />
+          <UnifiedChat roomId={null} currentUser={user} isHost={false} />
+          <WhisperPanel roomId={null} currentUser={user} recipientId={null} recipientName="" onClose={() => {}} />
+          <ShareButtons url={window.location.href} title="Messages" />
           <EnhancedStreamChat roomId={null} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
           <SuperChatRail superchats={[]} />
           <AnnouncementFeed communityId={null} />
