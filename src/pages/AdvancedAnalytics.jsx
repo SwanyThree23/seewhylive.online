@@ -10,6 +10,8 @@ import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboar
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -227,6 +229,11 @@ export default function AdvancedAnalyticsPage() {
             </div>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <BroadcastAnalyticsDashboard streamSession={rooms.find(r => r.status === 'live') || null} isLive={activeRooms > 0} />
+          <StreamHealthDashboard isLive={activeRooms > 0} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[

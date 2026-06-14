@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ReportsManager from '../components/admin/ReportsManager';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -567,6 +569,11 @@ export default function AdminDashboard() {
             </DarkCard>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AnnouncementScheduler communityId={null} userId={user?.id} />
+          <SpotlightBanner communityId={null} isAdmin={true} />
+        </div>
       </div>
     </div>
   );

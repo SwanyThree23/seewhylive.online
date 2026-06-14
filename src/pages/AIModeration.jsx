@@ -7,6 +7,8 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -307,6 +309,8 @@ export default function AIModerationPage() {
         <div className="mt-6 space-y-4 px-4 pb-6">
           <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
           <ReportsManager communityId={null} userId={null} />
+          <AnnouncementScheduler communityId={null} userId={null} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>
     </div>

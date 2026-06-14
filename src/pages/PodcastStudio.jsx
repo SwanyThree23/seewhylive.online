@@ -6,6 +6,9 @@ import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1451,6 +1454,12 @@ export default function PodcastStudio() {
       )}
 
       <Toast message={toast} />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIStreamSummary roomId={null} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <CollaborationMatcher />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
     </div>
   );
 }

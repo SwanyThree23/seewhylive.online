@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -98,6 +100,8 @@ export default function CommunitySettingsPage() {
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <SpotlightBanner communityId={communityId} isAdmin={true} />
             <DiscussionFeed communityId={communityId} />
+            <AnnouncementPanel communityId={communityId} />
+            <ReferralProgram communityId={communityId} />
           </div>
         )}
 

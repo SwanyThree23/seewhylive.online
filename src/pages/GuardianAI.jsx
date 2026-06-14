@@ -7,6 +7,8 @@ import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-r
 import { toast } from 'sonner';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -385,6 +387,8 @@ export default function GuardianAI() {
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
         <ReportsManager communityId={null} userId={null} />
+        <ChallengeAnalytics communityId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
       </div>
 
       {/* Cross-nav footer */}
