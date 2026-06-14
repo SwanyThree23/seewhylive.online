@@ -9,6 +9,8 @@ import PKBattleProgress from '@/components/pk/PKBattleProgress';
 import PKBattleVotePanel from '@/components/pk/PKBattleVotePanel';
 import PKInviteModal from '@/components/pk/PKInviteModal';
 import TournamentBracket from '../components/pk/TournamentBracket';
+import BattleMode from '../components/streaming/BattleMode';
+import BattleScoreboard from '../components/live/BattleScoreboard';
 
 function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
@@ -202,6 +204,14 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
+
+      {/* Battle Mode + Scoreboard for active battle */}
+      {activeBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 space-y-4">
+          <BattleMode roomId={activeBattle.id} isHost={user?.id === activeBattle.challenger_id} hostName={user?.full_name || ''} participants={[]} />
+          <BattleScoreboard roomId={activeBattle.id} />
+        </div>
+      )}
 
       {/* Tournament Bracket */}
       <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
