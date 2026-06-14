@@ -24,6 +24,9 @@ import GuestGrid from '../components/live/GuestGrid';
 import GuestControls from '../components/live/GuestControls';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamChatbot from '../components/live/StreamChatbot';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import ShareModal from '../components/live/ShareModal';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -771,6 +774,9 @@ export default function GoLive() {
         <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
         <StreamChatbot roomId={null} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
+        <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
       </div>
     </div>
   );

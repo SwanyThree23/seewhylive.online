@@ -15,6 +15,9 @@ import RewardShop from '../components/loyalty/RewardShop';
 import FollowButton from '../components/shared/FollowButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ShareModal from '../components/live/ShareModal';
+import PaywallGate from '../components/live/PaywallGate';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 
 const BG = '#0d0618';
 const GOLD = '#D4AF37';
@@ -296,6 +299,12 @@ export default function CreatorChannel() {
             </div>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <PaywallGate roomId={null} creatorId={null} price={0} />
+          <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
+          <ClipCreatorSheet roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+        </div>
       </div>
     </div>
   );
