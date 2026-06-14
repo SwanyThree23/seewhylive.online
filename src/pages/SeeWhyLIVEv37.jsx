@@ -5,6 +5,9 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -1317,6 +1320,12 @@ export default function SeeWhyLIVEv37() {
           {TABS.find(t => t.id === activeTab)?.label}
         </div>
         {panelMap[activeTab]}
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ReactionOverlay partyId={null} currentUser={null} />
+        <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
+        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={false} currentUser={null} />
       </div>
     </div>
   );

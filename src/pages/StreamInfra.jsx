@@ -3,9 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
-import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -786,6 +787,12 @@ export default function StreamInfra() {
             {activeTab === 'studio' && <StudioTab user={user} />}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={null} isHost={false} />
+        <EnhancedIngestPanel roomId={null} isHost={false} />
       </div>
     </div>
   );
