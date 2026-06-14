@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 import ShareToSocial from '../components/social/ShareToSocial';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import StreamGoals from '../components/live/StreamGoals';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -479,6 +481,8 @@ export default function StreamScheduler() {
       <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamGoals isHost={true} />
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+        <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
+        <MultiStreamConfig roomId={null} isHost={true} />
       </div>
 
       {/* Quick navigation to related stream tools */}

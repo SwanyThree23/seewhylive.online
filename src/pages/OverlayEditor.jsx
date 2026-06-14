@@ -9,6 +9,8 @@ import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import SceneSwitcher from '../components/live/SceneSwitcher';
 import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -59,6 +61,8 @@ export default function OverlayEditorPage() {
           <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <OverlayThemeBuilder creatorId={user.id} />
             <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+            <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+            <StreamMetricsBar startTime={null} memberCount={0} tipTotal={0} peakViewers={0} />
           </div>
         )}
 

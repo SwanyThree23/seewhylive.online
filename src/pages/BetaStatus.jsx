@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import HostAlertCenter from '../components/live/HostAlertCenter';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -198,6 +200,8 @@ export default function BetaStatusPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
           <LeaderboardPanel roomId={null} />
           <StreamGoals isHost={false} />
+          <StreamAnalyticsDashboard roomId={null} />
+          <HostAlertCenter />
         </div>
       </div>
     </div>
