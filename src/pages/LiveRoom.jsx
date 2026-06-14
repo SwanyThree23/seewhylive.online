@@ -42,6 +42,9 @@ import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
@@ -1083,6 +1086,9 @@ export default function LiveRoom() {
           {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
           {party && <StreamMetadata room={party} isHost={isHost} />}
           {party?.id && <AICopilotSidebar roomId={party.id} isHost={isHost} viewerCount={members.length} />}
+          {party?.id && <StreamHighlightCapture roomId={party.id} sessionId={party.id} creatorId={user?.id} elapsedSeconds={0} isHost={isHost} />}
+          {party?.id && <EnhancedPollingSystem roomId={party.id} hostId={user?.id} isHost={isHost} />}
+          {party?.id && user?.id && <EngagementBadgesDisplay roomId={party.id} userId={user.id} creatorId={party.host_id} />}
         </div>
       )}
 

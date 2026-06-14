@@ -8,6 +8,7 @@ import { createPageUrl } from '../utils';
 import PKBattleProgress from '@/components/pk/PKBattleProgress';
 import PKBattleVotePanel from '@/components/pk/PKBattleVotePanel';
 import PKInviteModal from '@/components/pk/PKInviteModal';
+import TournamentBracket from '../components/pk/TournamentBracket';
 
 function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
@@ -201,6 +202,11 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
+
+      {/* Tournament Bracket */}
+      <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+        <TournamentBracket />
+      </div>
 
       {/* Quick links */}
       <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 flex gap-3 flex-wrap pb-6">

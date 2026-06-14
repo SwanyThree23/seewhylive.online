@@ -12,6 +12,7 @@ import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -242,6 +243,9 @@ export default function SettingsPage() {
         {user && (
           <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
             <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+            <div className="pt-2">
+              <StripeConnectButton creatorId={user.id} />
+            </div>
           </Section>
         )}
 
