@@ -4,6 +4,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {
@@ -891,6 +894,9 @@ export default function EnhancementSuite() {
         <OverlayThemeBuilder creatorId={null} />
         <SoundboardWidget roomId={null} isHost={true} />
         <RoomBrandingEditor roomId={null} isHost={true} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

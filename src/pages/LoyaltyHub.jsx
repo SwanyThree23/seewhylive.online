@@ -11,6 +11,9 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import RewardShop from '../components/loyalty/RewardShop';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -343,6 +346,11 @@ export default function LoyaltyHubPage() {
           </motion.div>
         </AnimatePresence>
 
+        <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <RewardShopEditor creatorId={null} />
+          <LiveAuctionWidget creatorId={null} roomId={null} isCreator={false} currentUser={null} />
+          <VirtualGoodsStore userId={null} />
+        </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
           {[
             { label: '🏆 Loyalty Program', href: 'LoyaltyProgram' },

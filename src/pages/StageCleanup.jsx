@@ -11,6 +11,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import BitratePresets from '../components/streaming/BitratePresets';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AIModeration from '../components/live/AIModeration';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 
 const AGE_OPTIONS = [
   { label: '1 day', days: 1 },
@@ -199,6 +202,9 @@ export default function StageCleanupPage() {
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
           <GreenroomQueue roomId={null} hostId={null} onApprove={() => {}} />
+          <StreamHealthDashboard isLive={false} />
+          <AIModeration roomId={null} isHost={true} />
+          <GreenroomWaitlistPanel roomId={null} currentUser={null} onAdmit={() => {}} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

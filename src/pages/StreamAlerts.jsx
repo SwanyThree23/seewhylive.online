@@ -11,6 +11,9 @@ import StreamGoals from '../components/live/StreamGoals';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import GiftAnimation from '../components/live/GiftAnimation';
+import TippingModal from '../components/monetization/TippingModal';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -342,6 +345,9 @@ export default function StreamAlerts() {
         <PollLaunchBar roomId={null} hostId={null} activePoll={null} isHost={true} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <GiftAnimation event={null} onDone={() => {}} />
+        <EnhancedPollingSystem roomId={null} hostId={null} isHost={true} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
       </div>
 
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

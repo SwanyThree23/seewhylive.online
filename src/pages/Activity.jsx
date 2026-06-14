@@ -11,6 +11,9 @@ import StreamGoals from '../components/live/StreamGoals';
 import PresenceDot from '../components/shared/PresenceDot';
 import OnlinePresence from '../components/shared/OnlinePresence';
 import PointsNotification from '../components/live/PointsNotification';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -98,9 +101,12 @@ export default function ActivityPage() {
       </div>
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid compact maxVisible={12} />
         <OnlinePresence userId={null} showLabel />
         <PresenceDot userId={null} />
         <PointsNotification userId={null} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
       </div>
     </div>
   );
