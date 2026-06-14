@@ -6,6 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, RefreshCw, AlertTriangle, CheckCircle, Layers, Clock } from 'lucide-react';
 import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const AGE_OPTIONS = [
   { label: '1 day', days: 1 },
@@ -187,6 +189,11 @@ export default function StageCleanupPage() {
             })}
           </div>
         )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AnalyticsOverview creatorId={null} timeRange="7d" />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
           {[

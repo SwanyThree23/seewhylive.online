@@ -6,6 +6,8 @@ import { Copy, Check, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import ShareToSocial from '../components/social/ShareToSocial';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import RecordingManager from '../components/content/RecordingManager';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -271,8 +273,10 @@ export default function TranscriptionStudio() {
           </a>
         </div>
 
-      <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
+        <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <RecordingManager userId={null} />
       </div>
 
       {/* Footer nav */}
