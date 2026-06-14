@@ -8,6 +8,8 @@ import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'd
 import { toast } from 'sonner';
 import StreamGoals from '../components/live/StreamGoals';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -240,6 +242,11 @@ export default function ContentCalendarPage() {
           <AIHighlightGenerator creatorId={user.id} />
         </div>
       )}
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[

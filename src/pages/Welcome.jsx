@@ -5,6 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -177,8 +179,10 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      <div className="relative z-20 px-4 pb-4">
+      <div className="relative z-20 px-4 pb-4 space-y-4">
         <SpotlightBanner communityId={null} isAdmin={false} />
+        <ContentRecommendations userId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
 
       {/* Footer */}

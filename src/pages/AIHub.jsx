@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -966,6 +968,16 @@ export default function AIHub() {
         {/* ── AI Persona Customizer ── */}
         <div style={{ marginTop: 8 }}>
           <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        </div>
+
+        {/* ── AI Stream Summary ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIStreamSummary roomId={null} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+        </div>
+
+        {/* ── Content Recommendations ── */}
+        <div style={{ marginTop: 8 }}>
+          <ContentRecommendations userId={null} />
         </div>
 
         {/* ── SwanyBot Context Enhancer ── */}

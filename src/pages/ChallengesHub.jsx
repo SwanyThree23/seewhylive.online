@@ -8,6 +8,8 @@ import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -335,6 +337,8 @@ export default function ChallengesHubPage() {
         <div className="mt-4 space-y-4">
           <LeaderboardPanel roomId={null} />
           {user?.id && <LoyaltyBadge userId={user.id} creatorId={null} />}
+          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeAnalytics communityId={null} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>

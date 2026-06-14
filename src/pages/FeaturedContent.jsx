@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import SpotlightSection from '../components/community/SpotlightSection';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const CHANNELS = [
   {
@@ -216,6 +218,8 @@ export default function FeaturedContent() {
 
         <SpotlightSection communityId={null} currentUser={null} />
         <YouTubeDiscovery />
+        <ContentRecommendations userId={null} />
+        <CollaborationMatcher />
 
         <div className="text-center">
           <Link to={createPageUrl('Home')}>

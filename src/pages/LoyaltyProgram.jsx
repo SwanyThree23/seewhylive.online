@@ -9,6 +9,8 @@ import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -358,6 +360,11 @@ export default function LoyaltyProgram() {
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <LeaderboardPanel roomId={null} />
         {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={null} isAdmin={false} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

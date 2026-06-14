@@ -9,6 +9,8 @@ import AlertConfig from '@/components/live/AlertConfig';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import StreamGoals from '../components/live/StreamGoals';
 import PollLaunchBar from '../components/live/PollLaunchBar';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -338,6 +340,8 @@ export default function StreamAlerts() {
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <StreamGoals isHost={true} />
         <PollLaunchBar roomId={null} hostId={null} activePoll={null} isHost={true} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
       </div>
 
       <div style={{ padding: '10px 16px', background: 'rgba(13,10,20,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

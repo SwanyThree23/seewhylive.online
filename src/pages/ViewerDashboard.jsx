@@ -12,6 +12,8 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -384,6 +386,12 @@ export default function ViewerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Analytics + milestone panel */}
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {user?.id && <MilestoneAlerts creatorId={user.id} />}
+          <PartyAnalyticsDashboard partyId={null} isHost={false} />
+        </div>
       </div>
     </div>
   );

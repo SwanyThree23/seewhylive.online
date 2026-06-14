@@ -6,6 +6,8 @@ import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, W
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -234,6 +236,18 @@ export default function GuestJoin() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Device camera/mic preview */}
+        <div style={{ marginTop: 8 }}>
+          <DevicePreview />
+        </div>
+
+        {/* Waitlist panel when waiting */}
+        {status === 'waiting' && roomId && (
+          <div style={{ marginTop: 8 }}>
+            <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
+          </div>
+        )}
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI
