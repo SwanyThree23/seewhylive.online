@@ -6,6 +6,7 @@ import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lu
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -309,6 +310,13 @@ export default function StreamAlerts() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Sound Alerts Manager ── */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <SoundAlertsManager creatorId={user.id} />
+          </div>
+        )}
 
         {/* ── Footer note ── */}
         <p

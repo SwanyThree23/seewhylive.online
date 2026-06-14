@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1199,6 +1201,12 @@ export default function PodcastStudio() {
 
             {/* Audio Mixer */}
             <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
+            {/* Enhanced Audio Mixer */}
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+
+            {/* Soundboard */}
+            <SoundboardWidget />
 
             {/* Panel slots */}
             <div style={{
