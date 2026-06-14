@@ -10,6 +10,8 @@ import {
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -584,6 +586,11 @@ export default function GreenroomPage() {
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              {isHost && <StreamGoals isHost={true} />}
+            </div>
           </div>
         </div>
       </div>

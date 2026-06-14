@@ -6,6 +6,8 @@ import { Lock, Users, DollarSign, Calendar, Clock, Plus, CheckCircle, Eye, Tv, B
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 
 const BG   = '#080B18';
@@ -418,6 +420,13 @@ export default function PayPerViewEventsPage() {
           <div className="mt-6 rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-3" style={{ fontFamily: FONT }}>Payment Methods</p>
             <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+          </div>
+        )}
+
+        {user?.id && (
+          <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
 
