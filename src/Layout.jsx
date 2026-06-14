@@ -9,6 +9,7 @@ import {
   Trophy, Eye, Menu, X, User, ChevronRight,
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
 } from 'lucide-react';
+// DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -60,6 +61,10 @@ var DRAWER_CREATE = [
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
+  { name: 'Go Live Studio',   icon: Radio,           href: '/GoLiveStudio' },
+  { name: 'Payout Center',    icon: DollarSign,      href: '/PayoutCenter' },
+  { name: 'INS Forge AI',     icon: Sparkles,        href: '/INSForgeStudio' },
+  { name: 'Fallen Legends',   icon: Heart,           href: '/FallenLegends' },
 ];
 
 var DRAWER_ACCOUNT = [
