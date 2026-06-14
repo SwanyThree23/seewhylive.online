@@ -10,6 +10,7 @@ import {
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
   Film, FileText, Calendar, Sliders, Scissors, Bell, Star, Users, BarChart
 } from 'lucide-react';
+// DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -35,6 +36,7 @@ var DRAWER_WATCH = [
   { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
+  { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
@@ -94,6 +96,10 @@ var DRAWER_CREATE = [
   { name: 'Monetize Widgets', icon: DollarSign,      href: createPageUrl('MonetizationWidgets') },
   { name: 'Subscriptions',    icon: Star,            href: createPageUrl('CreatorSubscriptions') },
   { name: 'Poll Manager',     icon: BarChart,        href: createPageUrl('PollManager') },
+  { name: 'Go Live Studio',   icon: Radio,           href: '/GoLiveStudio' },
+  { name: 'Payout Center',    icon: DollarSign,      href: '/PayoutCenter' },
+  { name: 'INS Forge AI',     icon: Sparkles,        href: '/INSForgeStudio' },
+  { name: 'Fallen Legends',   icon: Heart,           href: '/FallenLegends' },
 ];
 
 var DRAWER_ACCOUNT = [

@@ -1,0 +1,44 @@
+{
+  "name": "GuardianLog",
+  "type": "object",
+  "properties": {
+    "stream_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "toxicity_score": {
+      "type": "number"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "flagged",
+        "warned",
+        "banned",
+        "none"
+      ],
+      "default": "none"
+    },
+    "reversed_by": {
+      "type": "string"
+    },
+    "reversed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "message",
+    "toxicity_score",
+    "action"
+  ]
+}
