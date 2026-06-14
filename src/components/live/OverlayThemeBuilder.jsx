@@ -40,8 +40,15 @@ export default function OverlayThemeBuilder({ creatorId }) {
         is_active: false,
       });
     },
-    onSuccess: () => {
+    onSuccess: (layout) => {
       queryClient.invalidateQueries({ queryKey: ['overlayLayouts', creatorId] });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Saved overlay theme: ${layout?.name || PRESETS[selectedPreset]?.name || 'Custom Theme'}`,
+        }).catch(() => {});
+      }
     },
   });
 

@@ -13,6 +13,8 @@ export default function GreenroomQueue({ roomId, isHost }) {
   const [guestSearch, setGuestSearch] = useState('');
   const qc = useQueryClient();
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   // Fetch all stage participants for this room
   const { data: participants = [], isLoading } = useQuery({
     queryKey: ['greenroom', roomId],
@@ -52,7 +54,16 @@ export default function GreenroomQueue({ roomId, isHost }) {
       status: 'admitted',
       role: participant.role === 'viewer' ? 'guest' : participant.role,
     }),
-    onSuccess: (_, p) => toast.success(`✅ ${p.user_name} admitted to stage`),
+    onSuccess: (_, p) => {
+      toast.success(`✅ ${p.user_name} admitted to stage`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${p.user_name} to greenroom stage`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const rejectMutation = useMutation({

@@ -97,6 +97,13 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['muted-users'] });
       toast.success(`User ${variables.action}ed`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Moderation action: ${variables.action} applied to chat user`,
+        }).catch(() => {});
+      }
     },
   });
 
