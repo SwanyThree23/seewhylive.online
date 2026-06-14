@@ -8,6 +8,7 @@ import { createPageUrl } from '../utils';
 import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
@@ -231,6 +232,13 @@ export default function SettingsPage() {
         {user && (
           <Section icon={Youtube} title="Social Links" description="Connect your YouTube and other channels">
             <CreatorBridge user={user} />
+          </Section>
+        )}
+
+        {/* Creator Profile Setup */}
+        {user && (
+          <Section icon={User} title="Creator Profile Setup" description="Complete your creator profile">
+            <CreatorProfileSetup user={user} isOpen={true} onClose={() => {}} />
           </Section>
         )}
 

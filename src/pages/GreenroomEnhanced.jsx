@@ -17,6 +17,7 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -256,6 +257,9 @@ export default function GreenroomEnhanced() {
 
         {/* Guest destinations panel */}
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+
+        {/* ZEGO guest approval */}
+        <ZEGOGuestApprovalPanel roomId={null} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

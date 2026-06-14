@@ -41,6 +41,7 @@ import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import TippingModal from '../components/monetization/TippingModal';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -647,6 +648,13 @@ export default function AudioRoom() {
       {roomId && !isHost && party?.host_id && user && (
         <div style={{ padding: '0 16px 8px' }}>
           <VirtualCurrencyTips roomId={roomId} creatorId={party.host_id} currentUser={user} isHost={false} />
+        </div>
+      )}
+
+      {/* ZEGO guest join (for non-host joining via ZEGO) */}
+      {roomId && !isHost && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user.full_name || ''} onJoined={() => {}} />
         </div>
       )}
 
