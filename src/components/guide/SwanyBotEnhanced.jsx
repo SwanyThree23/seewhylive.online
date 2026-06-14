@@ -23,7 +23,6 @@ export default function SwanyBotContextEnhancer({ userId, conversationId, onCont
           onContextReady?.(result.data);
         }
       } catch (error) {
-        console.error('Context enhancement error:', error);
       }
     };
 

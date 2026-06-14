@@ -21,7 +21,6 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
         );
         setLeaderboard(entries || []);
       } catch (error) {
-        console.error('Leaderboard fetch error:', error);
       }
       setLoading(false);
     };

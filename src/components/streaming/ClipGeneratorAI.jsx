@@ -26,7 +26,6 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
         toast.success(`Generated ${result.data.clips.length} clips!`);
       }
     } catch (error) {
-      console.error('Clip generation error:', error);
       toast.error('Failed to generate clips');
     }
     setGenerating(false);

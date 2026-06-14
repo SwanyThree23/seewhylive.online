@@ -49,7 +49,6 @@ export default function LiveTranscription({ isLive = false, roomId }) {
               addCaption(transcribeRes.data.text);
             }
           } catch (error) {
-            console.error('Transcription error:', error);
           }
         };
 
@@ -70,7 +69,6 @@ export default function LiveTranscription({ isLive = false, roomId }) {
           stream.getTracks().forEach(track => track.stop());
         };
       } catch (error) {
-        console.error('Transcription setup error:', error);
         setIsTranscribing(false);
       }
     };

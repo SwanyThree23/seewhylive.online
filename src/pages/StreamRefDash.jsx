@@ -968,10 +968,10 @@ export default function StreamRefDash() {
             <Badge type="pending">4 keys pending</Badge>
             <Badge type="info">9 tabs</Badge>
             <Link to={createPageUrl('StreamAnalytics')} style={{ textDecoration: 'none' }}>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 transition-colors cursor-pointer">📊 Stream Analytics</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(192,57,43,0.15)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.35)' }}>📊 Stream Analytics</span>
             </Link>
             <Link to={createPageUrl('AdvancedAnalytics')} style={{ textDecoration: 'none' }}>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-colors cursor-pointer">📈 Advanced Analytics</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>📈 Advanced Analytics</span>
             </Link>
           </div>
         </div>

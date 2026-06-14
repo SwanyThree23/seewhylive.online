@@ -10,7 +10,7 @@ const CRIMSON = '#800020';
 const BG = '#080B18';
 const BG2 = '#0d0618';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#C0392B','#D4854A','#C9A84C'];
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
@@ -107,7 +107,7 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
 
         {/* Online dot */}
         <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-          style={{ background: '#22c55e', border: `2px solid ${BG}` }} />
+          style={{ background: '#6DBF7E', border: `2px solid ${BG}` }} />
       </div>
 
       {/* Name */}
@@ -254,7 +254,7 @@ export default function OnlineUsersGrid({
       {/* Section header */}
       <div className="flex items-center justify-between mb-3 px-1">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
+          <div className="w-2 h-2 rounded-full" style={{ background: '#6DBF7E', boxShadow: '0 0 6px #6DBF7E' }} />
           <span style={{
             fontFamily: 'Barlow Condensed, sans-serif',
             fontSize: compact ? 12 : 14,

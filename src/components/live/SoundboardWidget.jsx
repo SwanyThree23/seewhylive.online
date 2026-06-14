@@ -30,7 +30,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
     const audio = audioRef.current;
     audio.src = sound.url;
     audio.volume = volume;
-    audio.play().catch(() => console.log('Audio play failed'));
+    audio.play().catch(() => {});
 
     audio.onended = () => setPlayingId(null);
     setTimeout(() => setPlayingId(null), 3000);

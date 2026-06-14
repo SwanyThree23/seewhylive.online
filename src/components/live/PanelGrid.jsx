@@ -7,9 +7,9 @@ const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0%
 
 const ROLE_CONFIG = {
   HOST:     { label: 'HOST',     color: '#d4af37', icon: '👑', textColor: '#000' },
-  COHOST:   { label: 'CO-HOST', color: '#ADFF2F', icon: '⚡', textColor: '#000' },
-  FEATURED: { label: 'FEATURED', color: '#8B5CF6', icon: '⭐', textColor: '#fff' },
-  GUEST:    { label: 'GUEST',    color: '#00d4ff', icon: '🎙', textColor: '#000' },
+  COHOST:   { label: 'CO-HOST', color: '#D4AF37', icon: '⚡', textColor: '#000' },
+  FEATURED: { label: 'FEATURED', color: '#C0392B', icon: '⭐', textColor: '#fff' },
+  GUEST:    { label: 'GUEST',    color: '#D4854A', icon: '🎙', textColor: '#000' },
   VIEWER:   { label: 'VIEWER',   color: '#666',    icon: '👁', textColor: '#fff' },
 };
 
@@ -139,10 +139,10 @@ function ExpandedModal({ guest, onClose, onMuteMic, onToggleCam, onRemove }) {
           <div style={{ fontSize: 12, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{role.label}</div>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onMuteMic} style={{ padding: '10px 20px', borderRadius: 10, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(0,255,136,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.15)' : 'rgba(0,255,136,0.1)', color: guest.micMuted ? '#ef4444' : '#00FF88', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={onMuteMic} style={{ padding: '10px 20px', borderRadius: 10, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(109,191,126,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.1)', color: guest.micMuted ? '#ef4444' : '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
             {guest.micMuted ? <MicOff size={14} /> : <Mic size={14} />} {guest.micMuted ? 'UNMUTE' : 'MUTE'}
           </button>
-          <button onClick={onToggleCam} style={{ padding: '10px 20px', borderRadius: 10, border: guest.camOff ? '1px solid rgba(255,140,0,0.5)' : '1px solid rgba(0,212,255,0.5)', background: guest.camOff ? 'rgba(255,140,0,0.1)' : 'rgba(0,212,255,0.1)', color: guest.camOff ? '#FF8C00' : '#00d4ff', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={onToggleCam} style={{ padding: '10px 20px', borderRadius: 10, border: guest.camOff ? '1px solid rgba(212,133,74,0.5)' : '1px solid rgba(212,133,74,0.4)', background: guest.camOff ? 'rgba(212,133,74,0.1)' : 'rgba(212,133,74,0.06)', color: guest.camOff ? '#D4854A' : '#D4AF37', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
             {guest.camOff ? <VideoOff size={14} /> : <Video size={14} />} CAM {guest.camOff ? 'ON' : 'OFF'}
           </button>
           <button onClick={onRemove} style={{ padding: '10px 20px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -155,17 +155,8 @@ function ExpandedModal({ guest, onClose, onMuteMic, onToggleCam, onRemove }) {
   );
 }
 
-const DEMO_GUESTS = [
-  { id: 'g1', name: 'SwanyThree23', role: 'HOST', micMuted: false, camOff: false },
-  { id: 'g2', name: 'JoyceMoore', role: 'COHOST', micMuted: false, camOff: false },
-  { id: 'g3', name: 'CaliBones', role: 'FEATURED', micMuted: true, camOff: false },
-  { id: 'g4', name: 'DominoKing', role: 'GUEST', micMuted: false, camOff: true },
-  { id: 'g5', name: 'VibeNBones', role: 'GUEST', micMuted: false, camOff: false },
-  { id: 'g6', name: 'WashDomz', role: 'VIEWER', micMuted: true, camOff: true },
-];
-
 export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, compact, streams = {} }) {
-  const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || DEMO_GUESTS });
+  const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || [] });
   var lastTap = useRef({});
 
   var guests = state.guests;

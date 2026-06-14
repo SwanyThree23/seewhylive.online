@@ -15,7 +15,6 @@ export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) 
       setPurchased(true);
       onPurchase?.();
     } catch (error) {
-      console.error('PPV error:', error);
     }
     setProcessing(false);
   };

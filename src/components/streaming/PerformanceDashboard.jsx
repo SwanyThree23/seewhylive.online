@@ -30,7 +30,6 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
           }]);
         }
       } catch (error) {
-        console.error('Performance fetch error:', error);
       }
       setLoading(false);
     };

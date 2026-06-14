@@ -21,7 +21,6 @@ export default function MonetizationDashboard({ roomId }) {
           setAnalytics(result.data);
         }
       } catch (error) {
-        console.error('Analytics error:', error);
       }
       setLoading(false);
     };

@@ -94,26 +94,6 @@ function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
 
-// ── Demo data (replaced by real WebRTC when roomId is available) ──────────────
-const DEMO_STAGE = [
-  { id: 1, name: 'Joyce 🦋',   role: 'host',    speaking: true,  muted: false },
-  { id: 2, name: 'SwanyThree', role: 'co-host', speaking: false, muted: false },
-  { id: 3, name: 'Tom',        role: 'speaker', speaking: false, muted: true  },
-  { id: 4, name: 'Yahawadah',  role: 'speaker', speaking: false, muted: false },
-  { id: 5, name: 'Marvin',     role: 'speaker', speaking: false, muted: true  },
-  { id: 6, name: 'Durand',     role: 'speaker', speaking: false, muted: true  },
-];
-const DEMO_AUDIENCE = [
-  'SwanyThree','Phelo The Great','Obi Knowledg.','Marvin 10','Sim 11',
-  'Phelo The Gre.','Durand 13','Joyce 14','SwanyThree 15','Obi Knowledg.',
-  'Marvin 17','Sim 18','Phelo The Gre.','Durand 20',
-].map((name, i) => ({ id: 100 + i, name }));
-const DEMO_CHAT = [
-  { id: 1, user: 'Joyce 🦋',   text: 'Welcome to the session everyone! 🎉', host: true  },
-  { id: 2, user: 'SwanyThree', text: 'Thanks for joining — we go live in 2 min', host: false },
-  { id: 3, user: 'Marvin',     text: 'Ready! 🔥',                            host: false },
-  { id: 4, user: 'Sim 11',     text: 'Looking good on stage 👏',             host: false },
-];
 
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
@@ -372,11 +352,11 @@ export default function LiveRoom() {
         fm:       m.is_founding_member || false,
         fmNum:    m.founding_member_number || null,
       }))
-    : DEMO_STAGE;
+    : [];
 
   const audience = roomId && members.length > 6
     ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
-    : DEMO_AUDIENCE;
+    : [];
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
   const hostName   = party ? (members.find(m => m.user_id === party.host_id)?.user_name || 'Host') : 'SwanyThree';
@@ -387,7 +367,7 @@ export default function LiveRoom() {
   const [stageData, setStageData]   = useState(stage);
   const [spotlit, setSpotlit]       = useState(null);
   const [chatOpen, setChatOpen]     = useState(false);
-  const [chatMsgs, setChatMsgs]     = useState(DEMO_CHAT);
+  const [chatMsgs, setChatMsgs]     = useState([]);
   const [unread, setUnread]         = useState(0);
   const [liked, setLiked]           = useState(false);
   const [likeCount, setLikeCount]   = useState(3);
@@ -430,16 +410,6 @@ export default function LiveRoom() {
     }
   }, [members]);
 
-  // Simulate rotating speaker in demo mode
-  useEffect(() => {
-    if (roomId) return;
-    let idx = 0;
-    const t = setInterval(() => {
-      idx = (idx + 1) % DEMO_STAGE.length;
-      setStageData(prev => prev.map((s, i) => ({ ...s, speaking: i === idx && !s.muted })));
-    }, 4500);
-    return () => clearInterval(t);
-  }, [roomId]);
 
   const activeSpeaker = stageData.find(s => s.speaking);
   const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;

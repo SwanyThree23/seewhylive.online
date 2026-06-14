@@ -107,8 +107,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
     } catch (err) {
-      console.error('Camera access error:', err);
-      
       if (err.name === 'NotAllowedError') {
         setError('Permission denied. Please enable camera/microphone in browser settings.');
       } else if (err.name === 'NotFoundError') {
@@ -164,8 +162,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
     } catch (err) {
-      console.error('Screen share error:', err);
-      
       if (err.name === 'NotAllowedError') {
         setError('Screen sharing permission denied.');
       } else {

@@ -33,7 +33,6 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
         setExpanded(false);
       }
     } catch (error) {
-      console.error('Customization error:', error);
     }
     setSaving(false);
   };

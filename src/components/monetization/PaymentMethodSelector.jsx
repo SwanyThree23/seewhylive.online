@@ -35,7 +35,6 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
         setSelectedMethod(null);
       }
     } catch (error) {
-      console.error('Payment error:', error);
     }
     setProcessing(false);
   };

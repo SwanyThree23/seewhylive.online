@@ -69,7 +69,6 @@ export function BackgroundProvider({ children }) {
       try {
         await base44.auth.updateMe({ background_style: style });
       } catch (e) {
-        console.error('Failed to save background preference:', e);
       }
     }
   };
