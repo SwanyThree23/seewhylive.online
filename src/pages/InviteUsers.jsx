@@ -7,6 +7,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import ReferralProgram from '../components/community/ReferralProgram';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -186,6 +189,9 @@ export default function InviteUsersPage() {
           <DiscussionFeed communityId="invite" />
           <ReferralProgram communityId={null} />
           <AnnouncementFeed communityId={null} />
+          <AnnouncementPanel communityId={null} />
+          <ChallengeLeaderboard challengeId={null} />
+          <ZEGOMobileAppBanner />
         </div>
 
         {/* Beta info */}

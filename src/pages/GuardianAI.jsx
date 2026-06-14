@@ -9,6 +9,9 @@ import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ReportsManager from '../components/admin/ReportsManager';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import AIModeration from '../components/live/AIModeration';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -385,6 +388,9 @@ export default function GuardianAI() {
       `}</style>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIModeration roomId={null} isHost={false} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} userId={null} action={null} />
+        <AnnouncementScheduler communityId={null} userId={null} />
         <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
         <ReportsManager communityId={null} userId={null} />
         <ChallengeAnalytics communityId={null} />
