@@ -64,7 +64,19 @@ export default function VideoLibrary({ creatorId }) {
 
   const createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
-    onSuccess: () => { qc.invalidateQueries(['vod-library', creatorId]); setShowAdd(false); setNewVOD({ title: '', video_url: '', description: '' }); toast.success('VOD added to library'); },
+    onSuccess: (vod) => {
+      qc.invalidateQueries(['vod-library', creatorId]);
+      setShowAdd(false);
+      setNewVOD({ title: '', video_url: '', description: '' });
+      toast.success('VOD added to library');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'clip_created',
+          title: `Added VOD: ${vod?.title || 'New Video'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const importRecording = (rec) => {

@@ -71,9 +71,16 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
         expires_at: expiresAt,
       });
     },
-    onSuccess: () => {
+    onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 

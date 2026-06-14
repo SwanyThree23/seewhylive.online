@@ -113,6 +113,13 @@ export default function Messages() {
       setShowCompose(false);
       setComposeName("");
       setComposeMsg("");
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Sent a direct message to ${composeName.trim()}`,
+        }).catch(() => {});
+      }
     },
   });
 

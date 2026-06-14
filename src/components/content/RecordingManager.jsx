@@ -66,12 +66,19 @@ export default function RecordingManager({ userId }) {
         ai_keywords: aiResult.keywords,
       });
     },
-    onSuccess: () => {
+    onSuccess: (recording) => {
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setUploadDialogOpen(false);
       setUploadFile(null);
       setFormData({ title: '', description: '', tags: [], category: '', is_public: true });
       toast.success('Recording uploaded successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Uploaded recording: ${recording?.title || 'New Recording'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -120,15 +127,22 @@ export default function RecordingManager({ userId }) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success).length;
       const failed = results.filter(r => !r.success).length;
-      
+
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setBatchUploadDialogOpen(false);
       setBatchFiles([]);
-      
+
       if (failed === 0) {
         toast.success(`Successfully uploaded ${successful} recordings!`);
       } else {
         toast.warning(`Uploaded ${successful} recordings, ${failed} failed`);
+      }
+      if (successful > 0 && userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Batch uploaded ${successful} recording${successful !== 1 ? 's' : ''}`,
+        }).catch(() => {});
       }
     },
   });

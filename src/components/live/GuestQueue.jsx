@@ -35,6 +35,8 @@ function timeAgo(dateStr) {
 export default function GuestQueue({ roomId, isHost }) {
   const qc = useQueryClient();
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: waitingGuests = [] } = useQuery({
     queryKey: ['guest-queue', roomId],
     queryFn: () =>
@@ -82,6 +84,13 @@ export default function GuestQueue({ roomId, isHost }) {
       toast.success(`${name} admitted to stage!`);
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${name} to the stage`,
+        }).catch(() => {});
+      }
     },
   });
 

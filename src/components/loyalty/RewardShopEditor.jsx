@@ -40,11 +40,18 @@ export default function RewardShopEditor({ creatorId }) {
       is_active: true,
       claimed_count: 0,
     }),
-    onSuccess: () => {
+    onSuccess: (reward) => {
       toast.success('Reward created!');
       setForm(DEFAULT_FORM);
       setShowForm(false);
       qc.invalidateQueries(['loyalty-rewards', creatorId]);
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created loyalty reward: ${reward?.name || form.name}`,
+        }).catch(() => {});
+      }
     },
   });
 
