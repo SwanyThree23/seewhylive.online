@@ -3,6 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Eye, Gem, Radio, Clock, Users, Award } from 'lucide-react';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
 const CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }
@@ -333,6 +337,12 @@ export default function CreatorAnalytics() {
             ))}
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <AudienceInsights creatorId={null} />
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={true} embedded={true} />
+        <PerformanceDashboard roomId={null} sessionId={null} />
       </div>
     </div>
   );

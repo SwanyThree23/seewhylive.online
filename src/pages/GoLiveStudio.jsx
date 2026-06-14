@@ -1,6 +1,17 @@
 import React, { useReducer, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BitratePresets from '../components/streaming/BitratePresets';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import ChatModeration from '../components/live/ChatModeration';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -456,6 +467,19 @@ export default function GoLiveStudio() {
             </button>
           )}
         </div>
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <StreamHealthDashboard isLive={false} />
+        <BitratePresets selected={null} onChange={() => {}} />
+        <DestinationsManager userId={null} />
+        <ChatModeration />
+        <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+        <StreamMetadataEditor />
+        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <GreenroomQueue roomId={null} isHost={true} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
+        <StreamingPresets onApply={() => {}} />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
       </div>
     </div>
   );

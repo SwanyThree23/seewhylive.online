@@ -74,6 +74,8 @@ function getYouTubeId(url) {
   return m ? m[1] : null;
 }
 
+const OCT = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+
 function SpeakerTile({ member, size = 80 }) {
   const isHost    = member.role === 'host';
   const isCohost  = member.role === 'cohost';
@@ -86,23 +88,23 @@ function SpeakerTile({ member, size = 80 }) {
       <div className="relative" style={{ width: size, height: size }}>
         {isSpeaking && (
           <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ background: GOLD, opacity: 0.2 }}
-            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.08, 1] }}
+            className="absolute inset-0"
+            style={{ clipPath: OCT, background: GOLD, opacity: 0.25 }}
+            animate={{ opacity: [0.25, 0.55, 0.25], scale: [1, 1.08, 1] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            border: isSpeaking ? `2.5px solid ${GOLD}` : `2px solid rgba(255,255,255,0.15)`,
-            transition: 'border-color 0.3s',
-          }}
-        />
-        <div
-          className="absolute inset-[3px] rounded-full flex items-center justify-center font-black text-lg text-white"
-          style={{ background: `linear-gradient(135deg, ${color}88, ${BG2})` }}
-        >
+        {/* OCT outer ring */}
+        <div className="absolute inset-0" style={{
+          clipPath: OCT,
+          background: isSpeaking ? GOLD : (isHost ? '#D4AF37' : 'rgba(255,255,255,0.18)'),
+          transition: 'background 0.3s',
+        }} />
+        {/* OCT inner fill */}
+        <div className="absolute inset-[3px] flex items-center justify-center font-black text-lg text-white" style={{
+          clipPath: OCT,
+          background: `linear-gradient(135deg, ${color}88, ${BG2})`,
+        }}>
           {(member.user_name || '?').charAt(0).toUpperCase()}
         </div>
 
@@ -112,21 +114,13 @@ function SpeakerTile({ member, size = 80 }) {
           </div>
         )}
         {isMuted && (
-          <div
-            className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: '#EF4444', border: `2px solid ${BG}` }}
-          >
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
         )}
-        <button
-          className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
-        >
-          <Heart className="w-2.5 h-2.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
-        </button>
       </div>
-      <p className="text-[12px] font-bold text-black truncate" style={{ maxWidth: size + 8 }}>
+      <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 8 }}>
         {(member.user_name || 'Guest').split(' ')[0]}
       </p>
     </div>
@@ -138,13 +132,14 @@ function AudienceTile({ member }) {
   const color = avatarColor(member.user_name || 'A');
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <div
-        className="rounded-full flex items-center justify-center font-bold text-sm text-white"
-        style={{ width: size, height: size, background: `linear-gradient(135deg, ${color}66, ${BG2})`, border: '2px solid rgba(255,255,255,0.1)' }}
-      >
-        {(member.user_name || '?').charAt(0).toUpperCase()}
+      <div className="relative" style={{ width: size, height: size }}>
+        <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
+        <div className="absolute inset-[2px] flex items-center justify-center font-bold text-sm text-white"
+          style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
+          {(member.user_name || '?').charAt(0).toUpperCase()}
+        </div>
       </div>
-      <p className="text-[11px] truncate" style={{ color: '#888', maxWidth: size + 4 }}>
+      <p className="text-[11px] truncate" style={{ color: '#888', fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 4 }}>
         {(member.user_name || 'Guest').slice(0, 8)}
       </p>
     </div>

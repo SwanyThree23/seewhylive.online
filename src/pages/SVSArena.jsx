@@ -2,6 +2,10 @@ import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Swords, Trophy, MapPin, Users, Plus, Clock } from 'lucide-react';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import BattleMode from '../components/streaming/BattleMode';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 
 const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 const FORMAT = '7 Rock / 5-150 / Double Elimination';
@@ -324,6 +328,12 @@ export default function SVSArena() {
             ))}
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <BattleScoreboard roomId={null} />
+        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <SocialLeaderboard roomId={null} />
       </div>
     </div>
   );

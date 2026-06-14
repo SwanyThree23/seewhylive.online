@@ -8,6 +8,8 @@ import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import StreamGoals from '../components/live/StreamGoals';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import TipWidget from '../components/live/TipWidget';
 import TippingOverlay from '../components/live/TippingOverlay';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
@@ -416,6 +418,8 @@ export default function LeaderboardPage() {
           <TipWidget roomId={null} hostId={null} currentUser={null} />
           <TippingOverlay roomId={null} creatorId={null} isVisible={true} />
           <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
+          <LeaderboardPanel roomId={null} />
+          <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
     </div>

@@ -185,81 +185,97 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     return 'grid grid-cols-3 gap-2';
   };
 
+  const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
+  const count = 1 + participants.length;
+  const cellSize = count <= 2 ? 180 : count <= 6 ? 140 : 110;
+
   return (
     <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(201,168,76,0.15)' }}>
-      {/* Video Grid */}
-      <div className={`flex-1 ${gridLayout()} p-2 min-h-0`}>
-        {/* Local Video */}
+      {/* Participant count strip */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <span id="zego-participant-count" style={{ fontSize: 13, fontWeight: 900, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          👥 {count} LIVE
+        </span>
+        {isHost && <span style={{ fontSize: 10, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, padding: '2px 8px', background: 'rgba(0,255,136,0.1)', border: '1px solid rgba(0,255,136,0.3)', borderRadius: 99 }}>HOST</span>}
+      </div>
+
+      {/* Octagonal Video Grid */}
+      <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 12, padding: 16, justifyContent: 'center', alignItems: 'center', minHeight: 0 }}>
+        {/* Local Video — octagonal tile */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative rounded-xl overflow-hidden"
-          style={{ background: '#000', border: '1px solid rgba(201,168,76,0.2)' }}>
-          {error ? (
-            <div className="inset-0 flex items-center justify-center text-center p-4 text-red-400 text-sm">
-              <p>{error}</p>
-            </div>
-          ) : (
-            <>
-              <video
-                ref={localVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 flex items-start justify-between p-2">
-                <span className="text-[10px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>
-                  YOU {isHost ? '(HOST)' : '(VIEWER)'}
-                </span>
-                {localVideoPaused && (
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.8)' }}>
-                    <VideoOff className="w-6 h-6 text-white/50" />
-                  </div>
-                )}
+          style={{ position: 'relative', width: cellSize, height: cellSize, flexShrink: 0 }}>
+          {/* Gold ring for host, crimson for viewer */}
+          <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isHost ? 'rgba(212,175,55,0.5)' : 'rgba(128,0,32,0.5)' }} />
+          <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {error ? (
+              <div style={{ fontSize: 10, color: '#ef4444', textAlign: 'center', padding: 4 }}>{error.slice(0, 40)}</div>
+            ) : localVideoPaused ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <div style={{ width: cellSize * 0.32, height: cellSize * 0.32, borderRadius: '50%', background: 'rgba(212,175,55,0.2)', border: '2px solid rgba(212,175,55,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: cellSize * 0.16, fontWeight: 900, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  {(userName || 'YOU').slice(0, 2).toUpperCase()}
+                </div>
               </div>
-            </>
+            ) : (
+              <video ref={localVideoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
+          </div>
+          {/* You label */}
+          <div style={{ position: 'absolute', bottom: cellSize * 0.12, left: '50%', transform: 'translateX(-50%)', fontSize: cellSize * 0.09, fontWeight: 900, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', whiteSpace: 'nowrap', textShadow: '0 1px 4px rgba(0,0,0,0.9)', zIndex: 2 }}>
+            {isHost ? '👑 YOU' : '👁 YOU'}
+          </div>
+          {/* LIVE badge */}
+          {!connecting && !error && (
+            <div style={{ position: 'absolute', top: cellSize * 0.06, left: '50%', transform: 'translateX(-50%)', background: isHost ? GOLD : '#800020', color: isHost ? '#000' : '#fff', fontSize: cellSize * 0.08, fontWeight: 900, padding: '1px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif', zIndex: 2 }}>
+              {isHost ? 'HOST' : 'LIVE'}
+            </div>
           )}
+          {/* Mic indicator */}
+          <div style={{ position: 'absolute', bottom: cellSize * 0.28, left: '50%', transform: 'translateX(-50%)', width: cellSize * 0.2, height: cellSize * 0.2, borderRadius: '50%', background: localMuted ? 'rgba(239,68,68,0.9)' : 'rgba(0,255,136,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+            {localMuted ? <MicOff style={{ width: cellSize * 0.09, height: cellSize * 0.09, color: '#fff' }} /> : <Mic style={{ width: cellSize * 0.09, height: cellSize * 0.09, color: '#fff' }} />}
+          </div>
         </motion.div>
 
-        {/* Peer Videos — real WebRTC streams */}
+        {/* Peer Video Tiles — octagonal with real WebRTC streams */}
         {participants.map(p => {
-          // Find peerId whose announceJoin userId matches this participant's user_id
           const peerId = Array.from(peerUserIds.entries()).find(([, uid]) => uid === p.user_id)?.[0];
-          const stream = peerId ? remoteStreams.get(peerId) : undefined;
+          const peerStream = peerId ? remoteStreams.get(peerId) : undefined;
           const connState = peerId ? peerStates.get(peerId) : undefined;
+          const initials = (p.name || 'P').slice(0, 2).toUpperCase();
+          const isConnected = connState === 'connected' && !!peerStream;
           return (
             <motion.div
               key={p.id}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="relative rounded-xl overflow-hidden"
-              style={{ background: '#000', border: '1px solid rgba(212,175,55,0.2)' }}>
-              {stream ? (
-                <video
-                  autoPlay playsInline
-                  ref={el => { if (el && el.srcObject !== stream) el.srcObject = stream; }}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: '#0A0A0F' }}>
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-full mx-auto mb-2 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
-                    <p className="text-[10px]" style={{ color: GOLD }}>{p.name}</p>
-                    <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? 'Connection failed' : 'Waiting for stream…'}
-                    </p>
+              style={{ position: 'relative', width: cellSize, height: cellSize, flexShrink: 0 }}>
+              {/* Outer ring */}
+              <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isConnected ? 'rgba(0,255,136,0.4)' : 'rgba(212,175,55,0.25)', transition: 'background 0.3s' }} />
+              {/* Inner content */}
+              <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {peerStream ? (
+                  <video
+                    autoPlay playsInline
+                    ref={el => { if (el && el.srcObject !== peerStream) el.srcObject = peerStream; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                    <div style={{ width: cellSize * 0.32, height: cellSize * 0.32, borderRadius: '50%', background: 'rgba(212,175,55,0.15)', border: '2px solid rgba(212,175,55,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: cellSize * 0.16, fontWeight: 900, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', animation: connState === 'connecting' ? 'pulse 1.5s infinite' : 'none' }}>
+                      {initials}
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className="absolute top-2 left-2 flex items-center gap-1">
-                <span className="text-[11px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#C9A84C' }}>
-                  {p.role}
-                </span>
-                {connState === 'connected' && stream && (
-                  <span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(109,191,126,0.2)', color: '#6DBF7E' }}>LIVE</span>
                 )}
+              </div>
+              {/* Name label */}
+              <div style={{ position: 'absolute', bottom: cellSize * 0.12, left: '50%', transform: 'translateX(-50%)', fontSize: cellSize * 0.09, fontWeight: 900, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', whiteSpace: 'nowrap', textShadow: '0 1px 4px rgba(0,0,0,0.9)', zIndex: 2, maxWidth: cellSize * 0.85, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {p.name}
+              </div>
+              {/* Role badge */}
+              <div style={{ position: 'absolute', top: cellSize * 0.06, left: '50%', transform: 'translateX(-50%)', background: p.role === 'host' ? GOLD : 'rgba(0,212,255,0.8)', color: '#000', fontSize: cellSize * 0.08, fontWeight: 900, padding: '1px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif', zIndex: 2 }}>
+                {(p.role || 'GUEST').toUpperCase()}
               </div>
             </motion.div>
           );
