@@ -36,7 +36,6 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         setSelectedAmount(null);
       }, 2000);
     } catch (error) {
-      console.error('Tip error:', error);
     }
     setProcessing(false);
   };

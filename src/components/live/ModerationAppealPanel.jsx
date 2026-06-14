@@ -24,7 +24,6 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         setResult(res.data);
       }
     } catch (error) {
-      console.error('Appeal error:', error);
     }
     setSubmitting(false);
   };

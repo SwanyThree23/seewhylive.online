@@ -43,7 +43,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
           else if (videoDevices[0]) setSelectedId(videoDevices[0].deviceId);
         }
       } catch (e) {
-        console.error('Camera enum error', e);
       }
     }
     loadDevices();
@@ -62,7 +61,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
       setPreview(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch(e) {
-      console.error('Preview error', e);
     }
   }
 
@@ -83,7 +81,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
       onSourceSelected(stream, { deviceId: selectedId, quality, label: devices.find(d => d.deviceId === selectedId)?.label });
       setOpen(false);
     } catch(e) {
-      console.error('Source select error', e);
     }
   }
 

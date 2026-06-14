@@ -79,7 +79,6 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
 
       toast.success(`🎬 Highlight clip saved to library!`);
     } catch (err) {
-      console.warn('[HighlightDetector] clip save failed:', err?.message);
       toast.error('Auto-clip failed');
     } finally {
       savingRef.current = false;

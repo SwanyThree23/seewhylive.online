@@ -16,10 +16,10 @@ const RANGES = ['24h', '7d', '30d', '90d', 'All'];
 const TABS = ['overview', 'revenue', 'gems', 'viewers', 'streams'];
 
 const GEM_TYPES = [
-  { name: 'Ruby', color: '#FF1564', value: 4200 },
+  { name: 'Ruby', color: '#C0392B', value: 4200 },
   { name: 'Gold', color: '#d4af37', value: 3100 },
-  { name: 'Diamond', color: '#00d4ff', value: 2800 },
-  { name: 'Purple', color: '#8B5CF6', value: 1900 },
+  { name: 'Diamond', color: '#D4854A', value: 2800 },
+  { name: 'Purple', color: '#C9A84C', value: 1900 },
   { name: 'Bone', color: '#C4A882', value: 1200 },
 ];
 
@@ -41,9 +41,9 @@ const RETENTION = [
 
 const TRAFFIC_SOURCES = [
   { name: 'Direct', value: 38, color: '#d4af37' },
-  { name: 'Social', value: 29, color: '#8B5CF6' },
-  { name: 'Search', value: 18, color: '#00FF88' },
-  { name: 'Referral', value: 15, color: '#00d4ff' },
+  { name: 'Social', value: 29, color: '#C0392B' },
+  { name: 'Search', value: 18, color: '#6DBF7E' },
+  { name: 'Referral', value: 15, color: '#D4854A' },
 ];
 
 const TIPPERS = [
@@ -78,7 +78,7 @@ function StatCard({ label, value, sub, delta, color, icon }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Icon size={16} color={color || 'rgba(255,255,255,0.4)'} />
         {delta !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#00FF88' : '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#6DBF7E' : '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
             {isPositive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
             {Math.abs(delta)}%
           </div>
@@ -105,7 +105,7 @@ export default function CreatorAnalytics() {
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Header */}
       <div style={{ background: 'rgba(0,0,0,0.6)', borderBottom: '1px solid rgba(212,175,55,0.15)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #0a2a4a, #00d4ff)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #1a0a0a, #C0392B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <TrendingUp size={18} color="#fff" />
         </div>
         <div>
@@ -138,11 +138,11 @@ export default function CreatorAnalytics() {
         {state.tab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <StatCard label="TOTAL REVENUE (90%)" value={'$' + creatorTotal.toLocaleString()} delta={24} color="#00FF88" icon={DollarSign} />
-              <StatCard label="TOTAL VIEWERS" value="12.4K" delta={18} color="#00d4ff" icon={Eye} />
+              <StatCard label="TOTAL REVENUE (90%)" value={'$' + creatorTotal.toLocaleString()} delta={24} color="#6DBF7E" icon={DollarSign} />
+              <StatCard label="TOTAL VIEWERS" value="12.4K" delta={18} color="#D4854A" icon={Eye} />
               <StatCard label="GEMS RECEIVED" value="13.2K" delta={31} color="#d4af37" icon={Award} />
-              <StatCard label="STREAMS" value="24" delta={8} color="#8B5CF6" icon={Radio} />
-              <StatCard label="WATCH TIME" value="2,840h" delta={15} color="#FF8C00" icon={Clock} />
+              <StatCard label="STREAMS" value="24" delta={8} color="#C0392B" icon={Radio} />
+              <StatCard label="WATCH TIME" value="2,840h" delta={15} color="#D4854A" icon={Clock} />
               <StatCard label="NEW FOLLOWERS" value="892" delta={-4} color="#C9A0A0" icon={Users} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
@@ -186,16 +186,16 @@ export default function CreatorAnalytics() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <StatCard label="GROSS REVENUE" value={'$' + totalGross.toLocaleString()} color="#fff" icon={DollarSign} />
-              <StatCard label="YOUR CUT (90%)" value={'$' + creatorTotal.toLocaleString()} color="#00FF88" icon={TrendingUp} />
+              <StatCard label="YOUR CUT (90%)" value={'$' + creatorTotal.toLocaleString()} color="#6DBF7E" icon={TrendingUp} />
               <StatCard label="PLATFORM FEE (10%)" value={'$' + feeTotal.toLocaleString()} color="rgba(255,255,255,0.4)" icon={DollarSign} />
             </div>
-            <div style={{ background: 'rgba(0,255,136,0.04)', border: '1px solid rgba(0,255,136,0.15)', borderRadius: 10, padding: '10px 16px', fontSize: 12, color: 'rgba(0,255,136,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <div style={{ background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.15)', borderRadius: 10, padding: '10px 16px', fontSize: 12, color: 'rgba(109,191,126,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               🔒 creator_cut = Math.floor(gross × 0.90) · CREATOR_SPLIT = 0.90 is immutable
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>REVENUE BY SOURCE</div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
-                {[{ label: 'Gems', value: '$4,820', color: '#d4af37' }, { label: 'Subscriptions', value: '$3,140', color: '#8B5CF6' }, { label: 'PPV', value: '$2,090', color: '#00d4ff' }, { label: 'Tips', value: '$1,690', color: '#FF8C00' }].map(s => (
+                {[{ label: 'Gems', value: '$4,820', color: '#d4af37' }, { label: 'Subscriptions', value: '$3,140', color: '#C0392B' }, { label: 'PPV', value: '$2,090', color: '#D4854A' }, { label: 'Tips', value: '$1,690', color: '#D4854A' }].map(s => (
                   <div key={s.label} style={{ flex: 1, minWidth: 100, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
                     <div style={{ fontSize: 20, fontWeight: 900, color: s.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{s.value}</div>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{s.label}</div>
@@ -219,8 +219,8 @@ export default function CreatorAnalytics() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <StatCard label="TOTAL GEMS" value="13,200" delta={31} color="#d4af37" icon={Award} />
-              <StatCard label="UNIQUE SENDERS" value="284" delta={12} color="#8B5CF6" icon={Users} />
-              <StatCard label="PEAK GEM RATE" value="48/min" color="#FF1564" icon={TrendingUp} />
+              <StatCard label="UNIQUE SENDERS" value="284" delta={12} color="#C0392B" icon={Users} />
+              <StatCard label="PEAK GEM RATE" value="48/min" color="#C0392B" icon={TrendingUp} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 16 }}>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 16 }}>
@@ -272,7 +272,7 @@ export default function CreatorAnalytics() {
                   <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>@{t.handle}</span>
                   <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{t.streams} streams</span>
                   <span style={{ fontSize: 14, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{t.gems.toLocaleString()} 💎</span>
-                  <span style={{ fontSize: 13, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>${t.value}</span>
+                  <span style={{ fontSize: 13, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>${t.value}</span>
                 </div>
               ))}
             </div>
@@ -283,10 +283,10 @@ export default function CreatorAnalytics() {
         {state.tab === 'viewers' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <StatCard label="PEAK CONCURRENT" value="4,120" delta={28} color="#00d4ff" icon={Eye} />
-              <StatCard label="AVG CONCURRENT" value="1,840" delta={14} color="#8B5CF6" icon={Users} />
+              <StatCard label="PEAK CONCURRENT" value="4,120" delta={28} color="#D4854A" icon={Eye} />
+              <StatCard label="AVG CONCURRENT" value="1,840" delta={14} color="#C0392B" icon={Users} />
               <StatCard label="AVG SESSION" value="42 min" delta={6} color="#d4af37" icon={Clock} />
-              <StatCard label="RETURN RATE" value="61%" delta={9} color="#00FF88" icon={TrendingUp} />
+              <StatCard label="RETURN RATE" value="61%" delta={9} color="#6DBF7E" icon={TrendingUp} />
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>AUDIENCE RETENTION CURVE</div>
@@ -294,14 +294,14 @@ export default function CreatorAnalytics() {
                 <AreaChart data={RETENTION}>
                   <defs>
                     <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00d4ff" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#D4854A" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#D4854A" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="min" tick={{ fill: 'rgba(255,255,255,0.4)', fontSize: 11 }} axisLine={false} tickLine={false} label={{ value: 'minutes', position: 'insideBottom', fill: 'rgba(255,255,255,0.3)', fontSize: 10, dy: 6 }} />
                   <YAxis tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }} axisLine={false} tickLine={false} unit="%" />
                   <Tooltip contentStyle={TOOLTIP_STYLE} formatter={v => [v + '%', 'Retention']} />
-                  <Area type="monotone" dataKey="pct" stroke="#00d4ff" fill="url(#retGrad)" strokeWidth={2} />
+                  <Area type="monotone" dataKey="pct" stroke="#D4854A" fill="url(#retGrad)" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -321,11 +321,11 @@ export default function CreatorAnalytics() {
                 </div>
                 <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>${stream.revenue.toLocaleString()}</div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>${stream.revenue.toLocaleString()}</div>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>REVENUE</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: 16, fontWeight: 900, color: '#00d4ff', fontFamily: 'Barlow Condensed, sans-serif' }}>{stream.viewers.toLocaleString()}</div>
+                    <div style={{ fontSize: 16, fontWeight: 900, color: '#D4854A', fontFamily: 'Barlow Condensed, sans-serif' }}>{stream.viewers.toLocaleString()}</div>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>VIEWERS</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>

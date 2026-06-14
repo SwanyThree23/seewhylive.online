@@ -49,7 +49,6 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
         setVideoTitle('');
       }
     } catch (error) {
-      console.error('Publish error:', error);
     }
     setPublishing(false);
   };

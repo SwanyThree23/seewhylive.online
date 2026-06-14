@@ -290,7 +290,7 @@ export default function GoLiveStudio() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
                 { label: 'Host Mic', value: state.micVol, action: 'SET_MIC_VOL', icon: Mic, color: '#d4af37' },
-                { label: 'Stream Audio', value: state.streamVol, action: 'SET_STREAM_VOL', icon: Volume2, color: '#00d4ff' },
+                { label: 'Stream Audio', value: state.streamVol, action: 'SET_STREAM_VOL', icon: Volume2, color: '#D4854A' },
               ].map(ctrl => {
                 var Icon = ctrl.icon;
                 return (
@@ -318,12 +318,12 @@ export default function GoLiveStudio() {
                 <StatBox label="FPS" value={state.fps} unit="fps" />
                 <StatBox label="DROPPED" value={state.droppedFrames} unit="fr" warn={state.droppedFrames > 5} />
                 <StatBox label="LATENCY" value={state.latency} unit="ms" warn={state.latency > 200} />
-                <StatBox label="VIEWERS" value={Math.max(0, state.viewerCount)} color="#00FF88" />
-                <StatBox label="PEAK" value={state.peakViewers} color="#8B5CF6" />
+                <StatBox label="VIEWERS" value={Math.max(0, state.viewerCount)} color="#6DBF7E" />
+                <StatBox label="PEAK" value={state.peakViewers} color="#C0392B" />
               </div>
-              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(0,255,136,0.06)', border: '1px solid rgba(0,255,136,0.15)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Activity size={14} color="#00FF88" />
-                <span style={{ fontSize: 12, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>Target: 6000 kbps · {state.bitrate >= 5000 ? 'Excellent' : state.bitrate >= 4000 ? 'Good' : 'Poor'} connection</span>
+              <div style={{ marginTop: 12, padding: '8px 12px', background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.15)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Activity size={14} color="#6DBF7E" />
+                <span style={{ fontSize: 12, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>Target: 6000 kbps · {state.bitrate >= 5000 ? 'Excellent' : state.bitrate >= 4000 ? 'Good' : 'Poor'} connection</span>
               </div>
             </div>
           )}
@@ -339,7 +339,7 @@ export default function GoLiveStudio() {
               </button>
               <button
                 onClick={() => dispatch({ type: 'SET_SCENE', payload: 'brb' })}
-                style={{ flex: 1, padding: '12px', background: 'rgba(255,140,0,0.15)', border: '1px solid rgba(255,140,0,0.4)', borderRadius: 10, color: '#FF8C00', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={{ flex: 1, padding: '12px', background: 'rgba(212,133,74,0.15)', border: '1px solid rgba(212,133,74,0.4)', borderRadius: 10, color: '#D4854A', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 ☕ BREAK CARD
               </button>
@@ -371,7 +371,7 @@ export default function GoLiveStudio() {
                   onUncheck={() => dispatch({ type: 'UNCHECK_ITEM', payload: item.key })}
                 />
               ))}
-              <div style={{ marginTop: 12, padding: '8px 10px', background: allChecked ? 'rgba(0,255,136,0.08)' : 'rgba(255,140,0,0.08)', border: '1px solid ' + (allChecked ? 'rgba(0,255,136,0.25)' : 'rgba(255,140,0,0.25)'), borderRadius: 8, fontSize: 12, color: allChecked ? '#00FF88' : '#FF8C00', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>
+              <div style={{ marginTop: 12, padding: '8px 10px', background: allChecked ? 'rgba(109,191,126,0.08)' : 'rgba(212,133,74,0.08)', border: '1px solid ' + (allChecked ? 'rgba(109,191,126,0.25)' : 'rgba(212,133,74,0.25)'), borderRadius: 8, fontSize: 12, color: allChecked ? '#6DBF7E' : '#D4854A', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>
                 {allChecked ? '✓ All systems ready' : `${Object.values(state.checklist).filter(Boolean).length}/7 checks complete`}
               </div>
             </div>
@@ -414,13 +414,13 @@ export default function GoLiveStudio() {
           </div>
 
           {/* Guardian Status */}
-          <div style={{ background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.25)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Shield size={20} color="#8B5CF6" />
+          <div style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)', borderRadius: 12, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Shield size={20} color="#C0392B" />
             <div>
-              <div style={{ fontSize: 13, fontWeight: 900, color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>GUARDIAN AI</div>
+              <div style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>GUARDIAN AI</div>
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{state.guardianStatus} · Thresholds: 0.50 / 0.75 / 0.95</div>
             </div>
-            <div style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#00FF88', boxShadow: '0 0 8px #00FF88' }} />
+            <div style={{ marginLeft: 'auto', width: 10, height: 10, borderRadius: '50%', background: '#6DBF7E', boxShadow: '0 0 8px #6DBF7E' }} />
           </div>
 
           {/* 90/10 Split Notice */}

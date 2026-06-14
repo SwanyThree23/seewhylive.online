@@ -28,7 +28,6 @@ export default function SubscriptionGate({ creatorId, roomId }) {
           setUserSubscription(sub?.[0]);
         }
       } catch (error) {
-        console.error('Subscription fetch error:', error);
       }
       setLoading(false);
     };
@@ -50,7 +49,6 @@ export default function SubscriptionGate({ creatorId, roomId }) {
       });
       setUserSubscription(sub?.[0]);
     } catch (error) {
-      console.error('Subscribe error:', error);
     }
   };
 

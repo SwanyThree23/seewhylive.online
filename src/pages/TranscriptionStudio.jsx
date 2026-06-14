@@ -29,15 +29,6 @@ const GLOBAL_CSS = `
 .ts-line{animation:lineIn .25s ease forwards;}
 `;
 
-const DEMO_LINES = [
-  { id: 1,  time: '00:00:04', text: "Welcome everybody to the Washington Classic 2026 — we are live!" },
-  { id: 2,  time: '00:00:09', text: "State vs State, seven rock format, double elimination bracket tonight." },
-  { id: 3,  time: '00:00:16', text: "Washington is coming in ranked number one — they've been dominant all season." },
-  { id: 4,  time: '00:00:23', text: "Let's get into it, Jamar's Sports Bar is packed tonight." },
-  { id: 5,  time: '00:00:31', text: "The domino culture is alive and well. Big love to everyone watching on SeeWhy LIVE." },
-  { id: 6,  time: '00:00:39', text: "Round one kicks off in just a few minutes, coaches are at the table." },
-  { id: 7,  time: '00:00:47', text: "Chat is going crazy already — shout out to all the viewers in the building." },
-];
 
 const LANGS = ['English', 'Spanish', 'French', 'Portuguese', 'Mandarin'];
 
@@ -71,7 +62,7 @@ function CopyBtn({ value }) {
 }
 
 export default function TranscriptionStudio() {
-  const [lines, setLines]         = useState(DEMO_LINES);
+  const [lines, setLines]         = useState([]);
   const [live, setLive]           = useState(false);
   const [lang, setLang]           = useState('English');
   const [showOverlay, setShowOverlay] = useState(true);
