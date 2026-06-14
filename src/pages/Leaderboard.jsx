@@ -5,6 +5,7 @@ import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords 
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
@@ -399,6 +400,11 @@ export default function LeaderboardPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Social Leaderboard (engagement-based) */}
+      <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
+        <SocialLeaderboard />
       </div>
     </div>
   );
