@@ -7,6 +7,8 @@ import {
   CheckCircle, AlertCircle, Clock, Radio, Users, DollarSign,
   MessageSquare, Shield, Star, Zap, Globe, BarChart2, UserPlus
 } from 'lucide-react';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -191,6 +193,11 @@ export default function BetaStatusPage() {
               </button>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
+          <LeaderboardPanel roomId={null} />
+          <StreamGoals isHost={false} />
         </div>
       </div>
     </div>
