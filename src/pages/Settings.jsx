@@ -10,6 +10,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import TierEditor from '../components/subscriptions/TierEditor';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
@@ -271,6 +272,13 @@ export default function SettingsPage() {
         {user && (
           <Section icon={Bell} title="Sound Alerts" description="Customize sounds for tips, subs, and events">
             <SoundAlertsManager creatorId={user.id} />
+          </Section>
+        )}
+
+        {/* ZEGO Settings */}
+        {user && (
+          <Section icon={SettingsIcon} title="Streaming Settings" description="Configure ZEGO stream quality and devices">
+            <ZEGOSettingsDrawer roomId={null} streamKey={null} onClose={() => {}} />
           </Section>
         )}
 

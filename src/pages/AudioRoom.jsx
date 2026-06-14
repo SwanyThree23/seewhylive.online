@@ -51,6 +51,9 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -748,6 +751,15 @@ export default function AudioRoom() {
       {/* Moderation action modal (host) */}
       {isHost && (
         <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user?.id} />
+      )}
+
+      {/* Access gates (render for non-hosts on exclusive rooms) */}
+      {roomId && !isHost && party?.host_id && (
+        <>
+          <SubscriptionGate creatorId={party.host_id} roomId={roomId} />
+          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
+          <PaywallGate isHost={false} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
+        </>
       )}
 
       {/* Cross-nav footer */}

@@ -30,6 +30,11 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import NotificationBell from '../components/shared/NotificationBell';
 import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import DirectPayments from '../components/live/DirectPayments';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -861,10 +866,26 @@ function MonetizationTab({ user }) {
         </div>
       )}
 
-      {/* Subscription manager */}
+      {/* Subscription manager + tiers */}
+      {user?.id && (
+        <div className="mb-4 space-y-4">
+          <SubscriptionManager creatorId={user.id} />
+          <SubscriptionTiers communityId={null} userId={user.id} />
+        </div>
+      )}
+
+      {/* PPV manager */}
       {user?.id && (
         <div className="mb-4">
-          <SubscriptionManager creatorId={user.id} />
+          <PayPerViewManager roomId={null} />
+          <PayPerViewCard event={null} />
+        </div>
+      )}
+
+      {/* Virtual goods store */}
+      {user?.id && (
+        <div className="mb-4">
+          <VirtualGoodsStore userId={user.id} />
         </div>
       )}
 
@@ -874,6 +895,9 @@ function MonetizationTab({ user }) {
           <StreamerMonetizationCenter />
         </div>
       )}
+
+      {/* Direct payments modal */}
+      <DirectPayments isOpen={false} onClose={() => {}} creatorName={user?.full_name || ''} />
 
       {/* Deep links to monetization pages */}
       <div className="flex flex-wrap gap-3 pt-2">
