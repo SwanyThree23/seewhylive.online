@@ -8,6 +8,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -181,6 +184,9 @@ export default function WelcomePage() {
       </section>
 
       <div className="relative z-20 px-4 pb-4 space-y-4">
+        <FeaturedContentSection />
+        <ZEGOMobileAppBanner />
+        <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ContentRecommendations userId={null} />
         <OnlineUsersGrid compact maxVisible={10} />

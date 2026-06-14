@@ -8,9 +8,12 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '../utils';
 import { FEATURED_VIDEOS } from '../components/home/FeaturedContent';
+import FeaturedContentSection from '../components/home/FeaturedContent';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -692,9 +695,12 @@ export default function SocialExpo() {
         </AnimatePresence>
 
         {/* Collaboration opportunities */}
-        <div style={{ padding: '0 0 32px' }}>
+        <div style={{ padding: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <FeaturedContentSection />
           <CollaborationMatcher />
           <CreatorBridge user={null} />
+          <ShareToSocial />
+          <ContentRecommendations />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>
