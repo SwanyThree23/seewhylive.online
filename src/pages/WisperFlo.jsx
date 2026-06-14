@@ -91,15 +91,15 @@ function MsgBubble({ msg, isHost, pinned, expanded, onExpand, onPin, onGem, gemC
       style={{ padding: '6px 12px', cursor: 'pointer', borderRadius: 8, background: expanded ? 'rgba(212,175,55,0.06)' : 'transparent', transition: 'background 0.15s', borderLeft: pinned ? '2px solid #d4af37' : '2px solid transparent' }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, fontWeight: 900, color: msg.is_moderator ? '#00FF88' : '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', flexShrink: 0 }}>
-          {msg.is_moderator && <span style={{ fontSize: 10, color: '#00FF88', marginRight: 4 }}>MOD</span>}
+        <span style={{ fontSize: 12, fontWeight: 900, color: msg.is_moderator ? '#6DBF7E' : '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', flexShrink: 0 }}>
+          {msg.is_moderator && <span style={{ fontSize: 10, color: '#6DBF7E', marginRight: 4 }}>MOD</span>}
           {msg.user_name || 'Viewer'}
         </span>
         <LangBadge lang={msg.lang || 'en'} />
         <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.4, wordBreak: 'break-word' }}>{msg.content}</span>
       </div>
       {translation && (
-        <div style={{ fontSize: 12, color: 'rgba(0,212,255,0.7)', marginTop: 3, fontStyle: 'italic', paddingLeft: 2 }}>↳ {translation}</div>
+        <div style={{ fontSize: 12, color: 'rgba(212,133,74,0.7)', marginTop: 3, fontStyle: 'italic', paddingLeft: 2 }}>↳ {translation}</div>
       )}
       {expanded && (
         <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
@@ -114,7 +114,7 @@ function MsgBubble({ msg, isHost, pinned, expanded, onExpand, onPin, onGem, gemC
             </button>
           )}
           <button onClick={e => { e.stopPropagation(); onTranslate(msg); }}
-            style={{ padding: '3px 8px', background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: 6, color: '#00d4ff', fontSize: 11, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+            style={{ padding: '3px 8px', background: 'rgba(212,133,74,0.08)', border: '1px solid rgba(212,133,74,0.2)', borderRadius: 6, color: '#D4854A', fontSize: 11, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
             {translating ? '...' : '🌐 Translate'}
           </button>
         </div>
