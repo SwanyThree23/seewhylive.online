@@ -6,6 +6,9 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import ShareToSocial from '../components/social/ShareToSocial';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -247,6 +250,9 @@ export default function SwanyBotPage() {
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
         <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <AICopilotSidebar roomId={null} isHost={false} />
+        <AIStreamSummary roomId={null} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
         <div style={{ marginTop: 10 }}>
           <ShareToSocial />
         </div>
