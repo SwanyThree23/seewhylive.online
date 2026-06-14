@@ -1,6 +1,10 @@
 import React, { useReducer, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import BitratePresets from '../components/streaming/BitratePresets';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import ChatModeration from '../components/live/ChatModeration';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -456,6 +460,12 @@ export default function GoLiveStudio() {
             </button>
           )}
         </div>
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <StreamHealthDashboard isLive={false} />
+        <BitratePresets selected={null} onChange={() => {}} />
+        <DestinationsManager userId={null} />
+        <ChatModeration />
       </div>
     </div>
   );

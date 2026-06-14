@@ -2,6 +2,10 @@ import React, { useReducer, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Pin, Globe, Clock, Users, Lock, MessageSquare, ChevronDown } from 'lucide-react';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import AggregatedChat from '../components/live/AggregatedChat';
+import GiftAnimation from '../components/live/GiftAnimation';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 
 const GUARDIAN_FLAG_THRESHOLD = 0.50;
 const CREATOR_SPLIT = 0.90;
@@ -295,6 +299,10 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
           <Send size={15} color={canSend ? '#000' : 'rgba(255,255,255,0.3)'} />
         </button>
       </div>
+      <WhisperPanel roomId={null} currentUser={null} />
+      <AggregatedChat roomId={null} currentUser={null} isHost={false} onMessagesChange={() => {}} />
+      <GiftAnimation event={null} onDone={() => {}} />
+      <EnhancedStreamChat roomId={null} userId={null} userName={null} userRole={null} />
     </div>
   );
 }

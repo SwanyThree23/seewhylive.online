@@ -8,6 +8,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trophy, Users, Swords, Calendar, MapPin, Star, ChevronRight, Plus, Radio } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import BattleMode from '../components/streaming/BattleMode';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const C = {
   bg:    '#07050A',
@@ -328,6 +332,12 @@ export default function WashingtonClassic() {
             </Link>
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <BattleScoreboard roomId={null} />
+        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
+        <StreamAnalyticsDashboard roomId={null} />
+        <ChallengeLeaderboard communityId={null} />
       </div>
     </div>
   );

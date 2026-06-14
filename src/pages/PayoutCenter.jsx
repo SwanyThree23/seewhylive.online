@@ -2,6 +2,10 @@ import React, { useReducer, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { DollarSign, Shield, Clock, CheckCircle, AlertCircle, TrendingUp, Lock, Bell, CreditCard, FileText } from 'lucide-react';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
 
 const CREATOR_SPLIT = 0.90;
 const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
@@ -276,6 +280,12 @@ export default function PayoutCenter() {
             </div>
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <RevenueDashboard userId={null} />
+        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={true} embedded={true} />
+        <SubscriptionManager creatorId={null} />
+        <StripeConnectButton creatorId={null} />
       </div>
     </div>
   );
