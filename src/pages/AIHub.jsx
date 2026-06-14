@@ -4,6 +4,7 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -965,6 +966,11 @@ export default function AIHub() {
         {/* ── AI Persona Customizer ── */}
         <div style={{ marginTop: 8 }}>
           <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        </div>
+
+        {/* ── SwanyBot Context Enhancer ── */}
+        <div style={{ marginTop: 8 }}>
+          <SwanyBotContextEnhancer userId={null} conversationId={null} onContextReady={() => {}} />
         </div>
 
         {/* ── Bottom info strip ── */}
