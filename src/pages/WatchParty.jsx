@@ -35,6 +35,7 @@ import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import ChatOverlay from '../components/live/ChatOverlay';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -809,6 +810,9 @@ export default function WatchPartyPage() {
       </div>
 
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+
+      {/* Floating chat overlay on video */}
+      {partyId && <ChatOverlay roomId={partyId} />}
 
       {/* ── AI Floating Button ── */}
       <motion.button

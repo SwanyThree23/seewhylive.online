@@ -59,6 +59,7 @@ import ClipCreator from '../components/live/ClipCreator';
 import StreamMetadata from '../components/live/StreamMetadata';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import PrivatePanel from '../components/live/PrivatePanel';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1106,6 +1107,9 @@ export default function LiveRoom() {
       {(roomId || party?.id) && (
         <LivePollOverlay roomId={roomId || party?.id} currentUser={user} isHost={isHost} />
       )}
+
+      {/* Private panel (host only) */}
+      {isHost && <PrivatePanel isHost={isHost} currentUser={user} />}
 
       {showExclusiveGate && (
         <div style={{
