@@ -20,6 +20,7 @@ const PINK    = '#C0392B';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
 const GREEN  = '#22c55e';
+const AMBER  = '#F59E0B';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────

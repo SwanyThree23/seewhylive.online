@@ -45,6 +45,13 @@ import GuardianAI from './pages/GuardianAI';
 import ContentCalendar from './pages/ContentCalendar';
 import MultiPlatformIntegration from './pages/MultiPlatformIntegration';
 import MultiStreamManager from './pages/MultiStreamManager';
+import GoLiveStudio from './pages/GoLiveStudio';
+import PayoutCenter from './pages/PayoutCenter';
+import FallenLegendsPage from './pages/FallenLegendsPage';
+import WashingtonClassic from './pages/WashingtonClassic';
+import INSForgeStudio from './pages/INSForgeStudio';
+import CreatorAnalytics from './pages/CreatorAnalytics';
+import SVSArena from './pages/SVSArena';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -143,6 +150,13 @@ const AuthenticatedApp = () => {
       <Route path="/ContentCalendar" element={<LayoutWrapper currentPageName="ContentCalendar"><ContentCalendar /></LayoutWrapper>} />
       <Route path="/MultiPlatformIntegration" element={<LayoutWrapper currentPageName="MultiPlatformIntegration"><MultiPlatformIntegration /></LayoutWrapper>} />
       <Route path="/MultiStreamManager" element={<LayoutWrapper currentPageName="MultiStreamManager"><MultiStreamManager /></LayoutWrapper>} />
+      <Route path="/GoLiveStudio" element={<GoLiveStudio />} />
+      <Route path="/PayoutCenter" element={<LayoutWrapper currentPageName="PayoutCenter"><PayoutCenter /></LayoutWrapper>} />
+      <Route path="/FallenLegends" element={<LayoutWrapper currentPageName="FallenLegends"><FallenLegendsPage /></LayoutWrapper>} />
+      <Route path="/WashingtonClassic" element={<LayoutWrapper currentPageName="WashingtonClassic"><WashingtonClassic /></LayoutWrapper>} />
+      <Route path="/INSForgeStudio" element={<LayoutWrapper currentPageName="INSForgeStudio"><INSForgeStudio /></LayoutWrapper>} />
+      <Route path="/CreatorAnalytics" element={<LayoutWrapper currentPageName="CreatorAnalytics"><CreatorAnalytics /></LayoutWrapper>} />
+      <Route path="/SVSArena" element={<LayoutWrapper currentPageName="SVSArena"><SVSArena /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />

@@ -76,6 +76,8 @@ export default function SettingsPage() {
   const [showActivity, setShowActivity] = useState(true);
   const [publicProfile, setPublicProfile] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1); // 1 = reason, 2 = confirm
+  const [deleteReason, setDeleteReason] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -319,9 +321,10 @@ export default function SettingsPage() {
       {showDeleteDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteConfirmText(''); } }}>
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
             style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
+            {/* Step header */}
             <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
@@ -331,30 +334,74 @@ export default function SettingsPage() {
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
                 This permanently deletes your account, streams, and all data. This cannot be undone.
               </p>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
-                  Type DELETE to confirm
-                </label>
-                <input
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
-                  placeholder="DELETE"
-                  className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
-                  style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+              {/* Step indicator */}
+              <div className="flex items-center justify-center gap-2 mt-3">
+                {[1, 2].map(s => (
+                  <div key={s} className="rounded-full transition-all"
+                    style={{ width: deleteStep >= s ? 20 : 8, height: 8, background: deleteStep >= s ? '#EF4444' : 'rgba(239,68,68,0.2)' }} />
+                ))}
               </div>
-              <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
-                {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
-              </button>
-              <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}
-                className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
-                Cancel
-              </button>
             </div>
+
+            {/* Step 1: Reason */}
+            {deleteStep === 1 && (
+              <div className="p-5 space-y-3">
+                <p className="text-[10px] font-black uppercase text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                  Why are you leaving? (required)
+                </p>
+                <div className="space-y-2">
+                  {['I no longer use this service', 'Privacy concerns', 'Found a better platform', 'Too many notifications', 'Other reason'].map(reason => (
+                    <button key={reason} onClick={() => setDeleteReason(reason)}
+                      className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all"
+                      style={{ background: deleteReason === reason ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.08)'}`, color: deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.55)', userSelect: 'none', ...T }}>
+                      {deleteReason === reason ? '● ' : '○ '}{reason}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setDeleteStep(2)} disabled={!deleteReason}
+                  className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                  style={{ background: deleteReason ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)', color: deleteReason ? '#EF4444' : 'rgba(239,68,68,0.3)', userSelect: 'none', ...T }}>
+                  Continue →
+                </button>
+                <button onClick={() => { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); }}
+                  className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Step 2: Confirm */}
+            {deleteStep === 2 && (
+              <div className="p-5 space-y-3">
+                <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                  <p className="text-[10px] font-bold" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Reason</p>
+                  <p className="text-xs font-black" style={{ color: '#EF4444', ...T }}>{deleteReason}</p>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                    Type DELETE to confirm
+                  </label>
+                  <input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                    placeholder="DELETE"
+                    autoFocus
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
+                    style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+                </div>
+                <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                  className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                  style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                  {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
+                </button>
+                <button onClick={() => { setDeleteStep(1); setDeleteConfirmText(''); }}
+                  className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                  ← Back
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
