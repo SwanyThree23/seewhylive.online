@@ -202,6 +202,13 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     onSuccess: () => {
       qc.invalidateQueries(['zego-active']);
       toast.success('Stream ended');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'room_ended',
+          title: 'Ended live stream',
+        }).catch(() => {});
+      }
     },
   });
 

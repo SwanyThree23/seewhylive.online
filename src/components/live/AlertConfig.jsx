@@ -40,10 +40,17 @@ export default function AlertConfig({ creatorId }) {
         ...formData,
       });
     },
-    onSuccess: () => {
+    onSuccess: (alert) => {
       queryClient.invalidateQueries({ queryKey: ['soundAlerts', creatorId] });
       setShowForm(false);
       setFormData({ name: '', trigger_type: 'donation_amount', trigger_value: 5, sound_preset: 'cash_register', volume: 80, color: G });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created stream alert: ${alert?.name || formData.name}`,
+        }).catch(() => {});
+      }
     },
   });
 
