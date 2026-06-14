@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -91,6 +93,13 @@ export default function CommunitySettingsPage() {
           style={{ background: updateMutation.isPending ? 'rgba(128,0,32,0.3)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: updateMutation.isPending ? 'rgba(255,255,255,0.4)' : '#000', cursor: updateMutation.isPending ? 'default' : 'pointer', ...T }}>
           {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
         </button>
+
+        {communityId && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SpotlightBanner communityId={communityId} isAdmin={true} />
+            <DiscussionFeed communityId={communityId} />
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
           <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
