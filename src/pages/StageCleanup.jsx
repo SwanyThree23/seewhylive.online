@@ -8,6 +8,9 @@ import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
 import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
 
 const AGE_OPTIONS = [
   { label: '1 day', days: 1 },
@@ -193,6 +196,9 @@ export default function StageCleanupPage() {
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AnalyticsOverview creatorId={null} timeRange="7d" />
           <SpotlightBanner communityId={null} isAdmin={false} />
+          <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+          <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
+          <GreenroomQueue roomId={null} hostId={null} onApprove={() => {}} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

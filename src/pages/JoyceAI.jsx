@@ -5,6 +5,9 @@ import { base44 } from '@/api/base44Client';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import ChatOverlay from '../components/live/ChatOverlay';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 function getVoiceSettings() {
   try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
@@ -329,6 +332,9 @@ export default function JoyceAI() {
         <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
         <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="hype" />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <ChatOverlay roomId={null} isVisible={false} />
+        <AICopilotSidebar roomId={null} isHost={false} />
       </div>
     </div>
   );

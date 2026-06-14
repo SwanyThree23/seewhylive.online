@@ -9,6 +9,9 @@ import { toast } from 'sonner';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 
 const BG   = '#080B18';
 const BG2  = '#0D0A14';
@@ -445,6 +448,12 @@ export default function PayPerViewEventsPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <PayPerViewCard event={null} onPurchase={() => {}} />
+          <PayPerViewManager userId={null} />
+          <VirtualGoodsStore creatorId={null} userId={null} />
         </div>
       </div>
     </div>

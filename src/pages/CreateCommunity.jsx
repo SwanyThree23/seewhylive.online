@@ -7,6 +7,8 @@ import { createPageUrl } from '../utils';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import ReferralProgram from '../components/community/ReferralProgram';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -153,6 +155,11 @@ export default function CreateCommunityPage() {
           <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
             <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>← All Communities</span>
           </Link>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
+          <DiscussionFeed communityId="new" />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
         </div>
       </div>
     </div>
