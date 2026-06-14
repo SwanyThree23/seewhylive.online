@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import BitratePresets from '../components/streaming/BitratePresets';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -758,6 +761,12 @@ export default function StreamInfraRef() {
             </Link>
           ))}
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ZEGOConfigPanel roomId={null} />
+        <DestinationsManager userId={null} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
       </div>
     </div>
   );

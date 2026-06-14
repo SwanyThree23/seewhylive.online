@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Globe, MessageSquare, Menu, Search } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import { motion } from 'framer-motion';
 
 export default function BackPage() {
@@ -153,6 +156,12 @@ export default function BackPage() {
           </div>
         </motion.div>
       </section>
+
+      <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ContentRecommendations />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ZEGOMobileAppBanner />
+      </div>
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
