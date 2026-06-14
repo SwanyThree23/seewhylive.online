@@ -11,6 +11,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import PollCard from '../components/community/PollCard';
 import RaidPanelButton from '../components/live/RaidPanel';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SpotlightSection from '../components/community/SpotlightSection';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -262,8 +266,12 @@ export default function CommunitiesPage() {
         )}
 
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
           <RaidPanelButton room={null} currentUser={null} isHost={false} />
+          <AnnouncementPanel communityId={null} userId={null} />
+          <SpotlightSection communityId={null} />
+          <ContentRecommendations />
         </div>
       </div>
     </div>

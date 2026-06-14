@@ -6,6 +6,9 @@ import AlertConfig from '../components/live/AlertConfig';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 
 const BG    = '#080B18';
@@ -227,6 +230,9 @@ export default function VoiceAISettings() {
           <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
           <BackgroundCustomizer onBackgroundChange={() => {}} />
           <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+          <AIStreamSummary roomId={null} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
+          <AuraEmotionDisplay roomId={null} sessionId={null} />
+          <ContentRecommendations />
         </div>
       </div>
     </div>

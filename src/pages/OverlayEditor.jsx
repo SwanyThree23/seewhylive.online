@@ -11,6 +11,9 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import ChatOverlay from '../components/live/ChatOverlay';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -63,6 +66,9 @@ export default function OverlayEditorPage() {
             <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
             <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
             <StreamMetricsBar startTime={null} memberCount={0} tipTotal={0} peakViewers={0} />
+            <ChatOverlay roomId={null} isVisible={true} />
+            <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+            <InteractivePollWidget roomId={null} isHost={true} />
           </div>
         )}
 

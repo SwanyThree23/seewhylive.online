@@ -5,6 +5,10 @@ import PKBattleProgress from '../components/pk/PKBattleProgress';
 import BattleMode from '../components/streaming/BattleMode';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import GiftShopTray from '../components/live/GiftShopTray';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -860,6 +864,10 @@ export default function StateVsState() {
         <BattleMode roomId={null} hostId={null} isHost={false} />
         <SocialLeaderboard roomId={null} />
         <GiftShopTray roomId={null} currentUser={null} />
+        <BattleScoreboard roomId={null} />
+        <TournamentBracket />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

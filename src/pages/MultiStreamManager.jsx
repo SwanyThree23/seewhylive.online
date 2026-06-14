@@ -14,6 +14,10 @@ import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import ShareToSocial from '../components/social/ShareToSocial';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import OBSBridge from '../components/obs/OBSBridge';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -427,6 +431,10 @@ export default function MultiStreamManager() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
           <EnhancedIngestPanel roomId={null} isHost={true} />
           <OBSBridge roomId={null} isHost={true} />
+          <GuestRTMPPanel participantId={null} userId={null} />
+          <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+          <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

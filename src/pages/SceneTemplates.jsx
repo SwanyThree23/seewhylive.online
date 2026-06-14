@@ -7,6 +7,10 @@ import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import ChatOverlay from '../components/live/ChatOverlay';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
@@ -650,6 +654,10 @@ export default function SceneTemplates() {
         <ChatOverlay roomId={null} isVisible={true} />
         <EvmuxWebSource isActive={false} onClose={() => {}} />
         <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedClipGenerator streamSession={null} isLive={false} />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
+        <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={null} onScreenCapture={() => {}} isHost={false} />
       </div>
 
       {/* Cross-nav footer */}
