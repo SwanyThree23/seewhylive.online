@@ -20,6 +20,10 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import GuestGrid from '../components/live/GuestGrid';
+import GuestControls from '../components/live/GuestControls';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import StreamChatbot from '../components/live/StreamChatbot';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -763,6 +767,10 @@ export default function GoLive() {
         <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
         <GuestRTMPPanel participantId={null} userId={user?.id} />
         <StreamHealthDashboard isLive={false} />
+        <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
+        <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <StreamChatbot roomId={null} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={null} />
       </div>
     </div>
   );

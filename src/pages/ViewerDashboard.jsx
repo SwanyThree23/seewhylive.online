@@ -14,6 +14,10 @@ import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
 import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LivePollWidget from '../components/live/LivePollWidget';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import SubscriptionGate from '../components/live/SubscriptionGate';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -391,6 +395,10 @@ export default function ViewerDashboard() {
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {user?.id && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
+          <QuickPollLauncher roomId={null} hostId={null} isHost={false} />
+          <LivePollWidget roomId={null} currentUser={user} isHost={false} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={null} />
+          {user?.id && <SubscriptionGate creatorId={null} roomId={null} />}
         </div>
       </div>
     </div>
