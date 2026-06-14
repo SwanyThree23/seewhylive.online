@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import SceneSwitcher from '../components/live/SceneSwitcher';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import ClipMarker from '../components/live/ClipMarker';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -393,6 +396,13 @@ export default function ControlRoomPage() {
       {/* Scene Switcher */}
       <div className="px-4 md:px-8 pb-4">
         <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+      </div>
+
+      {/* Extended control panels */}
+      <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
+        <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
+        <ClipMarker roomId={null} user={user} streamStartTs={null} />
+        <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
       </div>
 
       {/* RTMP Cards Grid */}
