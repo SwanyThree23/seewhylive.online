@@ -91,7 +91,7 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, stream }) {
         )}
       </div>
       {/* Mic indicator */}
-      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(0,255,136,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(109,191,126,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {guest.micMuted ? <MicOff size={size * 0.1} color="#fff" /> : <Mic size={size * 0.1} color="#fff" />}
       </div>
       {/* Role badge */}

@@ -47,7 +47,7 @@ const STATE_ROSTERS = {
   ],
 };
 
-const ROLE_COLORS = { CAPTAIN: '#d4af37', ANCHOR: '#8B5CF6', PLAYER: '#00d4ff' };
+const ROLE_COLORS = { CAPTAIN: '#d4af37', ANCHOR: '#C0392B', PLAYER: '#D4854A' };
 
 const initState = {
   tab: 'bracket',
@@ -116,7 +116,7 @@ function MatchCard({ match, active, onClick }) {
           <StateFlag state={match.stateA} />
           <span style={{ fontSize: 12, fontWeight: match.winner === 'A' ? 900 : 700, color: match.winner === 'A' ? '#d4af37' : match.winner === 'B' ? 'rgba(255,255,255,0.3)' : '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{match.stateA}</span>
         </div>
-        <span style={{ fontSize: 16, fontWeight: 900, color: match.winner === 'A' ? '#d4af37' : '#00d4ff', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{match.scoreA}</span>
+        <span style={{ fontSize: 16, fontWeight: 900, color: match.winner === 'A' ? '#d4af37' : '#D4854A', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{match.scoreA}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -317,11 +317,11 @@ export default function SVSArena() {
                   🏆 {h.champion}
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#00FF88', fontFamily: 'Barlow Condensed, sans-serif' }}>{h.score}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>{h.score}</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>vs {h.opponent}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: '#8B5CF6', fontFamily: 'Barlow Condensed, sans-serif' }}>{h.peak_viewers.toLocaleString()}</div>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>{h.peak_viewers.toLocaleString()}</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>PEAK VIEWERS</div>
                 </div>
               </div>
