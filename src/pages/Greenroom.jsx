@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import SelectSheet from '../components/shared/SelectSheet';
 import StreamGoals from '../components/live/StreamGoals';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
@@ -596,6 +597,7 @@ export default function GreenroomPage() {
               <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
               <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
               <PrivatePanel roomId={room?.id || null} currentUser={null} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={null} onAdmit={() => {}} />}
             </div>
           </div>
         </div>
