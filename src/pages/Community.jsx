@@ -13,6 +13,9 @@ import CreatePollModal from '../components/community/CreatePollModal';
 import PollCard from '../components/community/PollCard';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import UnifiedChat from '../components/live/UnifiedChat';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import ShareModal from '../components/live/ShareModal';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
@@ -165,6 +168,12 @@ export default function CommunityPage() {
           <ModerationActionModal isOpen={modModalOpen} onClose={() => setModModalOpen(false)} targetUser={null} roomId={null} communityId={community.id} moderatorId={user?.id} />
         </>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
+        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
+      </div>
     </div>
   );
 }
