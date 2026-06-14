@@ -7,6 +7,9 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -994,6 +997,12 @@ export default function AIHub() {
           All AI features are included free · 90% creator payout · Powered by SeeWhy LIVE
         </p>
 
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={null} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   LineChart, Line, BarChart, Bar,
   AreaChart, Area, PieChart, Pie, Cell,
@@ -343,6 +346,9 @@ export default function StreamAnalytics() {
           <StreamHealthDashboard />
           <BroadcastAnalyticsDashboard />
           <PerformanceDashboard />
+          <AudienceInsights />
+          <StreamerGoalsWidget userId={null} />
+          <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         </div>
       </div>
     </div>
