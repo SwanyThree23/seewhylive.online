@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Users, Globe, Lock, Plus, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -139,6 +140,10 @@ export default function CreateCommunityPage() {
             </div>
           </div>
         </form>
+
+        <div style={{ marginBottom: 16 }}>
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
           <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
