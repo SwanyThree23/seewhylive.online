@@ -155,17 +155,8 @@ function ExpandedModal({ guest, onClose, onMuteMic, onToggleCam, onRemove }) {
   );
 }
 
-const DEMO_GUESTS = [
-  { id: 'g1', name: 'SwanyThree23', role: 'HOST', micMuted: false, camOff: false },
-  { id: 'g2', name: 'JoyceMoore', role: 'COHOST', micMuted: false, camOff: false },
-  { id: 'g3', name: 'CaliBones', role: 'FEATURED', micMuted: true, camOff: false },
-  { id: 'g4', name: 'DominoKing', role: 'GUEST', micMuted: false, camOff: true },
-  { id: 'g5', name: 'VibeNBones', role: 'GUEST', micMuted: false, camOff: false },
-  { id: 'g6', name: 'WashDomz', role: 'VIEWER', micMuted: true, camOff: true },
-];
-
 export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, compact, streams = {} }) {
-  const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || DEMO_GUESTS });
+  const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || [] });
   var lastTap = useRef({});
 
   var guests = state.guests;
