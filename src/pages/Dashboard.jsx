@@ -23,6 +23,9 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import RecordingManager from '../components/content/RecordingManager';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -290,6 +293,14 @@ function AnalyticsTab({ user }) {
       {roomAnalytics[0]?.room_id && (
         <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
       )}
+
+      {/* Streamer goals widget */}
+      {user?.id && (
+        <StreamerGoalsWidget creatorId={user.id} isCreator={true} />
+      )}
+
+      {/* AI highlight generator */}
+      <AIHighlightGenerator recording={null} />
     </div>
   );
 }
@@ -1085,6 +1096,7 @@ function SettingsTab({ user }) {
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [activityOpen, setActivityOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
@@ -1153,6 +1165,7 @@ export default function DashboardPage() {
       </div>
 
       <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
     </div>
   );
 }
