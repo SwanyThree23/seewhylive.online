@@ -6,6 +6,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestGrid from '../components/live/GuestGrid';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import StreamGoals from '../components/live/StreamGoals';
@@ -215,6 +218,15 @@ export default function HybridStreamRoom() {
         <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <CoStreamPanel roomId={roomId} />
           <CollaborativeWhiteboard roomId={roomId} />
+        </div>
+      )}
+
+      {/* Octagonal video window + guest grid (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+          <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
+          <EvmuxWebSource isActive={false} onClose={() => {}} />
         </div>
       )}
 

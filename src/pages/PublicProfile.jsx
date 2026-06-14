@@ -9,6 +9,8 @@ import FollowButton from '../components/shared/FollowButton';
 import PresenceDot from '../components/shared/PresenceDot';
 import ShareButtons from '../components/shared/ShareButtons';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import TierBadge from '../components/subscriptions/TierBadge';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -138,6 +140,12 @@ export default function PublicProfile() {
         {userId && (
           <div className="mb-6">
             <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <TierBadge tier={null} size="sm" showName />
+              {currentUser?.id && userId !== currentUser.id && (
+                <StripeSubscribeButton creatorId={userId} creatorName={profile?.display_name || ''} currentUserId={currentUser.id} />
+              )}
+            </div>
           </div>
         )}
 
