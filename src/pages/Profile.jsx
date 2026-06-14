@@ -13,6 +13,9 @@ import OnlinePresenceDot from '../components/shared/OnlinePresence';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -585,6 +588,9 @@ export default function ProfilePage() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <LeaderboardPanel roomId={null} />
         <SpotlightBanner communityId={null} isAdmin={false} />
+        {user?.id && <RevenueDashboard userId={user.id} />}
+        <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
+        <PerformanceDashboard roomId={null} sessionId={null} />
       </div>
     </div>
   );
