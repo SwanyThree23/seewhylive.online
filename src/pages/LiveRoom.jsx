@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -751,6 +752,17 @@ export default function LiveRoom() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ── Online Users Grid — everyone online/virtual ───────────────────── */}
+        <div className="px-4 mb-5">
+          <OnlineUsersGrid
+            roomId={roomId}
+            remoteStreams={remoteStreams}
+            peerUserIds={peerUserIds}
+            localStream={localStream}
+            currentUser={user}
+          />
         </div>
 
         {/* ── App shortcut carousel ─────────────────────────────────────────── */}
