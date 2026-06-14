@@ -8,6 +8,9 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import ChallengeCard from '../components/community/ChallengeCard';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import FollowButton from '../components/shared/FollowButton';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -113,7 +116,10 @@ export default function SearchPage() {
         )}
       </div>
 
-      <div style={{ padding: '0 16px 12px' }}>
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ContentRecommendations />
+        <FollowButton targetUserId={null} targetUserName="" />
+        <ZEGOMobileAppBanner />
         <SpotlightBanner communityId={null} isAdmin={false} />
       </div>
 
