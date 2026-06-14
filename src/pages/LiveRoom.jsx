@@ -56,6 +56,7 @@ import ChatModeration from '../components/live/ChatModeration';
 import ClipCreator from '../components/live/ClipCreator';
 import StreamMetadata from '../components/live/StreamMetadata';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -397,6 +398,7 @@ export default function LiveRoom() {
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
   const [whisperTarget, setWhisperTarget] = useState(null);
+  const [auraOpen, setAuraOpen]     = useState(false);
   const lastGiftTsRef               = useRef(0);
 
   // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
@@ -1090,6 +1092,11 @@ export default function LiveRoom() {
           {party?.id && <EnhancedPollingSystem roomId={party.id} hostId={user?.id} isHost={isHost} />}
           {party?.id && user?.id && <EngagementBadgesDisplay roomId={party.id} userId={user.id} creatorId={party.host_id} />}
         </div>
+      )}
+
+      {/* Aura/emotion drawer (host) */}
+      {isHost && party?.id && (
+        <AuraPanelDrawer roomId={party.id} hostId={user?.id} onClose={() => setAuraOpen(false)} />
       )}
 
       {showExclusiveGate && (

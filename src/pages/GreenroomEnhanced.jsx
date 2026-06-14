@@ -10,6 +10,7 @@ import DevicePreview from '../components/greenroom/DevicePreview';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import StreamingPresets from '../components/streaming/StreamingPresets';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -218,6 +219,9 @@ export default function GreenroomEnhanced() {
             onRetry={() => setWebrtcError(null)}
           />
         )}
+
+        {/* Streaming presets */}
+        <StreamingPresets onApply={() => {}} />
 
         {/* Stream metadata editor (title/category) */}
         <StreamMetadataEditor />
