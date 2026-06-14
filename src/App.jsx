@@ -45,7 +45,10 @@ import GuardianAI from './pages/GuardianAI';
 import GoLiveStudio from './pages/GoLiveStudio';
 import PayoutCenter from './pages/PayoutCenter';
 import FallenLegendsPage from './pages/FallenLegendsPage';
+import WashingtonClassic from './pages/WashingtonClassic';
 import INSForgeStudio from './pages/INSForgeStudio';
+import CreatorAnalytics from './pages/CreatorAnalytics';
+import SVSArena from './pages/SVSArena';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -144,7 +147,10 @@ const AuthenticatedApp = () => {
       <Route path="/GoLiveStudio" element={<GoLiveStudio />} />
       <Route path="/PayoutCenter" element={<LayoutWrapper currentPageName="PayoutCenter"><PayoutCenter /></LayoutWrapper>} />
       <Route path="/FallenLegends" element={<LayoutWrapper currentPageName="FallenLegends"><FallenLegendsPage /></LayoutWrapper>} />
+      <Route path="/WashingtonClassic" element={<LayoutWrapper currentPageName="WashingtonClassic"><WashingtonClassic /></LayoutWrapper>} />
       <Route path="/INSForgeStudio" element={<LayoutWrapper currentPageName="INSForgeStudio"><INSForgeStudio /></LayoutWrapper>} />
+      <Route path="/CreatorAnalytics" element={<LayoutWrapper currentPageName="CreatorAnalytics"><CreatorAnalytics /></LayoutWrapper>} />
+      <Route path="/SVSArena" element={<LayoutWrapper currentPageName="SVSArena"><SVSArena /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
