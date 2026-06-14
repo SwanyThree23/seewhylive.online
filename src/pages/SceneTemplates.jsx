@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
@@ -637,6 +639,11 @@ export default function SceneTemplates() {
             )}
           </AnimatePresence>
         </div>
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <SceneSwitcher activeScene={activeTemplate} onSceneChange={setActiveTemplate} />
+        {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
       </div>
 
       {/* Cross-nav footer */}

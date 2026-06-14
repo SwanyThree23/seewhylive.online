@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
+import StreamGoals from '../components/live/StreamGoals';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -229,6 +231,13 @@ export default function ContentCalendarPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {user?.id && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals roomId={null} isHost={true} />
+          <AIHighlightGenerator creatorId={user.id} />
         </div>
       )}
 
