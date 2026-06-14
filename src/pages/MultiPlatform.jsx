@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -23,12 +25,6 @@ const PLATFORMS = [
 
 const WEBHOOK_EVENTS = ['New Follower','New Like','New Comment','Stream Go Live','Gift Received','Milestone 100','Milestone 500','Milestone 1000'];
 
-const MOCK_EVENTS = [
-  { emoji:'👤', text:'New follower: Creator_XYZ just followed you on Fanbase', ago:'2m ago', color:GOLD },
-  { emoji:'🎁', text:'Gift received: FanUser sent a 💎 Diamond Gift on Fanbase', ago:'15m ago', color:CYAN },
-  { emoji:'🎯', text:'Milestone: 100 viewers on your Fanbase stream!', ago:'1h ago', color:GREEN },
-];
-
 const OVERLAY_PRESETS = [
   { id:'clean',    label:'Clean',        desc:'No overlay', preview:null },
   { id:'branded',  label:'Branded',      desc:'SeeWhy LIVE watermark + name bar', preview:'branded' },
@@ -42,6 +38,16 @@ const VIRTUAL_BGS = [
   { id:'gold',    label:'Gold Club',     color:'#D4AF37' },
   { id:'neon',    label:'Neon Blue',     color:'#001a2e' },
 ];
+
+function formatAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 function Toast({ message }) {
   return (
@@ -85,6 +91,19 @@ function ProgressBar({ value, max, color }) {
 
 export default function MultiPlatform() {
   const [tab, setTab] = useState('platforms');
+
+  const { data: recentActivities = [] } = useQuery({
+    queryKey: ['multiplatform-events'],
+    queryFn: () => base44.entities.Activity.list('-created_date', 20),
+    refetchInterval: 30000,
+  });
+
+  const liveEvents = recentActivities.slice(0, 10).map(a => ({
+    emoji: a.type === 'tip_sent' ? '🎁' : a.type === 'new_follower' ? '👤' : a.type === 'milestone' ? '🎯' : '📡',
+    text:  a.title || a.type,
+    ago:   a.created_date ? formatAgo(a.created_date) : '',
+    color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
+  }));
   const [connections, setConnections] = useState(() => {
     try { return JSON.parse(localStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
   });
@@ -264,18 +283,24 @@ export default function MultiPlatform() {
                 {/* Live event feed */}
                 <div style={{ background:BG2, borderRadius:16, border:'1px solid rgba(255,255,255,0.07)', padding:'18px 16px' }}>
                   <p style={{ ...T, fontSize:15, fontWeight:900, color:'#fff', margin:'0 0 12px' }}>📡 Live Event Feed</p>
-                  <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                    {MOCK_EVENTS.map((ev, i) => (
-                      <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, border:'1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize:18, flexShrink:0 }}>{ev.emoji}</span>
-                        <div style={{ flex:1 }}>
-                          <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)', margin:0, lineHeight:1.4 }}>{ev.text}</p>
-                          <p style={{ ...T, fontSize:10, color:'rgba(255,255,255,0.3)', margin:'3px 0 0' }}>{ev.ago}</p>
+                  {liveEvents.length === 0 ? (
+                    <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.25)', textAlign:'center', padding:'20px 0', margin:0 }}>
+                      No recent events — activity will appear here when viewers tip, subscribe, or follow
+                    </p>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                      {liveEvents.map((ev, i) => (
+                        <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:10, padding:'10px 12px', background:'rgba(255,255,255,0.03)', borderRadius:10, border:'1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize:18, flexShrink:0 }}>{ev.emoji}</span>
+                          <div style={{ flex:1 }}>
+                            <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)', margin:0, lineHeight:1.4 }}>{ev.text}</p>
+                            <p style={{ ...T, fontSize:10, color:'rgba(255,255,255,0.3)', margin:'3px 0 0' }}>{ev.ago}</p>
+                          </div>
+                          <span style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0, marginTop:4 }} />
                         </div>
-                        <span style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0, marginTop:4 }} />
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Webhook list */}
