@@ -12,6 +12,9 @@ import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerat
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -246,6 +249,12 @@ export default function AdvancedAnalyticsPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <StreamerGoalsWidget userId={null} />
+          <PayPerViewManager userId={null} />
+          <VirtualGoodsStore creatorId={null} userId={null} />
         </div>
       </div>
     </div>
