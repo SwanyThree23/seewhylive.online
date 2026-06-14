@@ -25,6 +25,7 @@ import SoundboardWidget from '../components/live/SoundboardWidget';
 import StreamChatbot from '../components/live/StreamChatbot';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -351,6 +352,17 @@ export default function AudioRoom() {
           remoteStreams={remoteStreams}
           onLeave={leaveRoom}
         />
+
+        {/* Multi-guest panel (host view) */}
+        {isHost && roomId && (
+          <MultiGuestPanel
+            participants={members}
+            spotlightId={null}
+            onSpotlight={() => {}}
+            roomId={roomId}
+            isHost={isHost}
+          />
+        )}
       </div>
 
       <div
