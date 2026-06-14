@@ -3,16 +3,19 @@ import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
 import NotificationBell from '../components/shared/NotificationBell';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
@@ -28,7 +31,10 @@ function usePullToRefresh(onRefresh) {
   function onTouchMove(e) {
     if (window.scrollY > 0) return;
     var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    }
   }
   async function onTouchEnd() {
     if (pullY >= THRESHOLD && !refreshing) {
@@ -689,11 +695,19 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── WHO'S ONLINE ── */}
+      <OnlineUsersGrid compact maxVisible={12} />
+
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
+
+      {/* ── CONTENT RECOMMENDATIONS ── */}
+      <div className="px-4 pb-4">
+        <ContentRecommendations />
+      </div>
 
       {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}
       {activeFilter === 'Communities' && (
@@ -782,6 +796,10 @@ export default function Home() {
                   Be the first → Go Live
                 </motion.div>
               </Link>
+              {/* AI recommendations when no live rooms */}
+              <div className="mt-4 w-full">
+                <SwanAIRecommendations roomId={null} currentLayout="grid" viewerCount={0} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

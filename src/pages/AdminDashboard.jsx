@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import ReportsManager from '../components/admin/ReportsManager';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import ReferralConfig from '../components/admin/ReferralConfig';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -13,6 +20,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -223,6 +231,27 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+
+          {/* Admin quick-links grid */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            {[
+              { label: '🛡 AI Moderation',     href: 'AIModeration'       },
+              { label: '📊 Stream Analytics',  href: 'StreamAnalytics'    },
+              { label: '📈 Adv. Analytics',    href: 'AdvancedAnalytics'  },
+              { label: '🤖 AI Hub',            href: 'AIHub'              },
+              { label: '🏆 Loyalty Program',   href: 'LoyaltyProgram'     },
+              { label: '👥 Community Admin',   href: 'CommunityAdmin'     },
+              { label: '⚔️ PK Battles',        href: 'PKBattle'           },
+              { label: '🔊 Voice AI',          href: 'VoiceAISettings'    },
+            ].map(item => (
+              <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl transition-all hover:brightness-110"
+                  style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', display: 'block', letterSpacing: '0.06em', cursor: 'pointer' }}>
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
           </div>
         )}
 
@@ -351,6 +380,14 @@ export default function AdminDashboard() {
             </div>
           )
         )}
+
+        {activeTab === 'reports' && (
+          <div className="mt-4">
+            <ReportsManager communityId={null} userId={user?.id} />
+          </div>
+        )}
+
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -535,6 +572,14 @@ export default function AdminDashboard() {
             </DarkCard>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <ChallengeAnalytics communityId={null} />
+          <ReferralConfig communityId={null} />
+          <PerformanceDashboard roomId={null} sessionId={null} />
+          <AnnouncementScheduler communityId={null} userId={user?.id} />
+          <SpotlightBanner communityId={null} isAdmin={true} />
+        </div>
       </div>
     </div>
   );

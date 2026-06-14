@@ -10,6 +10,13 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import VODLibrary from '../components/vod/VODLibrary';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -323,7 +330,22 @@ export default function CreatorDashboardPage() {
           <CollaborationMatcher />
         </motion.div>
 
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <VODLibrary creatorId={user.id} />
+          </motion.div>
+        )}
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+            <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+            <StreamEventBus roomId={null} isHost={true} sessionId={null} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} isHost={true} />
+            <ContentRecommendations />
+            <OnlineUsersGrid compact maxVisible={8} />
+            <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
+          </div>
+
           <Link to={createPageUrl('ContentCalendar')}>
             <div className="w-full flex items-center justify-between px-6 py-5 rounded-2xl cursor-pointer transition-all hover:brightness-110"
               style={{

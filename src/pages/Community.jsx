@@ -284,6 +284,12 @@ export default function CommunityPage() {
       {community?.id && (
         <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
+        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
+      </div>
     </div>
   );
 }

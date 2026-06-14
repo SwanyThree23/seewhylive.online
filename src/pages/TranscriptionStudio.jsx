@@ -5,6 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import ShareToSocial from '../components/social/ShareToSocial';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import RecordingManager from '../components/content/RecordingManager';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import LiveTranscription from '../components/live/LiveTranscription';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -269,6 +274,14 @@ export default function TranscriptionStudio() {
             OPEN CAPTION.NINJA ↗
           </a>
         </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ShareToSocial />
+        <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <RecordingManager userId={null} />
+        <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
+        <LiveTranscription roomId={null} isHost={false} />
+      </div>
 
       {/* Footer nav */}
       <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

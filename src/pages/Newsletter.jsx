@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Send, Sparkles, Calendar, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import FollowButton from '../components/shared/FollowButton';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import 'react-quill/dist/quill.snow.css';
 
 const BG = '#080B18';
@@ -200,6 +209,29 @@ export default function NewsletterPage() {
               )}
             </DarkCard>
           </div>
+        </div>
+
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ShareToSocial />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <EarningsBreakdown creatorId={null} />
+          <AudienceInsights creatorId={null} />
+          <ContentRecommendations />
+          <FollowButton targetUserId={null} targetUserName="" />
+          <MilestoneAlerts creatorId={null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
+            { label: '📅 Content Calendar', href: 'ContentCalendar' },
+            { label: '👥 Communities',      href: 'Communities'     },
+            { label: '📊 Dashboard',        href: 'Dashboard'       },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

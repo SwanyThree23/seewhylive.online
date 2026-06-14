@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleMode from '../components/streaming/BattleMode';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -824,6 +833,11 @@ export default function StateVsState() {
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
 
+      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={null} />
+        <PKBattleProgress battleId={null} />
+      </div>
+
       {/* Cross-navigation footer */}
       <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {[
@@ -844,6 +858,16 @@ export default function StateVsState() {
             </Link>
           );
         })}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={null} hostId={null} isHost={false} />
+        <SocialLeaderboard roomId={null} />
+        <GiftShopTray roomId={null} currentUser={null} />
+        <BattleScoreboard roomId={null} />
+        <TournamentBracket />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

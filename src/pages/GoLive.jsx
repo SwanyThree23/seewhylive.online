@@ -10,6 +10,23 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import BitratePresets from '../components/streaming/BitratePresets';
+import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import GuestGrid from '../components/live/GuestGrid';
+import GuestControls from '../components/live/GuestControls';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import StreamChatbot from '../components/live/StreamChatbot';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import ShareModal from '../components/live/ShareModal';
+import WebhookHooks from '../components/live/WebhookHooks';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -308,6 +325,7 @@ export default function GoLive() {
   const [description, setDescription] = useState('');
   const [isExclusive, setIsExclusive] = useState(false);
   const [launching,   setLaunching]   = useState(false);
+  const [bitratePreset, setBitratePreset] = useState('720p30');
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
@@ -665,9 +683,51 @@ export default function GoLive() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, textAlign: 'center' }}>
               Configure OBS: Server → <code style={{ color: 'rgba(255,255,255,0.35)' }}>rtmp://ingest.seewhylive.online/live</code>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Stream Health</span>
+              <StreamHealthMonitor isStreaming={false} />
+            </div>
+
+            <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+
+            {user?.id && (
+              <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
+                <DestinationsManager userId={user.id} />
+              </div>
+            )}
+
+            {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
+            {partyId && user?.id && (
+              <ZEGOGoLiveFlow roomId={partyId} userId={user.id} onLive={() => {}} />
+            )}
+
+            {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+
+            {partyId && user && (
+              <PreStreamCountdown room={{ id: partyId }} currentUser={user} onGoLive={() => {}} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Quick-links before the go-live button */}
+      {step === 'setup' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '0 16px 80px', justifyContent: 'center' }}>
+          {[
+            { label: '📅 Scheduler', href: 'StreamScheduler' },
+            { label: '📡 Multi-Platform', href: 'MultiPlatform' },
+            { label: '🎛 Control Room', href: 'ControlRoom' },
+            { label: '📊 Analytics', href: 'StreamAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: FONT, fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       {step === 'setup' && (
         <div style={{
@@ -711,6 +771,19 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamHealthDashboard isLive={false} />
+        <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
+        <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <StreamChatbot roomId={null} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
+        <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
   Film, FileText, Calendar, Sliders, Scissors, Bell, TrendingUp, Star, Users, BarChart2, Activity as ActivityIcon
 } from 'lucide-react';
+// DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -35,6 +36,7 @@ var DRAWER_WATCH = [
   { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
+  { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
   { name: 'SwanyBot',         icon: Bot,     href: createPageUrl('SwanyBotPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
@@ -59,12 +61,18 @@ var DRAWER_CREATE = [
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Stream Analytics', icon: BarChart,        href: createPageUrl('StreamAnalytics') },
+  { name: 'Analytics',        icon: BarChart,        href: createPageUrl('Analytics') },
+  { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Enhancement Suite', icon: Sparkles,       href: createPageUrl('EnhancementSuite') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
   { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
   { name: 'Multi-Platform+',  icon: Globe,           href: createPageUrl('MultiPlatformIntegration') },
+  { name: 'Multi-Stream Mgr', icon: Globe,          href: createPageUrl('MultiStreamManager') },
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },

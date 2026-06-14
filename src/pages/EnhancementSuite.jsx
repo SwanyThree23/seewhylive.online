@@ -892,6 +892,17 @@ export default function EnhancementSuite() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CoStreamPanel roomId={null} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <OverlayThemeBuilder creatorId={null} />
+        <SoundboardWidget roomId={null} isHost={true} />
+        <RoomBrandingEditor roomId={null} isHost={true} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <AutomatedHighlightReels streamSession={null} />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import GuestConnector from '../components/live/GuestConnector';
+import GuestQueue from '../components/live/GuestQueue';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -11,6 +30,7 @@ const GREEN = '#6DBF7E';
 export default function GreenroomEnhanced() {
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
+  const [webrtcError, setWebrtcError] = useState(null);
   const [audioLevel, setAudioLevel] = useState(0);
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
@@ -197,6 +217,53 @@ export default function GreenroomEnhanced() {
           )}
         </div>
 
+        {/* Device Preview */}
+        <DevicePreview user={null} onDeviceState={() => {}} />
+
+        {/* WebRTC Setup Banner (shows if camera/mic fails) */}
+        {webrtcError && (
+          <WebRTCSetupBanner
+            error={webrtcError}
+            audioEnabled={audioLevel > 0}
+            videoEnabled={!!cameraStream}
+            onRetry={() => setWebrtcError(null)}
+          />
+        )}
+
+        {/* Streaming presets */}
+        <StreamingPresets onApply={() => {}} />
+
+        {/* Stream metadata editor (title/category) */}
+        <StreamMetadataEditor />
+
+        {/* Room branding (logo, banner colors) */}
+        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+
+        {/* Guest connector + queue */}
+        <GuestConnector roomId={null} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={null} isHost={true} />
+
+        {/* Participant queue */}
+        <GreenroomQueue roomId={null} isHost={true} />
+
+        {/* RTMP / WHIP Ingest Panel */}
+        <EnhancedIngestPanel roomId={null} isHost={true} />
+
+        {/* Guest RTMP panel */}
+        <GuestRTMPPanel participantId={null} userId={null} />
+
+        {/* Guest stream monitor */}
+        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+
+        {/* Guest streaming permissions */}
+        <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+
+        {/* Guest destinations panel */}
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+
+        {/* ZEGO guest approval */}
+        <ZEGOGuestApprovalPanel roomId={null} isHost={true} />
+
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
           {countdown !== null ? (
@@ -231,6 +298,25 @@ export default function GreenroomEnhanced() {
           )}
         </div>
 
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <MultiGuestPanel roomId={null} hostId={null} isHost={true} />
+        <OBSBridge roomId={null} isHost={true} />
+        <VideoShortRecorder roomId={null} sessionId={null} onSave={() => {}} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🔴 Go Live',        href: 'GoLive'           },
+          { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+          { label: '🎧 Audio Room',     href: 'AudioRoom'        },
+          { label: '⚙️ Settings',       href: 'Settings'         },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );

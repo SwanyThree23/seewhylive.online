@@ -23,6 +23,8 @@ import SubscriptionManager from '@/components/monetization/SubscriptionManager';
 import RevenueDashboard from '@/components/monetization/RevenueDashboard';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import PayPerViewCard from '@/components/monetization/PayPerViewCard';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
 const G       = '#D4AF37';
@@ -781,6 +783,16 @@ export default function MonetizationPage() {
             </motion.div>
           )}
 
+          {/* ─── SUBSCRIPTIONS MANAGEMENT LINK ─── */}
+          {tab === 'subscribers' && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 16px 16px' }}>
+              <Link to={createPageUrl('CreatorSubscriptions')}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 12, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                ⭐ Manage Subscription Tiers →
+              </Link>
+            </div>
+          )}
+
           {/* ─── PAYOUTS TAB ─── */}
           {tab === 'payouts' && (
             <motion.div key="payouts" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -789,6 +801,12 @@ export default function MonetizationPage() {
               {user?.id && <StripeConnectButton creatorId={user.id} />}
               {user?.id && <RewardShopEditor creatorId={user.id} />}
               <StreamerMonetizationCenter />
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Link to={createPageUrl('MonetizationWidgets')}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', textDecoration: 'none', textTransform: 'uppercase' }}>
+                  🎛 Sound Alerts & Goals Widgets →
+                </Link>
+              </div>
             </motion.div>
           )}
 

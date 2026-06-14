@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Zap, RefreshCw, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -102,6 +111,7 @@ export default function AIModerationPage() {
       <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center justify-between gap-3 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-3">
+          <Link to={createPageUrl('AdminDashboard')} style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textDecoration: 'none', letterSpacing: '0.06em', marginRight: 4 }}>← Admin</Link>
           <Shield className="w-5 h-5" style={{ color: GOLD }} />
           <div>
             <h1 className="text-xl font-black text-white leading-none" style={T}>AI Moderation</h1>
@@ -298,6 +308,16 @@ export default function AIModerationPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-6 space-y-4 px-4 pb-6">
+          <AIModeration roomId={null} isHost={false} />
+          <HostAlertCenter roomId={null} />
+          <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
+          <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+          <ReportsManager communityId={null} userId={null} />
+          <AnnouncementScheduler communityId={null} userId={null} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
       </div>
     </div>
   );

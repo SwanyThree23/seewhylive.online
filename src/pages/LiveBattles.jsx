@@ -6,6 +6,18 @@ import { Swords, Plus, ArrowLeft, Trophy, Clock, Users, Zap } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import LoveTap from '../components/live/LoveTap';
+import GiftShopTray from '../components/live/GiftShopTray';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleMode from '../components/streaming/BattleMode';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -196,6 +208,25 @@ export default function LiveBattles() {
             ))}
           </div>
         )}
+      </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleProgress battleId={battles?.[0]?.id || null} />
+        <BattleScoreboard roomId={battles?.[0]?.id || null} />
+      </div>
+
+      {/* Battle engagement tools */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleInterface roomId={null} />
+        <TournamentBracket />
+        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <LoveTap roomId={null} user={null} creatorId={null} creatorName="Creator" />
+        <GiftShopTray roomId={null} currentUser={null} />
+        <PKBattleVotePanel battleId={battles?.[0]?.id || null} creatorId={battles?.[0]?.creator_id || null} challengerId={battles?.[0]?.challenger_id || null} creatorName={battles?.[0]?.creator_name || 'Creator'} challengerName={battles?.[0]?.challenger_name || 'Challenger'} />
+        <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
+        <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
+        <BattleOverlay battle={battles?.[0] || null} onBattleUpdate={() => {}} />
+        <PKAnalyticsDashboard battles={battles || []} user={null} />
       </div>
 
       {/* Cross-nav footer */}

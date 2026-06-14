@@ -2,7 +2,15 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
@@ -256,6 +264,26 @@ export default function NewsletterHubPage() {
       </div>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
         <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <AnnouncementScheduler communityId={null} userId={null} />
+          <MilestoneAlerts creatorId={null} />
+          <AnnouncementFeed communityId={null} />
+          <ContentRecommendations />
+          <EarningsBreakdown creatorId={null} />
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+          {[
+            { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
+            { label: '📆 Content Calendar', href: 'ContentCalendar' },
+            { label: '👥 Communities',      href: 'Communities'     },
+            { label: '📣 Social Expo',      href: 'SocialExpo'      },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: C.gold, cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

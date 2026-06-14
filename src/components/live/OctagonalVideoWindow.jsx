@@ -1,19 +1,51 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Share2 } from 'lucide-react';
 
-export default function OctagonalVideoWindow({ 
-  title, 
-  isMuted, 
-  isVideoOff, 
-  onMicToggle, 
+const OCT = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+function avatarColor(name) {
+  return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
+}
+
+export default function OctagonalVideoWindow({
+  title,
+  isMuted,
+  isVideoOff,
+  onMicToggle,
   onVideoToggle,
   onShareScreen,
+  // MediaStream object — preferred over legacy streamUrl
+  stream,
+  // Legacy string prop — kept for compatibility but not used for live feeds
   streamUrl,
+  avatarUrl,
+  userName,
   points = 0,
-  label = 'Participant'
+  label = 'Participant',
+  isLocal = false,
+  showControls = true,
 }) {
-  const clipPath = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (stream) {
+      el.srcObject = stream;
+    } else if (streamUrl && typeof streamUrl === 'string') {
+      el.srcObject = null;
+      el.src = streamUrl;
+    } else {
+      el.srcObject = null;
+    }
+  }, [stream, streamUrl]);
+
+  const displayName = userName || title || 'Guest';
+  const hasVideo = (stream || streamUrl) && !isVideoOff;
 
   return (
     <motion.div
@@ -22,9 +54,9 @@ export default function OctagonalVideoWindow({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Octagonal border glow */}
+      {/* Gold glow border */}
       <div
-        className="absolute inset-0 rounded-lg"
+        className="absolute inset-0"
         style={{
           clipPath,
           background: 'linear-gradient(135deg, #d4af37, #C0392B)',
@@ -34,44 +66,73 @@ export default function OctagonalVideoWindow({
         }}
       />
 
-      {/* Main octagonal container */}
+      {/* Main octagonal shell */}
       <div
-        className="relative w-full h-full bg-black/80 flex flex-col items-center justify-center overflow-hidden"
-        style={{ clipPath }}
+        className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden"
+        style={{
+          clipPath: OCT,
+          background: 'linear-gradient(145deg, rgba(30,15,30,0.97), rgba(8,11,24,0.97))',
+        }}
       >
-        {/* Video feed or placeholder */}
-        {streamUrl && !isVideoOff ? (
+        {/* Video or avatar */}
+        {hasVideo ? (
           <video
-            src={streamUrl}
+            ref={videoRef}
             autoPlay
-            muted
-            className="w-full h-full object-cover"
+            playsInline
+            muted={isLocal || isMuted}
+            className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 to-black">
-            <div className="text-center">
-              {isVideoOff && (
-                <>
-                  <VideoOff className="w-12 h-12 text-white/40 mx-auto mb-2" />
-                  <p className="text-xs text-white/40">Camera Off</p>
-                </>
-              )}
-            </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ background: `radial-gradient(circle, ${avatarColor(displayName)}22 0%, transparent 70%)` }}>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-14 h-14 rounded-full object-cover"
+                style={{ border: `2px solid ${avatarColor(displayName)}88` }}
+              />
+            ) : (
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black"
+                style={{
+                  background: `linear-gradient(135deg, ${avatarColor(displayName)}, ${avatarColor(displayName)}99)`,
+                  color: '#fff',
+                  boxShadow: `0 0 20px ${avatarColor(displayName)}55, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                  border: '2px solid rgba(255,255,255,0.15)',
+                }}
+              >
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+            {isVideoOff && (
+              <div className="mt-1.5 flex items-center gap-1">
+                <VideoOff className="w-3 h-3 text-white/30" />
+                <span className="text-[9px] text-white/30 font-semibold">Camera Off</span>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Points badge - top right */}
+        {/* Points badge */}
         {points > 0 && (
-          <div className="absolute top-3 right-3 bg-[#d4af37]/20 border border-[#d4af37] rounded-lg px-2 py-1">
-            <p className="text-xs font-bold text-[#d4af37]">{points}</p>
-            <p className="text-[11px] text-[#d4af37]/70">POINTS</p>
+          <div className="absolute top-3 right-3 rounded-lg px-2 py-1"
+            style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}` }}>
+            <p className="text-xs font-bold" style={{ color: GOLD }}>{points}</p>
+            <p className="text-[9px]" style={{ color: `${GOLD}99` }}>PTS</p>
           </div>
         )}
 
-        {/* Label - bottom center */}
-        <div className="absolute bottom-3 left-0 right-0 text-center">
-          <p className="text-xs font-bold text-white truncate px-2">{title}</p>
-          <p className="text-[10px] text-white/60">{label}</p>
+        {/* Name label */}
+        <div className="absolute bottom-8 left-0 right-0 text-center px-2">
+          <p className="text-[11px] font-bold text-white truncate leading-tight"
+            style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+            {displayName}
+          </p>
+          {label && label !== displayName && (
+            <p className="text-[9px] text-white/50">{label}</p>
+          )}
         </div>
 
         {/* Control buttons - bottom corners */}

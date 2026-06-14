@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -961,6 +968,26 @@ export default function AIHub() {
           </div>
         </Link>
 
+        {/* ── AI Persona Customizer ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+        </div>
+
+        {/* ── AI Stream Summary ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIStreamSummary roomId={null} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+        </div>
+
+        {/* ── Content Recommendations ── */}
+        <div style={{ marginTop: 8 }}>
+          <ContentRecommendations userId={null} />
+        </div>
+
+        {/* ── SwanyBot Context Enhancer ── */}
+        <div style={{ marginTop: 8 }}>
+          <SwanyBotContextEnhancer userId={null} conversationId={null} onContextReady={() => {}} />
+        </div>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
@@ -970,6 +997,12 @@ export default function AIHub() {
           All AI features are included free · 90% creator payout · Powered by SeeWhy LIVE
         </p>
 
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={null} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

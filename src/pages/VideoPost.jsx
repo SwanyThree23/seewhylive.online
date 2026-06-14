@@ -7,6 +7,11 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import VODCard from '../components/vod/VODCard';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const GOLD = '#D4AF37';
 
@@ -315,6 +320,14 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
+        <ClipCreatorSheet roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
+        <ContentRecommendations />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <DiscussionFeed communityId="video-posts" />
+      </div>
     </div>
   );
 }

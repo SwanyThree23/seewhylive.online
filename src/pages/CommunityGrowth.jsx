@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Gift, Megaphone, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ReferralProgram from '../components/community/ReferralProgram';
 import ChallengeCard from '../components/community/ChallengeCard';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import SpotlightSection from '../components/community/SpotlightSection';
+import CreatePollModal from '../components/community/CreatePollModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -172,6 +177,24 @@ export default function CommunityGrowthPage() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <SpotlightSection communityId={communityId || null} />
+          <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Admin</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚡ Settings</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

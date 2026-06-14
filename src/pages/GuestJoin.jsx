@@ -6,6 +6,12 @@ import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, W
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -234,6 +240,25 @@ export default function GuestJoin() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Device camera/mic preview */}
+        <div style={{ marginTop: 8 }}>
+          <DevicePreview />
+        </div>
+
+        {/* Waitlist panel when waiting */}
+        {status === 'waiting' && roomId && (
+          <div style={{ marginTop: 8 }}>
+            <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
+          <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
+          <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+        </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI

@@ -5,6 +5,13 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
@@ -172,6 +179,18 @@ export default function NotificationsPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StreamGoals isHost={true} />
+            <LeaderboardPanel roomId={null} />
+            <MilestoneAlerts creatorId={user.id} />
+            <AnnouncementFeed communityId={null} />
+            <PointsNotification userId={user.id} />
+            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={null} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
       </div>

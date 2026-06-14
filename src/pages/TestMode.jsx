@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -640,6 +649,29 @@ export default function TestMode() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🔴 Go Live',          href: 'GoLive'          },
+            { label: '🎧 Audio Room',       href: 'AudioRoom'       },
+            { label: '⚔️ PK Battle',        href: 'PKBattle'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LocalVideoTile stream={null} label="Test Camera" isHost={true} isMuted={false} />
+          <OctagonalVideoWindow stream={null} label="Test Participant" isHost={false} isMuted={true} />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <DevicePreview />
+          <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
+          <ZEGOStreamHealthCard roomId={null} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
         </div>
       </div>
     </div>

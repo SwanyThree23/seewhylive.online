@@ -5,6 +5,13 @@ import { Switch } from "@/components/ui/switch";
 import { Video, Mic, CalendarIcon, Plus, X, Upload, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -250,6 +257,19 @@ export default function CreateRoomPage() {
               ))}
             </div>
           </Section>
+
+          {/* Stream readiness tools */}
+          {user?.id && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+              <StreamGoals isHost={true} />
+              <ZEGOStreamHealthCard roomId={null} />
+              <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+              <SpotlightBanner communityId={null} isAdmin={false} />
+              <StreamMetadataEditor />
+              <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+              <GreenroomQueue roomId={null} isHost={true} />
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-3 pt-2">

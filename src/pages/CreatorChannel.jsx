@@ -11,8 +11,13 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import TierBadge from '../components/subscriptions/TierBadge';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
+import RewardShop from '../components/loyalty/RewardShop';
+import FollowButton from '../components/shared/FollowButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ShareModal from '../components/live/ShareModal';
+import PaywallGate from '../components/live/PaywallGate';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -145,6 +150,7 @@ export default function CreatorChannel() {
                 <Bell className="w-4 h-4" /> Notify Me
               </button>
             )}
+            <FollowButton targetUserId={userId} targetUserName={displayName} size="sm" />
             <button className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
               <Share2 className="w-4 h-4" />
@@ -275,6 +281,9 @@ export default function CreatorChannel() {
               <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
             )}
             <TierBadge tier="bronze" size="sm" showName />
+            {currentUser?.id && (
+              <RewardShop creatorId={userId} roomId={null} currentUser={currentUser} />
+            )}
           </div>
         )}
 
@@ -299,6 +308,12 @@ export default function CreatorChannel() {
             </div>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <PaywallGate roomId={null} creatorId={null} price={0} />
+          <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
+          <ClipCreatorSheet roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+        </div>
       </div>
     </div>
   );

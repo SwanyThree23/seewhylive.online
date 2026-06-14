@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -16,6 +17,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import TippingOverlay from '../components/live/TippingOverlay';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
@@ -41,11 +43,27 @@ import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ClipMarker from '../components/live/ClipMarker';
 import StreamGoals from '../components/live/StreamGoals';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import LivePollOverlay from '../components/live/LivePollOverlay';
 import GoldenWall from '../components/live/GoldenWall';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import { MerchStrip } from '../components/merch/MerchWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
+import ChatModeration from '../components/live/ChatModeration';
+import ClipCreator from '../components/live/ClipCreator';
+import StreamMetadata from '../components/live/StreamMetadata';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import PrivatePanel from '../components/live/PrivatePanel';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import CreatePollModal from '../components/community/CreatePollModal';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -127,16 +145,32 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
 
         {/* Dark content shell */}
         <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, ${BG2})` }}>
+          style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.95), rgba(20,10,28,0.95))` }}>
 
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
           ) : (
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
-              style={{ background: avatarColor(p.name) + '55', borderColor: avatarColor(p.name), color: '#fff' }}>
-              {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
-            </div>
+            <>
+              {/* Subtle ambient glow behind avatar */}
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}22 0%, transparent 70%)` }} />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                style={{ background: `linear-gradient(135deg, ${avatarColor(p.name)}, ${avatarColor(p.name)}99)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(255,255,255,0.15)' }}>
+                {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+              </div>
+              {/* Audio-only mic indicator */}
+              {!p.muted && (
+                <motion.div className="absolute bottom-3 left-0 right-0 flex justify-center items-end gap-[2px]"
+                  initial={{ opacity: 0 }} animate={{ opacity: p.speaking ? 1 : 0.35 }}>
+                  {[2,4,3,5,2].map((h, i) => (
+                    <motion.div key={i} className="w-[2px] rounded-full"
+                      style={{ background: p.speaking ? GOLD : 'rgba(255,255,255,0.4)', height: h }}
+                      animate={p.speaking ? { height: [h, h * 3, h] } : {}}
+                      transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.08 }} />
+                  ))}
+                </motion.div>
+              )}
+            </>
           )}
 
           {/* Speaking waveform bars */}
@@ -370,6 +404,9 @@ export default function LiveRoom() {
   const [giftEvent, setGiftEvent]   = useState(null);
   const [giftLog, setGiftLog]       = useState([]);
   const [goalOpen, setGoalOpen]     = useState(false);
+  const [whisperTarget, setWhisperTarget] = useState(null);
+  const [auraOpen, setAuraOpen]     = useState(false);
+  const [pollModalOpen, setPollModalOpen] = useState(false);
   const lastGiftTsRef               = useRef(0);
 
   // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
@@ -406,7 +443,9 @@ export default function LiveRoom() {
 
   const activeSpeaker = stageData.find(s => s.speaking);
   const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
-  const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
+  const tileSize = stageData.length === 1 ? Math.min(320, window.innerWidth * 0.9)
+    : stageData.length === 2 ? Math.min(170, window.innerWidth * 0.44)
+    : stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
     if (userId === user?.id) return { stream: localStream, isLocal: true };
@@ -543,7 +582,8 @@ export default function LiveRoom() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
+            <div className={stageData.length <= 2 ? "flex justify-center gap-0.5" : `grid gap-4`}
+              style={stageData.length > 2 ? { gridTemplateColumns: `repeat(${stageCols}, 1fr)` } : {}}>
               <AnimatePresence>
                 {stageData.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
@@ -678,6 +718,11 @@ export default function LiveRoom() {
           </div>
         )}
 
+        {/* ── Merch strip ───────────────────────────────────────────────────── */}
+        {party?.host_id && (
+          <MerchStrip roomId={roomId || party?.id} currentUser={user} hostId={party.host_id} />
+        )}
+
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
           <div className="flex items-center gap-2 mb-3">
@@ -692,11 +737,22 @@ export default function LiveRoom() {
           </div>
           <div className="grid grid-cols-5 gap-x-2 gap-y-3">
             {audience.map(p => (
-              <div key={p.id} className="flex justify-center">
+              <div key={p.id} className="flex justify-center" onClick={() => p.id !== user?.id && setWhisperTarget({ id: p.id, name: p.name })} style={{ cursor: p.id !== user?.id ? 'pointer' : 'default' }}>
                 <AudienceTile p={p} />
               </div>
             ))}
           </div>
+        </div>
+
+        {/* ── Online Users Grid — everyone online/virtual ───────────────────── */}
+        <div className="px-4 mb-5">
+          <OnlineUsersGrid
+            roomId={roomId}
+            remoteStreams={remoteStreams}
+            peerUserIds={peerUserIds}
+            localStream={localStream}
+            currentUser={user}
+          />
         </div>
 
         {/* ── App shortcut carousel ─────────────────────────────────────────── */}
@@ -936,6 +992,11 @@ export default function LiveRoom() {
       {/* Points notification */}
       {user?.id && <PointsNotification userId={user.id} />}
 
+      {/* Live auction (host can run auctions during stream) */}
+      {isHost && party?.id && (
+        <LiveAuctionWidget roomId={party.id} currentUser={user} isHost={isHost} />
+      )}
+
       {/* Loyalty badge */}
       {user?.id && party?.host_id && (
         <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
@@ -946,6 +1007,17 @@ export default function LiveRoom() {
 
       {/* Report modal */}
       <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
+
+      {/* Whisper DM panel */}
+      {whisperTarget && (roomId || party?.id) && (
+        <WhisperPanel
+          roomId={roomId || party?.id}
+          currentUser={user}
+          recipientId={whisperTarget.id}
+          recipientName={whisperTarget.name}
+          onClose={() => setWhisperTarget(null)}
+        />
+      )}
 
       {/* Mobile stream controls */}
       <MobileStreamControls
@@ -1010,6 +1082,55 @@ export default function LiveRoom() {
 
       {/* ── Host Alert Center ───────────────────────────────────────────────── */}
       {isHost && <HostAlertCenter />}
+
+      {/* ── Raid Panel (host only) ──────────────────────────────────────────── */}
+      {isHost && party && (
+        <div style={{ position: 'fixed', bottom: 148, right: 12, zIndex: 44 }}>
+          <RaidPanelButton room={party} currentUser={user} isHost={isHost} />
+        </div>
+      )}
+
+      {/* ── Chat Moderation + Clip Creator + Stream Metadata (host only) ────── */}
+      {isHost && (
+        <div style={{ padding: '0 16px 16px' }}>
+          <ChatModeration collapsed />
+          {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
+          {party && <StreamMetadata room={party} isHost={isHost} />}
+          {party?.id && <AICopilotSidebar roomId={party.id} isHost={isHost} viewerCount={members.length} />}
+          {party?.id && <StreamHighlightCapture roomId={party.id} sessionId={party.id} creatorId={user?.id} elapsedSeconds={0} isHost={isHost} />}
+          {party?.id && <EnhancedPollingSystem roomId={party.id} hostId={user?.id} isHost={isHost} />}
+          {party?.id && user?.id && <InteractivePollingSystem roomId={party.id} isHost={isHost} currentUser={user} />}
+          {party?.id && user?.id && <EngagementBadgesDisplay roomId={party.id} userId={user.id} creatorId={party.host_id} />}
+        </div>
+      )}
+
+      {/* Aura/emotion drawer (host) */}
+      {isHost && party?.id && (
+        <AuraPanelDrawer roomId={party.id} hostId={user?.id} onClose={() => setAuraOpen(false)} />
+      )}
+
+      {/* Live poll overlay (floating, all users) */}
+      {(roomId || party?.id) && (
+        <LivePollOverlay roomId={roomId || party?.id} currentUser={user} isHost={isHost} />
+      )}
+
+      {/* Private panel (host only) */}
+      {isHost && <PrivatePanel isHost={isHost} currentUser={user} />}
+
+      {/* Reaction overlay (all viewers) */}
+      {(roomId || party?.id) && (
+        <ReactionOverlay partyId={roomId || party?.id} currentUser={user} />
+      )}
+
+      {/* Viewer controls panel */}
+      {!isHost && user?.id && (roomId || party?.id) && (
+        <ViewerControlsPanel roomId={roomId || party?.id} currentUser={user} onClose={() => {}} />
+      )}
+
+      {/* Create poll modal (host) */}
+      {isHost && (
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={null} />
+      )}
 
       {showExclusiveGate && (
         <div style={{

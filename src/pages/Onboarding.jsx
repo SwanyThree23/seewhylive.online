@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SelectSheet from '../components/shared/SelectSheet';
+import QuickTip from '../components/rooms/QuickTip';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -554,7 +559,13 @@ export default function OnboardingPage() {
   });
   const [step, setStep] = useState(1);
   const [flowOpen, setFlowOpen] = useState(false);
-  useEffect(() => { if (onboarding) setStep(onboarding.current_step || 1); }, [onboarding]);
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+    if (onboarding) {
+      setStep(onboarding.current_step || 1);
+      setShowSplash(false); // already started setup, skip splash
+    }
+  }, [onboarding]);
 
   const updateOnboarding = useMutation({
     mutationFn: async (data) => {
@@ -623,6 +634,13 @@ export default function OnboardingPage() {
       </div>
 
       <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
+      <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
+      <SelectSheet label="" value="" options={[]} onChange={() => {}} />
+      <div style={{ padding: '0 0 16px' }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
     </div>
   );
 }

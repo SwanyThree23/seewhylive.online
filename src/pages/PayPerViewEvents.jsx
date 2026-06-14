@@ -6,6 +6,12 @@ import { Lock, Users, DollarSign, Calendar, Clock, Plus, CheckCircle, Eye, Tv, B
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 
 const BG   = '#080B18';
 const BG2  = '#0D0A08';
@@ -424,6 +430,20 @@ export default function PayPerViewEventsPage() {
           </>
         )}
 
+        {user?.id && (
+          <div className="mt-6 rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <p className="font-black text-sm text-white mb-3" style={{ fontFamily: FONT }}>Payment Methods</p>
+            <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+          </div>
+        )}
+
+        {user?.id && (
+          <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
+          </div>
+        )}
+
         {/* Footer nav */}
         <div className="mt-10 pt-6 flex flex-wrap gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
           {[
@@ -439,6 +459,12 @@ export default function PayPerViewEventsPage() {
               </div>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <PayPerViewCard event={null} onPurchase={() => {}} />
+          <PayPerViewManager userId={null} />
+          <VirtualGoodsStore creatorId={null} userId={null} />
         </div>
       </div>
     </div>

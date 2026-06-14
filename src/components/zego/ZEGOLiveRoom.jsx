@@ -284,6 +284,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     return 'grid grid-cols-3 gap-2';
   };
 
+  const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
+  const count = 1 + participants.length;
+  const cellSize = count <= 2 ? 180 : count <= 6 ? 140 : 110;
+
   return (
     <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(201,168,76,0.15)' }}>
       {/* Video Grid */}
@@ -302,8 +306,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
         {/* Peer Videos — real WebRTC streams, octagonal */}
         {participants.map(p => {
           const peerId = Array.from(peerUserIds.entries()).find(([, uid]) => uid === p.user_id)?.[0];
-          const stream = peerId ? remoteStreams.get(peerId) : undefined;
+          const peerStream = peerId ? remoteStreams.get(peerId) : undefined;
           const connState = peerId ? peerStates.get(peerId) : undefined;
+          const initials = (p.name || 'P').slice(0, 2).toUpperCase();
+          const isConnected = connState === 'connected' && !!peerStream;
           return (
             <OctCell
               key={p.id}

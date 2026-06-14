@@ -6,6 +6,14 @@ import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-r
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
 import { Link } from 'react-router-dom';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
@@ -617,6 +625,19 @@ export default function CreatorSubscriptionsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+            <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={targetCreatorId} isHighlighted={false} />
+            <CreatorTierManager creatorId={user.id} />
+            <MySubscriptions userId={user.id} />
+            {targetCreatorId && <SubscriberTierView creatorId={targetCreatorId} userId={user.id} />}
+            <SubscriptionCard tier={null} isCurrentTier={false} onSubscribe={() => {}} />
+            <StripeSubscribeButton creatorId={targetCreatorId || null} tierId={null} userId={user.id} />
+            <SubscriptionManager userId={user.id} />
+          </div>
+        )}
       </div>
     </div>
   );

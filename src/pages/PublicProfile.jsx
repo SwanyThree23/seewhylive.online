@@ -8,6 +8,13 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import FollowButton from '../components/shared/FollowButton';
 import PresenceDot from '../components/shared/PresenceDot';
 import ShareButtons from '../components/shared/ShareButtons';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import TierBadge from '../components/subscriptions/TierBadge';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -29,6 +36,11 @@ export default function PublicProfile() {
     queryKey: ['public-rooms', userId],
     queryFn: () => base44.entities.Room.filter({ host_id: userId, is_public: true }, '-created_date', 6),
     enabled: !!userId,
+  });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
   });
 
   if (isLoading) return (
@@ -85,6 +97,7 @@ export default function PublicProfile() {
               <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: '#fff', ...T }}>
                 {profile.display_name}
                 <PresenceDot userId={userId} size="md" />
+                <OnlinePresenceDot isOnline={true} size="sm" />
               </h1>
               {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               {profile.category && (
@@ -128,6 +141,24 @@ export default function PublicProfile() {
           </div>
         </div>
 
+        {/* Subscription Tiers */}
+        {userId && (
+          <div className="mb-6">
+            <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <TierBadge tier={null} size="sm" showName />
+              {currentUser?.id && userId !== currentUser.id && (
+                <StripeSubscribeButton creatorId={userId} creatorName={profile?.display_name || ''} currentUserId={currentUser.id} />
+              )}
+            </div>
+            {currentUser?.id && userId !== currentUser.id && (
+              <div className="mt-3">
+                <TierSubscribeCard tier={null} currentSub={null} userId={currentUser.id} creatorId={userId} isHighlighted={false} />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Recent Rooms */}
         {rooms.length > 0 && (
           <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
@@ -151,6 +182,27 @@ export default function PublicProfile() {
 
         {/* VOD Library */}
         <VideoLibrary creatorId={userId} />
+
+        {/* Subscription option */}
+        {userId && currentUser?.id && userId !== currentUser.id && (
+          <div className="mt-6">
+            <SubscriptionCard
+              tier={null}
+              price={4.99}
+              benefits={[]}
+              communityId={null}
+              creatorId={userId}
+              isSubscribed={false}
+            />
+          </div>
+        )}
+
+        {/* Community discussion */}
+        {userId && (
+          <div className="mt-6">
+            <DiscussionFeed communityId={userId} />
+          </div>
+        )}
       </div>
     </div>
   );

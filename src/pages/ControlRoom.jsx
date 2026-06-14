@@ -14,6 +14,15 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import ClipMarker from '../components/live/ClipMarker';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import ParticipantsList from '../components/rooms/ParticipantsList';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import AudioStageTab from '../components/audio/AudioStageTab';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -410,6 +419,21 @@ export default function ControlRoomPage() {
         <DestinationsManager userId={user?.id} />
       </div>
 
+      {/* Scene Switcher */}
+      <div className="px-4 md:px-8 pb-4">
+        <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+      </div>
+
+      {/* Extended control panels */}
+      <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
+        <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
+        <ClipMarker roomId={null} user={user} streamStartTs={null} />
+        <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={null} communityId={null} />
+        <RoomAnalyticsPanel roomId={null} />
+        <CollaborativeWhiteboard roomId={null} />
+      </div>
+
       {/* RTMP Cards Grid */}
       {destinations.length > 0 && (
         <div className="px-4 md:px-8 pb-8">
@@ -426,6 +450,11 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AudioStageTab roomId={null} isHost={true} />
+        <BackgroundCustomizer onBackgroundChange={() => {}} />
+      </div>
     </div>
   );
 }

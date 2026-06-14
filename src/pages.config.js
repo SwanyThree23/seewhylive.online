@@ -108,6 +108,14 @@ const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
 const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
 const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
+const GoLiveStudio             = lazy(() => import('./pages/GoLiveStudio'));
+const PayoutCenter             = lazy(() => import('./pages/PayoutCenter'));
+const FallenLegendsPage        = lazy(() => import('./pages/FallenLegendsPage'));
+const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
+const INSForgeStudio           = lazy(() => import('./pages/INSForgeStudio'));
+const CreatorAnalytics         = lazy(() => import('./pages/CreatorAnalytics'));
+const SVSArena                 = lazy(() => import('./pages/SVSArena'));
+const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -209,6 +217,14 @@ export const PAGES = {
     "GreenRoomPreFlight": GreenRoomPreFlight,
     "PKBattleArena": PKBattleArena,
     "TranscriptionStudio": TranscriptionStudio,
+    "GoLiveStudio": GoLiveStudio,
+    "PayoutCenter": PayoutCenter,
+    "FallenLegends": FallenLegendsPage,
+    "WashingtonClassic": WashingtonClassic,
+    "INSForgeStudio": INSForgeStudio,
+    "CreatorAnalytics": CreatorAnalytics,
+    "SVSArena": SVSArena,
+    "WisperFlo": WisperFlo,
 }
 
 export const pagesConfig = {

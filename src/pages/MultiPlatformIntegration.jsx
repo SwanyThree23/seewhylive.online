@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
+import WebhookHooks from '../components/live/WebhookHooks';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -589,6 +598,29 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ZEGOConfigPanel user={user} />
+        <ZEGOStreamHealthCard roomId={null} />
+        <GuestRTMPPanel participantId={null} userId={null} />
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={null} isHost={true} />
+        <WebhookHooks roomId={null} isHost={true} />
+        <MultiStreamConfig roomId={null} userId={null} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🌐 Multi-Platform',    href: 'MultiPlatform'   },
+          { label: '🔴 Go Live',           href: 'GoLive'          },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio' },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'  },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

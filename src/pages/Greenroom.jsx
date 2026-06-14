@@ -9,7 +9,13 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import SelectSheet from '../components/shared/SelectSheet';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PrivatePanel from '../components/live/PrivatePanel';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -584,6 +590,15 @@ export default function GreenroomPage() {
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              {isHost && <StreamGoals isHost={true} />}
+              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
+              <PrivatePanel roomId={room?.id || null} currentUser={null} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={null} onAdmit={() => {}} />}
+            </div>
           </div>
         </div>
       </div>

@@ -30,6 +30,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import ClipMarker from '../components/live/ClipMarker';
+import ClipCreator from '../components/live/ClipCreator';
 import GuestQueue from '../components/live/GuestQueue';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SuperChatRail from '../components/live/SuperChatRail';
@@ -103,6 +104,7 @@ import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import StreamEventBus from '../components/live/StreamEventBus';
 import ViewerCount from '../components/live/ViewerCount';
 import GuestControls from '../components/live/GuestControls';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -227,12 +229,34 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
   );
 }
 
+// ── Octagonal avatar thumbnail (audience rail) ───────────────────────────────
+function OctAvatarThumb({ name, stream, size = 36 }) {
+  const vRef = useRef(null);
+  const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.3)' }} />
+      <div style={{ position: 'absolute', inset: 2, clipPath: oct, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {stream ? (
+          <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ fontSize: size * 0.3, fontWeight: 900, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {(name || '?')[0].toUpperCase()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
 function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   const camRef = useRef(null);
   const screenRef = useRef(null);
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
   useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+  const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
       {screenStream ? (
@@ -250,11 +274,13 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
-      {/* PIP camera when screen sharing */}
+      {/* PIP camera (octagonal) when screen sharing */}
       {screenStream && localStream && videoEnabled && (
-        <div className="absolute bottom-2 right-2 w-28 h-20 rounded-lg overflow-hidden"
-          style={{ border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-          <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+        <div className="absolute bottom-2 right-2" style={{ width: 80, height: 80 }}>
+          <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.5)' }} />
+          <div style={{ position: 'absolute', inset: 2, clipPath: oct, overflow: 'hidden' }}>
+            <video ref={camRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
         </div>
       )}
     </div>
@@ -397,6 +423,7 @@ export default function BroadcastStudio() {
   const [ariaTopicIdx, setAriaTopicIdx] = useState(0);
   const [musicVolume, setMusicVolume] = useState(70);
   const streamStartRef = useRef(Date.now());
+  const [bitratePreset, setBitratePreset] = useState(3000);
   const [tipTotal, setTipTotal] = useState(0);
   const [superchats, setSuperchats] = useState([]);
   const [raisedHands, setRaisedHands] = useState(new Set());
@@ -851,7 +878,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               />
             )}
             {canStream && (
-              <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
+              <>
+                <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
+                <ClipCreator roomId={partyId} creatorId={user?.id} streamTitle={party?.title} elapsedSeconds={elapsed} currentUser={user} />
+              </>
             )}
             {isHost && (
               <button onClick={() => endMut.mutate()}
@@ -969,19 +999,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <div className="px-2 pt-2 pb-3">
                       <p className="text-[11px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {shown.map(m => (
-                          <div key={m.id} className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black text-white"
-                              style={{ background: 'rgba(255,255,255,0.08)' }}>
-                              {(m.user_name || '?')[0].toUpperCase()}
+                        {shown.map(m => {
+                          const peerId = peerUserIds && Array.from(peerUserIds.entries()).find(([, uid]) => uid === m.user_id)?.[0];
+                          const mStream = peerId && remoteStreams ? remoteStreams.get(peerId) : null;
+                          return (
+                            <div key={m.id} className="flex flex-col items-center gap-0.5">
+                              <OctAvatarThumb name={m.user_name} stream={mStream} size={36} />
+                              <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 36 }}>{m.user_name?.split(' ')[0]}</span>
                             </div>
-                            <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
-                          </div>
-                        ))}
+                          );
+                        })}
                         {overflow > 0 && (
                           <div className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-                              style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>
+                            <div style={{ width: 36, height: 36, clipPath: 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: GOLD }}>
                               +{overflow}
                             </div>
                           </div>
@@ -1382,6 +1412,28 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-2 space-y-3">
                 <HostControls isHost={canManage} party={party} onUpdate={setHostSettings} />
 
+                {/* Gift leaderboard */}
+                {partyId && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>🏆 Top Gifters</p>
+                    <GiftLeaderboard roomId={partyId} />
+                  </div>
+                )}
+
+                {/* Golden wall — live gift/superchat feed */}
+                {partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                    <GoldenWall roomId={partyId} isExpanded />
+                  </div>
+                )}
+
+                {/* Engagement badges */}
+                {partyId && user?.id && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.1)' }}>
+                    <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user.id} />
+                  </div>
+                )}
+
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
@@ -1520,7 +1572,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
-                {/* Octagonal video window */}
+                {/* Octagonal video window — live host feed */}
                 {isHost && (
                   <OctagonalVideoWindow
                     title={party?.title || 'Live'}
@@ -1529,8 +1581,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     onMicToggle={toggleAudio}
                     onVideoToggle={toggleVideo}
                     onShareScreen={() => setScreenSharing(v => !v)}
-                    streamUrl={null}
+                    stream={localStream}
+                    userName={user?.full_name || 'Host'}
+                    avatarUrl={user?.avatar_url}
                     label="Host"
+                    isLocal
                   />
                 )}
 
@@ -1589,6 +1644,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                     <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>⚡ Stream Presets</p>
                     <StreamingPresets onApply={preset => toast.success(`Preset "${preset?.label || preset}" applied`)} />
+                    <div className="mt-3">
+                      <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+                    </div>
                   </div>
                 )}
 
@@ -1610,6 +1668,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {activeTab === 'health' && (
               <div className="p-2 space-y-3">
                 <StreamHealthDashboard isLive={party?.status === 'live'} />
+                {partyId && (
+                  <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={liveViewers || members.length} />
+                )}
                 {partyId && (
                   <BroadcastAnalyticsDashboard
                     streamSession={{ id: partyId, title: party?.title }}
@@ -2076,6 +2137,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-3 space-y-3">
                 <div className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Share Your Live Session</div>
 
+                {/* ShareToSocial quick-share widget */}
+                <ShareToSocial content={{ url: window.location.href, title: party?.title ? `🔴 ${party.title} — Join me LIVE on SeeWhy!` : '🔴 Join me LIVE on SeeWhy!' }} />
+
                 {/* Copy link */}
                 <div className="flex gap-2">
                   <div className="flex-1 h-9 px-3 flex items-center rounded-xl text-[10px] truncate"
@@ -2272,6 +2336,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+
+      {/* Points notification overlay — shows animated badge when points are awarded */}
+      {user?.id && <PointsNotification userId={user.id} />}
+
+      {/* Tipping modal — opened via tipModalOpen state */}
+      <TippingModal
+        isOpen={tipModalOpen}
+        onClose={() => setTipModalOpen(false)}
+        recipient={{ id: party?.host_id, name: party?.host_name || 'Creator' }}
+        roomId={partyId}
+      />
     </div>
   );
 }

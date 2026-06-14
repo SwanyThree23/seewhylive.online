@@ -4,6 +4,13 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -58,7 +65,7 @@ export default function WelcomePage() {
       </header>
 
       {/* Hero */}
-      <main className="relative overflow-hidden">
+      <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
           background: `linear-gradient(180deg,
@@ -177,6 +184,16 @@ export default function WelcomePage() {
           </div>
         </div>
       </section>
+
+      <div className="relative z-20 px-4 pb-4 space-y-4">
+        <FeaturedContentSection />
+        <ZEGOMobileAppBanner />
+        <ShareToSocial />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ContentRecommendations userId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        {!user && <OnboardingFlow onComplete={() => {}} />}
+      </div>
 
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
