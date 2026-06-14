@@ -121,7 +121,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           <div className="flex flex-wrap gap-1 mt-1">
             {entry.keywords_matched.map((kw, i) => (
               <span key={i} className="text-[7px] px-1 py-0.5 rounded"
-                style={{ background: 'rgba(255,100,0,0.12)', color: '#D4854A', border: '1px solid rgba(255,100,0,0.2)' }}>{kw}</span>
+                style={{ background: 'rgba(192,57,43,0.12)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.2)' }}>{kw}</span>
             ))}
           </div>
         )}
