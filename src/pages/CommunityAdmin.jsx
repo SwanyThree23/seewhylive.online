@@ -105,7 +105,17 @@ function MembersTab({ communityId, currentUserId }) {
 
   const updateRoleMut = useMutation({
     mutationFn: ({ id, role }) => base44.entities.CommunityMember.update(id, { role }),
-    onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries({ queryKey: ['community-members-admin'] }); },
+    onSuccess: (_, { role }) => {
+      toast.success('Role updated');
+      qc.invalidateQueries({ queryKey: ['community-members-admin'] });
+      if (currentUserId) {
+        base44.entities.Activity.create({
+          user_id: currentUserId,
+          type: 'milestone',
+          title: `Updated community member role to ${role}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const removeMut = useMutation({

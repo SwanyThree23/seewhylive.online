@@ -54,6 +54,13 @@ export default function PollCard({ poll }) {
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       queryClient.invalidateQueries({ queryKey: ['poll-vote'] });
       toast.success('Vote submitted!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Voted on community poll: ${poll?.question || poll?.title || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 

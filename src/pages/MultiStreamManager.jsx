@@ -69,7 +69,19 @@ export default function MultiStreamManager() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onSuccess: (dest) => {
+      qc.invalidateQueries(['rtmp-destinations']);
+      setShowAddForm(false);
+      setNewLabel('');
+      toast.success('Destination added');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const updateMutation = useMutation({
