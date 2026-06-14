@@ -60,7 +60,16 @@ export default function CreatorChannel() {
       title: `${profile?.display_name} went live!`,
       message: `${profile?.display_name} is now streaming. Join now!`,
     }),
-    onSuccess: () => alert('Reminder set!'),
+    onSuccess: () => {
+      alert('Reminder set!');
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'follow',
+          title: `Set live notification for ${profile?.display_name || 'creator'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   if (isLoading) return (

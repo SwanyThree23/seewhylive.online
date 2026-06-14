@@ -37,6 +37,13 @@ export default function CoStreamPanel({ roomId }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['costream-sessions'] });
       toast.success('Co-stream started!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_joined',
+          title: 'Started a co-stream session',
+        }).catch(() => {});
+      }
     },
   });
 

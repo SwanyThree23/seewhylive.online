@@ -106,7 +106,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
     mutationFn: (entry) => Promise.all([
       base44.entities.GreenroomWaitlist.update(entry.id, {
         status: 'admitted',
-        admitted_by: currentUser.id,
+        admitted_by: currentUser?.id,
         resolved_at: new Date().toISOString(),
       }),
       entry.greenroom_session_id && base44.entities.GreenroomSession
@@ -119,6 +119,13 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
     onSuccess: (_, entry) => {
       qc.invalidateQueries(['greenroom-waitlist', roomId]);
       onAdmit?.(entry);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${entry?.user_name || 'guest'} to greenroom`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -126,7 +133,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
     mutationFn: ({ entry, reason }) => base44.entities.GreenroomWaitlist.update(entry.id, {
       status: 'denied',
       deny_reason: reason,
-      admitted_by: currentUser.id,
+      admitted_by: currentUser?.id,
       resolved_at: new Date().toISOString(),
     }),
     onSuccess: () => qc.invalidateQueries(['greenroom-waitlist', roomId]),
