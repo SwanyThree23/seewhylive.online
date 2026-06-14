@@ -35,6 +35,10 @@ import { MerchStrip } from '../components/merch/MerchWidget';
 import ReportModal from '../components/moderation/ReportModal';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GiftTray from '../components/live/GiftTray';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -608,6 +612,32 @@ export default function AudioRoom() {
       {/* Gift shop tray (viewers can send gifts) */}
       {roomId && !isHost && (
         <GiftShopTray roomId={roomId} currentUser={user} />
+      )}
+
+      {/* Gift tray + animated gift shop (viewers) */}
+      {roomId && !isHost && user && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />
+        </div>
+      )}
+      {roomId && !isHost && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AnimatedGiftShop roomId={roomId} recipientId={party.host_id} onClose={() => {}} />
+        </div>
+      )}
+
+      {/* Loyalty badge (viewers see their loyalty status) */}
+      {roomId && !isHost && user?.id && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
+        </div>
+      )}
+
+      {/* Enhanced stream chat (viewers) */}
+      {roomId && !isHost && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
+        </div>
       )}
 
       {/* Merch strip */}

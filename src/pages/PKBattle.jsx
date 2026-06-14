@@ -13,6 +13,7 @@ import BattleMode from '../components/streaming/BattleMode';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleOverlay from '../components/pk/BattleOverlay';
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 
 function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
@@ -213,6 +214,13 @@ export default function PKBattlePage() {
           <BattleMode roomId={activeBattle.id} isHost={user?.id === activeBattle.challenger_id} hostName={user?.full_name || ''} participants={[]} />
           <BattleScoreboard roomId={activeBattle.id} />
           <BattleOverlay battle={activeBattle} onBattleUpdate={() => {}} />
+        </div>
+      )}
+
+      {/* PK Battle soundboard (active battle) */}
+      {activeBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleSoundboard battleId={activeBattle.id} isBattleActive={activeBattle.status === 'active'} />
         </div>
       )}
 

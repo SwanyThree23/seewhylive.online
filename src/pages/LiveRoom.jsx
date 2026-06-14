@@ -60,6 +60,8 @@ import StreamMetadata from '../components/live/StreamMetadata';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import PrivatePanel from '../components/live/PrivatePanel';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1110,6 +1112,16 @@ export default function LiveRoom() {
 
       {/* Private panel (host only) */}
       {isHost && <PrivatePanel isHost={isHost} currentUser={user} />}
+
+      {/* Reaction overlay (all viewers) */}
+      {(roomId || party?.id) && (
+        <ReactionOverlay partyId={roomId || party?.id} currentUser={user} />
+      )}
+
+      {/* Viewer controls panel */}
+      {!isHost && user?.id && (roomId || party?.id) && (
+        <ViewerControlsPanel roomId={roomId || party?.id} currentUser={user} onClose={() => {}} />
+      )}
 
       {showExclusiveGate && (
         <div style={{
