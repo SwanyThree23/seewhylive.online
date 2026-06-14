@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import CreatorBridge from '../components/social/CreatorBridge';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import TierEditor from '../components/subscriptions/TierEditor';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
@@ -262,6 +263,7 @@ export default function SettingsPage() {
         {user && (
           <Section icon={Bell} title="Subscription Tiers" description="Manage your creator subscription tiers">
             <CreatorTierManager creatorId={user.id} />
+            <TierEditor open={false} onClose={() => {}} creatorId={user.id} existing={null} />
           </Section>
         )}
 

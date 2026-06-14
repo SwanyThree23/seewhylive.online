@@ -11,6 +11,8 @@ import ShareButtons from '../components/shared/ShareButtons';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 import TierBadge from '../components/subscriptions/TierBadge';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -93,6 +95,7 @@ export default function PublicProfile() {
               <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: '#fff', ...T }}>
                 {profile.display_name}
                 <PresenceDot userId={userId} size="md" />
+                <OnlinePresenceDot isOnline={true} size="sm" />
               </h1>
               {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4fc3f7' }} />}
               {profile.category && (
@@ -146,6 +149,11 @@ export default function PublicProfile() {
                 <StripeSubscribeButton creatorId={userId} creatorName={profile?.display_name || ''} currentUserId={currentUser.id} />
               )}
             </div>
+            {currentUser?.id && userId !== currentUser.id && (
+              <div className="mt-3">
+                <TierSubscribeCard tier={null} currentSub={null} userId={currentUser.id} creatorId={userId} isHighlighted={false} />
+              </div>
+            )}
           </div>
         )}
 

@@ -14,6 +14,8 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleOverlay from '../components/pk/BattleOverlay';
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
 
 function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
@@ -235,6 +237,20 @@ export default function PKBattlePage() {
       <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
         <TournamentBracket />
       </div>
+
+      {/* PK Analytics Dashboard */}
+      {battles && battles.length > 0 && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKAnalyticsDashboard battles={battles} user={user} />
+        </div>
+      )}
+
+      {/* PK Battle Interface (active battle) */}
+      {activeBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleInterface roomId={activeBattle.id} />
+        </div>
+      )}
 
       {/* Quick links */}
       <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 flex gap-3 flex-wrap pb-6">
