@@ -9,6 +9,9 @@ import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ReportsManager from '../components/admin/ReportsManager';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -307,6 +310,9 @@ export default function AIModerationPage() {
         )}
 
         <div className="mt-6 space-y-4 px-4 pb-6">
+          <AIModeration roomId={null} isHost={false} />
+          <HostAlertCenter roomId={null} />
+          <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
           <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
           <ReportsManager communityId={null} userId={null} />
           <AnnouncementScheduler communityId={null} userId={null} />

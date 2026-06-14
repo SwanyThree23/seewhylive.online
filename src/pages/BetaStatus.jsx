@@ -11,6 +11,9 @@ import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import HostAlertCenter from '../components/live/HostAlertCenter';
+import PointsNotification from '../components/live/PointsNotification';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -202,6 +205,9 @@ export default function BetaStatusPage() {
           <StreamGoals isHost={false} />
           <StreamAnalyticsDashboard roomId={null} />
           <HostAlertCenter />
+          <PointsNotification userId={null} />
+          <MilestoneAlerts creatorId={null} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>
     </div>
