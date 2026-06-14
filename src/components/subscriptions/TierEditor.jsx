@@ -81,10 +81,17 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
       }
       return base44.entities.SubscriptionTier.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: (tier) => {
       toast.success(existing ? 'Tier updated!' : 'Tier created!');
       qc.invalidateQueries(['creatorTiers', creatorId]);
       onClose();
+      if (!existing && creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created subscription tier: ${tier?.name || form.name}`,
+        }).catch(() => {});
+      }
     },
   });
 

@@ -37,7 +37,19 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
       status: 'active',
       total_votes: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(['livepoll', roomId]); toast.success('Poll created!'); onCreated?.(); onClose(); },
+    onSuccess: (poll) => {
+      qc.invalidateQueries(['livepoll', roomId]);
+      toast.success('Poll created!');
+      onCreated?.();
+      onClose();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Created live poll: ${poll?.question || form.question || 'Poll'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const addOpt = () => setForm(f => ({ ...f, options: [...f.options, ''] }));

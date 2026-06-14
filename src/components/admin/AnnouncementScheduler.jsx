@@ -47,10 +47,17 @@ export default function AnnouncementScheduler({ communityId, userId }) {
     mutationFn: async (announcementData) => {
       return await base44.entities.Announcement.create(announcementData);
     },
-    onSuccess: () => {
+    onSuccess: (announcement) => {
       toast.success('Announcement created!');
       queryClient.invalidateQueries(['communityAnnouncements']);
       resetForm();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Published community announcement: ${announcement?.title || title}`,
+        }).catch(() => {});
+      }
     },
   });
 
