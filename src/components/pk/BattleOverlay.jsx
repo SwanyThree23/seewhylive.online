@@ -17,17 +17,27 @@ const GIFTS = [
 
 const QUICK_EMOJIS = ['❤️','🔥','💯','👏','😂','🎉','💪','⚡','🌟','🤩','😱','🙌'];
 
-// Fake top supporters for simulation (in production these'd come from Transaction entity)
-function genSupporters(name, score, side) {
-  const names = side === 'left'
-    ? ['AceViewer','BlazeFan','ChampX','DragonSup','EaglePro']
-    : ['FlameBoss','GoldRush','HeroWave','IcePeak','JetStream'];
-  return names.slice(0, 5).map((n, i) => ({
-    name: n,
-    amount: Math.max(1, Math.floor(score * (0.35 - i * 0.06))),
-    rank: i + 1,
-    emoji: ['🥇','🥈','🥉','4️⃣','5️⃣'][i],
-  }));
+// Build supporter leaderboard from battle entity's top_supporters field or tip feed
+function buildSupporters(battleField, tipFeedSide, liveTipFeed) {
+  // battle may carry creator_top_supporters / challenger_top_supporters arrays from backend
+  if (Array.isArray(battleField) && battleField.length > 0) {
+    return battleField.slice(0, 5).map((s, i) => ({
+      name: s.username || s.name || 'Viewer',
+      amount: s.amount || 0,
+      rank: i + 1,
+      emoji: ['🥇','🥈','🥉','4️⃣','5️⃣'][i],
+    }));
+  }
+  // Fall back to live tip feed for this side
+  const feedEntries = liveTipFeed.filter(t => t.side === tipFeedSide);
+  const byName = {};
+  feedEntries.forEach(t => { byName[t.name] = (byName[t.name] || 0) + t.pts; });
+  return Object.entries(byName)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([name, amount], i) => ({
+      name, amount, rank: i + 1, emoji: ['🥇','🥈','🥉','4️⃣','5️⃣'][i],
+    }));
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -234,8 +244,8 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
   const creatorViewers = Math.floor(50 + creatorScore * 0.8);
   const challengerViewers = Math.floor(50 + challengerScore * 0.8);
 
-  const creatorSupporters = genSupporters(battle?.creator_name, creatorScore, 'left');
-  const challengerSupporters = genSupporters(battle?.challenger_name, challengerScore, 'right');
+  const creatorSupporters = buildSupporters(battle?.creator_top_supporters, 'creator', tipFeed);
+  const challengerSupporters = buildSupporters(battle?.challenger_top_supporters, 'challenger', tipFeed);
 
   // Timer
   useEffect(() => {

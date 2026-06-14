@@ -324,6 +324,34 @@ function InviteCard({ partyUrl }) {
   );
 }
 
+function AISummaryButton({ members, elapsed, partyId }) {
+  const [loading, setLoading] = useState(false);
+  async function handleSummary() {
+    setLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Summarize this watch party in 2 sentences: ${members.length} viewers, active for ${Math.round(elapsed / 60)} minutes, party ID: ${partyId}. Be concise and engaging.`,
+        add_context_from_internet: false,
+      });
+      toast.success(result || 'No summary available.');
+    } catch (err) {
+      toast.error('AI Summary failed — try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <button
+      onClick={handleSummary}
+      disabled={loading}
+      className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
+      style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif', opacity: loading ? 0.6 : 1 }}
+    >
+      {loading ? '…' : '✨ AI Summary'}
+    </button>
+  );
+}
+
 export default function WatchPartyPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const partyId = urlParams.get('id');
@@ -1047,15 +1075,7 @@ export default function WatchPartyPage() {
               <>
                 <div className="flex items-center justify-between px-1 pt-1">
                   <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
-                  <button
-                    onClick={() => {
-                      toast.success(`AI Summary: ${members.length} viewers watching. Room has been active for ${Math.round(elapsed / 60)}min. Top reaction: 🔥`);
-                    }}
-                    className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
-                    style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  >
-                    ✨ AI Summary
-                  </button>
+                  <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
