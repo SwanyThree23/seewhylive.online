@@ -9,6 +9,9 @@ import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestGrid from '../components/live/GuestGrid';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import UnifiedChat from '../components/live/UnifiedChat';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import StreamGoals from '../components/live/StreamGoals';
@@ -225,8 +228,17 @@ export default function HybridStreamRoom() {
       {isHost && (
         <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+          <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
           <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
           <EvmuxWebSource isActive={false} onClose={() => {}} />
+          <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        </div>
+      )}
+
+      {/* Unified chat (all users) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />
         </div>
       )}
 

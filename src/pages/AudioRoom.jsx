@@ -42,6 +42,13 @@ import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import TippingModal from '../components/monetization/TippingModal';
 import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import TippingOverlay from '../components/live/TippingOverlay';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import TipNowModal from '../components/live/TipNowModal';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import PollLaunchBar from '../components/live/PollLaunchBar';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -171,6 +178,8 @@ export default function AudioRoom() {
   const [loveCount,   setLoveCount]   = useState(0);
   const [reportOpen,  setReportOpen]  = useState(false);
   const [tipModalOpen, setTipModalOpen] = useState(false);
+  const [tipNowOpen,   setTipNowOpen]   = useState(false);
+  const [activeScene,  setActiveScene]  = useState('main');
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -585,6 +594,27 @@ export default function AudioRoom() {
         </div>
       )}
 
+      {/* Scene switcher (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
+        </div>
+      )}
+
+      {/* Poll launch bar (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={true} />
+        </div>
+      )}
+
+      {/* Stream metrics bar (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamMetricsBar startTime={null} memberCount={memberCount} tipTotal={0} peakViewers={memberCount} />
+        </div>
+      )}
+
       {/* Soundboard (host only) */}
       {isHost && (
         <div style={{ padding: '0 16px 8px' }}>
@@ -656,6 +686,37 @@ export default function AudioRoom() {
         <div style={{ padding: '0 16px 8px' }}>
           <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user.full_name || ''} onJoined={() => {}} />
         </div>
+      )}
+
+      {/* Tipping overlay (viewers) */}
+      {roomId && !isHost && party?.host_id && (
+        <TippingOverlay roomId={roomId} creatorId={party.host_id} isVisible={true} />
+      )}
+
+      {/* Mobile stream controls */}
+      {roomId && !isHost && (
+        <MobileStreamControls
+          micMuted={!audioEnabled}
+          onMicToggle={toggleAudio}
+          onReact={() => sendLove()}
+          onQuickTip={() => setTipNowOpen(true)}
+          roomId={roomId}
+        />
+      )}
+
+      {/* Moderation appeal panel */}
+      {roomId && (
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+      )}
+
+      {/* Tip now modal */}
+      {tipNowOpen && (
+        <TipNowModal
+          roomId={roomId}
+          currentUser={user}
+          hostId={party?.host_id}
+          onClose={() => setTipNowOpen(false)}
+        />
       )}
 
       {/* Tipping modal */}
