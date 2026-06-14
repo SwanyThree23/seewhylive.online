@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -228,6 +230,11 @@ export default function AuraAI() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           Aura AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIStreamSummary roomId={null} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
+        <ContentRecommendations />
       </div>
     </div>
   );

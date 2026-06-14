@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion } from 'framer-motion';
+import AlertConfig from '../components/live/AlertConfig';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -192,6 +194,12 @@ export default function VoiceAISettings() {
         >
           🔊 Test Voice
         </motion.button>
+
+        {/* Alert + feed integration */}
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AlertConfig creatorId={null} />
+          <AnnouncementFeed communityId={null} />
+        </div>
 
         {/* Cross-links */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingBottom: 16 }}>
