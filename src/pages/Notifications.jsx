@@ -9,6 +9,9 @@ import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
@@ -185,6 +188,9 @@ export default function NotificationsPage() {
             <LeaderboardPanel roomId={null} />
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={null} />
+            <PointsNotification userId={user.id} />
+            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={null} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
       </div>

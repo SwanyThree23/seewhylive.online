@@ -9,6 +9,9 @@ import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
 import LivePoll from '../components/live/LivePoll';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import PollCard from '../components/community/PollCard';
+import LivePollOverlay from '../components/live/LivePollOverlay';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -191,6 +194,9 @@ export default function PollManager() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+          <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
+          <PollCard poll={null} />
+          <LivePollOverlay roomId={null} currentUser={null} isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
 
