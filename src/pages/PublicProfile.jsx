@@ -13,6 +13,8 @@ import TierBadge from '../components/subscriptions/TierBadge';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -180,6 +182,27 @@ export default function PublicProfile() {
 
         {/* VOD Library */}
         <VideoLibrary creatorId={userId} />
+
+        {/* Subscription option */}
+        {userId && currentUser?.id && userId !== currentUser.id && (
+          <div className="mt-6">
+            <SubscriptionCard
+              tier={null}
+              price={4.99}
+              benefits={[]}
+              communityId={null}
+              creatorId={userId}
+              isSubscribed={false}
+            />
+          </div>
+        )}
+
+        {/* Community discussion */}
+        {userId && (
+          <div className="mt-6">
+            <DiscussionFeed communityId={userId} />
+          </div>
+        )}
       </div>
     </div>
   );

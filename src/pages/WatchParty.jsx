@@ -36,6 +36,8 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import ChatOverlay from '../components/live/ChatOverlay';
+import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1135,6 +1137,16 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'leaderboard' && (
               <SocialLeaderboard members={members} />
+            )}
+            {activePanel === 'discover' && (
+              <div className="space-y-3 p-2">
+                <YouTubeDiscovery />
+              </div>
+            )}
+            {activePanel === 'player' && partyId && (
+              <div className="space-y-3 p-2">
+                <WatchPartyPlayer roomId={partyId} isHost={isHost} />
+              </div>
             )}
             {activePanel === 'screen' && (
               <WatchPartyTab
