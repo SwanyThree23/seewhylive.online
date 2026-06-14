@@ -40,7 +40,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
   }, [roomId, sessionId]);
 
   const stats = [
-    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#FF8C00' },
+    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#D4854A' },
     { label: 'FPS', value: metrics?.fps || '--', icon: Activity, color: '#C9A84C' },
     { label: 'Viewers', value: metrics?.viewer_count || 0, icon: Users, color: '#6DBF7E' },
     { label: 'Latency', value: metrics?.latency_ms ? `${metrics.latency_ms}ms` : '--', icon: TrendingUp, color: G },
