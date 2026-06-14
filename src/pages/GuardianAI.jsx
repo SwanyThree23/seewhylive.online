@@ -24,15 +24,6 @@ const PILL  = 999;
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
-const SAMPLE_LOG = [
-  { time: '9:04 PM', user: 'anon_2931',  msg: 'spam spam spam spam',           risk: 0.82, action: 'MUTED'   },
-  { time: '9:03 PM', user: 'viewer_445', msg: 'Great stream! WA is dominating 🔥', risk: 0.04, action: 'ALLOWED' },
-  { time: '9:02 PM', user: 'troll_99',   msg: '[content removed]',              risk: 0.97, action: 'BANNED'  },
-  { time: '9:01 PM', user: 'DomFan22',   msg: 'Big Bone Earl tribute was 🙏',   risk: 0.03, action: 'ALLOWED' },
-  { time: '9:00 PM', user: 'hype_lord',  msg: 'LETS GOOOOO!!!! 🏆',             risk: 0.12, action: 'ALLOWED' },
-  { time: '8:58 PM', user: 'lurker_007', msg: 'first time here — love it',      risk: 0.02, action: 'ALLOWED' },
-];
-
 const ACTION_CONFIG = {
   ALLOWED: { color: GREEN,  label: 'ALLOWED' },
   MUTED:   { color: ORANGE, label: 'MUTED'   },
@@ -98,17 +89,15 @@ export default function GuardianAI() {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [moderations]);
 
-  const displayLog = moderations.length > 0
-    ? moderations.map(m => ({
-        time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        user: m.content_id?.slice(0, 12) || 'unknown',
-        msg:  m.ai_explanation || m.violation_type || '—',
-        risk: m.ai_confidence ?? 0,
-        action: m.action_taken === 'none' ? 'ALLOWED'
-              : m.action_taken === 'flagged' ? 'FLAGGED'
-              : m.action_taken?.toUpperCase() || 'FLAGGED',
-      }))
-    : SAMPLE_LOG;
+  const displayLog = moderations.map(m => ({
+    time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+    user: m.content_id?.slice(0, 12) || 'unknown',
+    msg:  m.ai_explanation || m.violation_type || '—',
+    risk: m.ai_confidence ?? 0,
+    action: m.action_taken === 'none' ? 'ALLOWED'
+          : m.action_taken === 'flagged' ? 'FLAGGED'
+          : m.action_taken?.toUpperCase() || 'FLAGGED',
+  }));
 
   const violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
   const allowedCount   = displayLog.filter(e => e.action === 'ALLOWED').length;
@@ -302,6 +291,10 @@ export default function GuardianAI() {
             {isLoading ? (
               <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
                 Loading moderation log…
+              </div>
+            ) : displayLog.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
+                No moderation events yet — click SCAN NOW to analyze recent messages
               </div>
             ) : displayLog.map((e, i) => {
               const cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.FLAGGED;
