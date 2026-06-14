@@ -10,6 +10,7 @@ const TIP_AMOUNTS_CENTS = [99, 199, 499];
 const G = '#D4AF37';
 const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 export default function PKBattleProgress({ battleId, currentUserId }) {
   const qc = useQueryClient();
@@ -110,12 +111,12 @@ export default function PKBattleProgress({ battleId, currentUserId }) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
-              <img
-                src={battle.creator_avatar || undefined}
-                onError={e => { e.target.style.display = 'none'; }}
-                alt={battle.creator_name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              <div className="relative w-8 h-8 shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.4)' }} />
+                <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT }}>
+                  <img src={battle.creator_avatar || undefined} onError={e => { e.target.style.display = 'none'; }} alt={battle.creator_name} className="w-full h-full object-cover" />
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black truncate" style={{ color: '#fff' }}>
                   {battle.creator_name}
@@ -159,12 +160,12 @@ export default function PKBattleProgress({ battleId, currentUserId }) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
-              <img
-                src={battle.challenger_avatar || undefined}
-                onError={e => { e.target.style.display = 'none'; }}
-                alt={battle.challenger_name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              <div className="relative w-8 h-8 shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.3)' }} />
+                <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT }}>
+                  <img src={battle.challenger_avatar || undefined} onError={e => { e.target.style.display = 'none'; }} alt={battle.challenger_name} className="w-full h-full object-cover" />
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black truncate" style={{ color: '#fff' }}>
                   {battle.challenger_name}

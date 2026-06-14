@@ -6,6 +6,8 @@ import { Swords, Crown, Trophy, Star, Zap, Users, DollarSign, Timer, Gift, X, Me
 import { toast } from 'sonner';
 
 // ── Constants ────────────────────────────────────────────────────────────────
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
 const GIFTS = [
   { emoji: '🌹', label: 'Rose',    pts: 1,   usd: 0.10, color: '#D4AF37' },
   { emoji: '🍰', label: 'Cake',    pts: 5,   usd: 0.50, color: '#D4AF37' },
@@ -389,9 +391,11 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             transition={{ duration: 2, repeat: Infinity }}
             style={{ background: 'rgba(212,175,55,0.06)', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
             <div className="flex items-center justify-between">
-              <div className="w-6 md:w-8 h-6 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm flex-shrink-0"
-                style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37' }}>
-                {battle.creator_name.charAt(0).toUpperCase()}
+              <div className="relative w-6 md:w-8 h-6 md:h-8 flex-shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.5)' }} />
+                <div className="absolute inset-[2px] flex items-center justify-center font-black text-xs md:text-sm" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.18)', color: '#D4AF37' }}>
+                  {battle.creator_name.charAt(0).toUpperCase()}
+                </div>
               </div>
               <ViewerBar count={creatorViewers} side="right" color="#D4AF37" />
             </div>
@@ -420,9 +424,11 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             style={{ background: 'rgba(239,68,68,0.06)', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>
             <div className="flex items-center justify-between w-full">
               <ViewerBar count={challengerViewers} side="left" color="#ef4444" />
-              <div className="w-6 md:w-8 h-6 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm flex-shrink-0"
-                style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
-                {(battle.challenger_name || '?').charAt(0).toUpperCase()}
+              <div className="relative w-6 md:w-8 h-6 md:h-8 flex-shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(239,68,68,0.45)' }} />
+                <div className="absolute inset-[2px] flex items-center justify-center font-black text-xs md:text-sm" style={{ clipPath: OCT, background: 'rgba(239,68,68,0.18)', color: '#ef4444' }}>
+                  {(battle.challenger_name || '?').charAt(0).toUpperCase()}
+                </div>
               </div>
             </div>
             <p className="text-[10px] md:text-xs font-bold text-white truncate mt-0.5 text-right">{battle.challenger_name || 'Challenger'}</p>
