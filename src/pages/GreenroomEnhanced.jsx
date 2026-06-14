@@ -13,6 +13,10 @@ import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestQueue from '../components/live/GuestQueue';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -240,6 +244,18 @@ export default function GreenroomEnhanced() {
 
         {/* RTMP / WHIP Ingest Panel */}
         <EnhancedIngestPanel roomId={null} isHost={true} />
+
+        {/* Guest RTMP panel */}
+        <GuestRTMPPanel participantId={null} userId={null} />
+
+        {/* Guest stream monitor */}
+        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+
+        {/* Guest streaming permissions */}
+        <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+
+        {/* Guest destinations panel */}
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

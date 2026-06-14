@@ -39,6 +39,8 @@ import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import GiftTray from '../components/live/GiftTray';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import TippingModal from '../components/monetization/TippingModal';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -167,6 +169,7 @@ export default function AudioRoom() {
   const [handRaised,  setHandRaised]  = useState(false);
   const [loveCount,   setLoveCount]   = useState(0);
   const [reportOpen,  setReportOpen]  = useState(false);
+  const [tipModalOpen, setTipModalOpen] = useState(false);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -639,6 +642,22 @@ export default function AudioRoom() {
           <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
         </div>
       )}
+
+      {/* Virtual currency tips (viewers) */}
+      {roomId && !isHost && party?.host_id && user && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <VirtualCurrencyTips roomId={roomId} creatorId={party.host_id} currentUser={user} isHost={false} />
+        </div>
+      )}
+
+      {/* Tipping modal */}
+      <TippingModal
+        isOpen={tipModalOpen}
+        onClose={() => setTipModalOpen(false)}
+        recipient={party?.host_name || ''}
+        roomId={roomId}
+        communityId={null}
+      />
 
       {/* Merch strip */}
       {roomId && party?.host_id && (
