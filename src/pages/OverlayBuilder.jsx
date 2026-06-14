@@ -165,6 +165,13 @@ export default function OverlayBuilderPage() {
       qc.invalidateQueries(['overlay-layouts']);
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Saved overlay layout: ${layoutName || 'Overlay'}`,
+        }).catch(() => {});
+      }
     },
   });
   const toggleActiveMut = useMutation({
