@@ -28,6 +28,8 @@ import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget'
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import NotificationBell from '../components/shared/NotificationBell';
+import SubscriptionManager from '@/components/monetization/SubscriptionManager';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
@@ -856,6 +858,20 @@ function MonetizationTab({ user }) {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Subscription manager */}
+      {user?.id && (
+        <div className="mb-4">
+          <SubscriptionManager creatorId={user.id} />
+        </div>
+      )}
+
+      {/* Monetization center */}
+      {user?.id && (
+        <div className="mb-4">
+          <StreamerMonetizationCenter />
         </div>
       )}
 
