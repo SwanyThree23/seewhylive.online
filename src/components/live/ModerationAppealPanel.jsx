@@ -24,7 +24,6 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         setResult(res.data);
       }
     } catch (error) {
-      console.error('Appeal error:', error);
     }
     setSubmitting(false);
   };
@@ -58,7 +57,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
+      style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}20` }}
     >
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4" style={{ color: G }} />

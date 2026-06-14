@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Volume2, Zap, Music } from 'lucide-react';
 
 const G = '#D4AF37';
-const PANEL = '#0D1022';
+const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 // Preset hype sound effects with Freesound/YouTube Audio Library URLs
@@ -30,7 +30,7 @@ export default function SoundboardWidget({ isVisible = true, disabled = false })
     const audio = audioRef.current;
     audio.src = sound.url;
     audio.volume = volume;
-    audio.play().catch(() => console.log('Audio play failed'));
+    audio.play().catch(() => {});
 
     audio.onended = () => setPlayingId(null);
     setTimeout(() => setPlayingId(null), 3000);

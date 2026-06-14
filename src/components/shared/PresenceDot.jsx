@@ -34,7 +34,6 @@ export function usePresenceHeartbeat(roomId) {
           }
         }
       } catch (error) {
-        console.warn('Presence heartbeat failed:', error);
       }
     };
 
@@ -52,7 +51,6 @@ export function usePresenceHeartbeat(roomId) {
           }
         }
       } catch (error) {
-        console.warn('Mark offline failed:', error);
       }
     };
 
@@ -88,7 +86,7 @@ export default function PresenceDot({ userId, size = 'sm' }) {
 
   return (
     <span
-      className={`${sizeClass} rounded-full border-2 border-white shrink-0 ${active ? 'bg-[#6DBF7E]' : 'bg-[rgba(255,255,255,0.2)]'}`}
+      className={`${sizeClass} rounded-full border-2 border-white shrink-0 ${active ? 'bg-green-500' : 'bg-slate-300'}`}
       title={active ? 'Online' : lastSeen ? `Last seen ${lastSeen.toLocaleTimeString()}` : 'Offline'}
     />
   );

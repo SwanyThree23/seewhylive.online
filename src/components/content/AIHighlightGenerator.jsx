@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,19 +12,10 @@ export default function AIHighlightGenerator({ recording }) {
   const [highlights, setHighlights] = useState([]);
   const queryClient = useQueryClient();
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-
   const createHighlightMutation = useMutation({
     mutationFn: (highlightData) => base44.entities.StreamHighlight.create(highlightData),
-    onSuccess: (highlight) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['highlights'] });
-      if (currentUser?.id) {
-        base44.entities.Activity.create({
-          user_id: currentUser.id,
-          type: 'clip_created',
-          title: `Created AI highlight: ${highlight?.title || 'Stream Highlight'}`,
-        }).catch(() => {});
-      }
     },
   });
 
@@ -83,7 +74,6 @@ Generate highlight segments with:
       setHighlights(result.highlights || []);
       toast.success(`Generated ${result.highlights?.length || 0} highlights!`);
     } catch (error) {
-      console.error('Error generating highlights:', error);
       toast.error('Failed to generate highlights');
     } finally {
       setGenerating(false);
@@ -115,7 +105,7 @@ Generate highlight segments with:
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#D4854A]" />
+          <Sparkles className="w-5 h-5 text-purple-500" />
           AI Highlight Generator
         </CardTitle>
       </CardHeader>
@@ -162,7 +152,7 @@ Generate highlight segments with:
                     {Math.round(highlight.confidence * 100)}% AI confidence
                   </Badge>
                   {highlight.engagement_score && (
-                    <Badge className="bg-[#6DBF7E] text-xs">
+                    <Badge className="bg-green-500 text-xs">
                       {Math.round(highlight.engagement_score)} engagement
                     </Badge>
                   )}

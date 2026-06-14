@@ -26,7 +26,6 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
         toast.success(`Generated ${result.data.clips.length} clips!`);
       }
     } catch (error) {
-      console.error('Clip generation error:', error);
       toast.error('Failed to generate clips');
     }
     setGenerating(false);
@@ -59,7 +58,7 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           className="space-y-2 p-3 rounded-lg"
-          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
+          style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}20` }}
         >
           {clips.map((clip, idx) => (
             <motion.div

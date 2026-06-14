@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GOLD = '#D4AF37';
-const BG2 = 'rgba(8,11,24,0.9)';
+const BG2 = 'rgba(13,6,24,0.9)';
 
 export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }) {
   const [devices, setDevices] = useState([]);
@@ -43,7 +43,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
           else if (videoDevices[0]) setSelectedId(videoDevices[0].deviceId);
         }
       } catch (e) {
-        console.error('Camera enum error', e);
       }
     }
     loadDevices();
@@ -62,7 +61,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
       setPreview(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch(e) {
-      console.error('Preview error', e);
     }
   }
 
@@ -83,7 +81,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
       onSourceSelected(stream, { deviceId: selectedId, quality, label: devices.find(d => d.deviceId === selectedId)?.label });
       setOpen(false);
     } catch(e) {
-      console.error('Source select error', e);
     }
   }
 
@@ -108,7 +105,7 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => { setOpen(false); if (preview) preview.getTracks().forEach(t => t.stop()); }} />
             <motion.div className="fixed inset-x-4 top-[10%] z-[201] rounded-2xl overflow-hidden"
-              style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
+              style={{ background: '#0D0618', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
 
               {/* Header */}
