@@ -9,6 +9,8 @@ import {
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import ShareToSocial from '../components/social/ShareToSocial';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import StreamGoals from '../components/live/StreamGoals';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -473,6 +475,11 @@ export default function StreamScheduler() {
       </AnimatePresence>
 
       <ShareToSocial />
+
+      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamGoals isHost={true} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
 
       {/* Quick navigation to related stream tools */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 16px 32px', justifyContent: 'center' }}>
