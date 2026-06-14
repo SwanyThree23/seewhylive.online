@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
+import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -308,6 +310,9 @@ function StreamTab({ user }) {
         </PanelCard>
 
       </div>
+
+      {/* Stream health monitor */}
+      <StreamHealthDashboard isLive={true} />
     </div>
   );
 }
@@ -476,6 +481,8 @@ function LiveRoomTab({ user }) {
               </div>
             </div>
           </PanelCard>
+          {/* Guest stream monitor */}
+          <GuestStreamMonitor guestName="Active Guest" isStreaming={roomActive} />
         </div>
 
         {/* Controls Panel */}

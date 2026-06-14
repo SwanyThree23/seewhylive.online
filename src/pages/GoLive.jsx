@@ -17,6 +17,9 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -755,6 +758,12 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamHealthDashboard isLive={false} />
+      </div>
     </div>
   );
 }
