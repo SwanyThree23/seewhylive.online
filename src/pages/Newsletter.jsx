@@ -6,6 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Send, Sparkles, Calendar, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 import 'react-quill/dist/quill.snow.css';
 
 const BG = '#080B18';
@@ -196,6 +198,9 @@ export default function NewsletterPage() {
             </DarkCard>
           </div>
         </div>
+
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ShareToSocial />
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
           {[

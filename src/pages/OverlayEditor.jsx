@@ -6,6 +6,8 @@ import { Layers, Bell, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SceneSwitcher from '../components/live/SceneSwitcher';
 import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
 import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
 
@@ -51,6 +53,13 @@ export default function OverlayEditorPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="md:col-span-2">
               <LowerThirdsBanner onBannerChange={() => {}} />
             </motion.div>
+          </div>
+        )}
+
+        {user?.id && (
+          <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <OverlayThemeBuilder creatorId={user.id} />
+            <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
           </div>
         )}
 
