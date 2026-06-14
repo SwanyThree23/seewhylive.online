@@ -4,6 +4,9 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
 import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
@@ -257,6 +260,9 @@ export default function PKBattleArena() {
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PKBattleProgress battleId={null} />
         <PKBattleVotePanel battleId={null} creatorId={null} challengerId={null} creatorName="Creator" challengerName="Challenger" />
+        <PKBattleSoundboard battleId={null} isBattleActive={false} />
+        <GiftShopTray roomId={null} currentUser={null} />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
       </div>
 
       {/* Footer nav */}

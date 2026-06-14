@@ -8,6 +8,8 @@ import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
 import BattleScoreboard from '../components/live/BattleScoreboard';
+import LoveTap from '../components/live/LoveTap';
+import GiftShopTray from '../components/live/GiftShopTray';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -203,6 +205,12 @@ export default function LiveBattles() {
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PKBattleProgress battleId={battles?.[0]?.id || null} />
         <BattleScoreboard roomId={battles?.[0]?.id || null} />
+      </div>
+
+      {/* Battle engagement tools */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <LoveTap roomId={null} user={null} creatorId={null} creatorName="Creator" />
+        <GiftShopTray roomId={null} currentUser={null} />
       </div>
 
       {/* Cross-nav footer */}

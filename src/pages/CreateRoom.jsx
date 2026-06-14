@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
 import StreamGoals from '../components/live/StreamGoals';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -251,6 +253,8 @@ export default function CreateRoomPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <StreamGoals isHost={true} />
               <ZEGOStreamHealthCard roomId={null} />
+              <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+              <SpotlightBanner communityId={null} isAdmin={false} />
             </div>
           )}
 
