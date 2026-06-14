@@ -5,6 +5,9 @@ import ReportsManager from '../components/admin/ReportsManager';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import ReferralConfig from '../components/admin/ReferralConfig';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -571,6 +574,9 @@ export default function AdminDashboard() {
         )}
 
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <ChallengeAnalytics communityId={null} />
+          <ReferralConfig communityId={null} />
+          <PerformanceDashboard roomId={null} sessionId={null} />
           <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={true} />
         </div>
