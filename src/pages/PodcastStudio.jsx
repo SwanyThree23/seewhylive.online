@@ -9,6 +9,9 @@ import SoundboardWidget from '../components/live/SoundboardWidget';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import VODCard from '../components/vod/VODCard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1459,6 +1462,9 @@ export default function PodcastStudio() {
         <AIStreamSummary roomId={null} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
         <CollaborationMatcher />
         <SpotlightBanner communityId={null} isAdmin={false} />
+        <ClipGeneratorAI roomId={null} sessionId={null} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={null} sessionId={null} isHost={true} />
+        <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
       </div>
     </div>
   );

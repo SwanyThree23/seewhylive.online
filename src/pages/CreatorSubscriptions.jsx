@@ -11,6 +11,9 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
@@ -614,6 +617,9 @@ export default function CreatorSubscriptionsPage() {
             <CreatorTierManager creatorId={user.id} />
             <MySubscriptions userId={user.id} />
             {targetCreatorId && <SubscriberTierView creatorId={targetCreatorId} userId={user.id} />}
+            <SubscriptionCard tier={null} isCurrentTier={false} onSubscribe={() => {}} />
+            <StripeSubscribeButton creatorId={targetCreatorId || null} tierId={null} userId={user.id} />
+            <SubscriptionManager userId={user.id} />
           </div>
         )}
       </div>

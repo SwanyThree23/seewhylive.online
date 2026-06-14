@@ -17,6 +17,9 @@ import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import BattleOverlay from '../components/pk/BattleOverlay';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
+import BattleMode from '../components/streaming/BattleMode';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
 
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
@@ -823,6 +826,12 @@ export default function PKBattleManager() {
             )}
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={null} hostId={user?.id} isHost={true} />
+        <TipAlert roomId={null} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={null} />
       </div>
     </div>
   );

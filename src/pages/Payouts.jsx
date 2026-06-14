@@ -6,6 +6,9 @@ import { createPageUrl } from '../utils';
 import DirectPayments from '../components/live/DirectPayments';
 import StreamGoals from '../components/live/StreamGoals';
 import ShareToSocial from '../components/social/ShareToSocial';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -612,6 +615,12 @@ export default function PayoutsPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <StripeConnectButton userId={null} accountId={null} />
+          <MonetizationDashboard userId={null} />
+          <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
         </div>
       </div>
     </div>
