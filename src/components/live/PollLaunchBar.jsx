@@ -36,7 +36,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       ends_at: new Date(Date.now() + dur * 1000).toISOString(),
       created_at: new Date().toISOString(),
     }),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       toast.success('Poll launched! 📊');
       setOpen(false);
       setCustom(false);
@@ -44,6 +44,13 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       setOptions(['', '', '']);
       qc.invalidateQueries(['livepoll', roomId]);
       qc.invalidateQueries(['polls', roomId]);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 

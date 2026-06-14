@@ -29,13 +29,20 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
       timeout_seconds: 60,
       created_at: new Date().toISOString(),
     }),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       toast.success('Poll launched! 📊');
       setOpen(false);
       setCustom(false);
       setQuestion('');
       setOptions(['', '']);
       qc.invalidateQueries(['polls', roomId]);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched quick poll: ${poll?.question || question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 

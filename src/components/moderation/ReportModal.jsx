@@ -40,6 +40,13 @@ export default function ReportModal({ isOpen, onClose, reportedUser, roomId, com
       onClose();
       setReportType('');
       setDescription('');
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Submitted moderation report: ${reportType}`,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Failed to submit report');
