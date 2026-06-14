@@ -6,6 +6,9 @@ import SpotlightSection from '../components/community/SpotlightSection';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import ViewerCount from '../components/live/ViewerCount';
+import LoveHearts from '../components/live/LoveHearts';
 
 const CHANNELS = [
   {
@@ -220,6 +223,11 @@ export default function FeaturedContent() {
         <YouTubeDiscovery />
         <ContentRecommendations userId={null} />
         <CollaborationMatcher />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <ViewerCount count={0} peakViewers={0} />
+          <LoveHearts roomId={null} currentUser={null} creatorId={null} />
+          <EmbedPlayer roomId={null} streamTitle="Featured Stream" viewerCount={0} />
+        </div>
 
         <div className="text-center">
           <Link to={createPageUrl('Home')}>
