@@ -2,6 +2,10 @@ import React, { useReducer, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Flame, Heart, Star, Award, MapPin, Send, Calendar } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ShareToSocial from '../components/social/ShareToSocial';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
 const SEED_LEGENDS = [
   { id: 'sl1', name: 'Big Sal Washington', years: '1961–2019', region: 'Pacific Northwest', quote: 'Every bone tells a story. Play yours with pride.', games_played: 847, titles_won: 3, candles: 142, tributes: 28, approved: true, featured_year: 2026 },
@@ -278,6 +282,12 @@ export default function FallenLegendsPage() {
             )}
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ShareToSocial content={null} />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <AnnouncementFeed communityId={null} />
       </div>
     </div>
   );
