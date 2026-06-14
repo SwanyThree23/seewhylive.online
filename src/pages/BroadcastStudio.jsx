@@ -229,12 +229,34 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
   );
 }
 
+// ── Octagonal avatar thumbnail (audience rail) ───────────────────────────────
+function OctAvatarThumb({ name, stream, size = 36 }) {
+  const vRef = useRef(null);
+  const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.3)' }} />
+      <div style={{ position: 'absolute', inset: 2, clipPath: oct, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {stream ? (
+          <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ fontSize: size * 0.3, fontWeight: 900, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {(name || '?')[0].toUpperCase()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
 function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   const camRef = useRef(null);
   const screenRef = useRef(null);
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
   useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+  const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
       {screenStream ? (
@@ -252,11 +274,13 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
-      {/* PIP camera when screen sharing */}
+      {/* PIP camera (octagonal) when screen sharing */}
       {screenStream && localStream && videoEnabled && (
-        <div className="absolute bottom-2 right-2 w-28 h-20 rounded-lg overflow-hidden"
-          style={{ border: '2px solid rgba(255,255,255,0.2)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)' }}>
-          <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+        <div className="absolute bottom-2 right-2" style={{ width: 80, height: 80 }}>
+          <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.5)' }} />
+          <div style={{ position: 'absolute', inset: 2, clipPath: oct, overflow: 'hidden' }}>
+            <video ref={camRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
         </div>
       )}
     </div>
@@ -958,19 +982,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <div className="px-2 pt-2 pb-3">
                       <p className="text-[11px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {shown.map(m => (
-                          <div key={m.id} className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black text-white"
-                              style={{ background: 'rgba(255,255,255,0.08)' }}>
-                              {(m.user_name || '?')[0].toUpperCase()}
+                        {shown.map(m => {
+                          const peerId = peerUserIds && Array.from(peerUserIds.entries()).find(([, uid]) => uid === m.user_id)?.[0];
+                          const mStream = peerId && remoteStreams ? remoteStreams.get(peerId) : null;
+                          return (
+                            <div key={m.id} className="flex flex-col items-center gap-0.5">
+                              <OctAvatarThumb name={m.user_name} stream={mStream} size={36} />
+                              <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 36 }}>{m.user_name?.split(' ')[0]}</span>
                             </div>
-                            <span className="text-[11px] truncate" style={{ color: 'rgba(255,255,255,0.3)', maxWidth: 32 }}>{m.user_name?.split(' ')[0]}</span>
-                          </div>
-                        ))}
+                          );
+                        })}
                         {overflow > 0 && (
                           <div className="flex flex-col items-center gap-0.5">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-                              style={{ background: 'rgba(212,175,55,0.15)', color: GOLD }}>
+                            <div style={{ width: 36, height: 36, clipPath: 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: GOLD }}>
                               +{overflow}
                             </div>
                           </div>

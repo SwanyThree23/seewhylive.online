@@ -46,9 +46,25 @@ function reducer(state, action) {
   }
 }
 
-function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight }) {
+function VideoOctInner({ stream, size }) {
+  const vRef = useRef(null);
+  useEffect(() => {
+    if (vRef.current && stream) vRef.current.srcObject = stream;
+  }, [stream]);
+  if (!stream) return null;
+  return (
+    <video
+      ref={vRef}
+      autoPlay playsInline muted
+      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+    />
+  );
+}
+
+function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, stream }) {
   var role = ROLE_CONFIG[guest.role] || ROLE_CONFIG.GUEST;
   var initials = (guest.name || 'G').slice(0, 2).toUpperCase();
+  var hasLiveCam = !!stream && !guest.camOff;
   return (
     <motion.div
       layout
@@ -60,19 +76,17 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight }) {
       onDoubleClick={onDoubleClick}
       style={{ position: 'relative', width: size, height: size, cursor: 'pointer', flexShrink: 0 }}
     >
-      {/* Outer ring — role color */}
+      {/* Outer ring — role color / spotlight gold */}
       <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpotlight ? '#d4af37' : role.color + '60', transition: 'background 0.2s' }} />
       {/* Inner content */}
-      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: guest.camOff ? '#0d0618' : '#1a0a2e', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {guest.camOff ? (
+      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {hasLiveCam ? (
+          <VideoOctInner stream={stream} size={size} />
+        ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <div style={{ width: size * 0.35, height: size * 0.35, borderRadius: '50%', background: role.color + '30', border: '2px solid ' + role.color + '60', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.18, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {initials}
             </div>
-          </div>
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, ' + role.color + '20, #0d0618)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.2 }}>
-            {role.icon}
           </div>
         )}
       </div>
@@ -150,7 +164,7 @@ const DEMO_GUESTS = [
   { id: 'g6', name: 'WashDomz', role: 'VIEWER', micMuted: true, camOff: true },
 ];
 
-export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, compact }) {
+export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, compact, streams = {} }) {
   const [state, dispatch] = useReducer(reducer, { ...initState, guests: propGuests || DEMO_GUESTS });
   var lastTap = useRef({});
 
@@ -199,7 +213,7 @@ export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, c
           {/* Thumbnail strip for non-spotlighted */}
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 0' }}>
             {guests.filter(g => g.id !== state.spotlight).map(g => (
-              <OctCell key={g.id} guest={g} size={64} onClick={() => handleTap(g.id)} onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: g.id })} isSpotlight={false} />
+              <OctCell key={g.id} guest={g} size={64} stream={streams[g.id] || null} onClick={() => handleTap(g.id)} onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: g.id })} isSpotlight={false} />
             ))}
           </div>
         </div>
@@ -214,6 +228,7 @@ export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, c
                 key={guest.id}
                 guest={guest}
                 size={cellSize}
+                stream={streams[guest.id] || null}
                 onClick={() => handleTap(guest.id)}
                 onDoubleClick={() => dispatch({ type: 'SET_EXPANDED', id: guest.id })}
                 isSpotlight={state.spotlight === guest.id}
