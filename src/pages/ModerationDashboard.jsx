@@ -6,6 +6,9 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -356,6 +359,12 @@ export default function ModerationDashboardPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff9999', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AIModeration roomId={null} isHost={true} />
+          <HostAlertCenter roomId={null} hostId={null} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={null} />
         </div>
       </div>
     </div>
