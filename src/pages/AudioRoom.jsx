@@ -18,6 +18,7 @@ import LivePoll from '../components/live/LivePoll';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AIStreamSummary from '../components/live/AIStreamSummary';
 import LiveTranscription from '../components/live/LiveTranscription';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
@@ -510,6 +511,13 @@ export default function AudioRoom() {
       {roomId && party?.host_id && !isHost && (
         <div style={{ padding: '0 16px 8px' }}>
           <SuperChatBar roomId={roomId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+        </div>
+      )}
+
+      {/* AI stream summary (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title} viewerCount={memberCount} />
         </div>
       )}
 
