@@ -800,7 +800,7 @@ export default function StreamInfra() {
         <ZEGOConfigPanel roomId={null} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
-        <GuestRTMPPanel participantId={null} userId={null} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
         <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
         <ZEGOStreamHealthCard roomId={null} />
         <OnlineUsersGrid compact maxVisible={8} />

@@ -307,7 +307,7 @@ export default function GreenroomEnhanced() {
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <MultiGuestPanel roomId={null} hostId={null} isHost={true} />
+        <MultiGuestPanel roomId={null} hostId={user?.id} isHost={true} />
         <OBSBridge roomId={null} isHost={true} />
         <VideoShortRecorder roomId={null} sessionId={null} onSave={() => {}} />
         <OnlineUsersGrid compact maxVisible={8} />
