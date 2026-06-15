@@ -181,7 +181,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)', border: `1px solid ${videoEnabled ? '#D4AF37' : '#ef4444'}` }}>
+            style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)' : 'transparent', border: `1px solid ${videoEnabled ? '#D4AF37' : '#ef4444'}` }}>
             {videoEnabled ? <Video className="w-3.5 h-3.5 text-[#D4AF37]" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
         </div>
