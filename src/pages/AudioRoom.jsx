@@ -54,6 +54,10 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -762,6 +766,14 @@ export default function AudioRoom() {
           <PaywallGate isHost={false} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
         </>
       )}
+
+      {/* Presence + discovery */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title={party?.title ? `Join "${party.title}" on SeeWhy LIVE!` : 'Join my audio room on SeeWhy LIVE!'} />
+      </div>
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
