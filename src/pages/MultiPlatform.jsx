@@ -15,6 +15,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -217,6 +219,12 @@ export default function MultiPlatform() {
                   <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
                     <DestinationsManager userId={user.id} />
                   </div>
+                )}
+                {user?.id && (
+                  <RTMPFanoutPanel userId={user.id} isStreaming={false} />
+                )}
+                {user?.id && (
+                  <GuestInviteGenerator userId={user.id} roomId={null} />
                 )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {

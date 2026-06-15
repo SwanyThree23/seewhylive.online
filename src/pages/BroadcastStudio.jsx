@@ -57,6 +57,9 @@ import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import WebSourceOverlay from '../components/streaming/WebSourceOverlay';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import AudioMixer from '../components/live/AudioMixer';
@@ -1729,6 +1732,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
                 <VdoNinjaGuestLink roomId={partyId} />
+                {user?.id && (
+                  <GuestInviteGenerator userId={user.id} roomId={partyId} streamId={partyId} />
+                )}
+                {user?.id && (
+                  <RTMPFanoutPanel userId={user.id} streamId={partyId} isStreaming={party?.status === 'live'} />
+                )}
+                <WebSourceOverlay />
               </div>
             )}
 
