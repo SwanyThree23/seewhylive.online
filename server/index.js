@@ -38,6 +38,7 @@ var rtmp         = require('./rtmp');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
+var ttsRouter = require('./tts');
 var translation  = require('./translation');
 var aura         = require('./aura');
 var whisper      = require('./whisper');
@@ -507,6 +508,21 @@ setInterval(function() {
 // ─── REST API Routes ──────────────────────────────────────────────────────
 
 // GET /api/health
+app.get('/api/config/public', function(req, res) {
+  res.json({
+    handles: {
+      venmo: 'SwanyThree23',
+      cashapp: 'SwanyThree23',
+      zelle: '+16026986110'
+    },
+    platform: 'SeeWhy LIVE',
+    support: 'seewhylive.online'
+  });
+});
+
+
+app.use('/api/tts', ttsRouter);
+
 app.get('/api/health', function(req, res) {
   var mem = process.memoryUsage();
   var dbOk = true;
@@ -1018,6 +1034,62 @@ app.post('/api/fanout-start', function(req, res) {
 });
 app.post('/api/fanout-stop', function(req, res) {
   res.json({ ok: true, msg: 'fanout stopped' });
+});
+
+// Stream sync route — called by MediaMTX runOnReady + client go-live
+app.post('/api/stream-sync', async function(req, res) {
+  try {
+    var body = req.body || {};
+    var streamId = body.streamId || body.stream_id || ('stream-' + Date.now());
+    var creatorId = body.creatorId || body.creator_id || null;
+    var status = body.status || 'live';
+    var title = body.title || body.streamId || 'Live Stream';
+    var category = body.category || 'General';
+    if (!creatorId) {
+      return res.status(400).json({ error: 'creatorId required' });
+    }
+    var https = require('https');
+    var SUPABASE_HOST = 'rxlgywvfclyjdfyvfvyc.supabase.co';
+    var SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '***REMOVED_SUPABASE_SERVICE_ROLE_KEY***';
+    var payload = JSON.stringify({
+      id: streamId,
+      creator_id: creatorId,
+      title: title,
+      category: category,
+      status: status,
+      started_at: status === 'live' ? new Date().toISOString() : null,
+      ended_at: status === 'ended' ? new Date().toISOString() : null
+    });
+    await new Promise(function(resolve, reject) {
+      var opts = {
+        hostname: SUPABASE_HOST,
+        path: '/rest/v1/streams',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'resolution=merge-duplicates',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      };
+      var req = https.request(opts, function(r) {
+        var body = '';
+        r.on('data', function(d) { body += d; });
+        r.on('end', function() {
+          logger.info('[stream-sync] ' + r.statusCode + ' ' + body.slice(0, 200));
+          res.json({ ok: r.statusCode < 300, status: r.statusCode, body: body.slice(0, 200) });
+          resolve();
+        });
+      });
+      req.on('error', reject);
+      req.write(payload);
+      req.end();
+    });
+  } catch(err) {
+    logger.error('[stream-sync] ' + err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 // ─────────────────────────────────────────────────────────────
 
@@ -2308,6 +2380,32 @@ io.on('connection', function(socket) {
 
   // ── go-live ────────────────────────────────────────────────────────────
   socket.on('go-live', function(data, ack) {
+    // R2: GoHighLevel CRM tag on stream start
+    try {
+      var https = require('https');
+      var ghlBody = JSON.stringify({
+        locationId: 'XkBtBOyDUhc9UgaeKLa9',
+        tags: ['active-streamer'],
+        customFields: [
+          { key: 'last_stream_start', value: new Date().toISOString() },
+          { key: 'stream_title', value: (data && data.title) || 'Live Stream' }
+        ],
+        contactId: (data && data.userId) || ''
+      });
+      var ghlReq = https.request({
+        hostname: 'services.leadconnectorhq.com',
+        path: '/contacts/' + ((data && data.userId) || '') + '/tags',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + (process.env.GHL_API_KEY || ''),
+          'Version': '2021-07-28'
+        }
+      }, function(r) { logger.info('[GHL] tag response: ' + r.statusCode); });
+      ghlReq.on('error', function(e) { logger.warn('[GHL] webhook error: ' + e.message); });
+      ghlReq.write(ghlBody);
+      ghlReq.end();
+    } catch(ghlErr) { logger.warn('[GHL] failed: ' + ghlErr.message); }
     var roomId      = data.roomId || socket.data.roomId;
     var destinations = data.destinations;
 
