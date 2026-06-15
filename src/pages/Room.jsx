@@ -33,6 +33,9 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -587,9 +590,14 @@ export default function RoomPage() {
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
             <div className="mt-3 space-y-3">
+              {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+              {roomId && room?.host_id && (
+                <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
+              )}
               <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
               <ContentRecommendations />
             </div>
+            {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
           </div>
         </div>
       </div>
