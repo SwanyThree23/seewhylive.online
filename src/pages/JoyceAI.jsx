@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -91,6 +92,7 @@ function ThinkDots() {
 }
 
 export default function JoyceAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
@@ -332,7 +334,7 @@ export default function JoyceAI() {
         <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
         <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="hype" />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
         <ChatOverlay roomId={null} isVisible={false} />
         <AICopilotSidebar roomId={null} isHost={false} />
       </div>
