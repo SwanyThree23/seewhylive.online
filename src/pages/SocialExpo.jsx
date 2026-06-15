@@ -18,6 +18,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamGoals from '../components/live/StreamGoals';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -102,6 +104,7 @@ const TICKET_TIERS = [
 const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoentertainment');
 
 export default function SocialExpo() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
 
@@ -712,7 +715,7 @@ export default function SocialExpo() {
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamGoals isHost={false} />
           <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
         </div>
       </div>
     </div>

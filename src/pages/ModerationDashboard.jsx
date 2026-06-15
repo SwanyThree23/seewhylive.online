@@ -372,8 +372,8 @@ export default function ModerationDashboardPage() {
           <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={user?.id} />
           <OnlineUsersGrid compact maxVisible={8} />
           <StreamHealthDashboard roomId={null} isHost={true} />
-          <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
           <CollaborationMatcher />
         </div>
       </div>

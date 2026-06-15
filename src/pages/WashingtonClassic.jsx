@@ -154,6 +154,7 @@ const TABS = [
 ];
 
 export default function WashingtonClassic() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('bracket');
 
   const sorted = [...TEAMS_2026].sort((a, b) => {
@@ -345,7 +346,7 @@ export default function WashingtonClassic() {
         <StreamAnalyticsDashboard roomId={null} />
         <ChallengeLeaderboard communityId={null} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <LeaderboardPanel roomId={null} />
         <ShareToSocial content={null} />
         <OnlineUsersGrid compact maxVisible={10} />

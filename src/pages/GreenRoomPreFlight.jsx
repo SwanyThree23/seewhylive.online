@@ -14,6 +14,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -90,6 +92,7 @@ function CopyBtn({ value }) {
 }
 
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const navigate = useNavigate();
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
@@ -247,7 +250,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <StreamGoals isHost={false} />
-        <PreStreamCountdown room={null} currentUser={null} onGoLive={() => {}} />
+        <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />
       </div>
     </div>
   );
