@@ -11,6 +11,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import VODLibrary from '../components/vod/VODLibrary';
 import ShopDashboard from '../components/merch/ShopDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -297,6 +301,13 @@ export default function PlatformShowcase() {
         <ContentRecommendations />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <QuickActionPanel isOpen={false} onClose={() => {}} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

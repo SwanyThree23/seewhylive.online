@@ -9,6 +9,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
 
 export default function BackPage() {
@@ -167,6 +171,10 @@ export default function BackPage() {
         <ContentRecommendations />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ZEGOMobileAppBanner />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <AnnouncementPanel communityId={null} userId={null} />
       </div>
 
       {/* Bottom Nav */}

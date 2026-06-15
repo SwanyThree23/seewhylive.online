@@ -5,6 +5,10 @@ import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucid
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import TippingModal from '../components/monetization/TippingModal';
 import NotificationBell from '../components/shared/NotificationBell';
 import SuperChatRail from '../components/live/SuperChatRail';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
@@ -517,6 +521,10 @@ export default function Messages() {
           <EnhancedStreamChat roomId={null} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
           <SuperChatRail superchats={[]} />
           <AnnouncementFeed communityId={null} />
+          <OnlineUsersGrid compact maxVisible={12} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
         </div>
       )}
 

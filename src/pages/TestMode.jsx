@@ -9,6 +9,10 @@ import DevicePreview from '../components/greenroom/DevicePreview';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -673,6 +677,12 @@ export default function TestMode() {
           <ZEGOStreamHealthCard roomId={null} />
           <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
         </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
       </div>
     </div>
   );

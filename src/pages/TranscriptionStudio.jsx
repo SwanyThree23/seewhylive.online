@@ -6,6 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, Download } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import RecordingManager from '../components/content/RecordingManager';
@@ -276,6 +280,10 @@ export default function TranscriptionStudio() {
         <RecordingManager userId={user?.id} />
         <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
         <LiveTranscription roomId={null} isHost={false} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+        <AutomatedHighlightReels streamSession={null} />
+        <CollaborationMatcher />
       </div>
 
       {/* Footer nav */}

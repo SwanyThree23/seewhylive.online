@@ -11,6 +11,10 @@ import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -619,6 +623,12 @@ export default function MultiPlatform() {
             <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
           </Link>
         ))}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
       </div>
     </div>
   );
