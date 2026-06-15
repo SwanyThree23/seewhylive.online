@@ -16,6 +16,10 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -435,6 +439,14 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Presence & Discovery */}
+      <div className="max-w-2xl mx-auto px-4 pb-6 space-y-4 mt-4">
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title="SeeWhy LIVE Settings" />
+      </div>
     </div>
   );
 }
