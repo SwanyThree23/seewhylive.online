@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid,
+  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, Hand,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -1707,7 +1707,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 <GuestGrid
                   participants={members}
                   isHost={isHost}
-                  onInvite={() => setInviteOpen(true)}
+                  onInvite={copyLink}
                   hostId={party?.host_id}
                 />
                 <GuestControls

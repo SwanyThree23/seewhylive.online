@@ -16,6 +16,7 @@ const BG2   = '#0D0A08';
 const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GREEN = '#6DBF7E';
+const CYAN  = '#D4854A';
 const SCARL = '#C0392B';
 const TEXT  = '#F0E8D4';
 const TEXTD = '#C4B596';

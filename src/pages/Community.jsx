@@ -11,6 +11,9 @@ import SpotlightSection from '@/components/community/SpotlightSection';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ReferralProgram from '@/components/community/ReferralProgram';
 import CreatePollModal from '../components/community/CreatePollModal';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import UnifiedChat from '../components/live/UnifiedChat';
+import ShareModal from '../components/live/ShareModal';
 
 const G = '#D4AF37';
 const BG = '#080B18';
