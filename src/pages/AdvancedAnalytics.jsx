@@ -33,6 +33,8 @@ const TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
 export default function AdvancedAnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: metrics = [] } = useQuery({
     queryKey: ['performanceMetrics'],
     queryFn: () => base44.entities.PerformanceMetric.list('-timestamp', 1000),
@@ -252,9 +254,9 @@ export default function AdvancedAnalyticsPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <StreamerGoalsWidget userId={null} />
-          <PayPerViewManager userId={null} />
-          <VirtualGoodsStore creatorId={null} userId={null} />
+          <StreamerGoalsWidget userId={user?.id} />
+          <PayPerViewManager userId={user?.id} />
+          <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
         </div>
       </div>
     </div>

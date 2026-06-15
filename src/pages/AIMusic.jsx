@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -680,6 +681,7 @@ function Toast({ message, visible }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   // Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
@@ -1513,11 +1515,11 @@ Return ONLY valid JSON (no markdown, no backticks):
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PanelMusicPlayer />
         <SoundboardWidget />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
         <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
-        <ContentRecommendations userId={null} />
+        <ContentRecommendations userId={user?.id} />
       </div>
 
       {/* Cross-nav footer */}
