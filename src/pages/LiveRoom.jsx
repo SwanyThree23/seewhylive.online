@@ -130,6 +130,8 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+          ) : p.avatar ? (
+            <img src={p.avatar} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               {/* Ambient glow */}
@@ -217,13 +219,10 @@ function AudienceTile({ p }) {
           style={{ clipPath: OCT, background: 'rgba(212,175,55,0.15)' }} />
         <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: `linear-gradient(135deg, #1A0F0A, ${BG2})` }}>
-          {p.avatar ? (
-            <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-xs font-black" style={{ color }}>
-              {p.name.charAt(0).toUpperCase()}
-            </span>
-          )}
+          {p.avatar
+            ? <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" />
+            : <span className="text-xs font-black" style={{ color }}>{p.name.charAt(0).toUpperCase()}</span>
+          }
         </div>
       </div>
       <div className="flex items-center gap-1 justify-center" style={{ maxWidth: 52 }}>
@@ -322,7 +321,7 @@ export default function LiveRoom() {
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -402,6 +401,13 @@ export default function LiveRoom() {
 
   // Connection quality — updated by real WebRTC getStats() via ZEGOStream callbacks when available
   const [connStats] = useState({ latency: 0, bitrate: 0, loss: 0, quality: 'GOOD' });
+
+  // Establish WebRTC peer mesh for real camera feeds
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [roomId, user?.id]);
 
   // Sync stage when real data arrives; auto-spotlight the host on first load
   useEffect(() => {
