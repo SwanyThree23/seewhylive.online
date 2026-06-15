@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
 import BattleMode from '../components/streaming/BattleMode';
@@ -750,6 +752,7 @@ const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 export default function StateVsState() {
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -861,12 +864,12 @@ export default function StateVsState() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={null} hostId={null} isHost={false} />
+        <BattleMode roomId={null} hostId={user?.id} isHost={false} />
         <SocialLeaderboard roomId={null} />
-        <GiftShopTray roomId={null} currentUser={null} />
+        <GiftShopTray roomId={null} currentUser={user} />
         <BattleScoreboard roomId={null} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
