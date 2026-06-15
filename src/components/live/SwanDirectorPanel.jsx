@@ -78,7 +78,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   const score = swan?.engagement_score || 0;
   const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#D4AF37' : '#6DBF7E';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
-  const engHistory = useMemo(() => Array.from({length:10},(_,i) => Math.floor(Math.random()*60+30)), []);
+  const engHistory = useMemo(() => decisions.slice(0, 10).map(d => d.score || score).reverse(), [decisions, score]);
 
   return (
     <motion.div initial={{x:'-100%'}} animate={{x:0}} exit={{x:'-100%'}} transition={{type:'spring',damping:28,stiffness:300}}
