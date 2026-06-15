@@ -24,8 +24,8 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
       const clipData = {
         stream_session_id: streamSession?.id,
         title: `Highlight Clip - ${new Date().toLocaleTimeString()}`,
-        start_timestamp_seconds: Math.floor(Math.random() * 3600),
-        end_timestamp_seconds: Math.floor(Math.random() * 3600 + 60),
+        start_timestamp_seconds: null,
+        end_timestamp_seconds: null,
         duration_seconds: 60,
         is_featured: false
       };
