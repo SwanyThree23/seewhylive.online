@@ -23,6 +23,10 @@ import ParticipantsList from '../components/rooms/ParticipantsList';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -454,6 +458,12 @@ export default function ControlRoomPage() {
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AudioStageTab roomId={null} isHost={true} />
         <BackgroundCustomizer onBackgroundChange={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );

@@ -25,6 +25,10 @@ import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import WatchQueue from '../components/watchparty/WatchQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -289,6 +293,12 @@ export default function HybridStreamRoom() {
         <WatchPartyAnalytics partyId={null} />
         <WatchPartyTab roomId={null} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );
