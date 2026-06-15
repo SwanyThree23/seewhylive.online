@@ -310,9 +310,9 @@ export default function CreatorChannel() {
         )}
 
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PaywallGate roomId={null} creatorId={null} price={0} />
+          <PaywallGate roomId={null} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
-          <ClipCreatorSheet roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+          <ClipCreatorSheet roomId={null} sessionId={null} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
         </div>
       </div>
     </div>
