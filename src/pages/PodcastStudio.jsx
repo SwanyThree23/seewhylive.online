@@ -7,7 +7,10 @@ import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import AIStreamSummary from '../components/live/AIStreamSummary';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import VODCard from '../components/vod/VODCard';
@@ -1465,6 +1468,12 @@ export default function PodcastStudio() {
         <ClipGeneratorAI roomId={null} sessionId={null} elapsedSeconds={0} isHost={true} />
         <AutomatedHighlightReels roomId={null} sessionId={null} isHost={true} />
         <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );

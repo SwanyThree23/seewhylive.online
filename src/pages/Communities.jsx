@@ -15,6 +15,7 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import SpotlightSection from '../components/community/SpotlightSection';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -319,6 +320,7 @@ export default function CommunitiesPage() {
           <AnnouncementPanel communityId={null} userId={user?.id} />
           <SpotlightSection communityId={null} />
           <ContentRecommendations />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

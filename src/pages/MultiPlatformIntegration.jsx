@@ -10,6 +10,10 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import OBSBridge from '../components/obs/OBSBridge';
 import WebhookHooks from '../components/live/WebhookHooks';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -607,6 +611,10 @@ export default function MultiPlatformIntegration() {
         <OBSBridge roomId={null} isHost={true} />
         <WebhookHooks roomId={null} isHost={true} />
         <MultiStreamConfig roomId={null} userId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

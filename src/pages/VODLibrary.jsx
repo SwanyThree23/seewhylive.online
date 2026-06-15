@@ -10,6 +10,9 @@ import RecordingManager from '../components/content/RecordingManager';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -163,6 +166,12 @@ export default function VODLibraryPage() {
             </Link>
           ))}
         </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

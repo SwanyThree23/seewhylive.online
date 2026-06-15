@@ -11,6 +11,11 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -172,6 +177,11 @@ export default function DataExportPage() {
           <PerformanceDashboard roomId={null} sessionId={null} />
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
+          <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
+          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <CollaborationMatcher />
+          <StreamHealthDashboard roomId={null} isHost={false} />
         </div>
       </div>
     </div>

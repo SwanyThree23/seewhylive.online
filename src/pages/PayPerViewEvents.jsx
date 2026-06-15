@@ -7,6 +7,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import PayPerViewCard from '../components/monetization/PayPerViewCard';
@@ -465,6 +469,10 @@ export default function PayPerViewEventsPage() {
           <PayPerViewCard event={null} onPurchase={() => {}} />
           <PayPerViewManager userId={user?.id} />
           <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={false} currentUser={user} />
+          <MonetizationDashboard roomId={null} />
         </div>
       </div>
     </div>

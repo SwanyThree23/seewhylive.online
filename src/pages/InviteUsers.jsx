@@ -10,6 +10,10 @@ import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -215,6 +219,13 @@ export default function InviteUsersPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

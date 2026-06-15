@@ -23,6 +23,9 @@ import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OBSBridge from '../components/obs/OBSBridge';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -307,6 +310,9 @@ export default function GreenroomEnhanced() {
         <MultiGuestPanel roomId={null} hostId={null} isHost={true} />
         <OBSBridge roomId={null} isHost={true} />
         <VideoShortRecorder roomId={null} sessionId={null} onSave={() => {}} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

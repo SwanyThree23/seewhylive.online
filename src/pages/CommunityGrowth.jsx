@@ -12,6 +12,8 @@ import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import SpotlightSection from '../components/community/SpotlightSection';
 import CreatePollModal from '../components/community/CreatePollModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -180,6 +182,8 @@ export default function CommunityGrowthPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
           <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
           <SpotlightSection communityId={communityId || null} />
           <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />
         </div>

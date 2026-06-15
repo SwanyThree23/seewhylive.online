@@ -10,6 +10,10 @@ import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
 import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import ChatModeration from '../components/live/ChatModeration';
 import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -1022,6 +1026,13 @@ export default function StreamRefDash() {
         <div className="text-white/20 text-[10px] font-mono">
           CREATOR_SHARE 0.90 · PLATFORM_FEE 0.10 · PREVIEW_SECS 120 · MAX_PANEL_GUESTS 20 · SVS_ROUNDS 5
         </div>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

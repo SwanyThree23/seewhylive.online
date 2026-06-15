@@ -6,6 +6,13 @@ import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import AggregatedChat from '../components/live/AggregatedChat';
 import GiftAnimation from '../components/live/GiftAnimation';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import TippingModal from '../components/monetization/TippingModal';
+import StreamGoals from '../components/live/StreamGoals';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
 const GUARDIAN_FLAG_THRESHOLD = 0.50;
 const CREATOR_SPLIT = 0.90;
@@ -297,6 +304,13 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <AggregatedChat roomId={null} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
       <EnhancedStreamChat roomId={null} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
+      <OnlineUsersGrid compact maxVisible={12} />
+      <ContentRecommendations />
+      <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+      <CollaborationMatcher />
+      <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
+      <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+      <StreamGoals isHost={false} />
     </div>
   );
 }

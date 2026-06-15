@@ -10,6 +10,12 @@ import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BitratePresets from '../components/streaming/BitratePresets';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -794,6 +800,13 @@ export default function StreamInfra() {
         <ZEGOConfigPanel roomId={null} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
+        <GuestRTMPPanel participantId={null} userId={null} />
+        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
+        <ZEGOStreamHealthCard roomId={null} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <StreamHealthDashboard roomId={null} isHost={true} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

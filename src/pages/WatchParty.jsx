@@ -43,6 +43,10 @@ import TipNowModal from '../components/live/TipNowModal';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import UnifiedChat from '../components/live/UnifiedChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -445,7 +449,7 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
 
   const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(partyId, localStream);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -463,6 +467,12 @@ export default function WatchPartyPage() {
   useEffect(() => () => {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
+
+  useEffect(() => {
+    if (!partyId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [partyId, user?.id]);
 
   const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
   const wpOverlayConfig = {
@@ -1222,6 +1232,10 @@ export default function WatchPartyPage() {
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
         {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={false} onClose={() => {}} />}
+        <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
       </div>
     </div>
   );

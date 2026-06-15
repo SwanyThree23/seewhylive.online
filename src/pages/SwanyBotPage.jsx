@@ -10,6 +10,10 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -261,6 +265,12 @@ export default function SwanyBotPage() {
         </div>
         <ContentRecommendations />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
       </div>
     </div>
   );

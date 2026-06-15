@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import SelectSheet from '../components/shared/SelectSheet';
@@ -640,6 +644,10 @@ export default function OnboardingPage() {
       <SelectSheet label="" value="" options={[]} onChange={() => {}} />
       <div style={{ padding: '0 0 16px' }}>
         <SpotlightBanner communityId={null} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
       </div>
     </div>
   );

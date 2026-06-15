@@ -12,6 +12,10 @@ import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -480,6 +484,12 @@ export default function GoLiveStudio() {
         <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );

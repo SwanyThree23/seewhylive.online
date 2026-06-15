@@ -13,6 +13,10 @@ import AudienceInsights from '../components/dashboard/AudienceInsights';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import FollowButton from '../components/shared/FollowButton';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import 'react-quill/dist/quill.snow.css';
 
 const BG = '#080B18';
@@ -232,6 +236,12 @@ export default function NewsletterPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <ChallengeLeaderboard challengeId={null} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>

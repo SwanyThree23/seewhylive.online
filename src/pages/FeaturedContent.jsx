@@ -11,6 +11,10 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import ViewerCount from '../components/live/ViewerCount';
 import LoveHearts from '../components/live/LoveHearts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const CHANNELS = [
   {
@@ -243,6 +247,13 @@ export default function FeaturedContent() {
           <Link to={createPageUrl('Home')}>
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>← Back to Home</button>
           </Link>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+          <StreamGoals isHost={false} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>
