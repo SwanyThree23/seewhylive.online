@@ -25,12 +25,6 @@ const SLOW_MODE_OPTIONS = [
 
 const GEM_EMOTES = ['💎', '🔥', '👑', '🚀', '❤️', '🌊', '⚡', '🏆'];
 
-const SEED_MESSAGES = [
-  { id: 'sm1', user_name: 'DominoKing_WA', content: 'Let\'s GOOO Washington Classic! 🏆', lang: 'en', created_date: new Date(Date.now() - 120000).toISOString(), pinned: false },
-  { id: 'sm2', user_name: 'CaliBones_Fan', content: '¡Qué partido tan increíble! El equipo está jugando de maravilla esta noche 🔥', lang: 'es', created_date: new Date(Date.now() - 90000).toISOString(), pinned: false },
-  { id: 'sm3', user_name: 'SwanyFan99', content: 'SwanyThree23 the GOAT no debate! 👑', lang: 'en', created_date: new Date(Date.now() - 60000).toISOString(), pinned: true },
-  { id: 'sm4', user_name: 'VibeNBones', content: 'C\'est incroyable ce stream! Bravo à tous! 🎉', lang: 'fr', created_date: new Date(Date.now() - 30000).toISOString(), pinned: false },
-];
 
 const initState = {
   input: '',
@@ -43,7 +37,7 @@ const initState = {
   expandedMsg: null,
   translationCache: {},
   translating: null,
-  pinnedMsgs: ['sm3'],
+  pinnedMsgs: [],
   localMessages: [],
   gemCounts: {},
 };
@@ -148,7 +142,7 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
     return unsub;
   }, [resolvedRoomId]);
 
-  var allMessages = [...SEED_MESSAGES, ...(dbMessages || []), ...state.localMessages];
+  var allMessages = [...(dbMessages || []), ...state.localMessages];
   var pinned = allMessages.filter(m => state.pinnedMsgs.includes(m.id));
 
   useEffect(() => {
