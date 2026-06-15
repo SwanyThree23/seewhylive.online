@@ -10,6 +10,8 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const CREATOR_SPLIT = 0.90;
 
@@ -396,6 +398,8 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         <AutomatedClipGenerator streamSession={null} isLive={false} />
         <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
       </div>
     </div>
   );

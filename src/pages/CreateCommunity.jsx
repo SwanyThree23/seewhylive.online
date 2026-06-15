@@ -14,6 +14,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import StreamGoals from '../components/live/StreamGoals';
 
 function Toggle({ checked, onChange }) {
   return (

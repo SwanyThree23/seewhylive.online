@@ -16,6 +16,9 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import PrivatePanel from '../components/live/PrivatePanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -598,6 +601,9 @@ export default function GreenroomPage() {
               <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
               <PrivatePanel roomId={room?.id || null} currentUser={user} isHost={isHost} />
               {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
+              <OnlineUsersGrid compact maxVisible={10} />
+              <ContentRecommendations />
+              <CollaborationMatcher />
             </div>
           </div>
         </div>

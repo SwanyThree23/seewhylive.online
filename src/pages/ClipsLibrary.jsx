@@ -12,6 +12,9 @@ import VODCard from '../components/vod/VODCard';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
 import ChapterEditor from '../components/vod/ChapterEditor';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
@@ -249,6 +252,12 @@ export default function ClipsLibraryPage() {
           onClose={() => setClipSheetOpen(false)}
         />
       )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+      </div>
     </div>
   );
 }

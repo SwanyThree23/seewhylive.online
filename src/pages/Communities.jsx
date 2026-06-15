@@ -15,6 +15,7 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import SpotlightSection from '../components/community/SpotlightSection';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);

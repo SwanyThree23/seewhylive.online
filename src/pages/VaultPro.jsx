@@ -12,6 +12,8 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const BG2 = 'rgba(8,11,24,0.9)';

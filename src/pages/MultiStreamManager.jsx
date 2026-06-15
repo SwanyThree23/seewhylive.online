@@ -18,6 +18,7 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }

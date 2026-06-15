@@ -14,6 +14,8 @@ import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -376,6 +378,8 @@ export default function LoyaltyHubPage() {
           <RewardShopEditor creatorId={user?.id} />
           <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={!!user?.id} currentUser={user} />
           <VirtualGoodsStore userId={user?.id} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
           {[

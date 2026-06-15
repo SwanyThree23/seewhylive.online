@@ -14,6 +14,8 @@ import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -303,6 +305,8 @@ export default function RTMPServer() {
           <EnhancedIngestPanel roomId={null} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
         </div>
       </div>
     </div>

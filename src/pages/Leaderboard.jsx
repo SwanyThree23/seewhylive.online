@@ -13,6 +13,7 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import TipWidget from '../components/live/TipWidget';
 import TippingOverlay from '../components/live/TippingOverlay';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },

@@ -12,6 +12,7 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }

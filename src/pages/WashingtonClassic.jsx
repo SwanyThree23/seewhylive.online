@@ -16,6 +16,8 @@ import TournamentBracket from '../components/pk/TournamentBracket';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import ShareToSocial from '../components/social/ShareToSocial';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const C = {
   bg:    '#07050A',

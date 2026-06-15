@@ -13,6 +13,8 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import AIModeration from '../components/live/AIModeration';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

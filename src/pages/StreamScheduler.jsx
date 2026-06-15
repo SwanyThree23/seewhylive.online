@@ -17,6 +17,7 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [

@@ -109,7 +109,7 @@ export default function SocialExpo() {
     var subject = encodeURIComponent(`SeeWhy LIVE Sponsorship Inquiry — ${tierLabel} ($${price}/event)`);
     var body = encodeURIComponent(`Hi,\n\nI'm interested in the ${tierLabel} sponsorship tier ($${price}/event) on SeeWhy LIVE.\n\nPlease send me more details.\n\nThank you.`);
     var mailto = `mailto:partnerships@seewhylive.online?subject=${subject}&body=${body}`;
-    window.open(mailto, '_blank');
+    window.open(mailto, '_blank', 'noopener,noreferrer');
     setSponsorToast('Opening email…');
     setTimeout(() => setSponsorToast(''), 2500);
   }
