@@ -276,8 +276,8 @@ export default function CommunitiesPage() {
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
-          <RaidPanelButton room={null} currentUser={null} isHost={false} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <RaidPanelButton room={null} currentUser={user} isHost={false} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
           <SpotlightSection communityId={null} />
           <ContentRecommendations />
         </div>

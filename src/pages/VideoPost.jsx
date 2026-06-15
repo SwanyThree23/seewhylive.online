@@ -323,7 +323,7 @@ export default function VideoPost() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
-        <ClipCreatorSheet roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
+        <ClipCreatorSheet roomId={null} sessionId={null} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
         <ContentRecommendations />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />

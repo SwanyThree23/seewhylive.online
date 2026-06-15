@@ -293,10 +293,10 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
           <Send size={15} color={canSend ? '#000' : 'rgba(255,255,255,0.3)'} />
         </button>
       </div>
-      <WhisperPanel roomId={null} currentUser={null} />
-      <AggregatedChat roomId={null} currentUser={null} isHost={false} onMessagesChange={() => {}} />
+      <WhisperPanel roomId={null} currentUser={currentUser} />
+      <AggregatedChat roomId={null} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
-      <EnhancedStreamChat roomId={null} userId={null} userName={null} userRole={null} />
+      <EnhancedStreamChat roomId={null} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
     </div>
   );
 }

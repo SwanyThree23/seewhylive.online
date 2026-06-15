@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -107,6 +109,8 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
   const [vaultPassword, setVaultPassword]   = useState('');
@@ -609,7 +613,7 @@ export default function VaultPro() {
       {/* Community spotlight + milestone alerts */}
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <SpotlightBanner communityId={null} isAdmin={false} />
-        <MilestoneAlerts creatorId={null} />
+        <MilestoneAlerts creatorId={user?.id} />
       </div>
 
       {/* Cross-nav footer */}
@@ -637,12 +641,12 @@ export default function VaultPro() {
       </div>
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <EarningsBreakdown userId={null} />
-        <RevenueDashboard userId={null} />
-        <StreamerMonetizationCenter userId={null} />
+        <EarningsBreakdown userId={user?.id} />
+        <RevenueDashboard userId={user?.id} />
+        <StreamerMonetizationCenter userId={user?.id} />
         <MonetizationDashboard roomId={null} />
-        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={true} currentUser={null} />
-        <VirtualGoodsStore userId={null} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
+        <VirtualGoodsStore userId={user?.id} />
       </div>
     </div>
   );

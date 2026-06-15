@@ -66,6 +66,8 @@ const STATUS_STYLE = {
 };
 
 export default function BetaStatusPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-beta'],
     queryFn: () => base44.entities.Room.list('-created_date', 100),
@@ -205,8 +207,8 @@ export default function BetaStatusPage() {
           <StreamGoals isHost={false} />
           <StreamAnalyticsDashboard roomId={null} />
           <HostAlertCenter />
-          <PointsNotification userId={null} />
-          <MilestoneAlerts creatorId={null} />
+          <PointsNotification userId={user?.id} />
+          <MilestoneAlerts creatorId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>

@@ -299,9 +299,9 @@ export default function RTMPServer() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={false} />
           <CoStreamPanel roomId={null} />
-          <WebhookHooks roomId={null} userId={null} isHost={true} />
+          <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
           <EnhancedIngestPanel roomId={null} isHost={true} />
-          <GuestRTMPPanel participantId={null} userId={null} />
+          <GuestRTMPPanel participantId={null} userId={user?.id} />
           <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
         </div>
       </div>

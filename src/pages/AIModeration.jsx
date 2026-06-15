@@ -34,6 +34,8 @@ export default function AIModerationPage() {
   const [scanProgress, setScanProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('pending');
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: moderations = [] } = useQuery({
     queryKey: ['moderations'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
@@ -314,8 +316,8 @@ export default function AIModerationPage() {
           <HostAlertCenter roomId={null} />
           <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
           <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
-          <ReportsManager communityId={null} userId={null} />
-          <AnnouncementScheduler communityId={null} userId={null} />
+          <ReportsManager communityId={null} userId={user?.id} />
+          <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
       </div>

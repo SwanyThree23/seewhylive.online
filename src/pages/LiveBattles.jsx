@@ -113,6 +113,7 @@ function BattleCard({ battle, index }) {
 }
 
 export default function LiveBattles() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [filter, setFilter] = useState('active');
 
   const { data: battles = [], isLoading } = useQuery({
@@ -219,9 +220,9 @@ export default function LiveBattles() {
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PKBattleInterface roomId={null} />
         <TournamentBracket />
-        <MatchmakingQueue user={null} onMatchFound={() => {}} />
-        <LoveTap roomId={null} user={null} creatorId={null} creatorName="Creator" />
-        <GiftShopTray roomId={null} currentUser={null} />
+        <MatchmakingQueue user={user} onMatchFound={() => {}} />
+        <LoveTap roomId={null} user={user} creatorId={battles?.[0]?.creator_id || null} creatorName="Creator" />
+        <GiftShopTray roomId={null} currentUser={user} />
         <PKBattleVotePanel battleId={battles?.[0]?.id || null} creatorId={battles?.[0]?.creator_id || null} challengerId={battles?.[0]?.challenger_id || null} creatorName={battles?.[0]?.creator_name || 'Creator'} challengerName={battles?.[0]?.challenger_name || 'Challenger'} />
         <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
         <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
