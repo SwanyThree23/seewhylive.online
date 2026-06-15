@@ -18,6 +18,9 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -441,6 +444,9 @@ export default function MultiStreamManager() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+          <RTMPFanoutPanel roomId={null} isHost={true} />
+          <GuestInviteGenerator roomId={null} isHost={true} />
+          <RTMPIngestPanel roomId={null} />
           <EnhancedIngestPanel roomId={null} isHost={true} />
           <OBSBridge roomId={null} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />

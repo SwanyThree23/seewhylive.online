@@ -98,6 +98,9 @@ import GuestConnector from '../components/live/GuestConnector';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
 import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import WebSourceOverlay from '../components/live/WebSourceOverlay';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
@@ -1560,11 +1563,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
-                {/* Web Sources + RTMP Ingest */}
+                {/* Web Overlays + RTMP Fanout + Ingest */}
                 {isHost && (
-                  <div className="space-y-2 p-3 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.5)' }}>
-                    <StreamWebSourceManager isStreamActive={party?.status === 'live'} />
-                    <div className="pt-1 border-t border-white/5">
+                  <div className="space-y-3 p-3 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.5)' }}>
+                    <WebSourceOverlay isStreamActive={party?.status === 'live'} />
+                    <div className="pt-2 border-t border-white/5">
+                      <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
+                    </div>
+                    <div className="pt-2 border-t border-white/5">
                       <RTMPIngestPanel roomId={partyId} />
                     </div>
                   </div>
@@ -1727,11 +1733,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
+                <GuestInviteGenerator roomId={partyId} isHost={isHost} />
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
+                <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
                 <RTMPIngestPanel roomId={partyId} />
-                <StreamWebSourceManager isStreamActive={party?.status === 'live'} />
+                <WebSourceOverlay isStreamActive={party?.status === 'live'} />
               </div>
             )}
 
