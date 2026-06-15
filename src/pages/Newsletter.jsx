@@ -241,7 +241,7 @@ export default function NewsletterPage() {
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
         </div>
       </div>
     </div>

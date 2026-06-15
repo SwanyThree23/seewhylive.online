@@ -345,7 +345,7 @@ export default function CreatorDashboardPage() {
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
-            <AnnouncementPanel communityId={null} userId={null} />
+            <AnnouncementPanel communityId={null} userId={user?.id} />
           </div>
 
           <Link to={createPageUrl('ContentCalendar')}>

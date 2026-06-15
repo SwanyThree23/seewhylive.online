@@ -343,11 +343,11 @@ export default function StreamAlerts() {
       {/* Cross-nav footer */}
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <StreamGoals isHost={true} />
-        <PollLaunchBar roomId={null} hostId={null} activePoll={null} isHost={true} />
+        <PollLaunchBar roomId={null} hostId={user?.id} activePoll={null} isHost={true} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <GiftAnimation event={null} onDone={() => {}} />
-        <EnhancedPollingSystem roomId={null} hostId={null} isHost={true} />
+        <EnhancedPollingSystem roomId={null} hostId={user?.id} isHost={true} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />

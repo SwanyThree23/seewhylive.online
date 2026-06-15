@@ -270,7 +270,7 @@ export default function SwanyBotPage() {
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
-        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+        <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
       </div>
     </div>
   );

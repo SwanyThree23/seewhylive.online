@@ -387,7 +387,7 @@ export default function GuardianAI() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIModeration roomId={null} isHost={false} />
-        <ModerationActionModal isOpen={false} onClose={() => {}} userId={null} action={null} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} userId={user?.id} action={null} />
         <AnnouncementScheduler communityId={null} userId={user?.id} />
         <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
         <ReportsManager communityId={null} userId={user?.id} />
@@ -398,8 +398,8 @@ export default function GuardianAI() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <StreamHealthDashboard roomId={null} isHost={false} />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
-        <AnnouncementPanel communityId={null} userId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <AnnouncementPanel communityId={null} userId={user?.id} />
       </div>
 
       {/* Cross-nav footer */}
