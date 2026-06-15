@@ -64,6 +64,7 @@ function CopyBtn({ value }) {
 
 export default function TranscriptionStudio() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const [lines, setLines]         = useState([]);
   const [live, setLive]           = useState(false);
@@ -271,10 +272,10 @@ export default function TranscriptionStudio() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
-        <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={user?.id} />
-        <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
-        <LiveTranscription roomId={null} isHost={false} />
+        <LiveTranslationWidget roomId={roomId} isHost={false} targetLanguage="en" />
+        <LiveTranscription roomId={roomId} isHost={false} />
       </div>
 
       {/* Footer nav */}
