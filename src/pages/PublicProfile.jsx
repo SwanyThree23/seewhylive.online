@@ -15,6 +15,10 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -203,6 +207,13 @@ export default function PublicProfile() {
             <DiscussionFeed communityId={userId} />
           </div>
         )}
+
+        <div className="mt-6 flex flex-col gap-4">
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="Check out this creator on SeeWhy LIVE!" />
+        </div>
       </div>
     </div>
   );
