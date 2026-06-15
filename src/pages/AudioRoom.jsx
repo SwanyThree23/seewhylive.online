@@ -775,7 +775,7 @@ export default function AudioRoom() {
 
       {/* Presence + discovery */}
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <OnlineUsersGrid compact maxVisible={10} />
+        <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />
         <ShareToSocial url={window.location.href} title={party?.title ? `Join "${party.title}" on SeeWhy LIVE!` : 'Join my audio room on SeeWhy LIVE!'} />
