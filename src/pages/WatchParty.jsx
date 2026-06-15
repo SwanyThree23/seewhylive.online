@@ -39,6 +39,7 @@ import ChatOverlay from '../components/live/ChatOverlay';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import GiftTray from '../components/live/GiftTray';
+import GiftAnimation from '../components/live/GiftAnimation';
 import TipNowModal from '../components/live/TipNowModal';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
@@ -1228,6 +1229,7 @@ export default function WatchPartyPage() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <GiftTray roomId={partyId} currentUser={user} recipientId={party?.host_id} />
+        {partyId && <GiftAnimation roomId={partyId} />}
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
