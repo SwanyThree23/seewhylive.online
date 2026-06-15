@@ -355,9 +355,9 @@ export default function ChallengesHubPage() {
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={null} />
           <SocialLeaderboard roomId={null} />
-          <PointsEarnWidget userId={null} />
+          <PointsEarnWidget userId={user?.id} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>

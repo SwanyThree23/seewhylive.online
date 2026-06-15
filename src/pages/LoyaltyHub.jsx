@@ -373,9 +373,9 @@ export default function LoyaltyHubPage() {
         </AnimatePresence>
 
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <RewardShopEditor creatorId={null} />
-          <LiveAuctionWidget creatorId={null} roomId={null} isCreator={false} currentUser={null} />
-          <VirtualGoodsStore userId={null} />
+          <RewardShopEditor creatorId={user?.id} />
+          <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={!!user?.id} currentUser={user} />
+          <VirtualGoodsStore userId={user?.id} />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
           {[
