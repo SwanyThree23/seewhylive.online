@@ -114,6 +114,13 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
@@ -648,8 +655,8 @@ export default function VaultPro() {
         <EarningsBreakdown userId={user?.id} />
         <RevenueDashboard userId={user?.id} />
         <StreamerMonetizationCenter userId={user?.id} />
-        <MonetizationDashboard roomId={null} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
+        <MonetizationDashboard roomId={activeRoomId} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />

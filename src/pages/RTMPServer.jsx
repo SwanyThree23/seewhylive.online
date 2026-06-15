@@ -12,6 +12,8 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
@@ -52,6 +54,13 @@ function CopyField({ label, value, mono = true, secret = false }) {
 export default function RTMPServer() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
@@ -270,7 +279,7 @@ export default function RTMPServer() {
               ))}
             </div>
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <ZEGOStreamHealthCard roomId={null} />
+              <ZEGOStreamHealthCard roomId={activeRoomId} />
               <ZEGOConfigPanel user={user} />
             </div>
 
@@ -300,11 +309,13 @@ export default function RTMPServer() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={false} />
-          <CoStreamPanel roomId={null} />
-          <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
-          <EnhancedIngestPanel roomId={null} isHost={true} />
+          <CoStreamPanel roomId={activeRoomId} />
+          <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
+          <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
-          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
+          {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
         </div>
