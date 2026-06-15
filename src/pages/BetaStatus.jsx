@@ -14,6 +14,9 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import PointsNotification from '../components/live/PointsNotification';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SpotlightBanner from '../components/community/SpotlightBanner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -210,6 +213,9 @@ export default function BetaStatusPage() {
           <PointsNotification userId={user?.id} />
           <MilestoneAlerts creatorId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>
