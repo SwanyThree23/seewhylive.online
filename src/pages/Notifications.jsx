@@ -189,7 +189,7 @@ export default function NotificationsPage() {
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={null} />
             <PointsNotification userId={user.id} />
-            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={null} />
+            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={user?.id} />
             <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}

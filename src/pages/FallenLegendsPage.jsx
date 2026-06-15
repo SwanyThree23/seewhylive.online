@@ -98,6 +98,8 @@ export default function FallenLegendsPage() {
   const [state, dispatch] = useReducer(reducer, initState);
   const qc = useQueryClient();
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: dbLegends } = useQuery({
     queryKey: ['fallen-legends'],
     queryFn: () => base44.entities.FallenLegend.filter({ approved: true }).catch(() => []),
@@ -278,7 +280,7 @@ export default function FallenLegendsPage() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ShareToSocial content={null} />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
       </div>
     </div>

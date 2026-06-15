@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -102,6 +103,8 @@ const INIT_MESSAGES = [
 ];
 
 export default function TributeWall() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const [selected, setSelected] = useState(null);
   const [tributeMsg, setTributeMsg] = useState('');
   const [messages, setMessages] = useState(INIT_MESSAGES);
@@ -320,7 +323,7 @@ export default function TributeWall() {
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="tribute-wall" />
         <GoldenWall roomId={null} isExpanded={false} />
-        <MilestoneAlerts creatorId={null} />
+        <MilestoneAlerts creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
         <ShareToSocial />
         <ContentRecommendations />

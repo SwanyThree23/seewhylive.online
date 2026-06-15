@@ -415,9 +415,9 @@ export default function LeaderboardPage() {
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
-          <TipWidget roomId={null} hostId={null} currentUser={null} />
-          <TippingOverlay roomId={null} creatorId={null} isVisible={true} />
-          <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
+          <TipWidget roomId={null} hostId={null} currentUser={currentUser} />
+          <TippingOverlay roomId={null} creatorId={currentUser?.id} isVisible={true} />
+          <AnimatedGiftShop recipientId={currentUser?.id} roomId={null} onClose={() => {}} />
           <LeaderboardPanel roomId={null} />
           <ChallengeLeaderboard challengeId={null} />
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -87,6 +88,8 @@ function ThinkDots() {
 }
 
 export default function SwanyBotPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "SwanyBot in the building! I'm your domino culture AI — ask me anything about State vs State, strategy, the legends, or the culture. Let's get it! 🎮🔥" },
   ]);
@@ -249,7 +252,7 @@ export default function SwanyBotPage() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
-        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
         <AICopilotSidebar roomId={null} isHost={false} />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
         <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />

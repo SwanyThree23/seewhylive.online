@@ -443,7 +443,7 @@ export default function MultiStreamManager() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
           <EnhancedIngestPanel roomId={null} isHost={true} />
           <OBSBridge roomId={null} isHost={true} />
-          <GuestRTMPPanel participantId={null} userId={null} />
+          <GuestRTMPPanel participantId={null} userId={user?.id} />
           <GuestStreamMonitor guestName="Guest" isStreaming={false} />
           <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
           <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
