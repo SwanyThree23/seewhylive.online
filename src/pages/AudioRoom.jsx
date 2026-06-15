@@ -54,6 +54,8 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -372,6 +374,14 @@ export default function AudioRoom() {
           remoteStreams={remoteStreams}
           onLeave={leaveRoom}
         />
+
+        {/* Host streaming tools */}
+        {isHost && roomId && (
+          <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+        )}
+        {isHost && roomId && (
+          <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+        )}
 
         {/* Multi-guest panel (host view) */}
         {isHost && roomId && (
