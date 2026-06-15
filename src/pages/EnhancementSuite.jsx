@@ -464,6 +464,7 @@ function fmtAgo(dateStr) {
 
 export default function EnhancementSuite() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState("emoji");
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
@@ -895,11 +896,11 @@ export default function EnhancementSuite() {
       )}
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <CoStreamPanel roomId={null} />
+        <CoStreamPanel roomId={roomId} />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <OverlayThemeBuilder creatorId={user?.id} />
-        <SoundboardWidget roomId={null} isHost={true} />
-        <RoomBrandingEditor roomId={null} isHost={true} />
+        <SoundboardWidget roomId={roomId} isHost={true} />
+        <RoomBrandingEditor roomId={roomId} isHost={true} />
         <CollaborationMatcher />
         <ContentRecommendations />
         <AutomatedHighlightReels streamSession={null} />
