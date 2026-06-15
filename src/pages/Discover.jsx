@@ -107,6 +107,7 @@ export default function DiscoverPage() {
   const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
 
   // 300ms debounce
@@ -407,7 +408,7 @@ export default function DiscoverPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
           <StreamGoals isHost={false} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>

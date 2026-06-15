@@ -338,7 +338,7 @@ export default function OverlayBuilderPage() {
           <CompositorOverlay stream={null} isHost={true} roomId={null} />
           <ChatOverlay roomId={null} isVisible={true} />
           <InteractivePollWidget roomId={null} isHost={true} />
-          <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+          <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
           <StreamGoals isHost={true} />
           <OnlineUsersGrid compact maxVisible={10} />
         </div>
