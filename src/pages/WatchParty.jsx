@@ -1217,11 +1217,11 @@ export default function WatchPartyPage() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <GiftTray roomId={partyId} currentUser={user} creatorId={null} />
+        <GiftTray roomId={partyId} currentUser={user} recipientId={party?.host_id} />
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
-        {!isHost && <TipNowModal roomId={partyId} recipientId={null} isOpen={false} onClose={() => {}} />}
+        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={false} onClose={() => {}} />}
       </div>
     </div>
   );

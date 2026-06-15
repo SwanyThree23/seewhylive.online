@@ -71,7 +71,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
       buyer_id: currentUser?.id, buyer_name: currentUser?.full_name || "Viewer",
       creator_id: hostId, item_id: item.id, item_name: item.name,
       size, quantity: qty, total_usd: total,
-      creator_payout: total * 0.9, platform_cut: total * 0.1,
+      creator_payout: Math.floor(total * 0.90), platform_cut: total - Math.floor(total * 0.90),
       room_id: roomId, status: "pending",
     }),
     onSuccess: () => {
@@ -90,7 +90,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
             user_id: hostId,
             type: 'tip_received',
             title: `Merch order: ${item.name} x${qty} from ${currentUser.full_name || 'viewer'}`,
-            amount: total * 0.9,
+            amount: Math.floor(total * 0.90),
             sender_id: currentUser.id,
           }),
         ]);
