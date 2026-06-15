@@ -8,6 +8,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -407,6 +411,10 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
         <CollaborationMatcher />
         <CreatorBridge />
         <AudienceInsights />
+        <ContentRecommendations />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

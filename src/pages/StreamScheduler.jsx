@@ -13,6 +13,10 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import StreamGoals from '../components/live/StreamGoals';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -495,6 +499,10 @@ export default function StreamScheduler() {
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
         <MultiStreamConfig roomId={null} isHost={true} />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <ContentRecommendations />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <EnhancedIngestPanel roomId={null} isHost={true} />
       </div>
 
       {/* Quick navigation to related stream tools */}

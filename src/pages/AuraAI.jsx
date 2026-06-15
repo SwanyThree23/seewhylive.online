@@ -7,6 +7,11 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import TippingModal from '../components/monetization/TippingModal';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -241,6 +246,11 @@ export default function AuraAI() {
         <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamGoals isHost={false} />
+        <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+        <CollaborationMatcher />
       </div>
     </div>
   );

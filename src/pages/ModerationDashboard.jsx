@@ -9,6 +9,10 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import ReportModal from '../components/moderation/ReportModal';
 import AIModeration from '../components/live/AIModeration';
 import HostAlertCenter from '../components/live/HostAlertCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -365,6 +369,10 @@ export default function ModerationDashboardPage() {
           <AIModeration roomId={null} isHost={true} />
           <HostAlertCenter roomId={null} hostId={user?.id} />
           <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={user?.id} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <StreamHealthDashboard roomId={null} isHost={true} />
+          <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>
