@@ -5,8 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -602,6 +601,7 @@ export default function MultiPlatform() {
         <EnhancedIngestPanel roomId={null} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <AdvancedEncoderSettings onApply={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>

@@ -10,6 +10,8 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import OBSBridge from '../components/obs/OBSBridge';
 import WebhookHooks from '../components/live/WebhookHooks';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -106,6 +108,7 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -601,12 +604,14 @@ export default function MultiPlatformIntegration() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ZEGOConfigPanel user={user} />
-        <ZEGOStreamHealthCard roomId={null} />
+        <ZEGOStreamHealthCard roomId={roomId} />
         <GuestRTMPPanel participantId={null} userId={user?.id} />
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={true} />
-        <WebhookHooks roomId={null} isHost={true} />
-        <MultiStreamConfig roomId={null} userId={user?.id} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <WebhookHooks roomId={roomId} isHost={true} />
+        <MultiStreamConfig roomId={roomId} userId={user?.id} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <AdvancedEncoderSettings onApply={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
