@@ -64,6 +64,8 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import CreatePollModal from '../components/community/CreatePollModal';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1054,6 +1056,8 @@ export default function LiveRoom() {
       {/* ── Chat Moderation + Clip Creator + Stream Metadata (host only) ────── */}
       {isHost && (
         <div style={{ padding: '0 16px 16px' }}>
+          {party?.id && <RTMPFanoutPanel roomId={party.id} isHost={isHost} />}
+          {party?.id && <GuestInviteGenerator roomId={party.id} isHost={isHost} />}
           <ChatModeration collapsed />
           {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
           {party && <StreamMetadata room={party} isHost={isHost} />}
