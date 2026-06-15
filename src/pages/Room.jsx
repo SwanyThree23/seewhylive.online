@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
@@ -574,6 +576,12 @@ export default function RoomPage() {
             {isHost && (
               <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
                 <ChatModerationPanel roomId={roomId} />
+              </div>
+            )}
+            {isHost && (
+              <div className="mt-3 space-y-3">
+                <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+                <GuestInviteGenerator roomId={roomId} isHost={isHost} />
               </div>
             )}
             {/* Live Auctions - visible to all */}
