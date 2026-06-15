@@ -64,5 +64,41 @@
     "challenger_id",
     "challenger_name",
     "format"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.challenger_id": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "$or": [
+        {
+          "data.challenger_id": "{{user.id}}"
+        },
+        {
+          "data.opponent_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.challenger_id": "{{user.id}}"
+        },
+        {
+          "data.opponent_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
 }

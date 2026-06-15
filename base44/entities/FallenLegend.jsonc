@@ -45,5 +45,21 @@
     "name",
     "years",
     "region"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "data.submitted_by": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }
