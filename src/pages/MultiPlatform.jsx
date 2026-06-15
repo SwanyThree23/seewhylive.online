@@ -5,8 +5,6 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
