@@ -781,10 +781,10 @@ export default function GoLive() {
         <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
         <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
-        <StreamChatbot roomId={null} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={null} />
-        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+        <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={partyId ? { id: partyId } : null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={partyId} />
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
-        <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
+        <WebhookHooks roomId={partyId} userId={user?.id} isHost={true} />
       </div>
     </div>
   );

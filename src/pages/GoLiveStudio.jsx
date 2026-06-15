@@ -133,6 +133,7 @@ function StatBox({ label, value, unit, color, warn }) {
 }
 
 export default function GoLiveStudio() {
+  const roomId = roomId;
   const [state, dispatch] = useReducer(reducer, initState);
   const uptimeRef = useRef(null);
   const healthRef = useRef(null);
@@ -476,12 +477,12 @@ export default function GoLiveStudio() {
         <ChatModeration />
         <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
         <StreamMetadataEditor />
-        <EnhancedIngestPanel roomId={null} isHost={true} />
-        <GreenroomQueue roomId={null} isHost={true} />
-        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
+        <GreenroomQueue roomId={roomId} isHost={true} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={roomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <AdvancedEncoderSettings onApply={() => {}} />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
       </div>
     </div>
   );
