@@ -93,6 +93,7 @@ function ThinkDots() {
 
 export default function JoyceAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
@@ -331,12 +332,12 @@ export default function JoyceAI() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
-        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="hype" />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        <ChatOverlay roomId={null} isVisible={false} />
-        <AICopilotSidebar roomId={null} isHost={false} />
+        <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="hype" />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={roomId} onContextReady={() => {}} />
+        <ChatOverlay roomId={roomId} isVisible={false} />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
       </div>
     </div>
   );

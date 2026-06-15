@@ -248,7 +248,7 @@ export default function ContentCalendarPage() {
 
       {user?.id && (
         <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StreamGoals roomId={null} isHost={true} />
+          <StreamGoals roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
           <AIHighlightGenerator creatorId={user.id} />
         </div>
       )}
