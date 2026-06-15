@@ -3,6 +3,13 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Users, Globe, Lock, Plus, X, Image, UserCircle, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ReferralProgram from '@/components/community/ReferralProgram';
+import DiscussionFeed from '@/components/community/DiscussionFeed';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 function Toggle({ checked, onChange }) {
   return (

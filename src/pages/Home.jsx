@@ -547,6 +547,9 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
+  var liveCount = liveRooms.length;
+  var filteredRooms = applyFilter(liveRooms, activeFilter);
+
   var { data: communities = [] } = useQuery({
     queryKey: ['communities'],
     queryFn: function() { return base44.entities.Community.list('-member_count', 12); },

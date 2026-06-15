@@ -1,6 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {

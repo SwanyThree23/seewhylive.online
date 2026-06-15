@@ -58,7 +58,7 @@ export default function OctagonalVideoWindow({
       <div
         className="absolute inset-0"
         style={{
-          clipPath,
+          clipPath: OCT,
           background: 'linear-gradient(135deg, #d4af37, #C0392B)',
           padding: '3px',
           opacity: 0.5,

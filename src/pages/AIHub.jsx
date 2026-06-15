@@ -19,6 +19,7 @@ const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
+const AMBER  = '#D4854A';
 const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 

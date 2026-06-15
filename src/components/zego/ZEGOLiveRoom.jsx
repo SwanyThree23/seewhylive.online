@@ -313,10 +313,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           return (
             <OctCell
               key={p.id}
-              stream={stream}
+              stream={peerStream}
               label={p.name}
-              sublabel={connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? '⚠ Failed' : stream ? undefined : 'Waiting…'}
-              live={connState === 'connected' && !!stream}
+              sublabel={connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? '⚠ Failed' : peerStream ? undefined : 'Waiting…'}
+              live={connState === 'connected' && !!peerStream}
               role={p.role}
             />
           );
