@@ -30,6 +30,7 @@ const TABS = ['pending', 'reviewed', 'insights'];
 
 export default function AIModerationPage() {
   const queryClient = useQueryClient();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('pending');
@@ -312,10 +313,10 @@ export default function AIModerationPage() {
         )}
 
         <div className="mt-6 space-y-4 px-4 pb-6">
-          <AIModeration roomId={null} isHost={false} />
-          <HostAlertCenter roomId={null} />
+          <AIModeration roomId={roomId} isHost={false} />
+          <HostAlertCenter roomId={roomId} />
           <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
-          <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+          <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
           <ReportsManager communityId={null} userId={user?.id} />
           <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={false} />

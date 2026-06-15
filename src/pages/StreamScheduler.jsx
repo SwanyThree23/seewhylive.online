@@ -494,7 +494,7 @@ export default function StreamScheduler() {
         <StreamGoals isHost={true} />
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
-        <MultiStreamConfig roomId={null} isHost={true} />
+        <MultiStreamConfig roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
       </div>
 
       {/* Quick navigation to related stream tools */}

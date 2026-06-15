@@ -79,6 +79,7 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 export default function GuardianAI() {
   const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
   const [banT,   setBanT]   = useState(95);
@@ -382,10 +383,10 @@ export default function GuardianAI() {
       `}</style>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIModeration roomId={null} isHost={false} />
+        <AIModeration roomId={roomId} isHost={false} />
         <ModerationActionModal isOpen={false} onClose={() => {}} userId={null} action={null} />
         <AnnouncementScheduler communityId={null} userId={user?.id} />
-        <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
         <ReportsManager communityId={null} userId={user?.id} />
         <ChallengeAnalytics communityId={null} />
         <SpotlightBanner communityId={null} isAdmin={false} />
