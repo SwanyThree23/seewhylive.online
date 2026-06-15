@@ -18,6 +18,10 @@ import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -313,6 +317,12 @@ export default function CreatorChannel() {
           <PaywallGate roomId={null} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
           <ClipCreatorSheet roomId={null} sessionId={null} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+          <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <OnlineUsersGrid compact maxVisible={10} />
+            <ContentRecommendations />
+            <CollaborationMatcher />
+            <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          </div>
         </div>
       </div>
     </div>
