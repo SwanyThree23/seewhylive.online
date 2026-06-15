@@ -48,6 +48,16 @@ export default function CreatorDashboardPage() {
     enabled: !!user?.id,
   });
 
+  const activeCreatorRoom = recentRooms.find(r => r.status === 'live') || recentRooms[0] || null;
+  const activeCreatorRoomId = activeCreatorRoom?.id || null;
+
+  const { data: creatorCommunity } = useQuery({
+    queryKey: ['creatorCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const creatorCommunityId = creatorCommunity?.id || null;
+
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['creatorActiveSubs', user?.id],
     queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id, status: 'active' }),
@@ -340,12 +350,12 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
             <SwanDirectorPanel roomId={null} hostId={user?.id} onClose={() => {}} />
-            <StreamEventBus roomId={null} isHost={true} sessionId={null} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
-            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <StreamEventBus roomId={activeCreatorRoomId} isHost={true} sessionId={activeCreatorRoomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
-            <AnnouncementPanel communityId={null} userId={user?.id} />
+            <AnnouncementPanel communityId={creatorCommunityId} userId={user?.id} />
           </div>
 
           <Link to={createPageUrl('ContentCalendar')}>
