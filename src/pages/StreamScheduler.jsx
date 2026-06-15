@@ -504,6 +504,7 @@ export default function StreamScheduler() {
         <ContentRecommendations />
         <OnlineUsersGrid compact maxVisible={8} />
         <EnhancedIngestPanel roomId={null} isHost={true} />
+        <CollaborationMatcher />
       </div>
 
       {/* Quick navigation to related stream tools */}

@@ -840,6 +840,7 @@ export default function PKBattleManager() {
         <BattleMode roomId={null} hostId={user?.id} isHost={true} />
         <TipAlert roomId={null} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

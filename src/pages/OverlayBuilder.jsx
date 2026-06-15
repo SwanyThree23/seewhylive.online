@@ -340,6 +340,7 @@ export default function OverlayBuilderPage() {
           <InteractivePollWidget roomId={null} isHost={true} />
           <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
           <StreamGoals isHost={true} />
+          <OnlineUsersGrid compact maxVisible={10} />
         </div>
       )}
     </div>

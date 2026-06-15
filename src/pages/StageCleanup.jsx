@@ -203,6 +203,8 @@ export default function StageCleanupPage() {
           <StreamHealthDashboard isLive={false} />
           <AIModeration roomId={null} isHost={true} />
           <GreenroomWaitlistPanel roomId={null} currentUser={user} onAdmit={() => {}} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

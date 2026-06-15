@@ -448,6 +448,7 @@ export default function MultiStreamManager() {
           <GuestStreamMonitor guestName="Guest" isStreaming={false} />
           <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
           <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

@@ -374,6 +374,7 @@ export default function ModerationDashboardPage() {
           <StreamHealthDashboard roomId={null} isHost={true} />
           <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
           <AnnouncementPanel communityId={null} userId={null} />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

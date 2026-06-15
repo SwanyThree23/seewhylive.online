@@ -774,6 +774,7 @@ export default function SceneTemplates() {
         <AutomatedClipGenerator streamSession={null} isLive={false} />
         <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
         <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
 
       {/* Cross-nav footer */}
