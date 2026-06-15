@@ -69,6 +69,13 @@ function CopyBtn({ value }) {
 
 export default function TranscriptionStudio() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const [lines, setLines]         = useState([]);
   const [live, setLive]           = useState(false);
@@ -276,12 +283,12 @@ export default function TranscriptionStudio() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
-        <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={user?.id} />
-        <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
-        <LiveTranscription roomId={null} isHost={false} />
+        <LiveTranslationWidget roomId={activeRoomId} isHost={false} targetLanguage="en" />
+        <LiveTranscription roomId={activeRoomId} isHost={false} />
         <OnlineUsersGrid compact maxVisible={8} />
-        <StreamHealthDashboard roomId={null} isHost={false} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
         <AutomatedHighlightReels streamSession={null} />
         <CollaborationMatcher />
       </div>
