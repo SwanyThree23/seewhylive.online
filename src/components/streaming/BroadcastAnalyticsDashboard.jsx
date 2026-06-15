@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, Eye, MessageSquare, Heart, Share2 } from 'lucide-react';
@@ -27,35 +27,14 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
 );
 
 export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
-  const [viewerData, setViewerData] = useState([
-    { time: '8:00', viewers: 120 },
-    { time: '8:15', viewers: 180 },
-    { time: '8:30', viewers: 245 },
-    { time: '8:45', viewers: 320 },
-    { time: '9:00', viewers: 380 },
-  ]);
+  const [viewerData] = useState([]);
 
-  const [engagementData, setEngagementData] = useState([
-    { label: 'Likes', value: 1240, color: '#C0392B' },
-    { label: 'Comments', value: 580, color: '#C9A84C' },
-    { label: 'Shares', value: 320, color: '#d4af37' },
-    { label: 'Tips', value: 890, color: '#6DBF7E' },
-  ]);
-
-  useEffect(() => {
-    if (!isLive) return;
-    const interval = setInterval(() => {
-      setViewerData(prev => [
-        ...prev.slice(1),
-        {
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          viewers: Math.floor(Math.random() * 200 + 300)
-        }
-      ]);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isLive]);
+  const engagementData = [
+    { label: 'Likes', value: streamSession?.likes || 0, color: '#C0392B' },
+    { label: 'Comments', value: streamSession?.comments || 0, color: '#C9A84C' },
+    { label: 'Shares', value: streamSession?.shares || 0, color: '#d4af37' },
+    { label: 'Tips', value: streamSession?.tips_count || 0, color: '#6DBF7E' },
+  ];
 
   const totalViewers = viewerData[viewerData.length - 1]?.viewers || 0;
   const peakViewers = Math.max(...viewerData.map(d => d.viewers));
