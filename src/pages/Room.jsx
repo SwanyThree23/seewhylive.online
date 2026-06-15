@@ -31,6 +31,8 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -583,6 +585,10 @@ export default function RoomPage() {
             {/* Live Poll Widget */}
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
+            </div>
+            <div className="mt-3 space-y-3">
+              <OnlineUsersGrid compact maxVisible={8} />
+              <ContentRecommendations />
             </div>
           </div>
         </div>

@@ -21,6 +21,9 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import GiftTray from '../components/live/GiftTray';
 import TipNowModal from '../components/live/TipNowModal';
 import PointsNotification from '../components/live/PointsNotification';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -786,6 +789,9 @@ export default function PKBattlePage() {
         <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
         {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
         {user?.id && <PointsNotification userId={user.id} />}
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
       </div>
     </div>
   );
