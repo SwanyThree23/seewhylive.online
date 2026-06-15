@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
@@ -78,6 +80,15 @@ export default function HybridStreamRoom() {
 
     return unsubscribe;
   }, [roomId]);
+
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [roomId, user?.id]);
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
@@ -294,7 +305,7 @@ export default function HybridStreamRoom() {
         <WatchPartyTab roomId={null} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <OnlineUsersGrid compact maxVisible={10} />
+          <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
           <ContentRecommendations />
           <CollaborationMatcher />
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
