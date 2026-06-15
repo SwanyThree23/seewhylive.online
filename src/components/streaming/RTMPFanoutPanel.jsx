@@ -1,107 +1,132 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Radio, Plus, Trash2, Wifi, WifiOff, Loader2, ChevronDown, ChevronUp, Settings, Eye, EyeOff, Copy, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Radio, Zap, ZapOff, Plus, ChevronDown, ChevronUp, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const PLATFORM_DEFS = [
-  { key: 'youtube',    label: 'YouTube Live',    color: '#C0392B',   rtmp: 'rtmp://a.rtmp.youtube.com/live2' },
-  { key: 'twitch',     label: 'Twitch',          color: '#9146ff',   rtmp: 'rtmp://live.twitch.tv/live' },
-  { key: 'facebook',   label: 'Facebook Live',   color: '#1877f2',   rtmp: 'rtmps://live-api-s.facebook.com:443/rtmp' },
-  { key: 'instagram',  label: 'Instagram Live',  color: '#C0392B',   rtmp: 'rtmps://edgetee-upload.facebook.com:443/rtmp' },
-  { key: 'tiktok',     label: 'TikTok Live',     color: '#fff',      rtmp: 'rtmp://push.tiktokv.com/rtmp' },
-  { key: 'x',          label: 'X (Twitter)',      color: '#fff',      rtmp: 'rtmp://ingest.pscp.tv:80/x' },
-  { key: 'linkedin',   label: 'LinkedIn Live',   color: '#0A66C2',   rtmp: 'rtmp://4.rtmp.linkedin.com/live' },
-  { key: 'amazon',     label: 'Amazon Live',     color: '#FF9900',   rtmp: 'rtmp://live.amazon.com/live' },
-  { key: 'telegram',   label: 'Telegram',        color: '#2AABEE',   rtmp: 'rtmp://dc1-1.rtmp.t.me/s' },
-  { key: 'steam',      label: 'Steam',           color: '#1b2838',   rtmp: 'rtmp://ingest.steam.tv/live' },
-  { key: 'custom',     label: 'Custom RTMP',     color: G,           rtmp: '' },
-];
-
-const STATUS_CFG = {
-  live:        { color: '#6DBF7E', dot: true,  label: 'LIVE' },
-  connecting:  { color: G,         dot: true,  label: 'Connecting' },
-  error:       { color: '#C0392B', dot: false, label: 'Error' },
-  offline:     { color: 'rgba(255,255,255,0.2)', dot: false, label: 'Idle' },
+const PLATFORM_META = {
+  youtube:   { icon: '▶', color: '#FF0000', label: 'YouTube Live' },
+  twitch:    { icon: '◉', color: '#9146FF', label: 'Twitch' },
+  facebook:  { icon: 'f', color: '#1877F2', label: 'Facebook Live' },
+  instagram: { icon: '◈', color: '#E1306C', label: 'Instagram Live' },
+  tiktok:    { icon: '♫', color: '#69C9D0', label: 'TikTok LIVE' },
+  linkedin:  { icon: 'in', color: '#0A66C2', label: 'LinkedIn Live' },
+  kick:      { icon: '⚡', color: '#53FC18', label: 'Kick' },
+  x:         { icon: '𝕏', color: '#FFFFFF', label: 'X (Twitter)' },
+  custom:    { icon: '⊕', color: GOLD,      label: 'Custom RTMP' },
 };
 
-function PlatformRow({ dest, onRemove, onToggle, onStatusChange, fanoutActive }) {
-  const [expanded, setExpanded] = useState(false);
-  const [showKey, setShowKey] = useState(false);
-  const [copiedKey, setCopiedKey] = useState(false);
-  const def = PLATFORM_DEFS.find(p => p.key === dest.platform) || PLATFORM_DEFS.find(p => p.key === 'custom');
-  const sCfg = STATUS_CFG[dest.status] || STATUS_CFG.offline;
-
-  const copyKey = () => {
-    if (!dest.stream_key) return;
-    navigator.clipboard.writeText(dest.stream_key);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
-    toast.success('Stream key copied');
-  };
-
+function PlatformRow({ dest, isLive, onToggle, isPending }) {
+  const meta = PLATFORM_META[dest.platform] || PLATFORM_META.custom;
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -16 }}
-      className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${dest.enabled ? `${def.color}30` : 'rgba(255,255,255,0.06)'}`, background: 'rgba(8,11,24,0.8)' }}
+      className="flex items-center gap-2 rounded-lg p-2"
+      style={{ background: isLive ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isLive ? 'rgba(109,191,126,0.2)' : 'rgba(255,255,255,0.06)'}` }}
     >
-      <div className="flex items-center gap-2 px-3 py-2.5">
-        {/* Platform dot */}
-        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: def.color }} />
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-black flex-shrink-0"
+        style={{ background: `${meta.color}22`, color: meta.color }}>
+        {meta.icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[11px] font-bold text-white leading-none truncate">{dest.label || meta.label}</p>
+        <p className="text-[9px] text-white/30 mt-0.5 truncate">{dest.server_url || '—'}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {isLive && <span className="flex items-center gap-1 text-[9px] font-black text-[#6DBF7E]"><span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" /> LIVE</span>}
+        <button
+          disabled={isPending}
+          onClick={() => onToggle(dest.id, !isLive)}
+          style={{ ...T, padding: '3px 10px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: isLive ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.15)',
+            color: isLive ? '#f87171' : '#6DBF7E', opacity: isPending ? 0.5 : 1 }}
+        >
+          {isLive ? 'Stop' : 'Start'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
 
-        {/* Label + status */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-black" style={{ ...T, color: dest.enabled ? def.color : 'rgba(255,255,255,0.3)' }}>
-              {dest.label || def.label}
+export default function RTMPFanoutPanel({ userId, streamId, isStreaming }) {
+  const qc = useQueryClient();
+  const [expanded, setExpanded] = useState(true);
+  const [liveSet, setLiveSet] = useState(new Set());
+  const [pending, setPending] = useState(new Set());
+
+  const { data: destinations = [] } = useQuery({
+    queryKey: ['rtmp-destinations', userId],
+    queryFn: () => userId ? base44.entities.RTMPDestination.filter({ creator_id: userId }) : [],
+    enabled: !!userId,
+    refetchInterval: 15000,
+  });
+
+  const enabledDests = destinations.filter(d => d.is_enabled !== false);
+
+  const toggleDest = async (destId, goLive) => {
+    setPending(p => new Set([...p, destId]));
+    try {
+      await base44.entities.RTMPDestination.update(destId, { is_live: goLive });
+      setLiveSet(prev => {
+        const next = new Set(prev);
+        goLive ? next.add(destId) : next.delete(destId);
+        return next;
+      });
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: goLive ? 'RTMP fanout started' : 'RTMP fanout stopped',
+          description: `Destination: ${destId}`,
+        }).catch(() => {});
+      }
+      toast.success(goLive ? 'Fanout started' : 'Fanout stopped');
+      qc.invalidateQueries(['rtmp-destinations', userId]);
+    } catch {
+      toast.error('Failed to update destination');
+    } finally {
+      setPending(p => { const n = new Set(p); n.delete(destId); return n; });
+    }
+  };
+
+  const goLiveAll = async () => {
+    if (!enabledDests.length) { toast.error('No destinations configured'); return; }
+    for (const d of enabledDests) await toggleDest(d.id, true);
+  };
+
+  const stopAll = async () => {
+    for (const d of enabledDests) await toggleDest(d.id, false);
+  };
+
+  const liveCount = enabledDests.filter(d => liveSet.has(d.id) || d.is_live).length;
+
+  return (
+    <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: liveCount > 0 ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.15)' }}>
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between p-3"
+        style={T}
+      >
+        <div className="flex items-center gap-2">
+          <Radio className="w-3.5 h-3.5" style={{ color: GOLD }} />
+          <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD }}>RTMP Fanout</span>
+          {liveCount > 0 && (
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#6DBF7E]/20 text-[#6DBF7E] border border-[#6DBF7E]/30">
+              {liveCount} LIVE
             </span>
-            {fanoutActive && dest.enabled && (
-              <div className="flex items-center gap-1">
-                {sCfg.dot && <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: sCfg.color }} />}
-                <span className="text-[9px] font-black uppercase" style={{ color: sCfg.color, ...T }}>{sCfg.label}</span>
-              </div>
-            )}
-          </div>
-          {dest.rtmp_url && (
-            <p className="text-[9px] font-mono text-white/20 truncate">{dest.rtmp_url}</p>
           )}
         </div>
-
-        {/* Controls */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="w-6 h-6 rounded flex items-center justify-center transition-all"
-            style={{ background: expanded ? `${G}15` : 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-          >
-            <Settings className="w-3 h-3" style={{ color: expanded ? G : 'rgba(255,255,255,0.3)' }} />
-          </button>
-          {/* Enable toggle */}
-          <button
-            onClick={() => onToggle(dest.id, !dest.enabled)}
-            className="w-10 h-5 rounded-full transition-all relative flex-shrink-0"
-            style={{ background: dest.enabled ? G : 'rgba(255,255,255,0.1)' }}
-          >
-            <div className="w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all" style={{ left: dest.enabled ? 'calc(100% - 18px)' : 2 }} />
-          </button>
-          <button
-            onClick={() => onRemove(dest.id)}
-            className="w-6 h-6 rounded flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-white/30">{enabledDests.length} dest.</span>
+          {expanded ? <ChevronUp className="w-3 h-3 text-white/30" /> : <ChevronDown className="w-3 h-3 text-white/30" />}
         </div>
-      </div>
+      </button>
 
-      {/* Expanded config */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -110,279 +135,54 @@ function PlatformRow({ dest, onRemove, onToggle, onStatusChange, fanoutActive })
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-3 space-y-2 border-t border-white/5 pt-2">
-              {/* RTMP URL */}
-              <div>
-                <p className="text-[9px] uppercase text-white/25 mb-1 font-bold" style={T}>RTMP URL</p>
-                <input
-                  defaultValue={dest.rtmp_url || def.rtmp}
-                  placeholder={def.rtmp || 'rtmp://ingest.example.com/live'}
-                  className="w-full px-2 py-1 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-white/70 placeholder-white/20 outline-none focus:border-[#d4af37]/30"
-                  onBlur={e => onToggle(dest.id, dest.enabled, { rtmp_url: e.target.value })}
-                />
-              </div>
-              {/* Stream Key */}
-              <div>
-                <p className="text-[9px] uppercase text-white/25 mb-1 font-bold" style={T}>Stream Key</p>
-                <div className="flex items-center gap-1">
-                  <div className="flex-1 flex items-center gap-1 px-2 py-1 rounded bg-black/40 border border-white/10">
-                    <input
-                      type={showKey ? 'text' : 'password'}
-                      defaultValue={dest.stream_key || ''}
-                      placeholder="xxxx-xxxx-xxxx-xxxx"
-                      className="flex-1 bg-transparent text-[10px] font-mono text-white/70 placeholder-white/20 outline-none"
-                      onBlur={e => onToggle(dest.id, dest.enabled, { stream_key: e.target.value })}
+            <div className="px-3 pb-3 space-y-2">
+              {enabledDests.length === 0 ? (
+                <div className="text-center py-4">
+                  <AlertCircle className="w-5 h-5 text-white/20 mx-auto mb-1" />
+                  <p className="text-[10px] text-white/30">No destinations configured</p>
+                  <p className="text-[10px] text-white/20">Add them in Multi-Platform Settings</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  {enabledDests.map(dest => (
+                    <PlatformRow
+                      key={dest.id}
+                      dest={dest}
+                      isLive={liveSet.has(dest.id) || !!dest.is_live}
+                      isPending={pending.has(dest.id)}
+                      onToggle={toggleDest}
                     />
-                    <button onClick={() => setShowKey(s => !s)} className="text-white/25 hover:text-white/50">
-                      {showKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                    </button>
-                  </div>
-                  <button onClick={copyKey}
-                    className="w-7 h-7 rounded flex items-center justify-center transition-all"
-                    style={{ background: copiedKey ? `${G}20` : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    {copiedKey ? <Check className="w-3 h-3" style={{ color: G }} /> : <Copy className="w-3 h-3 text-white/30" />}
+                  ))}
+                </div>
+              )}
+
+              {enabledDests.length > 0 && (
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={goLiveAll}
+                    disabled={!isStreaming}
+                    style={{ ...T, flex: 1, height: 30, fontSize: 11, fontWeight: 900, borderRadius: 8, border: 'none', cursor: isStreaming ? 'pointer' : 'not-allowed',
+                      background: isStreaming ? `linear-gradient(135deg, ${CRIMSON}, #B22222)` : 'rgba(255,255,255,0.05)', color: '#fff',
+                      opacity: isStreaming ? 1 : 0.4 }}
+                  >
+                    <Zap className="w-3 h-3 inline mr-1" />Go Live All
+                  </button>
+                  <button
+                    onClick={stopAll}
+                    style={{ ...T, height: 30, padding: '0 10px', fontSize: 11, fontWeight: 900, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'transparent', color: 'rgba(255,255,255,0.4)' }}
+                  >
+                    <ZapOff className="w-3 h-3 inline mr-1" />Stop All
                   </button>
                 </div>
-              </div>
+              )}
+
+              {!isStreaming && enabledDests.length > 0 && (
+                <p className="text-[9px] text-white/20 text-center">Start your main stream first to enable fanout</p>
+              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
-  );
-}
-
-export default function RTMPFanoutPanel({ roomId, isHost }) {
-  const qc = useQueryClient();
-  const [destinations, setDestinations] = useState([]);
-  const [fanoutActive, setFanoutActive] = useState(false);
-  const [showAdd, setShowAdd] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState('youtube');
-  const [customLabel, setCustomLabel] = useState('');
-
-  // Load existing RTMP destinations from room entity
-  const { data: room } = useQuery({
-    queryKey: ['room-fanout', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
-    enabled: !!roomId,
-    refetchInterval: fanoutActive ? 8000 : false,
-  });
-
-  useEffect(() => {
-    if (room?.rtmp_destinations?.length && destinations.length === 0) {
-      setDestinations(room.rtmp_destinations.map(d => ({
-        id: d.id || `dest_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-        platform: d.platform || 'custom',
-        label: d.label || d.platform,
-        rtmp_url: d.rtmp_url || '',
-        stream_key: d.stream_key || '',
-        enabled: d.isActive || false,
-        status: 'offline',
-      })));
-    }
-    if (room?.multi_streaming_enabled !== undefined) {
-      setFanoutActive(room.multi_streaming_enabled);
-    }
-  }, [room]);
-
-  const addDestination = () => {
-    const def = PLATFORM_DEFS.find(p => p.key === selectedPlatform);
-    const id = `dest_${Date.now()}`;
-    const newDest = {
-      id,
-      platform: selectedPlatform,
-      label: customLabel.trim() || def.label,
-      rtmp_url: def.rtmp,
-      stream_key: '',
-      enabled: false,
-      status: 'offline',
-    };
-    const updated = [newDest, ...destinations];
-    setDestinations(updated);
-    persistDestinations(updated);
-    setCustomLabel('');
-    setShowAdd(false);
-    toast.success(`${def.label} added`);
-  };
-
-  const removeDestination = (id) => {
-    const updated = destinations.filter(d => d.id !== id);
-    setDestinations(updated);
-    persistDestinations(updated);
-  };
-
-  const toggleDestination = (id, enabled, patch = {}) => {
-    const updated = destinations.map(d => d.id === id ? { ...d, enabled, ...patch } : d);
-    setDestinations(updated);
-    persistDestinations(updated);
-  };
-
-  const persistDestinations = (dests) => {
-    if (!roomId) return;
-    base44.entities.Room.update(roomId, {
-      rtmp_destinations: dests.map(d => ({
-        id: d.id,
-        platform: d.platform,
-        label: d.label,
-        rtmp_url: d.rtmp_url,
-        stream_key: d.stream_key,
-        isActive: d.enabled,
-      })),
-    }).catch(() => {});
-  };
-
-  const toggleFanout = async () => {
-    const next = !fanoutActive;
-    setFanoutActive(next);
-    if (next) {
-      // Mark all enabled destinations as connecting
-      setDestinations(prev => prev.map(d => d.enabled ? { ...d, status: 'connecting' } : d));
-      setTimeout(() => setDestinations(prev => prev.map(d => d.enabled ? { ...d, status: 'live' } : d)), 3000);
-    } else {
-      setDestinations(prev => prev.map(d => ({ ...d, status: 'offline' })));
-    }
-    if (roomId) {
-      await base44.entities.Room.update(roomId, { multi_streaming_enabled: next }).catch(() => {});
-    }
-    toast.success(next ? 'Fanout started' : 'Fanout stopped');
-  };
-
-  if (!isHost) return null;
-
-  const enabledCount = destinations.filter(d => d.enabled).length;
-
-  return (
-    <div className="space-y-2">
-      {/* Header + master toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Radio className="w-3.5 h-3.5" style={{ color: fanoutActive ? '#C0392B' : G }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: fanoutActive ? '#C0392B' : G }}>
-            RTMP Fanout
-          </span>
-          {enabledCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: fanoutActive ? 'rgba(192,57,43,0.25)' : `${G}22`, color: fanoutActive ? '#C0392B' : G, ...T }}>
-              {enabledCount} platforms
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowAdd(s => !s)}
-            className="flex items-center gap-1 px-2 py-1 rounded transition-all"
-            style={{
-              background: showAdd ? `${G}15` : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${showAdd ? `${G}40` : 'rgba(255,255,255,0.1)'}`,
-              color: showAdd ? G : 'rgba(255,255,255,0.4)',
-            }}
-          >
-            <Plus className="w-3 h-3" />
-            <span className="text-[10px] font-bold uppercase" style={T}>Add</span>
-          </button>
-          {enabledCount > 0 && (
-            <button
-              onClick={toggleFanout}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded font-black text-[10px] uppercase transition-all"
-              style={{
-                background: fanoutActive ? 'rgba(192,57,43,0.2)' : `${G}20`,
-                border: `1px solid ${fanoutActive ? 'rgba(192,57,43,0.5)' : `${G}50`}`,
-                color: fanoutActive ? '#C0392B' : G,
-                ...T,
-              }}
-            >
-              {fanoutActive ? (
-                <><WifiOff className="w-3 h-3" /> Stop</>
-              ) : (
-                <><Wifi className="w-3 h-3" /> Go Live</>
-              )}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Add platform form */}
-      <AnimatePresence>
-        {showAdd && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-3 space-y-2.5 rounded-lg" style={{ background: `${G}06`, border: `1px solid ${G}20` }}>
-              <div className="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto pr-0.5">
-                {PLATFORM_DEFS.map(p => (
-                  <button
-                    key={p.key}
-                    onClick={() => setSelectedPlatform(p.key)}
-                    className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all"
-                    style={{
-                      background: selectedPlatform === p.key ? `${p.color}15` : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${selectedPlatform === p.key ? `${p.color}50` : 'rgba(255,255,255,0.07)'}`,
-                    }}
-                  >
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
-                    <span className="text-[10px] font-bold text-white/70 truncate" style={T}>{p.label}</span>
-                  </button>
-                ))}
-              </div>
-              {selectedPlatform === 'custom' && (
-                <input
-                  value={customLabel}
-                  onChange={e => setCustomLabel(e.target.value)}
-                  placeholder="Custom label (e.g. Rumble, Kick)"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
-                />
-              )}
-              <button
-                onClick={addDestination}
-                className="w-full py-1.5 rounded text-[11px] font-black uppercase transition-all"
-                style={{ background: G, color: '#000', ...T }}
-              >
-                Add {PLATFORM_DEFS.find(p => p.key === selectedPlatform)?.label}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Destinations list */}
-      {destinations.length === 0 && !showAdd ? (
-        <div className="py-5 text-center">
-          <Radio className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.2)' }} />
-          <p className="text-[11px] text-white/20" style={T}>No platforms configured</p>
-          <p className="text-[10px] text-white/15 mt-0.5">Add YouTube, Twitch, TikTok + 8 more</p>
-        </div>
-      ) : (
-        <AnimatePresence>
-          <div className="space-y-1.5">
-            {destinations.map(dest => (
-              <PlatformRow
-                key={dest.id}
-                dest={dest}
-                onRemove={removeDestination}
-                onToggle={toggleDestination}
-                fanoutActive={fanoutActive}
-              />
-            ))}
-          </div>
-        </AnimatePresence>
-      )}
-
-      {/* Fanout status summary */}
-      {fanoutActive && enabledCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.25)' }}
-        >
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
-          <span className="text-[10px] font-black uppercase text-red-400" style={T}>
-            Streaming to {destinations.filter(d => d.enabled && d.status === 'live').length}/{enabledCount} platforms
-          </span>
-        </motion.div>
-      )}
     </div>
   );
 }
