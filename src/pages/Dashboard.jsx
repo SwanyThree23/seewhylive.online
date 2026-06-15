@@ -232,7 +232,7 @@ function AnalyticsTab({ user }) {
 
   const platformData = destinations.map(d => ({
     name: d.platform || d.label || 'Custom',
-    viewers: Math.floor(Math.random() * 200 + 50),
+    viewers: d.viewer_count || 0,
   }));
 
   const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];

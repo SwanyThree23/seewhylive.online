@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, Users, Trophy, Zap, Timer, TrendingUp } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const BattleCard = ({ player, score, tips, isWinner }) => (
   <motion.div
@@ -41,50 +43,44 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
 );
 
 export default function PKBattleInterface({ roomId }) {
-  const [battleActive, setBattleActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180);
-  const [creator, setCreator] = useState({
-    name: 'CreatorName',
-    followers: 1250,
-    initials: 'CN',
-    score: 0,
-    tips: 0
+
+  const { data: battles = [] } = useQuery({
+    queryKey: ['pk-interface-battle', roomId],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: roomId, status: 'active' }),
+    enabled: !!roomId,
+    refetchInterval: 3000,
   });
-  const [challenger, setChallenger] = useState({
-    name: 'ChallengeName',
-    followers: 890,
-    initials: 'CH',
-    score: 0,
-    tips: 0
-  });
+
+  const battle = battles[0] || null;
+  const battleActive = !!battle;
+
+  const creator = {
+    name: battle?.creator_name || 'Creator',
+    followers: 0,
+    initials: (battle?.creator_name || 'C').slice(0, 2).toUpperCase(),
+    score: (battle?.creator_tips || 0) + (battle?.creator_subs || 0) * 10,
+    tips: battle?.creator_tips || 0,
+  };
+
+  const challenger = {
+    name: battle?.challenger_name || 'Challenger',
+    followers: 0,
+    initials: (battle?.challenger_name || 'CH').slice(0, 2).toUpperCase(),
+    score: (battle?.challenger_tips || 0) + (battle?.challenger_subs || 0) * 10,
+    tips: battle?.challenger_tips || 0,
+  };
 
   useEffect(() => {
-    if (!battleActive) return;
+    if (!battle?.started_at) return;
+    const battleDuration = battle.duration_seconds || 180;
+    const elapsed = Math.round((Date.now() - new Date(battle.started_at).getTime()) / 1000);
+    setTimeLeft(Math.max(0, battleDuration - elapsed));
     const interval = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          setBattleActive(false);
-          return 0;
-        }
-        return t - 1;
-      });
-
-      // Simulate score updates
-      setCreator(prev => ({
-        ...prev,
-        tips: prev.tips + Math.floor(Math.random() * 50),
-        score: prev.score + Math.floor(Math.random() * 100)
-      }));
-
-      setChallenger(prev => ({
-        ...prev,
-        tips: prev.tips + Math.floor(Math.random() * 40),
-        score: prev.score + Math.floor(Math.random() * 80)
-      }));
-    }, 2000);
-
+      setTimeLeft(t => Math.max(0, t - 1));
+    }, 1000);
     return () => clearInterval(interval);
-  }, [battleActive]);
+  }, [battle?.id, battle?.started_at]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -106,22 +102,7 @@ export default function PKBattleInterface({ roomId }) {
           <h2 className="text-2xl font-black text-white">PK BATTLE</h2>
         </div>
         <p className="text-white/60 mb-6">Challenge another creator to a live battle</p>
-        <button
-          onClick={() => {
-            setBattleActive(true);
-            setTimeLeft(180);
-            setCreator(p => ({ ...p, tips: 0, score: 0 }));
-            setChallenger(p => ({ ...p, tips: 0, score: 0 }));
-          }}
-          style={{
-            width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', borderRadius: 8,
-            background: '#D4AF37', color: '#000', border: 'none',
-          }}
-        >
-          <Swords className="w-4 h-4" />
-          Start Battle
-        </button>
+        <p className="text-[11px] text-white/40 mt-2">No active battle in this room</p>
       </motion.div>
     );
   }
@@ -197,10 +178,9 @@ export default function PKBattleInterface({ roomId }) {
             {winner === 'creator' ? creator.name : challenger.name} Wins!
           </p>
           <button
-            onClick={() => setBattleActive(false)}
             style={{
               width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: 14, cursor: 'pointer', borderRadius: 8,
+              fontWeight: 600, fontSize: 14, cursor: 'default', borderRadius: 8,
               background: '#6DBF7E', color: '#fff', border: 'none',
             }}
           >
