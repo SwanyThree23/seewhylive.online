@@ -587,7 +587,7 @@ export default function RoomPage() {
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
             <div className="mt-3 space-y-3">
-              <OnlineUsersGrid compact maxVisible={8} />
+              <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
               <ContentRecommendations />
             </div>
           </div>
