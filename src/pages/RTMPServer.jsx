@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -53,7 +58,7 @@ export default function RTMPServer() {
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    return stored || `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+    return stored || `sk_live_${cryptoHex(24)}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
 
@@ -64,7 +69,7 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const newKey = `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+      const newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);

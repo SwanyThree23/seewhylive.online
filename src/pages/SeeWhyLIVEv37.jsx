@@ -740,7 +740,8 @@ function WatchPartyPanel() {
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    setPartyId(`PARTY-${Math.random().toString(36).slice(2,8).toUpperCase()}`);
+    const arr = crypto.getRandomValues(new Uint8Array(4));
+    setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);

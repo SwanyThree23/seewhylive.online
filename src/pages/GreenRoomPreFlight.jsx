@@ -25,21 +25,25 @@ const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
+
 function genToken() {
-  const rand = () => Math.random().toString(36).slice(2, 10);
-  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
+  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + cryptoHex(8);
   const session = Date.now();
   return `${user}?session=${session}`;
 }
 
 function genVDOLink() {
-  const push = Math.random().toString(36).slice(2, 14);
+  const push = cryptoHex(12);
   return `https://vdo.ninja/?push=${push}&quality=4k`;
 }
 
 function genStreamKey(userId) {
-  const id = userId || 'sw_' + Math.random().toString(36).slice(2, 18);
-  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+  const id = userId || 'sw_' + cryptoHex(16);
+  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${cryptoHex(8).toUpperCase()}`;
 }
 
 function StatusBadge({ status }) {
