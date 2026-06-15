@@ -190,7 +190,7 @@ export default function WelcomePage() {
         <ZEGOMobileAppBanner />
         <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
-        <ContentRecommendations userId={null} />
+        <ContentRecommendations userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         {!user && <OnboardingFlow onComplete={() => {}} />}
       </div>

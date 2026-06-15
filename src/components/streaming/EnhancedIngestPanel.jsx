@@ -28,7 +28,6 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [bitrate, setBitrate] = useState(3000);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(null);
-  const [mockGuestStreaming] = useState(true);
 
   const copyToClipboard = (text, label) => {
     navigator.clipboard.writeText(text);
@@ -198,7 +197,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
           {activeTab === 'guests' && <div className="space-y-3">
             <div className="space-y-3">
               {/* Guest Stream Monitor */}
-              <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={mockGuestStreaming} />
+              <GuestStreamMonitor guestName="Alex (YouTube)" isStreaming={false} />
               <GuestStreamMonitor guestName="Jordan (Twitch)" isStreaming={false} />
 
               <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">

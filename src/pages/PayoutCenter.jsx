@@ -76,7 +76,7 @@ export default function PayoutCenter() {
 
   var records = payouts || [];
   var totalPaid = records.filter(r => r.status === 'paid').reduce((s, r) => s + creatorCut(r.gross || r.gross_amount || 0), 0);
-  var pendingBalance = 847; // Simulated pending
+  var pendingBalance = records.filter(r => r.status === 'pending').reduce((s, r) => s + creatorCut(r.gross || r.gross_amount || 0), 0);
   var totalGross = records.reduce((s, r) => s + (r.gross || r.gross_amount || 0), 0);
 
   function handleRequestPayout() {
@@ -275,10 +275,10 @@ export default function PayoutCenter() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <RevenueDashboard userId={null} />
-        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={true} embedded={true} />
-        <SubscriptionManager creatorId={null} />
-        <StripeConnectButton creatorId={null} />
+        <RevenueDashboard userId={user?.id} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
+        <SubscriptionManager creatorId={user?.id} />
+        <StripeConnectButton creatorId={user?.id} />
       </div>
     </div>
   );
