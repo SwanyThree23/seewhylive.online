@@ -91,7 +91,7 @@ export default function DevicePreview({ user, onDeviceState }) {
         const dl = navigator.connection.downlink;
         setNetworkQuality(dl > 10 ? 4 : dl > 5 ? 3 : dl > 1 ? 2 : 1);
       } else {
-        setNetworkQuality(q => (Math.random() > 0.85 ? Math.max(2, q - 1) : Math.min(4, q + 1)));
+        setNetworkQuality(3);
       }
     }, 4000);
     return () => clearInterval(iv);

@@ -316,7 +316,7 @@ function LiveMatchView() {
 
   function addPlay() {
     const newPlay = {
-      time: `${Math.floor(Math.random() * 12)}:${String(Math.floor(Math.random() * 59)).padStart(2, '0')}`,
+      time: new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
       player: plays.length % 2 === 0 ? 'K. Daniels' : 'O. Smith',
       action: 'Manual log play',
       pts: 1,

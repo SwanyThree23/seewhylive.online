@@ -96,6 +96,8 @@ import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
@@ -1558,10 +1560,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
-                {/* Evmux web source */}
+                {/* Web Sources + RTMP Ingest */}
                 {isHost && (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => {}} />
+                  <div className="space-y-2 p-3 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.5)' }}>
+                    <StreamWebSourceManager isStreamActive={party?.status === 'live'} />
+                    <div className="pt-1 border-t border-white/5">
+                      <RTMPIngestPanel roomId={partyId} />
+                    </div>
                   </div>
                 )}
 
@@ -1725,7 +1730,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
-                <VdoNinjaGuestLink roomId={partyId} />
+                <RTMPIngestPanel roomId={partyId} />
+                <StreamWebSourceManager isStreamActive={party?.status === 'live'} />
               </div>
             )}
 

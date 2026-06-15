@@ -15,6 +15,12 @@ const SPAM_PATTERNS = [
   /(?:visit|click|buy|now|free)[^\s]*/gi, // spam keywords
 ];
 
+function userHue(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return h % 360;
+}
+
 const EMOTES = {
   ':)': '😊',
   ':(': '😢',
@@ -184,7 +190,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        user_color: `hsl(${userHue(userId)}, 70%, 50%)`,
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },

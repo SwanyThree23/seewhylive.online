@@ -149,11 +149,11 @@ export default function GoLiveStudio() {
       dispatch({
         type: 'UPDATE_HEALTH',
         payload: {
-          bitrate: 5800 + Math.floor(Math.random() * 400),
-          fps: 59 + Math.round(Math.random()),
-          droppedFrames: Math.floor(Math.random() * 3),
-          latency: 80 + Math.floor(Math.random() * 40),
-          viewerCount: state.viewerCount + Math.floor(Math.random() * 3) - 1,
+          bitrate: 5800,
+          fps: 60,
+          droppedFrames: 0,
+          latency: 80,
+          viewerCount: state.viewerCount,
         },
       });
     }, 2000);

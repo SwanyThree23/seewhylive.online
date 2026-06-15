@@ -9,6 +9,9 @@ import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestGrid from '../components/live/GuestGrid';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import GuestConnector from '../components/live/GuestConnector';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import UnifiedChat from '../components/live/UnifiedChat';
@@ -239,7 +242,9 @@ export default function HybridStreamRoom() {
           <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
           <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
           <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
-          <EvmuxWebSource isActive={false} onClose={() => {}} />
+          <StreamWebSourceManager isStreamActive={false} />
+          <RTMPIngestPanel roomId={roomId} />
+          <GuestConnector roomId={roomId} />
           <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
         </div>
       )}

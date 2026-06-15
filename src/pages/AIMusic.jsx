@@ -791,7 +791,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       } catch (_) {
         data = {
           title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
-          emoji: '🎵', tags, duration: `${2 + Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+          emoji: '🎵', tags, duration: '3:00',
           streamReady: true,
           lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
         };
@@ -817,7 +817,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         id: `t${Date.now()}`,
         title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
         tags: tags.slice(0, 6),
-        duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+        duration: '3:00',
         emoji: '🎵', liked: false, likeCount: 0,
         streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
@@ -844,7 +844,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         ...track,
         id: `t${Date.now()}`,
         title: track.title + ' (Continued)',
-        duration: '1:' + (30 + Math.floor(Math.random() * 29)).toString(),
+        duration: '2:00',
         likeCount: 0,
         liked: false,
       };

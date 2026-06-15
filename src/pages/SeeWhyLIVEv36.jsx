@@ -1178,7 +1178,7 @@ function PlatformsPanel() {
   const totalViewers = platforms.filter(p=>p.live).reduce((a,p)=>a+p.viewers,0);
 
   function togglePlatform(id) {
-    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:p.live?0:Math.floor(Math.random()*600+100)}:p));
+    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:0}:p));
   }
 
   const SCENES = ["Main Stage","State vs State Matchup","Tribute Memorial","Podcast Booth","Music Studio","Watch Party","Intermission","Outro Slate"];
