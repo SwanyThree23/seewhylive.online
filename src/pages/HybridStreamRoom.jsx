@@ -31,6 +31,11 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import GiftShopTray from '../components/live/GiftShopTray';
+import GiftAnimation from '../components/live/GiftAnimation';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -299,10 +304,17 @@ export default function HybridStreamRoom() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <CollabPlaylist roomId={null} isHost={false} />
-        <VideoQueuePanel roomId={null} isHost={false} onVideoSelect={() => {}} />
-        <WatchPartyAnalytics partyId={null} />
-        <WatchPartyTab roomId={null} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
+        {roomId && room?.host_id && (
+          <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
+        )}
+        {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+        {roomId && isHost && <GiftShopTray roomId={roomId} recipientId={room?.host_id} onClose={() => {}} />}
+        {roomId && <GiftAnimation roomId={roomId} />}
+        {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
+        <CollabPlaylist roomId={roomId} isHost={isHost} />
+        <VideoQueuePanel roomId={roomId} isHost={isHost} onVideoSelect={() => {}} />
+        <WatchPartyAnalytics partyId={roomId} />
+        <WatchPartyTab roomId={roomId} user={user} party={room} members={participants} remoteStreams={remoteStreams} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />

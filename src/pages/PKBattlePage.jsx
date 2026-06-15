@@ -21,6 +21,8 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import GiftTray from '../components/live/GiftTray';
 import TipNowModal from '../components/live/TipNowModal';
 import PointsNotification from '../components/live/PointsNotification';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LivePoll from '../components/live/LivePoll';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -536,6 +538,8 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
+  const isHost = !!(user?.id && battle?.creator_id === user?.id);
+
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
@@ -789,6 +793,8 @@ export default function PKBattlePage() {
         <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
         {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
         {user?.id && <PointsNotification userId={user.id} />}
+        {battleId && <SuperChatRail roomId={battleId} currentUser={user} />}
+        {battleId && <LivePoll roomId={battleId} isHost={isHost} />}
         <OnlineUsersGrid roomId={battleId} remoteStreams={battleRemoteStreams} peerUserIds={battlePeerUserIds} localStream={localCamStream} currentUser={user} compact maxVisible={8} />
         <ContentRecommendations />
         <CollaborationMatcher />
