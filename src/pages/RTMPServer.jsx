@@ -19,6 +19,9 @@ import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -273,7 +276,7 @@ export default function RTMPServer() {
               ))}
             </div>
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <ZEGOStreamHealthCard roomId={null} />
+              <ZEGOStreamHealthCard roomId={streamKey || null} />
               <ZEGOConfigPanel user={user} />
             </div>
 
@@ -304,8 +307,11 @@ export default function RTMPServer() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={false} />
           <CoStreamPanel roomId={null} />
+          <RTMPFanoutPanel roomId={null} isHost={true} />
+          <RTMPIngestPanel roomId={null} />
           <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
           <EnhancedIngestPanel roomId={null} isHost={true} />
+          <AdvancedEncoderSettings onApply={() => {}} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
         </div>
