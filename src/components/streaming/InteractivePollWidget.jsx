@@ -54,10 +54,13 @@ export default function InteractivePollWidget({ roomId, isHost }) {
   };
 
   const handleVote = (pollId, optionIndex) => {
-    setVotes(prev => ({
-      ...prev,
-      [pollId]: { ...prev[pollId], voted: optionIndex }
-    }));
+    setVotes(prev => {
+      var current = prev[pollId] || {};
+      if (current.voted !== undefined) return prev;
+      var counts = { ...(current.counts || {}) };
+      counts[optionIndex] = (counts[optionIndex] || 0) + 1;
+      return { ...prev, [pollId]: { ...current, voted: optionIndex, counts } };
+    });
   };
 
   const getTotalVotes = (pollId) => {
@@ -169,9 +172,12 @@ export default function InteractivePollWidget({ roomId, isHost }) {
 
           <div className="space-y-1.5">
             {poll.options.map((option, optIdx) => {
-              const isVoted = votes[poll.id]?.voted === optIdx;
-              const fakeVotes = Math.floor(Math.random() * 50) + 5;
-              const percentage = (fakeVotes / 100) * 100;
+              const pollVotes = votes[poll.id];
+              const isVoted = pollVotes?.voted === optIdx;
+              const counts = pollVotes?.counts || {};
+              const totalVotes = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+              const optionVotes = counts[optIdx] || 0;
+              const percentage = (optionVotes / totalVotes) * 100;
 
               return (
                 <button
