@@ -379,7 +379,7 @@ export default function LeaderboardPage() {
           </div>
         ) : activeTab === 'earnings' && (
           <div className="mb-4">
-            <RealtimeLeaderboard creatorId={null} roomId={null} />
+            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={null} />
           </div>
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
