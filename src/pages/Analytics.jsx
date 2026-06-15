@@ -9,6 +9,10 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -386,6 +390,12 @@ export default function AnalyticsPage() {
               <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={8} />
+          <CollaborationMatcher />
+          <ContentRecommendations />
+          <EarningsBreakdown userId={null} />
         </div>
       </div>
     </div>

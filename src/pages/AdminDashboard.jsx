@@ -8,6 +8,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -579,6 +583,10 @@ export default function AdminDashboard() {
           <PerformanceDashboard roomId={null} sessionId={null} />
           <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={true} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <StreamHealthDashboard roomId={null} isHost={true} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>
