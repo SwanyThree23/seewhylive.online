@@ -105,6 +105,13 @@ export default function FallenLegendsPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: dbLegends } = useQuery({
     queryKey: ['fallen-legends'],
@@ -286,10 +293,10 @@ export default function FallenLegendsPage() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ShareToSocial content={null} />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
-        <RealtimeLeaderboard roomId={null} creatorId={user?.id} />
-        <SocialLeaderboard roomId={null} />
+        <RealtimeLeaderboard roomId={activeRoomId} creatorId={user?.id} />
+        <SocialLeaderboard roomId={activeRoomId} />
         <SpotlightSection communityId={null} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />

@@ -945,6 +945,13 @@ const TAB_CONTENT = {
 
 export default function StreamRefDash() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -1013,10 +1020,10 @@ export default function StreamRefDash() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamHealthDashboard isLive={false} />
-        <ZEGOConfigPanel roomId={null} />
-        <OBSBridge roomId={null} isHost={true} />
-        <SwanDirectorPanel roomId={null} hostId={user?.id} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={null} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ZEGOConfigPanel roomId={activeRoomId} />
+        <OBSBridge roomId={activeRoomId} isHost={true} />
+        <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
         <ChatModeration />
         <StreamMetadata room={null} isHost={false} />
       </div>
@@ -1031,7 +1038,7 @@ export default function StreamRefDash() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>

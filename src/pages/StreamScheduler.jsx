@@ -69,6 +69,13 @@ export default function StreamScheduler() {
   const [form, setForm] = useState(blankForm);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: streams = [] } = useQuery({
     queryKey: ['scheduled-streams', user?.id],
     queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: user?.id }, 'scheduled_start', 50),
@@ -499,11 +506,11 @@ export default function StreamScheduler() {
         <StreamGoals isHost={true} />
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
-        <MultiStreamConfig roomId={null} isHost={true} />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <MultiStreamConfig roomId={activeRoomId} isHost={true} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <ContentRecommendations />
         <OnlineUsersGrid compact maxVisible={8} />
-        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
         <CollaborationMatcher />
       </div>
 
