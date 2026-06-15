@@ -596,8 +596,8 @@ export default function GreenroomPage() {
               {isHost && <StreamGoals isHost={true} />}
               <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
               <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
-              <PrivatePanel roomId={room?.id || null} currentUser={null} isHost={isHost} />
-              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={null} onAdmit={() => {}} />}
+              <PrivatePanel roomId={room?.id || null} currentUser={user} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
             </div>
           </div>
         </div>

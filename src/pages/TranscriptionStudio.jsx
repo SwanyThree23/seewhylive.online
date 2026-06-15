@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -63,6 +64,8 @@ function CopyBtn({ value }) {
 }
 
 export default function TranscriptionStudio() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const [lines, setLines]         = useState([]);
   const [live, setLive]           = useState(false);
   const [lang, setLang]           = useState('English');
@@ -270,7 +273,7 @@ export default function TranscriptionStudio() {
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
-        <RecordingManager userId={null} />
+        <RecordingManager userId={user?.id} />
         <LiveTranslationWidget roomId={null} isHost={false} targetLanguage="en" />
         <LiveTranscription roomId={null} isHost={false} />
       </div>

@@ -338,9 +338,9 @@ export default function CreatorDashboardPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-            <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
+            <SwanDirectorPanel roomId={null} hostId={user?.id} onClose={() => {}} />
             <StreamEventBus roomId={null} isHost={true} sessionId={null} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
-            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={null} elapsedSeconds={0} isHost={true} />
+            <StreamHighlightCapture roomId={null} sessionId={null} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />

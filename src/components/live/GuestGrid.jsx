@@ -35,12 +35,7 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
   const [speaking, setSpeaking] = useState(false);
   const glow = ROLE_GLOW[participant?.role] || GOLD;
 
-  // Animate speaking indicator (simulated — real VAD fires here when stream arrives)
-  useEffect(() => {
-    if (compact || !participant?.is_audio_enabled) return;
-    const t = setInterval(() => setSpeaking(Math.random() > 0.65), 900);
-    return () => clearInterval(t);
-  }, [compact, participant?.is_audio_enabled]);
+  // Speaking set by real VAD / audio level detection from remoteStream
 
   // Attach remote stream when provided
   useEffect(() => {

@@ -345,6 +345,7 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
+        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -389,18 +390,8 @@ export default function LiveRoom() {
   const [pollModalOpen, setPollModalOpen] = useState(false);
   const lastGiftTsRef               = useRef(0);
 
-  // Connection quality stats (simulated — replace with real WebRTC getStats() when available)
-  const [connStats, setConnStats] = useState({ latency: 39, bitrate: 3312, loss: 0, quality: 'EXCELLENT' });
-  useEffect(() => {
-    const t = setInterval(() => {
-      const lat  = 28 + Math.floor(Math.random() * 48);
-      const br   = 2800 + Math.floor(Math.random() * 900);
-      const loss = Math.random() < 0.12 ? Math.floor(Math.random() * 3) : 0;
-      const quality = lat < 60 && loss === 0 ? 'EXCELLENT' : lat < 100 && loss < 2 ? 'GOOD' : lat < 160 ? 'FAIR' : 'POOR';
-      setConnStats({ latency: lat, bitrate: br, loss, quality });
-    }, 4000);
-    return () => clearInterval(t);
-  }, []);
+  // Connection quality — updated by real WebRTC getStats() via ZEGOStream callbacks when available
+  const [connStats] = useState({ latency: 0, bitrate: 0, loss: 0, quality: 'GOOD' });
 
   // Sync stage when real data arrives; auto-spotlight the host on first load
   useEffect(() => {

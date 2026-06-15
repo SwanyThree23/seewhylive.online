@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
@@ -127,6 +128,7 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -981,12 +983,12 @@ export default function AIHub() {
 
         {/* ── Content Recommendations ── */}
         <div style={{ marginTop: 8 }}>
-          <ContentRecommendations userId={null} />
+          <ContentRecommendations userId={user?.id} />
         </div>
 
         {/* ── SwanyBot Context Enhancer ── */}
         <div style={{ marginTop: 8 }}>
-          <SwanyBotContextEnhancer userId={null} conversationId={null} onContextReady={() => {}} />
+          <SwanyBotContextEnhancer userId={user?.id} conversationId={null} onContextReady={() => {}} />
         </div>
 
         {/* ── Bottom info strip ── */}

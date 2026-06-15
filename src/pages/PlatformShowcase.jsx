@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,6 +119,7 @@ const FEATURES = [
 ];
 
 export default function PlatformShowcase() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [selected, setSelected] = useState(0);
   const feature = FEATURES[selected];
 
@@ -289,8 +292,8 @@ export default function PlatformShowcase() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
-        <VODLibrary creatorId={null} />
-        <ShopDashboard creatorId={null} />
+        <VODLibrary creatorId={user?.id} />
+        <ShopDashboard creatorId={user?.id} />
         <ContentRecommendations />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <QuickActionPanel isOpen={false} onClose={() => {}} />

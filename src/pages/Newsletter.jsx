@@ -214,11 +214,11 @@ export default function NewsletterPage() {
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ShareToSocial />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-          <EarningsBreakdown creatorId={null} />
-          <AudienceInsights creatorId={null} />
+          <EarningsBreakdown creatorId={user?.id} />
+          <AudienceInsights creatorId={user?.id} />
           <ContentRecommendations />
           <FollowButton targetUserId={null} targetUserName="" />
-          <MilestoneAlerts creatorId={null} />
+          <MilestoneAlerts creatorId={user?.id} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

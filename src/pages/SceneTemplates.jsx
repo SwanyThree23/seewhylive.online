@@ -771,8 +771,8 @@ export default function SceneTemplates() {
         <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
-        <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={null} onScreenCapture={() => {}} isHost={false} />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
+        <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
       </div>
 
       {/* Cross-nav footer */}

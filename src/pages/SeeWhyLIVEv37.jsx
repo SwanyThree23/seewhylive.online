@@ -4,6 +4,8 @@
  * Earth-tone palette only — no forbidden colors
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { base44 } from '@/api/base44Client';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
@@ -1256,6 +1258,7 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv37() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -1326,10 +1329,10 @@ export default function SeeWhyLIVEv37() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ReactionOverlay partyId={null} currentUser={null} />
+        <ReactionOverlay partyId={null} currentUser={user} />
         <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
-        <LiveAuctionWidget creatorId={null} roomId={null} isCreator={false} currentUser={null} />
-        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={false} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={false} />
         <GreenroomQueue roomId={null} isHost={false} />
         <SocialLeaderboard roomId={null} />
       </div>

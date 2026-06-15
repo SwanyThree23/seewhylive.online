@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -34,21 +36,18 @@ const GLOBAL_CSS = `
 .pk-in{animation:pk-in .35s ease forwards;}
 `;
 
-function genBattles() {
-  const names = [
-    ['SwanyThree',    'KingDom_WA'],
-    ['MamaJoyce_ATL', 'SlickRick_TX'],
-    ['DominoKing_CA', 'FastHands_FL'],
-    ['WestCoast_WA',  'SouthSide_GA'],
-  ];
-  return names.map(([a, b], i) => ({
-    id: i + 1,
-    a: { name: a, score: Math.floor(Math.random() * 12000) + 4000, color: SCARL },
-    b: { name: b, score: Math.floor(Math.random() * 12000) + 4000, color: '#D4854A' },
-    status: i === 0 ? 'live' : i === 1 ? 'live' : 'upcoming',
-    timeLeft: i === 0 ? 142 : i === 1 ? 67 : null,
-    category: ['Tournament', 'Exhibition', 'Championship', 'Qualifier'][i],
-  }));
+function battleToUI(b) {
+  const creatorScore  = (b.creator_tips || 0) + (b.creator_subs || 0) * 10;
+  const challengerScore = (b.challenger_tips || 0) + (b.challenger_subs || 0) * 10;
+  return {
+    id: b.id,
+    raw: b,
+    a: { name: b.creator_name   || 'Creator',    score: creatorScore,    color: SCARL },
+    b: { name: b.challenger_name || 'Challenger', score: challengerScore, color: '#D4854A' },
+    status: b.status === 'active' ? 'live' : b.status === 'pending' ? 'upcoming' : b.status,
+    timeLeft: null,
+    category: b.battle_type || 'Exhibition',
+  };
 }
 
 function ScoreBar({ battle }) {
@@ -175,10 +174,17 @@ function BattleCard({ battle, onVote, myVote }) {
 }
 
 export default function PKBattleArena() {
-  const [battles, setBattles] = useState(() => genBattles());
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [votes, setVotes] = useState({});
   const [tab, setTab] = useState('live');
-  const tickRef = useRef(null);
+
+  const { data: rawBattles = [] } = useQuery({
+    queryKey: ['pk-battles-arena'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: ['active', 'pending'] }, '-created_date', 20),
+    refetchInterval: 5000,
+  });
+
+  const battles = rawBattles.map(battleToUI);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -187,31 +193,18 @@ export default function PKBattleArena() {
     return () => document.head.removeChild(style);
   }, []);
 
-  // Simulate live score updates
-  useEffect(() => {
-    tickRef.current = setInterval(() => {
-      setBattles(prev => prev.map(b => {
-        if (b.status !== 'live') return b;
-        const delta = Math.floor(Math.random() * 120);
-        const side  = Math.random() < 0.5 ? 'a' : 'b';
-        return { ...b, [side]: { ...b[side], score: b[side].score + delta }, timeLeft: b.timeLeft != null ? Math.max(0, b.timeLeft - 1) : null };
-      }));
-    }, 1200);
-    return () => clearInterval(tickRef.current);
-  }, []);
-
-  function vote(battleId, side) {
-    if (votes[battleId]) return;
+  async function vote(battleId, side) {
+    if (votes[battleId] || !user) return;
     setVotes(v => ({ ...v, [battleId]: side }));
-    setBattles(prev => prev.map(b => {
-      if (b.id !== battleId) return b;
-      const inc = Math.floor(Math.random() * 500) + 200;
-      return { ...b, [side]: { ...b[side], score: b[side].score + inc } };
-    }));
+    const battle = rawBattles.find(b => b.id === battleId);
+    if (!battle) return;
+    const field = side === 'a' ? 'creator_tips' : 'challenger_tips';
+    await base44.entities.PKBattle.update(battleId, { [field]: (battle[field] || 0) + 1 }).catch(() => {});
+    await base44.entities.Activity.create({ type: 'pk_vote', user_id: user.id, entity_id: battleId, metadata: { side } }).catch(() => {});
   }
 
   const liveBattles     = battles.filter(b => b.status === 'live');
-  const upcomingBattles = battles.filter(b => b.status === 'upcoming');
+  const upcomingBattles = battles.filter(b => b.status === 'upcoming' || b.status === 'pending');
   const displayed       = tab === 'live' ? liveBattles : upcomingBattles;
 
   return (
@@ -267,8 +260,8 @@ export default function PKBattleArena() {
         <PKBattleProgress battleId={null} />
         <PKBattleVotePanel battleId={null} creatorId={null} challengerId={null} creatorName="Creator" challengerName="Challenger" />
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
-        <GiftShopTray roomId={null} currentUser={null} />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <GiftShopTray roomId={null} currentUser={user} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <BattleScoreboard roomId={null} />
         <BattleMode roomId={null} isHost={false} hostName="" participants={[]} />
         <TournamentBracket />

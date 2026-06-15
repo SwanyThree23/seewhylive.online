@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
@@ -938,6 +940,7 @@ const TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -1009,7 +1012,7 @@ export default function StreamRefDash() {
         <ZEGOConfigPanel roomId={null} />
         <OBSBridge roomId={null} isHost={true} />
         <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={null} userId={null} userName="" isHost={false} onStreamHealth={() => {}} />
+        <ZEGOLiveRoom roomId={null} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
         <ChatModeration />
         <StreamMetadata room={null} isHost={false} />
       </div>

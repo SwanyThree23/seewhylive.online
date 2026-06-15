@@ -11,26 +11,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
   const [droppedFrames, setDroppedFrames] = useState(0);
   const intervalRef = useRef(null);
 
-  useEffect(() => {
-    if (!isLive) return;
-    intervalRef.current = setInterval(() => {
-      setBitrate(prev => {
-        const next = prev + (Math.random() - 0.5) * 400;
-        return Math.max(1200, Math.min(6000, Math.round(next)));
-      });
-      setLatency(prev => {
-        const next = prev + (Math.random() - 0.5) * 40;
-        return Math.max(50, Math.min(800, Math.round(next)));
-      });
-      setDroppedFrames(prev => prev + (Math.random() < 0.2 ? Math.floor(Math.random() * 3) : 0));
-      setHealth(prev => {
-        const next = prev + (Math.random() - 0.5) * 8;
-        return Math.max(10, Math.min(100, Math.round(next)));
-      });
-      setFps([24, 30, 60][Math.floor(Math.random() * 3) < 2 ? 1 : (Math.random() < 0.3 ? 2 : 0)]);
-    }, 2000);
-    return () => clearInterval(intervalRef.current);
-  }, [isLive]);
+  // Stats updated by real WebRTC getStats() / ZEGO callbacks when available
 
   const healthColor = health >= 80 ? '#6DBF7E' : health >= 50 ? '#D4AF37' : '#ef4444';
   const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#D4AF37' : '#ef4444';

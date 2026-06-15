@@ -137,7 +137,7 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
           setMetrics(prev => {
             const newViewers = room?.viewer_count || prev.viewers;
             const newBitrate = isLive ? Math.round(3500 + Math.sin(Date.now() / 3000) * 800) : 0;
-            const newFps = isLive ? Math.round(58 + Math.random() * 4) : 0;
+            const newFps = isLive ? 60 : 0;
             const newLatency = isLive ? Math.round(40 + Math.sin(Date.now() / 5000) * 20) : 0;
             const newQuality = Math.min(100, Math.max(20, 100 - (newLatency > 100 ? 30 : 0)));
 

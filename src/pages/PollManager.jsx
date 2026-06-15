@@ -201,9 +201,9 @@ export default function PollManager() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
-          <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
+          <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
           <PollCard poll={null} />
-          <LivePollOverlay roomId={null} currentUser={null} isHost={false} />
+          <LivePollOverlay roomId={null} currentUser={user} isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
 

@@ -618,8 +618,8 @@ export default function PayoutsPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <StripeConnectButton userId={null} accountId={null} />
-          <MonetizationDashboard userId={null} />
+          <StripeConnectButton userId={user?.id} accountId={null} />
+          <MonetizationDashboard userId={user?.id} />
           <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
         </div>
       </div>

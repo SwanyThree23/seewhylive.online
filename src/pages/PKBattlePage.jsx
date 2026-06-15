@@ -783,8 +783,8 @@ export default function PKBattlePage() {
       </AnimatePresence>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <GiftTray roomId={battleId} currentUser={user} creatorId={null} />
-        <TipNowModal roomId={battleId} recipientId={null} isOpen={false} onClose={() => {}} />
+        <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
+        {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
         {user?.id && <PointsNotification userId={user.id} />}
       </div>
     </div>

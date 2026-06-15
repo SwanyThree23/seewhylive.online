@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
@@ -691,6 +693,7 @@ const TAB_CONTENT = {
 export default function StreamInfraRef() {
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }}
@@ -768,7 +771,7 @@ export default function StreamInfraRef() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ZEGOConfigPanel roomId={null} />
-        <DestinationsManager userId={null} />
+        <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamHealthDashboard isLive={false} />
         <OBSBridge roomId={null} isHost={false} />

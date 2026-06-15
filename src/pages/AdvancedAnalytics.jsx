@@ -33,6 +33,8 @@ const TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
 export default function AdvancedAnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: metrics = [] } = useQuery({
     queryKey: ['performanceMetrics'],
     queryFn: () => base44.entities.PerformanceMetric.list('-timestamp', 1000),
@@ -183,7 +185,7 @@ export default function AdvancedAnalyticsPage() {
           <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-1" style={T}>Viewer Retention</p>
             <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Average watch time over stream duration</p>
-            <SwanAIRecommendations roomId={null} />
+            <SwanAIRecommendations roomId={rooms.find(r => r.status === 'live')?.id || null} />
           </div>
         )}
 
@@ -252,9 +254,9 @@ export default function AdvancedAnalyticsPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <StreamerGoalsWidget userId={null} />
-          <PayPerViewManager userId={null} />
-          <VirtualGoodsStore creatorId={null} userId={null} />
+          <StreamerGoalsWidget userId={user?.id} />
+          <PayPerViewManager userId={user?.id} />
+          <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
         </div>
       </div>
     </div>
