@@ -132,12 +132,17 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
           ) : (
             <>
-              {/* Subtle ambient glow behind avatar */}
-              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}22 0%, transparent 70%)` }} />
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
-                style={{ background: `linear-gradient(135deg, ${avatarColor(p.name)}, ${avatarColor(p.name)}99)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(255,255,255,0.15)' }}>
-                {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
-              </div>
+              {/* Ambient glow */}
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}33 0%, transparent 70%)` }} />
+              {p.avatar ? (
+                <img src={p.avatar} alt={p.name}
+                  className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                  style={{ background: `linear-gradient(135deg, #800020, #D4AF37)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}66, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(212,175,55,0.4)' }}>
+                  {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+                </div>
+              )}
               {/* Audio-only mic indicator */}
               {!p.muted && (
                 <motion.div className="absolute bottom-3 left-0 right-0 flex justify-center items-end gap-[2px]"
@@ -209,12 +214,16 @@ function AudienceTile({ p }) {
     <div className="flex flex-col items-center gap-1">
       <div className="relative" style={{ width: 48, height: 48 }}>
         <div className="absolute inset-0"
-          style={{ clipPath: OCT, background: 'rgba(255,255,255,0.07)' }} />
+          style={{ clipPath: OCT, background: 'rgba(212,175,55,0.15)' }} />
         <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: `linear-gradient(135deg, #1A0F0A, ${BG2})` }}>
-          <span className="text-xs font-black" style={{ color }}>
-            {p.name.charAt(0).toUpperCase()}
-          </span>
+          {p.avatar ? (
+            <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-xs font-black" style={{ color }}>
+              {p.name.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-1 justify-center" style={{ maxWidth: 52 }}>
@@ -343,9 +352,10 @@ export default function LiveRoom() {
 
   // Build stage from real members or demo data
   const stage = roomId && members.length > 0
-    ? members.slice(0, 20).map((m, i) => ({
+    ? members.slice(0, 20).map((m) => ({
         id:       m.id,
         userId:   m.user_id,
+        avatar:   m.user_avatar || null,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -356,7 +366,7 @@ export default function LiveRoom() {
     : [];
 
   const audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
+    ? members.slice(6).map(m => ({ id: m.id, userId: m.user_id, avatar: m.user_avatar || null, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
     : [];
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
