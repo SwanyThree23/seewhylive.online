@@ -362,9 +362,9 @@ export default function ModerationDashboardPage() {
         </div>
 
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <AIModeration roomId={null} isHost={true} />
-          <HostAlertCenter roomId={null} hostId={user?.id} />
-          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={user?.id} />
+          <AIModeration roomId={roomId} isHost={true} />
+          <HostAlertCenter roomId={roomId} hostId={user?.id} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={user?.id} />
         </div>
       </div>
     </div>

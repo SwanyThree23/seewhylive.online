@@ -96,7 +96,7 @@ export default function GreenroomEnhanced() {
   }
 
   async function generatePin() {
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {

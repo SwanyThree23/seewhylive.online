@@ -56,6 +56,7 @@ import InteractivePollWidget from '../components/streaming/InteractivePollWidget
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
@@ -1657,6 +1658,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <StreamingPresets onApply={preset => toast.success(`Preset "${preset?.label || preset}" applied`)} />
                     <div className="mt-3">
                       <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+                    </div>
+                    <div className="mt-3">
+                      <AdvancedEncoderSettings onApply={cfg => toast.success(`Encoder: ${cfg.video.resolution} @ ${cfg.video.bitrate}kbps`)} />
                     </div>
                   </div>
                 )}

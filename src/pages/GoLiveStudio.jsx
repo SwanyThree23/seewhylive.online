@@ -11,6 +11,7 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
@@ -479,6 +480,7 @@ export default function GoLiveStudio() {
         <GreenroomQueue roomId={null} isHost={true} />
         <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
         <StreamingPresets onApply={() => {}} />
+        <AdvancedEncoderSettings onApply={() => {}} />
         <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
       </div>
     </div>
