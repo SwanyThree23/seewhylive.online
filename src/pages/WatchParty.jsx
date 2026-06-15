@@ -449,7 +449,7 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
 
   const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(partyId, localStream);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -467,6 +467,12 @@ export default function WatchPartyPage() {
   useEffect(() => () => {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
+
+  useEffect(() => {
+    if (!partyId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [partyId, user?.id]);
 
   const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
   const wpOverlayConfig = {
