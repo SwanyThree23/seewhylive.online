@@ -22,9 +22,9 @@ const PLATFORM_PRESETS = [
 export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [activeTab, setActiveTab] = useState('rtmp');
   const [rtmpUrl, setRtmpUrl] = useState('rtmp://ingest.seewhy.live/live');
-  const [rtmpKey, setRtmpKey] = useState('sk_abc123xyz789');
+  const [rtmpKey, setRtmpKey] = useState('');
   const [whipUrl, setWhipUrl] = useState('https://ingest.seewhy.live/whip');
-  const [whipAuth, setWhipAuth] = useState('Bearer token_abc123xyz789');
+  const [whipAuth, setWhipAuth] = useState('');
   const [bitrate, setBitrate] = useState(3000);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(null);
