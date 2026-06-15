@@ -7,15 +7,6 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 
-const SEED_LEGENDS = [
-  { id: 'sl1', name: 'Big Sal Washington', years: '1961–2019', region: 'Pacific Northwest', quote: 'Every bone tells a story. Play yours with pride.', games_played: 847, titles_won: 3, candles: 142, tributes: 28, approved: true, featured_year: 2026 },
-  { id: 'sl2', name: 'Mama Ruth Davis', years: '1955–2021', region: 'West Coast', quote: 'The domino table is sacred ground. Come correct or don\'t come.', games_played: 1203, titles_won: 5, candles: 218, tributes: 41, approved: true, featured_year: 2026 },
-  { id: 'sl3', name: 'King James Elroy', years: '1968–2022', region: 'Southeast', quote: 'Patience wins championships. Haste breaks chains.', games_played: 632, titles_won: 2, candles: 89, tributes: 16, approved: true, featured_year: 2026 },
-  { id: 'sl4', name: 'Coach Darnell Price', years: '1950–2023', region: 'Midwest', quote: 'I didn\'t play for trophies. I played to pass something down.', games_played: 1841, titles_won: 7, candles: 301, tributes: 52, approved: true, featured_year: null },
-  { id: 'sl5', name: 'Sweet T Thompson', years: '1972–2024', region: 'Pacific Northwest', quote: 'Bones don\'t lie. Neither do I.', games_played: 419, titles_won: 1, candles: 64, tributes: 11, approved: true, featured_year: null },
-];
-
-const CEREMONY_2026 = SEED_LEGENDS.filter(l => l.featured_year === 2026);
 
 const initState = {
   tab: 'wall',
@@ -112,7 +103,8 @@ export default function FallenLegendsPage() {
     queryFn: () => base44.entities.FallenLegend.filter({ approved: true }).catch(() => []),
   });
 
-  var legends = (dbLegends && dbLegends.length > 0) ? dbLegends : SEED_LEGENDS;
+  var legends = dbLegends || [];
+  var ceremony2026 = legends.filter(l => l.featured_year === 2026);
 
   const submitLegend = useMutation({
     mutationFn: () => base44.entities.FallenLegend.create({
@@ -149,7 +141,7 @@ export default function FallenLegendsPage() {
           <div style={{ fontSize: 14, color: 'rgba(201,160,160,0.7)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.3em' }}>WASHINGTON CLASSIC 2026</div>
           <div style={{ fontSize: 36, fontWeight: 900, color: '#C9A0A0', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>IN MEMORIAM</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'center' }}>
-            {CEREMONY_2026.map(l => (
+            {ceremony2026.map(l => (
               <div key={l.id} style={{ fontSize: 20, color: 'rgba(255,255,255,0.8)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🕯 {l.name} · {l.years}
               </div>
