@@ -128,6 +128,7 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -972,12 +973,12 @@ export default function AIHub() {
 
         {/* ── AI Persona Customizer ── */}
         <div style={{ marginTop: 8 }}>
-          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+          <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />
         </div>
 
         {/* ── AI Stream Summary ── */}
         <div style={{ marginTop: 8 }}>
-          <AIStreamSummary roomId={null} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+          <AIStreamSummary roomId={roomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
         </div>
 
         {/* ── Content Recommendations ── */}
@@ -1002,9 +1003,9 @@ export default function AIHub() {
       </div>
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <AICopilotSidebar roomId={null} isHost={false} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
