@@ -38,6 +38,7 @@ var rtmp         = require('./rtmp');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
+var ttsRouter    = require('./tts');
 var translation  = require('./translation');
 var aura         = require('./aura');
 var whisper      = require('./whisper');
@@ -507,6 +508,8 @@ setInterval(function() {
 }, 60000);
 
 // ─── REST API Routes ──────────────────────────────────────────────────────
+
+app.use('/api/tts', ttsRouter);
 
 // GET /api/health
 app.get('/api/health', function(req, res) {

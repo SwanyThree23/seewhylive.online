@@ -1541,7 +1541,7 @@ function LiveCameraFeed({ camOn, micOn, onToggleCam, onToggleMic }) {
   return (
     <div style={{position:"relative",width:"100%",height:320,background:"#000",borderRadius:12,overflow:"hidden",border:"2px solid #8B0000",boxShadow:"0 0 24px rgba(196,30,58,0.4)"}}>
       {/* Live video */}
-      <video ref={videoRef} autoPlay muted playsInline style={{width:"100%",height:"100%",objectFit:"cover",display:streamActive&&camOn?"block":"none"}} />
+      <video ref={videoRef} autoPlay muted playsInline style={{width:"100%",height:"100%",objectFit:"cover",position:"absolute",inset:0,opacity:streamActive&&camOn?1:0,transition:"opacity 0.2s",pointerEvents:"none"}} />
 
       {/* Cam off placeholder */}
       {(!streamActive || !camOn) && (
