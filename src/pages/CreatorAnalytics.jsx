@@ -7,6 +7,11 @@ import AudienceInsights from '../components/dashboard/AudienceInsights';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }
@@ -343,6 +348,11 @@ export default function CreatorAnalytics() {
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={null} sessionId={null} />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial content={null} />
+        <CollaborationMatcher />
+        <OnlineUsersGrid compact maxVisible={8} />
       </div>
     </div>
   );
