@@ -471,7 +471,7 @@ export default function GoLiveStudio() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <StreamHealthDashboard isLive={false} />
         <BitratePresets selected={null} onChange={() => {}} />
-        <DestinationsManager userId={null} />
+        <DestinationsManager userId={user?.id} />
         <ChatModeration />
         <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
         <StreamMetadataEditor />
