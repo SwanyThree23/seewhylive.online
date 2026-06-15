@@ -804,7 +804,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         duration: data.duration || '2:30',
         emoji: data.emoji || '🎵',
         liked: false,
-        likeCount: Math.floor(Math.random() * 20),
+        likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
       }, ...prev]);
@@ -819,7 +819,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         tags: tags.slice(0, 6),
         duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
         emoji: '🎵', liked: false, likeCount: 0,
-        streamReady: isInstrumental || Math.random() > 0.4,
+        streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);
