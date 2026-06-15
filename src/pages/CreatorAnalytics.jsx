@@ -339,9 +339,9 @@ export default function CreatorAnalytics() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <AudienceInsights creatorId={null} />
+        <AudienceInsights creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
-        <StreamerGoalsWidget creatorId={null} roomId={null} isCreator={true} embedded={true} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={null} sessionId={null} />
       </div>
     </div>

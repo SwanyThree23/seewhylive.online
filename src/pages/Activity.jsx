@@ -363,9 +363,9 @@ export default function ActivityPage() {
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <OnlineUsersGrid compact maxVisible={12} />
-        <OnlinePresence userId={null} showLabel />
-        <PresenceDot userId={null} />
-        <PointsNotification userId={null} />
+        <OnlinePresence userId={user?.id} showLabel />
+        <PresenceDot userId={user?.id} />
+        <PointsNotification userId={user?.id} />
         <CollaborationMatcher />
         <ContentRecommendations />
       </div>

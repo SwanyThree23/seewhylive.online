@@ -85,7 +85,7 @@ export default function AudienceInsights({ creatorId }) {
       <div className="mt-4 pt-4 border-t" style={{ borderColor: BORDER }}>
         <p className="text-xs font-bold text-white/60 mb-2">Growth Trend</p>
         <p className="text-sm text-white/80">
-          📊 Growing at <span style={{ color: '#6DBF7E' }}>+{Math.round(Math.random() * 20)}%</span> month-over-month
+          📊 Track growth trends in your Analytics dashboard
         </p>
       </div>
     </motion.div>

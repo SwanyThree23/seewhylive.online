@@ -9,9 +9,8 @@ import AudienceInsights from '../components/dashboard/AudienceInsights';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
-  LineChart, Line, BarChart, Bar,
-  AreaChart, Area, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, Users, DollarSign, MessageSquare, Download, BarChart2 } from 'lucide-react';
 
@@ -21,34 +20,6 @@ const CRIMSON = '#800020';
 const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-function genViewerData(points = 30) {
-  let v = 12;
-  return Array.from({ length: points }, (_, i) => {
-    v = Math.max(5, Math.min(200, v + (Math.random() - 0.45) * 15));
-    return { min: i, viewers: Math.round(v), messages: Math.round(Math.random() * 20) };
-  });
-}
-
-function genTipData() {
-  return Array.from({ length: 15 }, (_, i) => ({
-    time: i * 4,
-    amount: Math.random() < 0.3 ? Math.round(Math.random() * 50 + 5) : null,
-    event: Math.random() < 0.1 ? 'Tip Storm' : null,
-  })).filter(d => d.amount !== null);
-}
-
-const DEVICE_DATA = [
-  { name: 'Desktop', value: 60, color: CYAN },
-  { name: 'Mobile',  value: 35, color: GOLD },
-  { name: 'Tablet',  value: 5,  color: CRIMSON },
-];
-
-const SOURCE_DATA = [
-  { name: 'Direct Link', viewers: 45 },
-  { name: 'Embed',       viewers: 30 },
-  { name: 'Social',      viewers: 15 },
-  { name: 'Search',      viewers: 10 },
-];
 
 const TOOLTIP_STYLE = {
   background: '#080B18',
@@ -75,8 +46,6 @@ export default function StreamAnalytics() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
 
-  const [viewerData] = useState(genViewerData(60));
-  const [tipData]    = useState(genTipData());
   const [mode, setMode] = useState('post');
 
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -86,26 +55,43 @@ export default function StreamAnalytics() {
     enabled: !!roomId,
   });
 
-  const peakViewers  = Math.max(...viewerData.map(d => d.viewers));
-  const avgViewers   = Math.round(viewerData.reduce((s, d) => s + d.viewers, 0) / viewerData.length);
+  const { data: roomAnalytics = [] } = useQuery({
+    queryKey: ['room-analytics', roomId],
+    queryFn: () => base44.entities.RoomAnalytics.filter({ room_id: roomId }, '-timestamp', 60),
+    enabled: !!roomId,
+  });
+
+  const { data: tipTransactions = [] } = useQuery({
+    queryKey: ['tip-transactions', user?.id, roomId],
+    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id, type: 'tip' }, '-created_date', 100),
+    enabled: !!user?.id,
+  });
+
+  const viewerData = roomAnalytics.slice().reverse().map((a, i) => ({
+    min: i,
+    viewers: a.viewer_count || 0,
+    messages: a.chat_messages || 0,
+  }));
+
+  const tipData = tipTransactions.map((t, i) => ({
+    time: i * 4,
+    amount: t.amount || 0,
+    event: t.metadata?.event || null,
+  }));
+
+  const peakViewers  = roomAnalytics.length > 0
+    ? Math.max(...roomAnalytics.map(a => a.peak_viewers || a.viewer_count || 0))
+    : (room?.viewer_count || 0);
+  const avgViewers   = viewerData.length > 0
+    ? Math.round(viewerData.reduce((s, d) => s + d.viewers, 0) / viewerData.length)
+    : 0;
   const totalTips    = tipData.reduce((s, d) => s + (d.amount || 0), 0);
-  const totalMessages = viewerData.reduce((s, d) => s + d.messages, 0);
+  const totalMessages = roomAnalytics.length > 0
+    ? (roomAnalytics[0].chat_messages || 0)
+    : viewerData.reduce((s, d) => s + d.messages, 0);
 
-  const topChatters = [
-    { name: 'StreamFan42',   count: 48 },
-    { name: 'TopViewer',     count: 35 },
-    { name: 'GoldSupporter', count: 27 },
-    { name: 'LoyalWatcher',  count: 19 },
-    { name: 'NewcomerX',     count: 11 },
-  ];
-
-  const reactionData = [
-    { emoji: '🔥', count: 145 },
-    { emoji: '❤️', count: 98 },
-    { emoji: '😂', count: 67 },
-    { emoji: '👏', count: 54 },
-    { emoji: '😮', count: 32 },
-  ];
+  const topChatters = [];
+  const reactionData = [];
 
   const exportReport = () => {
     const lines = [
@@ -221,16 +207,9 @@ export default function StreamAnalytics() {
           </ChartCard>
 
           <ChartCard title="Device Breakdown">
-            <div className="flex items-center justify-center h-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={DEVICE_DATA} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value">
-                    {DEVICE_DATA.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: 10, color: 'rgba(255,255,255,0.5)' }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex flex-col items-center justify-center h-full gap-2">
+              <BarChart2 className="w-8 h-8 opacity-20" style={{ color: GOLD }} />
+              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Device data available after stream ends</p>
             </div>
           </ChartCard>
         </div>
@@ -255,7 +234,7 @@ export default function StreamAnalytics() {
               <span className="text-sm font-black" style={{ color: GOLD, ...T }}>Top Chatters</span>
             </div>
             <div className="px-4 pb-4 space-y-2">
-              {topChatters.map((c, i) => (
+              {topChatters.length > 0 ? topChatters.map((c, i) => (
                 <div key={c.name} className="flex items-center gap-2">
                   <span className="text-[10px] w-4 font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>{i + 1}</span>
                   <div className="flex-1 min-w-0">
@@ -266,7 +245,9 @@ export default function StreamAnalytics() {
                   </div>
                   <span className="text-[10px] font-mono tabular-nums" style={{ color: GOLD }}>{c.count}</span>
                 </div>
-              ))}
+              )) : (
+                <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>No chat data yet</p>
+              )}
             </div>
           </div>
 
@@ -276,7 +257,7 @@ export default function StreamAnalytics() {
               <span className="text-sm font-black" style={{ color: GOLD, ...T }}>Reactions</span>
             </div>
             <div className="px-4 pb-4 space-y-2.5">
-              {reactionData.map(r => (
+              {reactionData.length > 0 ? reactionData.map(r => (
                 <div key={r.emoji} className="flex items-center gap-2">
                   <span className="text-base w-6">{r.emoji}</span>
                   <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
@@ -285,7 +266,9 @@ export default function StreamAnalytics() {
                   </div>
                   <span className="text-[10px] font-mono tabular-nums" style={{ color: 'rgba(255,255,255,0.5)' }}>{r.count}</span>
                 </div>
-              ))}
+              )) : (
+                <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>No reactions recorded yet</p>
+              )}
             </div>
           </div>
         </div>
@@ -303,40 +286,32 @@ export default function StreamAnalytics() {
               </span>
             </div>
             <div className="px-4 pb-4 space-y-2">
-              {[
-                { label: 'Tips',          amount: totalTips,        pct: 55 },
-                { label: 'Subscriptions', amount: totalTips * 0.25, pct: 25 },
-                { label: 'PPV Tickets',   amount: totalTips * 0.15, pct: 15 },
-                { label: 'Store Sales',   amount: totalTips * 0.05, pct: 5 },
-              ].map(r => (
-                <div key={r.label} className="flex items-center gap-3">
-                  <p className="text-xs w-28" style={{ color: 'rgba(255,255,255,0.6)' }}>{r.label}</p>
-                  <div className="flex-1 h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                    <div className="h-full rounded-full"
-                      style={{ width: `${r.pct}%`, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})` }} />
+              {tipTransactions.length > 0 ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs w-28" style={{ color: 'rgba(255,255,255,0.6)' }}>Tips</p>
+                    <div className="flex-1 h-2 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <div className="h-full rounded-full" style={{ width: '100%', background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})` }} />
+                    </div>
+                    <p className="text-xs font-mono w-16 text-right" style={{ color: GOLD }}>${totalTips.toFixed(2)}</p>
                   </div>
-                  <p className="text-xs font-mono w-16 text-right" style={{ color: GOLD }}>${r.amount.toFixed(2)}</p>
-                </div>
-              ))}
-              <div className="pt-2 flex justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Your share (90%)</p>
-                <p className="text-sm font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
-                  ${(totalTips * 0.9).toFixed(2)}
-                </p>
-              </div>
+                  <div className="pt-2 flex justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>Your share (90%)</p>
+                    <p className="text-sm font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
+                      ${Math.floor(totalTips * 90) / 100 .toFixed(2)}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>No revenue data for this stream</p>
+              )}
             </div>
           </div>
 
           <ChartCard title="Traffic Sources" height="h-auto">
-            <div style={{ height: 160 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={SOURCE_DATA} layout="vertical">
-                  <XAxis type="number" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.5)' }} width={70} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="viewers" fill={CYAN} radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div style={{ height: 160 }} className="flex flex-col items-center justify-center gap-2">
+              <BarChart2 className="w-8 h-8 opacity-20" style={{ color: CYAN }} />
+              <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Traffic source data coming soon</p>
             </div>
           </ChartCard>
         </div>
@@ -347,7 +322,7 @@ export default function StreamAnalytics() {
           <BroadcastAnalyticsDashboard />
           <PerformanceDashboard />
           <AudienceInsights />
-          <StreamerGoalsWidget userId={null} />
+          <StreamerGoalsWidget userId={user?.id} />
           <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         </div>
       </div>

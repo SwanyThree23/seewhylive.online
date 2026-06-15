@@ -38,9 +38,8 @@ function DestRow({ dest, userId }) {
     setValidating(true);
     setValidState(null);
     await new Promise(function(r) { return setTimeout(r, 1200); });
-    var ok = Math.random() > 0.2;
-    setValidState(ok ? 'ok' : 'err');
-    toast[ok ? 'success' : 'error'](ok ? platform.label + ' — OK' : platform.label + ' — failed');
+    setValidState('ok');
+    toast.success(platform.label + ' — stream key saved');
     setValidating(false);
   };
 

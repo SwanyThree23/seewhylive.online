@@ -5,6 +5,7 @@
 // Joyce AI Co-Host | INS Forge | SwanyBot Automation | Full Nav
 
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
@@ -2021,6 +2022,7 @@ const PANEL_MAP = {
 const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
@@ -2146,11 +2148,11 @@ export default function SeeWhyLIVEv36() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
-        <AudienceInsights creatorId={null} />
-        <SubscriptionManager creatorId={null} />
-        <InteractivePollingSystem roomId={null} isHost={false} currentUser={null} />
-        <VirtualGoodsStore userId={null} />
-        <EarningsBreakdown creatorId={null} />
+        <AudienceInsights creatorId={user?.id} />
+        <SubscriptionManager creatorId={user?.id} />
+        <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
+        <VirtualGoodsStore userId={user?.id} />
+        <EarningsBreakdown creatorId={user?.id} />
       </div>
     </>
   );

@@ -135,8 +135,8 @@ export default function MonetizationWidgets() {
           </div>
         )}
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <AnimatedGiftShop recipientId={null} roomId={null} onClose={() => {}} />
-          <TipAlert roomId={null} recipientId={null} />
+          <AnimatedGiftShop recipientId={user?.id} roomId={null} onClose={() => {}} />
+          <TipAlert roomId={null} recipientId={user?.id} />
           <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
         </div>
       </div>

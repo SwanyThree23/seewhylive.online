@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion } from 'framer-motion';
@@ -59,6 +60,7 @@ function Toggle({ value, onChange }) {
 }
 
 export default function VoiceAISettings() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [vs, setVs] = useState(load);
   const [saved, setSaved] = useState(false);
 
@@ -203,7 +205,7 @@ export default function VoiceAISettings() {
 
         {/* Alert + feed integration */}
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <AlertConfig creatorId={null} />
+          <AlertConfig creatorId={user?.id} />
           <AnnouncementFeed communityId={null} />
         </div>
 

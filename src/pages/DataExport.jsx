@@ -171,7 +171,7 @@ export default function DataExportPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <PerformanceDashboard roomId={null} sessionId={null} />
           <AudienceInsights />
-          <EarningsBreakdown userId={null} />
+          <EarningsBreakdown userId={user?.id} />
         </div>
       </div>
     </div>

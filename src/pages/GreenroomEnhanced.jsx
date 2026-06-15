@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -28,6 +30,7 @@ const CRIMSON = '#800020';
 const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -250,7 +253,7 @@ export default function GreenroomEnhanced() {
         <EnhancedIngestPanel roomId={null} isHost={true} />
 
         {/* Guest RTMP panel */}
-        <GuestRTMPPanel participantId={null} userId={null} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
 
         {/* Guest stream monitor */}
         <GuestStreamMonitor guestName="Guest" isStreaming={false} />

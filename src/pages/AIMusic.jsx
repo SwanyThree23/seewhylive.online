@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -680,6 +681,7 @@ function Toast({ message, visible }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   // Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
@@ -802,7 +804,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         duration: data.duration || '2:30',
         emoji: data.emoji || '🎵',
         liked: false,
-        likeCount: Math.floor(Math.random() * 20),
+        likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
       }, ...prev]);
@@ -817,7 +819,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         tags: tags.slice(0, 6),
         duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
         emoji: '🎵', liked: false, likeCount: 0,
-        streamReady: isInstrumental || Math.random() > 0.4,
+        streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);
@@ -1513,11 +1515,11 @@ Return ONLY valid JSON (no markdown, no backticks):
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PanelMusicPlayer />
         <SoundboardWidget />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
         <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
-        <ContentRecommendations userId={null} />
+        <ContentRecommendations userId={user?.id} />
       </div>
 
       {/* Cross-nav footer */}

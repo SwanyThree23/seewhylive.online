@@ -427,11 +427,11 @@ export default function ControlRoomPage() {
       {/* Extended control panels */}
       <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
         <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
-        <ClipMarker roomId={null} user={user} streamStartTs={null} />
+        <ClipMarker roomId={roomId} user={user} streamStartTs={room?.started_at || null} />
         <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
-        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={null} communityId={null} />
-        <RoomAnalyticsPanel roomId={null} />
-        <CollaborativeWhiteboard roomId={null} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={roomId} communityId={room?.community_id || null} />
+        <RoomAnalyticsPanel roomId={roomId} />
+        <CollaborativeWhiteboard roomId={roomId} />
       </div>
 
       {/* RTMP Cards Grid */}

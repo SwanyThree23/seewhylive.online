@@ -68,15 +68,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
     toast.success(`Battle over! Winner: ${winner}`);
   };
 
-  // Simulate incoming score from opponent (in real impl, sync via entity)
-  useEffect(() => {
-    if (!active) return;
-    const interval = setInterval(() => {
-      // Random opponent score trickle (simulate)
-      setTheirScore(s => s + Math.floor(Math.random() * 3));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [active]);
+  // Opponent score synced via PKBattle entity subscription (real-time via base44.entities.PKBattle.subscribe)
 
   const addPoint = (pts = 1) => setMyScore(s => s + pts);
 

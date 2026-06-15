@@ -145,6 +145,7 @@ function findActiveMatch(bracket, id) {
 export default function SVSArena() {
   const [state, dispatch] = useReducer(reducer, initState);
   var activeMatch = findActiveMatch(state.bracket, state.activeMatch);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   return (
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -332,7 +333,7 @@ export default function SVSArena() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <BattleScoreboard roomId={null} />
         <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <SocialLeaderboard roomId={null} />
       </div>
     </div>

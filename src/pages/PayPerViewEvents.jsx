@@ -463,8 +463,8 @@ export default function PayPerViewEventsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <PayPerViewCard event={null} onPurchase={() => {}} />
-          <PayPerViewManager userId={null} />
-          <VirtualGoodsStore creatorId={null} userId={null} />
+          <PayPerViewManager userId={user?.id} />
+          <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
         </div>
       </div>
     </div>

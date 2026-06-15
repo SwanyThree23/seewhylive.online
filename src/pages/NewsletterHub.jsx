@@ -266,11 +266,11 @@ export default function NewsletterHubPage() {
         <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-          <AnnouncementScheduler communityId={null} userId={null} />
-          <MilestoneAlerts creatorId={null} />
+          <AnnouncementScheduler communityId={null} userId={user?.id} />
+          <MilestoneAlerts creatorId={user?.id} />
           <AnnouncementFeed communityId={null} />
           <ContentRecommendations />
-          <EarningsBreakdown creatorId={null} />
+          <EarningsBreakdown creatorId={user?.id} />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
           {[
