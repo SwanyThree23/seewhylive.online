@@ -12,6 +12,10 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const C = {
   bg:    '#07050A',
@@ -338,6 +342,10 @@ export default function WashingtonClassic() {
         <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
         <StreamAnalyticsDashboard roomId={null} />
         <ChallengeLeaderboard communityId={null} />
+        <TournamentBracket />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <LeaderboardPanel roomId={null} />
+        <ShareToSocial content={null} />
       </div>
     </div>
   );

@@ -6,6 +6,10 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import GiftShopTray from '../components/live/GiftShopTray';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 const FORMAT = '7 Rock / 5-150 / Double Elimination';
@@ -335,6 +339,10 @@ export default function SVSArena() {
         <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
         <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <SocialLeaderboard roomId={null} />
+        <TournamentBracket />
+        <PKBattleProgress battleId={null} />
+        <GiftShopTray roomId={null} currentUser={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

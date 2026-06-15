@@ -6,6 +6,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ShareToSocial from '../components/social/ShareToSocial';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SpotlightSection from '../components/community/SpotlightSection';
 
 
 const initState = {
@@ -282,6 +286,10 @@ export default function FallenLegendsPage() {
         <ShareToSocial content={null} />
         <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
+        <RealtimeLeaderboard roomId={null} creatorId={null} />
+        <SocialLeaderboard roomId={null} />
+        <SpotlightSection communityId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );
