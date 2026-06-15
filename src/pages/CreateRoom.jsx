@@ -12,6 +12,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -285,6 +289,13 @@ export default function CreateRoomPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
       </div>
     </div>
   );

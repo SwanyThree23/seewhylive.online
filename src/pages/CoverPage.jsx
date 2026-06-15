@@ -11,6 +11,10 @@ import NebulaBg from '../components/home/NebulaBg';
 import GridLines from '../components/home/GridLines';
 import StarField from '../components/home/StarField';
 import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
 
 export default function CoverPage() {
   const { data: user } = useQuery({
@@ -183,6 +187,13 @@ export default function CoverPage() {
         <OnlineUsersGrid compact maxVisible={8} />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <ZEGOMobileAppBanner />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <ContentRecommendations />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
       </div>
     </div>
   );

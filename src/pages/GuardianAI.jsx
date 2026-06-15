@@ -12,6 +12,10 @@ import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import AIModeration from '../components/live/AIModeration';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -389,6 +393,13 @@ export default function GuardianAI() {
         <ReportsManager communityId={null} userId={user?.id} />
         <ChallengeAnalytics communityId={null} />
         <SpotlightBanner communityId={null} isAdmin={false} />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <AnnouncementPanel communityId={null} userId={null} />
       </div>
 
       {/* Cross-nav footer */}

@@ -12,6 +12,10 @@ import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -288,6 +292,13 @@ export default function CommunityAdminPage() {
           <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
             <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Settings</span>
           </Link>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <StreamHealthDashboard roomId={null} isHost={false} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
         </div>
       </div>
     </div>

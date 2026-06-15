@@ -11,6 +11,10 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -200,6 +204,14 @@ export default function WelcomePage() {
         style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AnnouncementPanel communityId={null} userId={null} />
+        <ChallengeLeaderboard challengeId={null} />
+      </div>
     </div>
   );
 }

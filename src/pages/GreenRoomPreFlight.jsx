@@ -10,6 +10,10 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -237,6 +241,13 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
           </Link>
         </div>
         {content}
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <PreStreamCountdown room={null} currentUser={null} onGoLive={() => {}} />
       </div>
     </div>
   );

@@ -12,6 +12,10 @@ import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import ReportModal from '../components/moderation/ReportModal';
 import AIModeration from '../components/live/AIModeration';
 import HostAlertCenter from '../components/live/HostAlertCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -319,6 +323,13 @@ export default function AIModerationPage() {
           <ReportsManager communityId={null} userId={user?.id} />
           <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamHealthDashboard roomId={null} isHost={false} />
+          <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>

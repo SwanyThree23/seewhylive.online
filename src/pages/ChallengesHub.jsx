@@ -13,6 +13,10 @@ import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -371,6 +375,13 @@ export default function ChallengesHubPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <TournamentBracket />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
     </div>

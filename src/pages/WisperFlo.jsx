@@ -7,6 +7,10 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import GiftAnimation from '../components/live/GiftAnimation';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import TippingModal from '../components/monetization/TippingModal';
+import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
@@ -303,6 +307,10 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <OnlineUsersGrid compact maxVisible={12} />
       <ContentRecommendations />
       <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+      <CollaborationMatcher />
+      <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
+      <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+      <StreamGoals isHost={false} />
     </div>
   );
 }
