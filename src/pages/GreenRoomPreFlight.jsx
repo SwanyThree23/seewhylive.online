@@ -91,6 +91,7 @@ function CopyBtn({ value }) {
 
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const navigate = useNavigate();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());
@@ -180,8 +181,8 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <VdoNinjaGuestLink roomId={token} />
 
       {/* Stream health */}
-      <ZEGOStreamHealthCard roomId={null} />
-      <GuestQueue roomId={null} isHost={false} />
+      <ZEGOStreamHealthCard roomId={roomId} />
+      <GuestQueue roomId={roomId} isHost={false} />
       <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
       <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
