@@ -345,6 +345,7 @@ export default function LiveRoom() {
   const stage = roomId && members.length > 0
     ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
+        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
