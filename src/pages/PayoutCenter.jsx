@@ -290,6 +290,7 @@ export default function PayoutCenter() {
         <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <StripeSubscribeButton creatorId={user?.id} creatorName="" currentUserId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

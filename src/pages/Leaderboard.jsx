@@ -421,6 +421,7 @@ export default function LeaderboardPage() {
           <AnimatedGiftShop recipientId={currentUser?.id} roomId={null} onClose={() => {}} />
           <LeaderboardPanel roomId={null} />
           <ChallengeLeaderboard challengeId={null} />
+          <OnlineUsersGrid compact maxVisible={10} />
         </div>
       </div>
     </div>

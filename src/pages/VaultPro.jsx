@@ -649,6 +649,8 @@ export default function VaultPro() {
         <MonetizationDashboard roomId={null} />
         <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
       </div>
     </div>
   );

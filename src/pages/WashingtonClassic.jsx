@@ -348,6 +348,8 @@ export default function WashingtonClassic() {
         <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
         <LeaderboardPanel roomId={null} />
         <ShareToSocial content={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
       </div>
     </div>
   );

@@ -237,6 +237,8 @@ export default function VoiceAISettings() {
           <AIStreamSummary roomId={null} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
           <AuraEmotionDisplay roomId={null} sessionId={null} />
           <ContentRecommendations />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

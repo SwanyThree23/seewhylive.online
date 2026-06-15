@@ -872,6 +872,7 @@ export default function StateVsState() {
         <TournamentBracket />
         <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
       </div>
     </div>
   );

@@ -320,6 +320,7 @@ export default function CommunitiesPage() {
           <AnnouncementPanel communityId={null} userId={user?.id} />
           <SpotlightSection communityId={null} />
           <ContentRecommendations />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>
