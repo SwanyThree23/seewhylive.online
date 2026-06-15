@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -624,6 +625,14 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -1462,11 +1471,11 @@ export default function PodcastStudio() {
       <Toast message={toast} />
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIStreamSummary roomId={null} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
         <CollaborationMatcher />
         <SpotlightBanner communityId={null} isAdmin={false} />
-        <ClipGeneratorAI roomId={null} sessionId={null} elapsedSeconds={0} isHost={true} />
-        <AutomatedHighlightReels roomId={null} sessionId={null} isHost={true} />
+        <ClipGeneratorAI roomId={activeRoomId} sessionId={activeRoomId} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={activeRoomId} sessionId={activeRoomId} isHost={true} />
         <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid compact maxVisible={10} />
