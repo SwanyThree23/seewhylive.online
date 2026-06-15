@@ -105,6 +105,9 @@ import StreamEventBus from '../components/live/StreamEventBus';
 import ViewerCount from '../components/live/ViewerCount';
 import GuestControls from '../components/live/GuestControls';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -2347,6 +2350,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         recipient={{ id: party?.host_id, name: party?.host_name || 'Creator' }}
         roomId={partyId}
       />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+      </div>
     </div>
   );
 }
