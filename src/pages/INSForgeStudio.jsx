@@ -386,7 +386,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AICopilotSidebar roomId={null} isHost={false} viewerCount={0} />
         <ContentRecommendations />
-        <VODLibrary creatorId={null} />
+        <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
       </div>
     </div>
