@@ -222,16 +222,16 @@ export default function LiveBattles() {
 
       {/* Battle engagement tools */}
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <PKBattleInterface roomId={null} />
+        <PKBattleInterface roomId={battles?.[0]?.id || null} />
         <TournamentBracket />
         <MatchmakingQueue user={user} onMatchFound={() => {}} />
-        <LoveTap roomId={null} user={user} creatorId={battles?.[0]?.creator_id || null} creatorName="Creator" />
-        <GiftShopTray roomId={null} currentUser={user} />
+        <LoveTap roomId={battles?.[0]?.id || null} user={user} creatorId={battles?.[0]?.creator_id || null} creatorName="Creator" />
+        <GiftShopTray roomId={battles?.[0]?.id || null} currentUser={user} />
         <PKBattleVotePanel battleId={battles?.[0]?.id || null} creatorId={battles?.[0]?.creator_id || null} challengerId={battles?.[0]?.challenger_id || null} creatorName={battles?.[0]?.creator_name || 'Creator'} challengerName={battles?.[0]?.challenger_name || 'Challenger'} />
         <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
         <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
         <BattleOverlay battle={battles?.[0] || null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={battles || []} user={null} />
+        <PKAnalyticsDashboard battles={battles || []} user={user} />
       </div>
 
       {/* Cross-nav footer */}
