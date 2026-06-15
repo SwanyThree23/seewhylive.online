@@ -265,9 +265,9 @@ export default function PKBattleArena() {
         <BattleScoreboard roomId={null} />
         <BattleMode roomId={null} isHost={false} hostName="" participants={[]} />
         <TournamentBracket />
-        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <MatchmakingQueue user={user} onMatchFound={() => {}} />
         <BattleOverlay battle={null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={[]} user={null} />
+        <PKAnalyticsDashboard battles={battles} user={user} />
       </div>
 
       {/* Footer nav */}

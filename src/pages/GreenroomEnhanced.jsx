@@ -13,6 +13,7 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestQueue from '../components/live/GuestQueue';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
@@ -31,6 +32,8 @@ const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const isHost = true;
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -235,6 +238,7 @@ export default function GreenroomEnhanced() {
 
         {/* Streaming presets */}
         <StreamingPresets onApply={() => {}} />
+        <AdvancedEncoderSettings onApply={() => {}} />
 
         {/* Stream metadata editor (title/category) */}
         <StreamMetadataEditor />
@@ -243,14 +247,14 @@ export default function GreenroomEnhanced() {
         <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
 
         {/* Guest connector + queue */}
-        <GuestConnector roomId={null} roomName="SeeWhy Studio" />
-        <GuestQueue roomId={null} isHost={true} />
+        <GuestConnector roomId={roomId} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={roomId} isHost={true} />
 
         {/* Participant queue */}
-        <GreenroomQueue roomId={null} isHost={true} />
+        <GreenroomQueue roomId={roomId} isHost={true} />
 
         {/* RTMP / WHIP Ingest Panel */}
-        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
 
         {/* Guest RTMP panel */}
         <GuestRTMPPanel participantId={null} userId={user?.id} />
@@ -265,7 +269,7 @@ export default function GreenroomEnhanced() {
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
 
         {/* ZEGO guest approval */}
-        <ZEGOGuestApprovalPanel roomId={null} isHost={true} />
+        <ZEGOGuestApprovalPanel roomId={roomId} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
@@ -304,9 +308,9 @@ export default function GreenroomEnhanced() {
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <MultiGuestPanel roomId={null} hostId={null} isHost={true} />
-        <OBSBridge roomId={null} isHost={true} />
-        <VideoShortRecorder roomId={null} sessionId={null} onSave={() => {}} />
+        <MultiGuestPanel roomId={roomId} hostId={user?.id} isHost={true} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <VideoShortRecorder roomId={roomId} sessionId={roomId} onSave={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

@@ -11,7 +11,10 @@ import GuestGrid from '../components/live/GuestGrid';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
 import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
 import GuestConnector from '../components/live/GuestConnector';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import UnifiedChat from '../components/live/UnifiedChat';
@@ -244,7 +247,10 @@ export default function HybridStreamRoom() {
           <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
           <StreamWebSourceManager isStreamActive={false} />
           <RTMPIngestPanel roomId={roomId} />
+          <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
           <GuestConnector roomId={roomId} />
+          <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+          <AdvancedEncoderSettings onApply={() => {}} />
           <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
         </div>
       )}

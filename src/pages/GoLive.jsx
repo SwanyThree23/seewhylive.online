@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import BitratePresets from '../components/streaming/BitratePresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
@@ -690,6 +691,7 @@ export default function GoLive() {
             </div>
 
             <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+            <AdvancedEncoderSettings onApply={() => {}} />
 
             {user?.id && (
               <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
