@@ -149,7 +149,7 @@ export default function MonetizationWidgets() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <MonetizationDashboard roomId={null} />
-        <VirtualGoodsStore userId={null} />
+        <VirtualGoodsStore userId={user?.id} />
       </div>
     </div>
   );

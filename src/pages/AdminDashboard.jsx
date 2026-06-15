@@ -586,7 +586,7 @@ export default function AdminDashboard() {
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamHealthDashboard roomId={null} isHost={true} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
         </div>
       </div>
     </div>

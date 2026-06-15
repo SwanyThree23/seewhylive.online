@@ -253,7 +253,7 @@ export default function FeaturedContent() {
           <OnlineUsersGrid compact maxVisible={10} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
           <StreamGoals isHost={false} />
-          <AnnouncementPanel communityId={null} userId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
         </div>
       </div>
     </div>
