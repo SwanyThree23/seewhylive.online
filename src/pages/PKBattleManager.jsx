@@ -20,6 +20,7 @@ import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import BattleMode from '../components/streaming/BattleMode';
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
@@ -839,6 +840,7 @@ export default function PKBattleManager() {
         <BattleMode roomId={null} hostId={user?.id} isHost={true} />
         <TipAlert roomId={null} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

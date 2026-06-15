@@ -7,6 +7,10 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import GuestConnector from '../components/live/GuestConnector';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
@@ -258,6 +262,10 @@ export default function GuestJoin() {
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
           <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <StreamGoals isHost={false} />
+          {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>

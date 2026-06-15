@@ -15,6 +15,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import FollowButton from '../components/shared/FollowButton';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -356,6 +360,13 @@ export default function SearchPage() {
             <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
           </Link>
         ))}
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

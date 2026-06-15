@@ -6,6 +6,11 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import SignalBars from '../components/live/SignalBars';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -539,6 +544,10 @@ export default function CreatorPublicProfile() {
           <VirtualCurrencyTips roomId={null} creatorId={creatorId} currentUser={currentUser} isHost={false} />
           <PayPerViewGate roomId={null} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
+          <ContentRecommendations />
+          <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
         </div>
       )}
     </div>

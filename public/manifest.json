@@ -1,12 +1,17 @@
 {
+  "id": "/",
   "name": "SeeWhy LIVE",
   "short_name": "SeeWhy",
   "description": "Live streaming and creator platform — real-time rooms, subscriptions, watch parties and more",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#080B18",
-  "theme_color": "#D4AF37",
+  "theme_color": "#080B18",
   "orientation": "portrait-primary",
+  "lang": "en-US",
+  "dir": "ltr",
   "icons": [
     { "src": "/icons/icon-72x72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "maskable any" },
     { "src": "/icons/icon-96x96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "maskable any" },
@@ -17,6 +22,22 @@
     { "src": "/icons/icon-384x384.png","sizes": "384x384", "type": "image/png", "purpose": "maskable any" },
     { "src": "/icons/icon-512x512.png","sizes": "512x512", "type": "image/png", "purpose": "maskable any" },
     { "src": "/icons/icon.svg",        "sizes": "any",     "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Go Live",
+      "short_name": "Live",
+      "description": "Start streaming immediately",
+      "url": "/go-live",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Discover Streams",
+      "short_name": "Discover",
+      "description": "Find live rooms and creators",
+      "url": "/discover",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
   ],
   "categories": ["entertainment", "social", "multimedia"],
   "screenshots": [],

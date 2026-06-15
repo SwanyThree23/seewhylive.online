@@ -7,9 +7,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import ReferralProgram from '@/components/community/ReferralProgram';
-import DiscussionFeed from '@/components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import DiscussionFeed from '../components/community/DiscussionFeed';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import StreamGoals from '../components/live/StreamGoals';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -257,6 +262,10 @@ export default function CreateCommunityPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
           <DiscussionFeed communityId="new" />
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
+          <OnlineUsersGrid compact maxVisible={12} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
     </div>

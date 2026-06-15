@@ -27,6 +27,11 @@ import StreamChatbot from '../components/live/StreamChatbot';
 import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
 import ShareModal from '../components/live/ShareModal';
 import WebhookHooks from '../components/live/WebhookHooks';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -783,6 +788,11 @@ export default function GoLive() {
         <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
         <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title="I'm going live on SeeWhy LIVE!" />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
       </div>
     </div>
   );

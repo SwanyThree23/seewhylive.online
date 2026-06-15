@@ -208,3 +208,13 @@
   p, li, td, th { font-size: max(14px, 0.875em); }
   label, small, .text-label { font-size: max(12px, 0.75em); }
 }
+
+/* BrandChyron positioning — sit above the 60px mobile bottom nav */
+.brand-chyron {
+  bottom: 0;
+}
+@media (max-width: 767px) {
+  .brand-chyron {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+}

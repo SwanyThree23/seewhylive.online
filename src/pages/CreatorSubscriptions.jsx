@@ -14,6 +14,9 @@ import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
@@ -636,6 +639,9 @@ export default function CreatorSubscriptionsPage() {
             <SubscriptionCard tier={null} isCurrentTier={false} onSubscribe={() => {}} />
             <StripeSubscribeButton creatorId={targetCreatorId || null} tierId={null} userId={user.id} />
             <SubscriptionManager userId={user.id} />
+            <OnlineUsersGrid compact maxVisible={10} />
+            <ContentRecommendations />
+            <CollaborationMatcher />
           </div>
         )}
       </div>

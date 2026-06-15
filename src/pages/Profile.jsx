@@ -16,6 +16,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -598,6 +602,10 @@ export default function ProfilePage() {
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
         <PerformanceDashboard roomId={null} sessionId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <ShareToSocial url={window.location.href} title={`Check out ${user?.full_name || 'my'} profile on SeeWhy LIVE!`} />
       </div>
     </div>
   );

@@ -6,13 +6,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { base44 } from '@/api/base44Client';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -1335,6 +1339,14 @@ export default function SeeWhyLIVEv37() {
         <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={false} />
         <GreenroomQueue roomId={null} isHost={false} />
         <SocialLeaderboard roomId={null} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

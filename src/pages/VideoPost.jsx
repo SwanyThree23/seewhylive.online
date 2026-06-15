@@ -12,6 +12,10 @@ import DiscussionFeed from '../components/community/DiscussionFeed';
 import VODCard from '../components/vod/VODCard';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import StreamGoals from '../components/live/StreamGoals';
 
 const GOLD = '#D4AF37';
 
@@ -327,6 +331,12 @@ export default function VideoPost() {
         <ContentRecommendations />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <AnnouncementPanel communityId={null} userId={null} />
+        <StreamGoals isHost={false} />
       </div>
     </div>
   );

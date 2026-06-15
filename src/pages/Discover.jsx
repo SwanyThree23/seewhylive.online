@@ -16,6 +16,10 @@ import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -399,6 +403,12 @@ export default function DiscoverPage() {
         {/* YouTube partner content discovery */}
         <div className="mt-8">
           <YouTubeDiscovery />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
+          <StreamGoals isHost={false} />
+          <AnnouncementPanel communityId={null} userId={null} />
+          <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
     </div>

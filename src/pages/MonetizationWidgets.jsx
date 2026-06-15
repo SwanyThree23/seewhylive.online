@@ -10,6 +10,10 @@ import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -139,6 +143,13 @@ export default function MonetizationWidgets() {
           <TipAlert roomId={null} recipientId={user?.id} />
           <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
         </div>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MonetizationDashboard roomId={null} />
+        <VirtualGoodsStore userId={null} />
       </div>
     </div>
   );

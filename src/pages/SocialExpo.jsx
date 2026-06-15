@@ -14,6 +14,10 @@ import CreatorBridge from '../components/social/CreatorBridge';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ShareToSocial from '../components/social/ShareToSocial';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -105,7 +109,7 @@ export default function SocialExpo() {
     var subject = encodeURIComponent(`SeeWhy LIVE Sponsorship Inquiry — ${tierLabel} ($${price}/event)`);
     var body = encodeURIComponent(`Hi,\n\nI'm interested in the ${tierLabel} sponsorship tier ($${price}/event) on SeeWhy LIVE.\n\nPlease send me more details.\n\nThank you.`);
     var mailto = `mailto:partnerships@seewhylive.online?subject=${subject}&body=${body}`;
-    window.open(mailto, '_blank');
+    window.open(mailto, '_blank', 'noopener,noreferrer');
     setSponsorToast('Opening email…');
     setTimeout(() => setSponsorToast(''), 2500);
   }
@@ -702,6 +706,13 @@ export default function SocialExpo() {
           <ShareToSocial />
           <ContentRecommendations />
           <SpotlightBanner communityId={null} isAdmin={false} />
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamGoals isHost={false} />
+          <ChallengeLeaderboard challengeId={null} />
+          <AnnouncementPanel communityId={null} userId={null} />
         </div>
       </div>
     </div>

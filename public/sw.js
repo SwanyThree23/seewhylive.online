@@ -1,4 +1,4 @@
-const CACHE_NAME = 'seewhy-live-v1';
+const CACHE_NAME = 'seewhy-live-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

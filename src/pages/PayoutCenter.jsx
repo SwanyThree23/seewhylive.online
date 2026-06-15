@@ -6,6 +6,12 @@ import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SubscriptionManager from '../components/monetization/SubscriptionManager';
 import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const CREATOR_SPLIT = 0.90;
 const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
@@ -279,6 +285,12 @@ export default function PayoutCenter() {
         <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
         <SubscriptionManager creatorId={user?.id} />
         <StripeConnectButton creatorId={user?.id} />
+        <EarningsBreakdown creatorId={user?.id} />
+        <MonetizationDashboard roomId={null} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
+        <VirtualGoodsStore userId={user?.id} />
+        <StripeSubscribeButton creatorId={user?.id} creatorName={user?.full_name || ''} currentUserId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>
   );

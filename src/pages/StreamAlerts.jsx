@@ -14,6 +14,8 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import GiftAnimation from '../components/live/GiftAnimation';
 import TippingModal from '../components/monetization/TippingModal';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -339,6 +341,18 @@ export default function StreamAlerts() {
       </div>
 
       {/* Cross-nav footer */}
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <StreamGoals isHost={true} />
+        <PollLaunchBar roomId={null} hostId={null} activePoll={null} isHost={true} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <GiftAnimation event={null} onDone={() => {}} />
+        <EnhancedPollingSystem roomId={null} hostId={null} isHost={true} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+      </div>
+
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
           <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>

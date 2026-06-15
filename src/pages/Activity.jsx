@@ -18,6 +18,7 @@ import PointsNotification from '../components/live/PointsNotification';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
