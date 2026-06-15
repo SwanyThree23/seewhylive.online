@@ -288,7 +288,7 @@ export default function FallenLegendsPage() {
         <ShareToSocial content={null} />
         <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
-        <RealtimeLeaderboard roomId={null} creatorId={null} />
+        <RealtimeLeaderboard roomId={null} creatorId={user?.id} />
         <SocialLeaderboard roomId={null} />
         <SpotlightSection communityId={null} />
         <OnlineUsersGrid compact maxVisible={10} />

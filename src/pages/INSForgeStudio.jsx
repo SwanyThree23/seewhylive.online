@@ -396,7 +396,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         <ShareToSocial content={null} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={null} />
+        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />

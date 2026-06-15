@@ -769,7 +769,7 @@ export default function SceneTemplates() {
         {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
         <ChatOverlay roomId={null} isVisible={true} />
         <EvmuxWebSource isActive={false} onClose={() => {}} />
-        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+        <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
         <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
