@@ -91,6 +91,8 @@ export default function AdminDashboard() {
   const { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: user?.role === 'admin' });
   const { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: user?.role === 'admin' });
   const { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: user?.role === 'admin' });
+  const firstCommunityId = communities[0]?.id || null;
+  const activeAdminRoomId = allRooms.find(r => r.status === 'live')?.id || null;
 
   const changeRoleMutation = useMutation({
     mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
@@ -387,11 +389,11 @@ export default function AdminDashboard() {
 
         {activeTab === 'reports' && (
           <div className="mt-4">
-            <ReportsManager communityId={null} userId={user?.id} />
+            <ReportsManager communityId={firstCommunityId} userId={user?.id} />
           </div>
         )}
 
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={firstCommunityId} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -578,15 +580,15 @@ export default function AdminDashboard() {
         )}
 
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <ChallengeAnalytics communityId={null} />
-          <ReferralConfig communityId={null} />
-          <PerformanceDashboard roomId={null} sessionId={null} />
-          <AnnouncementScheduler communityId={null} userId={user?.id} />
-          <SpotlightBanner communityId={null} isAdmin={true} />
+          <ChallengeAnalytics communityId={firstCommunityId} />
+          <ReferralConfig communityId={firstCommunityId} />
+          <PerformanceDashboard roomId={activeAdminRoomId} sessionId={activeAdminRoomId} />
+          <AnnouncementScheduler communityId={firstCommunityId} userId={user?.id} />
+          <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamHealthDashboard roomId={null} isHost={true} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
+          <AnnouncementPanel communityId={firstCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>
