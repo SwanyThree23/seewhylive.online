@@ -14,6 +14,8 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const BG2 = 'rgba(8,11,24,0.9)';
@@ -651,6 +653,8 @@ export default function VaultPro() {
         <VirtualGoodsStore userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title="Secured with SeeWhy LIVE Vault Pro" />
       </div>
     </div>
   );
