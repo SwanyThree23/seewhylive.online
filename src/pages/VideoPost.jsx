@@ -335,7 +335,7 @@ export default function VideoPost() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={null} userId={null} />
+        <AnnouncementPanel communityId={null} userId={user?.id} />
         <StreamGoals isHost={false} />
       </div>
     </div>
