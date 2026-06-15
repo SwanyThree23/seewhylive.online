@@ -439,7 +439,7 @@ export default function PKBattlePage() {
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
 
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams } = useWebRTCPeers(battleId || '', localCamStream);
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
   React.useEffect(() => {
@@ -789,7 +789,7 @@ export default function PKBattlePage() {
         <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
         {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
         {user?.id && <PointsNotification userId={user.id} />}
-        <OnlineUsersGrid compact maxVisible={8} />
+        <OnlineUsersGrid roomId={battleId} remoteStreams={battleRemoteStreams} peerUserIds={battlePeerUserIds} localStream={localCamStream} currentUser={user} compact maxVisible={8} />
         <ContentRecommendations />
         <CollaborationMatcher />
       </div>
