@@ -62,9 +62,7 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import WebSourceOverlay from '../components/streaming/WebSourceOverlay';
-import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
-import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
-import WebSourceOverlayV49 from '../components/streaming/WebSourceOverlayV49';
+
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import AudioMixer from '../components/live/AudioMixer';
@@ -1781,26 +1779,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
-                {/* V49 enhanced RTMP fanout — 12 platforms, real RTMP base URLs */}
-                {isHost && (
-                  <div className="rounded-xl overflow-hidden p-3" style={{ border: '1px solid rgba(128,0,32,0.3)', background: 'rgba(8,11,24,0.5)' }}>
-                    <RTMPFanoutPanelV49
-                      streamKey={partyId || ''}
-                      rtmpIngest="rtmp://76.13.31.91:1935/live/"
-                      onFanoutStart={(cfg) => toast.success(`Fanout started to ${Object.values(cfg.enabled || {}).filter(Boolean).length} platforms`)}
-                      onFanoutStop={() => toast('Fanout stopped')}
-                    />
-                  </div>
+                <VdoNinjaGuestLink roomId={partyId} />
+                {user?.id && (
+                  <GuestInviteGenerator userId={user.id} roomId={partyId} streamId={partyId} />
                 )}
-                <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
-                <RTMPIngestPanel roomId={partyId} />
-                {/* V49 web source overlay manager */}
-                {isHost && (
-                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(0,191,255,0.15)', background: 'rgba(8,11,24,0.5)' }}>
-                    <WebSourceOverlayV49 />
-                  </div>
+                {user?.id && (
+                  <RTMPFanoutPanel userId={user.id} streamId={partyId} isStreaming={party?.status === 'live'} />
                 )}
-                <WebSourceOverlay isStreamActive={party?.status === 'live'} />
+                <WebSourceOverlay />
               </div>
             )}
 

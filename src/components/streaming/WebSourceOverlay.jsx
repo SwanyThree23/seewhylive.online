@@ -1,309 +1,206 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GripVertical, X, Volume2, VolumeX, Maximize2, Minimize2, Globe, Plus, RefreshCw } from 'lucide-react';
+import { Plus, X, Maximize2, Minimize2, Volume2, VolumeX, GripHorizontal, Globe, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const MIN_W = 240;
-const MIN_H = 135;
+const PRESETS = [
+  { label: 'VDO.Ninja Guest', url: 'https://vdo.ninja/?view=', hint: 'Paste push ID after "view="' },
+  { label: 'OBS VirtualCam', url: '', hint: 'Local browser source URL' },
+  { label: 'Stream Overlay', url: '', hint: 'Custom overlay URL' },
+];
 
-function DraggableOverlay({ source, onRemove, onUpdate, containerRef }) {
-  const [pos, setPos] = useState(source.pos || { x: 40, y: 40 });
-  const [size, setSize] = useState(source.size || { w: 360, h: 200 });
+function OverlayWindow({ source, onClose, zIndex, onFocus }) {
+  const [pos, setPos] = useState({ x: source.x || 40, y: source.y || 40 });
+  const [size, setSize] = useState({ w: source.w || 320, h: source.h || 200 });
   const [muted, setMuted] = useState(true);
   const [minimized, setMinimized] = useState(false);
-  const [key, setKey] = useState(0); // force iframe reload
-  const dragging = useRef(false);
-  const resizing = useRef(false);
-  const startRef = useRef({});
+  const dragRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragStart = useRef({ mx: 0, my: 0, ox: 0, oy: 0 });
 
-  const onDragStart = useCallback((e) => {
+  const onMouseDown = useCallback((e) => {
     e.preventDefault();
-    dragging.current = true;
-    startRef.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y };
-    const onMove = (mv) => {
-      if (!dragging.current) return;
-      const dx = mv.clientX - startRef.current.mx;
-      const dy = mv.clientY - startRef.current.my;
-      setPos({ x: startRef.current.px + dx, y: startRef.current.py + dy });
+    onFocus();
+    isDragging.current = true;
+    dragStart.current = { mx: e.clientX, my: e.clientY, ox: pos.x, oy: pos.y };
+
+    const onMove = (ev) => {
+      if (!isDragging.current) return;
+      setPos({ x: dragStart.current.ox + ev.clientX - dragStart.current.mx, y: dragStart.current.oy + ev.clientY - dragStart.current.my });
     };
-    const onUp = () => { dragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+    const onUp = () => { isDragging.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-  }, [pos]);
-
-  const onResizeStart = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    resizing.current = true;
-    startRef.current = { mx: e.clientX, my: e.clientY, sw: size.w, sh: size.h };
-    const onMove = (mv) => {
-      if (!resizing.current) return;
-      const dw = mv.clientX - startRef.current.mx;
-      const dh = mv.clientY - startRef.current.my;
-      setSize({ w: Math.max(MIN_W, startRef.current.sw + dw), h: Math.max(MIN_H, startRef.current.sh + dh) });
-    };
-    const onUp = () => { resizing.current = false; window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  }, [size]);
+  }, [pos, onFocus]);
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        left: pos.x,
-        top: pos.y,
-        width: minimized ? 200 : size.w,
-        height: minimized ? 32 : size.h,
-        zIndex: 300,
-        borderRadius: 8,
-        overflow: 'hidden',
-        border: `1px solid ${G}40`,
-        boxShadow: `0 0 20px rgba(0,0,0,0.6), 0 0 0 1px ${G}20`,
-        background: '#000',
-        userSelect: 'none',
-      }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      style={{ position: 'absolute', left: pos.x, top: pos.y, width: size.w, zIndex, userSelect: 'none' }}
+      onMouseDown={onFocus}
     >
-      {/* Title bar */}
-      <div
-        onMouseDown={onDragStart}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          padding: '4px 8px',
-          background: 'rgba(8,11,24,0.95)',
-          borderBottom: minimized ? 'none' : '1px solid rgba(255,255,255,0.08)',
-          cursor: 'grab',
-          height: 32,
-          flexShrink: 0,
-        }}
-      >
-        <GripVertical style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: source.active ? '#C0392B' : 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
-        <p style={{ flex: 1, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {source.name}
-        </p>
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }} onMouseDown={e => e.stopPropagation()}>
-          <button onClick={() => setKey(k => k + 1)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>
-            <RefreshCw style={{ width: 10, height: 10 }} />
-          </button>
-          <button onClick={() => setMuted(m => !m)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: muted ? '#C0392B' : '#6DBF7E' }}>
-            {muted ? <VolumeX style={{ width: 10, height: 10 }} /> : <Volume2 style={{ width: 10, height: 10 }} />}
-          </button>
-          <button onClick={() => setMinimized(m => !m)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>
-            {minimized ? <Maximize2 style={{ width: 10, height: 10 }} /> : <Minimize2 style={{ width: 10, height: 10 }} />}
-          </button>
-          <button onClick={() => onRemove(source.id)}
-            style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(192,57,43,0.15)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#C0392B' }}>
-            <X style={{ width: 10, height: 10 }} />
-          </button>
+      <div className="rounded-xl overflow-hidden shadow-2xl" style={{ border: `1px solid rgba(212,175,55,0.25)`, background: '#000' }}>
+        {/* Title bar */}
+        <div
+          ref={dragRef}
+          onMouseDown={onMouseDown}
+          className="flex items-center gap-2 px-2.5 py-1.5 cursor-grab active:cursor-grabbing"
+          style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+        >
+          <GripHorizontal className="w-3 h-3 text-white/20 flex-shrink-0" />
+          <Globe className="w-3 h-3 flex-shrink-0" style={{ color: GOLD }} />
+          <p className="text-[10px] font-bold text-white truncate flex-1" style={T}>{source.label || 'Web Source'}</p>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <button onClick={() => setMuted(m => !m)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
+              {muted ? <VolumeX className="w-2.5 h-2.5 text-white/40" /> : <Volume2 className="w-2.5 h-2.5 text-[#6DBF7E]" />}
+            </button>
+            <button onClick={() => setMinimized(m => !m)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
+              {minimized ? <Maximize2 className="w-2.5 h-2.5 text-white/40" /> : <Minimize2 className="w-2.5 h-2.5 text-white/40" />}
+            </button>
+            <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-500/20 transition-colors">
+              <X className="w-2.5 h-2.5 text-red-400" />
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Content */}
-      {!minimized && (
-        <div style={{ position: 'relative', width: '100%', height: size.h - 32 }}>
-          <iframe
-            key={key}
-            src={source.url}
-            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-            allow="autoplay; camera; microphone"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            title={source.name}
-          />
-          {/* Resize handle */}
-          <div
-            onMouseDown={onResizeStart}
-            style={{
-              position: 'absolute', bottom: 0, right: 0,
-              width: 16, height: 16,
-              cursor: 'se-resize',
-              background: 'linear-gradient(135deg, transparent 50%, rgba(212,175,55,0.3) 50%)',
-            }}
-          />
-        </div>
-      )}
-    </div>
+        {/* Content */}
+        <AnimatePresence>
+          {!minimized && (
+            <motion.div initial={{ height: 0 }} animate={{ height: size.h }} exit={{ height: 0 }} style={{ overflow: 'hidden' }}>
+              <iframe
+                src={source.url}
+                allow="camera; microphone; autoplay; display-capture; fullscreen"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+                style={{ width: '100%', height: size.h, border: 'none', display: 'block', background: '#000' }}
+                title={source.label || 'web-source'}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
 
-export default function WebSourceOverlay({ isStreamActive = false }) {
+export default function WebSourceOverlay({ containerRef }) {
   const [sources, setSources] = useState([]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newUrl, setNewUrl] = useState('');
-  const containerRef = useRef(null);
-
-  const QUICK_SOURCES = [
-    { name: 'Lower Thirds Demo', url: 'https://publicfiles.evmux.com/static/websources/websource-demo.v7.html' },
-  ];
+  const [adding, setAdding] = useState(false);
+  const [url, setUrl] = useState('');
+  const [label, setLabel] = useState('');
+  const [focusId, setFocusId] = useState(null);
 
   const addSource = () => {
-    const url = newUrl.trim();
-    const name = newName.trim() || 'Web Source';
-    if (!url) { toast.error('Enter a URL'); return; }
-    if (!url.startsWith('http')) { toast.error('URL must start with http:// or https://'); return; }
-    setSources(prev => [...prev, {
-      id: `wso_${Date.now()}`,
-      name,
-      url,
-      active: true,
-      pos: { x: 60 + prev.length * 20, y: 80 + prev.length * 20 },
-      size: { w: 400, h: 225 },
-    }]);
-    setNewName('');
-    setNewUrl('');
-    setShowAdd(false);
-    toast.success(`${name} added to stream`);
+    if (!url.trim()) { toast.error('Enter a URL'); return; }
+    try { new URL(url); } catch { toast.error('Invalid URL'); return; }
+    const id = Date.now().toString();
+    setSources(s => [...s, { id, url: url.trim(), label: label.trim() || 'Web Source', x: 40 + s.length * 20, y: 40 + s.length * 20 }]);
+    setUrl('');
+    setLabel('');
+    setAdding(false);
+    setFocusId(id);
+    toast.success('Web source added');
   };
 
-  const removeSource = useCallback((id) => {
-    setSources(prev => prev.filter(s => s.id !== id));
-  }, []);
+  const removeSource = (id) => setSources(s => s.filter(src => src.id !== id));
 
-  const activeSources = sources.filter(s => s.active);
+  const getZ = (id) => id === focusId ? 100 : 50;
 
   return (
     <>
-      {/* Floating overlays rendered to document body via portal-style absolute positioning */}
+      {/* Floating overlay windows — render absolutely inside parent */}
       <AnimatePresence>
-        {activeSources.map(source => (
-          <DraggableOverlay
-            key={source.id}
-            source={source}
-            onRemove={removeSource}
-            onUpdate={(id, upd) => setSources(prev => prev.map(s => s.id === id ? { ...s, ...upd } : s))}
-            containerRef={containerRef}
+        {sources.map(src => (
+          <OverlayWindow
+            key={src.id}
+            source={src}
+            zIndex={getZ(src.id)}
+            onClose={() => removeSource(src.id)}
+            onFocus={() => setFocusId(src.id)}
           />
         ))}
       </AnimatePresence>
 
-      {/* Control panel */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5" style={{ color: G }} />
-            <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: G }}>
-              Web Overlays
-            </span>
-            {activeSources.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: 'rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
-                {activeSources.length} live
-              </span>
+      {/* Control panel (non-overlay) */}
+      <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: 'rgba(212,175,55,0.15)' }}>
+        <div className="flex items-center justify-between p-3 border-b border-white/5">
+          <div className="flex items-center gap-2">
+            <Globe className="w-3.5 h-3.5" style={{ color: GOLD }} />
+            <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD, ...T }}>Web Sources</span>
+            {sources.length > 0 && (
+              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-white/10 text-white/50">{sources.length}</span>
             )}
           </div>
           <button
-            onClick={() => setShowAdd(s => !s)}
-            className="flex items-center gap-1 px-2 py-1 rounded transition-all"
-            style={{
-              background: showAdd ? `${G}15` : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${showAdd ? `${G}40` : 'rgba(255,255,255,0.1)'}`,
-              color: showAdd ? G : 'rgba(255,255,255,0.4)',
-            }}
+            onClick={() => setAdding(a => !a)}
+            style={{ ...T, height: 24, padding: '0 8px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
+              background: adding ? 'rgba(255,255,255,0.05)' : 'rgba(212,175,55,0.15)', color: adding ? 'rgba(255,255,255,0.4)' : GOLD }}
           >
-            <Plus className="w-3 h-3" />
-            <span className="text-[10px] font-bold uppercase" style={T}>Add</span>
+            {adding ? <X className="w-3 h-3 inline" /> : <><Plus className="w-3 h-3 inline mr-1" />Add</>}
           </button>
         </div>
 
-        <AnimatePresence>
-          {showAdd && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="p-3 space-y-2 rounded-lg" style={{ background: `${G}06`, border: `1px solid ${G}20` }}>
+        <div className="p-3 space-y-2">
+          <AnimatePresence>
+            {adding && (
+              <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                className="rounded-lg p-2.5 space-y-2" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
                 <input
-                  value={newName}
-                  onChange={e => setNewName(e.target.value)}
-                  placeholder="Overlay name"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
-                />
-                <input
-                  value={newUrl}
-                  onChange={e => setNewUrl(e.target.value)}
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addSource()}
-                  placeholder="https://example.com/overlay"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] font-mono text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
+                  placeholder="https://vdo.ninja/?view=..."
+                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
                 />
-                <button
-                  onClick={addSource}
-                  className="w-full py-1.5 rounded text-[11px] font-black uppercase transition-all"
-                  style={{ background: G, color: '#000', ...T }}
-                >
-                  Add Overlay
-                </button>
-                {/* Quick presets */}
-                {QUICK_SOURCES.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-[9px] uppercase text-white/25 font-bold" style={T}>Quick Add</p>
-                    {QUICK_SOURCES.map(qs => (
-                      <button
-                        key={qs.name}
-                        onClick={() => { setNewName(qs.name); setNewUrl(qs.url); }}
-                        className="w-full px-2 py-1 rounded text-[10px] text-left transition-all"
-                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', ...T, fontWeight: 600 }}
-                      >
-                        {qs.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Active overlays list */}
-        {sources.length > 0 && (
-          <div className="space-y-1.5">
-            {sources.map(s => (
-              <motion.div
-                key={s.id}
-                layout
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${s.active ? `${G}25` : 'rgba(255,255,255,0.06)'}` }}
-              >
-                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.active ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
-                <Globe className="w-3 h-3 flex-shrink-0" style={{ color: s.active ? G : 'rgba(255,255,255,0.2)' }} />
-                <p className="flex-1 text-[10px] font-bold text-white truncate">{s.name}</p>
-                <button
-                  onClick={() => setSources(prev => prev.map(x => x.id === s.id ? { ...x, active: !x.active } : x))}
-                  className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase transition-all"
-                  style={{
-                    background: s.active ? 'rgba(192,57,43,0.15)' : `${G}15`,
-                    color: s.active ? '#C0392B' : G,
-                    border: `1px solid ${s.active ? 'rgba(192,57,43,0.3)' : `${G}30`}`,
-                    ...T,
-                  }}
-                >
-                  {s.active ? 'Hide' : 'Show'}
-                </button>
-                <button onClick={() => removeSource(s.id)}
-                  className="text-white/20 hover:text-red-400 transition-colors">
-                  <X className="w-3 h-3" />
+                <input
+                  value={label}
+                  onChange={e => setLabel(e.target.value)}
+                  placeholder="Label (optional)"
+                  style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+                />
+                <div className="flex gap-1">
+                  {PRESETS.map(p => (
+                    <button key={p.label}
+                      onClick={() => setUrl(p.url)}
+                      style={{ ...T, height: 22, padding: '0 8px', fontSize: 9, fontWeight: 700, borderRadius: 6, border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', background: 'transparent', color: 'rgba(255,255,255,0.4)' }}
+                    >{p.label}</button>
+                  ))}
+                </div>
+                <button onClick={addSource}
+                  style={{ ...T, width: '100%', height: 28, fontSize: 11, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer', background: `linear-gradient(135deg, ${GOLD}, #b8962e)`, color: '#000' }}>
+                  <Link2 className="w-3 h-3 inline mr-1" />Open Web Source
                 </button>
               </motion.div>
-            ))}
-          </div>
-        )}
+            )}
+          </AnimatePresence>
 
-        {sources.length === 0 && !showAdd && (
-          <div className="py-4 text-center">
-            <Globe className="w-6 h-6 mx-auto mb-1.5" style={{ color: 'rgba(212,175,55,0.2)' }} />
-            <p className="text-[11px] text-white/20" style={T}>No overlays active</p>
-            <p className="text-[10px] text-white/12">Add browser sources, timers, or graphics</p>
-          </div>
-        )}
+          {sources.length === 0 && !adding && (
+            <div className="text-center py-4">
+              <Globe className="w-5 h-5 text-white/20 mx-auto mb-1" />
+              <p className="text-[10px] text-white/30">No web sources open</p>
+              <p className="text-[10px] text-white/20">Add VDO.Ninja links, overlays, or any web URL</p>
+            </div>
+          )}
+
+          {sources.map(src => (
+            <div key={src.id} className="flex items-center gap-2 p-2 rounded-lg"
+              style={{ background: focusId === src.id ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <Globe className="w-3 h-3 text-white/30 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-white truncate">{src.label}</p>
+                <p className="text-[9px] text-white/30 truncate">{src.url}</p>
+              </div>
+              <button onClick={() => setFocusId(src.id)} style={{ ...T, height: 20, padding: '0 6px', fontSize: 9, fontWeight: 700, borderRadius: 6, border: 'none', cursor: 'pointer', background: 'rgba(212,175,55,0.1)', color: GOLD }}>Focus</button>
+              <button onClick={() => removeSource(src.id)} className="w-5 h-5 flex items-center justify-center rounded hover:bg-red-500/10 transition-colors flex-shrink-0">
+                <X className="w-2.5 h-2.5 text-red-400/60" />
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );
