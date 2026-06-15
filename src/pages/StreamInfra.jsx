@@ -372,18 +372,13 @@ function LiveRoomTab({ user }) {
   var [myRole, setMyRole] = useState('listener');
   var [roomActive, setRoomActive] = useState(false);
 
-  var mockParticipants = [
-    { id: '1', name: 'Alex Rivera', role: 'host', mic: true, video: true, hand: false, speaking: true },
-    { id: '2', name: 'Jordan M.', role: 'speaker', mic: true, video: false, hand: false, speaking: false },
-    { id: '3', name: 'Sam Chen', role: 'speaker', mic: false, video: true, hand: true, speaking: false },
-    { id: '4', name: 'Tara K.', role: 'listener', mic: false, video: false, hand: false, speaking: false },
-    { id: '5', name: 'Devon L.', role: 'listener', mic: false, video: false, hand: true, speaking: false },
-    { id: '6', name: 'Maya R.', role: 'cohost', mic: true, video: true, hand: false, speaking: false },
-  ];
+  var liveParticipants = roomActive && user
+    ? [{ id: user.id, name: user.full_name || user.email || 'You', role: myRole, mic: micOn, video: videoOn, hand: handRaised, speaking: micOn && myRole !== 'listener' }]
+    : [];
 
   var roleColors = { host: '#C0392B', cohost: '#D4AF37', speaker: '#d4af37', listener: '#D4AF37' };
-  var hostParticipants = mockParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
-  var listenerParticipants = mockParticipants.filter(function(p) { return p.role === 'listener'; });
+  var hostParticipants = liveParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
+  var listenerParticipants = liveParticipants.filter(function(p) { return p.role === 'listener'; });
 
   return (
     <div className="space-y-4">
@@ -399,7 +394,7 @@ function LiveRoomTab({ user }) {
             <span className="text-sm text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Offline</span>
           )}
           <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.5)', border:'1px solid rgba(255,255,255,0.1)' }}>
-            {mockParticipants.length} participants
+            {liveParticipants.length} participant{liveParticipants.length !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -550,8 +545,8 @@ function LiveRoomTab({ user }) {
               {[
                 { label: 'On Stage', val: String(hostParticipants.length), c: '#d4af37' },
                 { label: 'Listeners', val: String(listenerParticipants.length + 42), c: '#D4AF37' },
-                { label: 'Hand Up', val: String(mockParticipants.filter(function(p) { return p.hand; }).length), c: '#D4AF37' },
-                { label: 'Speaking', val: String(mockParticipants.filter(function(p) { return p.speaking; }).length), c: '#6DBF7E' },
+                { label: 'Hand Up', val: String(liveParticipants.filter(function(p) { return p.hand; }).length), c: '#D4AF37' },
+                { label: 'Speaking', val: String(liveParticipants.filter(function(p) { return p.speaking; }).length), c: '#6DBF7E' },
               ].map(function(s) {
                 return (
                   <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
