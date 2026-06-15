@@ -42,8 +42,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
         message: data.message,
         gift_type: data.giftType,
         status: 'completed',
-        platform_fee: data.amount * 0.1,
-        creator_amount: data.amount * 0.9,
+        creator_amount: Math.floor(data.amount * 0.9),
+        platform_fee: data.amount - Math.floor(data.amount * 0.9),
       });
 
       // Post message to chat
