@@ -174,7 +174,7 @@ export default function BackPage() {
         <OnlineUsersGrid compact maxVisible={12} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={null} userId={null} />
+        <AnnouncementPanel communityId={null} userId={user?.id} />
       </div>
 
       {/* Bottom Nav */}

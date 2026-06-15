@@ -306,7 +306,7 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <EnhancedStreamChat roomId={null} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
       <OnlineUsersGrid compact maxVisible={12} />
       <ContentRecommendations />
-      <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+      <EnhancedPollingSystem roomId={null} hostId={currentUser?.id} isHost={false} />
       <CollaborationMatcher />
       <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
       <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />

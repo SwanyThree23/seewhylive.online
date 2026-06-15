@@ -344,7 +344,7 @@ export default function SVSArena() {
         <SocialLeaderboard roomId={null} />
         <TournamentBracket />
         <PKBattleProgress battleId={null} />
-        <GiftShopTray roomId={null} currentUser={null} />
+        <GiftShopTray roomId={null} currentUser={user} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />

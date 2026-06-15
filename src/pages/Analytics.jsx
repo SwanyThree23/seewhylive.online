@@ -395,7 +395,7 @@ export default function AnalyticsPage() {
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
           <ContentRecommendations />
-          <EarningsBreakdown userId={null} />
+          <EarningsBreakdown userId={user?.id} />
         </div>
       </div>
     </div>

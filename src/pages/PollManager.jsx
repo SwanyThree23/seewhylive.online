@@ -204,7 +204,7 @@ export default function PollManager() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+          <EnhancedPollingSystem roomId={null} hostId={user?.id} isHost={false} />
           <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
           <PollCard poll={null} />
           <LivePollOverlay roomId={null} currentUser={user} isHost={false} />

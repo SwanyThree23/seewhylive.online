@@ -627,7 +627,7 @@ export default function PayoutsPage() {
           <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
-          <EarningsBreakdown userId={null} />
+          <EarningsBreakdown userId={user?.id} />
           <CollaborationMatcher />
         </div>
       </div>
