@@ -395,7 +395,7 @@ export default function ViewerDashboard() {
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {user?.id && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
-          <QuickPollLauncher roomId={null} hostId={null} isHost={false} />
+          <QuickPollLauncher roomId={null} hostId={user?.id} isHost={false} />
           <LivePollWidget roomId={null} currentUser={user} isHost={false} />
           <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={null} />
           {user?.id && <SubscriptionGate creatorId={null} roomId={null} />}

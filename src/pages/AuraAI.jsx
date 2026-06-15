@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -81,6 +82,7 @@ function ThinkDots() {
 }
 
 export default function AuraAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm Aura — your premium creative partner on SeeWhy LIVE. Ready to elevate your stream, sharpen your brand, and help you build something unforgettable. What are we creating today? ✨" },
   ]);
@@ -245,10 +247,10 @@ export default function AuraAI() {
         <ContentRecommendations />
         <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
+        <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
         <OnlineUsersGrid compact maxVisible={10} />
         <StreamGoals isHost={false} />
-        <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
+        <EnhancedPollingSystem roomId={null} hostId={user?.id} isHost={false} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
         <CollaborationMatcher />
       </div>

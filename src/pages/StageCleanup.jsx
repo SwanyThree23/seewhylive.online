@@ -199,7 +199,7 @@ export default function StageCleanupPage() {
           <SpotlightBanner communityId={null} isAdmin={false} />
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
-          <GreenroomQueue roomId={null} hostId={null} onApprove={() => {}} />
+          <GreenroomQueue roomId={null} hostId={user?.id} onApprove={() => {}} />
           <StreamHealthDashboard isLive={false} />
           <AIModeration roomId={null} isHost={true} />
           <GreenroomWaitlistPanel roomId={null} currentUser={user} onAdmit={() => {}} />

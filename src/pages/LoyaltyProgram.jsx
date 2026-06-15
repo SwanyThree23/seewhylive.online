@@ -382,7 +382,7 @@ export default function LoyaltyProgram() {
         <SpotlightBanner communityId={null} isAdmin={false} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <ChallengeLeaderboard challengeId={null} />
       </div>
 
