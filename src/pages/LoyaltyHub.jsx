@@ -16,6 +16,8 @@ import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -380,6 +382,8 @@ export default function LoyaltyHubPage() {
           <VirtualGoodsStore userId={user?.id} />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
+          <ContentRecommendations />
+          <ShareToSocial url={window.location.href} title="Check out my loyalty rewards on SeeWhy LIVE!" />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 0 32px' }}>
           {[

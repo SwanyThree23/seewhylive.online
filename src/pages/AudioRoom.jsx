@@ -101,11 +101,14 @@ function SpeakerTile({ member, size = 80 }) {
           transition: 'background 0.3s',
         }} />
         {/* OCT inner fill */}
-        <div className="absolute inset-[3px] flex items-center justify-center font-black text-lg text-white" style={{
+        <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center font-black text-lg text-white" style={{
           clipPath: OCT,
           background: `linear-gradient(135deg, ${color}88, ${BG2})`,
         }}>
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="absolute inset-0 w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
 
         {(isHost || isCohost) && (
@@ -134,9 +137,12 @@ function AudienceTile({ member }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative" style={{ width: size, height: size }}>
         <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
-        <div className="absolute inset-[2px] flex items-center justify-center font-bold text-sm text-white"
+        <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center font-bold text-sm text-white"
           style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="absolute inset-0 w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
       </div>
       <p className="text-[11px] truncate" style={{ color: '#888', fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 4 }}>
