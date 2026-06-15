@@ -349,13 +349,13 @@ export default function ChallengesHubPage() {
 
         <div className="mt-4 space-y-4">
           <LeaderboardPanel roomId={null} />
-          {user?.id && <LoyaltyBadge userId={user.id} creatorId={null} />}
+          {user?.id && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
           <ChallengeLeaderboard challengeId={null} />
           <ChallengeAnalytics communityId={null} />
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={null} />
+          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
           <SocialLeaderboard roomId={null} />
           <PointsEarnWidget userId={user?.id} />
         </div>

@@ -606,7 +606,7 @@ export default function MultiPlatformIntegration() {
         <StreamHealthDashboard isLive={false} />
         <OBSBridge roomId={null} isHost={true} />
         <WebhookHooks roomId={null} isHost={true} />
-        <MultiStreamConfig roomId={null} userId={null} />
+        <MultiStreamConfig roomId={null} userId={user?.id} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

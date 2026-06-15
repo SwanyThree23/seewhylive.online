@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -175,6 +177,7 @@ function BattleCard({ battle, onVote, myVote }) {
 }
 
 export default function PKBattleArena() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [battles, setBattles] = useState(() => genBattles());
   const [votes, setVotes] = useState({});
   const [tab, setTab] = useState('live');
@@ -267,8 +270,8 @@ export default function PKBattleArena() {
         <PKBattleProgress battleId={null} />
         <PKBattleVotePanel battleId={null} creatorId={null} challengerId={null} creatorName="Creator" challengerName="Challenger" />
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
-        <GiftShopTray roomId={null} currentUser={null} />
-        <EngagementBadgesDisplay roomId={null} userId={null} creatorId={null} />
+        <GiftShopTray roomId={null} currentUser={user} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
         <BattleScoreboard roomId={null} />
         <BattleMode roomId={null} isHost={false} hostName="" participants={[]} />
         <TournamentBracket />
