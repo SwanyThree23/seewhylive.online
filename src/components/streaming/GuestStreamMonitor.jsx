@@ -11,19 +11,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
     health: 'excellent'
   });
 
-  useEffect(() => {
-    if (!isStreaming) return;
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        bitrate: Math.max(1000, prev.bitrate + (Math.random() - 0.5) * 200),
-        latency: Math.max(10, prev.latency + (Math.random() - 0.5) * 15),
-        frames: Math.max(20, prev.frames + (Math.random() - 0.5) * 10),
-        resolution: prev.resolution,
-        health: Math.random() > 0.1 ? 'excellent' : Math.random() > 0.3 ? 'good' : 'warning'
-      }));
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [isStreaming]);
+  // Stats updated via real WebRTC getStats() callbacks from parent when available
 
   const healthColor = {
     excellent: '#6DBF7E',
