@@ -16,6 +16,8 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -598,6 +600,8 @@ export default function ProfilePage() {
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
         <PerformanceDashboard roomId={null} sessionId={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
       </div>
     </div>
   );

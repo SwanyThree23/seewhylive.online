@@ -9,6 +9,8 @@ import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {
@@ -911,6 +913,8 @@ export default function EnhancementSuite() {
         <CollaborationMatcher />
         <ContentRecommendations />
         <AutomatedHighlightReels streamSession={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamGoals isHost={false} />
       </div>
     </div>
   );

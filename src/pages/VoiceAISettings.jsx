@@ -11,6 +11,8 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';

@@ -10,6 +10,8 @@ import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import SpotlightSection from '../components/community/SpotlightSection';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 
 const initState = {
@@ -290,6 +292,8 @@ export default function FallenLegendsPage() {
         <SocialLeaderboard roomId={null} />
         <SpotlightSection communityId={null} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
       </div>
     </div>
   );

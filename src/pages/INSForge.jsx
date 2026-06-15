@@ -12,6 +12,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';

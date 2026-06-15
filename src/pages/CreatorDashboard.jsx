@@ -17,6 +17,7 @@ import StreamEventBus from '../components/live/StreamEventBus';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';

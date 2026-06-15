@@ -14,6 +14,8 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import GiftAnimation from '../components/live/GiftAnimation';
 import TippingModal from '../components/monetization/TippingModal';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

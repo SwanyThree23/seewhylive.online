@@ -13,6 +13,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown

@@ -11,6 +11,7 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const CREATOR_SPLIT = 0.90;
 const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';

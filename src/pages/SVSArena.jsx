@@ -10,6 +10,9 @@ import TournamentBracket from '../components/pk/TournamentBracket';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
 import GiftShopTray from '../components/live/GiftShopTray';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 const FORMAT = '7 Rock / 5-150 / Double Elimination';
@@ -343,6 +346,9 @@ export default function SVSArena() {
         <PKBattleProgress battleId={null} />
         <GiftShopTray roomId={null} currentUser={null} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
       </div>
     </div>
   );
