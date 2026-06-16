@@ -16,6 +16,9 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -820,6 +823,9 @@ export default function StreamInfra() {
         <ContentRecommendations />
         <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         <AutomatedHighlightReels streamSession={null} />
+        <RTMPFanoutPanel roomId={activeRoomId} isHost={true} />
+        <GuestInviteGenerator roomId={activeRoomId} isHost={true} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );

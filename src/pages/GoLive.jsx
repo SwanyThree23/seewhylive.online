@@ -33,6 +33,9 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import StreamGoals from '../components/live/StreamGoals';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
@@ -797,6 +800,9 @@ export default function GoLive() {
         <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={partyId} />
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
         <WebhookHooks roomId={partyId} userId={user?.id} isHost={true} />
+        <RTMPFanoutPanel roomId={partyId} isHost={true} />
+        <GuestInviteGenerator roomId={partyId} isHost={true} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );
