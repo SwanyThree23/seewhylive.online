@@ -9,6 +9,8 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import StreamGoals from '../components/live/StreamGoals';
@@ -400,6 +402,9 @@ export default function ViewerDashboard() {
           <LivePollWidget roomId={roomId} currentUser={user} isHost={false} />
           <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher currentUserId={user?.id} />
         </div>
       </div>
     </div>

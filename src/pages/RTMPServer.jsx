@@ -26,6 +26,9 @@ import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSett
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -322,6 +325,9 @@ export default function RTMPServer() {
           <MilestoneAlerts userId={user?.id} roomId={roomId} />
           <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
           <StreamGoals isHost={true} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <CollaborationMatcher currentUserId={user?.id} />
         </div>
       </div>
     </div>

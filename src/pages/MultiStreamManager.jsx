@@ -24,6 +24,9 @@ import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -467,6 +470,9 @@ export default function MultiStreamManager() {
           <MilestoneAlerts userId={user?.id} roomId={roomId} />
           <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
           <StreamGoals isHost={true} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <CollaborationMatcher currentUserId={user?.id} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
