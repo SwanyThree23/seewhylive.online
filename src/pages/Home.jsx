@@ -574,7 +574,7 @@ export default function Home() {
   return (
     <div
       className="min-h-screen relative"
-      style={{ background: '#080B18' }}
+      style={{ background: '#080B18', overscrollBehavior: 'contain' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
