@@ -78,7 +78,7 @@ function StatCard({ label, value, sub, delta, color, icon }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Icon size={16} color={color || 'rgba(255,255,255,0.4)'} />
         {delta !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#6DBF7E' : '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#6DBF7E' : '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
             {isPositive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
             {Math.abs(delta)}%
           </div>

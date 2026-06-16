@@ -213,9 +213,9 @@ export default function GoLiveStudio() {
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>SeeWhy LIVE · {RTMP_URL}</div>
         </div>
         {isLive && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.5)', borderRadius: 8, padding: '4px 12px' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#ef4444', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE · {formatUptime(state.uptime)}</span>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.5)', borderRadius: 8, padding: '4px 12px' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C0392B', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE · {formatUptime(state.uptime)}</span>
           </div>
         )}
         {isLive && (
@@ -237,7 +237,7 @@ export default function GoLiveStudio() {
             <div style={{ fontSize: 48 }}>{activeScene.icon}</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{activeScene.label}</div>
             {isLive && (
-              <div style={{ position: 'absolute', top: 12, left: 12, background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>● LIVE</div>
+              <div style={{ position: 'absolute', top: 12, left: 12, background: '#C0392B', color: '#fff', fontSize: 12, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>● LIVE</div>
             )}
             {state.showLowerThird && (
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(90deg, rgba(7,5,10,0.95), rgba(212,175,55,0.15))', borderTop: '2px solid #d4af37', padding: '10px 16px' }}>
@@ -335,7 +335,7 @@ export default function GoLiveStudio() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => dispatch({ type: 'PANIC' })}
-                style={{ flex: 1, padding: '12px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 10, color: '#ef4444', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={{ flex: 1, padding: '12px', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 10, color: '#C0392B', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <AlertTriangle size={16} /> PANIC CUT
               </button>
@@ -463,7 +463,7 @@ export default function GoLiveStudio() {
           {isLive && (
             <button
               onClick={endStream}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(239,68,68,0.15)', color: '#ef4444', fontSize: 17, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: '1px solid rgba(192,57,43,0.5)', background: 'rgba(192,57,43,0.15)', color: '#C0392B', fontSize: 17, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               <Square size={16} /> END STREAM
             </button>

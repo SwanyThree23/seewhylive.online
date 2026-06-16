@@ -28,7 +28,7 @@ const DURATIONS = [
 ];
 const CAT_COLORS = {
   gaming: '#C0392B', music: '#D4854A', education: '#D4AF37', talk: '#6DBF7E',
-  fitness: '#D4854A', cooking: '#D4AF37', art: '#f87171', tech: '#C9A84C',
+  fitness: '#D4854A', cooking: '#D4AF37', art: '#FF4444', tech: '#C9A84C',
   irl: '#6DBF7E', other: '#d4af37',
 };
 

@@ -33,7 +33,7 @@ function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, conne
       <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
         style={{ clipPath: OCT, background: '#0A0A12' }}>
         {error ? (
-          <p className="text-[11px] text-center px-2" style={{ color: '#ef4444' }}>{error}</p>
+          <p className="text-[11px] text-center px-2" style={{ color: '#C0392B' }}>{error}</p>
         ) : connecting ? (
           <div className="text-center">
             <div className="w-8 h-8 rounded-full animate-pulse mx-auto mb-1" style={{ background: 'rgba(212,175,55,0.2)' }} />

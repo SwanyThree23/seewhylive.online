@@ -121,7 +121,7 @@ const ModerationAlert = ({ message, onDismiss }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}
+    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
   >
     <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>

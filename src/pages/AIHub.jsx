@@ -231,7 +231,7 @@ export default function AIHub() {
 
   // Guardian status badge color
   function guardianStatusColor(status) {
-    if (status === 'alert')   return '#ef4444';
+    if (status === 'alert')   return '#C0392B';
     if (status === 'warning') return '#D4AF37';
     return GREEN;
   }

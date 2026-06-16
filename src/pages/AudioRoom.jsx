@@ -314,7 +314,7 @@ export default function AudioRoom() {
           <span className="text-sm font-bold">{memberCount}</span>
         </div>
         <button onClick={sendLove} className="flex items-center gap-1">
-          <Heart className="w-4 h-4 text-red-500" fill="#ef4444" />
+          <Heart className="w-4 h-4 text-red-500" fill="#C0392B" />
           <span className="text-sm font-bold" style={{ color: '#555' }}>{loveCount}</span>
         </button>
         <button>
@@ -427,7 +427,7 @@ export default function AudioRoom() {
           <button onClick={sendLove} className="flex flex-col items-center gap-0.5">
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)' }}
+              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)' }}
             >
               <Heart className="w-4 h-4 text-red-400" fill="#EF4444" />
             </div>
@@ -464,8 +464,8 @@ export default function AudioRoom() {
             onClick={toggleAudio}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: audioEnabled ? `${GOLD}15` : 'rgba(239,68,68,0.15)',
-              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(239,68,68,0.4)',
+              background: audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
+              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
             }}
           >
             {audioEnabled

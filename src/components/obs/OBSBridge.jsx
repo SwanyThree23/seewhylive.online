@@ -193,15 +193,15 @@ export default function OBSBridge() {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
               <button
                 onClick={toggleStream}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#dc2626' : '#4A9B5E', color:'#fff' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#C0392B' : '#4A9B5E', color:'#fff' }}
               >
                 {streaming ? <><Square style={{ width:16, height:16 }} /> Stop Stream</> : <><Play style={{ width:16, height:16 }} /> Start Stream</>}
               </button>
               <button
                 onClick={toggleRecord}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#f87171' : 'rgba(255,255,255,0.6)' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(192,57,43,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#FF4444' : 'rgba(255,255,255,0.6)' }}
               >
-                <Circle style={{ width:16, height:16, fill: recording ? '#ef4444' : 'transparent', color: recording ? '#ef4444' : 'currentColor' }} />
+                <Circle style={{ width:16, height:16, fill: recording ? '#C0392B' : 'transparent', color: recording ? '#C0392B' : 'currentColor' }} />
                 {recording ? 'Stop Rec' : 'Start Rec'}
               </button>
             </div>

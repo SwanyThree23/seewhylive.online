@@ -14,7 +14,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white">{poll.question}</p>
         {onEnd && (
-          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#f87171', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Poll
           </button>
         )}
@@ -174,7 +174,7 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
             </div>
             <PollResults
               poll={activePoll}

@@ -269,7 +269,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -489,7 +489,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                       <>
                         <button
                           onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
                         >
                           Confirm
                         </button>
@@ -505,8 +505,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         onClick={() => setDeleteIdx(i)}
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
+                          color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
                         Remove
@@ -523,8 +523,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
               ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
-              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+              background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
+              color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
           >
             Clear All Sources
@@ -1420,7 +1420,7 @@ export default function PodcastStudio() {
                           onClick={() => deleteEpisode(i)}
                           style={{
                             ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 900,
+                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
                           }}
                         >
                           Confirm
@@ -1441,8 +1441,8 @@ export default function PodcastStudio() {
                         onClick={() => setDeleteConfirmIdx(i)}
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                          color: '#ef4444', fontSize: 13, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
+                          color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >
                         Delete

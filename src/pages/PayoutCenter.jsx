@@ -58,7 +58,7 @@ function StatCard({ label, value, sub, color, icon }) {
 }
 
 function StatusBadge({ status }) {
-  var map = { paid: { bg: 'rgba(109,191,126,0.1)', border: 'rgba(109,191,126,0.3)', color: '#6DBF7E', label: 'PAID' }, pending: { bg: 'rgba(212,133,74,0.1)', border: 'rgba(212,133,74,0.3)', color: '#D4854A', label: 'PENDING' }, failed: { bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)', color: '#ef4444', label: 'FAILED' } };
+  var map = { paid: { bg: 'rgba(109,191,126,0.1)', border: 'rgba(109,191,126,0.3)', color: '#6DBF7E', label: 'PAID' }, pending: { bg: 'rgba(212,133,74,0.1)', border: 'rgba(212,133,74,0.3)', color: '#D4854A', label: 'PENDING' }, failed: { bg: 'rgba(192,57,43,0.1)', border: 'rgba(192,57,43,0.3)', color: '#C0392B', label: 'FAILED' } };
   var s = map[status] || map.pending;
   return (
     <span style={{ background: s.bg, border: '1px solid ' + s.border, color: s.color, fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{s.label}</span>

@@ -91,7 +91,7 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, stream }) {
         )}
       </div>
       {/* Mic indicator */}
-      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(239,68,68,0.9)' : 'rgba(109,191,126,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+      <div style={{ position: 'absolute', bottom: size * 0.12, left: '50%', transform: 'translateX(-50%)', width: size * 0.22, height: size * 0.22, borderRadius: '50%', background: guest.micMuted ? 'rgba(192,57,43,0.9)' : 'rgba(109,191,126,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {guest.micMuted ? <MicOff size={size * 0.1} color="#fff" /> : <Mic size={size * 0.1} color="#fff" />}
       </div>
       {/* Role badge */}
@@ -139,13 +139,13 @@ function ExpandedModal({ guest, onClose, onMuteMic, onToggleCam, onRemove }) {
           <div style={{ fontSize: 12, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>{role.label}</div>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onMuteMic} style={{ padding: '10px 20px', borderRadius: 10, border: guest.micMuted ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(109,191,126,0.5)', background: guest.micMuted ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.1)', color: guest.micMuted ? '#ef4444' : '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={onMuteMic} style={{ padding: '10px 20px', borderRadius: 10, border: guest.micMuted ? '1px solid rgba(192,57,43,0.5)' : '1px solid rgba(109,191,126,0.5)', background: guest.micMuted ? 'rgba(192,57,43,0.15)' : 'rgba(109,191,126,0.1)', color: guest.micMuted ? '#C0392B' : '#6DBF7E', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
             {guest.micMuted ? <MicOff size={14} /> : <Mic size={14} />} {guest.micMuted ? 'UNMUTE' : 'MUTE'}
           </button>
           <button onClick={onToggleCam} style={{ padding: '10px 20px', borderRadius: 10, border: guest.camOff ? '1px solid rgba(212,133,74,0.5)' : '1px solid rgba(212,133,74,0.4)', background: guest.camOff ? 'rgba(212,133,74,0.1)' : 'rgba(212,133,74,0.06)', color: guest.camOff ? '#D4854A' : '#D4AF37', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
             {guest.camOff ? <VideoOff size={14} /> : <Video size={14} />} CAM {guest.camOff ? 'ON' : 'OFF'}
           </button>
-          <button onClick={onRemove} style={{ padding: '10px 20px', borderRadius: 10, border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={onRemove} style={{ padding: '10px 20px', borderRadius: 10, border: '1px solid rgba(192,57,43,0.4)', background: 'rgba(192,57,43,0.1)', color: '#C0392B', cursor: 'pointer', fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
             <X size={14} /> REMOVE
           </button>
         </div>

@@ -101,14 +101,14 @@ function MatchCard({ match, active, onClick }) {
     <div
       onClick={() => !match.winner && onClick(match.id)}
       style={{
-        background: match.live ? 'rgba(220,38,38,0.1)' : 'rgba(255,255,255,0.03)',
-        border: match.live ? '1px solid rgba(220,38,38,0.4)' : active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
+        background: match.live ? 'rgba(192,57,43,0.1)' : 'rgba(255,255,255,0.03)',
+        border: match.live ? '1px solid rgba(192,57,43,0.4)' : active ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
         borderRadius: 10, padding: '10px 12px', cursor: match.winner ? 'default' : 'pointer', transition: 'all 0.15s', minWidth: 160,
       }}
     >
       {match.live && (
-        <div style={{ fontSize: 9, fontWeight: 900, color: '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#ef4444' }} /> LIVE
+        <div style={{ fontSize: 9, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#C0392B' }} /> LIVE
         </div>
       )}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
@@ -123,7 +123,7 @@ function MatchCard({ match, active, onClick }) {
           <StateFlag state={match.stateB} />
           <span style={{ fontSize: 12, fontWeight: match.winner === 'B' ? 900 : 700, color: match.winner === 'B' ? '#d4af37' : match.winner === 'A' ? 'rgba(255,255,255,0.3)' : '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{match.stateB}</span>
         </div>
-        <span style={{ fontSize: 16, fontWeight: 900, color: match.winner === 'B' ? '#d4af37' : '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{match.scoreB}</span>
+        <span style={{ fontSize: 16, fontWeight: 900, color: match.winner === 'B' ? '#d4af37' : '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{match.scoreB}</span>
       </div>
       {match.winner && (
         <div style={{ marginTop: 6, fontSize: 10, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, textAlign: 'center' }}>
@@ -217,10 +217,10 @@ export default function SVSArena() {
 
               {/* Live scoreboard */}
               {activeMatch && !activeMatch.winner && (
-                <div style={{ background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 14, padding: 24 }}>
+                <div style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 14, padding: 24 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444' }} />
-                    <span style={{ fontSize: 12, fontWeight: 900, color: '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>LIVE SCORING · {FORMAT}</span>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C0392B' }} />
+                    <span style={{ fontSize: 12, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>LIVE SCORING · {FORMAT}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: 20 }}>
                     <div style={{ textAlign: 'center' }}>
@@ -239,7 +239,7 @@ export default function SVSArena() {
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 8 }}>{activeMatch.stateB}</div>
                       <div style={{ fontSize: 72, fontWeight: 900, color: '#C4170C', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{activeMatch.scoreB}</div>
                       <button onClick={() => dispatch({ type: 'SCORE', matchId: activeMatch.id, side: 'B' })}
-                        style={{ marginTop: 12, padding: '10px 24px', background: 'rgba(196,23,12,0.2)', border: '1px solid rgba(196,23,12,0.4)', borderRadius: 8, color: '#ef4444', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        style={{ marginTop: 12, padding: '10px 24px', background: 'rgba(196,23,12,0.2)', border: '1px solid rgba(196,23,12,0.4)', borderRadius: 8, color: '#C0392B', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Plus size={14} /> +1 POINT
                       </button>
                     </div>

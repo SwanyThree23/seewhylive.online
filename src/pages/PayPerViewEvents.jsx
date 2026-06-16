@@ -24,7 +24,7 @@ const MONO = 'Space Mono, monospace';
 
 const STATUS_COLORS = {
   upcoming: { bg: `${GOLD}18`, border: `${GOLD}35`, text: GOLD },
-  live:     { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', text: '#EF4444' },
+  live:     { bg: 'rgba(192,57,43,0.15)', border: 'rgba(192,57,43,0.4)', text: '#EF4444' },
   ended:    { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.35)' },
 };
 

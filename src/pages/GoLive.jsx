@@ -204,8 +204,8 @@ function CameraPreview({ onStreamReady }) {
       <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
         <button onClick={toggleMic} style={{
           width: 32, height: 32, borderRadius: '50%',
-          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(239,68,68,0.2)',
-          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(239,68,68,0.4)'}`,
+          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)',
+          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
         }}>
           {micOn
