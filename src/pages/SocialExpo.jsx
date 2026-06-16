@@ -730,6 +730,13 @@ export default function SocialExpo() {
           <ChallengeLeaderboard challengeId={null} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamGoals isHost={false} />
+          <ChallengeLeaderboard challengeId={null} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
+        </div>
       </div>
     </div>
   );
