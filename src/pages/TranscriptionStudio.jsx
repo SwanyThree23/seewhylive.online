@@ -66,15 +66,20 @@ export default function TranscriptionStudio() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
 
-  const [lines, setLines]         = useState([]);
-  const [live, setLive]           = useState(false);
-  const [lang, setLang]           = useState('English');
+  const [lines, setLines]             = useState([]);
+  const [interim, setInterim]         = useState('');
+  const [live, setLive]               = useState(false);
+  const [lang, setLang]               = useState('English');
   const [showOverlay, setShowOverlay] = useState(true);
-  const [autoScroll, setAutoScroll]  = useState(true);
-  const [tab, setTab]             = useState('transcript');
-  const bottomRef = useRef(null);
-  const tickRef   = useRef(null);
-  const idRef     = useRef(1);
+  const [autoScroll, setAutoScroll]   = useState(true);
+  const [tab, setTab]                 = useState('transcript');
+  const [speechSupported]             = useState(() => !!(window.SpeechRecognition || window.webkitSpeechRecognition));
+  const bottomRef  = useRef(null);
+  const recRef     = useRef(null);
+  const idRef      = useRef(1);
+  const liveRef    = useRef(false);
+
+  const LANG_CODES = { English: 'en-US', Spanish: 'es-ES', French: 'fr-FR', Portuguese: 'pt-BR', Mandarin: 'zh-CN' };
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -85,40 +90,81 @@ export default function TranscriptionStudio() {
 
   useEffect(() => {
     if (autoScroll) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [lines, autoScroll]);
+  }, [lines, interim, autoScroll]);
 
-  const SIMULATED = [
-    "Alright, the players are taking their seats — this is going to be intense.",
-    "Georgia is looking sharp tonight, they've been training hard for this rematch.",
-    "Seven rock format means the first team to one-fifty wins the game.",
-    "Washington's captain is already calling plays — strategic dominoes.",
-    "The crowd here is electric, Jamar's Sports Bar showing out!",
-    "Double elimination means one loss doesn't end your night.",
-    "SwanyThree in the building with the official commentary.",
-    "Chat, drop your predictions — who's taking it tonight?",
-    "Remember, creator keeps ninety percent on SeeWhy LIVE.",
-    "Let's get this bracket started, domino culture all day.",
-  ];
-  let simIdx = useRef(0);
+  function makeTimestamp() {
+    const secs = Math.floor(Date.now() / 1000) % 3600;
+    return `00:${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`;
+  }
+
+  function addLine(text) {
+    if (!text.trim()) return;
+    setLines(prev => [...prev, { id: idRef.current++, time: makeTimestamp(), text: text.trim() }]);
+    setInterim('');
+  }
 
   function startLive() {
+    liveRef.current = true;
     setLive(true);
-    tickRef.current = setInterval(() => {
-      const secs = Math.floor(Date.now() / 1000) % 3600;
-      const mm   = String(Math.floor(secs / 60)).padStart(2, '0');
-      const ss   = String(secs % 60).padStart(2, '0');
-      const text = SIMULATED[simIdx.current % SIMULATED.length];
-      simIdx.current++;
-      setLines(prev => [...prev, { id: idRef.current++, time: `00:${mm}:${ss}`, text }]);
-    }, 3800);
+
+    if (speechSupported) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SR();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = LANG_CODES[lang] || 'en-US';
+
+      rec.onresult = (e) => {
+        let fin = '', tmp = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const t = e.results[i][0].transcript;
+          if (e.results[i].isFinal) fin += t + ' ';
+          else tmp += t;
+        }
+        if (fin) addLine(fin.trim());
+        setInterim(tmp);
+      };
+
+      rec.onerror = () => {};
+      rec.onend = () => {
+        if (liveRef.current) rec.start();
+      };
+
+      recRef.current = rec;
+      rec.start();
+    } else {
+      // Fallback: simulated ticker when SpeechRecognition is unavailable
+      const DEMO = [
+        "Alright, the players are taking their seats — this is going to be intense.",
+        "Georgia is looking sharp tonight, they've been training hard for this rematch.",
+        "Seven rock format means the first team to one-fifty wins the game.",
+        "Washington's captain is already calling plays — strategic dominoes.",
+        "The crowd here is electric, Jamar's Sports Bar showing out!",
+        "Double elimination means one loss doesn't end your night.",
+        "SwanyThree in the building with the official commentary.",
+        "Chat, drop your predictions — who's taking it tonight?",
+        "Remember, creator keeps ninety percent on SeeWhy LIVE.",
+        "Let's get this bracket started, domino culture all day.",
+      ];
+      let idx = 0;
+      const tick = setInterval(() => {
+        if (!liveRef.current) { clearInterval(tick); return; }
+        addLine(DEMO[idx % DEMO.length]);
+        idx++;
+      }, 3800);
+      recRef.current = { stop: () => clearInterval(tick) };
+    }
   }
 
   function stopLive() {
+    liveRef.current = false;
     setLive(false);
-    clearInterval(tickRef.current);
+    setInterim('');
+    recRef.current?.stop?.();
+    recRef.current = null;
   }
 
-  useEffect(() => () => clearInterval(tickRef.current), []);
+  useEffect(() => () => { liveRef.current = false; recRef.current?.stop?.(); }, []);
 
   const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
   const srtText  = buildSRT(lines);
@@ -171,13 +217,13 @@ export default function TranscriptionStudio() {
 
       {/* Caption preview bar */}
       <AnimatePresence>
-        {showOverlay && lines.length > 0 && (
+        {showOverlay && (lines.length > 0 || interim) && (
           <motion.div
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             style={{ background: 'rgba(0,0,0,0.88)', borderBottom: `1px solid rgba(212,175,55,0.1)`, padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ ...MONO, fontSize: 9, color: GOLD, flexShrink: 0, letterSpacing: '0.06em' }}>CAPTION</span>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: TEXT, flex: 1 }}>
-              {lines[lines.length - 1].text}
+              {interim || (lines.length > 0 ? lines[lines.length - 1].text : '')}
               {live && <span style={{ animation: 'caretBlink 0.8s ease infinite', marginLeft: 2, color: GOLD }}>|</span>}
             </span>
           </motion.div>
@@ -202,11 +248,16 @@ export default function TranscriptionStudio() {
         {tab === 'transcript' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                 {live && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: 4, ...MONO, fontSize: 9, color: GREEN, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99, padding: '2px 8px' }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: GREEN, display: 'inline-block', animation: 'caretBlink 0.9s ease infinite' }} />
-                    LIVE
+                    {speechSupported ? 'MIC ACTIVE' : 'DEMO'}
+                  </span>
+                )}
+                {!speechSupported && (
+                  <span style={{ ...MONO, fontSize: 9, color: TEXTM, background: 'rgba(212,133,74,0.08)', border: '1px solid rgba(212,133,74,0.2)', borderRadius: 99, padding: '2px 8px' }}>
+                    Use Chrome/Edge for live mic
                   </span>
                 )}
                 <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>{lines.length} lines · {lang}</span>
@@ -225,6 +276,12 @@ export default function TranscriptionStudio() {
                 <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: TEXTD, lineHeight: 1.5, flex: 1 }}>{l.text}</span>
               </div>
             ))}
+            {interim && live && (
+              <div style={{ display: 'flex', gap: 10, padding: '8px 12px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 8, opacity: 0.65 }}>
+                <span style={{ ...MONO, fontSize: 10, color: GOLD, flexShrink: 0, minWidth: 60 }}>{makeTimestamp()}</span>
+                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: TEXTD, lineHeight: 1.5, flex: 1, fontStyle: 'italic' }}>{interim}</span>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
         ) : (
