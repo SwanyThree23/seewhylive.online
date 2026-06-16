@@ -86,6 +86,12 @@ export default function NewsletterHubPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const { data: letters=[], isLoading } = useQuery({
     queryKey: ['newsletters', user?.id],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),
@@ -298,7 +304,7 @@ export default function NewsletterHubPage() {
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <StreamGoals isHost={false} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
         </div>
       </div>
     </div>

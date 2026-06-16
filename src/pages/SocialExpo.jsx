@@ -117,6 +117,12 @@ export default function SocialExpo() {
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
     enabled: !!user?.id,
   });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
@@ -727,15 +733,15 @@ export default function SocialExpo() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamGoals isHost={false} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamGoals isHost={false} />
-          <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>

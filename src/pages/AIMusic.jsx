@@ -900,6 +900,12 @@ Return ONLY valid JSON (no markdown, no backticks):
     if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(tag => tag.includes(libSearch.toLowerCase()))) return false;
     return true;
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -1522,7 +1528,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         <SoundboardWidget />
         <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
         <ShareToSocial />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <AIStreamSummary roomId={roomId} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations userId={user?.id} />
       </div>

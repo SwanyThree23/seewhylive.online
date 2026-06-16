@@ -185,7 +185,7 @@ export default function OverlayEditorPage() {
             <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
             <StreamMetricsBar startTime={null} memberCount={0} tipTotal={0} peakViewers={0} />
             <ChatOverlay roomId={roomId} isVisible={true} />
-            <AuraPanelDrawer roomId={roomId} hostId={null} onClose={() => {}} />
+            <AuraPanelDrawer roomId={roomId} hostId={user?.id} onClose={() => {}} />
             <InteractivePollWidget roomId={roomId} isHost={true} />
           </div>
         )}

@@ -144,6 +144,12 @@ export default function DiscoverPage() {
     queryKey: ['discover-creators'],
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 20),
   });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
@@ -415,7 +421,7 @@ export default function DiscoverPage() {
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
           <StreamGoals isHost={false} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
         </div>
       </div>
     </div>

@@ -57,6 +57,13 @@ export default function Messages() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  var userCommunityId = userCommunity?.id || null;
+
   var { data: allMessages = [] } = useQuery({
     queryKey: ["all-dms", user?.id],
     queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
@@ -521,11 +528,11 @@ export default function Messages() {
           <ShareButtons url={window.location.href} title="Messages" />
           <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
           <SuperChatRail superchats={[]} />
-          <AnnouncementFeed communityId={null} />
+          <AnnouncementFeed communityId={userCommunityId} />
           <OnlineUsersGrid compact maxVisible={12} />
           <ContentRecommendations />
           <CollaborationMatcher />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={selectedThread || null} communityId={null} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={selectedThread || null} communityId={userCommunityId} />
         </div>
       )}
 

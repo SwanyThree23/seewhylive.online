@@ -217,6 +217,12 @@ export default function CreatorPublicProfile() {
     queryFn: () => base44.entities.Follow.filter({ creator_id: creatorId }),
     enabled: !!creatorId,
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   var isOwnProfile = currentUser && currentUser.id === creatorId;
   var totalEarned = transactions.reduce((sum, t) => sum + (t.creator_payout || 0), 0);
@@ -541,7 +547,7 @@ export default function CreatorPublicProfile() {
       {creatorId && (
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <VirtualCurrencyTips roomId={roomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
           <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />

@@ -133,6 +133,12 @@ export default function FallenLegendsPage() {
     },
     onError: () => dispatch({ type: 'SUBMIT_DONE' }),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   function handleSubmit() {
     if (!state.form.name || !state.form.years || !state.form.region) return;
@@ -288,7 +294,7 @@ export default function FallenLegendsPage() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ShareToSocial content={null} />
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
-        <AnnouncementFeed communityId={null} />
+        <AnnouncementFeed communityId={userCommunityId} />
       </div>
     </div>
   );

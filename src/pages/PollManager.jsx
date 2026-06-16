@@ -62,6 +62,12 @@ export default function PollManager() {
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));
   const handleRemoveOption = (idx) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
@@ -205,11 +211,11 @@ export default function PollManager() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={roomId} hostId={null} isHost={false} />
+          <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={false} />
           <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
           <PollCard poll={null} />
           <LivePollOverlay roomId={roomId} currentUser={user} isHost={false} />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
