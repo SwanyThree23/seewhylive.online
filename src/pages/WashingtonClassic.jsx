@@ -148,6 +148,7 @@ const TABS = [
 ];
 
 export default function WashingtonClassic() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tab, setTab] = useState('bracket');
 
   const sorted = [...TEAMS_2026].sort((a, b) => {
@@ -334,9 +335,9 @@ export default function WashingtonClassic() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <BattleScoreboard roomId={null} />
-        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
-        <StreamAnalyticsDashboard roomId={null} />
+        <BattleScoreboard roomId={roomId} />
+        <BattleMode roomId={roomId} isHost={false} hostName={null} participants={[]} />
+        <StreamAnalyticsDashboard roomId={roomId} />
         <ChallengeLeaderboard communityId={null} />
       </div>
     </div>

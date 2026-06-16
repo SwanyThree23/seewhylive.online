@@ -144,6 +144,7 @@ export default function OverlayBuilderPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
@@ -330,7 +331,7 @@ export default function OverlayBuilderPage() {
           <LowerThirdsBanner onBannerChange={() => {}} />
           <OverlayThemeBuilder creatorId={user.id} />
           <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
-          <CompositorOverlay stream={null} isHost={true} roomId={null} />
+          <CompositorOverlay stream={null} isHost={true} roomId={roomId} />
         </div>
       )}
     </div>

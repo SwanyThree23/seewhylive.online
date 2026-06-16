@@ -30,6 +30,7 @@ export default function PollManager() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: templates } = useQuery({
     queryKey: ['pollTemplates', user?.id],
@@ -194,16 +195,16 @@ export default function PollManager() {
 
         {user && (
           <div className="mt-6 space-y-4">
-            <LivePoll roomId={null} isHost={true} />
-            <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
+            <LivePoll roomId={roomId} isHost={true} />
+            <WatchPartyPoll partyId={null} roomId={roomId} currentUser={user} isHost={true} />
           </div>
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={null} hostId={null} isHost={false} />
-          <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
+          <EnhancedPollingSystem roomId={roomId} hostId={null} isHost={false} />
+          <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
           <PollCard poll={null} />
-          <LivePollOverlay roomId={null} currentUser={user} isHost={false} />
+          <LivePollOverlay roomId={roomId} currentUser={user} isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
         </div>
 

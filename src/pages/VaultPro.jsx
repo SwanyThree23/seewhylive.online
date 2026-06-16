@@ -110,6 +110,7 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
@@ -644,8 +645,8 @@ export default function VaultPro() {
         <EarningsBreakdown userId={user?.id} />
         <RevenueDashboard userId={user?.id} />
         <StreamerMonetizationCenter userId={user?.id} />
-        <MonetizationDashboard roomId={null} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={true} currentUser={user} />
+        <MonetizationDashboard roomId={roomId} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
       </div>
     </div>

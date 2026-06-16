@@ -694,6 +694,7 @@ export default function StreamInfraRef() {
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }}
@@ -770,11 +771,11 @@ export default function StreamInfraRef() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ZEGOConfigPanel roomId={null} />
+        <ZEGOConfigPanel roomId={roomId} />
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={false} />
+        <OBSBridge roomId={roomId} isHost={false} />
         <StreamMetadata room={null} isHost={false} />
       </div>
     </div>

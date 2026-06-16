@@ -31,6 +31,7 @@ const AGE_OPTIONS = [
 export default function StageCleanupPage() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [ageDays, setAgeDays] = useState(7);
   const [deletedCount, setDeletedCount] = useState(0);
 
@@ -197,10 +198,10 @@ export default function StageCleanupPage() {
           <SpotlightBanner communityId={null} isAdmin={false} />
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
-          <GreenroomQueue roomId={null} hostId={null} onApprove={() => {}} />
+          <GreenroomQueue roomId={roomId} hostId={null} onApprove={() => {}} />
           <StreamHealthDashboard isLive={false} />
-          <AIModeration roomId={null} isHost={true} />
-          <GreenroomWaitlistPanel roomId={null} currentUser={user} onAdmit={() => {}} />
+          <AIModeration roomId={roomId} isHost={true} />
+          <GreenroomWaitlistPanel roomId={roomId} currentUser={user} onAdmit={() => {}} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

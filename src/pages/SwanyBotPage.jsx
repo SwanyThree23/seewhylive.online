@@ -89,6 +89,7 @@ function ThinkDots() {
 
 export default function SwanyBotPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "SwanyBot in the building! I'm your domino culture AI — ask me anything about State vs State, strategy, the legends, or the culture. Let's get it! 🎮🔥" },
@@ -253,14 +254,14 @@ export default function SwanyBotPage() {
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
         <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        <AICopilotSidebar roomId={null} isHost={false} />
-        <AIStreamSummary roomId={null} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
-        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
         <div style={{ marginTop: 10 }}>
           <ShareToSocial />
         </div>
         <ContentRecommendations />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
     </div>
   );

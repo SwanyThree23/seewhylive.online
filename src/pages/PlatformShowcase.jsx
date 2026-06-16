@@ -120,6 +120,7 @@ const FEATURES = [
 
 export default function PlatformShowcase() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [selected, setSelected] = useState(0);
   const feature = FEATURES[selected];
 
@@ -291,7 +292,7 @@ export default function PlatformShowcase() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
+        <StreamAnalyticsDashboard roomId={roomId} isHost={false} isLive={false} />
         <VODLibrary creatorId={user?.id} />
         <ShopDashboard creatorId={user?.id} />
         <ContentRecommendations />

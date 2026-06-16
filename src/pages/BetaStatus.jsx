@@ -67,6 +67,7 @@ const STATUS_STYLE = {
 
 export default function BetaStatusPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-beta'],
@@ -203,9 +204,9 @@ export default function BetaStatusPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
-          <LeaderboardPanel roomId={null} />
+          <LeaderboardPanel roomId={roomId} />
           <StreamGoals isHost={false} />
-          <StreamAnalyticsDashboard roomId={null} />
+          <StreamAnalyticsDashboard roomId={roomId} />
           <HostAlertCenter />
           <PointsNotification userId={user?.id} />
           <MilestoneAlerts creatorId={user?.id} />

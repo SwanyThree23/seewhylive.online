@@ -104,6 +104,7 @@ const INIT_MESSAGES = [
 
 export default function TributeWall() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const [selected, setSelected] = useState(null);
   const [tributeMsg, setTributeMsg] = useState('');
@@ -322,7 +323,7 @@ export default function TributeWall() {
 
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="tribute-wall" />
-        <GoldenWall roomId={null} isExpanded={false} />
+        <GoldenWall roomId={roomId} isExpanded={false} />
         <MilestoneAlerts creatorId={user?.id} />
         <AnnouncementFeed communityId={null} />
         <ShareToSocial />

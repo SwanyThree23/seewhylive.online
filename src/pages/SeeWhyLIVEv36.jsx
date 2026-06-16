@@ -2023,6 +2023,7 @@ const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
@@ -2150,7 +2151,7 @@ export default function SeeWhyLIVEv36() {
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <AudienceInsights creatorId={user?.id} />
         <SubscriptionManager creatorId={user?.id} />
-        <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
+        <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
       </div>

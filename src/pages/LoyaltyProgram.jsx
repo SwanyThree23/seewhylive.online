@@ -47,6 +47,7 @@ export default function LoyaltyProgram() {
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const isOwnProgram = !creatorId || creatorId === user?.id;
 
   React.useEffect(() => {
@@ -369,7 +370,7 @@ export default function LoyaltyProgram() {
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={null} />
+        <LeaderboardPanel roomId={roomId} />
         {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
       </div>
 

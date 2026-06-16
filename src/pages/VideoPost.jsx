@@ -44,6 +44,7 @@ export default function VideoPost() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -323,7 +324,7 @@ export default function VideoPost() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
-        <ClipCreatorSheet roomId={null} sessionId={null} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
+        <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
         <ContentRecommendations />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />

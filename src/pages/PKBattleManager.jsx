@@ -651,6 +651,7 @@ var TABS = [
 ];
 
 export default function PKBattleManager() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('invitations');
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [showWinner, setShowWinner] = useState(false);
@@ -836,9 +837,9 @@ export default function PKBattleManager() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={null} hostId={user?.id} isHost={true} />
-        <TipAlert roomId={null} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={null} />
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
+        <TipAlert roomId={roomId} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
       </div>
     </div>
   );

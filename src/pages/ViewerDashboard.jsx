@@ -55,6 +55,7 @@ export default function ViewerDashboard() {
   const [notifFilter, setNotifFilter] = useState('all');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: liveRooms = [] } = useQuery({
     queryKey: ['all-live-rooms'],
@@ -258,8 +259,8 @@ export default function ViewerDashboard() {
             {user?.id && (
               <ViewerLoyaltyCard userId={user.id} />
             )}
-            <LeaderboardPanel roomId={null} />
-            <StreamGoals roomId={null} isHost={false} />
+            <LeaderboardPanel roomId={roomId} />
+            <StreamGoals roomId={roomId} isHost={false} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
               <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />
@@ -395,10 +396,10 @@ export default function ViewerDashboard() {
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {user?.id && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
-          <QuickPollLauncher roomId={null} hostId={null} isHost={false} />
-          <LivePollWidget roomId={null} currentUser={user} isHost={false} />
-          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={null} />
-          {user?.id && <SubscriptionGate creatorId={null} roomId={null} />}
+          <QuickPollLauncher roomId={roomId} hostId={null} isHost={false} />
+          <LivePollWidget roomId={roomId} currentUser={user} isHost={false} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />
+          {user?.id && <SubscriptionGate creatorId={null} roomId={roomId} />}
         </div>
       </div>
     </div>

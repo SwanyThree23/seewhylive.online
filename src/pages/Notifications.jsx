@@ -34,6 +34,7 @@ export default function NotificationsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -185,11 +186,11 @@ export default function NotificationsPage() {
         {user?.id && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <StreamGoals isHost={true} />
-            <LeaderboardPanel roomId={null} />
+            <LeaderboardPanel roomId={roomId} />
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={null} />
             <PointsNotification userId={user.id} />
-            <EngagementBadgesDisplay roomId={null} userId={user.id} creatorId={user?.id} />
+            <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />
             <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}

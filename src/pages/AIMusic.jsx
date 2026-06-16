@@ -682,6 +682,7 @@ function Toast({ message, visible }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   // Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
@@ -1515,10 +1516,10 @@ Return ONLY valid JSON (no markdown, no backticks):
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PanelMusicPlayer />
         <SoundboardWidget />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
         <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
-        <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations userId={user?.id} />
       </div>
 

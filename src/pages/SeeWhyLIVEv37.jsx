@@ -1257,6 +1257,7 @@ const TABS = [
 
 export default function SeeWhyLIVEv37() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -1329,10 +1330,10 @@ export default function SeeWhyLIVEv37() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ReactionOverlay partyId={null} currentUser={user} />
         <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={false} currentUser={user} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={false} />
-        <GreenroomQueue roomId={null} isHost={false} />
-        <SocialLeaderboard roomId={null} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={false} />
+        <GreenroomQueue roomId={roomId} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
       </div>
     </div>
   );

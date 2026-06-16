@@ -168,6 +168,7 @@ export default function ChallengesHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: activeChallenges = [] } = useQuery({
     queryKey: ['ch-active'],
@@ -348,15 +349,15 @@ export default function ChallengesHubPage() {
         </AnimatePresence>
 
         <div className="mt-4 space-y-4">
-          <LeaderboardPanel roomId={null} />
+          <LeaderboardPanel roomId={roomId} />
           {user?.id && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
           <ChallengeLeaderboard challengeId={null} />
           <ChallengeAnalytics communityId={null} />
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-          <SocialLeaderboard roomId={null} />
+          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+          <SocialLeaderboard roomId={roomId} />
           <PointsEarnWidget userId={user?.id} />
         </div>
 

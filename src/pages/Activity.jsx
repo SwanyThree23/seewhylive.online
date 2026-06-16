@@ -89,6 +89,7 @@ export default function ActivityPage() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities', user?.id],
@@ -342,7 +343,7 @@ export default function ActivityPage() {
 
         {user?.id && (
           <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <LeaderboardPanel roomId={null} />
+            <LeaderboardPanel roomId={roomId} />
             <StreamGoals isHost={false} />
           </div>
         )}

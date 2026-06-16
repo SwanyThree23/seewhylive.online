@@ -167,6 +167,7 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get("id");
   var navigate = useNavigate();
@@ -536,8 +537,8 @@ export default function CreatorPublicProfile() {
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
           <SpotlightBanner communityId={null} isAdmin={false} />
-          <VirtualCurrencyTips roomId={null} creatorId={creatorId} currentUser={currentUser} isHost={false} />
-          <PayPerViewGate roomId={null} ppvPrice={4.99} onPurchase={() => {}} />
+          <VirtualCurrencyTips roomId={roomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
+          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
         </div>
       )}

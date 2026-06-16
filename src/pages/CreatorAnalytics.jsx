@@ -96,6 +96,7 @@ const TOOLTIP_STYLE = { background: 'rgba(7,5,10,0.95)', border: '1px solid rgba
 export default function CreatorAnalytics() {
   const [state, dispatch] = useReducer(reducer, initState);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   var totalGross = MONTHLY_REVENUE.reduce((s, r) => s + r.gross, 0);
   var creatorTotal = creatorCut(totalGross);
@@ -341,8 +342,8 @@ export default function CreatorAnalytics() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AudienceInsights creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
-        <PerformanceDashboard roomId={null} sessionId={null} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={true} embedded={true} />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
       </div>
     </div>
   );

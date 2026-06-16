@@ -34,6 +34,7 @@ export default function CreatorChannel() {
   const qc = useQueryClient();
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['creator-profile', userId],
@@ -282,7 +283,7 @@ export default function CreatorChannel() {
             )}
             <TierBadge tier="bronze" size="sm" showName />
             {currentUser?.id && (
-              <RewardShop creatorId={userId} roomId={null} currentUser={currentUser} />
+              <RewardShop creatorId={userId} roomId={roomId} currentUser={currentUser} />
             )}
           </div>
         )}
@@ -310,9 +311,9 @@ export default function CreatorChannel() {
         )}
 
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PaywallGate roomId={null} creatorId={userId} price={0} />
+          <PaywallGate roomId={roomId} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
-          <ClipCreatorSheet roomId={null} sessionId={null} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+          <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
         </div>
       </div>
     </div>

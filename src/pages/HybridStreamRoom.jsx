@@ -295,10 +295,10 @@ export default function HybridStreamRoom() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <CollabPlaylist roomId={null} isHost={false} />
-        <VideoQueuePanel roomId={null} isHost={false} onVideoSelect={() => {}} />
+        <CollabPlaylist roomId={roomId} isHost={false} />
+        <VideoQueuePanel roomId={roomId} isHost={false} onVideoSelect={() => {}} />
         <WatchPartyAnalytics partyId={null} />
-        <WatchPartyTab roomId={null} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
+        <WatchPartyTab roomId={roomId} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
       </div>
     </div>

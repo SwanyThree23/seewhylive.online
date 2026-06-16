@@ -114,6 +114,7 @@ function YouTubeEmbed({ videoId, title }) {
 
 export default function FeaturedContent() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
@@ -235,8 +236,8 @@ export default function FeaturedContent() {
         <CollaborationMatcher />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
           <ViewerCount count={0} peakViewers={0} />
-          <LoveHearts roomId={null} currentUser={user} creatorId={user?.id} />
-          <EmbedPlayer roomId={null} streamTitle="Featured Stream" viewerCount={0} />
+          <LoveHearts roomId={roomId} currentUser={user} creatorId={user?.id} />
+          <EmbedPlayer roomId={roomId} streamTitle="Featured Stream" viewerCount={0} />
         </div>
 
         <div className="text-center">

@@ -753,6 +753,7 @@ export default function StateVsState() {
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -837,7 +838,7 @@ export default function StateVsState() {
       {tab === 'JUDGES' && <JudgesView />}
 
       <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={null} />
+        <LeaderboardPanel roomId={roomId} />
         <PKBattleProgress battleId={null} />
       </div>
 
@@ -864,12 +865,12 @@ export default function StateVsState() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={null} hostId={user?.id} isHost={false} />
-        <SocialLeaderboard roomId={null} />
-        <GiftShopTray roomId={null} currentUser={user} />
-        <BattleScoreboard roomId={null} />
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
+        <GiftShopTray roomId={roomId} currentUser={user} />
+        <BattleScoreboard roomId={roomId} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>

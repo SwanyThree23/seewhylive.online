@@ -941,6 +941,7 @@ const TAB_CONTENT = {
 
 export default function StreamRefDash() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -1009,10 +1010,10 @@ export default function StreamRefDash() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamHealthDashboard isLive={false} />
-        <ZEGOConfigPanel roomId={null} />
-        <OBSBridge roomId={null} isHost={true} />
-        <SwanDirectorPanel roomId={null} hostId={null} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={null} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ZEGOConfigPanel roomId={roomId} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <SwanDirectorPanel roomId={roomId} hostId={null} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={roomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
         <ChatModeration />
         <StreamMetadata room={null} isHost={false} />
       </div>

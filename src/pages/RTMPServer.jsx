@@ -58,6 +58,7 @@ function CopyField({ label, value, mono = true, secret = false }) {
 export default function RTMPServer() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
@@ -306,14 +307,14 @@ export default function RTMPServer() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={false} />
-          <CoStreamPanel roomId={null} />
-          <RTMPFanoutPanel roomId={null} isHost={true} />
-          <RTMPIngestPanel roomId={null} />
-          <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
-          <EnhancedIngestPanel roomId={null} isHost={true} />
+          <CoStreamPanel roomId={roomId} />
+          <RTMPFanoutPanel roomId={roomId} isHost={true} />
+          <RTMPIngestPanel roomId={roomId} />
+          <WebhookHooks roomId={roomId} userId={user?.id} isHost={true} />
+          <EnhancedIngestPanel roomId={roomId} isHost={true} />
           <AdvancedEncoderSettings onApply={() => {}} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
-          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
         </div>
       </div>
     </div>

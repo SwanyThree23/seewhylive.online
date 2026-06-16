@@ -146,6 +146,7 @@ export default function SVSArena() {
   const [state, dispatch] = useReducer(reducer, initState);
   var activeMatch = findActiveMatch(state.bracket, state.activeMatch);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   return (
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -331,10 +332,10 @@ export default function SVSArena() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <BattleScoreboard roomId={null} />
-        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-        <SocialLeaderboard roomId={null} />
+        <BattleScoreboard roomId={roomId} />
+        <BattleMode roomId={roomId} isHost={false} hostName={null} participants={[]} />
+        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+        <SocialLeaderboard roomId={roomId} />
       </div>
     </div>
   );

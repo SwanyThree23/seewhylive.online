@@ -75,6 +75,7 @@ export default function DataExportPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const handleExport = async (set, format) => {
     const key = `${set.id}-${format}`;
@@ -169,7 +170,7 @@ export default function DataExportPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <PerformanceDashboard roomId={null} sessionId={null} />
+          <PerformanceDashboard roomId={roomId} sessionId={roomId} />
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
         </div>

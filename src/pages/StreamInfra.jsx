@@ -723,6 +723,7 @@ var TABS = [
 ];
 
 export default function StreamInfra() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('stream');
 
   var { data: user } = useQuery({
@@ -794,9 +795,9 @@ export default function StreamInfra() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={false} />
-        <EnhancedIngestPanel roomId={null} isHost={false} />
-        <ZEGOConfigPanel roomId={null} />
+        <OBSBridge roomId={roomId} isHost={false} />
+        <EnhancedIngestPanel roomId={roomId} isHost={false} />
+        <ZEGOConfigPanel roomId={roomId} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
       </div>

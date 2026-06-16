@@ -323,7 +323,7 @@ export default function StreamAnalytics() {
           <PerformanceDashboard />
           <AudienceInsights />
           <StreamerGoalsWidget userId={user?.id} />
-          <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+          <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         </div>
       </div>
     </div>

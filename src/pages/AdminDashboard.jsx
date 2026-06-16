@@ -81,6 +81,7 @@ export default function AdminDashboard() {
   ]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: user?.role === 'admin' });
   const { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: user?.role === 'admin' });
   const { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: user?.role === 'admin' });
@@ -387,7 +388,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -576,7 +577,7 @@ export default function AdminDashboard() {
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <ChallengeAnalytics communityId={null} />
           <ReferralConfig communityId={null} />
-          <PerformanceDashboard roomId={null} sessionId={null} />
+          <PerformanceDashboard roomId={roomId} sessionId={roomId} />
           <AnnouncementScheduler communityId={null} userId={user?.id} />
           <SpotlightBanner communityId={null} isAdmin={true} />
         </div>

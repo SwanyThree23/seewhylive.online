@@ -160,6 +160,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],
@@ -379,7 +380,7 @@ export default function LeaderboardPage() {
           </div>
         ) : activeTab === 'earnings' && (
           <div className="mb-4">
-            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={null} />
+            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={roomId} />
           </div>
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
@@ -415,10 +416,10 @@ export default function LeaderboardPage() {
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={false} />
           <SpotlightBanner communityId={null} isAdmin={false} />
-          <TipWidget roomId={null} hostId={null} currentUser={currentUser} />
-          <TippingOverlay roomId={null} creatorId={currentUser?.id} isVisible={true} />
-          <AnimatedGiftShop recipientId={currentUser?.id} roomId={null} onClose={() => {}} />
-          <LeaderboardPanel roomId={null} />
+          <TipWidget roomId={roomId} hostId={null} currentUser={currentUser} />
+          <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />
+          <AnimatedGiftShop recipientId={currentUser?.id} roomId={roomId} onClose={() => {}} />
+          <LeaderboardPanel roomId={roomId} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>

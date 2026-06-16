@@ -27,6 +27,7 @@ export default function OverlayEditorPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: liveRoom } = useQuery({
     queryKey: ['my-live-room-overlay', user?.id],
@@ -170,9 +171,9 @@ export default function OverlayEditorPage() {
             <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
             <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
             <StreamMetricsBar startTime={null} memberCount={0} tipTotal={0} peakViewers={0} />
-            <ChatOverlay roomId={null} isVisible={true} />
-            <AuraPanelDrawer roomId={null} hostId={null} onClose={() => {}} />
-            <InteractivePollWidget roomId={null} isHost={true} />
+            <ChatOverlay roomId={roomId} isVisible={true} />
+            <AuraPanelDrawer roomId={roomId} hostId={null} onClose={() => {}} />
+            <InteractivePollWidget roomId={roomId} isHost={true} />
           </div>
         )}
 

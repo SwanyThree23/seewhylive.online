@@ -94,6 +94,7 @@ function ProgressBar({ value, max, color }) {
 
 export default function MultiPlatform() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({
@@ -203,7 +204,7 @@ export default function MultiPlatform() {
             {/* ── PLATFORMS ── */}
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                <MultiStreamConfig roomId={null} isHost={true} />
+                <MultiStreamConfig roomId={roomId} isHost={true} />
                 {user?.id && (
                   <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
                     <DestinationsManager userId={user.id} />
@@ -587,7 +588,7 @@ export default function MultiPlatform() {
             {/* ── WEBHOOK HOOKS ── */}
             {tab === 'webhooks' && (
               <div style={{ marginTop: 12 }}>
-                <WebhookHooks roomId={null} isHost={true} />
+                <WebhookHooks roomId={roomId} isHost={true} />
               </div>
             )}
 
@@ -598,7 +599,7 @@ export default function MultiPlatform() {
       <Toast message={toast} />
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <AdvancedEncoderSettings onApply={() => {}} />
