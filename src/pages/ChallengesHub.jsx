@@ -172,6 +172,18 @@ export default function ChallengesHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: activeChallenges = [] } = useQuery({
@@ -209,12 +221,6 @@ export default function ChallengesHubPage() {
       }
     },
   });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
 
   const myCompleted = myParticipations.filter(p => p.completed);
   const myActive = myParticipations.filter(p => !p.completed);

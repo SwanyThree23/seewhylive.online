@@ -338,13 +338,6 @@ export default function AIModerationPage() {
           <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
-
-        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
-        </div>
       </div>
     </div>
   );

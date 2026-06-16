@@ -42,6 +42,11 @@ import SuperChatRail from '../components/live/SuperChatRail';
 import GiftShopTray from '../components/live/GiftShopTray';
 import GiftAnimation from '../components/live/GiftAnimation';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import LoveTap from '../components/live/LoveTap';
+import GiftTray from '../components/live/GiftTray';
+import TipWidget from '../components/live/TipWidget';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -324,7 +329,18 @@ export default function HybridStreamRoom() {
           <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
           <ContentRecommendations />
           <CollaborationMatcher />
+          <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <MilestoneAlerts userId={user?.id} roomId={roomId} />
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          {roomId && room?.host_id && !isHost && (
+            <LoveTap roomId={roomId} user={user} creatorId={room.host_id} creatorName={room.host_name || 'Host'} />
+          )}
+          {roomId && room?.host_id && !isHost && (
+            <GiftTray roomId={roomId} recipientId={room.host_id} senderId={user?.id} />
+          )}
+          {roomId && room?.host_id && !isHost && (
+            <TipWidget roomId={roomId} recipient={{ id: room.host_id, name: room.host_name || 'Host' }} currentUser={user} />
+          )}
         </div>
       </div>
     </div>

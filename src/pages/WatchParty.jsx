@@ -48,6 +48,12 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import LoveTap from '../components/live/LoveTap';
+import TipWidget from '../components/live/TipWidget';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import SuperChatRail from '../components/live/SuperChatRail';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1237,7 +1243,17 @@ export default function WatchPartyPage() {
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
+        <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
+        <MilestoneAlerts userId={user?.id} roomId={partyId} />
+        {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
+        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} />}
         <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
+        {partyId && party?.host_id && !isHost && (
+          <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
+        )}
+        {partyId && party?.host_id && !isHost && (
+          <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
+        )}
       </div>
     </div>
   );

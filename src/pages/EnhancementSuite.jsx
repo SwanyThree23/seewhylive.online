@@ -474,6 +474,12 @@ function fmtAgo(dateStr) {
 
 export default function EnhancementSuite() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState("emoji");
   const [messages, setMessages] = useState([]);
@@ -508,12 +514,6 @@ export default function EnhancementSuite() {
     queryKey: ['share-activities'],
     queryFn: () => base44.entities.Activity.filter({ type: 'share' }),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
 
   const displayVods = clips.map(c => ({
     id: c.id,

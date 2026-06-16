@@ -164,6 +164,18 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: creators = [] } = useQuery({
@@ -185,18 +197,6 @@ export default function LeaderboardPage() {
     queryKey: ['leaderboardUsers'],
     queryFn: () => base44.entities.User.list('-created_date', 200),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
-  });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
-  const userCommunityId = userCommunity?.id || null;
 
   // Revenue leaderboard: aggregate by creator
   const revenueByCreator = transactions.reduce((acc, t) => {

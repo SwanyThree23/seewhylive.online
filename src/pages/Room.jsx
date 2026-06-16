@@ -38,6 +38,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import { MerchStrip } from '../components/merch/MerchWidget';
 import SuperChatRail from '../components/live/SuperChatRail';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import LoveTap from '../components/live/LoveTap';
+import GiftTray from '../components/live/GiftTray';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -604,7 +608,15 @@ export default function RoomPage() {
               )}
               <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
               <ContentRecommendations />
+              <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={participants.length} />
+              <MilestoneAlerts userId={user?.id} roomId={roomId} />
             </div>
+            {roomId && room?.host_id && room.host_id !== user?.id && (
+              <LoveTap roomId={roomId} user={user} creatorId={room.host_id} creatorName={room.host_name || 'Host'} />
+            )}
+            {roomId && room?.host_id && room.host_id !== user?.id && (
+              <GiftTray roomId={roomId} recipientId={room.host_id} senderId={user?.id} />
+            )}
             {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
           </div>
         </div>

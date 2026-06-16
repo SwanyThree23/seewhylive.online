@@ -114,6 +114,12 @@ export default function DiscoverPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
 
   // 300ms debounce
@@ -144,12 +150,6 @@ export default function DiscoverPage() {
     queryKey: ['discover-creators'],
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 20),
   });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
 
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
