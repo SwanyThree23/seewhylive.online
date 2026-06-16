@@ -13,6 +13,12 @@ import WebhookHooks from '../components/live/WebhookHooks';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -613,6 +619,15 @@ export default function MultiPlatformIntegration() {
         <MultiStreamConfig roomId={roomId} userId={user?.id} />
         <RTMPFanoutPanel roomId={roomId} isHost={true} />
         <AdvancedEncoderSettings onApply={() => {}} />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
+        <StreamGoals isHost={true} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
