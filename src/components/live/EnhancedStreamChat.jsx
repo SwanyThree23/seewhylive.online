@@ -15,6 +15,12 @@ const SPAM_PATTERNS = [
   /(?:visit|click|buy|now|free)[^\s]*/gi, // spam keywords
 ];
 
+function userHue(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return h % 360;
+}
+
 const EMOTES = {
   ':)': '😊',
   ':(': '😢',
@@ -115,7 +121,7 @@ const ModerationAlert = ({ message, onDismiss }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}
+    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
   >
     <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>
@@ -184,7 +190,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        user_color: `hsl(${userHue(userId)}, 70%, 50%)`,
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },

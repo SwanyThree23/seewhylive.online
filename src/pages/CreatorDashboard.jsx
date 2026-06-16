@@ -35,6 +35,7 @@ function fmtDuration(seconds) {
 }
 
 export default function CreatorDashboardPage() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [timeRange, setTimeRange] = useState('7d');
 
   const { data: user } = useQuery({
@@ -349,9 +350,9 @@ export default function CreatorDashboardPage() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-            <SwanDirectorPanel roomId={activeCreatorRoomId} hostId={user?.id} onClose={() => {}} />
-            <StreamEventBus roomId={activeCreatorRoomId} isHost={true} sessionId={activeCreatorRoomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
-            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => {}} />
+            <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />

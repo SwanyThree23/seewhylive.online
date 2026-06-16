@@ -38,19 +38,7 @@ export default function NotificationsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -202,12 +190,12 @@ export default function NotificationsPage() {
         {user?.id && (
           <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <StreamGoals isHost={true} />
-            <LeaderboardPanel roomId={activeRoomId} />
+            <LeaderboardPanel roomId={roomId} />
             <MilestoneAlerts creatorId={user.id} />
             <AnnouncementFeed communityId={userCommunityId} />
             <PointsNotification userId={user.id} />
-            <EngagementBadgesDisplay roomId={activeRoomId} userId={user.id} creatorId={user?.id} />
-            <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+            <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />
+            <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
       </div>

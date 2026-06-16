@@ -84,7 +84,7 @@ function StatCard({ label, value, sub, delta, color, icon }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <Icon size={16} color={color || 'rgba(255,255,255,0.4)'} />
         {delta !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#6DBF7E' : '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: isPositive ? '#6DBF7E' : '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
             {isPositive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
             {Math.abs(delta)}%
           </div>
@@ -102,13 +102,7 @@ const TOOLTIP_STYLE = { background: 'rgba(7,5,10,0.95)', border: '1px solid rgba
 export default function CreatorAnalytics() {
   const [state, dispatch] = useReducer(reducer, initState);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   var totalGross = MONTHLY_REVENUE.reduce((s, r) => s + r.gross, 0);
   var creatorTotal = creatorCut(totalGross);
@@ -354,13 +348,8 @@ export default function CreatorAnalytics() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AudienceInsights creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
-        <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        <AutomatedHighlightReels streamSession={null} />
-        <ShareToSocial content={null} />
-        <CollaborationMatcher />
-        <OnlineUsersGrid compact maxVisible={8} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={true} embedded={true} />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
       </div>
     </div>
   );

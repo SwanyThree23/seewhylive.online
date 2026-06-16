@@ -31,21 +31,25 @@ const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
+
 function genToken() {
-  const rand = () => Math.random().toString(36).slice(2, 10);
-  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
+  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + cryptoHex(8);
   const session = Date.now();
   return `${user}?session=${session}`;
 }
 
 function genVDOLink() {
-  const push = Math.random().toString(36).slice(2, 14);
+  const push = cryptoHex(12);
   return `https://vdo.ninja/?push=${push}&quality=4k`;
 }
 
 function genStreamKey(userId) {
-  const id = userId || 'sw_' + Math.random().toString(36).slice(2, 18);
-  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+  const id = userId || 'sw_' + cryptoHex(16);
+  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${cryptoHex(8).toUpperCase()}`;
 }
 
 function StatusBadge({ status }) {
@@ -94,6 +98,7 @@ function CopyBtn({ value }) {
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const navigate = useNavigate();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());
@@ -183,8 +188,8 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <VdoNinjaGuestLink roomId={token} />
 
       {/* Stream health */}
-      <ZEGOStreamHealthCard roomId={activeRoomId} />
-      <GuestQueue roomId={activeRoomId} isHost={false} />
+      <ZEGOStreamHealthCard roomId={roomId} />
+      <GuestQueue roomId={roomId} isHost={false} />
       <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
       <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />

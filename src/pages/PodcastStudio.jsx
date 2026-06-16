@@ -5,6 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -268,7 +273,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -488,7 +493,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                       <>
                         <button
                           onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
                         >
                           Confirm
                         </button>
@@ -504,8 +509,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         onClick={() => setDeleteIdx(i)}
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
+                          color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
                         Remove
@@ -522,8 +527,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
               ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
-              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+              background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
+              color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
           >
             Clear All Sources
@@ -625,14 +630,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -1426,7 +1424,7 @@ export default function PodcastStudio() {
                           onClick={() => deleteEpisode(i)}
                           style={{
                             ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 900,
+                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
                           }}
                         >
                           Confirm
@@ -1447,8 +1445,8 @@ export default function PodcastStudio() {
                         onClick={() => setDeleteConfirmIdx(i)}
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                          color: '#ef4444', fontSize: 13, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
+                          color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >
                         Delete
@@ -1471,18 +1469,17 @@ export default function PodcastStudio() {
       <Toast message={toast} />
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
         <CollaborationMatcher />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <ClipGeneratorAI roomId={activeRoomId} sessionId={activeRoomId} elapsedSeconds={0} isHost={true} />
-        <AutomatedHighlightReels roomId={activeRoomId} sessionId={activeRoomId} isHost={true} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
+        <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={roomId} sessionId={roomId} isHost={true} />
         <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
-        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <ContentRecommendations />
-          <CollaborationMatcher />
-          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
-        </div>
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <GuestInviteGenerator roomId={roomId} isHost={true} />
+        <GuestConnector roomId={roomId} />
+        <RTMPIngestPanel roomId={roomId} />
+        <AdvancedEncoderSettings onApply={() => {}} />
       </div>
     </div>
   );

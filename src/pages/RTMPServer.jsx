@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -16,8 +21,8 @@ import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -54,17 +59,11 @@ function CopyField({ label, value, mono = true, secret = false }) {
 export default function RTMPServer() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    return stored || `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+    return stored || `sk_live_${cryptoHex(24)}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
 
@@ -75,7 +74,7 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const newKey = `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+      const newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);
@@ -279,7 +278,7 @@ export default function RTMPServer() {
               ))}
             </div>
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <ZEGOStreamHealthCard roomId={activeRoomId} />
+              <ZEGOStreamHealthCard roomId={streamKey || null} />
               <ZEGOConfigPanel user={user} />
             </div>
 
@@ -309,15 +308,14 @@ export default function RTMPServer() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
           <StreamHealthDashboard isLive={false} />
-          <CoStreamPanel roomId={activeRoomId} />
-          <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
-          <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+          <CoStreamPanel roomId={roomId} />
+          <RTMPFanoutPanel roomId={roomId} isHost={true} />
+          <RTMPIngestPanel roomId={roomId} />
+          <WebhookHooks roomId={roomId} userId={user?.id} isHost={true} />
+          <EnhancedIngestPanel roomId={roomId} isHost={true} />
+          <AdvancedEncoderSettings onApply={() => {}} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
-          {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
-          {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-          <OnlineUsersGrid compact maxVisible={10} />
-          <ContentRecommendations />
+          <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
         </div>
       </div>
     </div>

@@ -48,6 +48,7 @@ export default function GuestJoin() {
   const [participantId, setParticipantId] = useState(null);
   const [status, setStatus] = useState('idle');
   const [readyState, setReadyState] = useState(false);
+  const [waitingTooLong, setWaitingTooLong] = useState(false);
 
   const { data: room } = useQuery({
     queryKey: ['guestRoom', roomId],
@@ -73,7 +74,8 @@ export default function GuestJoin() {
       if (newStatus === 'admitted') { setStatus('admitted'); toast.success("🎙️ You've been admitted to the stage!"); }
       else if (newStatus === 'rejected') { setStatus('rejected'); toast.error('You were removed from the queue'); }
     });
-    return unsub;
+    const waitTimeout = setTimeout(() => setWaitingTooLong(true), 5 * 60 * 1000);
+    return () => { unsub(); clearTimeout(waitTimeout); };
   }, [participantId]);
 
   const joinMutation = useMutation({
@@ -198,6 +200,11 @@ export default function GuestJoin() {
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
                     {readyState ? 'The director will admit you shortly' : "Mark yourself as ready when you're set up"}
                   </p>
+                  {waitingTooLong && (
+                    <p className="text-[10px] mt-1 px-2 py-1.5 rounded-lg" style={{ color: '#D4854A', background: 'rgba(212,133,74,0.08)', border: '1px solid rgba(212,133,74,0.2)' }}>
+                      Still waiting after 5 min — the host may not be monitoring the queue right now. Try messaging them directly.
+                    </p>
+                  )}
                 </div>
 
                 <button

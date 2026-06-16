@@ -88,7 +88,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
       await base44.entities.AnimatedGift.update(gift.id, { times_sent: (gift.times_sent || 0) + 1 }).catch(() => {});
     },
     onSuccess: (_, gift) => {
-      navigator.vibrate?.([40, 20, 60, 20, 100]);
+      navigator.vibrate?.([60, 30, 60, 30, 120]);
       setSending(gift);
       setOpen(false);
       qc.invalidateQueries(['gift-senders', roomId]);

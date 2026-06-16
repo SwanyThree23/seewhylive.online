@@ -28,7 +28,7 @@ const MONO = 'Space Mono, monospace';
 
 const STATUS_COLORS = {
   upcoming: { bg: `${GOLD}18`, border: `${GOLD}35`, text: GOLD },
-  live:     { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.4)', text: '#EF4444' },
+  live:     { bg: 'rgba(192,57,43,0.15)', border: 'rgba(192,57,43,0.4)', text: '#EF4444' },
   ended:    { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.35)' },
 };
 
@@ -125,6 +125,7 @@ function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {
 function CreateEventForm({ onSuccess }) {
   const [form, setForm] = useState({ title: '', description: '', price: '', event_date: '', duration_minutes: 60, max_participants: '' });
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -450,7 +451,7 @@ export default function PayPerViewEventsPage() {
         {user?.id && (
           <div className="mt-6 rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="font-black text-sm text-white mb-3" style={{ fontFamily: FONT }}>Payment Methods</p>
-            <PaymentMethodSelector creatorId={user.id} roomId={activeRoomId} onPaymentComplete={() => {}} />
+            <PaymentMethodSelector creatorId={user.id} roomId={roomId} onPaymentComplete={() => {}} />
           </div>
         )}
 

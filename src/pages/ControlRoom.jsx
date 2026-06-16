@@ -23,10 +23,7 @@ import ParticipantsList from '../components/rooms/ParticipantsList';
 import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -382,19 +379,21 @@ export default function ControlRoomPage() {
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>
         )}
-        {/* Stream key */}
-        <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            {showStreamKey ? streamKey : '●'.repeat(Math.min(streamKey.length, 16))}
-          </span>
-          <button onClick={() => setShowStreamKey(s => !s)}>
-            {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
-          </button>
-          <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }}>
-            <Copy className="w-3 h-3 text-white/40" />
-          </button>
-        </div>
+        {/* Stream key — only show when a real session key exists */}
+        {session?.stream_key && (
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {showStreamKey ? session.stream_key : '●'.repeat(Math.min(session.stream_key.length, 16))}
+            </span>
+            <button onClick={() => setShowStreamKey(s => !s)}>
+              {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(session.stream_key); toast.success('Stream key copied!'); }}>
+              <Copy className="w-3 h-3 text-white/40" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Quick Tools Toolbar */}
@@ -463,7 +462,8 @@ export default function ControlRoomPage() {
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AudioStageTab roomId={activeRoomId} isHost={true} />
+        <AudioStageTab roomId={roomId} isHost={true} />
+        <AdvancedEncoderSettings onApply={() => {}} />
         <BackgroundCustomizer onBackgroundChange={() => {}} />
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid compact maxVisible={10} />

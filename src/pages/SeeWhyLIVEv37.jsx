@@ -179,11 +179,7 @@ function StagePanel() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
     setLive(true);
     setHealth({ bitrate: 4200, fps: 30, latency: 42, dropped: 0 });
-    setViewers(Math.floor(Math.random() * 80) + 5);
-    timerRef.current = setInterval(() => {
-      setViewers(v => Math.max(0, v + Math.floor(Math.random() * 11) - 4));
-      setHealth(h => h ? { ...h, bitrate: 3800 + Math.floor(Math.random() * 800), latency: 35 + Math.floor(Math.random() * 30) } : h);
-    }, 4000);
+    setViewers(0);
     toast('Stream started!', setToastMsg);
   }
 
@@ -264,6 +260,7 @@ function SVSPanel() {
   const [s2, setS2] = useState('TX');
   const [scores, setScores] = useState({ s1: 0, s2: 0 });
   const [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
+  const [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
   const [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
@@ -320,8 +317,8 @@ function SVSPanel() {
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={`${s1}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state1} />
-              <Badge label={`${s2}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state2} />
+              <Badge label={`${s1}: ${judgeScores[i]?.s1 ?? 0}`} color={C.state1} />
+              <Badge label={`${s2}: ${judgeScores[i]?.s2 ?? 0}`} color={C.state2} />
             </div>
           </div>
         ))}
@@ -747,7 +744,8 @@ function WatchPartyPanel() {
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    setPartyId(`PARTY-${Math.random().toString(36).slice(2,8).toUpperCase()}`);
+    const arr = crypto.getRandomValues(new Uint8Array(4));
+    setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);
@@ -1263,19 +1261,7 @@ const TABS = [
 
 export default function SeeWhyLIVEv37() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -1348,18 +1334,10 @@ export default function SeeWhyLIVEv37() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ReactionOverlay partyId={null} currentUser={user} />
         <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} />
-        <GreenroomQueue roomId={activeRoomId} isHost={false} />
-        <SocialLeaderboard roomId={activeRoomId} />
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        {/* new components here */}
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={false} />
+        <GreenroomQueue roomId={roomId} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}

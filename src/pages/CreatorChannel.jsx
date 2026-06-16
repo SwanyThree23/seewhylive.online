@@ -38,13 +38,7 @@ export default function CreatorChannel() {
   const qc = useQueryClient();
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', currentUser?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['creator-profile', userId],
@@ -293,7 +287,7 @@ export default function CreatorChannel() {
             )}
             <TierBadge tier="bronze" size="sm" showName />
             {currentUser?.id && (
-              <RewardShop creatorId={userId} roomId={activeRoomId} currentUser={currentUser} />
+              <RewardShop creatorId={userId} roomId={roomId} currentUser={currentUser} />
             )}
           </div>
         )}
@@ -321,15 +315,9 @@ export default function CreatorChannel() {
         )}
 
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PaywallGate roomId={activeRoomId} creatorId={userId} price={0} />
+          <PaywallGate roomId={roomId} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
-          <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
-          <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <OnlineUsersGrid compact maxVisible={10} />
-            <ContentRecommendations />
-            <CollaborationMatcher />
-            <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
-          </div>
+          <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
         </div>
       </div>
     </div>

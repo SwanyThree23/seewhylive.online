@@ -376,11 +376,6 @@ export default function ModerationDashboardPage() {
           <AIModeration roomId={roomId} isHost={true} />
           <HostAlertCenter roomId={roomId} hostId={user?.id} />
           <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={user?.id} />
-          <OnlineUsersGrid compact maxVisible={8} />
-          <StreamHealthDashboard roomId={roomId} isHost={true} />
-          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
-          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
-          <CollaborationMatcher />
         </div>
       </div>
     </div>
