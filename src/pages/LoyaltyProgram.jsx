@@ -51,6 +51,19 @@ export default function LoyaltyProgram() {
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const isOwnProgram = !creatorId || creatorId === user?.id;
 
   React.useEffect(() => {
@@ -373,16 +386,16 @@ export default function LoyaltyProgram() {
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={null} />
+        <LeaderboardPanel roomId={activeRoomId} />
         {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <ChallengeLeaderboard challengeId={null} />
       </div>
 

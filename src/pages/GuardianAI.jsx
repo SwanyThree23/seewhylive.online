@@ -83,6 +83,19 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 export default function GuardianAI() {
   const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
   const [banT,   setBanT]   = useState(95);
@@ -386,20 +399,20 @@ export default function GuardianAI() {
       `}</style>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIModeration roomId={null} isHost={false} />
+        <AIModeration roomId={activeRoomId} isHost={false} />
         <ModerationActionModal isOpen={false} onClose={() => {}} userId={user?.id} action={null} />
-        <AnnouncementScheduler communityId={null} userId={user?.id} />
-        <ModerationAppealPanel flagId={null} messageId={null} roomId={null} onClose={() => {}} />
-        <ReportsManager communityId={null} userId={user?.id} />
-        <ChallengeAnalytics communityId={null} />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={activeRoomId} onClose={() => {}} />
+        <ReportsManager communityId={userCommunityId} userId={user?.id} />
+        <ChallengeAnalytics communityId={userCommunityId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
-        <StreamHealthDashboard roomId={null} isHost={false} />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-        <AnnouncementPanel communityId={null} userId={user?.id} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
       </div>
 
       {/* Cross-nav footer */}

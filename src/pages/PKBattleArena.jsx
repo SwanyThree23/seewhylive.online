@@ -263,10 +263,10 @@ export default function PKBattleArena() {
         <PKBattleProgress battleId={null} />
         <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
-        <GiftShopTray roomId={null} currentUser={user} />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-        <BattleScoreboard roomId={null} />
-        <BattleMode roomId={null} isHost={false} hostName="" participants={[]} />
+        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
+        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
+        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
+        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName="" participants={[]} />
         <TournamentBracket />
         <MatchmakingQueue user={null} onMatchFound={() => {}} />
         <BattleOverlay battle={null} onBattleUpdate={() => {}} />

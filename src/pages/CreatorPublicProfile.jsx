@@ -540,8 +540,8 @@ export default function CreatorPublicProfile() {
       {creatorId && (
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
-          <SpotlightBanner communityId={null} isAdmin={false} />
-          <VirtualCurrencyTips roomId={null} creatorId={creatorId} currentUser={currentUser} isHost={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <VirtualCurrencyTips roomId={activeRoomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
           <PayPerViewGate roomId={null} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
           <ContentRecommendations />

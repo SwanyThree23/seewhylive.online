@@ -34,6 +34,19 @@ export default function PollManager() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: templates } = useQuery({
     queryKey: ['pollTemplates', user?.id],
@@ -198,17 +211,17 @@ export default function PollManager() {
 
         {user && (
           <div className="mt-6 space-y-4">
-            <LivePoll roomId={null} isHost={true} />
-            <WatchPartyPoll partyId={null} roomId={null} currentUser={user} isHost={true} />
+            <LivePoll roomId={activeRoomId} isHost={true} />
+            <WatchPartyPoll partyId={activeRoomId} roomId={activeRoomId} currentUser={user} isHost={true} />
           </div>
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={null} hostId={user?.id} isHost={false} />
-          <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
+          <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={false} />
+          <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
           <PollCard poll={null} />
-          <LivePollOverlay roomId={null} currentUser={user} isHost={false} />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <LivePollOverlay roomId={activeRoomId} currentUser={user} isHost={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>

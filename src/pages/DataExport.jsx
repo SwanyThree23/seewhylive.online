@@ -80,6 +80,14 @@ export default function DataExportPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
 
   const handleExport = async (set, format) => {
     const key = `${set.id}-${format}`;
@@ -174,7 +182,7 @@ export default function DataExportPage() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
-          <PerformanceDashboard roomId={null} sessionId={null} />
+          <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
