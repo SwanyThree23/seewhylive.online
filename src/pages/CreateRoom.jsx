@@ -51,6 +51,19 @@ export default function CreateRoomPage() {
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: communities = [] } = useQuery({
     queryKey: ['myCommunities'],
@@ -266,12 +279,12 @@ export default function CreateRoomPage() {
           {user?.id && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <StreamGoals isHost={true} />
-              <ZEGOStreamHealthCard roomId={null} />
+              <ZEGOStreamHealthCard roomId={activeRoomId} />
               <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
-              <SpotlightBanner communityId={null} isAdmin={false} />
+              <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
               <StreamMetadataEditor />
               <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
-              <GreenroomQueue roomId={null} isHost={true} />
+              <GreenroomQueue roomId={activeRoomId} isHost={true} />
             </div>
           )}
 
@@ -294,8 +307,8 @@ export default function CreateRoomPage() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamHealthDashboard roomId={null} isHost={false} />
-        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={true} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
       </div>
     </div>
   );

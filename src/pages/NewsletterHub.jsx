@@ -80,6 +80,12 @@ export default function NewsletterHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: letters=[], isLoading } = useQuery({
     queryKey: ['newsletters', user?.id],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),
@@ -268,11 +274,11 @@ export default function NewsletterHubPage() {
       </div>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
         <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-          <AnnouncementScheduler communityId={null} userId={user?.id} />
+          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
           <MilestoneAlerts creatorId={user?.id} />
-          <AnnouncementFeed communityId={null} />
+          <AnnouncementFeed communityId={userCommunityId} />
           <ContentRecommendations />
           <EarningsBreakdown creatorId={user?.id} />
         </div>

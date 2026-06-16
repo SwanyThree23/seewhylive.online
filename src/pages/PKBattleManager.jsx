@@ -837,9 +837,9 @@ export default function PKBattleManager() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={null} hostId={user?.id} isHost={true} />
-        <TipAlert roomId={null} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={null} />
+        <BattleMode roomId={currentBattle?.id || null} hostId={user?.id} isHost={true} />
+        <TipAlert roomId={currentBattle?.id || null} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={currentBattle?.id || null} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>
     </div>

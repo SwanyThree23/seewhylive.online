@@ -285,7 +285,7 @@ export default function CommunitiesPage() {
         )}
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={mine[0]?.id || null} isAdmin={false} />
           <DiscussionFeed communityId="discover" />
         </div>
 
@@ -317,8 +317,8 @@ export default function CommunitiesPage() {
           <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
           <RaidPanelButton room={null} currentUser={user} isHost={false} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
-          <SpotlightSection communityId={null} />
+          <AnnouncementPanel communityId={mine[0]?.id || null} userId={user?.id} />
+          <SpotlightSection communityId={mine[0]?.id || null} />
           <ContentRecommendations />
           <CollaborationMatcher />
         </div>
