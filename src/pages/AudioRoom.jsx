@@ -336,7 +336,7 @@ export default function AudioRoom() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80, overscrollBehavior: "contain" }}>
 
         {party?.video_url && (
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
