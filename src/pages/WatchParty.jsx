@@ -911,7 +911,7 @@ export default function WatchPartyPage() {
               background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.2)',
               borderRadius: '16px 16px 0 0',
               padding: '16px 20px 32px',
-              maxHeight: '80vh', overflowY: 'auto',
+              maxHeight: '80vh', overflowY: 'auto', overscrollBehavior: 'contain',
               backdropFilter: 'blur(20px)',
             }}
           >
@@ -1103,7 +1103,7 @@ export default function WatchPartyPage() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ overscrollBehavior: "contain" }}>
             {activePanel === 'chat' && (
               <>
                 <div className="flex items-center justify-between px-1 pt-1">

@@ -158,7 +158,7 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#080B18] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div className="min-h-screen bg-[#080B18] text-white" style={{ overscrollBehavior: 'contain' }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
