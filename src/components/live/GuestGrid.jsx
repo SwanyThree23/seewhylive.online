@@ -37,17 +37,22 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
 
   // Speaking set by real VAD / audio level detection from remoteStream
 
-  // Attach remote stream when provided
+  // Attach stream to video element whenever it changes
   useEffect(() => {
-    if (videoRef.current && participant?.remoteStream) {
-      if (videoRef.current.srcObject !== participant.remoteStream) {
-        videoRef.current.srcObject = participant.remoteStream;
-      }
+    if (!videoRef.current) return;
+    const s = participant?.remoteStream ?? null;
+    if (videoRef.current.srcObject !== s) {
+      videoRef.current.srcObject = s;
+      if (s) videoRef.current.play?.().catch(() => {});
     }
   }, [participant?.remoteStream]);
 
   const px = isSpotlight ? 180 : compact ? 60 : 110;
-  const hasVideo = participant?.remoteStream && participant?.is_video_enabled;
+  // Show video if stream exists and has active video tracks; honour explicit is_video_enabled=false
+  const stream = participant?.remoteStream;
+  const hasVideo = !!stream && participant?.is_video_enabled !== false &&
+    (stream.getVideoTracks?.()?.some(t => t.enabled && t.readyState !== 'ended') ?? true);
+  const isLocal = !!participant?.isLocal;
 
   return (
     <motion.div
@@ -83,8 +88,9 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
         }}>
         {/* Video feed or avatar */}
         {hasVideo ? (
-          <video ref={videoRef} autoPlay playsInline
-            className="w-full h-full object-cover" />
+          <video ref={videoRef} autoPlay playsInline muted={isLocal}
+            className="w-full h-full object-cover"
+            style={{ transform: isLocal ? 'scaleX(-1)' : 'none' }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center"
             style={{ background: `linear-gradient(145deg, ${CRIMSON}44, #080B18)` }}>
@@ -202,8 +208,10 @@ export default React.memo(function GuestGrid({
   onInvite,
   hostId,
   maxGuests = 20,
-  remoteStreams,    // optional Map<peerId, MediaStream> from parent WebRTC session
-  peerUserIds,     // optional Map<peerId, userId>
+  remoteStreams,    // Map<peerId, MediaStream> from useWebRTCPeers
+  peerUserIds,     // Map<peerId, userId> from useWebRTCPeers
+  localStream,     // MediaStream from useLocalMedia (for current user's tile)
+  currentUserId,   // current user's id, to identify which tile gets localStream
 }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);
@@ -213,11 +221,15 @@ export default React.memo(function GuestGrid({
     .filter(p => ['host', 'co-host', 'speaker', 'guest'].includes(p.role))
     .slice(0, maxGuests)
     .map(p => {
-      // Attach remote stream if available
+      const isLocalUser = currentUserId && p.user_id === currentUserId;
+      if (isLocalUser && localStream) {
+        return { ...p, remoteStream: localStream, isLocal: true };
+      }
       const peerId = peerUserIds
         ? Array.from(peerUserIds.entries()).find(([, uid]) => uid === p.user_id)?.[0]
         : undefined;
-      return { ...p, remoteStream: peerId && remoteStreams ? remoteStreams.get(peerId) : undefined };
+      const stream = peerId && remoteStreams ? remoteStreams.get(peerId) : undefined;
+      return { ...p, remoteStream: stream };
     });
 
   const viewers = participants.filter(p => p.role === 'viewer');
