@@ -135,6 +135,24 @@ export default function SearchPage() {
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 80),
   });
 
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', currentUser?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+
   const q = debouncedQuery.toLowerCase().trim();
 
   const filter = (arr, fields) =>
@@ -346,7 +364,7 @@ export default function SearchPage() {
         <ContentRecommendations />
         <FollowButton targetUserId={null} targetUserName="" />
         <ZEGOMobileAppBanner />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

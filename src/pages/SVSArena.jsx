@@ -153,6 +153,12 @@ export default function SVSArena() {
   const [state, dispatch] = useReducer(reducer, initState);
   var activeMatch = findActiveMatch(state.bracket, state.activeMatch);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: rawBattles = [] } = useQuery({
+    queryKey: ['svsLiveBattles'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 10),
+    refetchInterval: 15000,
+  });
+  const liveBattles = rawBattles;
 
   return (
     <div style={{ minHeight: '100vh', background: '#07050A', color: '#fff', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -338,13 +344,13 @@ export default function SVSArena() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <BattleScoreboard roomId={null} />
-        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-        <SocialLeaderboard roomId={null} />
+        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
+        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName={null} participants={[]} />
+        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
+        <SocialLeaderboard roomId={liveBattles[0]?.id || null} />
         <TournamentBracket />
         <PKBattleProgress battleId={null} />
-        <GiftShopTray roomId={null} currentUser={user} />
+        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />

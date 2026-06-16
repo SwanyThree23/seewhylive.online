@@ -574,7 +574,7 @@ export default function Home() {
   return (
     <div
       className="min-h-screen relative"
-      style={{ background: '#080B18' }}
+      style={{ background: '#080B18', overscrollBehavior: 'contain' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -801,7 +801,7 @@ export default function Home() {
               </Link>
               {/* AI recommendations when no live rooms */}
               <div className="mt-4 w-full">
-                <SwanAIRecommendations roomId={null} currentLayout="grid" viewerCount={0} />
+                <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
               </div>
             </motion.div>
           )}

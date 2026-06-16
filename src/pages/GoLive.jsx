@@ -337,6 +337,13 @@ export default function GoLive() {
   const [suggestingTitles, setSuggestingTitles] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const streamKey = user?.id
     ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
@@ -784,10 +791,10 @@ export default function GoLive() {
         <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
         <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
-        <StreamChatbot roomId={null} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={null} />
-        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+        <StreamChatbot roomId={activeRoomId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={activeRoom || null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={activeRoomId} />
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
-        <WebhookHooks roomId={null} userId={user?.id} isHost={true} />
+        <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />

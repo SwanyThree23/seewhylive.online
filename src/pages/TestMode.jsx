@@ -674,7 +674,7 @@ export default function TestMode() {
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <DevicePreview />
           <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
-          <ZEGOStreamHealthCard roomId={null} />
+          <ZEGOStreamHealthCard roomId={activeRoomId} />
           <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
         </div>
       </div>

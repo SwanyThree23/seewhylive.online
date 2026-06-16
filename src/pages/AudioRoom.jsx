@@ -336,7 +336,7 @@ export default function AudioRoom() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80, overscrollBehavior: "contain" }}>
 
         {party?.video_url && (
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
@@ -748,7 +748,7 @@ export default function AudioRoom() {
         onClose={() => setTipModalOpen(false)}
         recipient={party?.host_name || ''}
         roomId={roomId}
-        communityId={null}
+        communityId={party?.community_id || null}
       />
 
       {/* Merch strip */}
@@ -757,11 +757,11 @@ export default function AudioRoom() {
       )}
 
       {/* Report modal */}
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={null} messageId={null} />
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={party?.community_id || null} messageId={null} />
 
       {/* Moderation action modal (host) */}
       {isHost && (
-        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user?.id} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={party?.community_id || null} moderatorId={user?.id} />
       )}
 
       {/* Access gates (render for non-hosts on exclusive rooms) */}

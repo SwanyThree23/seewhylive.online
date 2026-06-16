@@ -155,6 +155,13 @@ const TABS = [
 
 export default function WashingtonClassic() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [tab, setTab] = useState('bracket');
 
   const sorted = [...TEAMS_2026].sort((a, b) => {
@@ -341,13 +348,13 @@ export default function WashingtonClassic() {
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <BattleScoreboard roomId={null} />
-        <BattleMode roomId={null} isHost={false} hostName={null} participants={[]} />
-        <StreamAnalyticsDashboard roomId={null} />
-        <ChallengeLeaderboard communityId={null} />
+        <BattleScoreboard roomId={activeRoomId} />
+        <BattleMode roomId={activeRoomId} isHost={false} hostName={null} participants={[]} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} />
+        <ChallengeLeaderboard communityId={userCommunityId} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-        <LeaderboardPanel roomId={null} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <LeaderboardPanel roomId={activeRoomId} />
         <ShareToSocial content={null} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />

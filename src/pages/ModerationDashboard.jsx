@@ -201,6 +201,12 @@ export default function ModerationDashboardPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
@@ -352,7 +358,7 @@ export default function ModerationDashboardPage() {
         )}
 
         <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[
@@ -367,13 +373,13 @@ export default function ModerationDashboardPage() {
         </div>
 
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <AIModeration roomId={null} isHost={true} />
-          <HostAlertCenter roomId={null} hostId={user?.id} />
-          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={null} reporterId={user?.id} />
+          <AIModeration roomId={roomId} isHost={true} />
+          <HostAlertCenter roomId={roomId} hostId={user?.id} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={user?.id} />
           <OnlineUsersGrid compact maxVisible={8} />
-          <StreamHealthDashboard roomId={null} isHost={true} />
-          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
+          <StreamHealthDashboard roomId={roomId} isHost={true} />
+          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
           <CollaborationMatcher />
         </div>
       </div>

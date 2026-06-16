@@ -183,9 +183,9 @@ export default function OverlayEditorPage() {
             <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
             <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
             <StreamMetricsBar startTime={null} memberCount={0} tipTotal={0} peakViewers={0} />
-            <ChatOverlay roomId={null} isVisible={true} />
-            <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
-            <InteractivePollWidget roomId={null} isHost={true} />
+            <ChatOverlay roomId={liveRoom?.id || null} isVisible={true} />
+            <AuraPanelDrawer roomId={liveRoom?.id || null} hostId={user?.id} onClose={() => {}} />
+            <InteractivePollWidget roomId={liveRoom?.id || null} isHost={true} />
           </div>
         )}
 

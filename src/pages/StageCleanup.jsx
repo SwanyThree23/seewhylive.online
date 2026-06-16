@@ -33,6 +33,19 @@ const AGE_OPTIONS = [
 export default function StageCleanupPage() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [ageDays, setAgeDays] = useState(7);
   const [deletedCount, setDeletedCount] = useState(0);
 
@@ -196,13 +209,13 @@ export default function StageCleanupPage() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AnalyticsOverview creatorId={user?.id} timeRange="7d" />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
-          <GreenroomQueue roomId={null} hostId={user?.id} onApprove={() => {}} />
+          <GreenroomQueue roomId={activeRoomId} hostId={user?.id} onApprove={() => {}} />
           <StreamHealthDashboard isLive={false} />
-          <AIModeration roomId={null} isHost={true} />
-          <GreenroomWaitlistPanel roomId={null} currentUser={user} onAdmit={() => {}} />
+          <AIModeration roomId={activeRoomId} isHost={true} />
+          <GreenroomWaitlistPanel roomId={activeRoomId} currentUser={user} onAdmit={() => {}} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
         </div>

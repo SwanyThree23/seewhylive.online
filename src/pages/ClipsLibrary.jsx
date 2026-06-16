@@ -63,6 +63,13 @@ export default function ClipsLibraryPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: vods = [] } = useQuery({
     queryKey: ['vod-videos', user?.id],
@@ -182,7 +189,7 @@ export default function ClipsLibraryPage() {
         )}
         {/* AI Clip Generator */}
         <div style={{ marginTop: 32 }}>
-          <AutomatedClipGenerator roomId={null} />
+          <AutomatedClipGenerator roomId={activeRoomId} />
         </div>
         {/* AI Highlight Reels */}
         <div style={{ marginTop: 16 }}>
@@ -191,7 +198,7 @@ export default function ClipsLibraryPage() {
         {/* AI-powered clip suggestions */}
         {user?.id && (
           <div style={{ marginTop: 16 }}>
-            <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user.id} />
+            <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user.id} />
           </div>
         )}
 
@@ -217,7 +224,7 @@ export default function ClipsLibraryPage() {
         {/* Video Short Recorder */}
         {user?.id && (
           <div style={{ marginTop: 24 }}>
-            <VideoShortRecorder roomId={null} creatorId={user.id} />
+            <VideoShortRecorder roomId={activeRoomId} creatorId={user.id} />
           </div>
         )}
       </div>

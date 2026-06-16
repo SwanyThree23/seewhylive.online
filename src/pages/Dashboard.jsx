@@ -917,14 +917,14 @@ function MonetizationTab({ user }) {
       {user?.id && (
         <div className="mb-4 space-y-4">
           <SubscriptionManager creatorId={user.id} />
-          <SubscriptionTiers communityId={null} userId={user.id} />
+          <SubscriptionTiers communityId={dashCommunityId} userId={user.id} />
         </div>
       )}
 
       {/* PPV manager */}
       {user?.id && (
         <div className="mb-4">
-          <PayPerViewManager roomId={null} />
+          <PayPerViewManager roomId={dashActiveRoomId} />
           <PayPerViewCard event={null} />
         </div>
       )}
@@ -1197,6 +1197,12 @@ export default function DashboardPage() {
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
+  const { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashCommunityId = dashCommunity?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>

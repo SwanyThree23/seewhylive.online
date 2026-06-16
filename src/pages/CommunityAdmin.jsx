@@ -277,9 +277,9 @@ export default function CommunityAdminPage() {
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
 
         <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={true} />
-          <AnnouncementFeed communityId={null} />
-          <DiscussionFeed communityId={null} />
+          <SpotlightBanner communityId={communityId} isAdmin={true} />
+          <AnnouncementFeed communityId={communityId} />
+          <DiscussionFeed communityId={communityId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
@@ -297,8 +297,8 @@ export default function CommunityAdminPage() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-          <StreamHealthDashboard roomId={null} isHost={false} />
-          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
+          <StreamHealthDashboard roomId={communityId} isHost={false} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>
     </div>

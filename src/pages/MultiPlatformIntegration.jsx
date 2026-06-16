@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'react-router-dom';
@@ -110,6 +111,13 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -605,15 +613,15 @@ export default function MultiPlatformIntegration() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ZEGOConfigPanel user={user} />
-        <ZEGOStreamHealthCard roomId={null} />
+        <ZEGOStreamHealthCard roomId={activeRoomId} />
         <GuestRTMPPanel participantId={null} userId={user?.id} />
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={true} />
-        <WebhookHooks roomId={null} isHost={true} />
-        <MultiStreamConfig roomId={null} userId={user?.id} />
+        <OBSBridge roomId={activeRoomId} isHost={true} />
+        <WebhookHooks roomId={activeRoomId} isHost={true} />
+        <MultiStreamConfig roomId={activeRoomId} userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
 

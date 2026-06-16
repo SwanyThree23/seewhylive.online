@@ -124,6 +124,13 @@ const FEATURES = [
 
 export default function PlatformShowcase() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [selected, setSelected] = useState(0);
   const feature = FEATURES[selected];
 
@@ -295,7 +302,7 @@ export default function PlatformShowcase() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={false} isLive={false} />
         <VODLibrary creatorId={user?.id} />
         <ShopDashboard creatorId={user?.id} />
         <ContentRecommendations />

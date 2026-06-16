@@ -39,6 +39,7 @@ import ChatOverlay from '../components/live/ChatOverlay';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import GiftTray from '../components/live/GiftTray';
+import GiftAnimation from '../components/live/GiftAnimation';
 import TipNowModal from '../components/live/TipNowModal';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
@@ -910,7 +911,7 @@ export default function WatchPartyPage() {
               background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.2)',
               borderRadius: '16px 16px 0 0',
               padding: '16px 20px 32px',
-              maxHeight: '80vh', overflowY: 'auto',
+              maxHeight: '80vh', overflowY: 'auto', overscrollBehavior: 'contain',
               backdropFilter: 'blur(20px)',
             }}
           >
@@ -1102,7 +1103,7 @@ export default function WatchPartyPage() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ overscrollBehavior: "contain" }}>
             {activePanel === 'chat' && (
               <>
                 <div className="flex items-center justify-between px-1 pt-1">
@@ -1228,6 +1229,7 @@ export default function WatchPartyPage() {
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <GiftTray roomId={partyId} currentUser={user} recipientId={party?.host_id} />
+        {partyId && <GiftAnimation roomId={partyId} />}
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
