@@ -70,6 +70,8 @@ import GiftTray from '../components/live/GiftTray';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import PollLaunchBar from '../components/live/PollLaunchBar';
+import AudioMixer from '../components/live/AudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1089,6 +1091,8 @@ export default function LiveRoom() {
           <SwanAIRecommendations roomId={party?.id || roomId} currentLayout="default" viewerCount={members.length} />
           <MilestoneAlerts userId={user?.id} roomId={party?.id || roomId} />
           {isHost && party?.id && <PollLaunchBar roomId={party.id} hostId={user?.id} activePoll={null} isHost={true} />}
+          {isHost && <AudioMixer micMuted={false} onMicToggle={() => {}} participants={members} />}
+          {isHost && <SoundboardWidget />}
           {!isHost && party?.id && party?.host_id && (
             <GiftTray roomId={party.id} currentUser={user} recipientId={party.host_id} />
           )}
