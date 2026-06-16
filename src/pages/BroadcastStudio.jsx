@@ -1715,6 +1715,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   isHost={isHost}
                   onInvite={copyLink}
                   hostId={party?.host_id}
+                  remoteStreams={remoteStreams}
+                  peerUserIds={peerUserIds}
+                  localStream={localStream}
+                  currentUserId={user?.id}
                 />
                 <GuestControls
                   participants={members}
