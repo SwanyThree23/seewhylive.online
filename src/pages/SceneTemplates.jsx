@@ -779,7 +779,7 @@ export default function SceneTemplates() {
         <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
-        <ClipGeneratorAI sessionId={null} roomId={activeRoomId} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
         <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>

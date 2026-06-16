@@ -63,6 +63,19 @@ function Toggle({ value, onChange }) {
 
 export default function VoiceAISettings() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [vs, setVs] = useState(load);
   const [saved, setSaved] = useState(false);
 
@@ -208,7 +221,7 @@ export default function VoiceAISettings() {
         {/* Alert + feed integration */}
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AlertConfig creatorId={user?.id} />
-          <AnnouncementFeed communityId={null} />
+          <AnnouncementFeed communityId={userCommunityId} />
         </div>
 
         {/* Cross-links */}
@@ -231,11 +244,11 @@ export default function VoiceAISettings() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
-          <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={null} />
+          <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={activeRoomId} />
           <BackgroundCustomizer onBackgroundChange={() => {}} />
-          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
-          <AIStreamSummary roomId={null} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
-          <AuraEmotionDisplay roomId={null} sessionId={null} />
+          <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
+          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
+          <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} />
           <ContentRecommendations />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />

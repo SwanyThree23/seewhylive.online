@@ -686,6 +686,13 @@ function Toast({ message, visible }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   // Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
@@ -1519,7 +1526,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PanelMusicPlayer />
         <SoundboardWidget />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
         <ShareToSocial />
         <SpotlightBanner communityId={null} isAdmin={false} />
         <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />

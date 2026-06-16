@@ -139,16 +139,16 @@ export default function MonetizationWidgets() {
           </div>
         )}
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <AnimatedGiftShop recipientId={user?.id} roomId={null} onClose={() => {}} />
-          <TipAlert roomId={null} recipientId={user?.id} />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+          <AnimatedGiftShop recipientId={user?.id} roomId={activeRoom?.id || null} onClose={() => {}} />
+          <TipAlert roomId={activeRoom?.id || null} recipientId={user?.id} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoom?.id || null} communityId={null} />
         </div>
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <MonetizationDashboard roomId={null} />
+        <MonetizationDashboard roomId={activeRoom?.id || null} />
         <VirtualGoodsStore userId={user?.id} />
       </div>
     </div>

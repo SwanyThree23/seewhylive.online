@@ -133,6 +133,13 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -977,12 +984,12 @@ export default function AIHub() {
 
         {/* ── AI Persona Customizer ── */}
         <div style={{ marginTop: 8 }}>
-          <AIPersonaCustomizer roomId={null} sessionId={null} onCustomized={() => {}} />
+          <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
         </div>
 
         {/* ── AI Stream Summary ── */}
         <div style={{ marginTop: 8 }}>
-          <AIStreamSummary roomId={null} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
         </div>
 
         {/* ── Content Recommendations ── */}
@@ -1007,9 +1014,9 @@ export default function AIHub() {
       </div>
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AuraEmotionDisplay roomId={null} sessionId={null} auraPersona="calm" />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <AICopilotSidebar roomId={null} isHost={false} />
+        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
@@ -1018,7 +1025,7 @@ export default function AIHub() {
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
-        <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
+        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
       </div>
     </div>
   );

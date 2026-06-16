@@ -373,7 +373,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <LeaderboardPanel roomId={null} />
+          <LeaderboardPanel roomId={rooms[0]?.id || null} />
           <ShareToSocial />
           <AudienceInsights />
           <StreamerMonetizationCenter userId={user?.id} />

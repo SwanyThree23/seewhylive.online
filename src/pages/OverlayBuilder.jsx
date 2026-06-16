@@ -149,6 +149,13 @@ export default function OverlayBuilderPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
@@ -335,10 +342,10 @@ export default function OverlayBuilderPage() {
           <LowerThirdsBanner onBannerChange={() => {}} />
           <OverlayThemeBuilder creatorId={user.id} />
           <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
-          <CompositorOverlay stream={null} isHost={true} roomId={null} />
-          <ChatOverlay roomId={null} isVisible={true} />
-          <InteractivePollWidget roomId={null} isHost={true} />
-          <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
+          <CompositorOverlay stream={null} isHost={true} roomId={activeRoomId} />
+          <ChatOverlay roomId={activeRoomId} isVisible={true} />
+          <InteractivePollWidget roomId={activeRoomId} isHost={true} />
+          <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
           <StreamGoals isHost={true} />
           <OnlineUsersGrid compact maxVisible={10} />
         </div>

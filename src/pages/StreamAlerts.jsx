@@ -71,6 +71,13 @@ export default function StreamAlerts() {
   );
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],
@@ -343,12 +350,12 @@ export default function StreamAlerts() {
       {/* Cross-nav footer */}
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <StreamGoals isHost={true} />
-        <PollLaunchBar roomId={null} hostId={user?.id} activePoll={null} isHost={true} />
+        <PollLaunchBar roomId={activeRoomId} hostId={user?.id} activePoll={null} isHost={true} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <GiftAnimation event={null} onDone={() => {}} />
-        <EnhancedPollingSystem roomId={null} hostId={user?.id} isHost={true} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+        <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={true} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={null} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
       </div>
