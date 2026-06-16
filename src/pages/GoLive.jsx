@@ -34,6 +34,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
@@ -803,6 +804,8 @@ export default function GoLive() {
         <RTMPFanoutPanel roomId={partyId} isHost={true} />
         <GuestInviteGenerator roomId={partyId} isHost={true} />
         <StreamGoals isHost={true} />
+        <SwanAIRecommendations roomId={partyId} currentLayout="broadcast" viewerCount={0} />
+        <MilestoneAlerts userId={user?.id} roomId={partyId} />
       </div>
     </div>
   );

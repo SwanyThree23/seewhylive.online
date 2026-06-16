@@ -18,6 +18,11 @@ import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -275,6 +280,11 @@ export default function PKBattleArena() {
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="battle" viewerCount={0} />
+        <StreamGoals isHost={true} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <GuestInviteGenerator roomId={roomId} isHost={true} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
         <CollaborationMatcher />

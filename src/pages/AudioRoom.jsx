@@ -56,6 +56,11 @@ import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import TipWidget from '../components/live/TipWidget';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import SuperChatRail from '../components/live/SuperChatRail';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -777,6 +782,27 @@ export default function AudioRoom() {
           <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
           <PaywallGate isHost={false} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
         </>
+      )}
+
+      {/* Milestone alerts + AI recommendations */}
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      <SwanAIRecommendations roomId={roomId} currentLayout="audio" viewerCount={members.length} />
+
+      {/* Engagement badges */}
+      {roomId && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id} />
+        </div>
+      )}
+
+      {/* Super chat rail (all users) */}
+      {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+
+      {/* Tip widget (viewers only) */}
+      {roomId && !isHost && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <TipWidget roomId={roomId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
+        </div>
       )}
 
       {/* Presence + discovery */}

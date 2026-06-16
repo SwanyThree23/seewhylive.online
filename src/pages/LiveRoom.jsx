@@ -66,6 +66,10 @@ import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import CreatePollModal from '../components/community/CreatePollModal';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import GiftTray from '../components/live/GiftTray';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import PollLaunchBar from '../components/live/PollLaunchBar';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -1082,6 +1086,12 @@ export default function LiveRoom() {
           {party?.id && <EnhancedPollingSystem roomId={party.id} hostId={user?.id} isHost={isHost} />}
           {party?.id && user?.id && <InteractivePollingSystem roomId={party.id} isHost={isHost} currentUser={user} />}
           {party?.id && user?.id && <EngagementBadgesDisplay roomId={party.id} userId={user.id} creatorId={party.host_id} />}
+          <SwanAIRecommendations roomId={party?.id || roomId} currentLayout="default" viewerCount={members.length} />
+          <MilestoneAlerts userId={user?.id} roomId={party?.id || roomId} />
+          {isHost && party?.id && <PollLaunchBar roomId={party.id} hostId={user?.id} activePoll={null} isHost={true} />}
+          {!isHost && party?.id && party?.host_id && (
+            <GiftTray roomId={party.id} currentUser={user} recipientId={party.host_id} />
+          )}
         </div>
       )}
 

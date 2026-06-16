@@ -20,6 +20,8 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -500,6 +502,8 @@ export default function GoLiveStudio() {
         <RTMPFanoutPanel roomId={roomId} isHost={true} />
         <GuestInviteGenerator roomId={roomId} isHost={true} />
         <StreamGoals isHost={true} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
       </div>
     </div>
   );
