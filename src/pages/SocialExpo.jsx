@@ -105,6 +105,19 @@ const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoenterta
 
 export default function SocialExpo() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
 
@@ -708,14 +721,14 @@ export default function SocialExpo() {
           <CreatorBridge user={null} />
           <ShareToSocial />
           <ContentRecommendations />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <StreamGoals isHost={false} />
           <ChallengeLeaderboard challengeId={null} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>

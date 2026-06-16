@@ -2028,6 +2028,13 @@ const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
@@ -2155,7 +2162,7 @@ export default function SeeWhyLIVEv36() {
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <AudienceInsights creatorId={user?.id} />
         <SubscriptionManager creatorId={user?.id} />
-        <InteractivePollingSystem roomId={null} isHost={false} currentUser={user} />
+        <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={12} />

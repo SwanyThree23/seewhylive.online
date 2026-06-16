@@ -924,7 +924,7 @@ function MonetizationTab({ user }) {
       {/* PPV manager */}
       {user?.id && (
         <div className="mb-4">
-          <PayPerViewManager roomId={null} />
+          <PayPerViewManager roomId={dashActiveRoomId} />
           <PayPerViewCard event={null} />
         </div>
       )}

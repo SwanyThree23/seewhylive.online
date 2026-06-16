@@ -604,8 +604,8 @@ export default function ProfilePage() {
       )}
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={null} />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <LeaderboardPanel roomId={activeRoomId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
         <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />

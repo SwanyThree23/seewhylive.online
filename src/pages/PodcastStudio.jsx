@@ -1473,7 +1473,7 @@ export default function PodcastStudio() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
         <CollaborationMatcher />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ClipGeneratorAI roomId={activeRoomId} sessionId={activeRoomId} elapsedSeconds={0} isHost={true} />
         <AutomatedHighlightReels roomId={activeRoomId} sessionId={activeRoomId} isHost={true} />
         <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />

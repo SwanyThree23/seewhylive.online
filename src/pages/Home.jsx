@@ -801,7 +801,7 @@ export default function Home() {
               </Link>
               {/* AI recommendations when no live rooms */}
               <div className="mt-4 w-full">
-                <SwanAIRecommendations roomId={null} currentLayout="grid" viewerCount={0} />
+                <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
               </div>
             </motion.div>
           )}

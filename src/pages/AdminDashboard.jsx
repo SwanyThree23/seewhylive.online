@@ -393,7 +393,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={firstCommunityId} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={activeAdminRoomId} communityId={firstCommunityId} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -587,7 +587,7 @@ export default function AdminDashboard() {
           <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
-          <StreamHealthDashboard roomId={null} isHost={true} />
+          <StreamHealthDashboard roomId={activeAdminRoomId} isHost={true} />
           <AnnouncementPanel communityId={firstCommunityId} userId={user?.id} />
         </div>
       </div>

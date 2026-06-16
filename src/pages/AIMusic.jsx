@@ -1528,8 +1528,8 @@ Return ONLY valid JSON (no markdown, no backticks):
         <SoundboardWidget />
         <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
         <ShareToSocial />
-        <SpotlightBanner communityId={null} isAdmin={false} />
-        <AIStreamSummary roomId={null} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations userId={user?.id} />
       </div>
 

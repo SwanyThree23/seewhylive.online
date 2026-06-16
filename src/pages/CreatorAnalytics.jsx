@@ -354,9 +354,9 @@ export default function CreatorAnalytics() {
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AudienceInsights creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
         <ShareToSocial content={null} />
         <CollaborationMatcher />

@@ -221,7 +221,7 @@ export default function BetaStatusPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
           <LeaderboardPanel roomId={activeRoomId} />
           <StreamGoals isHost={false} />
-          <StreamAnalyticsDashboard roomId={null} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} />
           <HostAlertCenter />
           <PointsNotification userId={user?.id} />
           <MilestoneAlerts creatorId={user?.id} />
