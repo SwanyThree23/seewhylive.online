@@ -23,6 +23,9 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import WebhookHooks from '../components/live/WebhookHooks';
 import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -316,6 +319,9 @@ export default function RTMPServer() {
           <AdvancedEncoderSettings onApply={() => {}} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
+          <MilestoneAlerts userId={user?.id} roomId={roomId} />
+          <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
+          <StreamGoals isHost={true} />
         </div>
       </div>
     </div>

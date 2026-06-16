@@ -18,6 +18,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import StreamGoals from '../components/live/StreamGoals';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -296,6 +298,8 @@ export default function CommunityPage() {
         {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
         {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
+        <MilestoneAlerts userId={user?.id} roomId={community?.id} />
+        <StreamGoals isHost={true} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />

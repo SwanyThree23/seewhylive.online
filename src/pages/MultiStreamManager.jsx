@@ -21,6 +21,9 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -461,6 +464,9 @@ export default function MultiStreamManager() {
           <GuestStreamMonitor guestName="Guest" isStreaming={false} />
           <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
           <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
+          <MilestoneAlerts userId={user?.id} roomId={roomId} />
+          <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
+          <StreamGoals isHost={true} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

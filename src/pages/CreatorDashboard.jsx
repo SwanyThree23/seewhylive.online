@@ -18,6 +18,8 @@ import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -353,6 +355,8 @@ export default function CreatorDashboardPage() {
             <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => {}} />
             <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
             <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <StreamGoals isHost={true} />
+            <SwanAIRecommendations roomId={roomId} currentLayout="dashboard" viewerCount={0} />
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />

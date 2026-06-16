@@ -21,6 +21,9 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import VODCard from '../components/vod/VODCard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -1483,6 +1486,9 @@ export default function PodcastStudio() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="podcast" viewerCount={0} />
+        <StreamGoals isHost={true} />
         <CollaborationMatcher />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />

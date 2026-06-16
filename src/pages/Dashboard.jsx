@@ -44,6 +44,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -1268,6 +1269,7 @@ export default function DashboardPage() {
       <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
 
       <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamGoals isHost={true} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />
