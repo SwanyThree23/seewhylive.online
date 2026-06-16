@@ -64,6 +64,8 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import CreatePollModal from '../components/community/CreatePollModal';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -823,7 +825,7 @@ export default function LiveRoom() {
           {/* Mic */}
           <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
               {!audioEnabled
                 ? <MicOff className="w-4 h-4 text-red-400" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
@@ -834,7 +836,7 @@ export default function LiveRoom() {
           {/* Camera */}
           <button onClick={toggleVideo} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              style={{ background: !videoEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
               {!videoEnabled
                 ? <VideoOff className="w-4 h-4 text-red-400" />
                 : <Video className="w-4 h-4" style={{ color: GOLD }} />}
@@ -1070,6 +1072,8 @@ export default function LiveRoom() {
       {/* ── Chat Moderation + Clip Creator + Stream Metadata (host only) ────── */}
       {isHost && (
         <div style={{ padding: '0 16px 16px' }}>
+          {party?.id && <RTMPFanoutPanel roomId={party.id} isHost={isHost} />}
+          {party?.id && <GuestInviteGenerator roomId={party.id} isHost={isHost} />}
           <ChatModeration collapsed />
           {party?.id && <ClipCreator roomId={party.id} creatorId={user?.id} streamTitle={party.title} elapsedSeconds={0} currentUser={user} />}
           {party && <StreamMetadata room={party} isHost={isHost} />}

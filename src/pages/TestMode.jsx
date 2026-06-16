@@ -328,6 +328,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
 
 // ── Main TestMode page ─────────────────────────────────────────────────────────
 export default function TestMode() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
@@ -674,8 +675,8 @@ export default function TestMode() {
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <DevicePreview />
           <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
-          <ZEGOStreamHealthCard roomId={activeRoomId} />
-          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
+          <ZEGOStreamHealthCard roomId={roomId} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={roomId} isHost={false} />
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>

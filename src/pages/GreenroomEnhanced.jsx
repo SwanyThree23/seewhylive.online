@@ -13,6 +13,7 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestQueue from '../components/live/GuestQueue';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
@@ -34,13 +35,8 @@ const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const isHost = true;
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -106,7 +102,7 @@ export default function GreenroomEnhanced() {
   }
 
   async function generatePin() {
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {
@@ -245,6 +241,7 @@ export default function GreenroomEnhanced() {
 
         {/* Streaming presets */}
         <StreamingPresets onApply={() => {}} />
+        <AdvancedEncoderSettings onApply={() => {}} />
 
         {/* Stream metadata editor (title/category) */}
         <StreamMetadataEditor />
@@ -253,14 +250,14 @@ export default function GreenroomEnhanced() {
         <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
 
         {/* Guest connector + queue */}
-        <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
-        <GuestQueue roomId={activeRoomId} isHost={true} />
+        <GuestConnector roomId={roomId} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={roomId} isHost={true} />
 
         {/* Participant queue */}
-        <GreenroomQueue roomId={activeRoomId} isHost={true} />
+        <GreenroomQueue roomId={roomId} isHost={true} />
 
         {/* RTMP / WHIP Ingest Panel */}
-        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
 
         {/* Guest RTMP panel */}
         <GuestRTMPPanel participantId={null} userId={user?.id} />
@@ -275,7 +272,7 @@ export default function GreenroomEnhanced() {
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
 
         {/* ZEGO guest approval */}
-        <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
+        <ZEGOGuestApprovalPanel roomId={roomId} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
@@ -314,12 +311,9 @@ export default function GreenroomEnhanced() {
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <MultiGuestPanel roomId={activeRoomId} hostId={user?.id} isHost={true} />
-        <OBSBridge roomId={activeRoomId} isHost={true} />
-        <VideoShortRecorder roomId={activeRoomId} sessionId={activeRoomId} onSave={() => {}} />
-        <OnlineUsersGrid compact maxVisible={8} />
-        <ContentRecommendations />
-        <CollaborationMatcher />
+        <MultiGuestPanel roomId={roomId} hostId={user?.id} isHost={true} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <VideoShortRecorder roomId={roomId} sessionId={roomId} onSave={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

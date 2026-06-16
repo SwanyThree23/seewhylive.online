@@ -83,13 +83,7 @@ function ThinkDots() {
 
 export default function AuraAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm Aura — your premium creative partner on SeeWhy LIVE. Ready to elevate your stream, sharpen your brand, and help you build something unforgettable. What are we creating today? ✨" },
   ]);
@@ -250,16 +244,11 @@ export default function AuraAI() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations />
-        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <StreamGoals isHost={false} />
-        <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={false} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={null} />
-        <CollaborationMatcher />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <AuraPanelDrawer roomId={roomId} hostId={user?.id} onClose={() => {}} />
       </div>
     </div>
   );

@@ -90,13 +90,7 @@ export default function ActivityPage() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities', user?.id],
@@ -350,7 +344,7 @@ export default function ActivityPage() {
 
         {user?.id && (
           <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <LeaderboardPanel roomId={activeRoomId} />
+            <LeaderboardPanel roomId={roomId} />
             <StreamGoals isHost={false} />
           </div>
         )}

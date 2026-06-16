@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import BitratePresets from '../components/streaming/BitratePresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
@@ -208,8 +209,8 @@ function CameraPreview({ onStreamReady }) {
       <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
         <button onClick={toggleMic} style={{
           width: 32, height: 32, borderRadius: '50%',
-          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(239,68,68,0.2)',
-          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(239,68,68,0.4)'}`,
+          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)',
+          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
         }}>
           {micOn
@@ -702,6 +703,7 @@ export default function GoLive() {
             </div>
 
             <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+            <AdvancedEncoderSettings onApply={() => {}} />
 
             {user?.id && (
               <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
@@ -791,15 +793,10 @@ export default function GoLive() {
         <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
         <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
         <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
-        <StreamChatbot roomId={activeRoomId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={activeRoom || null} />
-        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={activeRoomId} />
+        <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={partyId ? { id: partyId } : null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={partyId} />
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
-        <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
-        <OnlineUsersGrid compact maxVisible={8} />
-        <ContentRecommendations />
-        <CollaborationMatcher currentUserId={user?.id} />
-        <ShareToSocial url={window.location.href} title="I'm going live on SeeWhy LIVE!" />
-        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <WebhookHooks roomId={partyId} userId={user?.id} isHost={true} />
       </div>
     </div>
   );

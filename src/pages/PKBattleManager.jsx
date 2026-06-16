@@ -95,7 +95,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
         <span style={{ color: leftColor || '#D4AF37' }}>{leftName}</span>
-        <span style={{ color: rightColor || '#ef4444' }}>{rightName}</span>
+        <span style={{ color: rightColor || '#C0392B' }}>{rightName}</span>
       </div>
       <div className="h-4 rounded-full flex overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
         <motion.div
@@ -104,12 +104,12 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
         />
         <motion.div
           className="h-full rounded-r-full transition-all duration-700"
-          style={{ width: rp + '%', background: rightColor || '#ef4444' }}
+          style={{ width: rp + '%', background: rightColor || '#C0392B' }}
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-black font-mono">
         <span style={{ color: leftColor || '#D4AF37' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
-        <span style={{ color: rightColor || '#ef4444' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
+        <span style={{ color: rightColor || '#C0392B' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
       </div>
     </div>
   );
@@ -652,6 +652,7 @@ var TABS = [
 ];
 
 export default function PKBattleManager() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('invitations');
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [showWinner, setShowWinner] = useState(false);
@@ -837,10 +838,9 @@ export default function PKBattleManager() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={currentBattle?.id || null} hostId={user?.id} isHost={true} />
-        <TipAlert roomId={currentBattle?.id || null} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={currentBattle?.id || null} />
-        <OnlineUsersGrid compact maxVisible={10} />
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
+        <TipAlert roomId={roomId} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
       </div>
     </div>
   );

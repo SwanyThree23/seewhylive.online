@@ -92,6 +92,7 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
@@ -604,15 +605,11 @@ export default function ProfilePage() {
       )}
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={activeRoomId} />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <LeaderboardPanel roomId={roomId} />
+        <SpotlightBanner communityId={null} isAdmin={false} />
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
-        <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <ContentRecommendations />
-        <ShareToSocial url={window.location.href} title={`Check out ${user?.full_name || 'my'} profile on SeeWhy LIVE!`} />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
       </div>
     </div>
   );

@@ -147,7 +147,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   </div>
                 </div>
                 <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
-                  style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)' }}>
+                  style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
               </motion.div>

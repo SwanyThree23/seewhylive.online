@@ -11,6 +11,7 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
@@ -138,6 +139,7 @@ function StatBox({ label, value, unit, color, warn }) {
 }
 
 export default function GoLiveStudio() {
+  const roomId = roomId;
   const [state, dispatch] = useReducer(reducer, initState);
   const uptimeRef = useRef(null);
   const healthRef = useRef(null);
@@ -162,11 +164,11 @@ export default function GoLiveStudio() {
       dispatch({
         type: 'UPDATE_HEALTH',
         payload: {
-          bitrate: 5800 + Math.floor(Math.random() * 400),
-          fps: 59 + Math.round(Math.random()),
-          droppedFrames: Math.floor(Math.random() * 3),
-          latency: 80 + Math.floor(Math.random() * 40),
-          viewerCount: state.viewerCount + Math.floor(Math.random() * 3) - 1,
+          bitrate: 5800,
+          fps: 60,
+          droppedFrames: 0,
+          latency: 80,
+          viewerCount: state.viewerCount,
         },
       });
     }, 2000);
@@ -224,9 +226,9 @@ export default function GoLiveStudio() {
           <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>SeeWhy LIVE · {RTMP_URL}</div>
         </div>
         {isLive && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.5)', borderRadius: 8, padding: '4px 12px' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: 13, fontWeight: 900, color: '#ef4444', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE · {formatUptime(state.uptime)}</span>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.5)', borderRadius: 8, padding: '4px 12px' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#C0392B', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: 13, fontWeight: 900, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE · {formatUptime(state.uptime)}</span>
           </div>
         )}
         {isLive && (
@@ -248,7 +250,7 @@ export default function GoLiveStudio() {
             <div style={{ fontSize: 48 }}>{activeScene.icon}</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>{activeScene.label}</div>
             {isLive && (
-              <div style={{ position: 'absolute', top: 12, left: 12, background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>● LIVE</div>
+              <div style={{ position: 'absolute', top: 12, left: 12, background: '#C0392B', color: '#fff', fontSize: 12, fontWeight: 900, padding: '3px 10px', borderRadius: 6, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>● LIVE</div>
             )}
             {state.showLowerThird && (
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(90deg, rgba(7,5,10,0.95), rgba(212,175,55,0.15))', borderTop: '2px solid #d4af37', padding: '10px 16px' }}>
@@ -346,7 +348,7 @@ export default function GoLiveStudio() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => dispatch({ type: 'PANIC' })}
-                style={{ flex: 1, padding: '12px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 10, color: '#ef4444', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                style={{ flex: 1, padding: '12px', background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 10, color: '#C0392B', fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
                 <AlertTriangle size={16} /> PANIC CUT
               </button>
@@ -474,7 +476,7 @@ export default function GoLiveStudio() {
           {isLive && (
             <button
               onClick={endStream}
-              style={{ width: '100%', padding: '14px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(239,68,68,0.15)', color: '#ef4444', fontSize: 17, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              style={{ width: '100%', padding: '14px', borderRadius: 12, border: '1px solid rgba(192,57,43,0.5)', background: 'rgba(192,57,43,0.15)', color: '#C0392B', fontSize: 17, fontWeight: 900, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               <Square size={16} /> END STREAM
             </button>
@@ -488,19 +490,12 @@ export default function GoLiveStudio() {
         <ChatModeration />
         <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
         <StreamMetadataEditor />
-        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
-        <GreenroomQueue roomId={activeRoomId} isHost={true} />
-        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
+        <GreenroomQueue roomId={roomId} isHost={true} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={roomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
-        {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
-        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <ContentRecommendations />
-          <CollaborationMatcher />
-          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
-        </div>
+        <AdvancedEncoderSettings onApply={() => {}} />
+        <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
       </div>
     </div>
   );

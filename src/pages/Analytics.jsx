@@ -67,6 +67,7 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['analyticsRooms', user?.id],
@@ -373,7 +374,7 @@ export default function AnalyticsPage() {
         </div>
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <LeaderboardPanel roomId={rooms[0]?.id || null} />
+          <LeaderboardPanel roomId={roomId} />
           <ShareToSocial />
           <AudienceInsights />
           <StreamerMonetizationCenter userId={user?.id} />

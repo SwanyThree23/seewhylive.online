@@ -11,6 +11,12 @@ import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestGrid from '../components/live/GuestGrid';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import UnifiedChat from '../components/live/UnifiedChat';
@@ -257,18 +263,14 @@ export default function HybridStreamRoom() {
       {isHost && (
         <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
-          <LocalVideoTile stream={localStream} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
-          <GuestGrid
-            participants={participants}
-            isHost={isHost}
-            onInvite={() => {}}
-            hostId={user?.id}
-            remoteStreams={remoteStreams}
-            peerUserIds={peerUserIds}
-            localStream={localStream}
-            currentUserId={user?.id}
-          />
-          <EvmuxWebSource isActive={false} onClose={() => {}} />
+          <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
+          <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
+          <StreamWebSourceManager isStreamActive={false} />
+          <RTMPIngestPanel roomId={roomId} />
+          <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+          <GuestConnector roomId={roomId} />
+          <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+          <AdvancedEncoderSettings onApply={() => {}} />
           <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
         </div>
       )}
@@ -313,17 +315,10 @@ export default function HybridStreamRoom() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {roomId && room?.host_id && (
-          <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
-        )}
-        {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
-        {roomId && isHost && <GiftShopTray roomId={roomId} recipientId={room?.host_id} onClose={() => {}} />}
-        {roomId && <GiftAnimation roomId={roomId} />}
-        {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
-        <CollabPlaylist roomId={roomId} isHost={isHost} />
-        <VideoQueuePanel roomId={roomId} isHost={isHost} onVideoSelect={() => {}} />
-        <WatchPartyAnalytics partyId={roomId} />
-        <WatchPartyTab roomId={roomId} user={user} party={room} members={participants} remoteStreams={remoteStreams} onSyncEvent={() => {}} syncEvent={null} />
+        <CollabPlaylist roomId={roomId} isHost={false} />
+        <VideoQueuePanel roomId={roomId} isHost={false} onVideoSelect={() => {}} />
+        <WatchPartyAnalytics partyId={null} />
+        <WatchPartyTab roomId={roomId} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />

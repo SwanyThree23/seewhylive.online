@@ -51,19 +51,7 @@ export default function CreateRoomPage() {
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: communities = [] } = useQuery({
     queryKey: ['myCommunities'],
@@ -279,12 +267,12 @@ export default function CreateRoomPage() {
           {user?.id && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               <StreamGoals isHost={true} />
-              <ZEGOStreamHealthCard roomId={activeRoomId} />
+              <ZEGOStreamHealthCard roomId={roomId} />
               <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
               <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
               <StreamMetadataEditor />
               <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
-              <GreenroomQueue roomId={activeRoomId} isHost={true} />
+              <GreenroomQueue roomId={roomId} isHost={true} />
             </div>
           )}
 
