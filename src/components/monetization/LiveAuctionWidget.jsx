@@ -45,7 +45,7 @@ function CountdownTimer({ endsAt, onExpire }) {
   }, [endsAt]);
 
   return (
-    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#f87171' : '#D4AF37' }}>
+    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 13, color: urgent ? '#FF4444' : '#D4AF37' }}>
       <Clock className="w-3.5 h-3.5" style={{ display: 'inline', marginRight: 4 }} />{time}
     </span>
   );
@@ -89,13 +89,13 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
   const minBid = Math.ceil(displayBid + (auction.bid_increment || 1));
 
   const cardBorder =
-    auction.status === 'ending_soon' ? '1px solid rgba(239,68,68,0.5)' :
+    auction.status === 'ending_soon' ? '1px solid rgba(192,57,43,0.5)' :
     auction.status === 'active' ? '1px solid rgba(212,175,55,0.2)' :
     isEnded ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.1)';
 
   const statusBadge = () => {
     if (auction.status === 'active') return { bg: 'rgba(21,128,61,0.4)', color: '#6DBF7E', text: '🟢 LIVE' };
-    if (auction.status === 'ending_soon') return { bg: 'rgba(153,27,27,0.4)', color: '#f87171', text: '🔴 ENDING' };
+    if (auction.status === 'ending_soon') return { bg: 'rgba(153,27,27,0.4)', color: '#FF4444', text: '🔴 ENDING' };
     if (auction.status === 'ended') return { bg: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)', text: '✓ ENDED' };
     return { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.2)', text: '⏳ SOON' };
   };
@@ -216,7 +216,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
         {/* Creator controls */}
         {isCreator && auction.status !== 'ended' && (
           <button onClick={() => onEnd(auction.id)}
-            style={{ width: '100%', border: '1px solid rgba(153,27,27,0.3)', background: 'transparent', color: '#f87171', borderRadius: 8, padding: '6px 0', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ width: '100%', border: '1px solid rgba(153,27,27,0.3)', background: 'transparent', color: '#FF4444', borderRadius: 8, padding: '6px 0', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Auction
           </button>
         )}
@@ -339,7 +339,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         <h3 style={{ fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
           <Gavel className="w-4 h-4" style={{ color: GOLD }} /> Live Auctions
           {activeAuctions.length > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(153,27,27,0.4)', color: '#f87171', border: '1px solid rgba(153,27,27,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(153,27,27,0.4)', color: '#FF4444', border: '1px solid rgba(153,27,27,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {activeAuctions.length} LIVE
             </span>
           )}

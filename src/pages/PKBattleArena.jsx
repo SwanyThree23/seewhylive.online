@@ -178,6 +178,7 @@ function BattleCard({ battle, onVote, myVote }) {
 
 export default function PKBattleArena() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [votes, setVotes] = useState({});
   const [tab, setTab] = useState('live');
 
@@ -263,14 +264,14 @@ export default function PKBattleArena() {
         <PKBattleProgress battleId={null} />
         <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
-        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
-        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
-        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
-        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName="" participants={[]} />
+        <GiftShopTray roomId={roomId} currentUser={user} />
+        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+        <BattleScoreboard roomId={roomId} />
+        <BattleMode roomId={roomId} isHost={false} hostName="" participants={[]} />
         <TournamentBracket />
-        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <MatchmakingQueue user={user} onMatchFound={() => {}} />
         <BattleOverlay battle={null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={[]} user={null} />
+        <PKAnalyticsDashboard battles={battles} user={user} />
       </div>
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>

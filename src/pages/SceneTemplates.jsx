@@ -510,13 +510,7 @@ export default function SceneTemplates() {
   const [editingTpl, setEditingTpl]         = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],
@@ -774,12 +768,12 @@ export default function SceneTemplates() {
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <SceneSwitcher activeScene={activeTemplate} onSceneChange={setActiveTemplate} />
         {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
-        <ChatOverlay roomId={activeRoomId} isVisible={true} />
+        <ChatOverlay roomId={roomId} isVisible={true} />
         <EvmuxWebSource isActive={false} onClose={() => {}} />
-        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+        <AuraPanelDrawer roomId={roomId} hostId={null} onClose={() => {}} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
-        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
         <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
         <OnlineUsersGrid compact maxVisible={10} />
       </div>

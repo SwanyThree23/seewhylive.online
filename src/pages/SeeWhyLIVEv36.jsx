@@ -122,7 +122,7 @@ function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style 
     cyan:    `linear-gradient(135deg,${C.cyan}CC,${C.blue})`,
     green:   `linear-gradient(135deg,${C.teal},${C.green})`,
     purple:  `linear-gradient(135deg,${C.purple},#800020)`,
-    orange:  `linear-gradient(135deg,${C.orange},#E55100)`,
+    orange:  `linear-gradient(135deg,${C.orange},#CC7755)`,
   };
   const colors = {
     gold:"#07050A",ghost:C.gold,ruby:C.text,slate:C.textD,
@@ -1183,7 +1183,7 @@ function PlatformsPanel() {
   const totalViewers = platforms.filter(p=>p.live).reduce((a,p)=>a+p.viewers,0);
 
   function togglePlatform(id) {
-    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:p.live?0:Math.floor(Math.random()*600+100)}:p));
+    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:0}:p));
   }
 
   const SCENES = ["Main Stage","State vs State Matchup","Tribute Memorial","Podcast Booth","Music Studio","Watch Party","Intermission","Outro Slate"];
@@ -2028,13 +2028,7 @@ const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
@@ -2162,7 +2156,7 @@ export default function SeeWhyLIVEv36() {
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <AudienceInsights creatorId={user?.id} />
         <SubscriptionManager creatorId={user?.id} />
-        <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
+        <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={12} />

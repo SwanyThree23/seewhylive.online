@@ -261,11 +261,7 @@ export default function CreateCommunityPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
           <DiscussionFeed communityId="new" />
-          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={null} communityId={null} moderatorId={null} />
-          <OnlineUsersGrid compact maxVisible={12} />
-          <ContentRecommendations />
-          <CollaborationMatcher />
-          <ChallengeLeaderboard challengeId={null} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={null} />
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Youtube, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -89,6 +89,7 @@ export default function SettingsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: preferences } = useQuery({
     queryKey: ['userPreferences', user?.id],
@@ -289,7 +290,7 @@ export default function SettingsPage() {
         {/* Payment Methods */}
         {user && (
           <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
-            <PaymentMethodSelector creatorId={user.id} roomId={activeRoomId} onPaymentComplete={() => {}} />
+            <PaymentMethodSelector creatorId={user.id} roomId={roomId} onPaymentComplete={() => {}} />
             <div className="pt-2">
               <StripeConnectButton creatorId={user.id} />
             </div>
@@ -315,7 +316,7 @@ export default function SettingsPage() {
         {/* ZEGO Settings */}
         {user && (
           <Section icon={SettingsIcon} title="Streaming Settings" description="Configure ZEGO stream quality and devices">
-            <ZEGOSettingsDrawer roomId={activeRoomId} streamKey={null} onClose={() => {}} />
+            <ZEGOSettingsDrawer roomId={roomId} streamKey={null} onClose={() => {}} />
           </Section>
         )}
 
@@ -339,13 +340,13 @@ export default function SettingsPage() {
             <button
               onClick={() => base44.auth.logout()}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
             </button>
             <button
               onClick={() => setShowDeleteDialog(true)}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-              style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.6)', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', color: 'rgba(192,57,43,0.6)', userSelect: 'none', ...T }}>
               <Trash2 className="w-3.5 h-3.5" />
               Delete Account
             </button>
@@ -358,10 +359,10 @@ export default function SettingsPage() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
-            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
+            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
               </div>
               <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
@@ -372,7 +373,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-center gap-2 mt-3">
                 {[1, 2].map(s => (
                   <div key={s} className="rounded-full transition-all"
-                    style={{ width: deleteStep >= s ? 20 : 8, height: 8, background: deleteStep >= s ? '#EF4444' : 'rgba(239,68,68,0.2)' }} />
+                    style={{ width: deleteStep >= s ? 20 : 8, height: 8, background: deleteStep >= s ? '#EF4444' : 'rgba(192,57,43,0.2)' }} />
                 ))}
               </div>
             </div>
@@ -380,21 +381,21 @@ export default function SettingsPage() {
             {/* Step 1: Reason */}
             {deleteStep === 1 && (
               <div className="p-5 space-y-3">
-                <p className="text-[10px] font-black uppercase text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                <p className="text-[10px] font-black uppercase text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
                   Why are you leaving? (required)
                 </p>
                 <div className="space-y-2">
                   {['I no longer use this service', 'Privacy concerns', 'Found a better platform', 'Too many notifications', 'Other reason'].map(reason => (
                     <button key={reason} onClick={() => setDeleteReason(reason)}
                       className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all"
-                      style={{ background: deleteReason === reason ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.08)'}`, color: deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.55)', userSelect: 'none', ...T }}>
+                      style={{ background: deleteReason === reason ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.08)'}`, color: deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.55)', userSelect: 'none', ...T }}>
                       {deleteReason === reason ? '● ' : '○ '}{reason}
                     </button>
                   ))}
                 </div>
                 <button onClick={() => setDeleteStep(2)} disabled={!deleteReason}
                   className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                  style={{ background: deleteReason ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)', color: deleteReason ? '#EF4444' : 'rgba(239,68,68,0.3)', userSelect: 'none', ...T }}>
+                  style={{ background: deleteReason ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.06)', color: deleteReason ? '#EF4444' : 'rgba(192,57,43,0.3)', userSelect: 'none', ...T }}>
                   Continue →
                 </button>
                 <button onClick={() => { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); }}
@@ -408,12 +409,12 @@ export default function SettingsPage() {
             {/* Step 2: Confirm */}
             {deleteStep === 2 && (
               <div className="p-5 space-y-3">
-                <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)' }}>
                   <p className="text-[10px] font-bold" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Reason</p>
                   <p className="text-xs font-black" style={{ color: '#EF4444', ...T }}>{deleteReason}</p>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                  <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
                     Type DELETE to confirm
                   </label>
                   <input
@@ -422,11 +423,11 @@ export default function SettingsPage() {
                     placeholder="DELETE"
                     autoFocus
                     className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
-                    style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+                    style={{ background: 'rgba(192,57,43,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(192,57,43,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
                 </div>
                 <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
                   className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                  style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                  style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(192,57,43,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(192,57,43,0.4)', userSelect: 'none', ...T }}>
                   {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
                 </button>
                 <button onClick={() => { setDeleteStep(1); setDeleteConfirmText(''); }}

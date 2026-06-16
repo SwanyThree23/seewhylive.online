@@ -44,7 +44,7 @@ function drawSlot(ctx, videoEl, x, y, w, h, label) {
 function drawOverlay(ctx, { title, subtitle, showLive }) {
   // LIVE badge
   if (showLive) {
-    ctx.fillStyle = 'rgba(255,21,100,0.85)';
+    ctx.fillStyle = 'rgba(192,57,43,0.9)';
     roundRect(ctx, W - 100, 20, 80, 32, 6);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 16px Arial';

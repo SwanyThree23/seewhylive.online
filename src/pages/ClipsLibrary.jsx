@@ -54,6 +54,7 @@ function ClipCard({ clip, onDelete, onShare }) {
 }
 
 export default function ClipsLibraryPage() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
@@ -189,7 +190,7 @@ export default function ClipsLibraryPage() {
         )}
         {/* AI Clip Generator */}
         <div style={{ marginTop: 32 }}>
-          <AutomatedClipGenerator roomId={activeRoomId} />
+          <AutomatedClipGenerator roomId={roomId} />
         </div>
         {/* AI Highlight Reels */}
         <div style={{ marginTop: 16 }}>
@@ -198,7 +199,7 @@ export default function ClipsLibraryPage() {
         {/* AI-powered clip suggestions */}
         {user?.id && (
           <div style={{ marginTop: 16 }}>
-            <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user.id} />
+            <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user.id} />
           </div>
         )}
 
@@ -224,7 +225,7 @@ export default function ClipsLibraryPage() {
         {/* Video Short Recorder */}
         {user?.id && (
           <div style={{ marginTop: 24 }}>
-            <VideoShortRecorder roomId={activeRoomId} creatorId={user.id} />
+            <VideoShortRecorder roomId={roomId} creatorId={user.id} />
           </div>
         )}
       </div>
@@ -251,7 +252,7 @@ export default function ClipsLibraryPage() {
       {/* Clip creator sheet */}
       {clipSheetOpen && (
         <ClipCreatorSheet
-          roomId={null}
+          roomId={roomId}
           sessionId={user?.id}
           creatorId={user?.id}
           elapsedSeconds={0}

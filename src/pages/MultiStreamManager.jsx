@@ -18,7 +18,9 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
@@ -65,6 +67,7 @@ function StatusDot({ status }) {
 
 export default function MultiStreamManager() {
   const qc = useQueryClient();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKeyFor, setShowKeyFor] = useState({});
   const [testingId, setTestingId] = useState(null);
   const [newLabel, setNewLabel] = useState('');
@@ -217,7 +220,7 @@ export default function MultiStreamManager() {
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
                   <p className="text-[10px] text-white/40">Total Outbound Bandwidth</p>
-                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#ef4444' : '#6DBF7E' }}>
+                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#C0392B' : '#6DBF7E' }}>
                     {(totalBitrate / 1000).toFixed(1)} Mbps
                   </p>
                 </div>
@@ -226,7 +229,7 @@ export default function MultiStreamManager() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${Math.min(100, (totalBitrate / recommendedMax) * 100)}%`,
-                      background: totalBitrate > recommendedMax ? '#ef4444' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
+                      background: totalBitrate > recommendedMax ? '#C0392B' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
                     }}
                   />
                 </div>
@@ -437,7 +440,7 @@ export default function MultiStreamManager() {
 
         {/* Stream health monitoring */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-          <ZEGOStreamHealthCard roomId={activeRoomId} />
+          <ZEGOStreamHealthCard roomId={roomId} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Health</span>
             <StreamHealthMonitor isStreaming={false} />
@@ -449,13 +452,15 @@ export default function MultiStreamManager() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
-          <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
-          <OBSBridge roomId={activeRoomId} isHost={true} />
+          <RTMPFanoutPanel roomId={roomId} isHost={true} />
+          <GuestInviteGenerator roomId={roomId} isHost={true} />
+          <RTMPIngestPanel roomId={roomId} />
+          <EnhancedIngestPanel roomId={roomId} isHost={true} />
+          <OBSBridge roomId={roomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           <GuestStreamMonitor guestName="Guest" isStreaming={false} />
           <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>

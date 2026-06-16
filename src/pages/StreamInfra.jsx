@@ -33,7 +33,9 @@ function copyText(val) {
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
-  return prefix + '_' + id + '_' + Math.random().toString(36).slice(2, 10);
+  var arr = crypto.getRandomValues(new Uint8Array(4));
+  var rnd = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  return prefix + '_' + id + '_' + rnd;
 }
 
 /* ─── Sub-components ─── */
@@ -128,7 +130,10 @@ function StreamTab({ user }) {
   var userId = (user && user.id) || 'demo0000';
   var [streamKey, setStreamKey] = useState(function() { return genKey('sw', userId); });
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
-  var [vdoRoom] = useState(function() { return 'sw_' + Math.random().toString(36).slice(2, 10); });
+  var [vdoRoom] = useState(function() {
+    var arr = crypto.getRandomValues(new Uint8Array(5));
+    return 'sw_' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, 10);
+  });
   var [perms, setPerms] = useState({
     speakers_can_share_screen: true,
     listeners_can_react: true,
@@ -724,6 +729,7 @@ var TABS = [
 ];
 
 export default function StreamInfra() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('stream');
 
   var { data: user } = useQuery({
@@ -802,9 +808,9 @@ export default function StreamInfra() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={activeRoomId} isHost={false} />
-        <EnhancedIngestPanel roomId={activeRoomId} isHost={false} />
-        <ZEGOConfigPanel roomId={activeRoomId} />
+        <OBSBridge roomId={roomId} isHost={false} />
+        <EnhancedIngestPanel roomId={roomId} isHost={false} />
+        <ZEGOConfigPanel roomId={roomId} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
         <GuestRTMPPanel participantId={null} userId={user?.id} />

@@ -94,7 +94,7 @@ export default function EmbedPlayer({
       {/* Top overlay: stream info */}
       <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/70 to-transparent flex items-center gap-2">
         {isLive && (
-          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#fff' }} />
             LIVE
           </span>

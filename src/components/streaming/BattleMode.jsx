@@ -137,7 +137,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Battle Mode</span>
           {activeBattle && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
           )}
         </div>
         {isHost && !activeBattle && (
@@ -151,7 +151,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         {isHost && activeBattle && (
           <button
             onClick={() => endBattleMutation.mutate(activeBattle)}
-            style={{ height:24, fontSize:10, background:'#dc2626', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, background:'#C0392B', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <X className="w-3 h-3" /> End
           </button>

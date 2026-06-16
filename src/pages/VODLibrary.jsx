@@ -33,13 +33,7 @@ export default function VODLibraryPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: stats } = useQuery({
     queryKey: ['vodStats', user?.id],
@@ -128,7 +122,7 @@ export default function VODLibraryPage() {
             {activeTab === 'highlights' && (
               <motion.div key="highlights" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5 pb-10">
                 <AutomatedHighlightReels />
-                <AutomatedClipGenerator roomId={activeRoomId} />
+                <AutomatedClipGenerator roomId={roomId} />
               </motion.div>
             )}
 

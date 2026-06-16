@@ -97,13 +97,7 @@ function ThinkDots() {
 
 export default function JoyceAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
@@ -342,16 +336,12 @@ export default function JoyceAI() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
-        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="hype" />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        <ChatOverlay roomId={activeRoomId} isVisible={false} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
+        <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="hype" />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={roomId} onContextReady={() => {}} />
+        <ChatOverlay roomId={roomId} isVisible={false} />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
       </div>
     </div>
   );

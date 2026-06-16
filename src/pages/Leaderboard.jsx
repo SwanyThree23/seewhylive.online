@@ -164,13 +164,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', currentUser?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],
@@ -390,7 +384,7 @@ export default function LeaderboardPage() {
           </div>
         ) : activeTab === 'earnings' && (
           <div className="mb-4">
-            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={activeRoomId} />
+            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={roomId} />
           </div>
         )}
         {activeTab !== 'svs' && rest.length > 0 && (
@@ -425,11 +419,11 @@ export default function LeaderboardPage() {
         <SocialLeaderboard />
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={false} />
-          <SpotlightBanner communityId={activeRoomId} isAdmin={false} />
-          <TipWidget roomId={activeRoomId} hostId={currentUser?.id} currentUser={currentUser} />
-          <TippingOverlay roomId={activeRoomId} creatorId={currentUser?.id} isVisible={true} />
-          <AnimatedGiftShop recipientId={currentUser?.id} roomId={activeRoomId} onClose={() => {}} />
-          <LeaderboardPanel roomId={activeRoomId} />
+          <SpotlightBanner communityId={null} isAdmin={false} />
+          <TipWidget roomId={roomId} hostId={null} currentUser={currentUser} />
+          <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />
+          <AnimatedGiftShop recipientId={currentUser?.id} roomId={roomId} onClose={() => {}} />
+          <LeaderboardPanel roomId={roomId} />
           <ChallengeLeaderboard challengeId={null} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />

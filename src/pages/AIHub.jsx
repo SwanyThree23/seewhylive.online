@@ -133,13 +133,7 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -242,7 +236,7 @@ export default function AIHub() {
 
   // Guardian status badge color
   function guardianStatusColor(status) {
-    if (status === 'alert')   return '#ef4444';
+    if (status === 'alert')   return '#C0392B';
     if (status === 'warning') return '#D4AF37';
     return GREEN;
   }
@@ -819,7 +813,7 @@ export default function AIHub() {
           <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              background: `linear-gradient(90deg, ${AMBER}, #CC7755)`,
               color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -984,12 +978,12 @@ export default function AIHub() {
 
         {/* ── AI Persona Customizer ── */}
         <div style={{ marginTop: 8 }}>
-          <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
+          <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />
         </div>
 
         {/* ── AI Stream Summary ── */}
         <div style={{ marginTop: 8 }}>
-          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+          <AIStreamSummary roomId={roomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
         </div>
 
         {/* ── Content Recommendations ── */}
@@ -1014,9 +1008,9 @@ export default function AIHub() {
       </div>
 
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

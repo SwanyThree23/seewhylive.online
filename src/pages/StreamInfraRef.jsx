@@ -627,7 +627,7 @@ function StatusTab() {
           return (
             <div key={check.id} className="flex items-center gap-3 py-3 border-b border-white/5">
               <div className="w-3 h-3 rounded-full shrink-0"
-                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#6DBF7E" : "#ef4444") : "#ffffff20" }} />
+                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#6DBF7E" : "#C0392B") : "#ffffff20" }} />
               <div className="flex-1">
                 <div className="text-white/80 text-xs">{check.label}</div>
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>
@@ -698,13 +698,7 @@ export default function StreamInfraRef() {
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }}
@@ -781,11 +775,11 @@ export default function StreamInfraRef() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ZEGOConfigPanel roomId={activeRoomId} />
+        <ZEGOConfigPanel roomId={roomId} />
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={activeRoomId} isHost={false} />
+        <OBSBridge roomId={roomId} isHost={false} />
         <StreamMetadata room={null} isHost={false} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>

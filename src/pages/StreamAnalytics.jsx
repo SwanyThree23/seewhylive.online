@@ -329,20 +329,6 @@ export default function StreamAnalytics() {
           <StreamerGoalsWidget userId={user?.id} />
           <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         </div>
-
-        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <ContentRecommendations />
-          <CollaborationMatcher />
-          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-        </div>
-
-        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <ContentRecommendations />
-          <CollaborationMatcher />
-          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-        </div>
       </div>
     </div>
   );
