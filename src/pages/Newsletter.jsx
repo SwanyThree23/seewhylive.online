@@ -62,6 +62,12 @@ export default function NewsletterPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: communities = [] } = useQuery({
     queryKey: ['userCommunities', user?.id],
@@ -253,7 +259,7 @@ export default function NewsletterPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>

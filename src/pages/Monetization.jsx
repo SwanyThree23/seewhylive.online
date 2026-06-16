@@ -829,7 +829,7 @@ export default function MonetizationPage() {
                 tier="bronze"
                 price={4.99}
                 benefits={['Exclusive badges', 'Early access']}
-                communityId={null}
+                communityId={userCommunityId}
                 creatorId={user.id}
                 isSubscribed={false}
               />

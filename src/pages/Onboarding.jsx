@@ -655,7 +655,7 @@ export default function OnboardingPage() {
 
       <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
       {user?.id && <MilestoneAlerts creatorId={user.id} />}
-      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
+      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={user?.id ? `conv_${user.id}` : null} onContextReady={() => {}} />
       <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
       <SelectSheet label="" value="" options={[]} onChange={() => {}} />
       <div style={{ padding: '0 0 16px' }}>

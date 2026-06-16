@@ -261,9 +261,9 @@ export default function PKBattleArena() {
       </div>
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <PKBattleProgress battleId={null} />
-        <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
-        <PKBattleSoundboard battleId={null} isBattleActive={false} />
+        <PKBattleProgress battleId={rawBattles[0]?.id || null} />
+        <PKBattleVotePanel battleId={rawBattles[0]?.id || null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
+        <PKBattleSoundboard battleId={rawBattles[0]?.id || null} isBattleActive={false} />
         <GiftShopTray roomId={roomId} currentUser={user} />
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
         <BattleScoreboard roomId={roomId} />

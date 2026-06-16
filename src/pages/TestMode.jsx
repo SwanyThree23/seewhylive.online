@@ -683,7 +683,7 @@ export default function TestMode() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <StreamGoals isHost={false} />
-        <StreamHealthDashboard roomId={null} isHost={false} />
+        <StreamHealthDashboard roomId={roomId} isHost={false} />
       </div>
     </div>
   );

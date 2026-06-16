@@ -109,6 +109,25 @@ const INIT_MESSAGES = [
 export default function TributeWall() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const [selected, setSelected] = useState(null);
   const [tributeMsg, setTributeMsg] = useState('');
@@ -342,7 +361,7 @@ export default function TributeWall() {
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
           <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
         </div>
 
       </div>

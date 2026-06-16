@@ -57,6 +57,12 @@ const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogu
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ message }) {
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   return (
     <AnimatePresence>
       {message && (
@@ -631,6 +637,13 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -1471,7 +1484,7 @@ export default function PodcastStudio() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
         <CollaborationMatcher />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />
         <AutomatedHighlightReels roomId={roomId} sessionId={roomId} isHost={true} />
         <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />

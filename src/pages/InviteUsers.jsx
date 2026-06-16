@@ -40,6 +40,12 @@ export default function InviteUsersPage() {
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
     enabled: !!user?.id,
   });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const userCommunityId = userCommunity?.id || null;
 
   const isAdmin = user?.role === 'admin';
@@ -207,7 +213,7 @@ export default function InviteUsersPage() {
           <ReferralProgram communityId={userCommunityId} />
           <AnnouncementFeed communityId={userCommunityId} />
           <AnnouncementPanel communityId={userCommunityId} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
           <ZEGOMobileAppBanner />
         </div>
 

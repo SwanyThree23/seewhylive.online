@@ -37,6 +37,12 @@ export default function WelcomePage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: liveCount } = useQuery({
     queryKey: ['welcomeLiveCount'],
@@ -223,7 +229,7 @@ export default function WelcomePage() {
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
         <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
-        <ChallengeLeaderboard challengeId={null} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>
     </div>
   );

@@ -396,10 +396,10 @@ export default function ViewerDashboard() {
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {user?.id && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
-          <QuickPollLauncher roomId={roomId} hostId={null} isHost={false} />
+          <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={false} />
           <LivePollWidget roomId={roomId} currentUser={user} isHost={false} />
           <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />
-          {user?.id && <SubscriptionGate creatorId={null} roomId={roomId} />}
+          {user?.id && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
         </div>
       </div>
     </div>

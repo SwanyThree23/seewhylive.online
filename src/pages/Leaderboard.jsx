@@ -185,6 +185,18 @@ export default function LeaderboardPage() {
     queryKey: ['leaderboardUsers'],
     queryFn: () => base44.entities.User.list('-created_date', 200),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+  const userCommunityId = userCommunity?.id || null;
 
   // Revenue leaderboard: aggregate by creator
   const revenueByCreator = transactions.reduce((acc, t) => {
@@ -419,12 +431,12 @@ export default function LeaderboardPage() {
         <SocialLeaderboard />
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={false} />
-          <SpotlightBanner communityId={null} isAdmin={false} />
-          <TipWidget roomId={roomId} hostId={null} currentUser={currentUser} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <TipWidget roomId={roomId} hostId={currentUser?.id} currentUser={currentUser} />
           <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />
           <AnimatedGiftShop recipientId={currentUser?.id} roomId={roomId} onClose={() => {}} />
           <LeaderboardPanel roomId={roomId} />
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
           <CollaborationMatcher />

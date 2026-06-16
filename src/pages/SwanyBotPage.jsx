@@ -82,6 +82,13 @@ function speakText(text) {
 }
 
 function ThinkDots() {
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {[0, 1, 2].map(i => (
@@ -257,7 +264,7 @@ export default function SwanyBotPage() {
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
-        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={user?.id ? `conv_${user.id}` : null} onContextReady={() => {}} />
         <AICopilotSidebar roomId={roomId} isHost={false} />
         <AIStreamSummary roomId={roomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
         <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
@@ -271,7 +278,7 @@ export default function SwanyBotPage() {
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
-        <AuraPanelDrawer roomId={null} hostId={user?.id} onClose={() => {}} />
+        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
       </div>
     </div>
   );

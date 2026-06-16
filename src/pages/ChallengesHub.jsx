@@ -209,6 +209,12 @@ export default function ChallengesHubPage() {
       }
     },
   });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const myCompleted = myParticipations.filter(p => p.completed);
   const myActive = myParticipations.filter(p => !p.completed);
@@ -355,7 +361,7 @@ export default function ChallengesHubPage() {
         <div className="mt-4 space-y-4">
           <LeaderboardPanel roomId={roomId} />
           {user?.id && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
-          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
           <ChallengeAnalytics communityId={userCommunityId} />
         </div>
 

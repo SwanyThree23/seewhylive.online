@@ -163,6 +163,12 @@ export default function ProfilePage() {
       }
     },
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   useEffect(() => {
     if (user) {
@@ -606,7 +612,7 @@ export default function ProfilePage() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <LeaderboardPanel roomId={roomId} />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
         <PerformanceDashboard roomId={roomId} sessionId={roomId} />

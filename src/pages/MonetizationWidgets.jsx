@@ -31,6 +31,13 @@ export default function MonetizationWidgets() {
   const [activeTab, setActiveTab] = useState('goals');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+
   const { data: myRooms = [] } = useQuery({
     queryKey: ['my-live-rooms', user?.id],
     queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }, '-created_date', 5),
@@ -141,7 +148,7 @@ export default function MonetizationWidgets() {
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <AnimatedGiftShop recipientId={user?.id} roomId={myRooms[0]?.id || null} onClose={() => {}} />
           <TipAlert roomId={myRooms[0]?.id || null} recipientId={user?.id} />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={myRooms[0]?.id || null} communityId={null} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={myRooms[0]?.id || null} communityId={userCommunityId} />
         </div>
       </div>
 

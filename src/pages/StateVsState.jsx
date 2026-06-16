@@ -755,6 +755,12 @@ export default function StateVsState() {
   const [matches, setMatches] = useState(BRACKET_MATCHES);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: svsBattles = [] } = useQuery({
+    queryKey: ['svsBattles'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: 'active' }, '-created_date', 1),
+    enabled: true,
+  });
+  const activeBattle = svsBattles[0] || null;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -840,7 +846,7 @@ export default function StateVsState() {
 
       <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <LeaderboardPanel roomId={roomId} />
-        <PKBattleProgress battleId={null} />
+        <PKBattleProgress battleId={activeBattle?.id || null} />
       </div>
 
       {/* Cross-navigation footer */}

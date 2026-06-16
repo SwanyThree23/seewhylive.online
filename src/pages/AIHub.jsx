@@ -993,7 +993,7 @@ export default function AIHub() {
 
         {/* ── SwanyBot Context Enhancer ── */}
         <div style={{ marginTop: 8 }}>
-          <SwanyBotContextEnhancer userId={user?.id} conversationId={null} onContextReady={() => {}} />
+          <SwanyBotContextEnhancer userId={user?.id} conversationId={user?.id ? `conv_${user.id}` : null} onContextReady={() => {}} />
         </div>
 
         {/* ── Bottom info strip ── */}

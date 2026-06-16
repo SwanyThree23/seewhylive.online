@@ -66,6 +66,18 @@ export default function NotificationsPage() {
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['notifications']),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+  const userCommunityId = userCommunity?.id || null;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -195,7 +207,7 @@ export default function NotificationsPage() {
             <AnnouncementFeed communityId={userCommunityId} />
             <PointsNotification userId={user.id} />
             <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />
-            <SpotlightBanner communityId={null} isAdmin={false} />
+            <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           </div>
         )}
       </div>
@@ -203,7 +215,7 @@ export default function NotificationsPage() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
-        <ChallengeLeaderboard challengeId={null} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>
     </div>
   );

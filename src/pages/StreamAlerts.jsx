@@ -78,6 +78,12 @@ export default function StreamAlerts() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],
@@ -355,7 +361,7 @@ export default function StreamAlerts() {
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <GiftAnimation event={null} onDone={() => {}} />
         <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={true} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={null} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={userCommunityId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
       </div>

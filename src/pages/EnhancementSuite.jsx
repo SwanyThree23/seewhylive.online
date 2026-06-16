@@ -508,6 +508,12 @@ export default function EnhancementSuite() {
     queryKey: ['share-activities'],
     queryFn: () => base44.entities.Activity.filter({ type: 'share' }),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const displayVods = clips.map(c => ({
     id: c.id,
@@ -907,7 +913,7 @@ export default function EnhancementSuite() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <CoStreamPanel roomId={roomId} />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <OverlayThemeBuilder creatorId={user?.id} />
         <SoundboardWidget roomId={roomId} isHost={true} />
         <RoomBrandingEditor roomId={roomId} isHost={true} />

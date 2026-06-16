@@ -70,6 +70,12 @@ export default function CreateCommunityPage() {
     onSuccess: (c) => { toast.success('Community created!'); window.location.href = `/Community?id=${c.id}`; },
     onError: () => toast.error('Failed to create community'),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const addTag = (tag) => {
     const t = tag || tagInput.trim();
@@ -248,9 +254,9 @@ export default function CreateCommunityPage() {
         </form>
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
-          <AnnouncementFeed communityId={null} />
-          <ReferralProgram communityId={null} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <ReferralProgram communityId={userCommunityId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
@@ -261,7 +267,7 @@ export default function CreateCommunityPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
           <DiscussionFeed communityId="new" />
-          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={null} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={null} />
         </div>
       </div>
     </div>

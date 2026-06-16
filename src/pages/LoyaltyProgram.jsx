@@ -97,6 +97,12 @@ export default function LoyaltyProgram() {
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
     onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
   });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
   const userPoints = myPoints?.points || 0;
@@ -384,7 +390,7 @@ export default function LoyaltyProgram() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-        <ChallengeLeaderboard challengeId={null} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

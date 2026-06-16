@@ -155,6 +155,13 @@ const TABS = [
 
 export default function WashingtonClassic() {
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('bracket');
 
   const sorted = [...TEAMS_2026].sort((a, b) => {
@@ -344,7 +351,7 @@ export default function WashingtonClassic() {
         <BattleScoreboard roomId={roomId} />
         <BattleMode roomId={roomId} isHost={false} hostName={null} participants={[]} />
         <StreamAnalyticsDashboard roomId={roomId} />
-        <ChallengeLeaderboard communityId={null} />
+        <ChallengeLeaderboard communityId={userCommunityId} />
       </div>
     </div>
   );
