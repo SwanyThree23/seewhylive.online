@@ -189,7 +189,7 @@ export default function ClipsLibraryPage() {
         )}
         {/* AI Clip Generator */}
         <div style={{ marginTop: 32 }}>
-          <AutomatedClipGenerator roomId={null} />
+          <AutomatedClipGenerator roomId={activeRoomId} />
         </div>
         {/* AI Highlight Reels */}
         <div style={{ marginTop: 16 }}>
@@ -224,7 +224,7 @@ export default function ClipsLibraryPage() {
         {/* Video Short Recorder */}
         {user?.id && (
           <div style={{ marginTop: 24 }}>
-            <VideoShortRecorder roomId={null} creatorId={user.id} />
+            <VideoShortRecorder roomId={activeRoomId} creatorId={user.id} />
           </div>
         )}
       </div>

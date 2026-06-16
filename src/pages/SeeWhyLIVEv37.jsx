@@ -1349,9 +1349,9 @@ export default function SeeWhyLIVEv37() {
         <ReactionOverlay partyId={null} currentUser={user} />
         <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
         <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={false} />
-        <GreenroomQueue roomId={null} isHost={false} />
-        <SocialLeaderboard roomId={null} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} />
+        <GreenroomQueue roomId={activeRoomId} isHost={false} />
+        <SocialLeaderboard roomId={activeRoomId} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}

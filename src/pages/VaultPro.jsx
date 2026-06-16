@@ -623,7 +623,7 @@ export default function VaultPro() {
 
       {/* Community spotlight + milestone alerts */}
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <MilestoneAlerts creatorId={user?.id} />
       </div>
 

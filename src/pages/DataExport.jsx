@@ -186,10 +186,10 @@ export default function DataExportPage() {
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
-          <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
-          <StreamHealthDashboard roomId={null} isHost={false} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
         </div>
       </div>
     </div>

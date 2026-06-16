@@ -812,7 +812,7 @@ export default function StreamInfra() {
         <ZEGOStreamHealthCard roomId={activeRoomId} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
-        <StreamHealthDashboard roomId={null} isHost={true} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>

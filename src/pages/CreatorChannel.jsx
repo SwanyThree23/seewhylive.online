@@ -293,7 +293,7 @@ export default function CreatorChannel() {
             )}
             <TierBadge tier="bronze" size="sm" showName />
             {currentUser?.id && (
-              <RewardShop creatorId={userId} roomId={null} currentUser={currentUser} />
+              <RewardShop creatorId={userId} roomId={activeRoomId} currentUser={currentUser} />
             )}
           </div>
         )}
@@ -321,7 +321,7 @@ export default function CreatorChannel() {
         )}
 
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PaywallGate roomId={null} creatorId={userId} price={0} />
+          <PaywallGate roomId={activeRoomId} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
           <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
           <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
