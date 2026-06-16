@@ -257,8 +257,17 @@ export default function HybridStreamRoom() {
       {isHost && (
         <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OctagonalVideoWindow title="Main Stage" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
-          <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
-          <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />
+          <LocalVideoTile stream={localStream} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />
+          <GuestGrid
+            participants={participants}
+            isHost={isHost}
+            onInvite={() => {}}
+            hostId={user?.id}
+            remoteStreams={remoteStreams}
+            peerUserIds={peerUserIds}
+            localStream={localStream}
+            currentUserId={user?.id}
+          />
           <EvmuxWebSource isActive={false} onClose={() => {}} />
           <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
         </div>
@@ -279,12 +288,12 @@ export default function HybridStreamRoom() {
             participants={participants}
             currentUserId={user?.id}
             onUpdateParticipant={() => {}}
-            localStream={null}
+            localStream={localStream}
             localAudioEnabled={true}
             localVideoEnabled={true}
             onToggleAudio={() => {}}
             onToggleVideo={() => {}}
-            remoteStreams={[]}
+            remoteStreams={remoteStreams}
             peerUserIds={[]}
           />
         </div>
