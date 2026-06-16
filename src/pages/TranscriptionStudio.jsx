@@ -251,7 +251,7 @@ export default function TranscriptionStudio() {
         {/* Caption.Ninja link */}
         <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <div style={{ ...T, fontSize: 14, fontWeight: 700, color: CYAN, letterSpacing: '0.05em' }}>Caption.Ninja Integration</div>
+            <div style={{ ...T, fontSize: 14, fontWeight: 700, color: GOLD, letterSpacing: '0.05em' }}>Caption.Ninja Integration</div>
             <div style={{ ...MONO, fontSize: 10, color: TEXTM, marginTop: 4 }}>Use Caption.Ninja browser extension to broadcast real-time captions from your stream</div>
           </div>
           <a
@@ -262,7 +262,7 @@ export default function TranscriptionStudio() {
               ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em',
               background: 'rgba(212,175,55,0.15)', border: `1px solid rgba(212,175,55,0.35)`,
               borderRadius: 8, padding: '8px 18px',
-              color: CYAN, textDecoration: 'none',
+              color: GOLD, textDecoration: 'none',
               flexShrink: 0,
             }}
           >

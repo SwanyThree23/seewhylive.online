@@ -117,7 +117,7 @@ function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style 
     cyan:    `linear-gradient(135deg,${C.cyan}CC,${C.blue})`,
     green:   `linear-gradient(135deg,${C.teal},${C.green})`,
     purple:  `linear-gradient(135deg,${C.purple},#800020)`,
-    orange:  `linear-gradient(135deg,${C.orange},#E55100)`,
+    orange:  `linear-gradient(135deg,${C.orange},#CC7755)`,
   };
   const colors = {
     gold:"#07050A",ghost:C.gold,ruby:C.text,slate:C.textD,

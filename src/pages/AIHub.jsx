@@ -20,6 +20,7 @@ const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const CYAN   = '#D4AF37';
 const PURPLE = '#D4AF37';
+const AMBER  = '#D4854A';
 const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -808,7 +809,7 @@ export default function AIHub() {
           <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              background: `linear-gradient(90deg, ${AMBER}, #CC7755)`,
               color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
