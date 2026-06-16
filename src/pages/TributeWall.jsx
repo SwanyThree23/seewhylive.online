@@ -9,6 +9,10 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import ShareToSocial from '../components/social/ShareToSocial';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
@@ -321,17 +325,24 @@ export default function TributeWall() {
           );
         })}
 
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="tribute-wall" />
         <GoldenWall roomId={roomId} isExpanded={false} />
         <MilestoneAlerts creatorId={user?.id} />
-        <AnnouncementFeed communityId={null} />
+        <AnnouncementFeed communityId={userCommunityId} />
         <ShareToSocial />
         <ContentRecommendations />
 
         {/* Bottom note */}
         <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 8 }}>
           🕊️ Their legacy lives in every game played on SeeWhy LIVE
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <ChallengeLeaderboard challengeId={null} />
         </div>
 
       </div>

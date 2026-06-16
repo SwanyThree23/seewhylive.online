@@ -8,6 +8,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import {
   Users, Radio, DollarSign, MessageSquare, Shield, TrendingUp,
   Activity, Crown, AlertTriangle, CheckCircle, RefreshCw,
@@ -88,6 +92,8 @@ export default function AdminDashboard() {
   const { data: reports = [] } = useQuery({ queryKey: ['adminReports'], queryFn: () => base44.entities.Report.list('-created_date', 50), enabled: user?.role === 'admin' });
   const { data: messages = [] } = useQuery({ queryKey: ['adminMessages'], queryFn: () => base44.entities.Message.list('-created_date', 500), enabled: user?.role === 'admin' });
   const { data: communities = [] } = useQuery({ queryKey: ['adminCommunities'], queryFn: () => base44.entities.Community.list('-member_count', 50), enabled: user?.role === 'admin' });
+  const firstCommunityId = communities[0]?.id || null;
+  const activeAdminRoomId = allRooms.find(r => r.status === 'live')?.id || null;
 
   const changeRoleMutation = useMutation({
     mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
@@ -384,7 +390,7 @@ export default function AdminDashboard() {
 
         {activeTab === 'reports' && (
           <div className="mt-4">
-            <ReportsManager communityId={null} userId={user?.id} />
+            <ReportsManager communityId={firstCommunityId} userId={user?.id} />
           </div>
         )}
 

@@ -11,6 +11,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
@@ -1545,6 +1549,12 @@ Return ONLY valid JSON (no markdown, no backticks):
             🎛️ Control Room
           </button>
         </Link>
+      </div>
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

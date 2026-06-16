@@ -12,6 +12,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
 import PollCard from '../components/community/PollCard';
 import LivePollOverlay from '../components/live/LivePollOverlay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -219,6 +223,12 @@ export default function PollManager() {
             </Link>
           ))}
         </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

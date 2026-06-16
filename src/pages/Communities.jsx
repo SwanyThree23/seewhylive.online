@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, TrendingUp, Users } from 'lucide-react';
@@ -15,6 +15,32 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import SpotlightSection from '../components/community/SpotlightSection';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = useRef(0);
+  var THRESHOLD = 65;
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) { e.preventDefault(); setPullY(Math.min(dy * 0.45, THRESHOLD + 20)); }
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true); setPullY(THRESHOLD);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -28,6 +54,9 @@ export default function CommunitiesPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab]               = useState('discover');
   const queryClient = useQueryClient();
+  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    async function() { await queryClient.invalidateQueries(); }
+  );
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -87,7 +116,18 @@ export default function CommunitiesPage() {
   const mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}>
+    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+
+      {/* Pull-to-refresh indicator */}
+      <motion.div style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {pullY > 10 && (
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }} />
+        )}
+      </motion.div>
 
       {/* ── Sticky header ─────────────────────────────────────── */}
       <div className="sticky top-0 z-20"
@@ -245,7 +285,7 @@ export default function CommunitiesPage() {
         )}
 
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={mine[0]?.id || null} isAdmin={false} />
           <DiscussionFeed communityId="discover" />
         </div>
 
@@ -277,9 +317,10 @@ export default function CommunitiesPage() {
           <OnlineUsersGrid compact maxVisible={12} />
           <PollCard poll={null} />
           <RaidPanelButton room={null} currentUser={user} isHost={false} />
-          <AnnouncementPanel communityId={null} userId={user?.id} />
-          <SpotlightSection communityId={null} />
+          <AnnouncementPanel communityId={mine[0]?.id || null} userId={user?.id} />
+          <SpotlightSection communityId={mine[0]?.id || null} />
           <ContentRecommendations />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

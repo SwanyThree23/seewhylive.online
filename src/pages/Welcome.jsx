@@ -11,6 +11,10 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -20,6 +24,19 @@ export default function WelcomePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: liveCount } = useQuery({
     queryKey: ['welcomeLiveCount'],
@@ -189,7 +206,7 @@ export default function WelcomePage() {
         <FeaturedContentSection />
         <ZEGOMobileAppBanner />
         <ShareToSocial />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ContentRecommendations userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         {!user && <OnboardingFlow onComplete={() => {}} />}
@@ -200,6 +217,14 @@ export default function WelcomePage() {
         style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <ChallengeLeaderboard challengeId={null} />
+      </div>
     </div>
   );
 }

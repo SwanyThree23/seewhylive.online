@@ -6,6 +6,13 @@ import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import AggregatedChat from '../components/live/AggregatedChat';
 import GiftAnimation from '../components/live/GiftAnimation';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import TippingModal from '../components/monetization/TippingModal';
+import StreamGoals from '../components/live/StreamGoals';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 
 const GUARDIAN_FLAG_THRESHOLD = 0.50;
 const CREATOR_SPLIT = 0.90;

@@ -18,6 +18,10 @@ import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

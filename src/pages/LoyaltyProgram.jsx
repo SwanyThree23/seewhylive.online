@@ -6,6 +6,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import RewardShopEditor from '../components/loyalty/RewardShopEditor';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
@@ -376,7 +380,11 @@ export default function LoyaltyProgram() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <ChallengeLeaderboard challengeId={null} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

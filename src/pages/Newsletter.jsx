@@ -13,6 +13,10 @@ import AudienceInsights from '../components/dashboard/AudienceInsights';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import FollowButton from '../components/shared/FollowButton';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import 'react-quill/dist/quill.snow.css';
 
 const BG = '#080B18';
@@ -45,6 +49,19 @@ export default function NewsletterPage() {
   const [selectedCommunity, setSelectedCommunity] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: communities = [] } = useQuery({
     queryKey: ['userCommunities', user?.id],
@@ -211,7 +228,7 @@ export default function NewsletterPage() {
           </div>
         </div>
 
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ShareToSocial />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
           <EarningsBreakdown creatorId={user?.id} />
@@ -232,6 +249,12 @@ export default function NewsletterPage() {
               <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
             </Link>
           ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <ChallengeLeaderboard challengeId={null} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>

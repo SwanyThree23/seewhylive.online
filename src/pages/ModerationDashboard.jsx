@@ -9,6 +9,11 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import ReportModal from '../components/moderation/ReportModal';
 import AIModeration from '../components/live/AIModeration';
 import HostAlertCenter from '../components/live/HostAlertCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -196,6 +201,12 @@ export default function ModerationDashboardPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
@@ -347,7 +358,7 @@ export default function ModerationDashboardPage() {
         )}
 
         <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
           {[

@@ -68,12 +68,11 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
                 <img
                   src={user.avatar_url}
                   alt={name}
-                  className="w-10 h-10 rounded-full object-cover"
-                  style={{ border: `2px solid ${color}55` }}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black shrink-0"
                   style={{
                     background: `linear-gradient(135deg, ${color}, ${color}88)`,
                     color: '#fff',

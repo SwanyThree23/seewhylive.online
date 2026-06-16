@@ -24,6 +24,9 @@ import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import OBSBridge from '../components/obs/OBSBridge';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

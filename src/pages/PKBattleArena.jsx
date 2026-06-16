@@ -15,6 +15,9 @@ import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import BattleMode from '../components/streaming/BattleMode';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -259,7 +262,7 @@ export default function PKBattleArena() {
 
       <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <PKBattleProgress battleId={null} />
-        <PKBattleVotePanel battleId={null} creatorId={null} challengerId={null} creatorName="Creator" challengerName="Challenger" />
+        <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
         <PKBattleSoundboard battleId={null} isBattleActive={false} />
         <GiftShopTray roomId={roomId} currentUser={user} />
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
@@ -269,6 +272,12 @@ export default function PKBattleArena() {
         <MatchmakingQueue user={user} onMatchFound={() => {}} />
         <BattleOverlay battle={null} onBattleUpdate={() => {}} />
         <PKAnalyticsDashboard battles={battles} user={user} />
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
       </div>
 
       {/* Footer nav */}

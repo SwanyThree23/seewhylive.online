@@ -13,6 +13,8 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import AIModeration from '../components/live/AIModeration';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -195,7 +197,7 @@ export default function StageCleanupPage() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AnalyticsOverview creatorId={user?.id} timeRange="7d" />
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
           <GreenroomQueue roomId={roomId} hostId={null} onApprove={() => {}} />

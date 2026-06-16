@@ -3,10 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Layers, Bell, Palette, Target, Info, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import AlertConfig from '@/components/live/AlertConfig';
 import OverlayThemeBuilder from '@/components/live/OverlayThemeBuilder';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundboardWidget from '../components/live/SoundboardWidget';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import LowerThirdsBanner from '@/components/live/LowerThirdsBanner';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import ChatOverlay from '../components/live/ChatOverlay';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -187,11 +200,17 @@ export default function OverlayEditorPage() {
           ].map(item => (
             <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
               <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
-                style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: G, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+                style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
                 {item.label}
               </span>
             </Link>
           ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 0 24px' }}>
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <StreamGoals isHost={true} />
+          <ShareToSocial content={{ title: 'Overlay Editor', url: window.location.href }} />
         </div>
       </div>
     </div>

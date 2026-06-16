@@ -210,6 +210,12 @@ export default function MultiPlatform() {
                     <DestinationsManager userId={user.id} />
                   </div>
                 )}
+                {user?.id && (
+                  <RTMPFanoutPanel userId={user.id} isStreaming={false} />
+                )}
+                {user?.id && (
+                  <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />
+                )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
                   const isConn = !!connections[p.id];
@@ -616,6 +622,12 @@ export default function MultiPlatform() {
             <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
           </Link>
         ))}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
       </div>
     </div>
   );

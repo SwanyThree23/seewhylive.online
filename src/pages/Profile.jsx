@@ -16,6 +16,10 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -105,6 +109,13 @@ export default function ProfilePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['userReferrals', user?.id],

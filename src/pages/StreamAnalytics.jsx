@@ -8,6 +8,10 @@ import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer

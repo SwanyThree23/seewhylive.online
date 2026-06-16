@@ -22,8 +22,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
@@ -33,6 +33,11 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -592,6 +597,15 @@ export default function RoomPage() {
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
+            <div className="mt-3 space-y-3">
+              {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+              {roomId && room?.host_id && (
+                <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
+              )}
+              <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
+              <ContentRecommendations />
+            </div>
+            {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
           </div>
         </div>
       </div>

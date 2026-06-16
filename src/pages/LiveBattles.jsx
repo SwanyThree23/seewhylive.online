@@ -18,6 +18,10 @@ import BattleOverlay from '../components/pk/BattleOverlay';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import BattleMode from '../components/streaming/BattleMode';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -228,7 +232,7 @@ export default function LiveBattles() {
         <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
         <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
         <BattleOverlay battle={battles?.[0] || null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={battles || []} user={null} />
+        <PKAnalyticsDashboard battles={battles || []} user={user} />
       </div>
 
       {/* Cross-nav footer */}
@@ -246,6 +250,13 @@ export default function LiveBattles() {
             </button>
           </Link>
         ))}
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
       </div>
     </div>
   );

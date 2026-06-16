@@ -13,6 +13,11 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import StreamGoals from '../components/live/StreamGoals';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
 
 const CATEGORIES = [
@@ -64,6 +69,13 @@ export default function StreamScheduler() {
   const [form, setForm] = useState(blankForm);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: streams = [] } = useQuery({
     queryKey: ['scheduled-streams', user?.id],
     queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: user?.id }, 'scheduled_start', 50),

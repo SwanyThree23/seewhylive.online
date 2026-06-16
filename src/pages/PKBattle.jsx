@@ -14,6 +14,8 @@ import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
 import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -243,7 +245,58 @@ export default function PKBattlePage() {
         </div>
       </div>
 
-      <PKInviteModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} creators={creators} />
+      <PKInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        creators={creators}
+      />
+
+      {/* Battle Mode + Scoreboard for active battle */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 space-y-4">
+          <BattleMode roomId={displayBattle.id} isHost={user?.id === displayBattle.challenger_id} hostName={user?.full_name || ''} participants={[]} />
+          <BattleScoreboard roomId={displayBattle.id} />
+          <BattleOverlay battle={displayBattle} onBattleUpdate={() => {}} />
+        </div>
+      )}
+
+      {/* PK Battle soundboard */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleSoundboard battleId={displayBattle.id} isBattleActive={displayBattle.status === 'active'} />
+        </div>
+      )}
+
+      {/* Matchmaking queue */}
+      {user && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <MatchmakingQueue user={user} onMatchFound={() => {}} />
+        </div>
+      )}
+
+      {/* Tournament Bracket */}
+      <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+        <TournamentBracket />
+      </div>
+
+      {/* PK Analytics Dashboard */}
+      {battles && battles.length > 0 && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKAnalyticsDashboard battles={battles} user={user} />
+        </div>
+      )}
+
+      {/* PK Battle Interface */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleInterface roomId={displayBattle.id} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+      </div>
     </div>
   );
 }

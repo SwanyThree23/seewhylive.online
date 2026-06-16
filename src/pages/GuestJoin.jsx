@@ -7,11 +7,16 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import GuestConnector from '../components/live/GuestConnector';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -20,6 +25,24 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 export default function GuestJoin() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('room') || urlParams.get('id');
+  const inviteToken = urlParams.get('token');
+
+  // If arriving via invite link, show the enhanced landing panel
+  if (inviteToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18' }}>
+        <div className="w-full max-w-sm rounded-2xl" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <GuestLandingPanel
+            token={inviteToken}
+            roomId={roomId}
+            onJoin={({ name }) => {
+              toast.success(`Welcome, ${name}! Waiting for host to admit you.`);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const [name, setName] = useState('');
   const [participantId, setParticipantId] = useState(null);
@@ -265,6 +288,10 @@ export default function GuestJoin() {
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
           <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <StreamGoals isHost={false} />
+          {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>

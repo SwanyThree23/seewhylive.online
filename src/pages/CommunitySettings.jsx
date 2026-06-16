@@ -5,6 +5,17 @@ import { Settings, Users, Copy, Check, Image, Tag, Lock, Globe, AlertTriangle, A
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import PollCard from '../components/community/PollCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -282,6 +293,13 @@ export default function CommunitySettingsPage() {
               </button>
             </div>
           )}
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
     </div>

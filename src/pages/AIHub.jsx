@@ -11,6 +11,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -1010,6 +1014,13 @@ export default function AIHub() {
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -8,6 +9,11 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 import AudienceInsights from '../components/dashboard/AudienceInsights';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -76,6 +82,24 @@ export default function INSForge() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', currentUser?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   function copyBrief() {
     if (!result) return;
@@ -376,7 +400,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <ShareToSocial />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
       </div>
 
       {/* Cross-nav footer */}
@@ -407,6 +431,10 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
         <CollaborationMatcher />
         <CreatorBridge />
         <AudienceInsights />
+        <ContentRecommendations />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

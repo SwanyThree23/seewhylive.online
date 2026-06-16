@@ -7,6 +7,10 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import PayPerViewCard from '../components/monetization/PayPerViewCard';
@@ -232,6 +236,19 @@ export default function PayPerViewEventsPage() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['ppv-events', filter],
@@ -441,7 +458,7 @@ export default function PayPerViewEventsPage() {
         {user?.id && (
           <div className="mt-6" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
-            <SpotlightBanner communityId={null} isAdmin={false} />
+            <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           </div>
         )}
 
@@ -466,6 +483,10 @@ export default function PayPerViewEventsPage() {
           <PayPerViewCard event={null} onPurchase={() => {}} />
           <PayPerViewManager userId={user?.id} />
           <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
+          <MonetizationDashboard roomId={activeRoomId} />
         </div>
       </div>
     </div>

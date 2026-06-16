@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'react-router-dom';
@@ -10,7 +11,7 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import OBSBridge from '../components/obs/OBSBridge';
 import WebhookHooks from '../components/live/WebhookHooks';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,

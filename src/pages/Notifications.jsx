@@ -12,6 +12,10 @@ import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import PointsNotification from '../components/live/PointsNotification';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
@@ -188,12 +192,18 @@ export default function NotificationsPage() {
             <StreamGoals isHost={true} />
             <LeaderboardPanel roomId={roomId} />
             <MilestoneAlerts creatorId={user.id} />
-            <AnnouncementFeed communityId={null} />
+            <AnnouncementFeed communityId={userCommunityId} />
             <PointsNotification userId={user.id} />
             <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />
             <SpotlightBanner communityId={null} isAdmin={false} />
           </div>
         )}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ChallengeLeaderboard challengeId={null} />
       </div>
     </div>
   );

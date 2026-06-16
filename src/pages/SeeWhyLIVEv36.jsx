@@ -13,6 +13,11 @@ import SubscriptionManager from '../components/monetization/SubscriptionManager'
 import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -2154,6 +2159,11 @@ export default function SeeWhyLIVEv36() {
         <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <StreamGoals isHost={false} />
       </div>
     </>
   );

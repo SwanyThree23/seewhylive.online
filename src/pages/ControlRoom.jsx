@@ -214,6 +214,13 @@ export default function ControlRoomPage() {
   const [uptime, setUptime] = useState(0);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: room } = useQuery({
     queryKey: ['cr-room', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
@@ -458,6 +465,12 @@ export default function ControlRoomPage() {
         <AudioStageTab roomId={roomId} isHost={true} />
         <AdvancedEncoderSettings onApply={() => {}} />
         <BackgroundCustomizer onBackgroundChange={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );

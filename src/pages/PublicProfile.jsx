@@ -15,6 +15,10 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -42,6 +46,12 @@ export default function PublicProfile() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
@@ -190,7 +200,7 @@ export default function PublicProfile() {
               tier={null}
               price={4.99}
               benefits={[]}
-              communityId={null}
+              communityId={userCommunityId}
               creatorId={userId}
               isSubscribed={false}
             />
@@ -203,6 +213,13 @@ export default function PublicProfile() {
             <DiscussionFeed communityId={userId} />
           </div>
         )}
+
+        <div className="mt-6 flex flex-col gap-4">
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="Check out this creator on SeeWhy LIVE!" />
+        </div>
       </div>
     </div>
   );

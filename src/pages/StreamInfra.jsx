@@ -10,6 +10,12 @@ import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BitratePresets from '../components/streaming/BitratePresets';
 import StreamingPresets from '../components/streaming/StreamingPresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -730,6 +736,13 @@ export default function StreamInfra() {
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -800,6 +813,13 @@ export default function StreamInfra() {
         <ZEGOConfigPanel roomId={roomId} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={false} isLive={false} />
+        <ZEGOStreamHealthCard roomId={activeRoomId} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

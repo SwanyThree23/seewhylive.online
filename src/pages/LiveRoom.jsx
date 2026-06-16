@@ -64,8 +64,8 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import CreatePollModal from '../components/community/CreatePollModal';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 // ── Guardian AI chat filter ──────────────────────────────────────────────────
 const GUARDIAN_PATTERNS = [
@@ -132,14 +132,21 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
+          ) : p.avatar ? (
+            <img src={p.avatar} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
-              {/* Subtle ambient glow behind avatar */}
-              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}22 0%, transparent 70%)` }} />
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
-                style={{ background: `linear-gradient(135deg, ${avatarColor(p.name)}, ${avatarColor(p.name)}99)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}55, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(255,255,255,0.15)' }}>
-                {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
-              </div>
+              {/* Ambient glow */}
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}33 0%, transparent 70%)` }} />
+              {p.avatar ? (
+                <img src={p.avatar} alt={p.name}
+                  className="absolute inset-0 w-full h-full object-cover" />
+              ) : (
+                <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                  style={{ background: `linear-gradient(135deg, #800020, #D4AF37)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}66, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(212,175,55,0.4)' }}>
+                  {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+                </div>
+              )}
               {/* Audio-only mic indicator */}
               {!p.muted && (
                 <motion.div className="absolute bottom-3 left-0 right-0 flex justify-center items-end gap-[2px]"
@@ -211,12 +218,13 @@ function AudienceTile({ p }) {
     <div className="flex flex-col items-center gap-1">
       <div className="relative" style={{ width: 48, height: 48 }}>
         <div className="absolute inset-0"
-          style={{ clipPath: OCT, background: 'rgba(255,255,255,0.07)' }} />
+          style={{ clipPath: OCT, background: 'rgba(212,175,55,0.15)' }} />
         <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: `linear-gradient(135deg, #1A0F0A, ${BG2})` }}>
-          <span className="text-xs font-black" style={{ color }}>
-            {p.name.charAt(0).toUpperCase()}
-          </span>
+          {p.avatar
+            ? <img src={p.avatar} alt={p.name} className="w-full h-full object-cover" />
+            : <span className="text-xs font-black" style={{ color }}>{p.name.charAt(0).toUpperCase()}</span>
+          }
         </div>
       </div>
       <div className="flex items-center gap-1 justify-center" style={{ maxWidth: 52 }}>
@@ -264,7 +272,7 @@ function ChatPanel({ messages, onClose, onSend }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3" style={{ overscrollBehavior: "contain" }}>
         {messages.map(m => (
           <div key={m.id} className="flex gap-2.5">
             <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black"
@@ -315,7 +323,7 @@ export default function LiveRoom() {
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -345,9 +353,10 @@ export default function LiveRoom() {
 
   // Build stage from real members or demo data
   const stage = roomId && members.length > 0
-    ? members.slice(0, 20).map((m, i) => ({
+    ? members.slice(0, 20).map((m) => ({
         id:       m.id,
         userId:   m.user_id,
+        avatar:   m.user_avatar || null,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -358,7 +367,7 @@ export default function LiveRoom() {
     : [];
 
   const audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
+    ? members.slice(6).map(m => ({ id: m.id, userId: m.user_id, avatar: m.user_avatar || null, name: m.user_name || 'Viewer', fm: m.is_founding_member || false, fmNum: m.founding_member_number || null }))
     : [];
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
@@ -394,6 +403,13 @@ export default function LiveRoom() {
 
   // Connection quality — updated by real WebRTC getStats() via ZEGOStream callbacks when available
   const [connStats] = useState({ latency: 0, bitrate: 0, loss: 0, quality: 'GOOD' });
+
+  // Establish WebRTC peer mesh for real camera feeds
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [roomId, user?.id]);
 
   // Sync stage when real data arrives; auto-spotlight the host on first load
   useEffect(() => {
@@ -490,7 +506,7 @@ export default function LiveRoom() {
       </div>
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88, overscrollBehavior: "contain" }}>
 
         {/* ── STAGE FIRST — visible without scrolling ───────────────────────── */}
         {/* Stage header */}
@@ -969,7 +985,7 @@ export default function LiveRoom() {
       <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId || party?.id} onClose={() => {}} />
 
       {/* Report modal */}
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={party?.community_id || null} messageId={null} />
 
       {/* Whisper DM panel */}
       {whisperTarget && (roomId || party?.id) && (
@@ -1094,7 +1110,7 @@ export default function LiveRoom() {
 
       {/* Create poll modal (host) */}
       {isHost && (
-        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={null} />
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={party?.community_id || null} />
       )}
 
       {showExclusiveGate && (

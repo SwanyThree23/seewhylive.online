@@ -6,6 +6,13 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import GiftShopTray from '../components/live/GiftShopTray';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 const FORMAT = '7 Rock / 5-150 / Double Elimination';

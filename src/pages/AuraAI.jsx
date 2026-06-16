@@ -8,6 +8,11 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import TippingModal from '../components/monetization/TippingModal';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';

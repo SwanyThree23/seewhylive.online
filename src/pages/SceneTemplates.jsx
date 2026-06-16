@@ -11,6 +11,7 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
@@ -774,6 +775,7 @@ export default function SceneTemplates() {
         <AutomatedClipGenerator streamSession={null} isLive={false} />
         <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
         <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
       </div>
 
       {/* Cross-nav footer */}

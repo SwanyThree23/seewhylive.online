@@ -11,6 +11,7 @@ import BattleScoreboard from '../components/live/BattleScoreboard';
 import TournamentBracket from '../components/pk/TournamentBracket';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
@@ -872,6 +873,7 @@ export default function StateVsState() {
         <TournamentBracket />
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
       </div>
     </div>
   );

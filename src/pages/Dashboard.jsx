@@ -40,6 +40,10 @@ import SpotlightSection from '../components/community/SpotlightSection';
 import PollCard from '../components/community/PollCard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -913,7 +917,7 @@ function MonetizationTab({ user }) {
       {user?.id && (
         <div className="mb-4 space-y-4">
           <SubscriptionManager creatorId={user.id} />
-          <SubscriptionTiers communityId={null} userId={user.id} />
+          <SubscriptionTiers communityId={dashCommunityId} userId={user.id} />
         </div>
       )}
 
@@ -1193,6 +1197,12 @@ export default function DashboardPage() {
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
+  const { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashCommunityId = dashCommunity?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
@@ -1256,6 +1266,13 @@ export default function DashboardPage() {
 
       <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
       <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+
+      <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title="Check out my dashboard on SeeWhy LIVE!" />
+      </div>
     </div>
   );
 }

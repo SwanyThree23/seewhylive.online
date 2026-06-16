@@ -10,6 +10,12 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -90,6 +96,7 @@ function CopyBtn({ value }) {
 }
 
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const navigate = useNavigate();
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
@@ -242,6 +249,13 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
           </Link>
         </div>
         {content}
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />
       </div>
     </div>
   );

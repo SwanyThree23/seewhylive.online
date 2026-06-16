@@ -13,6 +13,12 @@ import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -140,6 +146,13 @@ export default function GoLiveStudio() {
   const countdownRef = useRef(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   var allChecked = Object.values(state.checklist).every(Boolean);
 

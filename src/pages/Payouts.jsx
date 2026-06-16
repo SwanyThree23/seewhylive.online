@@ -9,6 +9,10 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import StripeConnectButton from '../components/monetization/StripeConnectButton';
 import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -621,6 +625,10 @@ export default function PayoutsPage() {
           <StripeConnectButton userId={user?.id} accountId={null} />
           <MonetizationDashboard userId={user?.id} />
           <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <EarningsBreakdown userId={user?.id} />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

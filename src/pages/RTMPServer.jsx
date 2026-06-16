@@ -17,10 +17,11 @@ import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import WebhookHooks from '../components/live/WebhookHooks';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
-import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const PLATFORMS = [

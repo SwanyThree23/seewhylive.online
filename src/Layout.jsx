@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
@@ -61,8 +61,8 @@ var DRAWER_CREATE = [
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
-  { name: 'Stream Analytics', icon: BarChart,        href: createPageUrl('StreamAnalytics') },
-  { name: 'Analytics',        icon: BarChart,        href: createPageUrl('Analytics') },
+  { name: 'Stream Analytics', icon: BarChart2,       href: createPageUrl('StreamAnalytics') },
+  { name: 'Analytics',        icon: BarChart2,       href: createPageUrl('Analytics') },
   { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
   { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
   { name: 'Enhancement Suite', icon: Sparkles,       href: createPageUrl('EnhancementSuite') },
@@ -140,15 +140,29 @@ var DRAWER_ADMIN = [
   { name: 'AI Moderation',     icon: Shield,  href: createPageUrl('AIModeration') },
 ];
 
+// Tab ownership map — which URL patterns belong to each bottom-nav tab
+var TAB_OWNERSHIP = {
+  Home: /^(\/|\/Home)$/,
+  Watch: /\/(Discover|LiveRoom|Room|StateVsState|WashingtonClassic|SVSArena|PKBattleArena|LiveBattles|VODLibrary|WatchParty|TributeWall|FallenLegends|AudioRoom)/i,
+  Chat: /\/[Mm]essages/,
+  Me: /\/(Profile|Settings|CreatorDashboard|CreatorAnalytics|CreatorPublicProfile|Payouts|PayoutCenter|Notifications|Activity|CreatorSubscriptions|ViewerDashboard)/i,
+};
+
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
   var navigate = useNavigate();
-  var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
-  var scrollPositions = React.useRef({});
+  var scrollPositions = useRef({});
+  // Virtual tab history stacks — remember last path visited per tab
+  var tabMemory = useRef({
+    Home: BOTTOM_NAV[0].href,
+    Watch: BOTTOM_NAV[1].href,
+    Chat: BOTTOM_NAV[3].href,
+    Me: BOTTOM_NAV[4].href,
+  });
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -203,10 +217,28 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [location.pathname]);
 
+  // Update tab memory when navigation occurs within a tab's domain
+  useEffect(function() {
+    var path = location.pathname;
+    var tabs = Object.keys(TAB_OWNERSHIP);
+    for (var i = 0; i < tabs.length; i++) {
+      if (TAB_OWNERSHIP[tabs[i]].test(path)) {
+        tabMemory.current[tabs[i]] = path + location.search;
+        break;
+      }
+    }
+  }, [location.pathname, location.search]);
+
   function isActive(href) {
     var path = location.pathname;
     var hrefPath = href.split('?')[0];
     return path === hrefPath || path === '/' + currentPageName;
+  }
+
+  function isTabActive(item) {
+    var pattern = TAB_OWNERSHIP[item.name];
+    if (pattern) return pattern.test(location.pathname);
+    return isActive(item.href);
   }
 
   var MAIN_PATHS = BOTTOM_NAV.map(function(i) { return i.href.split('?')[0]; });
@@ -457,17 +489,20 @@ export default function Layout({ children, currentPageName }) {
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
-              var active = isActive(item.href);
+              var active = item.isCenter ? isActive(item.href) : isTabActive(item);
 
               function handleTabPress(e) {
-                if (active) {
-                  // Double-tap active tab → scroll to top
-                  e.preventDefault();
+                e.preventDefault();
+                if (active && !item.isCenter) {
+                  // Tap active tab → scroll to top
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  navigate(item.href, { replace: true });
                 } else {
-                  // Save current scroll before leaving
+                  // Save scroll of current page, then navigate to tab's remembered path
                   scrollPositions.current[location.pathname] = window.scrollY;
+                  var dest = item.isCenter
+                    ? item.href
+                    : (tabMemory.current[item.name] || item.href);
+                  navigate(dest);
                 }
               }
 

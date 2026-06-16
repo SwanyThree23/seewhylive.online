@@ -184,7 +184,7 @@ export default function DevicePreview({ user, onDeviceState }) {
         {/* Real camera feed */}
         <video ref={videoRef} autoPlay playsInline muted
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ display: cameraOn && !isSim ? 'block' : 'none' }} />
+          style={{ opacity: cameraOn && !isSim ? 1 : 0, transition: 'opacity 0.2s', pointerEvents: 'none' }} />
 
         {/* Simulated / camera off state */}
         {(!cameraOn || isSim) && (

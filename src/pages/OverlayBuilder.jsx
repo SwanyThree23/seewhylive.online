@@ -11,6 +11,11 @@ import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import SceneSwitcher from '../components/live/SceneSwitcher';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import ChatOverlay from '../components/live/ChatOverlay';
+import InteractivePollWidget from '../components/live/InteractivePollingSystem';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import StreamGoals from '../components/live/StreamGoals';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

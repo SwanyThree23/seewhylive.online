@@ -11,6 +11,8 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -207,7 +209,7 @@ export default function VoiceAISettings() {
         {/* Alert + feed integration */}
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <AlertConfig creatorId={user?.id} />
-          <AnnouncementFeed communityId={null} />
+          <AnnouncementFeed communityId={userCommunityId} />
         </div>
 
         {/* Cross-links */}
@@ -236,6 +238,8 @@ export default function VoiceAISettings() {
           <AIStreamSummary roomId={roomId} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
           <AuraEmotionDisplay roomId={roomId} sessionId={roomId} />
           <ContentRecommendations />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid,
+  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, Hand,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -58,6 +58,9 @@ import StreamingPresets from '../components/streaming/StreamingPresets';
 import BitratePresets from '../components/streaming/BitratePresets';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import WebSourceOverlay from '../components/streaming/WebSourceOverlay';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import AudioMixer from '../components/live/AudioMixer';
@@ -98,10 +101,7 @@ import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
-import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
-import WebSourceOverlay from '../components/live/WebSourceOverlay';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
@@ -111,6 +111,9 @@ import StreamEventBus from '../components/live/StreamEventBus';
 import ViewerCount from '../components/live/ViewerCount';
 import GuestControls from '../components/live/GuestControls';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1722,8 +1725,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 <GuestGrid
                   participants={members}
                   isHost={isHost}
-                  onInvite={() => setInviteOpen(true)}
+                  onInvite={copyLink}
                   hostId={party?.host_id}
+                  remoteStreams={remoteStreams}
+                  peerUserIds={peerUserIds}
+                  localStream={localStream}
+                  currentUserId={user?.id}
                 />
                 <GuestControls
                   participants={members}
@@ -2365,6 +2372,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         recipient={{ id: party?.host_id, name: party?.host_name || 'Creator' }}
         roomId={partyId}
       />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+      </div>
     </div>
   );
 }

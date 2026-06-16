@@ -9,6 +9,10 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import ChatOverlay from '../components/live/ChatOverlay';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
 
 function getVoiceSettings() {
   try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }

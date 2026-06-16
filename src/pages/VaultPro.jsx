@@ -12,6 +12,10 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG = '#080B18';
 const BG2 = 'rgba(8,11,24,0.9)';
@@ -613,7 +617,7 @@ export default function VaultPro() {
 
       {/* Community spotlight + milestone alerts */}
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <MilestoneAlerts creatorId={user?.id} />
       </div>
 
@@ -648,6 +652,10 @@ export default function VaultPro() {
         <MonetizationDashboard roomId={roomId} />
         <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title="Secured with SeeWhy LIVE Vault Pro" />
       </div>
     </div>
   );

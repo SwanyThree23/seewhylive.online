@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import SelectSheet from '../components/shared/SelectSheet';
@@ -552,6 +556,19 @@ export default function OnboardingPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: onboarding } = useQuery({
     queryKey: ['onboarding', user?.id],
     queryFn: async () => {
@@ -642,7 +659,11 @@ export default function OnboardingPage() {
       <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
       <SelectSheet label="" value="" options={[]} onChange={() => {}} />
       <div style={{ padding: '0 0 16px' }}>
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
       </div>
     </div>
   );

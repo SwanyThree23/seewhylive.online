@@ -9,6 +9,10 @@ import BitratePresets from '../components/streaming/BitratePresets';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import OBSBridge from '../components/obs/OBSBridge';
 import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -777,6 +781,13 @@ export default function StreamInfraRef() {
         <StreamHealthDashboard isLive={false} />
         <OBSBridge roomId={roomId} isHost={false} />
         <StreamMetadata room={null} isHost={false} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );

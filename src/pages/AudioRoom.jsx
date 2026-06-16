@@ -54,8 +54,8 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -103,11 +103,14 @@ function SpeakerTile({ member, size = 80 }) {
           transition: 'background 0.3s',
         }} />
         {/* OCT inner fill */}
-        <div className="absolute inset-[3px] flex items-center justify-center font-black text-lg text-white" style={{
+        <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center font-black text-lg text-white" style={{
           clipPath: OCT,
           background: `linear-gradient(135deg, ${color}88, ${BG2})`,
         }}>
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
 
         {(isHost || isCohost) && (
@@ -136,9 +139,12 @@ function AudienceTile({ member }) {
     <div className="flex flex-col items-center gap-0.5">
       <div className="relative" style={{ width: size, height: size }}>
         <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
-        <div className="absolute inset-[2px] flex items-center justify-center font-bold text-sm text-white"
+        <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center font-bold text-sm text-white"
           style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
       </div>
       <p className="text-[11px] truncate" style={{ color: '#888', fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 4 }}>
@@ -153,7 +159,7 @@ export default function AudioRoom() {
   const roomId    = urlParams.get('id');
 
   const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
   const { data: party } = useQuery({
@@ -188,6 +194,12 @@ export default function AudioRoom() {
   const [creating,       setCreating]       = useState(false);
 
   useEffect(() => { setLoveCount(loves.length); }, [loves.length]);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leavePeerRoom;
+  }, [roomId, user?.id]);
 
   const speakers = members.length > 0
     ? members.filter(m => m.role === 'host' || m.role === 'cohost' || m.role === 'speaker')
@@ -322,7 +334,7 @@ export default function AudioRoom() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80, overscrollBehavior: "contain" }}>
 
         {party?.video_url && (
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
@@ -742,7 +754,7 @@ export default function AudioRoom() {
         onClose={() => setTipModalOpen(false)}
         recipient={party?.host_name || ''}
         roomId={roomId}
-        communityId={null}
+        communityId={party?.community_id || null}
       />
 
       {/* Merch strip */}
@@ -751,11 +763,11 @@ export default function AudioRoom() {
       )}
 
       {/* Report modal */}
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={null} messageId={null} />
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={party?.community_id || null} messageId={null} />
 
       {/* Moderation action modal (host) */}
       {isHost && (
-        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={null} moderatorId={user?.id} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={party?.community_id || null} moderatorId={user?.id} />
       )}
 
       {/* Access gates (render for non-hosts on exclusive rooms) */}
@@ -766,6 +778,14 @@ export default function AudioRoom() {
           <PaywallGate isHost={false} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
         </>
       )}
+
+      {/* Presence + discovery */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title={party?.title ? `Join "${party.title}" on SeeWhy LIVE!` : 'Join my audio room on SeeWhy LIVE!'} />
+      </div>
 
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

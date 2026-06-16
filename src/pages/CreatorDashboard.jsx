@@ -17,6 +17,7 @@ import StreamEventBus from '../components/live/StreamEventBus';
 import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -47,6 +48,16 @@ export default function CreatorDashboardPage() {
     queryFn: () => base44.entities.Room.filter({ host_id: user?.id }, '-created_date', 5),
     enabled: !!user?.id,
   });
+
+  const activeCreatorRoom = recentRooms.find(r => r.status === 'live') || recentRooms[0] || null;
+  const activeCreatorRoomId = activeCreatorRoom?.id || null;
+
+  const { data: creatorCommunity } = useQuery({
+    queryKey: ['creatorCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const creatorCommunityId = creatorCommunity?.id || null;
 
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['creatorActiveSubs', user?.id],
@@ -345,6 +356,7 @@ export default function CreatorDashboardPage() {
             <ContentRecommendations />
             <OnlineUsersGrid compact maxVisible={8} />
             <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
+            <AnnouncementPanel communityId={creatorCommunityId} userId={user?.id} />
           </div>
 
           <Link to={createPageUrl('ContentCalendar')}>

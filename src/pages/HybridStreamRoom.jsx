@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
@@ -10,10 +12,10 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestGrid from '../components/live/GuestGrid';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
-import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
-import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestConnector from '../components/live/GuestConnector';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import LocalVideoTile from '../components/live/LocalVideoTile';
@@ -31,6 +33,15 @@ import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import WatchQueue from '../components/watchparty/WatchQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import GiftShopTray from '../components/live/GiftShopTray';
+import GiftAnimation from '../components/live/GiftAnimation';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -80,6 +91,15 @@ export default function HybridStreamRoom() {
 
     return unsubscribe;
   }, [roomId]);
+
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [roomId, user?.id]);
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
@@ -270,12 +290,12 @@ export default function HybridStreamRoom() {
             participants={participants}
             currentUserId={user?.id}
             onUpdateParticipant={() => {}}
-            localStream={null}
+            localStream={localStream}
             localAudioEnabled={true}
             localVideoEnabled={true}
             onToggleAudio={() => {}}
             onToggleVideo={() => {}}
-            remoteStreams={[]}
+            remoteStreams={remoteStreams}
             peerUserIds={[]}
           />
         </div>
@@ -300,6 +320,12 @@ export default function HybridStreamRoom() {
         <WatchPartyAnalytics partyId={null} />
         <WatchPartyTab roomId={roomId} user={null} party={null} members={[]} remoteStreams={[]} onSyncEvent={() => {}} syncEvent={null} />
         <WatchQueue isHost={false} currentIndex={0} onSelect={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+        </div>
       </div>
     </div>
   );

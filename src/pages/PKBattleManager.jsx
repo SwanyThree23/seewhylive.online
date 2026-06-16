@@ -20,6 +20,7 @@ import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import BattleMode from '../components/streaming/BattleMode';
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
