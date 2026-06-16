@@ -785,14 +785,14 @@ export default function StreamInfraRef() {
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={false} />
+        <OBSBridge roomId={activeRoomId} isHost={false} />
         <StreamMetadata room={null} isHost={false} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>

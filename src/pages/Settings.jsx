@@ -289,7 +289,7 @@ export default function SettingsPage() {
         {/* Payment Methods */}
         {user && (
           <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
-            <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
+            <PaymentMethodSelector creatorId={user.id} roomId={activeRoomId} onPaymentComplete={() => {}} />
             <div className="pt-2">
               <StripeConnectButton creatorId={user.id} />
             </div>
@@ -315,7 +315,7 @@ export default function SettingsPage() {
         {/* ZEGO Settings */}
         {user && (
           <Section icon={SettingsIcon} title="Streaming Settings" description="Configure ZEGO stream quality and devices">
-            <ZEGOSettingsDrawer roomId={null} streamKey={null} onClose={() => {}} />
+            <ZEGOSettingsDrawer roomId={activeRoomId} streamKey={null} onClose={() => {}} />
           </Section>
         )}
 
