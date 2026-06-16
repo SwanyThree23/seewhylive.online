@@ -24,6 +24,10 @@ import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -470,6 +474,10 @@ export default function ControlRoomPage() {
           <ContentRecommendations />
           <CollaborationMatcher />
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          <RTMPFanoutPanel roomId={roomId} isHost={true} />
+          <GuestInviteGenerator roomId={roomId} isHost={true} />
+          <StreamGoals isHost={true} />
+          <StreamHealthDashboard roomId={roomId} isHost={true} />
         </div>
       </div>
     </div>

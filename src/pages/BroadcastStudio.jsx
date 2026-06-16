@@ -113,6 +113,7 @@ import GuestControls from '../components/live/GuestControls';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const GOLD = '#D4AF37';
@@ -2377,6 +2378,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );

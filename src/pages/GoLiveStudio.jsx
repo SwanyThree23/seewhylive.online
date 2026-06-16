@@ -19,6 +19,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
 import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
@@ -496,6 +497,9 @@ export default function GoLiveStudio() {
         <StreamingPresets onApply={() => {}} />
         <AdvancedEncoderSettings onApply={() => {}} />
         <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={false} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <GuestInviteGenerator roomId={roomId} isHost={true} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );
