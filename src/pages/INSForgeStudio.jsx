@@ -101,6 +101,13 @@ export default function INSForgeStudio() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: library } = useQuery({
     queryKey: ['content-library', user && user.id],
@@ -390,13 +397,13 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <AICopilotSidebar roomId={null} isHost={false} viewerCount={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={false} viewerCount={0} />
         <ContentRecommendations />
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
         <AutomatedHighlightReels streamSession={null} />
         <AutomatedClipGenerator streamSession={null} isLive={false} />
-        <ClipGeneratorAI sessionId={null} roomId={null} creatorId={user?.id} />
+        <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />

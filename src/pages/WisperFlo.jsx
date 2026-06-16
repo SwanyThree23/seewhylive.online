@@ -300,16 +300,16 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
           <Send size={15} color={canSend ? '#000' : 'rgba(255,255,255,0.3)'} />
         </button>
       </div>
-      <WhisperPanel roomId={null} currentUser={currentUser} />
-      <AggregatedChat roomId={null} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
+      <WhisperPanel roomId={roomId} currentUser={currentUser} />
+      <AggregatedChat roomId={roomId} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
-      <EnhancedStreamChat roomId={null} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
+      <EnhancedStreamChat roomId={roomId} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
       <OnlineUsersGrid compact maxVisible={12} />
       <ContentRecommendations />
-      <EnhancedPollingSystem roomId={null} hostId={currentUser?.id} isHost={false} />
+      <EnhancedPollingSystem roomId={roomId} hostId={currentUser?.id} isHost={false} />
       <CollaborationMatcher />
       <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
-      <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={null} communityId={null} />
+      <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} communityId={null} />
       <StreamGoals isHost={false} />
     </div>
   );

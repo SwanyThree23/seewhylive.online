@@ -24,6 +24,19 @@ export default function WelcomePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: liveCount } = useQuery({
     queryKey: ['welcomeLiveCount'],
@@ -193,7 +206,7 @@ export default function WelcomePage() {
         <FeaturedContentSection />
         <ZEGOMobileAppBanner />
         <ShareToSocial />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ContentRecommendations userId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         {!user && <OnboardingFlow onComplete={() => {}} />}
@@ -209,7 +222,7 @@ export default function WelcomePage() {
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
-        <AnnouncementPanel communityId={null} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         <ChallengeLeaderboard challengeId={null} />
       </div>
     </div>

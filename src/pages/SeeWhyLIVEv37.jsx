@@ -1263,6 +1263,19 @@ const TABS = [
 
 export default function SeeWhyLIVEv37() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -1335,10 +1348,18 @@ export default function SeeWhyLIVEv37() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ReactionOverlay partyId={null} currentUser={user} />
         <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={null} isCreator={false} currentUser={user} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={false} />
-        <GreenroomQueue roomId={null} isHost={false} />
-        <SocialLeaderboard roomId={null} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} />
+        <GreenroomQueue roomId={activeRoomId} isHost={false} />
+        <SocialLeaderboard roomId={activeRoomId} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}

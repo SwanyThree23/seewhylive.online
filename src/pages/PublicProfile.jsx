@@ -46,6 +46,12 @@ export default function PublicProfile() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
@@ -194,7 +200,7 @@ export default function PublicProfile() {
               tier={null}
               price={4.99}
               benefits={[]}
-              communityId={null}
+              communityId={userCommunityId}
               creatorId={userId}
               isSubscribed={false}
             />

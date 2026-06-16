@@ -175,6 +175,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
       });
     },
     onSuccess: () => {
+      navigator.vibrate?.([50, 30, 80]);
       const name = (currentUser.full_name || currentUser.email || 'Viewer').split(' ')[0];
       setAnimating({ name, amount: rawAmount, emoji: selectedEmoji });
       setOpen(false);

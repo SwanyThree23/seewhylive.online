@@ -730,6 +730,13 @@ export default function StreamInfra() {
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
@@ -795,17 +802,17 @@ export default function StreamInfra() {
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={null} isHost={false} />
-        <EnhancedIngestPanel roomId={null} isHost={false} />
-        <ZEGOConfigPanel roomId={null} />
+        <OBSBridge roomId={activeRoomId} isHost={false} />
+        <EnhancedIngestPanel roomId={activeRoomId} isHost={false} />
+        <ZEGOConfigPanel roomId={activeRoomId} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamingPresets onApply={() => {}} />
         <GuestRTMPPanel participantId={null} userId={user?.id} />
-        <StreamAnalyticsDashboard roomId={null} isHost={false} isLive={false} />
-        <ZEGOStreamHealthCard roomId={null} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={false} isLive={false} />
+        <ZEGOStreamHealthCard roomId={activeRoomId} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
-        <StreamHealthDashboard roomId={null} isHost={true} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
