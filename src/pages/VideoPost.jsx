@@ -336,13 +336,13 @@ export default function VideoPost() {
         <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
         <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
         <ContentRecommendations />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={null} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         <StreamGoals isHost={false} />
       </div>
     </div>

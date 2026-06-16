@@ -542,7 +542,7 @@ export default function CreatorPublicProfile() {
           <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <VirtualCurrencyTips roomId={activeRoomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
-          <PayPerViewGate roomId={null} ppvPrice={4.99} onPurchase={() => {}} />
+          <PayPerViewGate roomId={activeRoomId} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
           <ContentRecommendations />
           <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />

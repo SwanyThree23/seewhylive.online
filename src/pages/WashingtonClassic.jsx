@@ -351,7 +351,7 @@ export default function WashingtonClassic() {
         <BattleScoreboard roomId={activeRoomId} />
         <BattleMode roomId={activeRoomId} isHost={false} hostName={null} participants={[]} />
         <StreamAnalyticsDashboard roomId={activeRoomId} />
-        <ChallengeLeaderboard communityId={null} />
+        <ChallengeLeaderboard communityId={userCommunityId} />
         <TournamentBracket />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <LeaderboardPanel roomId={activeRoomId} />

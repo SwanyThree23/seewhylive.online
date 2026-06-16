@@ -300,10 +300,10 @@ export default function FallenLegendsPage() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ShareToSocial content={null} />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-        <AnnouncementFeed communityId={null} />
+        <AnnouncementFeed communityId={userCommunityId} />
         <RealtimeLeaderboard roomId={activeRoomId} creatorId={user?.id} />
         <SocialLeaderboard roomId={activeRoomId} />
-        <SpotlightSection communityId={null} />
+        <SpotlightSection communityId={userCommunityId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />

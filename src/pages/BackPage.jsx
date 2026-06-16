@@ -23,6 +23,19 @@ export default function BackPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -165,16 +178,16 @@ export default function BackPage() {
       </section>
 
       <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ZEGOStreamHealthCard roomId={null} />
+        <ZEGOStreamHealthCard roomId={activeRoomId} />
         <StreamingPresets onApply={() => {}} />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <ContentRecommendations />
-        <SpotlightBanner communityId={null} isAdmin={false} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ZEGOMobileAppBanner />
         <OnlineUsersGrid compact maxVisible={12} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <AnnouncementPanel communityId={null} userId={user?.id} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
       </div>
 
       {/* Bottom Nav */}
