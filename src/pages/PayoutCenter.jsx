@@ -74,6 +74,19 @@ function StatusBadge({ status }) {
 export default function PayoutCenter() {
   const [state, dispatch] = useReducer(reducer, initState);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: payouts } = useQuery({
     queryKey: ['payout-records'],
     queryFn: () => base44.entities.PayoutRecord.filter({ creator_id: user && user.id }).catch(() => []),
@@ -282,7 +295,7 @@ export default function PayoutCenter() {
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <RevenueDashboard userId={user?.id} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
         <SubscriptionManager creatorId={user?.id} />
         <StripeConnectButton creatorId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />

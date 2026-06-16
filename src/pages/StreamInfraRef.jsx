@@ -698,6 +698,13 @@ export default function StreamInfraRef() {
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }}
@@ -774,7 +781,7 @@ export default function StreamInfraRef() {
       </div>
 
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ZEGOConfigPanel roomId={null} />
+        <ZEGOConfigPanel roomId={activeRoomId} />
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
         <StreamHealthDashboard isLive={false} />

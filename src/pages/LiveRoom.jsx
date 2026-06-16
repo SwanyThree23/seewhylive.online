@@ -983,7 +983,7 @@ export default function LiveRoom() {
       <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId || party?.id} onClose={() => {}} />
 
       {/* Report modal */}
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={party?.community_id || null} messageId={null} />
 
       {/* Whisper DM panel */}
       {whisperTarget && (roomId || party?.id) && (
@@ -1106,7 +1106,7 @@ export default function LiveRoom() {
 
       {/* Create poll modal (host) */}
       {isHost && (
-        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={null} />
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={party?.community_id || null} />
       )}
 
       {showExclusiveGate && (

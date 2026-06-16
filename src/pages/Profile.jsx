@@ -108,6 +108,13 @@ export default function ProfilePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['userReferrals', user?.id],
@@ -601,7 +608,7 @@ export default function ProfilePage() {
         <SpotlightBanner communityId={null} isAdmin={false} />
         {user?.id && <RevenueDashboard userId={user.id} />}
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
-        <PerformanceDashboard roomId={null} sessionId={null} />
+        <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
         <ContentRecommendations />

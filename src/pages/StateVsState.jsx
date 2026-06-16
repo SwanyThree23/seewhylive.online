@@ -754,6 +754,12 @@ export default function StateVsState() {
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: svsBattles = [] } = useQuery({
+    queryKey: ['svsActiveBattles'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 5),
+    refetchInterval: 15000,
+  });
+  const activeBattle = svsBattles[0] || null;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -838,7 +844,7 @@ export default function StateVsState() {
       {tab === 'JUDGES' && <JudgesView />}
 
       <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={null} />
+        <LeaderboardPanel roomId={activeBattle?.id || null} />
         <PKBattleProgress battleId={null} />
       </div>
 
@@ -865,12 +871,12 @@ export default function StateVsState() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={null} hostId={user?.id} isHost={false} />
-        <SocialLeaderboard roomId={null} />
-        <GiftShopTray roomId={null} currentUser={user} />
-        <BattleScoreboard roomId={null} />
+        <BattleMode roomId={activeBattle?.id || null} hostId={user?.id} isHost={false} />
+        <SocialLeaderboard roomId={activeBattle?.id || null} />
+        <GiftShopTray roomId={activeBattle?.id || null} currentUser={user} />
+        <BattleScoreboard roomId={activeBattle?.id || null} />
         <TournamentBracket />
-        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <EngagementBadgesDisplay roomId={activeBattle?.id || null} userId={user?.id} creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
       </div>

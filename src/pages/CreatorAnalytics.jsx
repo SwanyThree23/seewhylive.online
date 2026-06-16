@@ -102,6 +102,13 @@ const TOOLTIP_STYLE = { background: 'rgba(7,5,10,0.95)', border: '1px solid rgba
 export default function CreatorAnalytics() {
   const [state, dispatch] = useReducer(reducer, initState);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   var totalGross = MONTHLY_REVENUE.reduce((s, r) => s + r.gross, 0);
   var creatorTotal = creatorCut(totalGross);
@@ -348,7 +355,7 @@ export default function CreatorAnalytics() {
         <AudienceInsights creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
         <StreamerGoalsWidget creatorId={user?.id} roomId={null} isCreator={true} embedded={true} />
-        <PerformanceDashboard roomId={null} sessionId={null} />
+        <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
         <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
         <ShareToSocial content={null} />

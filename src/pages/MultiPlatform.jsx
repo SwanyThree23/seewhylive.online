@@ -105,6 +105,13 @@ function ProgressBar({ value, max, color }) {
 
 export default function MultiPlatform() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({
@@ -214,7 +221,7 @@ export default function MultiPlatform() {
             {/* ── PLATFORMS ── */}
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                <MultiStreamConfig roomId={null} isHost={true} />
+                <MultiStreamConfig roomId={activeRoomId} isHost={true} />
                 {user?.id && (
                   <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
                     <DestinationsManager userId={user.id} />
@@ -224,7 +231,7 @@ export default function MultiPlatform() {
                   <RTMPFanoutPanel userId={user.id} isStreaming={false} />
                 )}
                 {user?.id && (
-                  <GuestInviteGenerator userId={user.id} roomId={null} />
+                  <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />
                 )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {
@@ -604,7 +611,7 @@ export default function MultiPlatform() {
             {/* ── WEBHOOK HOOKS ── */}
             {tab === 'webhooks' && (
               <div style={{ marginTop: 12 }}>
-                <WebhookHooks roomId={null} isHost={true} />
+                <WebhookHooks roomId={activeRoomId} isHost={true} />
               </div>
             )}
 
@@ -615,7 +622,7 @@ export default function MultiPlatform() {
       <Toast message={toast} />
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <EnhancedIngestPanel roomId={null} isHost={true} />
+        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
       </div>
@@ -635,8 +642,8 @@ export default function MultiPlatform() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamHealthDashboard roomId={null} isHost={false} />
-        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
       </div>
     </div>
   );

@@ -35,6 +35,12 @@ export default function InviteUsersPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const isAdmin = user?.role === 'admin';
   const referralLink = `${BETA_REFERRAL_BASE}?ref=${user?.id}`;
@@ -196,11 +202,11 @@ export default function InviteUsersPage() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <DiscussionFeed communityId="invite" />
-          <ReferralProgram communityId={null} />
-          <AnnouncementFeed communityId={null} />
-          <AnnouncementPanel communityId={null} />
+          <ReferralProgram communityId={userCommunityId} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <AnnouncementPanel communityId={userCommunityId} />
           <ChallengeLeaderboard challengeId={null} />
           <ZEGOMobileAppBanner />
         </div>
