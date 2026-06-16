@@ -51,6 +51,25 @@ export default function LoyaltyProgram() {
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const isOwnProgram = !creatorId || creatorId === user?.id;
 
@@ -97,12 +116,6 @@ export default function LoyaltyProgram() {
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
     onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
   });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
 
   const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
   const userPoints = myPoints?.points || 0;

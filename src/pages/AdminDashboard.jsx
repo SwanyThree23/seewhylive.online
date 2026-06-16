@@ -103,12 +103,6 @@ export default function AdminDashboard() {
     mutationFn: (roomId) => base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() }),
     onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries(['adminRooms']); },
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
 
   if (!user || user.role !== 'admin') return (
     <div className="min-h-screen flex items-center justify-center text-center" style={{ background: BG }}>
@@ -400,7 +394,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={firstCommunityId} moderatorId={user.id} />}
 
         {/* SECURITY */}
         {activeTab === 'security' && (
@@ -587,11 +581,11 @@ export default function AdminDashboard() {
         )}
 
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <ChallengeAnalytics communityId={userCommunityId} />
-          <ReferralConfig communityId={userCommunityId} />
+          <ChallengeAnalytics communityId={firstCommunityId} />
+          <ReferralConfig communityId={firstCommunityId} />
           <PerformanceDashboard roomId={roomId} sessionId={roomId} />
-          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
-          <SpotlightBanner communityId={userCommunityId} isAdmin={true} />
+          <AnnouncementScheduler communityId={firstCommunityId} userId={user?.id} />
+          <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
         </div>
       </div>
     </div>

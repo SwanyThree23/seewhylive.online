@@ -181,6 +181,12 @@ export default function CreatorPublicProfile() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  var userCommunityId = userCommunity?.id || null;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -217,12 +223,6 @@ export default function CreatorPublicProfile() {
     queryFn: () => base44.entities.Follow.filter({ creator_id: creatorId }),
     enabled: !!creatorId,
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
 
   var isOwnProfile = currentUser && currentUser.id === creatorId;
   var totalEarned = transactions.reduce((sum, t) => sum + (t.creator_payout || 0), 0);

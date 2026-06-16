@@ -39,6 +39,18 @@ export default function NotificationsPage() {
     queryFn: () => base44.auth.me(),
   });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -66,18 +78,6 @@ export default function NotificationsPage() {
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['notifications']),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
-  const userCommunityId = userCommunity?.id || null;
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 

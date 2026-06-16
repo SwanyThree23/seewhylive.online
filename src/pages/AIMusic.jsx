@@ -686,6 +686,12 @@ function Toast({ message, visible }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   // Form state
   const [description, setDescription] = useState('');
@@ -900,12 +906,6 @@ Return ONLY valid JSON (no markdown, no backticks):
     if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(tag => tag.includes(libSearch.toLowerCase()))) return false;
     return true;
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (

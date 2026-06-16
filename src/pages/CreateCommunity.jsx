@@ -54,6 +54,12 @@ export default function CreateCommunityPage() {
   const [avatarUrl, setAvatarUrl] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -70,12 +76,6 @@ export default function CreateCommunityPage() {
     onSuccess: (c) => { toast.success('Community created!'); window.location.href = `/Community?id=${c.id}`; },
     onError: () => toast.error('Failed to create community'),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
 
   const addTag = (tag) => {
     const t = tag || tagInput.trim();
