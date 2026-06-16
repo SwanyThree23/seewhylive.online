@@ -93,13 +93,7 @@ function ThinkDots() {
 
 export default function SwanyBotPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "SwanyBot in the building! I'm your domino culture AI — ask me anything about State vs State, strategy, the legends, or the culture. Let's get it! 🎮🔥" },
@@ -264,20 +258,14 @@ export default function SwanyBotPage() {
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
         <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
-        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
+        <AICopilotSidebar roomId={roomId} isHost={false} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
+        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
         <div style={{ marginTop: 10 }}>
           <ShareToSocial />
         </div>
         <ContentRecommendations />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />

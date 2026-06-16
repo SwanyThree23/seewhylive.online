@@ -21,7 +21,7 @@ export default function AnnouncementFeed({ communityId }) {
     low:    { background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
     normal: { background: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
     high:   { background: 'rgba(212,133,74,0.2)',  color: '#D4854A' },
-    urgent: { background: 'rgba(239,68,68,0.2)',   color: '#f87171' },
+    urgent: { background: 'rgba(192,57,43,0.2)',   color: '#FF4444' },
   };
 
   const priorityIcons = {
@@ -51,13 +51,13 @@ export default function AnnouncementFeed({ communityId }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: announcement.priority === 'urgent' ? 'rgba(239,68,68,0.15)' : 'rgba(212,175,55,0.15)',
+              background: announcement.priority === 'urgent' ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)',
               flexShrink: 0,
             }}>
               {announcement.is_pinned ? (
                 <Pin className="w-5 h-5" style={{ color: '#D4AF37' }} />
               ) : (
-                <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#f87171' : '#D4AF37' }} />
+                <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#FF4444' : '#D4AF37' }} />
               )}
             </div>
 

@@ -94,7 +94,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Greenroom</span>
           {waitingGuests.length > 0 && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff' }}>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff' }}>
               {waitingGuests.length} waiting
             </span>
           )}

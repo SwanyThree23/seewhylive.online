@@ -609,7 +609,7 @@ export default function PKBattlePage() {
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
           {battle?.status === 'active' && (
-            <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
+            <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
           {battle?.status === 'ended' && (
             <span style={{ background: '#4b5563', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
@@ -694,7 +694,7 @@ export default function PKBattlePage() {
                   {bRightName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
-                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(220,38,38,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
+                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(192,57,43,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
               </div>
             )}
             <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
@@ -752,7 +752,7 @@ export default function PKBattlePage() {
           )}
           {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.4)', color: '#fca5a5', border: '1px solid rgba(192,57,43,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}

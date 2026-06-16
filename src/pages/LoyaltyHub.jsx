@@ -142,13 +142,7 @@ function PointsBreakdownRow({ vp }) {
 export default function LoyaltyHubPage() {
   const [activeTab, setActiveTab] = useState('my_card');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: myLoyalties = [] } = useQuery({
     queryKey: ['lh-loyalties', user?.id],
@@ -207,7 +201,7 @@ export default function LoyaltyHubPage() {
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {user?.id && mainLoyalty?.creator_id && (
-        <PointsEarnWidget userId={user.id} creatorId={mainLoyalty.creator_id} roomId={activeRoomId} isHost={false} />
+        <PointsEarnWidget userId={user.id} creatorId={mainLoyalty.creator_id} roomId={roomId} isHost={false} />
       )}
       <div className="px-4 md:px-6 py-4" style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="max-w-3xl mx-auto">
@@ -283,7 +277,7 @@ export default function LoyaltyHubPage() {
               <div className="space-y-4">
                 {/* Reward Shop */}
                 {user?.id && mainLoyalty?.creator_id && (
-                  <RewardShop creatorId={mainLoyalty.creator_id} roomId={activeRoomId} currentUser={user} />
+                  <RewardShop creatorId={mainLoyalty.creator_id} roomId={roomId} currentUser={user} />
                 )}
 
                 {/* Redemption Queue */}
@@ -352,7 +346,7 @@ export default function LoyaltyHubPage() {
             {activeTab === 'leaderboard' && (
               <div className="space-y-4">
                 {mainLoyalty?.creator_id && (
-                  <RealtimeLeaderboard creatorId={mainLoyalty.creator_id} roomId={activeRoomId} />
+                  <RealtimeLeaderboard creatorId={mainLoyalty.creator_id} roomId={roomId} />
                 )}
                 <div className="space-y-1.5">
                 {leaderboard.map((l, i) => {
@@ -385,7 +379,7 @@ export default function LoyaltyHubPage() {
 
         <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <RewardShopEditor creatorId={user?.id} />
-          <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={!!user?.id} currentUser={user} />
+          <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={!!user?.id} currentUser={user} />
           <VirtualGoodsStore userId={user?.id} />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />

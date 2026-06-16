@@ -5,18 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import OBSBridge from '../components/obs/OBSBridge';
-import WebhookHooks from '../components/live/WebhookHooks';
-import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import BitratePresets from '../components/streaming/BitratePresets';
-import DestinationsManager from '../components/streaming/DestinationsManager';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -105,13 +94,7 @@ function ProgressBar({ value, max, color }) {
 
 export default function MultiPlatform() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({
@@ -221,7 +204,7 @@ export default function MultiPlatform() {
             {/* ── PLATFORMS ── */}
             {tab === 'platforms' && (
               <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
-                <MultiStreamConfig roomId={activeRoomId} isHost={true} />
+                <MultiStreamConfig roomId={roomId} isHost={true} />
                 {user?.id && (
                   <div style={{ background:BG2, borderRadius:16, border:`1px solid ${GOLD}25`, padding:'20px 18px' }}>
                     <DestinationsManager userId={user.id} />
@@ -611,7 +594,7 @@ export default function MultiPlatform() {
             {/* ── WEBHOOK HOOKS ── */}
             {tab === 'webhooks' && (
               <div style={{ marginTop: 12 }}>
-                <WebhookHooks roomId={activeRoomId} isHost={true} />
+                <WebhookHooks roomId={roomId} isHost={true} />
               </div>
             )}
 
@@ -622,9 +605,10 @@ export default function MultiPlatform() {
       <Toast message={toast} />
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <AdvancedEncoderSettings onApply={() => {}} />
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>

@@ -559,6 +559,7 @@ export default function Home() {
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
+  var roomId = new URLSearchParams(window.location.search).get('room_id');
 
   var { data: onboarding } = useQuery({
     queryKey: ['onboarding-check', user?.id],
@@ -801,7 +802,7 @@ export default function Home() {
               </Link>
               {/* AI recommendations when no live rooms */}
               <div className="mt-4 w-full">
-                <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
+                <SwanAIRecommendations roomId={roomId} currentLayout="grid" viewerCount={0} />
               </div>
             </motion.div>
           )}

@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
@@ -330,7 +332,7 @@ export default function RoomPage() {
                 onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
                 disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
+                style={{ background: isRecording ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
                 {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
               </button>
               <button
@@ -579,6 +581,12 @@ export default function RoomPage() {
             {isHost && (
               <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
                 <ChatModerationPanel roomId={roomId} />
+              </div>
+            )}
+            {isHost && (
+              <div className="mt-3 space-y-3">
+                <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+                <GuestInviteGenerator roomId={roomId} isHost={isHost} />
               </div>
             )}
             {/* Live Auctions - visible to all */}

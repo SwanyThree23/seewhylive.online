@@ -178,7 +178,7 @@ export default function BackPage() {
       </section>
 
       <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ZEGOStreamHealthCard roomId={activeRoomId} />
+        <ZEGOStreamHealthCard roomId={new URLSearchParams(window.location.search).get('room_id')} />
         <StreamingPresets onApply={() => {}} />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <ContentRecommendations />

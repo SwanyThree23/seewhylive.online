@@ -44,7 +44,7 @@ const TEMPLATES = [
   { label: 'Creator Bio', type: 'creator_bio', tone: 'griot', platform: 'all', prompt: 'Write a compelling creator bio for SwanyThree23 (Ladrue Swanson), founder of SeeWhy LIVE and Cali Bones domino entertainment platform.' },
 ];
 
-const STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#ef4444' };
+const STATUS_COLORS = { draft: 'rgba(255,255,255,0.4)', scheduled: '#d4af37', posted: '#6DBF7E', failed: '#C0392B' };
 
 const initState = {
   tab: 'generate',
@@ -348,7 +348,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
                         style={{ padding: '5px 10px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, color: '#d4af37', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                         <Calendar size={11} /> SCHEDULE
                       </button>
-                      <button onClick={() => deleteContent.mutate(item.id)} style={{ padding: '5px 10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, color: '#ef4444', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      <button onClick={() => deleteContent.mutate(item.id)} style={{ padding: '5px 10px', background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 6, color: '#C0392B', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                         <Trash2 size={11} /> DELETE
                       </button>
                     </div>
@@ -397,7 +397,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} viewerCount={0} />
+        <AICopilotSidebar roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={false} viewerCount={0} />
         <ContentRecommendations />
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />

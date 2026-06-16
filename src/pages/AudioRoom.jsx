@@ -54,10 +54,8 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -328,7 +326,7 @@ export default function AudioRoom() {
           <span className="text-sm font-bold">{memberCount}</span>
         </div>
         <button onClick={sendLove} className="flex items-center gap-1">
-          <Heart className="w-4 h-4 text-red-500" fill="#ef4444" />
+          <Heart className="w-4 h-4 text-red-500" fill="#C0392B" />
           <span className="text-sm font-bold" style={{ color: '#555' }}>{loveCount}</span>
         </button>
         <button>
@@ -389,6 +387,14 @@ export default function AudioRoom() {
           onLeave={leaveRoom}
         />
 
+        {/* Host streaming tools */}
+        {isHost && roomId && (
+          <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+        )}
+        {isHost && roomId && (
+          <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+        )}
+
         {/* Multi-guest panel (host view) */}
         {isHost && roomId && (
           <MultiGuestPanel
@@ -433,7 +439,7 @@ export default function AudioRoom() {
           <button onClick={sendLove} className="flex flex-col items-center gap-0.5">
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)' }}
+              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)' }}
             >
               <Heart className="w-4 h-4 text-red-400" fill="#EF4444" />
             </div>
@@ -470,8 +476,8 @@ export default function AudioRoom() {
             onClick={toggleAudio}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: audioEnabled ? `${GOLD}15` : 'rgba(239,68,68,0.15)',
-              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(239,68,68,0.4)',
+              background: audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
+              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
             }}
           >
             {audioEnabled

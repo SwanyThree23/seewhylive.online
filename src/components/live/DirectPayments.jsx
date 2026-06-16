@@ -122,7 +122,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                     />
                   </div>
                   {links[platform.id] && (
-                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f87171', display: 'flex', alignItems: 'center' }}>
+                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF4444', display: 'flex', alignItems: 'center' }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}

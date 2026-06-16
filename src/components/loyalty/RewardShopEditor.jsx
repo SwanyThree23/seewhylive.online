@@ -115,7 +115,7 @@ export default function RewardShopEditor({ creatorId }) {
             </button>
             <button onClick={() => deleteMutation.mutate(reward.id)}
               style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.2)', padding:2 }}
-              onMouseEnter={e => e.currentTarget.style.color='#f87171'}
+              onMouseEnter={e => e.currentTarget.style.color='#FF4444'}
               onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.2)'}>
               <Trash2 style={{ width:14, height:14 }} />
             </button>
