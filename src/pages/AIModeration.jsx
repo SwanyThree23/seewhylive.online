@@ -344,6 +344,13 @@ export default function AIModerationPage() {
           <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamHealthDashboard roomId={null} isHost={false} />
+          <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+          <AnnouncementPanel communityId={null} userId={user?.id} />
+        </div>
       </div>
     </div>
   );

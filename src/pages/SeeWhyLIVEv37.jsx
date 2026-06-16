@@ -1361,6 +1361,14 @@ export default function SeeWhyLIVEv37() {
         <StreamGoals isHost={false} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+      </div>
     </div>
   );
 }

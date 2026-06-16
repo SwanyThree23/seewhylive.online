@@ -285,6 +285,13 @@ export default function ContentCalendarPage() {
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       </div>
 
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
+
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
         {[
           { label: '📅 Stream Scheduler', href: 'StreamScheduler' },

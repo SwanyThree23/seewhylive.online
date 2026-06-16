@@ -415,6 +415,13 @@ export default function GuardianAI() {
         <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
       </div>
 
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+        <EngagementBadgesDisplay roomId={null} userId={user?.id} creatorId={user?.id} />
+        <AnnouncementPanel communityId={null} userId={user?.id} />
+      </div>
+
       {/* Cross-nav footer */}
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
