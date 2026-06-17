@@ -5414,7 +5414,18 @@ function ZegoLiveRoom({ state, dispatch }) {
         var zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
           container: document.getElementById('zego-room-container'),
-          scenario: { mode: ZegoUIKitPrebuilt.LiveStreaming },
+          scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
+        turnOnMicrophoneWhenJoining: true,
+        turnOnCameraWhenJoining: true,
+        showMyCameraToggleButton: true,
+        showMyMicrophoneToggleButton: true,
+        showAudioVideoSettingsButton: true,
+        showScreenSharingButton: false,
+        showTextChat: false,
+        showUserList: false,
+        maxUsers: 20,
+        layout: 'Grid',
+        showLayoutButton: false,
           showPreJoinView: false,
           onLeaveRoom: function() {
             dispatch({ type: 'SET_LIVE', payload: false });
