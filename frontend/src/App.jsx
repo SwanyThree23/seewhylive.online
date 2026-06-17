@@ -5752,11 +5752,24 @@ function VODAutoRecordConfig({ state, dispatch }) {
   var [enabled, setEnabled] = React.useState(true);
   var [quality, setQuality] = React.useState('1080p');
   var [status, setStatus] = React.useState('idle');
-  var [recordings, setRecordings] = React.useState([
-    { id:1, title:'Washington Classic Semi-Finals', size:'2.4GB', duration:'1h 4m', date:'Jun 9', url:'https://ingest.seewhylive.online:8888/live/index.m3u8' },
-    { id:2, title:'PK Battle Night', size:'1.1GB', duration:'36m', date:'Jun 2', url:'' },
-    { id:3, title:'VibeNBones Sunday Session', size:'3.1GB', duration:'1h 30m', date:'May 26', url:'' },
-  ]);
+  var [recordings, setRecordings] = React.useState([]);
+  var [loadingRecs, setLoadingRecs] = React.useState(true);
+  React.useEffect(function() {
+    var SURL = 'https://rxlgywvfclyjdfyvfyc.supabase.co';
+    var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmeWMiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5ODUzMjc5MCwiZXhwIjoyMDE0MTA4NzkwfQ.jQzERNzTL0O2CAgzoJkzl7oj_9YnTOISta_80AsK6tk';
+    fetch(SURL + '/rest/v1/vod_recordings?order=created_at.desc&limit=20', {
+      headers: { 'apikey': SKEY, 'Authorization': 'Bearer ' + SKEY }
+    }).then(function(r) { return r.json(); }).then(function(rows) {
+      if (Array.isArray(rows)) { setRecordings(rows.map(function(r) { return {
+        id: r.id, title: r.filename || 'Recording',
+        size: r.file_size ? (Math.floor(r.file_size/1048576) + 'MB') : 'N/A',
+        duration: r.duration_seconds ? (Math.floor(r.duration_seconds/60) + 'm') : 'N/A',
+        date: r.created_at ? r.created_at.slice(0,10) : '',
+        url: r.file_path ? 'https://seewhylive.online/vod/' + r.file_path : ''
+      }; })); }
+      setLoadingRecs(false);
+    }).catch(function() { setLoadingRecs(false); });
+  }, []);
 
   return (
     <div style={{ background:C.obsidian, minHeight:'100vh', paddingBottom:80 }}>
