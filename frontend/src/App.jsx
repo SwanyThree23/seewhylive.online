@@ -5408,8 +5408,8 @@ function ZegoLiveRoom({ state, dispatch }) {
     script.src = 'https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js';
     script.onload = function() {
       try {
-        var kitToken = ZegoUIKitPrebuilt.generateKitTokenForProduction(
-          token.appId, token.token, token.roomId, token.userId, userId
+        var kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+          token.appId, '4889869d4d7bc03836553042c52c69b7', token.roomId, token.userId
         );
         var zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
@@ -5417,6 +5417,7 @@ function ZegoLiveRoom({ state, dispatch }) {
           scenario: { mode: ZegoUIKitPrebuilt.VideoConference },
         turnOnMicrophoneWhenJoining: true,
         turnOnCameraWhenJoining: true,
+        useFrontFacingCamera: true,
         showMyCameraToggleButton: true,
         showMyMicrophoneToggleButton: true,
         showAudioVideoSettingsButton: true,

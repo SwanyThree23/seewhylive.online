@@ -3173,8 +3173,17 @@ module.exports = { app, server, io };
 
 // ZEGO token generation endpoint
 app.post('/api/zego/token', function(req, res) {
+  var crypto = require('crypto');
   var appId = parseInt(process.env.ZEGO_APP_ID);
   var secret = process.env.ZEGO_SERVER_SECRET;
+  var userId = req.body.userId || 'guest_' + Math.floor(Date.now()/1000);
+  var roomId = req.body.roomId || 'room_1';
+  var expire = Math.floor(Date.now()/1000) + 3600;
+  var nonce = Math.floor(Math.random()*Math.pow(2,31));
+  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now()/1000) + '&userid=' + userId + '&version=1';
+  var hmacToken = crypto.createHmac('sha256', secret).update(plain).digest('hex');
+  var payload = Buffer.from(JSON.stringify({ver:1,hash:hmacToken,expired:expire,nonce:nonce,appsign:''})).toString('base64');
+  return res.json({ token: '04' + Buffer.from(JSON.stringify({app_id:appId,user_id:userId,nonce:nonce,ctime:Math.floor(Date.now()/1000),expired:expire,payload:payload})).toString('base64'), appId: appId, userId: userId, roomId: roomId, expire: expire });
   var userId = req.query.userId || 'guest_' + Date.now();
   var roomId = req.query.roomId || 'room_1';
   var expire = Math.floor(Date.now() / 1000) + 3600;
