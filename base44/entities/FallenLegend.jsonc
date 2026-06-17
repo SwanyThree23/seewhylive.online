@@ -1,0 +1,65 @@
+{
+  "name": "FallenLegend",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "years": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "games_played": {
+      "type": "number",
+      "default": 0
+    },
+    "titles_won": {
+      "type": "number",
+      "default": 0
+    },
+    "candles": {
+      "type": "number",
+      "default": 0
+    },
+    "tributes": {
+      "type": "number",
+      "default": 0
+    },
+    "submitted_by": {
+      "type": "string"
+    },
+    "approved": {
+      "type": "boolean",
+      "default": false
+    },
+    "featured_year": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name",
+    "years",
+    "region"
+  ],
+  "rls": {
+    "create": {
+      "data.submitted_by": "{{user.id}}"
+    },
+    "read": {},
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -425,6 +425,16 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
 
+  // Hooks must be called unconditionally, before any early return
+  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
+  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
+  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
+  React.useEffect(() => () => {
+    leftCaptureStream?.getTracks().forEach(t => t.stop());
+    rightCaptureStream?.getTracks().forEach(t => t.stop());
+  }, [leftCaptureStream, rightCaptureStream]);
+
   if (!battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#0d0618] via-[#1a0030] to-[#0d0618] flex items-center justify-center px-4">
@@ -511,17 +521,6 @@ export default function PKBattlePage() {
   const [bLeftName, bRightName] = names;
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
-
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
-
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
-  }, [leftCaptureStream, rightCaptureStream]);
 
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },

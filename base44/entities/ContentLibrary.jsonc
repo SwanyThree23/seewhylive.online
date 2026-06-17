@@ -1,0 +1,110 @@
+{
+  "name": "ContentLibrary",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "social_caption",
+        "stream_title",
+        "tournament_recap",
+        "highlight_script",
+        "creator_bio",
+        "hype_post",
+        "event_announcement",
+        "twitter_thread"
+      ]
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "instagram",
+        "twitter",
+        "tiktok",
+        "youtube",
+        "facebook",
+        "all"
+      ]
+    },
+    "tone": {
+      "type": "string",
+      "enum": [
+        "hype",
+        "pro",
+        "community",
+        "domino_culture",
+        "griot"
+      ]
+    },
+    "input_prompt": {
+      "type": "string"
+    },
+    "output_content": {
+      "type": "string"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scheduled_status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "posted",
+        "failed"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "creator_id",
+    "content_type",
+    "platform",
+    "tone"
+  ],
+  "rls": {
+    "create": {
+      "data.creator_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.creator_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
