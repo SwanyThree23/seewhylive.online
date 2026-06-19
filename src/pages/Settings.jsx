@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Palette } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { useAuth } from '@/lib/AuthContext';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
@@ -75,6 +75,7 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -139,7 +140,7 @@ export default function SettingsPage() {
     setIsDeleting(true);
     try {
       await base44.auth.deleteMe();
-      window.location.href = '/';
+      navigate('/');
     } catch {
       toast.error('Could not delete account. Contact support.');
     } finally {

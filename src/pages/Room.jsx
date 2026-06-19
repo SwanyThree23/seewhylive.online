@@ -30,7 +30,7 @@ import RaidPanelButton from '../components/live/RaidPanel';
 import GiftShopTray from '../components/live/GiftShopTray';
 import TipWidget from '../components/live/TipWidget';
 import LivePollWidget from '../components/live/LivePollWidget';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
@@ -44,6 +44,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function RoomPage() {
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
   const queryClient = useQueryClient();
@@ -197,7 +198,7 @@ export default function RoomPage() {
       }
     },
     onSuccess: () => {
-      window.location.href = createPageUrl('Home');
+      navigate(createPageUrl('Home'));
     },
   });
 
@@ -280,7 +281,7 @@ export default function RoomPage() {
         <div className="text-center">
           <h2 className="text-2xl font-black text-white mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room not found</h2>
           <p className="mb-4 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>This room doesn't exist or has been deleted</p>
-          <button onClick={() => window.location.href = createPageUrl('Home')}
+          <button onClick={() => navigate(createPageUrl('Home'))}
             className="px-5 py-2.5 rounded-xl font-black uppercase text-sm"
             style={{ background: '#800020', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Go Home

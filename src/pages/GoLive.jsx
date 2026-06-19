@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Radio, Swords, Tv2, Mic2,
@@ -325,6 +325,7 @@ function Countdown({ onDone }) {
 }
 
 export default function GoLive() {
+  const navigate = useNavigate();
   const [step,        setStep]        = useState('pick');
   const [format,      setFormat]      = useState(null);
   const [title,       setTitle]       = useState('');
@@ -431,7 +432,7 @@ export default function GoLive() {
 
   function onCountdownDone() {
     const dest = format?.dest || 'BroadcastStudio';
-    window.location.href = `${createPageUrl(dest)}?id=${partyId}`;
+    navigate(`${createPageUrl(dest)}?id=${partyId}`);
   }
 
   const SL = { fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 };
