@@ -554,7 +554,7 @@ export default function CreatorPublicProfile() {
           <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
           <ContentRecommendations />
-        <MilestoneAlerts userId={null} roomId={roomId} />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
           <OnlineUsersGrid compact maxVisible={10} />

@@ -619,7 +619,7 @@ export default function ProfilePage() {
         <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
         <PerformanceDashboard roomId={roomId} sessionId={roomId} />
       </div>
-        <MilestoneAlerts userId={null} roomId={activeRoomId} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );

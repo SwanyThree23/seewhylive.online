@@ -844,7 +844,7 @@ export default function PKBattleManager() {
         <TipAlert roomId={roomId} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
       </div>
-        <MilestoneAlerts userId={null} roomId={roomId} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );

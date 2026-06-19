@@ -821,7 +821,7 @@ export default function StreamInfra() {
         <ZEGOStreamHealthCard roomId={activeRoomId} />
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
-        <MilestoneAlerts userId={null} roomId={activeRoomId} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         <AutomatedHighlightReels streamSession={null} />
