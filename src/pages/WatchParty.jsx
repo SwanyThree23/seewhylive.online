@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
@@ -381,8 +381,8 @@ function AISummaryButton({ members, elapsed, partyId }) {
 }
 
 export default function WatchPartyPage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const partyId = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const partyId = searchParams.get('id');
   const qc = useQueryClient();
 
   const [videoUrl, setVideoUrl] = useState('');
@@ -588,7 +588,7 @@ export default function WatchPartyPage() {
           title: `Started watch party: ${p?.title || 'Watch Party'}`,
         }).catch(() => {});
       }
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      setSearchParams({ id: p.id });
     },
     onError: (e) => {
       if (e?.message === 'auth_required') {
@@ -610,7 +610,7 @@ export default function WatchPartyPage() {
           title: `Ended watch party: ${party?.title || 'Watch Party'}`,
         }).catch(() => {});
       }
-      window.location.href = window.location.pathname;
+      setSearchParams({});
     },
   });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -160,8 +160,8 @@ function AudienceTile({ member }) {
 }
 
 export default function AudioRoom() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId    = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
@@ -257,7 +257,7 @@ export default function AudioRoom() {
         status:      'active',
         updated_at_ms: Date.now(),
       });
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      setSearchParams({ id: p.id });
     } catch {
       toast.error('Failed to create room');
       setCreating(false);
