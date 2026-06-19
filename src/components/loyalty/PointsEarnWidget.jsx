@@ -10,7 +10,7 @@ export default function PointsEarnWidget({ userId, creatorId, roomId, isHost }) 
 
   const awardMutation = useMutation({
     mutationFn: ({ reason, metadata }) =>
-      base44.functions.invoke('awardLoyaltyPoints', { user_id: userId, creator_id: creatorId, room_id: roomId, reason, metadata }),
+      base44.entities.LoyaltyActivity.create({ user_id: userId, creator_id: creatorId, room_id: roomId, reason, metadata, created_at: new Date().toISOString() }),
     onSuccess: () => qc.invalidateQueries(['viewer-loyalty', userId, creatorId]),
   });
 

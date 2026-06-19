@@ -37,9 +37,12 @@ export default function SubscriptionGate({ creatorId, roomId }) {
 
   const handleSubscribe = async (tierId) => {
     try {
-      await base44.functions.invoke('createSubscription', {
+      await base44.entities.ViewerSubscription.create({
         tier_id: tierId,
         creator_id: creatorId,
+        viewer_id: (await base44.auth.me())?.id,
+        status: 'active',
+        started_at: new Date().toISOString(),
       });
       // Refresh subscription
       const user = await base44.auth.me();

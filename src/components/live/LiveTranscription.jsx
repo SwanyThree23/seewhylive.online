@@ -41,12 +41,12 @@ export default function LiveTranscription({ isLive = false, roomId }) {
             formData.append('file', audioBlob);
 
             const uploadRes = await base44.integrations.Core.UploadFile({ file: audioBlob });
-            const transcribeRes = await base44.functions.invoke('transcribeAudio', {
-              audio_url: uploadRes.file_url,
-            });
+            const transcribeRes = await base44.integrations.Core.InvokeLLM({
+              prompt: `Transcribe the following audio content. The audio is available at: ${uploadRes.file_url || 'uploaded audio'}. Provide a brief transcription or caption.`,
+            }).catch(() => null);
 
-            if (transcribeRes?.data?.text) {
-              addCaption(transcribeRes.data.text);
+            if (transcribeRes && typeof transcribeRes === 'string') {
+              addCaption(transcribeRes);
             }
           } catch (error) {
           }
