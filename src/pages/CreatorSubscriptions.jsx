@@ -231,7 +231,7 @@ function CreatorView({ user }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         {[
           { label: 'Active Subscribers', value: subs.length, color: GOLD, emoji: '👥' },
-          { label: 'Monthly Revenue', value: `$${(revenue * 0.9).toFixed(0)}`, color: GREEN, emoji: '💰' },
+          { label: 'Monthly Revenue', value: `$${(Math.floor(revenue * 90) / 100).toFixed(0)}`, color: GREEN, emoji: '💰' },
         ].map(stat => (
           <div key={stat.label} style={{
             borderRadius: 14, padding: '14px 16px',
@@ -367,7 +367,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
           user_id: creatorId,
           type: 'tip_received',
           title: `New ${tier.name} subscriber: ${user.full_name || user.email}`,
-          amount: Math.floor(tier.price * 0.9 * 100) / 100,
+          amount: Math.floor(tier.price * 90) / 100,
           sender_id: user.id,
         }),
       ]);

@@ -139,7 +139,8 @@ function TipAnimation({ senderName, amount, emoji, tier, onDone }) {
   );
 }
 
-export default function TipWidget({ roomId, hostId, currentUser }) {
+export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
+  const resolvedHostId = hostId || recipient?.id;
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(5);
   const [custom, setCustom] = useState('');
@@ -151,8 +152,8 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
 
   const rawAmount = useCustom ? parseFloat(custom) : selected;
   const validAmount = rawAmount > 0 && !isNaN(rawAmount);
-  const creatorReceives = validAmount ? (rawAmount * 0.9).toFixed(2) : '0.00';
-  const platformFee = validAmount ? (rawAmount * 0.1).toFixed(2) : '0.00';
+  const creatorReceives = validAmount ? (Math.floor(rawAmount * 90) / 100).toFixed(2) : '0.00';
+  const platformFee = validAmount ? (rawAmount - Math.floor(rawAmount * 90) / 100).toFixed(2) : '0.00';
 
   const activeTier = TIERS.slice().reverse().find(t => t.amount <= rawAmount) || TIERS[0];
 
@@ -163,12 +164,12 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
         room_id: roomId,
         type: 'tip',
         amount: amt,
-        creator_amount: parseFloat((amt * 0.9).toFixed(2)),
-        platform_fee: parseFloat((amt * 0.1).toFixed(2)),
+        creator_amount: Math.floor(amt * 90) / 100,
+        platform_fee: amt - Math.floor(amt * 90) / 100,
         from_user_id: currentUser.id,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
-        to_user_id: hostId,
+        to_user_id: resolvedHostId,
         status: 'completed',
         message: message,
         emoji: selectedEmoji,
@@ -190,10 +191,10 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
           type: 'tip_sent',
           title: `Tipped $${rawAmount} to creator`,
           amount: rawAmount,
-          recipient_id: hostId,
+          recipient_id: resolvedHostId,
         }),
-        hostId && base44.entities.Activity.create({
-          user_id: hostId,
+        resolvedHostId && base44.entities.Activity.create({
+          user_id: resolvedHostId,
           type: 'tip_received',
           title: `Received $${rawAmount} tip from ${name}`,
           amount: rawAmount,
