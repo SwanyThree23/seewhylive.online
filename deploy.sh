@@ -10,7 +10,7 @@ BRANCH="claude/seewhy-live-v33-build-v0L5Z"
 PROD_SERVER="/opt/seewhy/server"
 PROD_FRONTEND="/opt/seewhy/frontend"
 PM2_APP="seewhy-server"
-VPS_IP="2.24.194.112"
+VPS_IP="2.24.198.112"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
@@ -54,10 +54,20 @@ echo "  ✓ Dependencies installed"
 # ── 6. Ensure production directories exist ───────────────────────────────────
 echo "▶ Creating runtime directories..."
 mkdir -p /opt/seewhy/data
+mkdir -p /opt/seewhy/media
 mkdir -p /var/log/seewhy
 mkdir -p /var/www/html/hls
 chmod 755 /var/www/html/hls
 echo "  ✓ Directories ready"
+
+# ── 6a. Deploy MediaMTX config ────────────────────────────────────────────────
+echo "▶ Deploying MediaMTX config..."
+if [ -f "$REPO_DIR/deploy/mediamtx.yml" ]; then
+  cp "$REPO_DIR/deploy/mediamtx.yml" /opt/seewhy/mediamtx.yml
+  echo "  ✓ mediamtx.yml deployed to /opt/seewhy/"
+  # Reload if mediamtx is running
+  pkill -HUP mediamtx 2>/dev/null || true
+fi
 
 # ── 7. Firewall — open required ports ────────────────────────────────────────
 echo "▶ Configuring firewall..."

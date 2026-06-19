@@ -43,22 +43,22 @@ export default function BrandChyron() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden"
+      className="fixed left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden bottom-[calc(60px+env(safe-area-inset-bottom,0px))] md:bottom-0"
       style={{
-        background: 'linear-gradient(90deg, #03030A 0%, #07070F 50%, #03030A 100%)',
-        borderTop: '1px solid rgba(255,21,100,0.25)',
+        background: 'linear-gradient(90deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
+        borderTop: '1px solid rgba(192,57,43,0.25)',
       }}
     >
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, #FF1564, #FFB800, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, #C0392B, #D4AF37, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
       />
 
       {/* Left: brand + signal */}
       <div className="shrink-0 flex items-center gap-2 px-3 border-r border-white/5">
         <SignalBars count={5} active={liveCount > 0} size="xs" />
-        <span className="text-[11px] font-bold text-[#FF1564] uppercase tracking-wider whitespace-nowrap">SeeWhy LIVE</span>
+        <span className="text-[11px] font-bold text-[#C0392B] uppercase tracking-wider whitespace-nowrap">SeeWhy LIVE</span>
       </div>
 
       {/* Center: scrolling ticker */}
@@ -76,8 +76,8 @@ export default function BrandChyron() {
       <div className="shrink-0 flex items-center gap-3 px-3 border-l border-white/5">
         {liveCount > 0 && (
           <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#FF1564] animate-pulse" />
-            <span className="text-[11px] text-[#FF1564] font-bold font-mono">{liveCount} LIVE</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
+            <span className="text-[11px] text-[#C0392B] font-bold font-mono">{liveCount} LIVE</span>
           </div>
         )}
         <span className="text-[11px] text-white/30 font-mono">

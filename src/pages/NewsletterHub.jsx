@@ -2,9 +2,23 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
+const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
 const TEMPLATES = {
   stream_recap: {
     title: 'Stream Recap — [Date]',
@@ -67,6 +81,18 @@ export default function NewsletterHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
   const { data: letters=[], isLoading } = useQuery({
     queryKey: ['newsletters', user?.id],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),
@@ -79,7 +105,19 @@ export default function NewsletterHubPage() {
   });
   const sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Sent! 🚀'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('sent'); },
+    onSuccess: (newsletter) => {
+      qc.invalidateQueries({ queryKey:['newsletters'] });
+      showToast('Sent! 🚀');
+      setForm({title:'',content:'',preview_text:'',scheduled_for:''});
+      setTab('sent');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Sent newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
@@ -240,6 +278,36 @@ export default function NewsletterHubPage() {
             ))}
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+        <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+          <MilestoneAlerts creatorId={user?.id} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+          <EarningsBreakdown creatorId={user?.id} />
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+          {[
+            { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
+            { label: '📆 Content Calendar', href: 'ContentCalendar' },
+            { label: '👥 Communities',      href: 'Communities'     },
+            { label: '📣 Social Expo',      href: 'SocialExpo'      },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: C.gold, cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <StreamGoals isHost={false} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
+        </div>
       </div>
     </div>
   );

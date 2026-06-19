@@ -46,11 +46,23 @@ export default function ZEGOConfigPanel({ user }) {
         ? base44.entities.ZEGOStream.update(zegoStream.id, data)
         : base44.entities.ZEGOStream.create(data);
     },
-    onSuccess: () => { qc.invalidateQueries(['zego-config']); toast.success('ZEGOCLOUD config saved!'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['zego-config']);
+      toast.success('ZEGOCLOUD config saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Configured ZEGOCLOUD streaming settings',
+        }).catch(() => {});
+      }
+    },
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;
-  const obsUrl = `rtmp://YOUR_VPS_IP:1935/live/${zegoStream?.zego_room_id || 'seewhy_room_XXXXX'}`;
+  const obsUrl = zegoStream?.zego_room_id
+    ? `rtmp://<your-relay-server>:1935/live/${zegoStream.zego_room_id}`
+    : 'rtmp://<your-relay-server>:1935/live/<room-id>';
 
   return (
     <div className="rounded-xl p-5 space-y-5" style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.18)' }}>

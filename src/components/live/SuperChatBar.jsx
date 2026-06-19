@@ -6,12 +6,12 @@ import { DollarSign, Gift, X, Zap, Star, Crown, Heart, Flame } from 'lucide-reac
 import { toast } from 'sonner';
 
 const SUPER_AMOUNTS = [
-  { value: 2, label: '$2', color: '#5A5A7A', emoji: '💬' },
+  { value: 2, label: '$2', color: '#D4AF37', emoji: '💬' },
   { value: 5, label: '$5', color: '#C9A84C', emoji: '💙' },
   { value: 10, label: '$10', color: '#6DBF7E', emoji: '💚' },
-  { value: 20, label: '$20', color: '#FFB800', emoji: '⭐' },
-  { value: 50, label: '$50', color: '#FF8C00', emoji: '🔥' },
-  { value: 100, label: '$100', color: '#FF1564', emoji: '👑' },
+  { value: 20, label: '$20', color: '#D4AF37', emoji: '⭐' },
+  { value: 50, label: '$50', color: '#D4854A', emoji: '🔥' },
+  { value: 100, label: '$100', color: '#C0392B', emoji: '👑' },
 ];
 
 const GIFTS = [
@@ -42,8 +42,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
         message: data.message,
         gift_type: data.giftType,
         status: 'completed',
-        platform_fee: data.amount * 0.1,
-        creator_amount: data.amount * 0.9,
+        creator_amount: Math.floor(data.amount  * 90) / 100,
+        platform_fee: data.amount - Math.floor(data.amount  * 90) / 100,
       });
 
       // Post message to chat
@@ -62,6 +62,26 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
       toast.success(vars.type === 'gift' ? '🎁 Gift sent!' : '⭐ Super Chat sent!');
       setMode(null);
       setMessage('');
+      if (currentUser?.id) {
+        const isGift = vars.type === 'gift';
+        const giftName = isGift ? GIFTS.find(g => g.id === vars.giftType)?.name || 'Gift' : null;
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: isGift ? 'gift_sent' : 'tip_sent',
+            title: isGift ? `Sent ${giftName} gift` : `Super Chat $${vars.amount}`,
+            amount: vars.amount,
+            recipient_id: recipientId,
+          }),
+          recipientId && base44.entities.Activity.create({
+            user_id: recipientId,
+            type: isGift ? 'gift_received' : 'tip_received',
+            title: isGift ? `Received ${giftName} gift` : `Super Chat $${vars.amount} from ${currentUser.full_name || 'viewer'}`,
+            amount: vars.amount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
     onError: () => toast.error('Failed to send'),
   });
@@ -93,8 +113,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
           onClick={() => setMode(mode === 'superchat' ? null : 'superchat')}
           className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
             mode === 'superchat'
-              ? 'border-[#FFB800] text-[#FFB800] bg-[#FFB800]/10'
-              : 'border-white/10 text-white/40 hover:border-[#FFB800]/30 hover:text-[#FFB800]/60'
+              ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10'
+              : 'border-white/10 text-white/40 hover:border-[#D4AF37]/30 hover:text-[#D4AF37]/60'
           }`}
         >
           <Star className="w-3 h-3" /> Super Chat
@@ -103,8 +123,8 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
           onClick={() => setMode(mode === 'gift' ? null : 'gift')}
           className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all border ${
             mode === 'gift'
-              ? 'border-[#FF1564] text-[#FF1564] bg-[#FF1564]/10'
-              : 'border-white/10 text-white/40 hover:border-[#FF1564]/30 hover:text-[#FF1564]/60'
+              ? 'border-[#C0392B] text-[#C0392B] bg-[#C0392B]/10'
+              : 'border-white/10 text-white/40 hover:border-[#C0392B]/30 hover:text-[#C0392B]/60'
           }`}
         >
           <Gift className="w-3 h-3" /> Gift
@@ -123,7 +143,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-[#FFB800]/10"
+            className="overflow-hidden border-t border-[#D4AF37]/10"
           >
             <div className="p-2 space-y-2">
               {/* Amount grid */}
@@ -149,7 +169,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                   value={message}
                   onChange={e => setMessage(e.target.value.slice(0, 100))}
                   placeholder="Add a message..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#FFB800]/40"
+                  className="flex-1 bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white placeholder-white/20 focus:outline-none focus:border-[#D4AF37]/40"
                 />
                 <button
                   onClick={handleSuperChat}
@@ -168,7 +188,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-[#FF1564]/10"
+            className="overflow-hidden border-t border-[#C0392B]/10"
           >
             <div className="p-2">
               <div className="grid grid-cols-6 gap-1">
@@ -177,7 +197,7 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
                     key={gift.id}
                     onClick={() => handleGift(gift)}
                     disabled={sendMutation.isPending}
-                    className="flex flex-col items-center py-1.5 rounded border border-white/10 hover:border-[#FF1564]/40 hover:bg-[#FF1564]/10 transition-all"
+                    className="flex flex-col items-center py-1.5 rounded border border-white/10 hover:border-[#C0392B]/40 hover:bg-[#C0392B]/10 transition-all"
                     title={`${gift.name} — $${gift.price}`}
                   >
                     <span className="text-base">{gift.emoji}</span>

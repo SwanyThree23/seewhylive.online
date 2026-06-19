@@ -12,8 +12,8 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RARITY = {
   common:    { color: 'rgba(255,255,255,0.5)', label: 'COMMON',    glow: '' },
-  rare:      { color: '#60A5FA',               label: 'RARE',      glow: '0 0 12px rgba(96,165,250,0.3)' },
-  epic:      { color: '#A78BFA',               label: 'EPIC',      glow: '0 0 12px rgba(167,139,250,0.3)' },
+  rare:      { color: '#D4AF37',               label: 'RARE',      glow: '0 0 12px rgba(212,175,55,0.3)' },
+  epic:      { color: '#D4AF37',               label: 'EPIC',      glow: '0 0 12px rgba(212,175,55,0.3)' },
   legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(212,175,55,0.4)` },
 };
 
@@ -45,7 +45,7 @@ function FullScreenAnimation({ gift, senderName, onDone }) {
           animate={{ x: (Math.random() - 0.5) * 300, y: -200 - Math.random() * 200, opacity: 0, rotate: Math.random() * 360 }}
           transition={{ duration: 1.5 + Math.random(), delay: 0.2 + Math.random() * 0.5 }}
           className="absolute w-3 h-3 rounded-sm"
-          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#FF1564'][i % 4] }} />
+          style={{ background: [GOLD, BURGUNDY, '#6DBF7E', '#C0392B'][i % 4] }} />
       ))}
     </motion.div>
   );
@@ -123,8 +123,8 @@ export default function GiftShopTray({ roomId, currentUser }) {
         sender_name: currentUser?.full_name || currentUser?.email,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: gift.price * 0.85,
-        platform_fee: gift.price * 0.15,
+        creator_amount: Math.floor(gift.price  * 90) / 100,
+        platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
         status: 'completed',
         metadata: { gift_id: gift.id, gift_name: gift.name },
       });
@@ -136,6 +136,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
       qc.invalidateQueries(['gift-lb', roomId]);
       setAnim({ gift, sender: currentUser?.full_name || 'Someone' });
       setOpen(false);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Could not send gift'),
   });

@@ -7,16 +7,16 @@ import { toast } from 'sonner';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const BG      = '#080B18';
 const GREEN   = '#6DBF7E';
 
 export const GIFTS = [
   { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12 },
-  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#FF9500', particles: 20 },
-  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#00B4FF', particles: 24 },
+  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#D4854A', particles: 20 },
+  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#C9A84C', particles: 24 },
   { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30 },
-  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#FF8C00', particles: 36 },
+  { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#D4854A', particles: 36 },
   { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48 },
   { id: 'tsunami',  emoji: '🌊', name: 'Tsunami',   price: 99.99,  color: '#0066FF', particles: 60 },
   { id: 'legend',   emoji: '🏆', name: 'Legend',    price: 199.99, color: GOLD,      particles: 80 },

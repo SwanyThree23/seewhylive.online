@@ -15,6 +15,12 @@ const SPAM_PATTERNS = [
   /(?:visit|click|buy|now|free)[^\s]*/gi, // spam keywords
 ];
 
+function userHue(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return h % 360;
+}
+
 const EMOTES = {
   ':)': '😊',
   ':(': '😢',
@@ -29,7 +35,7 @@ const EMOTES = {
 };
 
 const BADGE_TYPES = {
-  admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
+  admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
   subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
   verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }
@@ -115,7 +121,7 @@ const ModerationAlert = ({ message, onDismiss }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}
+    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
   >
     <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>
@@ -184,7 +190,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        user_color: `hsl(${userHue(userId)}, 70%, 50%)`,
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },
@@ -211,17 +217,17 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(7,7,15,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Sparkles className="w-4 h-4 text-[#D4854A]" />
           <h3 className="text-xs font-bold uppercase tracking-wide text-white/70" style={{ fontFamily: 'Barlow Condensed' }}>
             Live Chat
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
         </div>
-        <Shield className="w-3 h-3 text-green-400" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}

@@ -13,19 +13,23 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
   const handleSubmitAppeal = async () => {
     setSubmitting(true);
     try {
-      const res = await base44.functions.invoke('aiModerationAppeal', {
-        message_id: messageId,
-        flag_id: flagId,
-        appeal_reason: appealReason,
-        room_id: roomId,
+      const msgs = await base44.entities.Message.filter({ room_id: roomId }, '-created_date', 100).catch(() => []);
+      const msgContent = msgs.find(m => m.id === messageId)?.content || '';
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `A live stream chat message was flagged as "${flagId || 'inappropriate'}". The user appeals with: "${appealReason}"${msgContent ? `\nMessage: "${msgContent}"` : ''}. Should this appeal be approved? Return JSON: { "appeal_approved": true or false, "reason": "brief explanation", "confidence": 0.0-1.0 }`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            appeal_approved: { type: 'boolean' },
+            reason: { type: 'string' },
+            confidence: { type: 'number' },
+          },
+        },
       });
-
-      if (res?.data) {
-        setResult(res.data);
+      if (res) {
+        setResult(res);
       }
-    } catch (error) {
-      console.error('Appeal error:', error);
-    }
+    } catch {}
     setSubmitting(false);
   };
 
@@ -37,7 +41,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
         className="p-4 rounded-lg"
         style={{ background: result.appeal_approved ? 'rgba(109,191,126,0.1)' : 'rgba(255,100,100,0.1)' }}
       >
-        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#6DBF7E' : '#FF1564' }}>
+        <p className="text-xs font-bold mb-2" style={{ color: result.appeal_approved ? '#6DBF7E' : '#C0392B' }}>
           {result.appeal_approved ? '✓ Appeal Approved' : '✗ Appeal Denied'}
         </p>
         <p className="text-[10px] text-white/70">{result.reason}</p>
@@ -58,7 +62,7 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}20` }}
+      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
     >
       <div className="flex items-center gap-2">
         <AlertCircle className="w-4 h-4" style={{ color: G }} />

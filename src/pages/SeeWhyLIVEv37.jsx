@@ -4,7 +4,21 @@
  * Earth-tone palette only — no forbidden colors
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -22,17 +36,17 @@ const C = {
   text:    '#F0E8D4',
   textD:   '#C4B596',
   textM:   '#8A7A62',
-  green:   '#2ECC71',
-  red:     '#E74C3C',
-  blue:    '#3498DB',
-  purple:  '#8B44B0',
+  green:   '#6DBF7E',
+  red:     '#C0392B',
+  blue:    '#D4AF37',
+  purple:  '#D4854A',
   amber:   '#D4854A',
-  orange:  '#FF6B35',
-  teal:    '#1ABC9C',
-  warn:    '#F39C12',
-  tribute: '#7B5EA7',
-  tribL:   '#A07BC4',
-  state1:  '#1565C0',
+  orange:  '#D4854A',
+  teal:    '#6DBF7E',
+  warn:    '#D4854A',
+  tribute: '#800020',
+  tribL:   '#C9A84C',
+  state1:  '#D4854A',
   state2:  '#C62828',
 };
 
@@ -167,11 +181,7 @@ function StagePanel() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
     setLive(true);
     setHealth({ bitrate: 4200, fps: 30, latency: 42, dropped: 0 });
-    setViewers(Math.floor(Math.random() * 80) + 5);
-    timerRef.current = setInterval(() => {
-      setViewers(v => Math.max(0, v + Math.floor(Math.random() * 11) - 4));
-      setHealth(h => h ? { ...h, bitrate: 3800 + Math.floor(Math.random() * 800), latency: 35 + Math.floor(Math.random() * 30) } : h);
-    }, 4000);
+    setViewers(0);
     toast('Stream started!', setToastMsg);
   }
 
@@ -252,6 +262,7 @@ function SVSPanel() {
   const [s2, setS2] = useState('TX');
   const [scores, setScores] = useState({ s1: 0, s2: 0 });
   const [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
+  const [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
   const [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
@@ -308,8 +319,8 @@ function SVSPanel() {
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={`${s1}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state1} />
-              <Badge label={`${s2}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state2} />
+              <Badge label={`${s1}: ${judgeScores[i]?.s1 ?? 0}`} color={C.state1} />
+              <Badge label={`${s2}: ${judgeScores[i]?.s2 ?? 0}`} color={C.state2} />
             </div>
           </div>
         ))}
@@ -735,7 +746,8 @@ function WatchPartyPanel() {
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    setPartyId(`PARTY-${Math.random().toString(36).slice(2,8).toUpperCase()}`);
+    const arr = crypto.getRandomValues(new Uint8Array(4));
+    setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);
@@ -1250,6 +1262,8 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv37() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -1317,6 +1331,25 @@ export default function SeeWhyLIVEv37() {
           {TABS.find(t => t.id === activeTab)?.label}
         </div>
         {panelMap[activeTab]}
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ReactionOverlay partyId={null} currentUser={user} />
+        <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={false} />
+        <GreenroomQueue roomId={roomId} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

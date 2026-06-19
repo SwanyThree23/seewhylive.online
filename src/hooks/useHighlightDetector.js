@@ -51,15 +51,16 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
     toast('✂️ High-engagement moment detected — saving clip…', { duration: 4000 });
 
     try {
-      await base44.functions.invoke('createVideoShort', {
+      await base44.entities.VideoShort.create({
         room_id: roomId,
         title,
         description: `Auto-captured highlight. Hype: ${hypeLevel}% · Sentiment: ${Math.round(sentiment * 100)}%`,
-        video_url: '',           // real implementation: pass actual stream URL/timestamp
+        video_url: '',
         thumbnail_url: '',
         duration_seconds: CLIP_DURATION,
         paywall_enabled: false,
         paywall_price: 0,
+        created_at: new Date().toISOString(),
       });
 
       // Also log a StreamHighlight record for the library
@@ -79,7 +80,6 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
 
       toast.success(`🎬 Highlight clip saved to library!`);
     } catch (err) {
-      console.warn('[HighlightDetector] clip save failed:', err?.message);
       toast.error('Auto-clip failed');
     } finally {
       savingRef.current = false;

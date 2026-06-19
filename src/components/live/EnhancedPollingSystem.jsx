@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveCo
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
 
-const COLORS = ['#d4af37', '#FF1564', '#C9A84C', '#D4AF37', '#6DBF7E'];
+const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
 
 export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
   const [showCreate, setShowCreate] = useState(false);
@@ -71,9 +71,16 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
         expires_at: expiresAt,
       });
     },
-    onSuccess: () => {
+    onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -201,7 +208,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
         <div className="flex-1">
           <h3 className="font-bold text-white mb-1">{activePoll.question}</h3>
           {timeRemaining !== null && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: timeRemaining < 10 ? '#FF1564' : '#d4af37' }}>
+            <div className="flex items-center gap-1.5 text-xs" style={{ color: timeRemaining < 10 ? '#C0392B' : '#d4af37' }}>
               <Clock className="w-3 h-3" />
               {formatTime(timeRemaining)}
             </div>
@@ -211,7 +218,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <button
             onClick={closePoll}
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
-            style={{ background: 'rgba(255,21,100,0.15)' }}
+            style={{ background: 'rgba(192,57,43,0.15)' }}
           >
             <X className="w-4 h-4 text-red-400" />
           </button>
@@ -225,7 +232,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} height={40} />
           <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} />
           <Tooltip
-            contentStyle={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
+            contentStyle={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
             labelStyle={{ color: '#fff' }}
           />
           <Bar dataKey="value" fill="#d4af37" radius={[4, 4, 0, 0]}>
@@ -268,7 +275,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       {/* Re-vote notice */}
       {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-        <div className="flex items-center gap-2 text-xs text-cyan-400" style={{ color: '#C9A84C' }}>
+        <div className="flex items-center gap-2 text-xs text-[#C9A84C]" style={{ color: '#C9A84C' }}>
           <RotateCcw className="w-3 h-3" />
           You can change your vote anytime
         </div>

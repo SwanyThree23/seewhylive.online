@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightSection from '../components/community/SpotlightSection';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import ViewerCount from '../components/live/ViewerCount';
+import LoveHearts from '../components/live/LoveHearts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CHANNELS = [
   {
@@ -10,8 +25,9 @@ const CHANNELS = [
     handle: '@dominoentertainment5513',
     url: 'https://youtube.com/@dominoentertainment5513',
     description: 'Live entertainment, shows, and exclusive content',
-    color: 'from-red-900 to-orange-900',
-    accent: '#ff6b35',
+    bg: 'rgba(128,0,32,0.25)',
+    border: 'rgba(192,57,43,0.3)',
+    accent: '#C0392B',
     emoji: '🎭',
   },
   {
@@ -20,8 +36,9 @@ const CHANNELS = [
     handle: '@memoirsofashygirl',
     url: 'https://youtube.com/@memoirsofashygirl',
     description: 'Personal stories, lifestyle, and real conversations',
-    color: 'from-pink-900 to-rose-900',
-    accent: '#ff85a1',
+    bg: 'rgba(128,0,32,0.2)',
+    border: 'rgba(128,0,32,0.35)',
+    accent: '#D4854A',
     emoji: '📖',
   },
   {
@@ -30,8 +47,9 @@ const CHANNELS = [
     handle: '@ampdupvideos',
     url: 'https://youtube.com/@ampdupvideos',
     description: 'High energy content, music videos, and entertainment',
-    color: 'from-yellow-900 to-amber-900',
-    accent: '#ffd700',
+    bg: 'rgba(212,175,55,0.1)',
+    border: 'rgba(212,175,55,0.3)',
+    accent: '#D4AF37',
     emoji: '⚡',
   },
   {
@@ -40,8 +58,9 @@ const CHANNELS = [
     handle: '@aiversepodcast',
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
-    color: 'from-blue-900 to-cyan-900',
-    accent: '#00d4ff',
+    bg: 'rgba(212,175,55,0.08)',
+    border: 'rgba(212,175,55,0.2)',
+    accent: '#D4AF37',
     emoji: '🤖',
   },
 ];
@@ -75,7 +94,7 @@ function YouTubeEmbed({ videoId, title }) {
           onError={e => { e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
         />
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform" style={{ background: '#C0392B' }}>
             <Play className="w-7 h-7 text-white fill-white ml-1" />
           </div>
         </div>
@@ -100,16 +119,18 @@ function YouTubeEmbed({ videoId, title }) {
 }
 
 export default function FeaturedContent() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#1a0a30] py-8 px-4">
+    <div className="min-h-screen py-8 px-4" style={{ background: '#080B18' }}>
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-red-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: '#C0392B' }}>
               <Youtube className="w-7 h-7 text-white" />
             </div>
             <div className="text-left">
@@ -142,7 +163,8 @@ export default function FeaturedContent() {
             {CHANNELS.map(channel => (
               <div
                 key={channel.id}
-                className={`bg-gradient-to-br ${channel.color} border border-white/10 rounded-2xl p-5 space-y-3 hover:border-white/20 transition-all cursor-pointer`}
+                className="rounded-2xl p-5 space-y-3 transition-all cursor-pointer"
+              style={{ background: channel.bg, border: `1px solid ${channel.border}` }}
                 onClick={() => setActiveChannel(activeChannel === channel.id ? null : channel.id)}
               >
                 <div className="flex items-start justify-between">
@@ -158,7 +180,8 @@ export default function FeaturedContent() {
                     target="_blank"
                     rel="noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-red-700/50 hover:bg-red-600 text-white transition-all"
+                    className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg text-white transition-all"
+                    style={{ background: 'rgba(192,57,43,0.5)' }}
                   >
                     <Youtube className="w-3 h-3" />
                     Subscribe
@@ -195,27 +218,47 @@ export default function FeaturedContent() {
         </div>
 
         {/* Memoirs Studio Pro Link */}
-        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-pink-700/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+          style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.35)' }}>
           <div className="flex items-center gap-4">
             <span className="text-4xl">📖</span>
             <div>
               <h3 className="text-white font-bold text-lg">Memoirs Studio Pro</h3>
               <p className="text-white/50 text-sm">Professional streaming studio by Memoirs of a Shy Girl</p>
-              <p className="text-[11px] text-pink-300/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
+              <p className="text-[11px] text-[#D4854A]/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
             </div>
           </div>
           <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
-            <button style={{ background: '#FF1564', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button style={{ background: '#C0392B', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               <ExternalLink className="w-4 h-4" />
               Visit Studio Pro
             </button>
           </a>
         </div>
 
+        <SpotlightSection communityId={userCommunityId} currentUser={user} />
+        <YouTubeDiscovery />
+        <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <ViewerCount count={0} peakViewers={0} />
+          <LoveHearts roomId={roomId} currentUser={user} creatorId={user?.id} />
+          <EmbedPlayer roomId={roomId} streamTitle="Featured Stream" viewerCount={0} />
+        </div>
+
         <div className="text-center">
           <Link to={createPageUrl('Home')}>
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>← Back to Home</button>
           </Link>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+          <StreamGoals isHost={false} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>

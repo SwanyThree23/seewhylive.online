@@ -28,7 +28,6 @@ export default function SubscriptionGate({ creatorId, roomId }) {
           setUserSubscription(sub?.[0]);
         }
       } catch (error) {
-        console.error('Subscription fetch error:', error);
       }
       setLoading(false);
     };
@@ -38,9 +37,12 @@ export default function SubscriptionGate({ creatorId, roomId }) {
 
   const handleSubscribe = async (tierId) => {
     try {
-      await base44.functions.invoke('createSubscription', {
+      await base44.entities.ViewerSubscription.create({
         tier_id: tierId,
         creator_id: creatorId,
+        viewer_id: (await base44.auth.me())?.id,
+        status: 'active',
+        started_at: new Date().toISOString(),
       });
       // Refresh subscription
       const user = await base44.auth.me();
@@ -50,14 +52,13 @@ export default function SubscriptionGate({ creatorId, roomId }) {
       });
       setUserSubscription(sub?.[0]);
     } catch (error) {
-      console.error('Subscribe error:', error);
     }
   };
 
   if (loading || tiers.length === 0) return null;
 
   return (
-    <div className="p-3 rounded-lg" style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}20` }}>
+    <div className="p-3 rounded-lg" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
       <div className="flex items-center gap-2 mb-3">
         <Crown className="w-4 h-4" style={{ color: G }} />
         <span className="text-xs font-bold uppercase tracking-wider" style={{ color: G }}>Subscribe</span>

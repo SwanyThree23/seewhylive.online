@@ -12,8 +12,8 @@ const CREAM = '#F5E6D3';
 
 const RARITY_STYLE = {
   common:    { color: 'rgba(255,255,255,0.4)', label: 'COMMON',    shimmer: false },
-  rare:      { color: '#4FC3F7',              label: 'RARE',      shimmer: false },
-  epic:      { color: '#CE93D8',              label: 'EPIC',      shimmer: false },
+  rare:      { color: '#D4AF37',              label: 'RARE',      shimmer: false },
+  epic:      { color: '#D4854A',              label: 'EPIC',      shimmer: false },
   legendary: { color: G,                      label: 'LEGENDARY', shimmer: true  },
 };
 
@@ -77,8 +77,8 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
         room_id: roomId,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: gift.price * 0.85,
-        platform_fee: gift.price * 0.15,
+        creator_amount: Math.floor(gift.price  * 90) / 100,
+        platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
         to_user_id: recipientId,
@@ -88,10 +88,26 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
       await base44.entities.AnimatedGift.update(gift.id, { times_sent: (gift.times_sent || 0) + 1 }).catch(() => {});
     },
     onSuccess: (_, gift) => {
-      navigator.vibrate?.([15, 50, 15, 50, 15]);
+      navigator.vibrate?.([60, 30, 60, 30, 120]);
       setSending(gift);
       setOpen(false);
       qc.invalidateQueries(['gift-senders', roomId]);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        recipientId && base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name || 'gift'} from ${currentUser.full_name || 'viewer'}`,
+          amount: gift.price,
+          sender_id: currentUser.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Could not send gift'),
   });
@@ -160,7 +176,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                             <p className="text-[11px] font-bold text-center leading-tight" style={{ color: CREAM }}>{gift.name}</p>
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="text-[7px] font-black uppercase" style={{ color: rarity.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{rarity.label}</span>
-                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(255,21,100,0.2)', color: '#FF1564' }}>LIMITED</span>}
+                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>LIMITED</span>}
                             </div>
                             <span className="font-black text-[11px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>${gift.price}</span>
                           </button>

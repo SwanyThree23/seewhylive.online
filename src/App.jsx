@@ -5,6 +5,7 @@ import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import PageNotFound from './lib/PageNotFound';
 import Greenroom from './pages/Greenroom';
 import ControlRoom from './pages/ControlRoom';
@@ -42,6 +43,18 @@ import TributeWall from './pages/TributeWall';
 import INSForge from './pages/INSForge';
 import JoyceAI from './pages/JoyceAI';
 import GuardianAI from './pages/GuardianAI';
+import ContentCalendar from './pages/ContentCalendar';
+import MultiPlatformIntegration from './pages/MultiPlatformIntegration';
+import MultiStreamManager from './pages/MultiStreamManager';
+import GoLiveStudio from './pages/GoLiveStudio';
+import PayoutCenter from './pages/PayoutCenter';
+import FallenLegendsPage from './pages/FallenLegendsPage';
+import WashingtonClassic from './pages/WashingtonClassic';
+import INSForgeStudio from './pages/INSForgeStudio';
+import CreatorAnalytics from './pages/CreatorAnalytics';
+import SVSArena from './pages/SVSArena';
+import WisperFlo from './pages/WisperFlo';
+import StudioHub from './pages/StudioHub';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
@@ -88,18 +101,22 @@ const AuthenticatedApp = () => {
     }>
     <Routes>
       <Route path="/" element={
-        <LayoutWrapper currentPageName={mainPageKey}>
-          <MainPage />
-        </LayoutWrapper>
+        <ErrorBoundary>
+          <LayoutWrapper currentPageName={mainPageKey}>
+            <MainPage />
+          </LayoutWrapper>
+        </ErrorBoundary>
       } />
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
           path={`/${path}`}
           element={
-            <LayoutWrapper currentPageName={path}>
-              <Page />
-            </LayoutWrapper>
+            <ErrorBoundary>
+              <LayoutWrapper currentPageName={path}>
+                <Page />
+              </LayoutWrapper>
+            </ErrorBoundary>
           }
         />
       ))}
@@ -137,7 +154,19 @@ const AuthenticatedApp = () => {
       <Route path="/INSForge" element={<LayoutWrapper currentPageName="INSForge"><INSForge /></LayoutWrapper>} />
       <Route path="/JoyceAI" element={<LayoutWrapper currentPageName="JoyceAI"><JoyceAI /></LayoutWrapper>} />
       <Route path="/GuardianAI" element={<LayoutWrapper currentPageName="GuardianAI"><GuardianAI /></LayoutWrapper>} />
+      <Route path="/ContentCalendar" element={<LayoutWrapper currentPageName="ContentCalendar"><ContentCalendar /></LayoutWrapper>} />
+      <Route path="/MultiPlatformIntegration" element={<LayoutWrapper currentPageName="MultiPlatformIntegration"><MultiPlatformIntegration /></LayoutWrapper>} />
+      <Route path="/MultiStreamManager" element={<LayoutWrapper currentPageName="MultiStreamManager"><MultiStreamManager /></LayoutWrapper>} />
+      <Route path="/GoLiveStudio" element={<GoLiveStudio />} />
+      <Route path="/PayoutCenter" element={<LayoutWrapper currentPageName="PayoutCenter"><PayoutCenter /></LayoutWrapper>} />
+      <Route path="/FallenLegends" element={<LayoutWrapper currentPageName="FallenLegends"><FallenLegendsPage /></LayoutWrapper>} />
+      <Route path="/WashingtonClassic" element={<LayoutWrapper currentPageName="WashingtonClassic"><WashingtonClassic /></LayoutWrapper>} />
+      <Route path="/INSForgeStudio" element={<LayoutWrapper currentPageName="INSForgeStudio"><INSForgeStudio /></LayoutWrapper>} />
+      <Route path="/CreatorAnalytics" element={<LayoutWrapper currentPageName="CreatorAnalytics"><CreatorAnalytics /></LayoutWrapper>} />
+      <Route path="/SVSArena" element={<LayoutWrapper currentPageName="SVSArena"><SVSArena /></LayoutWrapper>} />
+      <Route path="/WisperFlo" element={<LayoutWrapper currentPageName="WisperFlo"><WisperFlo /></LayoutWrapper>} />
       <Route path="/SeeWhyLIVEv36" element={<SeeWhyLIVEv36 />} />
+      <Route path="/StudioHub" element={<LayoutWrapper currentPageName="StudioHub"><StudioHub /></LayoutWrapper>} />
       <Route path="/login" element={<Login />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
@@ -149,20 +178,22 @@ const AuthenticatedApp = () => {
 function App() {
 
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <BackgroundProvider>
-        <Router>
-          <NavigationTracker />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/*" element={<AuthenticatedApp />} />
-          </Routes>
-        </Router>
-        <Toaster />
-        </BackgroundProvider>
-      </QueryClientProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <BackgroundProvider>
+          <Router>
+            <NavigationTracker />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/*" element={<AuthenticatedApp />} />
+            </Routes>
+          </Router>
+          <Toaster />
+          </BackgroundProvider>
+        </QueryClientProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 

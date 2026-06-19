@@ -1,35 +1,41 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import AIModeration from '../components/live/AIModeration';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
-const WARN  = '#F59E0B';
-const ORANGE= '#F97316';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
+const WARN  = '#D4AF37';
+const ORANGE= '#D4854A';
 const RED   = '#E74C3C';
 const PILL  = 999;
 
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
-
-const SAMPLE_LOG = [
-  { time: '9:04 PM', user: 'anon_2931',  msg: 'spam spam spam spam',           risk: 0.82, action: 'MUTED'   },
-  { time: '9:03 PM', user: 'viewer_445', msg: 'Great stream! WA is dominating 🔥', risk: 0.04, action: 'ALLOWED' },
-  { time: '9:02 PM', user: 'troll_99',   msg: '[content removed]',              risk: 0.97, action: 'BANNED'  },
-  { time: '9:01 PM', user: 'DomFan22',   msg: 'Big Bone Earl tribute was 🙏',   risk: 0.03, action: 'ALLOWED' },
-  { time: '9:00 PM', user: 'hype_lord',  msg: 'LETS GOOOOO!!!! 🏆',             risk: 0.12, action: 'ALLOWED' },
-  { time: '8:58 PM', user: 'lurker_007', msg: 'first time here — love it',      risk: 0.02, action: 'ALLOWED' },
-];
 
 const ACTION_CONFIG = {
   ALLOWED: { color: GREEN,  label: 'ALLOWED' },
@@ -78,6 +84,21 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 
 export default function GuardianAI() {
   const queryClient = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
   const [banT,   setBanT]   = useState(95);
@@ -96,17 +117,15 @@ export default function GuardianAI() {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [moderations]);
 
-  const displayLog = moderations.length > 0
-    ? moderations.map(m => ({
-        time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        user: m.content_id?.slice(0, 12) || 'unknown',
-        msg:  m.ai_explanation || m.violation_type || '—',
-        risk: m.ai_confidence ?? 0,
-        action: m.action_taken === 'none' ? 'ALLOWED'
-              : m.action_taken === 'flagged' ? 'FLAGGED'
-              : m.action_taken?.toUpperCase() || 'FLAGGED',
-      }))
-    : SAMPLE_LOG;
+  const displayLog = moderations.map(m => ({
+    time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+    user: m.content_id?.slice(0, 12) || 'unknown',
+    msg:  m.ai_explanation || m.violation_type || '—',
+    risk: m.ai_confidence ?? 0,
+    action: m.action_taken === 'none' ? 'ALLOWED'
+          : m.action_taken === 'flagged' ? 'FLAGGED'
+          : m.action_taken?.toUpperCase() || 'FLAGGED',
+  }));
 
   const violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
   const allowedCount   = displayLog.filter(e => e.action === 'ALLOWED').length;
@@ -198,7 +217,7 @@ export default function GuardianAI() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,
-            background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)'
+            background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)'
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>ACTIVE</span>
@@ -301,6 +320,10 @@ export default function GuardianAI() {
               <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
                 Loading moderation log…
               </div>
+            ) : displayLog.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
+                No moderation events yet — click SCAN NOW to analyze recent messages
+              </div>
             ) : displayLog.map((e, i) => {
               const cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.FLAGGED;
               const riskPct = Math.floor(e.risk * 100);
@@ -377,6 +400,42 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIModeration roomId={roomId} isHost={false} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} userId={user?.id} action={null} />
+        <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+        <ReportsManager communityId={userCommunityId} userId={user?.id} />
+        <ChallengeAnalytics communityId={userCommunityId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 AI Hub
+          </button>
+        </Link>
+        <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 Joyce AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            ✨ Aura AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

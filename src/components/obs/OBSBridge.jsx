@@ -140,17 +140,17 @@ export default function OBSBridge() {
   };
 
   return (
-    <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(0,212,255,0.15)', borderRadius:12, overflow:'hidden', color:'#fff' }}>
+    <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(212,175,55,0.15)', borderRadius:12, overflow:'hidden', color:'#fff' }}>
       {/* Header */}
       <div style={{ padding:'16px 16px 12px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:700, color:'#00d4ff' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:700, color:'#D4AF37' }}>
           <Monitor style={{ width:16, height:16 }} /> OBS Studio Bridge
         </div>
         <span style={{
           fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif',
-          background: connected ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
-          color: connected ? '#4ade80' : 'rgba(255,255,255,0.4)',
-          border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          background: connected ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+          color: connected ? '#6DBF7E' : 'rgba(255,255,255,0.4)',
+          border: `1px solid ${connected ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}`,
           display:'flex', alignItems:'center', gap:4,
         }}>
           {connected
@@ -181,7 +181,7 @@ export default function OBSBridge() {
             <button
               onClick={connect}
               disabled={connecting}
-              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#00d4ff', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: connecting ? 'not-allowed' : 'pointer', opacity: connecting ? 0.7 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: connecting ? 'not-allowed' : 'pointer', opacity: connecting ? 0.7 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Wifi style={{ width:16, height:16 }} />
               {connecting ? 'Connecting...' : 'Connect to OBS'}
@@ -193,15 +193,15 @@ export default function OBSBridge() {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
               <button
                 onClick={toggleStream}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#dc2626' : '#15803d', color:'#fff' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', border:'none', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', background: streaming ? '#C0392B' : '#4A9B5E', color:'#fff' }}
               >
                 {streaming ? <><Square style={{ width:16, height:16 }} /> Stop Stream</> : <><Play style={{ width:16, height:16 }} /> Start Stream</>}
               </button>
               <button
                 onClick={toggleRecord}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#f87171' : 'rgba(255,255,255,0.6)' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(192,57,43,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#FF4444' : 'rgba(255,255,255,0.6)' }}
               >
-                <Circle style={{ width:16, height:16, fill: recording ? '#ef4444' : 'transparent', color: recording ? '#ef4444' : 'currentColor' }} />
+                <Circle style={{ width:16, height:16, fill: recording ? '#C0392B' : 'transparent', color: recording ? '#C0392B' : 'currentColor' }} />
                 {recording ? 'Stop Rec' : 'Start Rec'}
               </button>
             </div>
@@ -216,7 +216,7 @@ export default function OBSBridge() {
                 ].map(s => (
                   <div key={s.label} style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:8, textAlign:'center' }}>
                     <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', margin:'0 0 2px' }}>{s.label}</p>
-                    <p style={{ fontSize:14, fontWeight:700, color:'#00d4ff', margin:0 }}>{s.value}</p>
+                    <p style={{ fontSize:14, fontWeight:700, color:'#D4AF37', margin:0 }}>{s.value}</p>
                   </div>
                 ))}
               </div>
@@ -242,16 +242,16 @@ export default function OBSBridge() {
                       onClick={() => switchScene(scene.sceneName)}
                       style={{
                         width:'100%', display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:12, fontSize:14, border:'none', cursor:'pointer', transition:'all 0.15s', textAlign:'left',
-                        background: active ? 'rgba(0,212,255,0.15)' : 'rgba(255,255,255,0.05)',
-                        borderLeft: active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
-                        color: active ? '#00d4ff' : 'rgba(255,255,255,0.6)',
+                        background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+                        borderLeft: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
+                        color: active ? '#D4AF37' : 'rgba(255,255,255,0.6)',
                         fontWeight: active ? 600 : 400,
                       }}
                     >
                       <ChevronRight style={{ width:14, height:14, flexShrink:0, opacity: active ? 1 : 0 }} />
                       <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{scene.sceneName}</span>
                       {active && (
-                        <span style={{ fontSize:11, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(0,212,255,0.2)', color:'#00d4ff', border:'1px solid rgba(0,212,255,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
+                        <span style={{ fontSize:11, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
                       )}
                     </button>
                   );

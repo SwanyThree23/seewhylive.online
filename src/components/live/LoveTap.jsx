@@ -5,10 +5,10 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 const GOLD    = '#D4AF37';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 
-const PARTICLE_COLORS = [PINK, GOLD, '#FF6B9D', '#FFD700', '#E8003D'];
+const PARTICLE_COLORS = [PINK, GOLD, '#C0392B', '#D4AF37', '#E8003D'];
 
 function formatAmount(cents) {
   if (cents >= 100) {
@@ -235,7 +235,7 @@ export default function LoveTap({ roomId, user, creatorId, creatorName }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: `0 4px 18px rgba(255,21,100,0.35)`,
+          boxShadow: `0 4px 18px rgba(192,57,43,0.35)`,
           userSelect: 'none',
           opacity: disabled ? 0.4 : 1,
           touchAction: 'none',

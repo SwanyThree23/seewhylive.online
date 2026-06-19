@@ -85,7 +85,7 @@ export default function UserMenu({ user, isAdmin }) {
         onClick={() => setOpen(v => !v)}
         style={{
           width:40, height:40, borderRadius:'50%', overflow:'hidden',
-          background:'linear-gradient(135deg,#92400e,#d97706)', border:'none', cursor:'pointer',
+          background:'linear-gradient(135deg,#800020,#D4854A)', border:'none', cursor:'pointer',
           display:'flex', alignItems:'center', justifyContent:'center',
           color:'#fff', fontWeight:700, fontSize:14, padding:0,
         }}
@@ -101,7 +101,7 @@ export default function UserMenu({ user, isAdmin }) {
           <div
             style={{
               position:'absolute', top:'calc(100% + 8px)', right:0, zIndex:100,
-              background:'rgba(13,6,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+              background:'rgba(8,11,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
               borderRadius:12, boxShadow:'0 12px 40px rgba(0,0,0,0.7)',
               width:224, maxHeight:'85vh', overflowY:'auto',
             }}
@@ -152,8 +152,8 @@ export default function UserMenu({ user, isAdmin }) {
             <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
             <button
               onClick={handleLogout}
-              style={{ ...menuItemStyle, color:'#ef4444', marginBottom:4 }}
-              onMouseEnter={e => e.currentTarget.style.background='rgba(239,68,68,0.1)'}
+              style={{ ...menuItemStyle, color:'#C0392B', marginBottom:4 }}
+              onMouseEnter={e => e.currentTarget.style.background='rgba(192,57,43,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background='transparent'}
             >
               <LogOut style={{ width:16, height:16 }} />

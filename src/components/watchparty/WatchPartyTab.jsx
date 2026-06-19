@@ -216,7 +216,7 @@ function ScreenShareMode({ user, party }) {
         )}
         {screenStream && (
           <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 6 }}>
-            <StatsBadge label="LIVE" color="#FF1564" />
+            <StatsBadge label="LIVE" color="#C0392B" />
             {streamSettings && (
               <>
                 <StatsBadge label={streamSettings.width + 'x' + streamSettings.height} />
@@ -251,7 +251,7 @@ function ScreenShareMode({ user, party }) {
         ) : (
           <ActionButton
             onClick={stopSharing}
-            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.35)', color: '#FF1564' }}
+            style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
           >
             Stop Sharing
           </ActionButton>
@@ -412,7 +412,7 @@ function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
             style={{
               flex: 1,
               padding: '8px 12px',
-              background: 'rgba(17,8,34,0.85)',
+              background: 'rgba(8,11,24,0.85)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 8,
               color: '#fff',
@@ -642,7 +642,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
           <>
             <ActionButton
               onClick={stopCamera}
-              style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.35)', color: '#FF1564' }}
+              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
             >
               Stop Camera
             </ActionButton>
@@ -706,7 +706,7 @@ function RemoteTile({ peerId, stream, members }) {
           position: 'absolute',
           inset: 2,
           clipPath: OCT,
-          background: '#0d0618',
+          background: '#080B18',
           overflow: 'hidden',
         }}>
           {stream ? (

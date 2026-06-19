@@ -2,14 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronDown, ChevronUp, Settings,
   Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import SelectSheet from '../components/shared/SelectSheet';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PrivatePanel from '../components/live/PrivatePanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -27,7 +38,7 @@ function PermissionPill({ label, status }) {
   const cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
     denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
-    prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
+    prompt:  { color: '#D4AF37', border: 'rgba(212,175,55,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
   return (
@@ -60,7 +71,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
       const roomId = new URLSearchParams(window.location.search).get('room_id');
-      window.location.href = `/LiveRoom?id=${roomId}`;
+      navigate(`/LiveRoom?id=${roomId}`);
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
@@ -82,7 +93,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
         <X className="w-12 h-12 text-red-400" />
         <div>
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
           {entry?.deny_reason && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
         </div>
@@ -160,6 +171,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 }
 
 export default function GreenroomPage() {
+  const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get('room_id');
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
@@ -390,7 +402,7 @@ export default function GreenroomPage() {
                   <p className="font-black text-sm text-white truncate">{room.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded"
-                      style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                       {room.status}
                     </span>
                     <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
@@ -546,7 +558,7 @@ export default function GreenroomPage() {
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl"
                   style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)' }}>
-                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <CheckCircle className="w-4 h-4 text-[#6DBF7E]" />
                   <span className="text-[10px] font-black uppercase" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Device Check ✓
                   </span>
@@ -584,6 +596,20 @@ export default function GreenroomPage() {
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              {isHost && <StreamGoals isHost={true} />}
+              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
+              <PrivatePanel roomId={room?.id || null} currentUser={user} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
+              <OnlineUsersGrid compact maxVisible={10} />
+              <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+              <CollaborationMatcher />
+            </div>
           </div>
         </div>
       </div>

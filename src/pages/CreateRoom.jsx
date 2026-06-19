@@ -5,18 +5,31 @@ import { Switch } from "@/components/ui/switch";
 import { Video, Mic, CalendarIcon, Plus, X, Upload, Radio } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
+import StreamGoals from '../components/live/StreamGoals';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function Section({ title, children }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
       <p className="font-black text-sm mb-4" style={{ color: GOLD, ...T }}>{title}</p>
       {children}
     </div>
@@ -24,6 +37,7 @@ function Section({ title, children }) {
 }
 
 export default function CreateRoomPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -40,6 +54,7 @@ export default function CreateRoomPage() {
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: communities = [] } = useQuery({
     queryKey: ['myCommunities'],
@@ -71,7 +86,14 @@ export default function CreateRoomPage() {
     },
     onSuccess: (room) => {
       toast.success('Room created successfully!');
-      window.location.href = `/LiveRoom?id=${room.id}`;
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Created room: ${room.title || 'New Room'}`,
+        }).catch(() => {});
+      }
+      navigate(`/LiveRoom?id=${room.id}`);
     },
     onError: () => toast.error('Failed to create room. Please try again.'),
   });
@@ -244,6 +266,19 @@ export default function CreateRoomPage() {
             </div>
           </Section>
 
+          {/* Stream readiness tools */}
+          {user?.id && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+              <StreamGoals isHost={true} />
+              <ZEGOStreamHealthCard roomId={roomId} />
+              <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+              <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+              <StreamMetadataEditor />
+              <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+              <GreenroomQueue roomId={roomId} isHost={true} />
+            </div>
+          )}
+
           {/* Submit */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={() => window.history.back()}
@@ -258,6 +293,15 @@ export default function CreateRoomPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
       </div>
     </div>
   );

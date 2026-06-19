@@ -1,8 +1,25 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 const GOLD = '#D4AF37';
 const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -60,7 +77,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pb-4">
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl p-5 space-y-4 z-10"
-        style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
         <p className="font-black text-base text-white" style={T}>{title}</p>
         {children}
         <button onClick={onClose} className="w-full py-2 rounded-xl text-xs font-black uppercase"
@@ -97,6 +114,9 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
   const [vaultPassword, setVaultPassword]   = useState('');
@@ -309,7 +329,7 @@ export default function VaultPro() {
         {/* Error banner */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold"
-            style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+            style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
             {error}
             <button onClick={() => setError('')} className="ml-3 underline opacity-70">Dismiss</button>
           </div>
@@ -397,12 +417,12 @@ export default function VaultPro() {
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
-                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,136,0,0.7)', ...T }}>Auto-hides in 10s</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(212,133,74,0.7)', ...T }}>Auto-hides in 10s</p>
                       )}
                     </div>
                     <button onClick={() => handleRevealKey(key)}
                       className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 shrink-0"
-                      style={{ background: revealedKeys[key.id] ? 'rgba(255,21,100,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#FF1564' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(255,21,100,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
+                      style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
                   </div>
@@ -595,6 +615,50 @@ export default function VaultPro() {
           </button>
         </div>
       )}
+
+      {/* Community spotlight + milestone alerts */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <MilestoneAlerts creatorId={user?.id} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('CreatorDashboard')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            📊 Creator Dashboard
+          </button>
+        </Link>
+        <Link to={createPageUrl('Dashboard')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🏠 Dashboard
+          </button>
+        </Link>
+        <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            ⚙️ Settings
+          </button>
+        </Link>
+        <Link to={createPageUrl('Monetization')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            💰 Monetization
+          </button>
+        </Link>
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <EarningsBreakdown userId={user?.id} />
+        <RevenueDashboard userId={user?.id} />
+        <StreamerMonetizationCenter userId={user?.id} />
+        <MonetizationDashboard roomId={roomId} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />
+        <VirtualGoodsStore userId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <ShareToSocial url={window.location.href} title="Secured with SeeWhy LIVE Vault Pro" />
+      </div>
     </div>
   );
 }

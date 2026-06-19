@@ -10,11 +10,38 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import BitratePresets from '../components/streaming/BitratePresets';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import GuestGrid from '../components/live/GuestGrid';
+import GuestControls from '../components/live/GuestControls';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import StreamChatbot from '../components/live/StreamChatbot';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import ShareModal from '../components/live/ShareModal';
+import WebhookHooks from '../components/live/WebhookHooks';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK    = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT = 'Barlow Condensed, sans-serif';
 
@@ -46,7 +73,7 @@ const FORMATS = [
     title: 'Watch Party',
     subtitle: 'Sync a video. React together in real time.',
     features: ['🔗 Sync', '💬 Chat', '🖥️ Screen Share', '4K'],
-    color: '#5B6EF5',
+    color: '#D4854A',
     dest: 'WatchParty',
   },
   {
@@ -56,7 +83,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#26A69A',
+    color: '#6DBF7E',
     dest: 'AudioRoom',
   },
 ];
@@ -78,7 +105,7 @@ function FormatCard({ fmt, onSelect }) {
         width: '100%',
         padding: '16px 18px',
         borderRadius: 16,
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid rgba(255,255,255,0.08)`,
         borderLeft: `4px solid ${fmt.color}`,
         cursor: 'pointer',
@@ -174,7 +201,7 @@ function CameraPreview({ onStreamReady }) {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 4,
           padding: '3px 8px', borderRadius: 999,
-          background: camOn ? 'rgba(255,21,100,0.85)' : 'rgba(0,0,0,0.5)',
+          background: camOn ? 'rgba(192,57,43,0.85)' : 'rgba(0,0,0,0.5)',
           fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT,
           letterSpacing: '0.08em',
         }}>
@@ -186,8 +213,8 @@ function CameraPreview({ onStreamReady }) {
       <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
         <button onClick={toggleMic} style={{
           width: 32, height: 32, borderRadius: '50%',
-          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(239,68,68,0.2)',
-          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(239,68,68,0.4)'}`,
+          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)',
+          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
         }}>
           {micOn
@@ -308,12 +335,20 @@ export default function GoLive() {
   const [description, setDescription] = useState('');
   const [isExclusive, setIsExclusive] = useState(false);
   const [launching,   setLaunching]   = useState(false);
+  const [bitratePreset, setBitratePreset] = useState('720p30');
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const streamKey = user?.id
     ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
@@ -382,6 +417,12 @@ export default function GoLive() {
       });
       setPartyId(party.id);
       setCountdown(true);
+      base44.entities.Activity.create({
+        user_id: user?.id,
+        type: 'room_created',
+        title: `Started streaming: ${title.trim()}`,
+        description: category || '',
+      }).catch(() => {});
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);
@@ -463,7 +504,7 @@ export default function GoLive() {
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
 
             <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)' }}>
-              <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+              <Link to={createPageUrl('GreenRoomPreFlight')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                 <span style={{ fontSize: 28 }}>🎬</span>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>
@@ -659,9 +700,52 @@ export default function GoLive() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, textAlign: 'center' }}>
               Configure OBS: Server → <code style={{ color: 'rgba(255,255,255,0.35)' }}>rtmp://ingest.seewhylive.online/live</code>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Stream Health</span>
+              <StreamHealthMonitor isStreaming={false} />
+            </div>
+
+            <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+            <AdvancedEncoderSettings onApply={() => {}} />
+
+            {user?.id && (
+              <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
+                <DestinationsManager userId={user.id} />
+              </div>
+            )}
+
+            {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
+            {partyId && user?.id && (
+              <ZEGOGoLiveFlow roomId={partyId} userId={user.id} onLive={() => {}} />
+            )}
+
+            {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+
+            {partyId && user && (
+              <PreStreamCountdown room={{ id: partyId }} currentUser={user} onGoLive={() => {}} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Quick-links before the go-live button */}
+      {step === 'setup' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '0 16px 80px', justifyContent: 'center' }}>
+          {[
+            { label: '📅 Scheduler', href: 'StreamScheduler' },
+            { label: '📡 Multi-Platform', href: 'MultiPlatform' },
+            { label: '🎛 Control Room', href: 'ControlRoom' },
+            { label: '📊 Analytics', href: 'StreamAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: FONT, fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       {step === 'setup' && (
         <div style={{
@@ -691,7 +775,7 @@ export default function GoLive() {
                 ? `linear-gradient(135deg, ${CRIMSON}, ${PINK})`
                 : 'rgba(255,255,255,0.06)',
               color: title.trim() ? '#fff' : 'rgba(255,255,255,0.2)',
-              boxShadow: title.trim() ? `0 4px 24px rgba(255,21,100,0.4)` : 'none',
+              boxShadow: title.trim() ? `0 4px 24px rgba(192,57,43,0.4)` : 'none',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
@@ -705,6 +789,24 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CameraSourcePicker onSourceSelected={() => {}} currentDeviceId={null} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamHealthDashboard isLive={false} />
+        <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />
+        <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || 'Host'} room={partyId ? { id: partyId } : null} />
+        <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={partyId} />
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="My Stream" />
+        <WebhookHooks roomId={partyId} userId={user?.id} isHost={true} />
+        <RTMPFanoutPanel roomId={partyId} isHost={true} />
+        <GuestInviteGenerator roomId={partyId} isHost={true} />
+        <StreamGoals isHost={true} />
+        <SwanAIRecommendations roomId={partyId} currentLayout="broadcast" viewerCount={0} />
+        <MilestoneAlerts userId={user?.id} roomId={partyId} />
+      </div>
     </div>
   );
 }

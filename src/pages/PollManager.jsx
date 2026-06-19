@@ -3,12 +3,27 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import WatchPartyPoll from '../components/watchparty/WatchPartyPoll';
+import LivePoll from '../components/live/LivePoll';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import PollCard from '../components/community/PollCard';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 const categories = {
@@ -21,6 +36,7 @@ export default function PollManager() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: templates } = useQuery({
     queryKey: ['pollTemplates', user?.id],
@@ -30,10 +46,17 @@ export default function PollManager() {
 
   const createTemplateMutation = useMutation({
     mutationFn: (data) => base44.entities.PollTemplate.create({ ...data, creator_id: user.id }),
-    onSuccess: () => {
+    onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll template: ${template?.name || template?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -41,6 +64,12 @@ export default function PollManager() {
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));
   const handleRemoveOption = (idx) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
@@ -73,7 +102,7 @@ export default function PollManager() {
         {/* Create form */}
         {showForm && (
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
+            className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <h2 className="font-black text-sm text-white mb-2" style={T}>New Poll Template</h2>
             <label style={lbl}>Template Name</label>
             <input placeholder="e.g., Quick Yes/No" value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} style={inp} />
@@ -86,8 +115,8 @@ export default function PollManager() {
                   <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
-                      className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
-                      <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                      className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
+                      <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
                 </div>
@@ -139,18 +168,18 @@ export default function PollManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {templates?.map(template => (
             <motion.div key={template.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              className="p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-black text-sm text-white" style={T}>{template.name}</h3>
                   <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase mt-1 inline-block"
-                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#a78bfa' }}>
+                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
                     {categories[template.category]}
                   </span>
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
-                  className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
-                  <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                  className="p-1.5 rounded-lg" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', cursor: 'pointer' }}>
+                  <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>
               <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{template.question}</p>
@@ -175,6 +204,41 @@ export default function PollManager() {
             <p className="text-sm mb-4" style={T}>No templates yet. Create your first one!</p>
           </div>
         )}
+
+        {user && (
+          <div className="mt-6 space-y-4">
+            <LivePoll roomId={roomId} isHost={true} />
+            <WatchPartyPoll partyId={null} roomId={roomId} currentUser={user} isHost={true} />
+          </div>
+        )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={false} />
+          <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
+          <PollCard poll={null} />
+          <LivePollOverlay roomId={roomId} currentUser={user} isHost={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🔴 Go Live',          href: 'GoLive'           },
+            { label: '🎬 Broadcast Studio', href: 'BroadcastStudio'  },
+            { label: '🎙️ Audio Room',       href: 'AudioRoom'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

@@ -6,10 +6,10 @@ import { motion } from 'framer-motion';
 import { Calendar, RefreshCw } from 'lucide-react';
 
 const statusColors = {
-  active:    { background: 'rgba(34,197,94,0.15)',  color: '#22c55e',           border: '1px solid rgba(34,197,94,0.3)' },
-  cancelled: { background: 'rgba(239,68,68,0.15)',  color: '#ef4444',           border: '1px solid rgba(239,68,68,0.3)' },
+  active:    { background: 'rgba(109,191,126,0.15)',  color: '#6DBF7E',           border: '1px solid rgba(109,191,126,0.3)' },
+  cancelled: { background: 'rgba(192,57,43,0.15)',  color: '#C0392B',           border: '1px solid rgba(192,57,43,0.3)' },
   expired:   { background: 'rgba(107,114,128,0.15)',color: '#9ca3af',           border: '1px solid rgba(107,114,128,0.3)' },
-  paused:    { background: 'rgba(234,179,8,0.15)',  color: '#eab308',           border: '1px solid rgba(234,179,8,0.3)' },
+  paused:    { background: 'rgba(212,175,55,0.15)',  color: '#D4AF37',           border: '1px solid rgba(212,175,55,0.3)' },
 };
 
 export default function MySubscriptions({ userId }) {
@@ -51,7 +51,7 @@ export default function MySubscriptions({ userId }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {subs.map((sub, idx) => (
         <motion.div key={sub.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}>
-          <div style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <div style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>{sub.tier_name}</span>
@@ -89,7 +89,7 @@ export default function MySubscriptions({ userId }) {
                   {sub.auto_renew ? 'Disable Renew' : 'Enable Renew'}
                 </button>
                 <button
-                  style={{ fontSize: 12, height: 28, padding: '0 10px', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 6, color: '#ef4444', cursor: cancelMutation.isPending ? 'not-allowed' : 'pointer', opacity: cancelMutation.isPending ? 0.6 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+                  style={{ fontSize: 12, height: 28, padding: '0 10px', background: 'transparent', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 6, color: '#C0392B', cursor: cancelMutation.isPending ? 'not-allowed' : 'pointer', opacity: cancelMutation.isPending ? 0.6 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
                   onClick={() => cancelMutation.mutate(sub.id)}
                   disabled={cancelMutation.isPending}
                 >

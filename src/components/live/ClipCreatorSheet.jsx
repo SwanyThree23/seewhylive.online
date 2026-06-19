@@ -31,11 +31,18 @@ export default function ClipCreatorSheet({ roomId, sessionId, creatorId, elapsed
       view_count: 0,
       share_count: 0,
     }),
-    onSuccess: () => {
+    onSuccess: (clip) => {
       qc.invalidateQueries({ queryKey:['room-clips', roomId] });
       qc.invalidateQueries({ queryKey:['clips'] });
       setToast('Clip saved! 🎬');
       setTimeout(() => { setToast(''); onClose(); }, 1800);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'clip_created',
+          title: `Clipped: ${clip?.title || title}`,
+        }).catch(() => {});
+      }
     },
   });
 

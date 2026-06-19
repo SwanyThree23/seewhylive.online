@@ -14,11 +14,12 @@ const ICE_SERVERS = {
   iceCandidatePoolSize: 10,
 };
 
-const ICE_TIMEOUT_MS = 30_000; // give up on ICE gathering after 30 s
+const ICE_TIMEOUT_MS = 30_000;
 const VALID_SIGNAL_TYPES = new Set(['peer_join', 'offer', 'answer', 'ice', 'peer_left']);
 
 /**
  * Full WebRTC peer mesh for multi-user live rooms.
+ * Signaling uses the RTCSignal entity (not ZEGOStream which is ZEGO SDK config only).
  * Security hardening:
  *  - Cryptographically secure peer IDs (Web Crypto)
  *  - Incoming signal validation (peer ID format, signal type whitelist, max peers)
@@ -28,50 +29,51 @@ const VALID_SIGNAL_TYPES = new Set(['peer_join', 'offer', 'answer', 'ice', 'peer
  */
 export function useWebRTCPeers(roomId, localStream) {
   const peersRef = useRef(new Map()); // peerId → { pc, stream, iceTimer }
+  // Update ref synchronously every render — avoids one-render lag vs useEffect
   const localStreamRef = useRef(localStream);
+  localStreamRef.current = localStream;
+
   const [remoteStreams, setRemoteStreams] = useState(new Map());
   const [peerStates, setPeerStates] = useState(new Map());
   const [peerUserIds, setPeerUserIds] = useState(new Map());
-  // Crypto-secure self ID — not guessable, not forgeable by remote peers
   const selfIdRef = useRef(secureId('peer'));
 
+  // Replace (or add) tracks on existing connections when stream changes
   useEffect(() => {
-    localStreamRef.current = localStream;
-    // Replace tracks on existing connections when stream changes
+    if (!localStream) return;
     peersRef.current.forEach(({ pc }) => {
-      if (!localStream) return;
       const senders = pc.getSenders();
       localStream.getTracks().forEach(track => {
         const sender = senders.find(s => s.track?.kind === track.kind);
-        if (sender) sender.replaceTrack(track).catch(() => {});
+        if (sender) {
+          // Replace existing track on the sender
+          sender.replaceTrack(track).catch(() => {});
+        } else {
+          // No sender for this track kind yet — add it so the remote peer sees us
+          pc.addTrack(track, localStream);
+        }
       });
     });
   }, [localStream]);
 
-  // Signaling subscription
+  // Signaling subscription — uses RTCSignal entity (not ZEGOStream)
   useEffect(() => {
     if (!roomId) return;
 
-    const unsub = base44.entities.ZEGOStream.subscribe(async (event) => {
+    const unsub = base44.entities.RTCSignal.subscribe(async (event) => {
       const msg = event.data;
       if (!msg || msg.room_id !== roomId) return;
 
-      // Reject messages from self
       const from = msg.from_peer;
       if (from === selfIdRef.current) return;
 
-      // Whitelist-only signal types
       if (!VALID_SIGNAL_TYPES.has(msg.signal_type)) return;
-
-      // Validate sender's peer ID format — blocks arbitrary injected IDs
       if (!isValidPeerId(from)) return;
 
-      // Route messages addressed to us (or broadcasts with no to_peer)
       if (msg.to_peer && msg.to_peer !== selfIdRef.current) return;
 
       try {
         if (msg.signal_type === 'peer_join') {
-          // Enforce max-peer limit before allocating a new connection
           if (peersRef.current.size >= LIMITS.MAX_PEERS) return;
           if (msg.user_id && typeof msg.user_id === 'string') {
             setPeerUserIds(prev => new Map(prev).set(from, msg.user_id));
@@ -89,19 +91,18 @@ export function useWebRTCPeers(roomId, localStream) {
         } else if (msg.signal_type === 'peer_left') {
           removePeer(from);
         }
-      } catch (err) {
-        // Log but don't crash — a bad peer message should not break the room
-        console.warn('[WebRTC] signal error from', from, err?.message);
+      } catch {
+        // a bad peer message should not break the room
       }
     });
 
     return unsub;
   }, [roomId]);
 
-  // Send signals with explicit field mapping — no ...payload spread to prevent field injection
+  // Send signals via RTCSignal entity — explicit field mapping, no spread
   const sendSignal = useCallback((toPeer, signalType, payload = {}) => {
     const safe = sanitizeSignalPayload(payload);
-    base44.entities.ZEGOStream.create({
+    base44.entities.RTCSignal.create({
       room_id: roomId,
       from_peer: selfIdRef.current,
       to_peer: toPeer || null,
@@ -109,10 +110,7 @@ export function useWebRTCPeers(roomId, localStream) {
       sdp: safe.sdp || null,
       candidate: safe.candidate || null,
       user_id: safe.user_id || null,
-      created_at: new Date().toISOString(),
-    }).catch((err) => {
-      console.warn('[WebRTC] sendSignal failed:', signalType, err?.message);
-    });
+    }).catch(() => {});
   }, [roomId]);
 
   const createPeerConnection = useCallback((peerId) => {
@@ -121,35 +119,31 @@ export function useWebRTCPeers(roomId, localStream) {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     const remoteStream = new MediaStream();
 
-    // Add local tracks
+    // Add local tracks — localStreamRef.current is updated synchronously above,
+    // so this always sees the latest stream even on first peer connection after getUserMedia
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
         pc.addTrack(track, localStreamRef.current);
       });
     }
 
-    // Receive remote tracks
     pc.ontrack = (event) => {
       event.streams[0]?.getTracks().forEach(track => remoteStream.addTrack(track));
       setRemoteStreams(prev => new Map(prev).set(peerId, remoteStream));
     };
 
-    // ICE candidate gathered — send to remote peer
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         sendSignal(peerId, 'ice', { candidate: event.candidate.toJSON() });
       }
     };
 
-    // ICE gathering timeout — close stuck connections after 30 s
     const iceTimer = setTimeout(() => {
       if (pc.iceConnectionState === 'checking' || pc.iceConnectionState === 'new') {
-        console.warn('[WebRTC] ICE timeout for peer', peerId);
         removePeer(peerId);
       }
     }, ICE_TIMEOUT_MS);
 
-    // Connection state changes
     pc.onconnectionstatechange = () => {
       const state = pc.connectionState;
       setPeerStates(prev => new Map(prev).set(peerId, state));
@@ -161,24 +155,20 @@ export function useWebRTCPeers(roomId, localStream) {
     };
 
     pc.oniceconnectionstatechange = () => {
-      if (pc.iceConnectionState === 'failed') {
-        pc.restartIce();
-      }
+      if (pc.iceConnectionState === 'failed') pc.restartIce();
     };
 
     peersRef.current.set(peerId, { pc, stream: remoteStream, iceTimer });
     return pc;
   }, [sendSignal]);
 
-  // Initiate connection (we are the offerer)
   const addPeer = useCallback(async (peerId) => {
     const pc = createPeerConnection(peerId);
     try {
       const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
       await pc.setLocalDescription(offer);
       sendSignal(peerId, 'offer', { sdp: offer });
-    } catch (err) {
-      console.warn('[WebRTC] addPeer failed:', err?.message);
+    } catch {
       removePeer(peerId);
     }
     return pc;
@@ -195,18 +185,14 @@ export function useWebRTCPeers(roomId, localStream) {
   const handleIncomingAnswer = useCallback(async (fromPeer, sdp) => {
     const entry = peersRef.current.get(fromPeer);
     if (entry?.pc) {
-      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch((err) => {
-        console.warn('[WebRTC] setRemoteDescription failed:', err?.message);
-      });
+      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(() => {});
     }
   }, []);
 
   const handleIncomingICE = useCallback(async (fromPeer, candidate) => {
     const entry = peersRef.current.get(fromPeer);
     if (entry?.pc && candidate) {
-      await entry.pc.addIceCandidate(new RTCIceCandidate(candidate)).catch((err) => {
-        console.warn('[WebRTC] addIceCandidate failed:', err?.message);
-      });
+      await entry.pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
     }
   }, []);
 

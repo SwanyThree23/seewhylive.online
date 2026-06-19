@@ -4,14 +4,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleScoreboard from '../components/live/BattleScoreboard';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import PKInviteModal from '../components/pk/PKInviteModal';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import GiftTray from '../components/live/GiftTray';
+import TipNowModal from '../components/live/TipNowModal';
+import PointsNotification from '../components/live/PointsNotification';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LivePoll from '../components/live/LivePoll';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -33,7 +49,7 @@ function OctCamTile({ stream, label, isLocal }) {
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />
-      <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#0d0618' }}>
+      <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#080B18' }}>
         {stream ? (
           <video ref={ref} autoPlay playsInline muted={isLocal}
             className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
@@ -98,8 +114,8 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#FF1564' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
-  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#CC7755' : '#D4AF37';
+  var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
       key={combo}
@@ -124,7 +140,7 @@ function OnFireBadge({ show }) {
           exit={{ scale: 0 }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
         >
-          <div className="text-sm font-black px-3 py-1 rounded-xl" style={{ background: 'rgba(255,100,0,0.3)', border: '1px solid rgba(255,100,0,0.6)', color: '#FF6400' }}>
+          <div className="text-sm font-black px-3 py-1 rounded-xl" style={{ background: 'rgba(192,57,43,0.3)', border: '1px solid rgba(192,57,43,0.6)', color: '#D4854A' }}>
             🔥 ON FIRE!
           </div>
         </motion.div>
@@ -144,7 +160,7 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
       </div>
       <div className="h-3 rounded-full flex overflow-hidden bg-white/10">
         <motion.div
-          className="bg-blue-500 transition-all duration-700"
+          className="bg-[#D4AF37] transition-all duration-700"
           style={{ width: `${leftPct}%` }}
         />
         <motion.div
@@ -153,7 +169,7 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
         />
       </div>
       <div className="flex items-center justify-between text-xs font-bold mt-1">
-        <span className="text-blue-400">{leftVotes.toLocaleString()} pts</span>
+        <span className="text-[#D4AF37]">{leftVotes.toLocaleString()} pts</span>
         <span className="text-red-400">{rightVotes.toLocaleString()} pts</span>
       </div>
     </div>
@@ -167,7 +183,7 @@ function CircularTimer({ timeLeft, totalTime }) {
   var circumference = 2 * Math.PI * radius;
   var pct = totalTime > 0 ? timeLeft / totalTime : 0;
   var offset = circumference * (1 - pct);
-  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#FF8C00' : '#FF3030';
+  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#D4854A' : '#FF3030';
   var mm = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   var ss = String(timeLeft % 60).padStart(2, '0');
   return (
@@ -242,8 +258,8 @@ function WinnerOverlay({ winner, onClose }) {
 }
 
 export default function PKBattlePage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const battleId = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const battleId = searchParams.get('id');
   const qc = useQueryClient();
 
   const [leftName, setLeftName] = useState('');
@@ -266,6 +282,7 @@ export default function PKBattlePage() {
   const [showChat, setShowChat] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [pkRound, setPkRound] = useState(1);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [leftSupporters, setLeftSupporters] = useState(new Set());
   const [rightSupporters, setRightSupporters] = useState(new Set());
 
@@ -337,7 +354,7 @@ export default function PKBattlePage() {
     }),
     onSuccess: (b) => {
       battleDurationRef.current = duration;
-      window.location.href = `${window.location.pathname}?id=${b.id}`;
+      setSearchParams({ id: b.id });
     },
   });
 
@@ -425,19 +442,20 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
 
-  // Hooks must be called unconditionally, before any early return
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
+  React.useEffect(() => {
+    return () => {
+      if (leftCaptureStream) leftCaptureStream.getTracks().forEach(t => t.stop());
+      if (rightCaptureStream) rightCaptureStream.getTracks().forEach(t => t.stop());
+    };
   }, [leftCaptureStream, rightCaptureStream]);
 
   if (!battleId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0d0618] via-[#1a0030] to-[#0d0618] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#080B18] via-[#001428] to-[#080B18] flex items-center justify-center px-4">
         <div className="w-full max-w-lg">
           <Link to={createPageUrl('Home')}>
             <button style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 24, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14 }}>
@@ -456,12 +474,12 @@ export default function PKBattlePage() {
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="text-[11px] text-blue-400 font-semibold uppercase tracking-wider mb-1 block">Left Creator</label>
+                <label className="text-[11px] text-[#D4AF37] font-semibold uppercase tracking-wider mb-1 block">Left Creator</label>
                 <input
                   placeholder="Name"
                   value={leftName}
                   onChange={e => setLeftName(e.target.value)}
-                  className="w-full bg-blue-900/20 border border-blue-700/40 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-blue-500/60"
+                  className="w-full bg-[#0F1428] border border-[#D4AF37]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#D4AF37]/50"
                 />
                 <input
                   placeholder="Stream URL (optional)"
@@ -505,7 +523,7 @@ export default function PKBattlePage() {
               </div>
             </div>
             <button
-              style={{ width: '100%', background: !leftName || !rightName || createBattle.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, #1d4ed8, #dc2626)', color: '#fff', fontWeight: 700, padding: '12px', borderRadius: 8, border: 'none', cursor: !leftName || !rightName || createBattle.isPending ? 'default' : 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', opacity: !leftName || !rightName || createBattle.isPending ? 0.5 : 1 }}
+              style={{ width: '100%', background: !leftName || !rightName || createBattle.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, #800020, #C0392B)', color: '#fff', fontWeight: 700, padding: '12px', borderRadius: 8, border: 'none', cursor: !leftName || !rightName || createBattle.isPending ? 'default' : 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', opacity: !leftName || !rightName || createBattle.isPending ? 0.5 : 1 }}
               disabled={!leftName || !rightName || createBattle.isPending}
               onClick={() => createBattle.mutate()}
             >
@@ -521,6 +539,8 @@ export default function PKBattlePage() {
   const [bLeftName, bRightName] = names;
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
+
+  const isHost = !!(user?.id && battle?.creator_id === user?.id);
 
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
@@ -547,6 +567,32 @@ export default function PKBattlePage() {
         {winner && <WinnerOverlay winner={winner} onClose={() => setWinner(null)} />}
       </AnimatePresence>
 
+      {/* PKBattleInterface widget — battle controls */}
+      {battleId && (
+        <div className="absolute top-2 left-2 z-30 max-w-xs">
+          <PKBattleInterface roomId={battleId} />
+        </div>
+      )}
+
+      {battleId && (
+        <div className="absolute top-2 right-2 z-30 max-w-xs space-y-2">
+          <BattleScoreboard roomId={battleId} />
+          <PKBattleSoundboard battleId={battleId} isBattleActive={!!battle} />
+          <PKBattleProgress battleId={battleId} />
+          {battle && (
+            <PKBattleVotePanel
+              battleId={battleId}
+              creatorId={battle.creator_id}
+              challengerId={battle.challenger_id}
+              creatorName={battle.creator_name || bLeftName}
+              challengerName={battle.challenger_name || bRightName}
+            />
+          )}
+        </div>
+      )}
+
+      <PKInviteModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} creators={[]} />
+
       <CountdownOverlay countdown={countdown} />
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
@@ -565,7 +611,7 @@ export default function PKBattlePage() {
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
           {battle?.status === 'active' && (
-            <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
+            <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
           {battle?.status === 'ended' && (
             <span style={{ background: '#4b5563', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
@@ -593,24 +639,24 @@ export default function PKBattlePage() {
       </div>
 
       <div className={'flex-1 flex overflow-hidden ' + splitDir}>
-        <div className={'flex-1 relative flex flex-col bg-gradient-to-br from-blue-950 to-black ' + (isMobile ? 'border-b-2' : 'border-r-2') + ' border-[#d4af37]/30'}>
+        <div className={'flex-1 relative flex flex-col bg-gradient-to-br from-[#080B18] to-black ' + (isMobile ? 'border-b-2' : 'border-r-2') + ' border-[#d4af37]/30'}>
           <div className="flex-1 relative overflow-hidden">
             {isSafeUrl(bLeftStream) ? (
               <iframe src={bLeftStream} className="w-full h-full" allowFullScreen allow="autoplay" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                <div className="w-20 h-20 rounded-full bg-blue-700/40 border-2 border-blue-500/60 flex items-center justify-center text-4xl font-black text-blue-300">
+                <div className="w-20 h-20 rounded-full bg-[#D4AF37]/20 border-2 border-[#D4AF37]/40 flex items-center justify-center text-4xl font-black text-[#D4AF37]">
                   {bLeftName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bLeftName}</p>
-                <span style={{ background: 'rgba(29,78,216,0.5)', color: '#bfdbfe', border: '1px solid rgba(37,99,235,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
+                <span style={{ background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Left Creator</span>
               </div>
             )}
             <div className="absolute top-3 left-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
               <AnimatePresence>
                 <ComboBadge combo={leftCombo} />
               </AnimatePresence>
-              <p className="text-3xl font-black text-blue-400 font-mono">{leftVotes.toLocaleString()}</p>
+              <p className="text-3xl font-black text-[#D4AF37] font-mono">{leftVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {leftSupporters.size} supporting</p>
               <OnFireBadge show={leftOnFire} />
@@ -622,7 +668,7 @@ export default function PKBattlePage() {
                 key={g.pts}
                 onClick={() => !giftsDisabled && addVote('left', g.pts, leftCombo)}
                 disabled={giftsDisabled}
-                className="flex items-center gap-1 px-2 py-1.5 bg-blue-900/40 border border-blue-700/40 rounded-lg text-[11px] text-blue-300 font-bold hover:bg-blue-700/50 transition-all shrink-0"
+                className="flex items-center gap-1 px-2 py-1.5 bg-[#0F1428]/80 border border-[#D4AF37]/30 rounded-lg text-[11px] text-[#D4AF37] font-bold hover:bg-[#800020]/50 transition-all shrink-0"
                 style={{ opacity: giftsDisabled ? 0.4 : 1 }}
               >
                 {g.emoji} +{g.pts}
@@ -650,7 +696,7 @@ export default function PKBattlePage() {
                   {bRightName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
-                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(220,38,38,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
+                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(192,57,43,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
               </div>
             )}
             <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
@@ -691,12 +737,12 @@ export default function PKBattlePage() {
         <div className="flex-1 flex items-center gap-1.5 overflow-x-auto">
           {Array.from(leftSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(59,130,246,0.4)', color: '#93c5fd', border: '1px solid rgba(59,130,246,0.4)' }}>
+              style={{ background: 'rgba(212,175,55,0.2)', color: '#C9A84C', border: '1px solid rgba(212,175,55,0.3)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}
           {leftSupporters.size > 5 && (
-            <span className="text-[11px] text-blue-300">+{leftSupporters.size - 5}</span>
+            <span className="text-[11px] text-[#D4AF37]">+{leftSupporters.size - 5}</span>
           )}
           {leftSupporters.size === 0 && <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>None yet</span>}
         </div>
@@ -708,7 +754,7 @@ export default function PKBattlePage() {
           )}
           {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.4)', color: '#fca5a5', border: '1px solid rgba(192,57,43,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}
@@ -717,7 +763,7 @@ export default function PKBattlePage() {
 
       <div className="bg-black/80 border-t border-white/10 px-6 py-3 shrink-0">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-sm font-bold text-blue-400 truncate flex-1 text-right">{bLeftName}</span>
+          <span className="text-sm font-bold text-[#D4AF37] truncate flex-1 text-right">{bLeftName}</span>
           <Swords className="w-4 h-4 text-[#d4af37] shrink-0" />
           <span className="text-sm font-bold text-red-400 truncate flex-1">{bRightName}</span>
         </div>
@@ -744,6 +790,19 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
+        {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
+        {user?.id && <PointsNotification userId={user.id} />}
+        {battleId && <SuperChatRail roomId={battleId} currentUser={user} />}
+        {battleId && <LivePoll roomId={battleId} isHost={isHost} />}
+        <OnlineUsersGrid roomId={battleId} remoteStreams={battleRemoteStreams} peerUserIds={battlePeerUserIds} localStream={localCamStream} currentUser={user} compact maxVisible={8} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+      </div>
     </div>
   );
 }

@@ -1,10 +1,25 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import VODCard from '../components/vod/VODCard';
+import VODTrimEditor from '../components/vod/VODTrimEditor';
+import ChapterEditor from '../components/vod/ChapterEditor';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
+const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
 function ClipCard({ clip, onDelete, onShare }) {
   const dur = clip.duration_seconds || (clip.end_timestamp_seconds - clip.start_timestamp_seconds) || 30;
@@ -14,7 +29,7 @@ function ClipCard({ clip, onDelete, onShare }) {
   const emoji = emojis[parseInt(clip.id?.slice(-1), 16) % emojis.length] || '🎬';
   return (
     <motion.div initial={{opacity:0,y:12}} animate={{opacity:1,y:0}}
-      style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(13,6,24,0.9)', cursor:'pointer' }}>
+      style={{ borderRadius:10, overflow:'hidden', border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', cursor:'pointer' }}>
       {/* Thumbnail */}
       <div style={{ height:110, background:`linear-gradient(135deg, ${C.burg}33, ${C.obs})`, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
         <span style={{ fontSize:36 }}>{emoji}</span>
@@ -41,12 +56,29 @@ function ClipCard({ clip, onDelete, onShare }) {
 }
 
 export default function ClipsLibraryPage() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
+  const [clipSheetOpen, setClipSheetOpen] = useState(false);
+  const [trimVod, setTrimVod] = useState(null);
+  const [chapterVod, setChapterVod] = useState(null);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
+  const { data: vods = [] } = useQuery({
+    queryKey: ['vod-videos', user?.id],
+    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }, '-created_date', 20),
+    enabled: !!user?.id,
+  });
   const { data: clips=[], isLoading } = useQuery({
     queryKey: ['clips', user?.id, filter],
     queryFn: async () => {
@@ -79,10 +111,17 @@ export default function ClipsLibraryPage() {
 
   return (
     <div style={{ minHeight:'100vh', background:C.obs, color:C.white }}>
-      {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(13,6,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
+      {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(8,11,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
       <div style={{ padding:'24px 20px', borderBottom:'1px solid rgba(212,175,55,0.12)', background:'rgba(128,0,32,0.06)' }}>
-        <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
-        <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
+          <div>
+            <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
+            <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+          </div>
+          <Link to={createPageUrl('VideoPost')} style={{ padding:'8px 16px', borderRadius:8, background:'rgba(212,175,55,0.12)', border:'1px solid rgba(212,175,55,0.3)', color:C.gold, fontFamily:'Barlow Condensed', fontSize:12, fontWeight:700, letterSpacing:1, textDecoration:'none', textTransform:'uppercase' }}>
+            📤 Post Video
+          </Link>
+        </div>
       </div>
       {/* Filters */}
       <div style={{ padding:'12px 20px', display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
@@ -91,7 +130,7 @@ export default function ClipsLibraryPage() {
         ))}
         <div style={{ marginLeft:'auto', display:'flex', gap:4 }}>
           {[['newest','Newest'],['views','Most Viewed'],['shares','Most Shared']].map(([v,l]) => (
-            <button key={v} onClick={()=>setSort(v)} style={{ padding:'5px 10px', borderRadius:20, border:`1px solid ${sort===v?C.burg:'#333'}`, background:sort===v?'rgba(128,0,32,0.15)':'transparent', color:sort===v?'#ff6666':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>{l}</button>
+            <button key={v} onClick={()=>setSort(v)} style={{ padding:'5px 10px', borderRadius:20, border:`1px solid ${sort===v?C.burg:'#333'}`, background:sort===v?'rgba(128,0,32,0.15)':'transparent', color:sort===v?'#D4854A':C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>{l}</button>
           ))}
         </div>
       </div>
@@ -115,20 +154,122 @@ export default function ClipsLibraryPage() {
             <h2 style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold, marginBottom:12, letterSpacing:2 }}>⚡ AI-DETECTED HIGHLIGHTS</h2>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {highlights.map(h => (
-                <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(13,6,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
-                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(200,255,0,0.08)`, border:`1px solid rgba(200,255,0,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
+                <div key={h.id} style={{ padding:'12px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,0.06)', background:'rgba(8,11,24,0.9)', display:'flex', alignItems:'center', gap:12 }}>
+                  <div style={{ padding:'3px 8px', borderRadius:4, background:`rgba(109,191,126,0.08)`, border:`1px solid rgba(109,191,126,0.2)`, fontFamily:'Barlow Condensed', fontSize:11, color:C.volt, letterSpacing:1, flexShrink:0 }}>{(h.highlight_type||'MOMENT').toUpperCase().replace('_',' ')}</div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>
                     <div style={{ fontSize:10, color:C.gray }}>Confidence: {Math.round((h.ai_confidence||0.8)*100)}%</div>
                   </div>
-                  <button style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
+                  <button
+                    onClick={() => {
+                      if (!user?.id) return;
+                      base44.entities.StreamClip.create({
+                        title: h.description || 'AI Highlight Clip',
+                        clipped_by_id: user.id,
+                        start_timestamp_seconds: h.start_timestamp_seconds || 0,
+                        end_timestamp_seconds: h.end_timestamp_seconds || 30,
+                        duration_seconds: (h.end_timestamp_seconds || 30) - (h.start_timestamp_seconds || 0),
+                        source_room_id: h.room_id,
+                        highlight_type: h.highlight_type,
+                      }).then((clip) => {
+                        qc.invalidateQueries({ queryKey: ['clips'] });
+                        setToast('Clip created! ✂️');
+                        setTimeout(() => setToast(''), 2500);
+                        base44.entities.Activity.create({
+                          user_id: user.id,
+                          type: 'clip_created',
+                          title: `Created clip: ${clip?.title || 'AI Highlight Clip'}`,
+                        }).catch(() => {});
+                      });
+                    }}
+                    style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>
+                    CREATE CLIP
+                  </button>
                 </div>
               ))}
             </div>
           </div>
         )}
+        {/* AI Clip Generator */}
+        <div style={{ marginTop: 32 }}>
+          <AutomatedClipGenerator roomId={roomId} />
+        </div>
+        {/* AI Highlight Reels */}
+        <div style={{ marginTop: 16 }}>
+          <AutomatedHighlightReels />
+        </div>
+        {/* AI-powered clip suggestions */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user.id} />
+          </div>
+        )}
+
+        {/* VOD Library */}
+        {vods.length > 0 && (
+          <div style={{ marginTop: 32 }}>
+            <h2 style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold, marginBottom:12, letterSpacing:2 }}>🎬 VOD LIBRARY</h2>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px, 1fr))', gap:12 }}>
+              {vods.map(v => (
+                <VODCard
+                  key={v.id}
+                  vod={v}
+                  onEdit={() => {}}
+                  onTrim={() => setTrimVod(v)}
+                  onChapters={() => setChapterVod(v)}
+                  onPublish={() => qc.invalidateQueries({ queryKey: ['vod-videos'] })}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Video Short Recorder */}
+        {user?.id && (
+          <div style={{ marginTop: 24 }}>
+            <VideoShortRecorder roomId={roomId} creatorId={user.id} />
+          </div>
+        )}
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+
+      {/* VOD Trim Editor */}
+      {trimVod && (
+        <VODTrimEditor
+          video={trimVod}
+          onSave={() => { setTrimVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setTrimVod(null)}
+        />
+      )}
+
+      {/* VOD Chapter Editor */}
+      {chapterVod && (
+        <ChapterEditor
+          video={chapterVod}
+          onSave={() => { setChapterVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setChapterVod(null)}
+        />
+      )}
+
+      {/* Clip creator sheet */}
+      {clipSheetOpen && (
+        <ClipCreatorSheet
+          roomId={roomId}
+          sessionId={user?.id}
+          creatorId={user?.id}
+          elapsedSeconds={0}
+          roomTitle="My Stream"
+          onClose={() => setClipSheetOpen(false)}
+        />
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      </div>
     </div>
   );
 }

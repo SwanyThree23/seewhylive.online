@@ -59,7 +59,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowChat(!showChat)}
               className={`w-12 h-12 rounded-full flex flex-col items-center justify-center gap-0.5 ${
-                showChat ? 'bg-[#00d4ff]/20 border border-[#00d4ff]/50' : 'bg-white/10 border border-white/20'
+                showChat ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/50' : 'bg-white/10 border border-white/20'
               }`}
             >
               <MessageSquare className="w-5 h-5 text-white" />
@@ -108,7 +108,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#0d0618] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
+              className="fixed bottom-0 left-0 right-0 bg-[#080B18] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <p className="text-sm font-semibold text-white/60 mb-3">Quick Actions</p>

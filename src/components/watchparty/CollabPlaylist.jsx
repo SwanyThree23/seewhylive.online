@@ -53,10 +53,10 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
   const sorted = [...items].sort((a, b) => b.votes - a.votes);
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)' }}>
-        <ListMusic className="w-3.5 h-3.5 text-yellow-400" />
+        <ListMusic className="w-3.5 h-3.5 text-[#D4AF37]" />
         <span className="text-[10px] font-black uppercase tracking-widest" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Collab Playlist
         </span>
@@ -126,7 +126,7 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
                     <button onClick={() => play(item, idx)}
                       className="w-5 h-5 rounded flex items-center justify-center"
                       style={{ background: 'rgba(107,124,74,0.2)', border: '1px solid rgba(107,124,74,0.3)' }}>
-                      <Play className="w-2.5 h-2.5 text-green-400" />
+                      <Play className="w-2.5 h-2.5 text-[#6DBF7E]" />
                     </button>
                     <button onClick={() => remove(item.id)}
                       className="w-5 h-5 rounded flex items-center justify-center"
