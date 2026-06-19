@@ -11,7 +11,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
@@ -534,6 +534,7 @@ function applyFilter(rooms, filter) {
 
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
+  const navigate = useNavigate();
   var [activeFilter, setActiveFilter] = useState('All');
   var [activityOpen, setActivityOpen] = useState(false);
   var [quickActionsOpen, setQuickActionsOpen] = useState(false);
@@ -608,7 +609,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
           style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(212,175,55,0.18) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}
-          onClick={() => { window.location.href = '/Onboarding'; }}
+          onClick={() => { navigate('/Onboarding'); }}
         >
           <div className="flex items-center gap-3 px-4 py-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"

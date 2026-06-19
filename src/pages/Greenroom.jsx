@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronDown, ChevronUp, Settings,
   Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
@@ -71,7 +71,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
       const roomId = new URLSearchParams(window.location.search).get('room_id');
-      window.location.href = `/LiveRoom?id=${roomId}`;
+      navigate(`/LiveRoom?id=${roomId}`);
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
@@ -171,6 +171,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 }
 
 export default function GreenroomPage() {
+  const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get('room_id');
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room

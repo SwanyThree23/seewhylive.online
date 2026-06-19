@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Play, Bell, Plus } from 'lucide-react';
@@ -19,6 +19,7 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function CoverPage() {
+  const navigate = useNavigate();
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -47,7 +48,7 @@ export default function CoverPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 

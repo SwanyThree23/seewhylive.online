@@ -37,6 +37,7 @@ function Section({ title, children }) {
 }
 
 export default function CreateRoomPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -92,7 +93,7 @@ export default function CreateRoomPage() {
           title: `Created room: ${room.title || 'New Room'}`,
         }).catch(() => {});
       }
-      window.location.href = `/LiveRoom?id=${room.id}`;
+      navigate(`/LiveRoom?id=${room.id}`);
     },
     onError: () => toast.error('Failed to create room. Please try again.'),
   });
