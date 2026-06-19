@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Users, Globe, Lock, Plus, X, Image, UserCircle, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
@@ -44,6 +44,7 @@ const TAG_OPTIONS = [
 ];
 
 export default function CreateCommunityPage() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -75,7 +76,7 @@ export default function CreateCommunityPage() {
       }).catch(() => {});
       return community;
     },
-    onSuccess: (c) => { toast.success('Community created!'); window.location.href = `/Community?id=${c.id}`; },
+    onSuccess: (c) => { toast.success('Community created!'); navigate(`/Community?id=${c.id}`); },
     onError: () => toast.error('Failed to create community'),
   });
 

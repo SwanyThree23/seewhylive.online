@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -387,8 +388,9 @@ function CreateScreen({ onSubmit, isPending }) {
 
 // ── Main BroadcastStudio ─────────────────────────────────────────────────────
 export default function BroadcastStudio() {
-  const params = new URLSearchParams(window.location.search);
-  const partyId = params.get('id');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const partyId = searchParams.get('id');
   const qc = useQueryClient();
 
   const [studioMode, setStudioMode] = useState('hybrid');
@@ -631,7 +633,7 @@ export default function BroadcastStudio() {
           title: `Started broadcast: ${p?.title || 'Broadcast Studio'}`,
         }).catch(() => {});
       }
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      setSearchParams({ id: p.id });
     },
   });
 
@@ -646,7 +648,7 @@ export default function BroadcastStudio() {
           title: `Stream ended`,
         }).catch(() => {});
       }
-      window.location.href = window.location.pathname;
+      setSearchParams({});
     },
   });
 
@@ -1203,12 +1205,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
             {[
               { icon: '🎁', label: 'Gifts',   action: () => setGiftOpen(true) },
-              { icon: '📊', label: 'Poll',    action: () => { window.location.href = '/PollManager'; } },
+              { icon: '📊', label: 'Poll',    action: () => { navigate('/PollManager'); } },
               { icon: '🔔', label: 'Alert',   action: () => toast.info('Alert sent to audience!') },
               { icon: '📱', label: 'QR',      action: () => toast.info(window.location.href) },
-              { icon: '🎵', label: 'Music',   action: () => { window.location.href = '/AIMusic'; } },
-              { icon: '📝', label: 'Captions',action: () => { window.location.href = '/TranscriptionStudio'; } },
-              { icon: '🎛️', label: 'Control', action: () => { window.location.href = '/ControlRoom'; } },
+              { icon: '🎵', label: 'Music',   action: () => { navigate('/AIMusic'); } },
+              { icon: '📝', label: 'Captions',action: () => { navigate('/TranscriptionStudio'); } },
+              { icon: '🎛️', label: 'Control', action: () => { navigate('/ControlRoom'); } },
             ].map(item => (
               <button key={item.label}
                 onClick={item.action}
@@ -2298,7 +2300,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
         {!isHost ? (
           <motion.button whileTap={{ scale: 0.92 }}
-            onClick={() => { window.location.href = '/'; }}
+            onClick={() => { navigate('/'); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
             style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', ...T }}>
             <PhoneOff className="w-3.5 h-3.5" /> Leave

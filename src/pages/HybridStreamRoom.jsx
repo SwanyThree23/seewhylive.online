@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -49,6 +49,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function HybridStreamRoom() {
+  const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
   const queryClient = useQueryClient();
@@ -114,7 +115,7 @@ export default function HybridStreamRoom() {
       }
     },
     onSuccess: () => {
-      window.location.href = '/Home';
+      navigate('/Home');
     },
   });
 
@@ -135,7 +136,7 @@ export default function HybridStreamRoom() {
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
         <div className="text-center">
           <h2 className="text-2xl font-black mb-2" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Room not found</h2>
-          <button onClick={() => window.location.href = '/Home'}
+          <button onClick={() => navigate('/Home')}
             className="px-5 py-2.5 rounded-xl font-black uppercase text-sm"
             style={{ background: '#800020', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Go Home
