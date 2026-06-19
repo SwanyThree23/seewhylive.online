@@ -774,7 +774,7 @@ export default function MonetizationPage() {
                       { name: 'Gold',   key: 'elite',  price: 15, color: G },
                     ].map(tier => {
                       const cnt     = tierCounts[tier.key] || 0;
-                      const tierMrr = cnt * tier.price * 0.9;
+                      const tierMrr = Math.floor(cnt * tier.price * 90) / 100;
                       return (
                         <div key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                           <div style={{ width: 10, height: 10, borderRadius: '50%', background: tier.color, flexShrink: 0 }} />
