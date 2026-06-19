@@ -75,7 +75,7 @@ export default function Messages() {
 
   var { data: onlineRecords = [] } = useQuery({
     queryKey: ["presence-online"],
-    queryFn: () => base44.entities.PresenceRecord.filter({ is_online: true }),
+    queryFn: () => base44.entities.OnlinePresence.filter({ is_online: true }),
     enabled: !!user?.id,
     refetchInterval: 15000,
   });

@@ -504,7 +504,7 @@ export default function EnhancementSuite() {
 
   const { data: clips = [] } = useQuery({
     queryKey: ['enhancement-clips'],
-    queryFn: () => base44.entities.Clip.list('-created_date', 12),
+    queryFn: () => base44.entities.StreamClip.list('-created_date', 12),
   });
 
   const { data: recentMessages = [] } = useQuery({

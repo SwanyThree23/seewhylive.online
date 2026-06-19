@@ -14,7 +14,7 @@ export default function MonetizationDashboard({ roomId }) {
       try {
         const [transactions, tips] = await Promise.all([
           base44.entities.Transaction.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
-          base44.entities.Tip.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
+          base44.entities.TipAlert.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
         ]);
         const grossCents = [...transactions, ...tips].reduce((s, t) => s + (t.amount || 0), 0);
         const creatorCents = Math.floor(grossCents * 0.90);

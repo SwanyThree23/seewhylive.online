@@ -145,7 +145,7 @@ export default function ProfilePage() {
 
   const { data: myClips = [] } = useQuery({
     queryKey: ['myClips', user?.id],
-    queryFn: () => base44.entities.Clip.filter({ creator_id: user?.id }, '-created_date', 12),
+    queryFn: () => base44.entities.StreamClip.filter({ creator_id: user?.id }, '-created_date', 12),
     enabled: !!user?.id,
   });
 

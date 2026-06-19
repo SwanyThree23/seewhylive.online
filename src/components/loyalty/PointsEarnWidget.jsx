@@ -9,8 +9,14 @@ export default function PointsEarnWidget({ userId, creatorId, roomId, isHost }) 
   const qc = useQueryClient();
 
   const awardMutation = useMutation({
-    mutationFn: ({ reason, metadata }) =>
-      base44.entities.LoyaltyActivity.create({ user_id: userId, creator_id: creatorId, room_id: roomId, reason, metadata, created_at: new Date().toISOString() }),
+    mutationFn: async ({ reason }) => {
+      const existing = await base44.entities.ViewerLoyalty.filter({ user_id: userId, creator_id: creatorId }).then(r => r[0]).catch(() => null);
+      const pts = 10;
+      if (existing?.id) {
+        return base44.entities.ViewerLoyalty.update(existing.id, { loyalty_points: (existing.loyalty_points || 0) + pts, updated_at: new Date().toISOString() });
+      }
+      return base44.entities.ViewerLoyalty.create({ user_id: userId, creator_id: creatorId, room_id: roomId, loyalty_points: pts, created_at: new Date().toISOString() });
+    },
     onSuccess: () => qc.invalidateQueries(['viewer-loyalty', userId, creatorId]),
   });
 
