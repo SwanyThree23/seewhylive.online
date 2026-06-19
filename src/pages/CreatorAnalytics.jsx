@@ -13,6 +13,8 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CREATOR_SPLIT = 0.90;
 function creatorCut(g) { return Math.floor(g * CREATOR_SPLIT); }
@@ -351,6 +353,8 @@ export default function CreatorAnalytics() {
         <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={roomId} sessionId={roomId} />
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

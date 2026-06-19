@@ -17,6 +17,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -274,6 +275,7 @@ export default function ContentCalendarPage() {
         <AutomatedHighlightReels streamSession={null} />
         <ShareToSocial />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
       </div>

@@ -20,6 +20,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -302,6 +303,7 @@ export default function CommunityPage() {
         <StreamGoals isHost={true} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher currentUserId={user?.id} />
         <ShareToSocial url={window.location.href} title={community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!'} />
       </div>

@@ -18,6 +18,8 @@ import LeaderboardPanel from '../components/live/LeaderboardPanel';
 import ShareToSocial from '../components/social/ShareToSocial';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const C = {
   bg:    '#07050A',
@@ -353,6 +355,8 @@ export default function WashingtonClassic() {
         <StreamAnalyticsDashboard roomId={roomId} />
         <ChallengeLeaderboard communityId={userCommunityId} />
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

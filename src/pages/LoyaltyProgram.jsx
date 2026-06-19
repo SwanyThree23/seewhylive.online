@@ -24,6 +24,7 @@ function Toggle({ checked, onChange }) {
   );
 }
 import { toast } from 'sonner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -402,6 +403,7 @@ export default function LoyaltyProgram() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
         <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>

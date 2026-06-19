@@ -17,6 +17,8 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -1343,6 +1345,8 @@ export default function SeeWhyLIVEv37() {
         {/* new components here */}
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />

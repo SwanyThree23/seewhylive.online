@@ -15,6 +15,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -300,6 +302,8 @@ export default function PlatformShowcase() {
         <VODLibrary creatorId={user?.id} />
         <ShopDashboard creatorId={user?.id} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <QuickActionPanel isOpen={false} onClose={() => {}} />
       </div>

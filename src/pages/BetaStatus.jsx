@@ -17,6 +17,7 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -216,6 +217,7 @@ export default function BetaStatusPage() {
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
         </div>
       </div>

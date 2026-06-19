@@ -19,6 +19,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -217,6 +219,8 @@ export default function PublicProfile() {
         <div className="mt-6 flex flex-col gap-4">
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <ShareToSocial url={window.location.href} title="Check out this creator on SeeWhy LIVE!" />
         </div>

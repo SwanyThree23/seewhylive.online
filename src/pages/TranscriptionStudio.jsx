@@ -15,6 +15,8 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import RecordingManager from '../components/content/RecordingManager';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import LiveTranscription from '../components/live/LiveTranscription';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -350,6 +352,8 @@ export default function TranscriptionStudio() {
           </Link>
         ))}
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

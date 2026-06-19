@@ -30,6 +30,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -854,6 +855,7 @@ export default function MonetizationPage() {
       <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <OnlineUsersGrid compact maxVisible={8} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher currentUserId={user?.id} />
         {user?.id && <MilestoneAlerts creatorId={user.id} />}
       </div>

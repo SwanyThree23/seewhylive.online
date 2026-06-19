@@ -12,6 +12,8 @@ import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CREATOR_SPLIT = 0.90;
 const STRIPE_ACCOUNT_ID = 'acct_1Svbvv2N0KWn0OQu';
@@ -292,6 +294,8 @@ export default function PayoutCenter() {
         <VirtualGoodsStore userId={user?.id} />
         <StripeSubscribeButton creatorId={user?.id} creatorName={user?.full_name || ''} currentUserId={user?.id} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
       </div>
     </div>
   );

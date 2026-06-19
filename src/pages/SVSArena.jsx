@@ -13,6 +13,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const VENUE = "Jamar's Sports Bar & Grill, Des Moines, WA";
 const FORMAT = '7 Rock / 5-150 / Double Elimination';
@@ -344,6 +346,8 @@ export default function SVSArena() {
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
         <SocialLeaderboard roomId={roomId} />
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

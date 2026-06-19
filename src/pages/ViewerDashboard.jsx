@@ -20,6 +20,7 @@ import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import LivePollWidget from '../components/live/LivePollWidget';
 import MobileStreamControls from '../components/live/MobileStreamControls';
 import SubscriptionGate from '../components/live/SubscriptionGate';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -404,6 +405,7 @@ export default function ViewerDashboard() {
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher currentUserId={user?.id} />
         </div>
       </div>

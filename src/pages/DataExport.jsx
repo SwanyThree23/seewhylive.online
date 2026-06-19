@@ -16,6 +16,8 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -181,6 +183,8 @@ export default function DataExportPage() {
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
           <OnlineUsersGrid compact maxVisible={8} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
         </div>

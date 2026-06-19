@@ -28,6 +28,8 @@ import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -472,6 +474,8 @@ export default function ControlRoomPage() {
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
           <RTMPFanoutPanel roomId={roomId} isHost={true} />

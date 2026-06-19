@@ -15,6 +15,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
@@ -1001,6 +1002,7 @@ export default function AIHub() {
         {/* ── Content Recommendations ── */}
         <div style={{ marginTop: 8 }}>
           <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
         </div>
 
         {/* ── SwanyBot Context Enhancer ── */}

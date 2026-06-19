@@ -25,6 +25,8 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -588,6 +590,8 @@ export default function AdminDashboard() {
           <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
         </div>
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

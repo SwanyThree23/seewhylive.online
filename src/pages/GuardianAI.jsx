@@ -16,6 +16,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -432,6 +434,8 @@ export default function GuardianAI() {
           </button>
         </Link>
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

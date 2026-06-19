@@ -16,6 +16,8 @@ import SpotlightSection from '../components/community/SpotlightSection';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -320,6 +322,8 @@ export default function CommunitiesPage() {
           <AnnouncementPanel communityId={mine[0]?.id || null} userId={user?.id} />
           <SpotlightSection communityId={mine[0]?.id || null} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
         </div>
       </div>

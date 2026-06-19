@@ -15,6 +15,8 @@ import AIModeration from '../components/live/AIModeration';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -224,6 +226,8 @@ export default function StageCleanupPage() {
           ))}
         </div>
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

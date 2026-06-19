@@ -19,6 +19,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
@@ -524,6 +526,8 @@ export default function StreamScheduler() {
           </Link>
         ))}
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import 'react-quill/dist/quill.snow.css';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -240,6 +241,7 @@ export default function NewsletterPage() {
           <EarningsBreakdown creatorId={user?.id} />
           <AudienceInsights creatorId={user?.id} />
           <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
           <FollowButton targetUserId={null} targetUserName="" />
           <MilestoneAlerts creatorId={user?.id} />
         </div>

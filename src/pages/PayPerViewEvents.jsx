@@ -16,6 +16,8 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import PayPerViewCard from '../components/monetization/PayPerViewCard';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG   = '#080B18';
 const BG2  = '#0D0A08';
@@ -485,6 +487,8 @@ export default function PayPerViewEventsPage() {
           <VirtualGoodsStore creatorId={user?.id} userId={user?.id} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
           <LiveAuctionWidget creatorId={user?.id} roomId={activeRoomId} isCreator={false} currentUser={user} />
           <MonetizationDashboard roomId={activeRoomId} />
         </div>

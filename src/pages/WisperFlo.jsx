@@ -13,6 +13,8 @@ import TippingModal from '../components/monetization/TippingModal';
 import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GUARDIAN_FLAG_THRESHOLD = 0.50;
 const CREATOR_SPLIT = 0.90;
@@ -304,6 +306,8 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
       <AggregatedChat roomId={roomId} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
       <EnhancedStreamChat roomId={roomId} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
+        <MilestoneAlerts userId={null} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

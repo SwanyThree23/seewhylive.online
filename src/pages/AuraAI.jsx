@@ -13,6 +13,7 @@ import StreamGoals from '../components/live/StreamGoals';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import TippingModal from '../components/monetization/TippingModal';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -246,6 +247,7 @@ export default function AuraAI() {
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AIStreamSummary roomId={roomId} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
         <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="calm" />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <AuraPanelDrawer roomId={roomId} hostId={user?.id} onClose={() => {}} />

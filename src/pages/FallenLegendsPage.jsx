@@ -12,6 +12,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import SpotlightSection from '../components/community/SpotlightSection';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 
 const initState = {
@@ -296,6 +298,8 @@ export default function FallenLegendsPage() {
         <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
         <AnnouncementFeed communityId={userCommunityId} />
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

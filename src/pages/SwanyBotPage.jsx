@@ -14,6 +14,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -272,6 +273,7 @@ export default function SwanyBotPage() {
           <ShareToSocial />
         </div>
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
