@@ -166,18 +166,28 @@ export default function GuardianAI() {
 
       setScanStep('Logging results…');
       const scanResults = result?.results || [];
-      await Promise.all(scanResults.map(r =>
-        base44.entities.ContentModeration.create({
-          content_type:    'message',
-          content_id:      r.id,
-          violation_type:  r.violation_type,
-          ai_confidence:   r.ai_confidence,
-          ai_explanation:  r.ai_explanation || null,
-          action_taken:    r.violation_type !== 'safe'
-            ? (r.ai_confidence >= banT / 100 ? 'banned' : r.ai_confidence >= muteT / 100 ? 'muted' : 'flagged')
-            : 'none',
-        })
-      ));
+      await Promise.all(scanResults.map(r => {
+        const action = r.violation_type !== 'safe'
+          ? (r.ai_confidence >= banT / 100 ? 'banned' : r.ai_confidence >= muteT / 100 ? 'muted' : 'flagged')
+          : 'none';
+        return Promise.all([
+          base44.entities.ContentModeration.create({
+            content_type:    'message',
+            content_id:      r.id,
+            violation_type:  r.violation_type,
+            ai_confidence:   r.ai_confidence,
+            ai_explanation:  r.ai_explanation || null,
+            action_taken:    action,
+          }),
+          base44.entities.GuardianLog?.create({
+            user_id:       r.user_id || null,
+            message:       r.content || r.text || '',
+            toxicity_score: Math.round((r.ai_confidence || 0) * 100),
+            action,
+            created_at:    new Date().toISOString(),
+          }).catch(() => {}),
+        ]);
+      }));
 
       const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
       toast.success(`Scanned ${scanResults.length} messages — ${violations} flagged`);
