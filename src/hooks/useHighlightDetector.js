@@ -51,7 +51,7 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
     toast('✂️ High-engagement moment detected — saving clip…', { duration: 4000 });
 
     try {
-      await base44.entities.VideoShort.create({
+      await base44.entities.VODVideo.create({
         room_id: roomId,
         title,
         description: `Auto-captured highlight. Hype: ${hypeLevel}% · Sentiment: ${Math.round(sentiment * 100)}%`,

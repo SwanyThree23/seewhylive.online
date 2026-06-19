@@ -69,14 +69,14 @@ export default function CreatorDashboardPage() {
 
   const { data: recentTips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
-    queryFn: () => base44.entities.Tip.list('-created_date', 10),
+    queryFn: () => base44.entities.TipAlert.list('-created_date', 10),
     enabled: !!user?.id,
   });
 
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const tipsThisWeek = recentTips
     .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .reduce((sum, t) => sum + (t.amount_usd || 0), 0);
 
   const quickActions = [
     {

@@ -181,7 +181,7 @@ export default function AudioRoom() {
   });
   const { data: loves = [] } = useQuery({
     queryKey: ['audio-room-loves', roomId],
-    queryFn:  () => base44.entities.Tip.filter({ room_id: roomId, currency: 'love' }),
+    queryFn:  () => base44.entities.Reaction.filter({ room_id: roomId, emoji: '❤️', target_type: 'room' }),
     enabled:  !!roomId,
     refetchInterval: 5000,
   });
@@ -228,7 +228,7 @@ export default function AudioRoom() {
       return;
     }
     try {
-      await base44.entities.Tip.create({ room_id: roomId, user_id: user.id, currency: 'love', amount: 1 });
+      await base44.entities.Reaction.create({ room_id: roomId, user_id: user.id, emoji: '❤️', target_type: 'room', target_id: roomId });
       setLoveCount(c => c + 1);
     } catch {
       setLoveCount(c => c + 1);

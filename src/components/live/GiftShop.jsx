@@ -93,15 +93,15 @@ function GiftCard({ gift, selected, onSelect }) {
 function TopGifters({ roomId }) {
   const { data: tips = [] } = useQuery({
     queryKey: ['gift-tips', roomId],
-    queryFn: () => base44.entities.Tip.filter({ room_id: roomId, type: 'gift' }),
+    queryFn: () => base44.entities.TipAlert.filter({ room_id: roomId }),
     enabled: !!roomId,
     refetchInterval: 8000,
   });
 
   const totals = {};
   tips.forEach(t => {
-    const key = t.sender_name || t.user_id || 'Guest';
-    totals[key] = (totals[key] || 0) + (t.amount || 0);
+    const key = t.sender_name || t.sender_id || 'Guest';
+    totals[key] = (totals[key] || 0) + (t.amount_usd || 0);
   });
   const sorted = Object.entries(totals)
     .sort((a, b) => b[1] - a[1])
@@ -168,18 +168,13 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
     }
     setSending(true);
     try {
-      await base44.entities.Tip.create({
+      await base44.entities.TipAlert.create({
         room_id:     roomId,
-        user_id:     user.id,
+        sender_id:   user.id,
         sender_name: user.full_name || user.email || 'Guest',
         creator_id:  creatorId,
-        amount:      selected.price,
-        currency:    'usd',
-        type:        'gift',
-        gift_id:     selected.id,
-        gift_name:   selected.name,
-        gift_emoji:  selected.emoji,
-        gift_color:  selected.color,
+        amount_usd:  selected.price,
+        message:     `${selected.emoji} ${selected.name}`,
       });
       toast.success(`${selected.emoji} ${selected.name} sent to ${creatorName}!`);
       onGiftSent?.(selected, user);

@@ -452,9 +452,9 @@ export default function LiveRoom() {
     if (!roomId || !user?.id) return;
     const iv = setInterval(async () => {
       try {
-        const tips = await base44.entities.Tip.filter({ room_id: roomId, type: 'gift' });
+        const tips = await base44.entities.TipAlert.filter({ room_id: roomId });
         const newest = tips
-          .filter(t => t.user_id !== user.id)
+          .filter(t => t.sender_id !== user.id)
           .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
         if (newest) {
           const ts = new Date(newest.created_date).getTime();

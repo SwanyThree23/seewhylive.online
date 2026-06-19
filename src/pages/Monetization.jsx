@@ -530,7 +530,7 @@ export default function MonetizationPage() {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
-    queryFn: () => base44.entities.Tip.filter({ creator_id: user.id }),
+    queryFn: () => base44.entities.TipAlert.filter({ creator_id: user.id }),
     enabled: !!user?.id,
   });
 
