@@ -3073,4 +3073,50 @@ app.post('/api/zego/token', function(req, res) {
   var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
   res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
 });
->>>>>>> origin/main
+
+// ─── MediaMTX webhooks: update stream status in Supabase ─────────────────────
+app.post('/api/stream/on-publish', function(req, res) {
+  var streamPath = req.body.stream_path || req.query.stream_path || '/live';
+  var streamKey  = (streamPath.split('/').pop()) || 'unknown';
+  logger.info('[on-publish] stream started: ' + streamPath);
+  var supabaseUrl = process.env.SUPABASE_URL;
+  var supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+  if (supabaseUrl && supabaseKey) {
+    var https = require('https');
+    var payload = JSON.stringify({ status: 'live', started_at: new Date().toISOString() });
+    var url = new URL('/rest/v1/streams?stream_key=eq.' + encodeURIComponent(streamKey), supabaseUrl);
+    var opts = {
+      hostname: url.hostname, port: 443,
+      path: url.pathname + url.search, method: 'PATCH',
+      headers: { 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey,
+        'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload), 'Prefer': 'return=minimal' }
+    };
+    var req2 = https.request(opts, function(r) { logger.info('[on-publish] supabase ' + r.statusCode); });
+    req2.on('error', function(e) { logger.error('[on-publish] ' + e.message); });
+    req2.write(payload); req2.end();
+  }
+  res.json({ ok: true });
+});
+
+app.post('/api/stream/on-unpublish', function(req, res) {
+  var streamPath = req.body.stream_path || req.query.stream_path || '/live';
+  var streamKey  = (streamPath.split('/').pop()) || 'unknown';
+  logger.info('[on-unpublish] stream ended: ' + streamPath);
+  var supabaseUrl = process.env.SUPABASE_URL;
+  var supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+  if (supabaseUrl && supabaseKey) {
+    var https = require('https');
+    var payload = JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() });
+    var url = new URL('/rest/v1/streams?stream_key=eq.' + encodeURIComponent(streamKey), supabaseUrl);
+    var opts = {
+      hostname: url.hostname, port: 443,
+      path: url.pathname + url.search, method: 'PATCH',
+      headers: { 'apikey': supabaseKey, 'Authorization': 'Bearer ' + supabaseKey,
+        'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload), 'Prefer': 'return=minimal' }
+    };
+    var req2 = https.request(opts, function(r) { logger.info('[on-unpublish] supabase ' + r.statusCode); });
+    req2.on('error', function(e) { logger.error('[on-unpublish] ' + e.message); });
+    req2.write(payload); req2.end();
+  }
+  res.json({ ok: true });
+});
