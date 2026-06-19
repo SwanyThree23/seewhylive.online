@@ -92,15 +92,39 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
   });
 
   const analyzeMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('aiCopilotAnalyze', {
-      room_id: roomId,
-      recent_messages: recentMessages,
-      viewer_count: viewerCount,
-      tips_last_5min: [],
-    }),
-    onSuccess: (res) => {
-      const data = res.data;
-      if (!data || data.error) return;
+    mutationFn: () => {
+      const msgLines = recentMessages
+        .map(m => `${m.user_name || 'User'}: ${m.content}`)
+        .join('\n');
+      return base44.integrations.Core.InvokeLLM({
+        prompt: `Analyze these live stream chat messages (${viewerCount} viewers) and return host insights as JSON with:
+- sentiment_score: number 0-100
+- trending_topics: array of strings
+- insights: array of { type: "conversation_starter"|"thank_you"|"chat_spike"|"trending_topic"|"performance_tip"|"sentiment_shift", content: string, urgency: "low"|"medium"|"high" }
+
+Messages:\n${msgLines}`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            sentiment_score: { type: 'number' },
+            trending_topics: { type: 'array', items: { type: 'string' } },
+            insights: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string' },
+                  content: { type: 'string' },
+                  urgency: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      });
+    },
+    onSuccess: (data) => {
+      if (!data) return;
       setSentimentScore(data.sentiment_score ?? 65);
       setTrendingTopics(data.trending_topics || []);
       const newInsights = (data.insights || []).map((ins, i) => ({ ...ins, id: `${Date.now()}-${i}` }));

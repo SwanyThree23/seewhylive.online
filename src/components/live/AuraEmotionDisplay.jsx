@@ -12,18 +12,28 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
   useEffect(() => {
     const detectEmotion = async () => {
       try {
-        const result = await base44.functions.invoke('auraEmotionDetection', {
-          room_id: roomId,
-          session_id: sessionId,
-          aura_persona: auraPersona,
+        const msgs = await base44.entities.Message.filter(
+          { room_id: roomId },
+          '-created_date',
+          20
+        ).catch(() => []);
+        if (!msgs.length) return;
+        const msgText = msgs.map(m => m.content).join('\n');
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Analyze the crowd energy of these live stream chat messages for a "${auraPersona}" persona. Return JSON: { "detected_emotion": "high" or "medium" or "low", "energy_level": 0.0-1.0 }\n\n${msgText}`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              detected_emotion: { type: 'string' },
+              energy_level: { type: 'number' },
+            },
+          },
         });
-
-        if (result?.data) {
-          setEmotion(result.data.detected_emotion);
-          setEnergy(result.data.energy_level);
+        if (result) {
+          setEmotion(result.detected_emotion);
+          setEnergy(result.energy_level ?? 0.5);
         }
-      } catch (error) {
-      }
+      } catch {}
     };
 
     const interval = setInterval(detectEmotion, 30000);

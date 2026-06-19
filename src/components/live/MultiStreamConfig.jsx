@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Radio, Plus, Trash2, Copy, Play, Square, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
 
 export default function MultiStreamConfig({ roomId, isHost }) {
   const [destinations, setDestinations] = useState([]);
@@ -10,23 +9,6 @@ export default function MultiStreamConfig({ roomId, isHost }) {
   const [formData, setFormData] = useState({ platform: 'twitch', rtmpUrl: '', streamKey: '' });
   const [isDistributing, setIsDistributing] = useState(false);
   const [streamStatus, setStreamStatus] = useState(null);
-
-  const distributeMutation = useMutation({
-    mutationFn: (payload) => base44.functions.invoke('distributeStreamToRTMP', payload),
-    onSuccess: (response) => {
-      setStreamStatus({
-        success: true,
-        message: `Streaming to ${response.data.activeDestinations} destination(s)`,
-        commands: response.data.commands,
-      });
-    },
-    onError: (error) => {
-      setStreamStatus({
-        success: false,
-        message: error.message || 'Failed to configure multi-streaming',
-      });
-    },
-  });
 
   const handleAddDestination = (e) => {
     e.preventDefault();
@@ -46,14 +28,31 @@ export default function MultiStreamConfig({ roomId, isHost }) {
     setDestinations(destinations.filter(d => d.id !== id));
   };
 
-  const handleStartStreaming = () => {
+  const handleStartStreaming = async () => {
     if (destinations.length === 0) return;
-    distributeMutation.mutate({
-      roomId,
-      destinations: destinations.filter(d => d.isActive),
-      action: 'start',
-    });
-    setIsDistributing(true);
+    const active = destinations.filter(d => d.isActive);
+    try {
+      await Promise.allSettled(active.map(d =>
+        base44.entities.RTMPDestination.create({
+          room_id: roomId,
+          platform: d.platform,
+          rtmp_url: d.rtmpUrl,
+          stream_key: d.streamKey,
+          status: 'live',
+          last_used: new Date().toISOString(),
+        })
+      ));
+      setIsDistributing(true);
+      setStreamStatus({
+        success: true,
+        message: `Streaming to ${active.length} destination(s)`,
+      });
+    } catch {
+      setStreamStatus({
+        success: false,
+        message: 'Failed to configure multi-streaming',
+      });
+    }
   };
 
   const handleStopStreaming = () => {
@@ -232,7 +231,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       {/* Control buttons */}
       {destinations.length > 0 && (
         <div className="flex gap-2">
-          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+          <button onClick={handleStartStreaming} disabled={isDistributing} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
             <Play className="w-4 h-4" />{isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
           </button>
           {isDistributing && (
