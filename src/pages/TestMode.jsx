@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
@@ -13,6 +13,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -328,7 +330,8 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
 
 // ── Main TestMode page ─────────────────────────────────────────────────────────
 export default function TestMode() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
@@ -684,6 +687,8 @@ export default function TestMode() {
         <ContentRecommendations />
         <StreamGoals isHost={false} />
         <StreamHealthDashboard roomId={roomId} isHost={false} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="test" viewerCount={0} />
+        <MilestoneAlerts userId={null} roomId={roomId} />
       </div>
     </div>
   );
