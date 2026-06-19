@@ -28,7 +28,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         amount,
         creator_payout: Math.floor(amount * 90) / 100,
         platform_fee: amount - Math.floor(amount * 90) / 100,
-        transaction_type: 'tip',
+        transaction_type: 'direct_support',
         message: 'Support tip',
         status: 'completed',
         created_at: new Date().toISOString(),

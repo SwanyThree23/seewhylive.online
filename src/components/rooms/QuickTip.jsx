@@ -18,7 +18,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       const transaction = await base44.entities.Transaction.create({
         sender_id: (await base44.auth.me()).id,
         recipient_id: recipientId,
-        type: 'tip',
+        transaction_type: 'direct_support',
         amount: amount,
         status: 'completed',
         description: `Tip to ${recipientName}`,
@@ -53,7 +53,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       const me = await base44.auth.me();
       await base44.entities.Notification.create({
         user_id: recipientId,
-        type: 'tip',
+        transaction_type: 'direct_support',
         title: `💰 New tip from ${me.full_name || me.email}!`,
         message: `You received a $${transaction.amount} tip! +${pointsEarned} loyalty points earned for the tipper.`,
         sender_id: me.id,

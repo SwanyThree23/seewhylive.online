@@ -41,7 +41,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
       await Promise.allSettled([
         base44.entities.Activity.create({
           user_id: currentUser?.id,
-          type: 'tip_sent',
+          transaction_type: 'direct_support',
           title: `Tipped $${tipData.amount} to ${recipient.full_name || recipient.host_name || 'creator'}`,
           amount: tipData.amount,
           recipient_id: recipientId,

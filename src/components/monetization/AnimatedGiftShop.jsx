@@ -31,7 +31,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
     mutationFn: async (gift) => {
       // Create transaction
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
+        transaction_type: 'direct_support',
         amount: gift.price,
         sender_id: user.id,
         recipient_id: recipientId,

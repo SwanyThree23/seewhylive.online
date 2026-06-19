@@ -274,7 +274,7 @@ export default function PayPerViewEventsPage() {
     setPurchasing(event.id);
     try {
       const txn = await base44.entities.Transaction.create({
-        type: 'ppv',
+        transaction_type: 'ppv',
         amount: Math.floor(event.price * 100) / 100,
         sender_id: user.id,
         recipient_id: event.creator_id,

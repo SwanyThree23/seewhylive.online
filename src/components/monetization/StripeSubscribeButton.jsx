@@ -106,7 +106,7 @@ async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
       sender_id: viewerId,
       recipient_id: creatorId,
       amount: grossUsd,
-      type: 'subscription',
+      transaction_type: 'subscription',
       status: 'completed',
       description: `Subscription payment`,
       metadata: {
