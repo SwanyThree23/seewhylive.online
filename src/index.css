@@ -75,6 +75,11 @@
     overscroll-behavior-y: none;
     touch-action: pan-y;
   }
+
+  /* Prevent rubber-banding in all scrollable child containers */
+  [class*="overflow-"] {
+    overscroll-behavior: contain;
+  }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
     letter-spacing: 0.02em;

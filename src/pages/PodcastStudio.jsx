@@ -661,8 +661,8 @@ export default function PodcastStudio() {
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState('');
   const [script, setScript] = useState(null);
-  const [library, setLibrary] = useState(() => JSON.parse(localStorage.getItem('podcast_library') || '[]'));
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(localStorage.getItem('podcast_nlm_sources') || '[]'));
+  const [library, setLibrary] = useState(() => JSON.parse(sessionStorage.getItem('podcast_library') || '[]'));
+  const [nlmSources, setNlmSources] = useState(() => JSON.parse(sessionStorage.getItem('podcast_nlm_sources') || '[]'));
   const [editingIdx, setEditingIdx] = useState(null);
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
@@ -675,7 +675,7 @@ export default function PodcastStudio() {
 
   function saveNlmSources(updated) {
     setNlmSources(updated);
-    localStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
+    sessionStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
   }
 
   function addSource() {
@@ -739,7 +739,7 @@ export default function PodcastStudio() {
       setScript(ep);
       const newLib = [ep, ...library].slice(0, 20);
       setLibrary(newLib);
-      localStorage.setItem('podcast_library', JSON.stringify(newLib));
+      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
       setTab('script');
     } catch (e) {
       const fallback = {
@@ -757,7 +757,7 @@ export default function PodcastStudio() {
       setScript(fallback);
       const newLib = [fallback, ...library].slice(0, 20);
       setLibrary(newLib);
-      localStorage.setItem('podcast_library', JSON.stringify(newLib));
+      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
       setTab('script');
     }
     setGenerating(false);
@@ -786,7 +786,7 @@ export default function PodcastStudio() {
   function deleteEpisode(idx) {
     const newLib = library.filter((_, i) => i !== idx);
     setLibrary(newLib);
-    localStorage.setItem('podcast_library', JSON.stringify(newLib));
+    sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
     setDeleteConfirmIdx(null);
     showToast('Episode deleted');
   }

@@ -117,11 +117,11 @@ export default function MultiPlatform() {
     color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
   }));
   const [connections, setConnections] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
+    try { return JSON.parse(sessionStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
   });
   const [connecting, setConnecting] = useState(null);
   const [webhooks, setWebhooks] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('webhooks') || '[]'); } catch { return []; }
+    try { return JSON.parse(sessionStorage.getItem('webhooks') || '[]'); } catch { return []; }
   });
   const [webhookUrl, setWebhookUrl] = useState('');
   const [outboundUrl, setOutboundUrl] = useState('');
@@ -150,7 +150,7 @@ export default function MultiPlatform() {
 
   function saveConnections(updated) {
     setConnections(updated);
-    localStorage.setItem('platform_connections', JSON.stringify(updated));
+    sessionStorage.setItem('platform_connections', JSON.stringify(updated));
   }
 
   async function handleConnect(id) {
@@ -164,7 +164,7 @@ export default function MultiPlatform() {
 
   function connectedCount() { return Object.values(connections).filter(Boolean).length; }
 
-  function saveWebhooks(list) { setWebhooks(list); localStorage.setItem('webhooks', JSON.stringify(list)); }
+  function saveWebhooks(list) { setWebhooks(list); sessionStorage.setItem('webhooks', JSON.stringify(list)); }
 
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;
