@@ -32,18 +32,20 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      const result = await base44.functions.invoke('createVideoShort', {
+      const result = await base44.entities.VideoShort.create({
         room_id: roomId,
+        creator_id: creatorId,
         title: videoTitle || 'Untitled Short',
         description: `Published at ${new Date().toLocaleTimeString()}`,
-        video_url: 'https://example.com/video.mp4', // Would be actual recording
-        thumbnail_url: 'https://example.com/thumb.jpg',
+        video_url: '',
+        thumbnail_url: '',
         duration_seconds: duration,
         paywall_enabled: paywall,
         paywall_price: paywall ? paywallPrice : 0,
+        created_at: new Date().toISOString(),
       });
 
-      if (result?.data) {
+      if (result?.id) {
         alert('Video published!');
         setDuration(0);
         setVideoTitle('');

@@ -120,10 +120,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
 
   // Join signaling mutation
   const joinSignalingMut = useMutation({
-    mutationFn: () => base44.functions.invoke('zegoSignaling', {
-      action: 'join',
-      roomId,
+    mutationFn: () => base44.entities.Participant.create({
+      room_id: roomId,
       role: isHost ? 'host' : 'viewer',
+      joined_at: new Date().toISOString(),
     }),
     onSuccess: () => {
       toast.success('Connected to room');
@@ -132,11 +132,9 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
 
   // Leave signaling mutation
   const leaveSignalingMut = useMutation({
-    mutationFn: (participantId) => base44.functions.invoke('zegoSignaling', {
-      action: 'leave',
-      roomId,
-      participantId,
-    }),
+    mutationFn: (participantId) => participantId
+      ? base44.entities.Participant.delete(participantId)
+      : Promise.resolve(),
   });
 
   // Initialize local media once and announce presence to peers

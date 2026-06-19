@@ -42,9 +42,9 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
 
   const redeemMutation = useMutation({
     mutationFn: ({ rewardId, message }) =>
-      base44.functions.invoke('redeemReward', { reward_id: rewardId, room_id: roomId, message }),
+      base44.entities.RewardRedemption.create({ reward_id: rewardId, room_id: roomId, user_id: currentUser?.id, message, redeemed_at: new Date().toISOString() }),
     onSuccess: (res, { rewardId }) => {
-      if (res.data?.error) { toast.error(res.data.error); return; }
+      if (res?.error) { toast.error(res.error); return; }
       toast.success('Reward redeemed! 🎉');
       const reward = rewards.find(r => r.id === rewardId);
       setRedeeming(null);

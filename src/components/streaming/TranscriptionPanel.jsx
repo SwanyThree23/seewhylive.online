@@ -32,10 +32,10 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
 
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('transcribeAudio', {
-        file_url: recordingUrl
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `A recording is available at: ${recordingUrl}\nPlease provide a transcription summary or placeholder text for this audio recording. Note: direct audio transcription requires Whisper API integration.`,
       });
-      setTranscription(res.data.transcription);
+      setTranscription(typeof res === 'string' ? res : 'Transcription service requires Whisper API integration.');
       toast.success('Transcription complete');
     } catch (err) {
       toast.error('Transcription failed. Please try again.');

@@ -23,16 +23,17 @@ export default function EngagementBadgesDisplay({ roomId, userId, creatorId }) {
     if (!userId || !creatorId) return;
 
     try {
-      const result = await base44.functions.invoke('awardEngagementBadges', {
+      const badge = await base44.entities.EngagementBadge.create({
         user_id: userId,
         creator_id: creatorId,
         badge_type: badgeType,
         room_id: roomId,
         milestone_data: milestone,
+        awarded_at: new Date().toISOString(),
       });
 
-      if (result?.data?.badge_awarded) {
-        displayBadgePopup(result.data.badge);
+      if (badge?.id) {
+        displayBadgePopup({ badge_type: badgeType, ...badge });
       }
     } catch (error) {
     }
