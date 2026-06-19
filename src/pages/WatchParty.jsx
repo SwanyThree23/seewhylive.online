@@ -411,7 +411,7 @@ export default function WatchPartyPage() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = localStorage.getItem('seewhy_dj_track');
+        const raw = sessionStorage.getItem('seewhy_dj_track');
         setWpDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setWpDjTrack(null);

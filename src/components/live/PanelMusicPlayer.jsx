@@ -42,7 +42,7 @@ export default function PanelMusicPlayer({ className, style }) {
   useEffect(() => {
     function readTrack() {
       try {
-        const raw = localStorage.getItem('seewhy_dj_track');
+        const raw = sessionStorage.getItem('seewhy_dj_track');
         const parsed = raw ? JSON.parse(raw) : null;
         setTrack(parsed);
       } catch {

@@ -12,7 +12,7 @@
     },
     "to_peer": {
       "type": "string",
-      "description": "Target peer ID — null = broadcast to all peers in room"
+      "description": "Target peer ID \u2014 null = broadcast to all peers in room"
     },
     "user_id": {
       "type": "string",
@@ -20,7 +20,13 @@
     },
     "signal_type": {
       "type": "string",
-      "enum": ["peer_join", "offer", "answer", "ice", "peer_left"],
+      "enum": [
+        "peer_join",
+        "offer",
+        "answer",
+        "ice",
+        "peer_left"
+      ],
       "description": "WebRTC signal type"
     },
     "sdp": {
@@ -32,16 +38,24 @@
       "description": "RTCIceCandidate payload"
     }
   },
-  "required": ["room_id", "from_peer", "signal_type"],
+  "required": [
+    "room_id",
+    "from_peer",
+    "signal_type"
+  ],
   "rls": {
     "create": {
       "user_condition": {
-        "role": { "$exists": true }
+        "role": {
+          "$exists": true
+        }
       }
     },
     "read": {
       "user_condition": {
-        "role": { "$exists": true }
+        "role": {
+          "$exists": true
+        }
       }
     }
   }
