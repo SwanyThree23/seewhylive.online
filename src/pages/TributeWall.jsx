@@ -13,6 +13,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
@@ -351,6 +352,7 @@ export default function TributeWall() {
         <AnnouncementFeed communityId={userCommunityId} />
         <ShareToSocial />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
 
         {/* Bottom note */}
         <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 8 }}>

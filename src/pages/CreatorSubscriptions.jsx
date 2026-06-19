@@ -17,6 +17,8 @@ import SubscriptionManager from '../components/monetization/SubscriptionManager'
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
@@ -641,6 +643,8 @@ export default function CreatorSubscriptionsPage() {
             <SubscriptionManager userId={user.id} />
             <OnlineUsersGrid compact maxVisible={10} />
             <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
             <CollaborationMatcher />
           </div>
         )}

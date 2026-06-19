@@ -16,6 +16,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 
@@ -330,6 +332,8 @@ export default function VideoPost() {
         <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
         <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <DiscussionFeed communityId="video-posts" />
       </div>

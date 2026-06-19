@@ -15,6 +15,8 @@ import AnnouncementFeed from '../components/community/AnnouncementFeed';
 import UnifiedChat from '../components/live/UnifiedChat';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import ShareButtons from '../components/shared/ShareButtons';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
@@ -531,6 +533,8 @@ export default function Messages() {
           <AnnouncementFeed communityId={userCommunityId} />
           <OnlineUsersGrid compact maxVisible={12} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={null} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={selectedThread || null} communityId={userCommunityId} />
         </div>

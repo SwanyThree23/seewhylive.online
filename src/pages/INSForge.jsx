@@ -14,6 +14,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -432,6 +434,8 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
         <CreatorBridge />
         <AudienceInsights />
         <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <OnlineUsersGrid compact maxVisible={10} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />

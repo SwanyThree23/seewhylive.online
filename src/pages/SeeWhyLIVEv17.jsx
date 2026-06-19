@@ -16,6 +16,8 @@ import AuraPanelDrawer from "@/components/live/AuraPanelDrawer";
 import SwanDirectorPanel, { SwanDirectorHUD } from "@/components/live/SwanDirectorPanel";
 import ClipCreatorSheet from "@/components/live/ClipCreatorSheet";
 import { MerchShopV2, ViewerControlsV2, InRoomSubWidgetV2, TipAlertConfig, EngagementDashboardV2 } from "@/components/live/v162Components";
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── DESIGN TOKENS ────────────────────────────────────────────────
 var G = {
@@ -1831,6 +1833,8 @@ export default function SeeWhyLIVEv17() {
             <div style={{fontFamily:G.fOrb,fontSize:18,color:G.gold,letterSpacing:3}}>DISCOVER</div>
             <OnlineUsersGrid compact maxVisible={12} />
             <ContentRecommendations />
+        <MilestoneAlerts userId={null} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
             <CollaborationMatcher />
             <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
           </div>

@@ -16,6 +16,7 @@ import TippingModal from '../components/monetization/TippingModal';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -364,6 +365,7 @@ export default function StreamAlerts() {
         <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={userCommunityId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
       </div>
 
       <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>

@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 var G = {
   gold: "#d4af37",
@@ -552,6 +554,8 @@ export default function CreatorPublicProfile() {
           <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
           <SignalBars count={5} active={true} size="sm" />
           <ContentRecommendations />
+        <MilestoneAlerts userId={null} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />

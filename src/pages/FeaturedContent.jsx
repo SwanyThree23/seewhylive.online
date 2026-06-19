@@ -15,6 +15,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CHANNELS = [
   {
@@ -237,6 +239,8 @@ export default function FeaturedContent() {
         <SpotlightSection communityId={userCommunityId} currentUser={user} />
         <YouTubeDiscovery />
         <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
           <ViewerCount count={0} peakViewers={0} />

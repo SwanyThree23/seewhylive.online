@@ -45,6 +45,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -1272,6 +1273,7 @@ export default function DashboardPage() {
         <StreamGoals isHost={true} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher currentUserId={user?.id} />
         <ShareToSocial url={window.location.href} title="Check out my dashboard on SeeWhy LIVE!" />
       </div>

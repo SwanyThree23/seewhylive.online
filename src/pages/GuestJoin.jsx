@@ -17,6 +17,8 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -290,6 +292,8 @@ export default function GuestJoin() {
           <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <StreamGoals isHost={false} />
           {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         </div>

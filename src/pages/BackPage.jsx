@@ -14,6 +14,8 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function BackPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -182,6 +184,8 @@ export default function BackPage() {
         <StreamingPresets onApply={() => {}} />
         <ActivitySidebar isOpen={false} onClose={() => {}} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ZEGOMobileAppBanner />
         <OnlineUsersGrid compact maxVisible={12} />

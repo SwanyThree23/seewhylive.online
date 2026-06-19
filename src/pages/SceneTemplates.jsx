@@ -19,6 +19,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
@@ -776,6 +778,8 @@ export default function SceneTemplates() {
         <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
         <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
         <OnlineUsersGrid compact maxVisible={10} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
 
       {/* Cross-nav footer */}

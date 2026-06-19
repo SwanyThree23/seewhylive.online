@@ -15,6 +15,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
@@ -286,6 +287,7 @@ export default function NewsletterHubPage() {
           <MilestoneAlerts creatorId={user?.id} />
           <AnnouncementFeed communityId={userCommunityId} />
           <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
           <EarningsBreakdown creatorId={user?.id} />
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>

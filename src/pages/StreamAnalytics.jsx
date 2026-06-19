@@ -17,6 +17,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, Users, DollarSign, MessageSquare, Download, BarChart2 } from 'lucide-react';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const CYAN = '#C9A84C';
@@ -333,6 +334,7 @@ export default function StreamAnalytics() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
           <CollaborationMatcher />
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>

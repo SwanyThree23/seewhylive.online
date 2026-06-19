@@ -21,6 +21,8 @@ import BattleMode from '../components/streaming/BattleMode';
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
@@ -842,6 +844,8 @@ export default function PKBattleManager() {
         <TipAlert roomId={roomId} />
         <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
       </div>
+        <MilestoneAlerts userId={null} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

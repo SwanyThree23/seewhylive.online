@@ -16,6 +16,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
@@ -214,6 +215,7 @@ export default function NotificationsPage() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
         <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>

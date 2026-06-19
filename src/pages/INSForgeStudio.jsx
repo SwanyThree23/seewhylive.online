@@ -12,6 +12,8 @@ import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const CREATOR_SPLIT = 0.90;
 
@@ -399,6 +401,8 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <AICopilotSidebar roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={false} viewerCount={0} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
         <AutomatedHighlightReels streamSession={null} />

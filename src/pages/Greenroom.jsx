@@ -19,6 +19,8 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -603,6 +605,8 @@ export default function GreenroomPage() {
               {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
               <OnlineUsersGrid compact maxVisible={10} />
               <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
               <CollaborationMatcher />
             </div>
           </div>

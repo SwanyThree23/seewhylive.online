@@ -13,6 +13,7 @@ import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const C = { burg: '#800020', gold: '#D4AF37', amber: '#D4854A', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
 const FONT = 'Barlow Condensed, sans-serif';
@@ -662,6 +663,7 @@ export default function OnboardingPage() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <OnlineUsersGrid compact maxVisible={12} />
         <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
         <StreamGoals isHost={false} />
       </div>

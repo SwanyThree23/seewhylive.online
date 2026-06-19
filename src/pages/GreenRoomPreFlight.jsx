@@ -16,6 +16,8 @@ import StreamGoals from '../components/live/StreamGoals';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -254,6 +256,8 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <StreamGoals isHost={false} />
         <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />
       </div>

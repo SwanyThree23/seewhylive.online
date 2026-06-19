@@ -20,6 +20,8 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -727,6 +729,8 @@ export default function SocialExpo() {
           <CreatorBridge user={null} />
           <ShareToSocial />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 

@@ -16,6 +16,8 @@ import InteractivePollWidget from '../components/live/InteractivePollingSystem';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import StreamGoals from '../components/live/StreamGoals';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -339,6 +341,8 @@ export default function OverlayBuilderPage() {
           <CompositorOverlay stream={null} isHost={true} roomId={roomId} />
         </div>
       )}
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

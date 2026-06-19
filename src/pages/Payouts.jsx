@@ -627,6 +627,8 @@ export default function PayoutsPage() {
           <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
           <EarningsBreakdown userId={user?.id} />
           <CollaborationMatcher />
         </div>

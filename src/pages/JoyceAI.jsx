@@ -13,6 +13,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function getVoiceSettings() {
   try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
@@ -343,6 +344,7 @@ export default function JoyceAI() {
         <ChatOverlay roomId={roomId} isVisible={false} />
         <AICopilotSidebar roomId={roomId} isHost={false} />
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
     </div>
   );
 }

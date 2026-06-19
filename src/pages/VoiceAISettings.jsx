@@ -13,6 +13,8 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -238,6 +240,8 @@ export default function VoiceAISettings() {
           <AIStreamSummary roomId={roomId} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
           <AuraEmotionDisplay roomId={roomId} sessionId={roomId} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <OnlineUsersGrid compact maxVisible={10} />
           <CollaborationMatcher />
         </div>

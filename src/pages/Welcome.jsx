@@ -15,6 +15,8 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G = '#D4AF37';
 const BG = '#080B18';
@@ -214,6 +216,8 @@ export default function WelcomePage() {
         <ShareToSocial />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <OnlineUsersGrid compact maxVisible={10} />
         {!user && <OnboardingFlow onComplete={() => {}} />}
       </div>

@@ -16,6 +16,7 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
@@ -711,6 +712,7 @@ export default function Home() {
       {/* ── CONTENT RECOMMENDATIONS ── */}
       <div className="px-4 pb-4">
         <ContentRecommendations />
+        <MilestoneAlerts userId={null} roomId={null} />
       </div>
 
       {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}

@@ -17,6 +17,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },
@@ -439,6 +441,8 @@ export default function LeaderboardPage() {
           <ChallengeLeaderboard challengeId={activeChallengeId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <ShareToSocial url={window.location.href} title="Check out the SeeWhy LIVE leaderboard!" />
         </div>

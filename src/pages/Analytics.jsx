@@ -396,6 +396,8 @@ export default function AnalyticsPage() {
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <EarningsBreakdown userId={user?.id} />
         </div>
       </div>

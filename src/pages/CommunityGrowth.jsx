@@ -14,6 +14,8 @@ import CreatePollModal from '../components/community/CreatePollModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -183,6 +185,8 @@ export default function CommunityGrowthPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
           <CollaborationMatcher />
           <SpotlightSection communityId={communityId || null} />
           <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />

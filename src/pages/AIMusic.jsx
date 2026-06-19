@@ -1531,6 +1531,8 @@ Return ONLY valid JSON (no markdown, no backticks):
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <AIStreamSummary roomId={roomId} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
         <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
       </div>
 
       {/* Cross-nav footer */}

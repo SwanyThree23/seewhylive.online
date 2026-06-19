@@ -13,6 +13,8 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -786,6 +788,8 @@ export default function StreamInfraRef() {
         {/* new components here */}
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
       </div>

@@ -18,6 +18,8 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -2161,6 +2163,8 @@ export default function SeeWhyLIVEv36() {
         <EarningsBreakdown creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={12} />
         <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <StreamGoals isHost={false} />
