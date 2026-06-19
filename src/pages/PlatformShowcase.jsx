@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import VODLibrary from '../components/vod/VODLibrary';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 
 const FEATURES = [
   {
@@ -14,7 +28,7 @@ const FEATURES = [
     title: 'Guest Destinations',
     description: 'Multi-guest co-streaming with automated camera direction via SwanAI Director.',
     icon: '🎬',
-    color: '#FF8C00',
+    color: '#D4854A',
     highlights: ['Real-time layout switching', 'AI spotlight detection', 'Multi-platform RTMP'],
     link: '/ControlRoom',
   },
@@ -59,7 +73,7 @@ const FEATURES = [
     title: 'SwanyBot AI Guide',
     description: 'Your personal platform assistant with memory, preferences, and conversation history.',
     icon: '💬',
-    color: '#FF1564',
+    color: '#C0392B',
     highlights: ['Preference memory', 'History tracking', 'Voice I/O'],
     link: '/',
   },
@@ -68,7 +82,7 @@ const FEATURES = [
     title: 'State vs State Tournaments',
     description: 'Full bracket domino tournament system with live matches, rosters, and real-time standings.',
     icon: '⚔️',
-    color: '#1565C0',
+    color: '#C0392B',
     highlights: ['Live brackets', 'State rosters', 'Season standings'],
     link: '/StateVsState',
   },
@@ -77,7 +91,7 @@ const FEATURES = [
     title: 'Tribute Wall',
     description: 'Honor fallen domino legends with tribute posts, memorial events, and nomination system.',
     icon: '🕊️',
-    color: '#7B5EA7',
+    color: '#800020',
     highlights: ['Legend cards', 'Tribute messages', 'Memorial fund'],
     link: '/TributeWall',
   },
@@ -95,7 +109,7 @@ const FEATURES = [
     title: 'INS Forge',
     description: 'AI creative brief generator for SVS graphics, tribute cards, overlays, and promo assets.',
     icon: '⚡',
-    color: '#F59E0B',
+    color: '#D4AF37',
     highlights: ['SVS brackets', 'Stream overlays', 'Tribute cards'],
     link: '/INSForge',
   },
@@ -104,13 +118,15 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#00d4ff',
+    color: '#D4AF37',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },
 ];
 
 export default function PlatformShowcase() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [selected, setSelected] = useState(0);
   const feature = FEATURES[selected];
 
@@ -274,11 +290,29 @@ export default function PlatformShowcase() {
             href="/LiveRoom"
             whileHover={{ scale: 1.05 }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-            style={{ background: `linear-gradient(135deg, ${G}, #FF8C00)` }}
+            style={{ background: `linear-gradient(135deg, ${G}, #D4854A)` }}
           >
             Go Live Now <Radio className="w-5 h-5" />
           </motion.a>
         </motion.div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamAnalyticsDashboard roomId={roomId} isHost={false} isLive={false} />
+        <VODLibrary creatorId={user?.id} />
+        <ShopDashboard creatorId={user?.id} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <ActivitySidebar isOpen={false} onClose={() => {}} />
+        <QuickActionPanel isOpen={false} onClose={() => {}} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
     </div>
   );

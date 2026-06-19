@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Star, Gift, Trophy, Users, Zap, Download, Trash2, X, Check } from 'lucide-react';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -12,12 +24,13 @@ function Toggle({ checked, onChange }) {
   );
 }
 import { toast } from 'sonner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 
 const REWARD_TYPES = [
   { id: 'badge', label: '🏅 Badge', icon: '🏅' },
@@ -27,7 +40,7 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#00d4ff', '#a78bfa'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#D4854A', '#C0392B'];
 
 export default function LoyaltyProgram() {
   const qc = useQueryClient();
@@ -39,6 +52,26 @@ export default function LoyaltyProgram() {
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const isOwnProgram = !creatorId || creatorId === user?.id;
 
   React.useEffect(() => {
@@ -63,7 +96,18 @@ export default function LoyaltyProgram() {
 
   const createRewardMutation = useMutation({
     mutationFn: (data) => base44.entities.LoyaltyReward.create(data),
-    onSuccess: () => { qc.invalidateQueries(['loyalty-rewards']); setShowRewardForm(false); toast.success('Reward created!'); },
+    onSuccess: (reward) => {
+      qc.invalidateQueries(['loyalty-rewards']);
+      setShowRewardForm(false);
+      toast.success('Reward created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created loyalty reward: ${reward?.name || 'Reward'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const toggleRewardMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
@@ -142,17 +186,17 @@ export default function LoyaltyProgram() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
-                { label: 'Active Viewers', value: leaderboard.length, color: '#00d4ff', icon: Users },
-                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#00ff88', icon: Gift },
+                { label: 'Active Viewers', value: leaderboard.length, color: GOLD, icon: Users },
+                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <p className="text-[10px] font-black uppercase mb-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{stat.label}</p>
                   <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: stat.color }}>{stat.value}</p>
                 </div>
               ))}
             </div>
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>Points Earn Rate</p>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
@@ -165,7 +209,7 @@ export default function LoyaltyProgram() {
                   <div key={e.label} className="rounded-xl p-3 text-center"
                     style={{ background: 'rgba(255,255,255,0.04)' }}>
                     <span className="text-xl">{e.icon}</span>
-                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>+{e.value}</p>
+                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>+{e.value}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{e.label}</p>
                   </div>
                 ))}
@@ -176,14 +220,14 @@ export default function LoyaltyProgram() {
 
         {/* Viewer View */}
         {tab === 'viewer' && !isOwnProgram && (
-          <div className="rounded-2xl p-6" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          <div className="rounded-2xl p-6" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center"
                 style={{ background: `linear-gradient(135deg, ${GOLD}, ${CRIMSON})` }}>
                 <Star className="w-8 h-8 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>
+                <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>
                   {userPoints.toLocaleString()} pts
                 </p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -195,11 +239,11 @@ export default function LoyaltyProgram() {
               <div>
                 <div className="flex justify-between text-xs mb-1.5">
                   <span style={{ color: 'rgba(255,255,255,0.4)' }}>Progress to {nextReward.name}</span>
-                  <span className="font-black" style={{ color: '#fbbf24' }}>{Math.round(progressToNext)}%</span>
+                  <span className="font-black" style={{ color: '#D4AF37' }}>{Math.round(progressToNext)}%</span>
                 </div>
                 <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-                    className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${GOLD}, #fbbf24)` }} />
+                    className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${GOLD}, #D4AF37)` }} />
                 </div>
               </div>
             )}
@@ -209,7 +253,7 @@ export default function LoyaltyProgram() {
         {/* Rewards */}
         {tab === 'rewards' && (
           sortedRewards.length === 0 ? (
-            <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <Gift className="w-12 h-12 mx-auto opacity-20 mb-3" style={{ color: GOLD }} />
               <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No rewards configured yet</p>
             </div>
@@ -220,7 +264,7 @@ export default function LoyaltyProgram() {
                 return (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                     <div className="rounded-2xl p-4 flex items-center gap-4 transition-all"
-                      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
+                      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
                         style={{ background: `${TIER_COLORS[i % 5]}20`, border: `1px solid ${TIER_COLORS[i % 5]}40` }}>
                         {REWARD_TYPES.find(rt => rt.id === r.reward_type)?.icon || '🎁'}
@@ -270,7 +314,7 @@ export default function LoyaltyProgram() {
 
         {/* Leaderboard */}
         {tab === 'leaderboard' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="px-5 py-4 flex items-center gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <Trophy className="w-4 h-4" style={{ color: GOLD }} />
               <p className="font-black text-sm text-white" style={T}>Top Viewers</p>
@@ -287,7 +331,7 @@ export default function LoyaltyProgram() {
                     <p className="text-sm text-white truncate" style={T}>{l.user_id?.slice(0, 8) || 'Anonymous'}</p>
                     <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{l.watch_minutes || 0}min watched</p>
                   </div>
-                  <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#fbbf24' }}>{(l.points || 0).toLocaleString()} pts</p>
+                  <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>{(l.points || 0).toLocaleString()} pts</p>
                 </div>
               ))}
               {leaderboard.length === 0 && <p className="text-center py-8" style={{ color: 'rgba(255,255,255,0.25)' }}>No viewers yet</p>}
@@ -305,7 +349,7 @@ export default function LoyaltyProgram() {
               onClick={() => setShowRewardForm(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-2xl overflow-hidden z-50"
-              style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.25)' }}>
+              style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
                 <p className="font-black text-sm text-white" style={T}>Create Reward</p>
                 <button onClick={() => setShowRewardForm(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
@@ -340,6 +384,42 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Reward shop editor and redemption queue for admins */}
+      {isOwnProgram && user?.id && (
+        <div style={{ padding: '0 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RewardShopEditor creatorId={user.id} />
+          <RedemptionQueue creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏆 Loyalty Hub',  href: 'LoyaltyHub'    },
+          { label: '🛍 Reward Shop',  href: 'RewardShop'    },
+          { label: '🔴 Go Live',      href: 'GoLive'        },
+          { label: '📊 Analytics',    href: 'Analytics'     },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -41,15 +41,14 @@ export default function LiveTranscription({ isLive = false, roomId }) {
             formData.append('file', audioBlob);
 
             const uploadRes = await base44.integrations.Core.UploadFile({ file: audioBlob });
-            const transcribeRes = await base44.functions.invoke('transcribeAudio', {
-              audio_url: uploadRes.file_url,
-            });
+            const transcribeRes = await base44.integrations.Core.InvokeLLM({
+              prompt: `Transcribe the following audio content. The audio is available at: ${uploadRes.file_url || 'uploaded audio'}. Provide a brief transcription or caption.`,
+            }).catch(() => null);
 
-            if (transcribeRes?.data?.text) {
-              addCaption(transcribeRes.data.text);
+            if (transcribeRes && typeof transcribeRes === 'string') {
+              addCaption(transcribeRes);
             }
           } catch (error) {
-            console.error('Transcription error:', error);
           }
         };
 
@@ -70,7 +69,6 @@ export default function LiveTranscription({ isLive = false, roomId }) {
           stream.getTracks().forEach(track => track.stop());
         };
       } catch (error) {
-        console.error('Transcription setup error:', error);
         setIsTranscribing(false);
       }
     };
@@ -119,7 +117,7 @@ export default function LiveTranscription({ isLive = false, roomId }) {
             transition={{ duration: 0.3 }}
             className="mb-2 p-3 rounded-lg backdrop-blur-md"
             style={{
-              background: 'rgba(7,7,15,0.85)',
+              background: 'rgba(8,11,24,0.85)',
               border: `1px solid ${G}30`,
             }}
           >

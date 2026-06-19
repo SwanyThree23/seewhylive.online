@@ -6,8 +6,8 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
     excellent: '#6DBF7E',
     good: '#d4af37',
-    warning: '#FFB800',
-    critical: '#FF1564'
+    warning: '#D4AF37',
+    critical: '#C0392B'
   };
 
   return (
@@ -20,7 +20,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
         <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
         <div className="flex items-center gap-1">
           {trend === 'up' ? (
-            <TrendingUp className="w-3 h-3 text-green-400" />
+            <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
           ) : trend === 'down' ? (
             <TrendingDown className="w-3 h-3 text-red-400" />
           ) : null}
@@ -51,22 +51,7 @@ export default function StreamHealthDashboard({ isLive }) {
     viewers: { value: 247, status: 'excellent', trend: 'up' }
   });
 
-  useEffect(() => {
-    if (!isLive) return;
-
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        bitrate: { value: Math.round(Math.random() * 2000 + 4000), status: 'excellent', trend: Math.random() > 0.5 ? 'up' : 'down' },
-        fps: { value: Math.round(Math.random() * 15 + 50), status: 'excellent', trend: null },
-        latency: { value: Math.round(Math.random() * 30 + 30), status: 'good', trend: 'down' },
-        resolution: { value: '1080p', status: 'excellent', trend: null },
-        uploadSpeed: { value: Math.round(Math.random() * 10 + 20), status: 'excellent', trend: null },
-        viewers: { value: Math.round(Math.random() * 100 + 200), status: 'excellent', trend: 'up' }
-      }));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isLive]);
+  // Real metrics come from WebRTC getStats() / ZEGO callbacks — no simulation
 
   if (!isLive) {
     return (

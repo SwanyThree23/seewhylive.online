@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '../utils';
 import ShareButtons from '../components/shared/ShareButtons';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import LiveAuctionWidget from '../components/live/LiveAuctionWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
@@ -31,6 +33,15 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import LoveTap from '../components/live/LoveTap';
+import GiftTray from '../components/live/GiftTray';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -305,7 +316,7 @@ export default function RoomPage() {
           </h1>
           {room.status === 'live' && (
             <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[11px] uppercase animate-pulse"
-              style={{ background: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+              style={{ background: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
           )}
           <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
             style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -325,7 +336,7 @@ export default function RoomPage() {
                 onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
                 disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
+                style={{ background: isRecording ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
                 {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
               </button>
               <button
@@ -390,7 +401,7 @@ export default function RoomPage() {
           {/* Left Column - Stage & Controls */}
           <div className="lg:col-span-3 space-y-4">
             {/* Stage */}
-            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               {stages.length > 0 ? (
                 <Tabs defaultValue={stages[0]?.id} className="space-y-4">
                   {stages.length > 1 && (
@@ -432,7 +443,7 @@ export default function RoomPage() {
 
             {/* Whiteboard */}
             {showWhiteboard && (
-              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                 <h3 className="font-semibold mb-4 text-white">Collaborative Whiteboard</h3>
                 <CollaborativeWhiteboard roomId={roomId} />
               </div>
@@ -440,7 +451,7 @@ export default function RoomPage() {
 
             {/* Quick Tip */}
             {room?.host_id !== user?.id && (
-              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                 <h3 className="font-semibold mb-3 flex items-center gap-2 text-white">
                   <DollarSign className="w-5 h-5" style={{ color: '#D4AF37' }} />
                   Support the Creator
@@ -450,7 +461,7 @@ export default function RoomPage() {
             )}
 
             {/* Control Bar */}
-            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center justify-center gap-3">
                 {/* Gift Shop Tray + Tip for viewers */}
                 {user && !isHost && (
@@ -576,6 +587,12 @@ export default function RoomPage() {
                 <ChatModerationPanel roomId={roomId} />
               </div>
             )}
+            {isHost && (
+              <div className="mt-3 space-y-3">
+                <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
+                <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+              </div>
+            )}
             {/* Live Auctions - visible to all */}
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LiveAuctionWidget roomId={roomId} currentUser={user} isHost={isHost} />
@@ -584,6 +601,23 @@ export default function RoomPage() {
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
+            <div className="mt-3 space-y-3">
+              {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+              {roomId && room?.host_id && (
+                <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
+              )}
+              <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
+              <ContentRecommendations />
+              <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={participants.length} />
+              <MilestoneAlerts userId={user?.id} roomId={roomId} />
+            </div>
+            {roomId && room?.host_id && room.host_id !== user?.id && (
+              <LoveTap roomId={roomId} user={user} creatorId={room.host_id} creatorName={room.host_name || 'Host'} />
+            )}
+            {roomId && room?.host_id && room.host_id !== user?.id && (
+              <GiftTray roomId={roomId} recipientId={room.host_id} senderId={user?.id} />
+            )}
+            {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
           </div>
         </div>
       </div>

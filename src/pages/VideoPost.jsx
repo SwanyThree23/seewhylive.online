@@ -7,6 +7,17 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import VODCard from '../components/vod/VODCard';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 
@@ -39,6 +50,7 @@ export default function VideoPost() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -119,7 +131,7 @@ export default function VideoPost() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#1a0a30] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#080B18] py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -195,20 +207,20 @@ export default function VideoPost() {
                     value={form.title}
                     onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Video title *"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                   <textarea
                     value={form.description}
                     onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Description (optional)"
                     rows={3}
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', height:80 }}
                   />
                   <input
                     value={form.tags}
                     onChange={e => setForm(prev => ({ ...prev, tags: e.target.value }))}
                     placeholder="Tags (comma-separated)"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
 
                   {/* Privacy & Paywall */}
@@ -250,7 +262,7 @@ export default function VideoPost() {
                         type="number"
                         min="0.99"
                         step="0.50"
-                        style={{ width:112, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                        style={{ width:112, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                       />
                       <span className="text-white/40 text-xs">per view</span>
                     </div>
@@ -281,8 +293,8 @@ export default function VideoPost() {
 
         {step === 'published' && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-10 h-10 text-green-400" />
+            <div className="w-20 h-20 rounded-full bg-[#0F1428]/30 flex items-center justify-center mx-auto">
+              <CheckCircle className="w-10 h-10 text-[#6DBF7E]" />
             </div>
             <div>
               <h2 className="text-2xl font-bold text-white mb-2">Video Posted! 🎉</h2>
@@ -315,6 +327,22 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
+        <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <DiscussionFeed communityId="video-posts" />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <StreamGoals isHost={false} />
+      </div>
     </div>
   );
 }

@@ -38,9 +38,8 @@ function DestRow({ dest, userId }) {
     setValidating(true);
     setValidState(null);
     await new Promise(function(r) { return setTimeout(r, 1200); });
-    var ok = Math.random() > 0.2;
-    setValidState(ok ? 'ok' : 'err');
-    toast[ok ? 'success' : 'error'](ok ? platform.label + ' — OK' : platform.label + ' — failed');
+    setValidState('ok');
+    toast.success(platform.label + ' — stream key saved');
     setValidating(false);
   };
 
@@ -59,7 +58,7 @@ function DestRow({ dest, userId }) {
         <span className="text-[11px] font-bold px-1.5 py-0.5 rounded" style={{ background: platform.color + '15', color: platform.color }}>
           {platform.label}
         </span>
-        {validState === 'ok' && <CheckCircle className="w-3 h-3 text-green-400" />}
+        {validState === 'ok' && <CheckCircle className="w-3 h-3 text-[#6DBF7E]" />}
         {validState === 'err' && <XCircle className="w-3 h-3 text-red-400" />}
         <div onClick={function() { updateMut.mutate({ is_enabled: !dest.is_enabled }); }} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
         <button onClick={function() { deleteMut.mutate(); }} className="text-white/20 hover:text-red-400 transition-colors">

@@ -2,21 +2,35 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, Plus, Radio, Bell, Users, Mail, Trophy, Filter, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
+import StreamGoals from '../components/live/StreamGoals';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
-  scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
-  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
-  cancelled:  { bg: 'rgba(255,21,100,0.1)',   border: 'rgba(255,21,100,0.3)',   color: '#FF1564' },
+  scheduled:  { bg: 'rgba(212,175,55,0.1)',    border: 'rgba(212,175,55,0.3)',    color: '#D4AF37' },
+  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#6DBF7E' },
+  cancelled:  { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
 };
 
 function getTypeIcon(type) {
@@ -39,6 +53,19 @@ export default function ContentCalendarPage() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: scheduledContent = [] } = useQuery({
     queryKey: ['scheduled-content', user?.id],
@@ -48,11 +75,18 @@ export default function ContentCalendarPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledContent.create({ ...data, creator_id: user.id, status: 'scheduled' }),
-    onSuccess: () => {
+    onSuccess: (content) => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-content'] });
       setShowCreate(false);
       setFormData({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
       toast.success('Content scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled content: ${content?.title || 'Content'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -125,7 +159,7 @@ export default function ContentCalendarPage() {
               const todayHighlight = isToday(scheduledDate);
               return (
                 <div key={item.id} className="rounded-2xl p-4 space-y-3"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${todayHighlight ? 'rgba(212,175,55,0.35)' : 'rgba(212,175,55,0.08)'}` }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${todayHighlight ? 'rgba(212,175,55,0.35)' : 'rgba(212,175,55,0.08)'}` }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
                       {getTypeIcon(item.content_type)}
@@ -160,12 +194,12 @@ export default function ContentCalendarPage() {
                     <div className="flex gap-2">
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'published' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer' }}>
                         Publish
                       </button>
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'cancelled' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#FF1564', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         Cancel
                       </button>
                     </div>
@@ -181,7 +215,7 @@ export default function ContentCalendarPage() {
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}
           onClick={e => { if (e.target === e.currentTarget) setShowCreate(false); }}>
-          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+          <div className="w-full max-w-md rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
               <span className="font-black text-sm text-white" style={T}>Schedule Content</span>
               <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
@@ -229,6 +263,49 @@ export default function ContentCalendarPage() {
           </div>
         </div>
       )}
+
+      {user?.id && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
+          <AIHighlightGenerator creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
+          { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
+          { label: '📊 Analytics',        href: 'Analytics'       },
+          { label: '🔴 Go Live',          href: 'GoLive'          },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

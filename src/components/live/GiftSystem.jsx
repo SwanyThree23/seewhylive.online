@@ -5,15 +5,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
   volt: "#D4AF37", white: "#FFF", gray: "#888", dim: "#444",
-  purple: "#BF5FFF", cyan: "#00E5FF", green: "#30D158",
+  purple: "#800020", cyan: "#6DBF7E", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
 var RARITY_STYLES = {
   common: { color: C.gray, border: "#555", label: "COMMON" },
-  rare: { color: C.cyan, border: "#00E5FF44", label: "RARE" },
-  epic: { color: C.purple, border: "#BF5FFF44", label: "EPIC" },
+  rare: { color: C.gold, border: "#D4AF3744", label: "RARE" },
+  epic: { color: C.burgundy, border: "#80002044", label: "EPIC" },
   legendary: { color: C.gold, border: "#D4AF3766", label: "LEGENDARY", shimmer: true },
 };
 
@@ -143,13 +143,13 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: (gift.price * 0.1), platform_cut: (gift.price * 0.01), creator_payout: (gift.price * 0.09),
+        amount: Math.floor(gift.price * 0.1), creator_payout: Math.floor(gift.price * 0.09), platform_cut: Math.floor(gift.price * 0.1) - Math.floor(gift.price * 0.09),
         transaction_type: "direct_support", status: "completed",
       }),
       base44.entities.TipAlert.create({
         creator_id: hostId, room_id: roomId,
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
-        amount_usd: gift.price * 0.1, message: "Sent " + (gift.name || gift.id),
+        amount_usd: Math.floor(gift.price * 0.1), message: "Sent " + (gift.name || gift.id),
         animation_type: gift.rarity === "legendary" ? "fireworks" : gift.rarity === "epic" ? "confetti" : "slide_in",
         is_displayed: false,
       }),
@@ -158,6 +158,24 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       onSend && onSend({ ...gift, sender_name: currentUser?.full_name || "You" });
       qc.invalidateQueries(["gift-lb", roomId]);
       setOpen(false);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'gift_sent',
+            title: `Sent ${gift.name || 'gift'}`,
+            amount: gift.price,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'gift_received',
+            title: `Received ${gift.name || 'gift'} from ${currentUser.full_name || 'viewer'}`,
+            amount: gift.price,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
   });
 

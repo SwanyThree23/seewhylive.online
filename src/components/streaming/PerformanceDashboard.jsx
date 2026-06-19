@@ -14,24 +14,34 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const result = await base44.functions.invoke('analyzeStreamPerformance', {
-          room_id: roomId,
-          session_id: sessionId,
-        });
-
-        if (result?.data) {
-          setMetrics(result.data);
-          setHistory(prev => [...prev, {
-            timestamp: Date.now(),
-            bitrate: result.data.bitrate,
-            fps: result.data.fps,
-            viewers: result.data.viewer_count,
-            latency: result.data.latency_ms,
-          }]);
-        }
-      } catch (error) {
-        console.error('Performance fetch error:', error);
-      }
+        const [healthRows, viewerRows] = await Promise.all([
+          base44.entities.StreamHealthMetric.filter(
+            { room_id: roomId },
+            '-created_date',
+            1
+          ).catch(() => []),
+          base44.entities.Participant.filter(
+            { room_id: roomId, status: 'active' },
+            '-created_date',
+            1000
+          ).catch(() => []),
+        ]);
+        const h = healthRows[0];
+        const data = {
+          bitrate: h?.bitrate ?? null,
+          fps: h?.fps ?? null,
+          viewer_count: viewerRows.length || h?.viewer_count || 0,
+          latency_ms: h?.latency_ms ?? null,
+        };
+        setMetrics(data);
+        setHistory(prev => [...prev, {
+          timestamp: Date.now(),
+          bitrate: data.bitrate,
+          fps: data.fps,
+          viewers: data.viewer_count,
+          latency: data.latency_ms,
+        }]);
+      } catch {}
       setLoading(false);
     };
 
@@ -41,14 +51,14 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
   }, [roomId, sessionId]);
 
   const stats = [
-    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#FF8C00' },
+    { label: 'Bitrate', value: metrics?.bitrate ? `${metrics.bitrate} Mbps` : '--', icon: Zap, color: '#D4854A' },
     { label: 'FPS', value: metrics?.fps || '--', icon: Activity, color: '#C9A84C' },
     { label: 'Viewers', value: metrics?.viewer_count || 0, icon: Users, color: '#6DBF7E' },
     { label: 'Latency', value: metrics?.latency_ms ? `${metrics.latency_ms}ms` : '--', icon: TrendingUp, color: G },
   ];
 
   return (
-    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}20` }}>
+    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Eye className="w-5 h-5" style={{ color: G }} />
@@ -86,7 +96,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
               <XAxis dataKey="timestamp" stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <YAxis stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <Tooltip
-                contentStyle={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}30` }}
+                contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}30` }}
                 labelStyle={{ color: '#fff' }}
               />
               <Line

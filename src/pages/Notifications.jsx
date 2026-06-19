@@ -5,15 +5,27 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const GOLD = '#D4AF37';
-const PINK = '#FF1564';
+const PINK    = '#C0392B';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#D4AF37' },
   subscription: { icon: Users,     color: '#C9A84C' },
-  room_invite:  { icon: Radio,     color: '#FF1564' },
+  room_invite:  { icon: Radio,     color: '#C0392B' },
   challenge:    { icon: Trophy,    color: '#D4AF37' },
   announcement: { icon: Megaphone, color: '#D4AF37' },
   referral:     { icon: Gift,      color: '#6DBF7E' },
@@ -27,6 +39,19 @@ export default function NotificationsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -113,7 +138,7 @@ export default function NotificationsPage() {
                   key={notif.id}
                   className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer hover:brightness-110"
                   style={{
-                    background: notif.is_read ? 'rgba(13,6,24,0.6)' : 'rgba(13,6,24,0.95)',
+                    background: notif.is_read ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.95)',
                     border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
                   }}
                   onClick={() => handleNotifClick(notif)}
@@ -155,7 +180,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
-                      style={{ background: 'rgba(255,30,80,0.12)', color: 'rgba(255,80,80,0.6)', border: '1px solid rgba(255,30,80,0.2)' }}
+                      style={{ background: 'rgba(192,57,43,0.15)', color: 'rgba(212,133,74,0.8)', border: '1px solid rgba(192,57,43,0.3)' }}
                       title="Delete notification">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -174,6 +199,25 @@ export default function NotificationsPage() {
             })}
           </div>
         )}
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StreamGoals isHost={true} />
+            <LeaderboardPanel roomId={roomId} />
+            <MilestoneAlerts creatorId={user.id} />
+            <AnnouncementFeed communityId={userCommunityId} />
+            <PointsNotification userId={user.id} />
+            <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />
+            <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          </div>
+        )}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
       </div>
     </div>
   );

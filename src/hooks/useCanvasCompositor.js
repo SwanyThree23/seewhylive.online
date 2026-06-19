@@ -44,7 +44,7 @@ function drawSlot(ctx, videoEl, x, y, w, h, label) {
 function drawOverlay(ctx, { title, subtitle, showLive }) {
   // LIVE badge
   if (showLive) {
-    ctx.fillStyle = 'rgba(255,21,100,0.85)';
+    ctx.fillStyle = 'rgba(192,57,43,0.9)';
     roundRect(ctx, W - 100, 20, 80, 32, 6);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 16px Arial';
@@ -230,7 +230,7 @@ function drawBattleLayout(ctx, slots, videoCache, battleData = {}) {
   const mins = Math.floor(timeLeft / 60);
   const secs = String(timeLeft % 60).padStart(2, '0');
   ctx.font = 'bold 28px Arial';
-  ctx.fillStyle = timeLeft <= 30 ? '#FF1564' : 'rgba(255,255,255,0.8)';
+  ctx.fillStyle = timeLeft <= 30 ? '#C0392B' : 'rgba(255,255,255,0.8)';
   ctx.fillText(`${mins}:${secs}`, half, barY + 50);
 
   // Progress bar

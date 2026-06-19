@@ -7,13 +7,13 @@ import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
 
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
-const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#22c55e', '#f97316', '#f472b6'];
+const GOAL_COLORS = ['#d4af37', '#D4AF37', '#D4AF37', '#6DBF7E', '#D4854A', '#D4854A'];
 
 function GoalBar({ goal, onUpdate, isCreator }) {
   const pct = Math.min(100, ((goal.current_amount || 0) / goal.target_amount) * 100);
@@ -22,14 +22,14 @@ function GoalBar({ goal, onUpdate, isCreator }) {
 
   useEffect(() => {
     if (pct >= 100 && prevPct.current < 100) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#d4af37', '#fff', '#00d4ff'] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#d4af37', '#fff', '#D4AF37'] });
       toast.success(`🎉 Goal "${goal.title}" reached!`);
     }
     prevPct.current = pct;
   }, [pct]);
 
   return (
-    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(34,197,94,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
+    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(109,191,126,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(109,191,126,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 20 }}>{GOAL_ICONS[goal.goal_type] || '🎯'}</span>
@@ -40,7 +40,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {isComplete && (
-            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.2)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ✓ Complete!
             </span>
           )}
@@ -69,7 +69,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#22c55e' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
+            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#6DBF7E' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
           >
             {/* Shimmer */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)', animation: 'pulse 2s infinite' }} />
@@ -111,7 +111,19 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamerGoal.create(data),
-    onSuccess: () => { qc.invalidateQueries(['streamer-goals']); setShowForm(false); toast.success('Goal created!'); },
+    onSuccess: (goal) => {
+      qc.invalidateQueries(['streamer-goals']);
+      setShowForm(false);
+      toast.success('Goal created!');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created stream goal: ${goal?.title || 'Goal'}`,
+          amount: goal?.target_amount,
+        }).catch(() => {});
+      }
+    },
   });
 
   const updateMutation = useMutation({
@@ -131,7 +143,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const containerStyle = embedded
     ? { display: 'flex', flexDirection: 'column', gap: 12 }
-    : { minHeight: '100vh', background: '#0d0618', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
+    : { minHeight: '100vh', background: '#080B18', color: '#fff', padding: 16, maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20, fontFamily: 'Barlow Condensed, sans-serif' };
 
   return (
     <div style={containerStyle}>
@@ -177,7 +189,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <select value={form.goal_type} onChange={e => setForm(f => ({ ...f, goal_type: e.target.value }))}
-                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
                   {Object.entries(GOAL_ICONS).map(([k, v]) => (
                     <option key={k} value={k}>{v} {k}</option>
                   ))}

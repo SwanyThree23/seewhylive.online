@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', ...T,
 };
@@ -31,13 +31,20 @@ export default function AnnouncementPanel({ communityId, userId }) {
         sent_at: new Date().toISOString(),
       });
     },
-    onSuccess: () => {
+    onSuccess: (ann) => {
       queryClient.invalidateQueries(['announcements']);
       setTitle('');
       setContent('');
       setPriority('normal');
       setTargetAudience('all');
       toast.success('Announcement sent successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Sent announcement: ${ann?.title || 'Announcement'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -54,11 +61,18 @@ export default function AnnouncementPanel({ communityId, userId }) {
         scheduled_for: scheduledTime,
       });
     },
-    onSuccess: () => {
+    onSuccess: (ann) => {
       queryClient.invalidateQueries(['announcements']);
       setTitle('');
       setContent('');
       toast.success('Announcement scheduled!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'stream_scheduled',
+          title: `Scheduled announcement: ${ann?.title || 'Announcement'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -73,7 +87,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       {/* Header */}
       <div style={{ padding: '20px 20px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px', ...T }}>
-          <Megaphone className="w-5 h-5" style={{ color: '#a78bfa' }} />
+          <Megaphone className="w-5 h-5" style={{ color: '#D4AF37' }} />
           Create Announcement
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>
@@ -113,7 +127,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             >
               <option value="low">Low</option>
               <option value="normal">Normal</option>
@@ -128,7 +142,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
             <select
               value={targetAudience}
               onChange={(e) => setTargetAudience(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             >
               <option value="all">All Members</option>
               <option value="admins">Admins Only</option>
@@ -175,11 +189,11 @@ export default function AnnouncementPanel({ communityId, userId }) {
         </div>
 
         {/* Info */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(59,130,246,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
-          <AlertCircle className="w-4 h-4" style={{ color: '#60a5fa', marginTop: 2, flexShrink: 0 }} />
-          <div style={{ color: 'rgba(147,197,253,0.9)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(212,175,55,0.1)', borderRadius: 8, padding: 12, fontSize: 13 }}>
+          <AlertCircle className="w-4 h-4" style={{ color: '#D4AF37', marginTop: 2, flexShrink: 0 }} />
+          <div style={{ color: 'rgba(212,175,55,0.9)' }}>
             <p style={{ fontWeight: 600, margin: '0 0 2px', ...T }}>Targeting: {targetAudience.replace('_', ' ')}</p>
-            <p style={{ fontSize: 11, color: 'rgba(147,197,253,0.6)', margin: 0, ...T }}>
+            <p style={{ fontSize: 11, color: 'rgba(212,175,55,0.6)', margin: 0, ...T }}>
               This will notify members via in-app notifications
             </p>
           </div>

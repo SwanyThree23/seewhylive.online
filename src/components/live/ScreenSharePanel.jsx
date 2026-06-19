@@ -16,7 +16,6 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
       onStartShare(stream);
       setShowOptions(false);
     } catch (err) {
-      console.error('Screen share failed:', err);
     }
   };
 
@@ -33,7 +32,6 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
       onStartShare(stream);
       setShowOptions(false);
     } catch (err) {
-      console.error('Window share failed:', err);
     }
   };
 
@@ -43,7 +41,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
   };
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setShowOptions(!showOptions)}
@@ -53,7 +51,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
           <Share2 className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Screen Share</span>
           {isSharing && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-purple-900/60 text-purple-300 animate-pulse">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'rgba(192,57,43,0.4)', color: '#D4AF37' }}>
               ACTIVE
             </span>
           )}
@@ -73,7 +71,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
               {isSharing ? (
                 <button
                   onClick={handleStopShare}
-                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(239,68,68,0.5)', background:'rgba(127,29,29,0.5)', color:'#f87171', cursor:'pointer', fontSize:13 }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(192,57,43,0.5)', background:'rgba(127,29,29,0.5)', color:'#FF4444', cursor:'pointer', fontSize:13 }}
                 >
                   <StopCircle className="w-4 h-4" />
                   Stop Sharing
@@ -82,14 +80,14 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
                 <>
                   <button
                     onClick={handleStartScreenShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.5)', background:'rgba(88,28,135,0.5)', color:'#c084fc', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.4)', background:'rgba(128,0,32,0.4)', color:'#D4AF37', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Screen
                   </button>
                   <button
                     onClick={handleStartWindowShare}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(147,51,234,0.3)', background:'rgba(88,28,135,0.3)', color:'#d8b4fe', cursor:'pointer', fontSize:13 }}
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(212,175,55,0.25)', background:'rgba(128,0,32,0.25)', color:'#C9A84C', cursor:'pointer', fontSize:13 }}
                   >
                     <Monitor className="w-4 h-4" />
                     Share Window

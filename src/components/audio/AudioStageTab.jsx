@@ -6,7 +6,7 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const BG      = '#080B18';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B3A','#7C4A3A','#6B5C3A','#A6263A','#D4854A'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
@@ -81,7 +81,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
           clipPath: OCT,
           background: isHost
             ? `linear-gradient(135deg, ${CRIMSON}, #4a0012)`
-            : `rgba(30,10,30,0.9)`,
+            : `rgba(8,11,24,0.9)`,
           border: `2px solid rgba(212,175,55,0.3)`,
           position: 'relative',
           cursor: showControls ? 'pointer' : 'default',
@@ -386,9 +386,9 @@ export default function AudioStageTab({
             height: 40,
             borderRadius: '50%',
             background: isMuted
-              ? 'rgba(239,68,68,0.18)'
+              ? 'rgba(192,57,43,0.18)'
               : `linear-gradient(135deg, ${GOLD}, #B8960C)`,
-            border: isMuted ? '1px solid rgba(239,68,68,0.5)' : 'none',
+            border: isMuted ? '1px solid rgba(192,57,43,0.5)' : 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -428,7 +428,7 @@ export default function AudioStageTab({
               minWidth: 16,
               height: 16,
               borderRadius: 8,
-              background: '#FF1564',
+              background: '#C0392B',
               color: '#fff',
               fontSize: 11,
               fontWeight: 900,
@@ -547,8 +547,8 @@ export default function AudioStageTab({
                         gap: 4,
                         padding: '4px 8px',
                         borderRadius: 6,
-                        background: 'rgba(239,68,68,0.1)',
-                        border: '1px solid rgba(239,68,68,0.3)',
+                        background: 'rgba(192,57,43,0.1)',
+                        border: '1px solid rgba(192,57,43,0.3)',
                         color: '#EF4444',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',

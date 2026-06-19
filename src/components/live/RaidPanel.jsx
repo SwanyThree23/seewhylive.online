@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -115,7 +116,25 @@ function RaidLauncher({ room, currentUser, onClose }) {
       });
       return raid;
     },
-    onSuccess: () => { qc.invalidateQueries(['raid-active', room?.id]); toast.success('Raid initiated! Countdown starting…'); onClose(); },
+    onSuccess: (raid) => {
+      qc.invalidateQueries(['raid-active', room?.id]);
+      toast.success('Raid initiated! Countdown starting…');
+      onClose();
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'raid_sent',
+          title: `Raided ${raid?.to_creator_username || 'a room'} with ${raid?.viewer_count_sent || 0} viewers`,
+          recipient_id: raid?.to_creator_id,
+        }),
+        raid?.to_creator_id && base44.entities.Activity.create({
+          user_id: raid.to_creator_id,
+          type: 'raid_received',
+          title: `Received raid from ${currentUser.full_name || currentUser.email}`,
+          sender_id: currentUser.id,
+        }),
+      ]);
+    },
   });
 
   return (
@@ -155,6 +174,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
 }
 
 export default function RaidPanelButton({ room, currentUser, isHost }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [activateRaid, setActiveRaid] = useState(null);
   const [incomingRaid, setIncomingRaid] = useState(null);
@@ -197,7 +217,7 @@ export default function RaidPanelButton({ room, currentUser, isHost }) {
   };
 
   const joinRaid = (raid) => {
-    window.location.href = `/Room?id=${raid.to_room_id}`;
+    navigate(`/Room?id=${raid.to_room_id}`);
   };
 
   return (

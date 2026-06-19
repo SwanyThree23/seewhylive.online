@@ -30,7 +30,7 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
     const prevCount = prevRef.current;
     const hitMilestone = MILESTONES.find(m => prevCount < m && count >= m);
     if (hitMilestone) {
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.3 }, colors: ['#d4af37', '#f5e6a3', '#00d4ff'] });
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.3 }, colors: ['#d4af37', '#f5e6a3', '#D4AF37'] });
     }
     prevRef.current = count;
   }, [count]);
@@ -42,7 +42,7 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
     <div className="flex flex-col items-center gap-0.5">
       <motion.div
         key={displayed}
-        initial={{ scale: 1.3, color: '#00d4ff' }}
+        initial={{ scale: 1.3, color: '#D4AF37' }}
         animate={{ scale: 1, color: '#ffffff' }}
         transition={{ duration: 0.3 }}
         className="text-2xl font-bold font-mono leading-none"
@@ -60,7 +60,7 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
         <div className="w-20 h-8 mt-1">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={history}>
-              <Line type="monotone" dataKey="v" stroke="#00d4ff" strokeWidth={1.5} dot={false} />
+              <Line type="monotone" dataKey="v" stroke="#D4AF37" strokeWidth={1.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>

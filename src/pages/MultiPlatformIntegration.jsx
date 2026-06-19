@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
+import WebhookHooks from '../components/live/WebhookHooks';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,
@@ -97,6 +115,7 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -250,8 +269,8 @@ export default function MultiPlatformIntegration() {
             ))}
           </div>
           {platforms.fanbase && (
-            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,90,0,0.06)', border: '1px solid rgba(255,90,0,0.2)' }}>
-              <p style={{ ...T, fontSize: 11, color: '#FF8040', margin: 0 }}>
+            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.2)' }}>
+              <p style={{ ...T, fontSize: 11, color: '#D4854A', margin: 0 }}>
                 <strong>Fanbase.com connected.</strong> Fan counts, tips, and Super Chats will sync automatically. Go live on both platforms simultaneously using the RTMP destinations below.
               </p>
             </div>
@@ -342,7 +361,7 @@ export default function MultiPlatformIntegration() {
               {webhookTestLoading ? 'Sending…' : 'Test Webhook'}
             </button>
             {webhookTestResult && (
-              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#FF6680', fontWeight: 700 }}>
+              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#C0392B', fontWeight: 700 }}>
                 {webhookTestResult.ok ? '✓' : '✗'} {webhookTestResult.msg}
               </span>
             )}
@@ -589,6 +608,40 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <ZEGOConfigPanel user={user} />
+        <ZEGOStreamHealthCard roomId={roomId} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <WebhookHooks roomId={roomId} isHost={true} />
+        <MultiStreamConfig roomId={roomId} userId={user?.id} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <AdvancedEncoderSettings onApply={() => {}} />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="broadcast" viewerCount={0} />
+        <StreamGoals isHost={true} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🌐 Multi-Platform',    href: 'MultiPlatform'   },
+          { label: '🔴 Go Live',           href: 'GoLive'          },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio' },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'  },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

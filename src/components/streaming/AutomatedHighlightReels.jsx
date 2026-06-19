@@ -105,12 +105,12 @@ export default function AutomatedHighlightReels({ streamSession }) {
       const newHighlight = {
         id: highlights.length + 1,
         title: 'New Highlight - Peak Engagement',
-        duration: Math.floor(Math.random() * 30 + 30),
+        duration: null,
         views: 0,
-        thumbnail: 'https://images.unsplash.com/photo-1559027615-cd2628902d4a?w=400&h=225&fit=crop',
+        thumbnail: null,
         tags: ['auto', 'peak', 'engagement'],
         quality: '1080p',
-        confidence: Math.floor(Math.random() * 10 + 85)
+        confidence: 95
       };
       setHighlights([newHighlight, ...highlights]);
       toast.success('Highlight generated!');
@@ -136,7 +136,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
     >
       {/* Header */}
       <div className="flex items-center justify-between">

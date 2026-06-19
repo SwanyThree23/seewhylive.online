@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
@@ -19,14 +19,14 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
   var qc = useQueryClient();
 
   var finalAmount = amount || parseFloat(custom) || 0;
-  var creatorGets = (finalAmount * 0.9).toFixed(2);
+  var creatorGets = (Math.floor(finalAmount  * 90) / 100).toFixed(2);
 
   var sendMutation = useMutation({
     mutationFn: () => Promise.all([
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: finalAmount, platform_cut: finalAmount * 0.1, creator_payout: finalAmount * 0.9,
+        amount: finalAmount, creator_payout: Math.floor(finalAmount  * 90) / 100, platform_cut: finalAmount - Math.floor(finalAmount  * 90) / 100,
         payment_method: method.toLowerCase(), transaction_type: "direct_support", status: "completed",
       }),
       base44.entities.TipAlert.create({
@@ -37,7 +37,28 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         is_displayed: false,
       }),
     ]),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["tip-alerts", roomId]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries(["tip-alerts", roomId]);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'tip_sent',
+            title: `Tipped $${finalAmount.toFixed(2)}`,
+            amount: finalAmount,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Received $${finalAmount.toFixed(2)} tip from ${currentUser.full_name || 'viewer'}`,
+            amount: finalAmount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
   });
 
   if (success) return (

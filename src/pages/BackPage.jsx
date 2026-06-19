@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Globe, MessageSquare, Menu, Search } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function BackPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
 
@@ -13,11 +26,24 @@ export default function BackPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   // Redirect if already logged in
   useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 
@@ -32,7 +58,7 @@ export default function BackPage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[rgba(7,7,15,0.98)] border-b border-white/5 backdrop-blur-md">
+      <header className="sticky top-0 z-50 bg-[rgba(8,11,24,0.98)] border-b border-white/5 backdrop-blur-md">
         <div className="flex h-14 items-center justify-between px-4 md:px-6">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #A0522D, #d4af37)' }}>
@@ -154,8 +180,23 @@ export default function BackPage() {
         </motion.div>
       </section>
 
+      <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ZEGOStreamHealthCard roomId={new URLSearchParams(window.location.search).get('room_id')} />
+        <StreamingPresets onApply={() => {}} />
+        <ActivitySidebar isOpen={false} onClose={() => {}} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ZEGOMobileAppBanner />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+      </div>
+
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(8,11,24,0.98)] border-t border-white/5 px-4 py-3">
         <div className="flex items-center justify-around text-white/40 text-[11px]">
           <span>© 2026 SeeWhy LIVE</span>
           <span>Privacy</span>

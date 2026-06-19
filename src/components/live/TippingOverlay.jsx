@@ -22,11 +22,16 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
   const handleTip = async (amount) => {
     setProcessing(true);
     try {
-      await base44.functions.invoke('processTip', {
+      await base44.entities.Transaction.create({
         room_id: roomId,
-        creator_id: creatorId,
+        recipient_id: creatorId,
         amount,
+        creator_payout: Math.floor(amount * 90) / 100,
+        platform_fee: amount - Math.floor(amount * 90) / 100,
+        transaction_type: 'tip',
         message: 'Support tip',
+        status: 'completed',
+        created_at: new Date().toISOString(),
       });
       
       // Show celebration
@@ -36,7 +41,6 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         setSelectedAmount(null);
       }, 2000);
     } catch (error) {
-      console.error('Tip error:', error);
     }
     setProcessing(false);
   };
@@ -52,7 +56,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2.5 rounded-lg font-bold text-sm transition-all"
         style={{
-          background: isOpen ? `linear-gradient(135deg, ${G}, #FFB700)` : G,
+          background: isOpen ? `linear-gradient(135deg, ${G}, #D4AF37)` : G,
           color: '#000',
         }}
       >
@@ -68,7 +72,7 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className="absolute bottom-12 right-0 w-64 p-4 rounded-lg"
-            style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+            style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
           >
             {/* Header */}
             <p className="text-xs font-bold uppercase mb-3" style={{ color: G }}>Support this creator</p>

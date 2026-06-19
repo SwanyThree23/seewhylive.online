@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
@@ -98,7 +98,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
         <StatCard icon={Eye} label="Total Viewers" value={stats.totalViewers} unit="" color={G} />
         <StatCard icon={Users} label="Avg Viewers" value={stats.avgViewers} unit="" color="#C9A84C" />
         <StatCard icon={DollarSign} label="Revenue" value={stats.totalRevenue} unit="$" color="#6DBF7E" />
-        <StatCard icon={TrendingUp} label="Engagement" value={stats.avgEngagement} unit="%" color="#FF8C00" />
+        <StatCard icon={TrendingUp} label="Engagement" value={stats.avgEngagement} unit="%" color="#D4854A" />
       </div>
 
       {/* Viewer Trend */}
@@ -112,7 +112,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.1)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v.toLocaleString(), 'Viewers']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v.toLocaleString(), 'Viewers']} />
             <Line type="monotone" dataKey="viewers" stroke={G} strokeWidth={2} dot={{ fill: G, r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -139,7 +139,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" tickFormatter={v => `$${v}`} />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
             <Area type="monotone" dataKey="tips" stroke={G} fill="url(#gradTips)" strokeWidth={2} />
             <Area type="monotone" dataKey="subs" stroke="#6DBF7E" fill="url(#gradSubs)" strokeWidth={2} />
           </AreaChart>
@@ -165,7 +165,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
             <Bar dataKey="subscribers" fill="rgba(201,168,76,0.7)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

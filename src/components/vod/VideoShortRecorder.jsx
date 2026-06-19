@@ -32,24 +32,25 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      const result = await base44.functions.invoke('createVideoShort', {
+      const result = await base44.entities.VideoShort.create({
         room_id: roomId,
+        creator_id: creatorId,
         title: videoTitle || 'Untitled Short',
         description: `Published at ${new Date().toLocaleTimeString()}`,
-        video_url: 'https://example.com/video.mp4', // Would be actual recording
-        thumbnail_url: 'https://example.com/thumb.jpg',
+        video_url: '',
+        thumbnail_url: '',
         duration_seconds: duration,
         paywall_enabled: paywall,
         paywall_price: paywall ? paywallPrice : 0,
+        created_at: new Date().toISOString(),
       });
 
-      if (result?.data) {
+      if (result?.id) {
         alert('Video published!');
         setDuration(0);
         setVideoTitle('');
       }
     } catch (error) {
-      console.error('Publish error:', error);
     }
     setPublishing(false);
   };
@@ -63,7 +64,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
     >
       <div className="flex items-center gap-2">
         <Video className="w-4 h-4" style={{ color: G }} />
@@ -73,7 +74,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-3 h-3 rounded-full ${isRecording ? 'animate-pulse' : ''}`}
-            style={{ background: isRecording ? '#FF1564' : 'rgba(255,255,255,0.2)' }} />
+            style={{ background: isRecording ? '#C0392B' : 'rgba(255,255,255,0.2)' }} />
           <span className="text-xs font-bold text-white/70">
             {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')} / 10:00
           </span>
@@ -82,7 +83,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
           onClick={() => isRecordingSet(!isRecording)}
           disabled={maxDuration}
           className="px-3 py-1.5 rounded text-xs font-bold"
-          style={{ background: isRecording ? '#FF1564' : G, color: isRecording ? 'white' : '#000' }}
+          style={{ background: isRecording ? '#C0392B' : G, color: isRecording ? 'white' : '#000' }}
         >
           {isRecording ? 'Stop' : 'Record'}
         </button>

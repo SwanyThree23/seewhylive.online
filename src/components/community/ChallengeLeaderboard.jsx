@@ -20,17 +20,17 @@ export default function ChallengeLeaderboard({ challengeId }) {
 
   const getRankIcon = (rank) => {
     switch(rank) {
-      case 1: return <Trophy className="w-5 h-5" style={{ color: '#eab308' }} />;
+      case 1: return <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />;
       case 2: return <Medal className="w-5 h-5" style={{ color: '#9ca3af' }} />;
-      case 3: return <Medal className="w-5 h-5" style={{ color: '#ea580c' }} />;
+      case 3: return <Medal className="w-5 h-5" style={{ color: '#C0392B' }} />;
       default: return <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>#{rank}</span>;
     }
   };
 
   const getRankBadgeStyle = (rank) => {
-    if (rank === 1) return { background: 'rgba(234,179,8,0.2)', color: '#eab308', border: '1px solid rgba(234,179,8,0.3)' };
+    if (rank === 1) return { background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' };
     if (rank === 2) return { background: 'rgba(156,163,175,0.2)', color: '#9ca3af', border: '1px solid rgba(156,163,175,0.3)' };
-    if (rank === 3) return { background: 'rgba(234,88,12,0.2)', color: '#fb923c', border: '1px solid rgba(234,88,12,0.3)' };
+    if (rank === 3) return { background: 'rgba(212,133,74,0.2)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' };
     return { background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' };
   };
 
@@ -47,7 +47,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
       {/* Header */}
       <div style={{ padding: '16px 16px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 2px', ...T }}>
-          <Trophy className="w-5 h-5" style={{ color: '#a78bfa' }} />
+          <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />
           Leaderboard
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>Top performers in this challenge</p>
@@ -94,7 +94,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
                   {participant.score} pts
                 </span>
                 {participant.completed && (
-                  <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                  <div style={{ fontSize: 10, color: '#6DBF7E', marginTop: 2, display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
                     <Award className="w-3 h-3" />
                     Completed
                   </div>

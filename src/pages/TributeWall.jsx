@@ -1,18 +1,31 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import GoldenWall from '../components/live/GoldenWall';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG      = '#080B18';
 const BG2     = '#0D1022';
 const BG3     = '#13182C';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PURPLE  = '#7B5EA7';
-const PURPLE_L= '#A07BC4';
+const PURPLE  = '#800020';
+const PURPLE_L= '#C9A84C';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const GLOBAL_CSS = `
-@keyframes glowTribute{0%,100%{box-shadow:0 0 8px #7B5EA744;}50%{box-shadow:0 0 28px #7B5EA799;}}
+@keyframes glowTribute{0%,100%{box-shadow:0 0 8px #80002044;}50%{box-shadow:0 0 28px #80002099;}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .glow-tribute{animation:glowTribute 2.5s ease infinite;}
 `;
@@ -95,6 +108,28 @@ const INIT_MESSAGES = [
 ];
 
 export default function TributeWall() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+
   const [selected, setSelected] = useState(null);
   const [tributeMsg, setTributeMsg] = useState('');
   const [messages, setMessages] = useState(INIT_MESSAGES);
@@ -310,9 +345,25 @@ export default function TributeWall() {
           );
         })}
 
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <DiscussionFeed communityId="tribute-wall" />
+        <GoldenWall roomId={roomId} isExpanded={false} />
+        <MilestoneAlerts creatorId={user?.id} />
+        <AnnouncementFeed communityId={userCommunityId} />
+        <ShareToSocial />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+
         {/* Bottom note */}
         <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 8 }}>
           🕊️ Their legacy lives in every game played on SeeWhy LIVE
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
         </div>
 
       </div>

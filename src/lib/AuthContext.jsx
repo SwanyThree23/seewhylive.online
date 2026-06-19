@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
 
   const navigateToLogin = () => {
 
-    window.location.href = `/login?from_url=${encodeURIComponent(window.location.href)}`;
+    window.location.href = `/login?from_url=${encodeURIComponent(window.location.pathname + window.location.search)}`;
   };
 
   return (

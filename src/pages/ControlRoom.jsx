@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -12,6 +14,22 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import ClipMarker from '../components/live/ClipMarker';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import ParticipantsList from '../components/rooms/ParticipantsList';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import AudioStageTab from '../components/audio/AudioStageTab';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -45,7 +63,7 @@ function StatusBadge({ status }) {
   return (
     <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
       {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
       {cfg.label}
@@ -66,7 +84,7 @@ function BitrateSparkline({ data, degraded }) {
 }
 
 function StatPill({ label, value, color }) {
-  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#D4AF37' : value === 'BAD' ? '#FF4444' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
       style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
@@ -92,7 +110,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
   return (
     <div className="rounded-xl p-4 space-y-3"
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
         boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
       }}>
@@ -111,7 +129,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         <div className="flex items-center gap-1.5">
           {(dest.reconnect_count || 0) > 0 && (
             <span className="text-[11px] px-1.5 py-0.5 rounded font-bold"
-              style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
+              style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' }}>
               ⚠ {dest.reconnect_count} reconnects
             </span>
           )}
@@ -147,9 +165,9 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
 
       {/* Stats */}
       <div className="flex gap-1.5">
-        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#D4AF37' : '#FF4444'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#D4AF37' : '#FF4444'} />
       </div>
 
       {/* Force reconnect */}
@@ -169,10 +187,10 @@ function EndStreamModal({ onConfirm, onCancel }) {
       style={{ background: 'rgba(0,0,0,0.8)' }}>
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-red-400" />
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
         </div>
         <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
         <div className="flex gap-2">
@@ -202,6 +220,13 @@ export default function ControlRoomPage() {
   const [uptime, setUptime] = useState(0);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: room } = useQuery({
     queryKey: ['cr-room', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
@@ -250,24 +275,43 @@ export default function ControlRoomPage() {
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
       
-      // Distribute to enabled RTMP destinations
+      // Mark enabled RTMP destinations as live (actual fanout handled by MediaMTX on server)
       const enabledDests = destinations.filter(d => d.is_enabled);
-      if (enabledDests.length > 0 && user?.id) {
-        await base44.functions.invoke('distributeStreamToRTMP', {
-          room_id: roomId,
-          creator_id: user.id,
-          destinations: enabledDests.map(d => ({ id: d.id, platform: d.platform, label: d.label })),
-        });
+      if (enabledDests.length > 0) {
+        await Promise.allSettled(enabledDests.map(d =>
+          base44.entities.RTMPDestination.update(d.id, { status: 'live', last_used: new Date().toISOString() })
+        ));
       }
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      toast.success('Stream is now LIVE!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Stream went live`,
+        }).catch(() => {});
+      }
+    },
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onSuccess: () => {
+      qc.invalidateQueries(['cr-room', roomId]);
+      setShowEndModal(false);
+      toast.success('Stream ended.');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended via Control Room`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const latestHealth = healthMetrics[0];
@@ -288,7 +332,7 @@ export default function ControlRoomPage() {
 
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Monitor className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -339,19 +383,42 @@ export default function ControlRoomPage() {
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>
         )}
-        {/* Stream key */}
-        <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            {showStreamKey ? streamKey : '●'.repeat(Math.min(streamKey.length, 16))}
-          </span>
-          <button onClick={() => setShowStreamKey(s => !s)}>
-            {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
-          </button>
-          <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }}>
-            <Copy className="w-3 h-3 text-white/40" />
-          </button>
-        </div>
+        {/* Stream key — only show when a real session key exists */}
+        {session?.stream_key && (
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {showStreamKey ? session.stream_key : '●'.repeat(Math.min(session.stream_key.length, 16))}
+            </span>
+            <button onClick={() => setShowStreamKey(s => !s)}>
+              {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(session.stream_key); toast.success('Stream key copied!'); }}>
+              <Copy className="w-3 h-3 text-white/40" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Tools Toolbar */}
+      <div className="px-4 md:px-8 py-2 flex items-center gap-2 flex-wrap"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        {[
+          { label: '🎨 Scenes',       page: 'SceneTemplates',       color: 'rgba(212,175,55,0.12)' },
+          { label: '🔔 Alerts',       page: 'StreamAlerts',         color: 'rgba(212,133,74,0.12)' },
+          { label: '🛡️ Guardian AI',  page: 'GuardianAI',           color: 'rgba(192,57,43,0.12)' },
+          { label: '📡 Multi-Stream', page: 'MultiStreamManager',   color: 'rgba(109,191,126,0.1)' },
+          { label: '📊 Analytics',    page: 'AdvancedAnalytics',    color: 'rgba(212,175,55,0.08)' },
+          { label: '📅 Schedule',     page: 'StreamScheduler',      color: 'rgba(107,124,74,0.12)' },
+          { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
+        ].map(t => (
+          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+              {t.label}
+            </button>
+          </Link>
+        ))}
       </div>
 
       {/* ZEGOCLOUD Health Card */}
@@ -364,6 +431,21 @@ export default function ControlRoomPage() {
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
+      </div>
+
+      {/* Scene Switcher */}
+      <div className="px-4 md:px-8 pb-4">
+        <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+      </div>
+
+      {/* Extended control panels */}
+      <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
+        <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
+        <ClipMarker roomId={roomId} user={user} streamStartTs={room?.started_at || null} />
+        <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={roomId} communityId={room?.community_id || null} />
+        <RoomAnalyticsPanel roomId={roomId} />
+        <CollaborativeWhiteboard roomId={roomId} />
       </div>
 
       {/* RTMP Cards Grid */}
@@ -382,6 +464,24 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AudioStageTab roomId={roomId} isHost={true} />
+        <AdvancedEncoderSettings onApply={() => {}} />
+        <BackgroundCustomizer onBackgroundChange={() => {}} />
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          <RTMPFanoutPanel roomId={roomId} isHost={true} />
+          <GuestInviteGenerator roomId={roomId} isHost={true} />
+          <StreamGoals isHost={true} />
+          <StreamHealthDashboard roomId={roomId} isHost={true} />
+        </div>
+      </div>
     </div>
   );
 }

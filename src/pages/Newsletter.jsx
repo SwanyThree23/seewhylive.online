@@ -1,21 +1,35 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Send, Sparkles, Calendar, TrendingUp, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactQuill from 'react-quill';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import FollowButton from '../components/shared/FollowButton';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import 'react-quill/dist/quill.snow.css';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const inp = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+const inp = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
 const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6, marginTop: 14 };
 
 function DarkCard({ title, desc, children, style = {} }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20, ...style }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20, ...style }}>
       {(title || desc) && (
         <div className="mb-4">
           {title && <p className="font-black text-sm text-white" style={T}>{title}</p>}
@@ -36,6 +50,25 @@ export default function NewsletterPage() {
   const [selectedCommunity, setSelectedCommunity] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: communities = [] } = useQuery({
     queryKey: ['userCommunities', user?.id],
@@ -56,10 +89,17 @@ export default function NewsletterPage() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create(data),
-    onSuccess: () => {
+    onSuccess: (newsletter) => {
       toast.success('Newsletter created!');
       queryClient.invalidateQueries(['newsletters']);
       setTitle(''); setContent(''); setPreviewText('');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Published newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -104,7 +144,7 @@ export default function NewsletterPage() {
         </div>
         <button onClick={generateWithAI} disabled={generating || !selectedCommunity}
           className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-          style={{ background: generating || !selectedCommunity ? 'rgba(200,255,0,0.04)' : 'rgba(200,255,0,0.1)', border: '1px solid rgba(200,255,0,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
+          style={{ background: generating || !selectedCommunity ? 'rgba(212,175,55,0.04)' : 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: generating || !selectedCommunity ? 'default' : 'pointer', opacity: generating || !selectedCommunity ? 0.5 : 1, ...T }}>
           <Sparkles className="w-3.5 h-3.5" />
           {generating ? 'Generating…' : 'AI Generate'}
         </button>
@@ -138,7 +178,7 @@ export default function NewsletterPage() {
               <label style={lbl}>Content</label>
               {/* Quill editor with dark wrapper */}
               <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <style>{`.ql-toolbar{background:rgba(17,8,34,0.9)!important;border-color:rgba(255,255,255,0.1)!important}.ql-container{background:rgba(17,8,34,0.85)!important;border-color:rgba(255,255,255,0.1)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif}.ql-editor{min-height:240px;color:#fff}.ql-stroke{stroke:rgba(255,255,255,0.5)!important}.ql-fill{fill:rgba(255,255,255,0.5)!important}.ql-picker-label{color:rgba(255,255,255,0.5)!important}`}</style>
+                <style>{`.ql-toolbar{background:rgba(8,11,24,0.9)!important;border-color:rgba(255,255,255,0.1)!important}.ql-container{background:rgba(8,11,24,0.85)!important;border-color:rgba(255,255,255,0.1)!important;color:#fff!important;font-family:'Barlow Condensed',sans-serif}.ql-editor{min-height:240px;color:#fff}.ql-stroke{stroke:rgba(255,255,255,0.5)!important}.ql-fill{fill:rgba(255,255,255,0.5)!important}.ql-picker-label{color:rgba(255,255,255,0.5)!important}`}</style>
                 <ReactQuill value={content} onChange={setContent} />
               </div>
 
@@ -150,7 +190,7 @@ export default function NewsletterPage() {
                   {createMutation.isPending ? 'Saving…' : 'Save Draft'}
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', ...T }}>
                   <Calendar className="w-3.5 h-3.5" /> Schedule
                 </button>
               </div>
@@ -184,7 +224,7 @@ export default function NewsletterPage() {
                         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{new Date(nl.created_date).toLocaleDateString()}</p>
                       </div>
                       <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 uppercase"
-                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(109,191,126,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#00ff88' : GOLD }}>
+                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(109,191,126,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#6DBF7E' : GOLD }}>
                         {nl.status}
                       </span>
                     </div>
@@ -193,6 +233,36 @@ export default function NewsletterPage() {
               )}
             </DarkCard>
           </div>
+        </div>
+
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ShareToSocial />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+          <EarningsBreakdown creatorId={user?.id} />
+          <AudienceInsights creatorId={user?.id} />
+          <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+          <FollowButton targetUserId={null} targetUserName="" />
+          <MilestoneAlerts creatorId={user?.id} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
+            { label: '📅 Content Calendar', href: 'ContentCalendar' },
+            { label: '👥 Communities',      href: 'Communities'     },
+            { label: '📊 Dashboard',        href: 'Dashboard'       },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
     </div>

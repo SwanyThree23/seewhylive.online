@@ -1,15 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Play, Bell, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NebulaBg from '../components/home/NebulaBg';
+import GridLines from '../components/home/GridLines';
+import StarField from '../components/home/StarField';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function CoverPage() {
+  const navigate = useNavigate();
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: liveRooms } = useQuery({
     queryKey: ['cover-live-rooms'],
@@ -21,7 +48,7 @@ export default function CoverPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 
@@ -31,12 +58,12 @@ export default function CoverPage() {
       <div
         className="absolute inset-0 opacity-30"
         style={{
-          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(255,21,100,0.05) 100%)',
+          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(192,57,43,0.05) 100%)',
         }}
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[rgba(7,7,15,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
+      <header className="sticky top-0 z-50 bg-[rgba(8,11,24,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
         <div className="flex h-14 items-center justify-between px-4 md:px-6">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
@@ -73,11 +100,11 @@ export default function CoverPage() {
               key={room.id}
               whileHover={{ scale: 1.05 }}
               className="flex-shrink-0 w-20 h-24 rounded-xl overflow-hidden relative cursor-pointer"
-              style={{ border: '2px solid #FF1564' }}
+              style={{ border: '2px solid #C0392B' }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/80" />
               <div className="absolute bottom-1 left-1 right-1">
-                <div className="flex items-center gap-0.5 bg-[#FF1564] rounded-full px-1.5 py-0.5 w-fit">
+                <div className="flex items-center gap-0.5 bg-[#C0392B] rounded-full px-1.5 py-0.5 w-fit">
                   <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
                   <span className="text-[7px] font-bold text-white">LIVE</span>
                 </div>
@@ -91,9 +118,9 @@ export default function CoverPage() {
       {/* Hero Section */}
       <section className="relative px-4 md:px-6 py-12 md:py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div className="inline-block px-3 py-1.5 rounded-full mb-6" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)' }}>
-            <span className="text-[10px] font-bold text-[#FF1564] flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF1564] animate-pulse" />
+          <div className="inline-block px-3 py-1.5 rounded-full mb-6" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}>
+            <span className="text-[10px] font-bold text-[#C0392B] flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
               Live Streaming Platform
             </span>
           </div>
@@ -156,17 +183,36 @@ export default function CoverPage() {
       </section>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(8,11,24,0.98)] border-t border-white/5 px-4 py-3">
         <div className="flex items-center justify-around max-w-md mx-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
           <span>SeeWhy</span>
           <span className="flex items-center gap-1">
-            <div className="w-1 h-1 rounded-full bg-[#FF1564]" />
+            <div className="w-1 h-1 rounded-full bg-[#C0392B]" />
             3 LIVE
           </span>
           <span>Multi-streaming</span>
           <span>90% Payout</span>
         </div>
       </nav>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <NebulaBg />
+        <GridLines />
+        <StarField count={40} />
+        <FeaturedContentSection />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ZEGOMobileAppBanner />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+      </div>
     </div>
   );
 }

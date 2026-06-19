@@ -14,7 +14,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white">{poll.question}</p>
         {onEnd && (
-          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#f87171', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Poll
           </button>
         )}
@@ -52,6 +52,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
 
 export default function LivePoll({ roomId, isHost }) {
   const qc = useQueryClient();
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [creating, setCreating] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);
@@ -149,7 +150,7 @@ export default function LivePoll({ roomId, isHost }) {
 
   if (!activePoll && !isHost) return null;
 
-  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
   const inputSmStyle = { ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 };
 
   return (
@@ -174,17 +175,17 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
             </div>
             <PollResults
               poll={activePoll}
               votes={voteTally}
-              currentUser={null}
+              currentUser={currentUser}
               onVote={userVotedOption === null ? handleVote : null}
               onEnd={isHost ? () => endPollMutation.mutate() : null}
             />
             {userVotedOption !== null && (
-              <p className="text-[10px] text-green-400 flex items-center gap-1 mt-1">
+              <p className="text-[10px] text-[#6DBF7E] flex items-center gap-1 mt-1">
                 <Check className="w-3 h-3" /> Your vote was recorded
               </p>
             )}

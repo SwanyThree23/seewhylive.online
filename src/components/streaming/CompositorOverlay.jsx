@@ -10,9 +10,9 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
-  connecting: { label: 'Connecting…', color: '#F59E0B' },
-  live: { label: 'LIVE', color: '#FF1564' },
-  recording: { label: 'Recording', color: '#22C55E' },
+  connecting: { label: 'Connecting…', color: '#D4AF37' },
+  live: { label: 'LIVE', color: '#C0392B' },
+  recording: { label: 'Recording', color: '#6DBF7E' },
   error: { label: 'Error', color: '#EF4444' },
 };
 
@@ -212,9 +212,9 @@ export default function CompositorOverlay({
         onClick={() => setOpen(v => !v)}
         className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all"
         style={{
-          background: open ? 'rgba(255,21,100,0.2)' : 'rgba(255,21,100,0.1)',
-          border: `1px solid ${status === 'live' ? '#FF1564' : status === 'recording' ? '#22C55E' : 'rgba(255,21,100,0.3)'}`,
-          color: status === 'live' ? '#FF1564' : status === 'recording' ? '#22C55E' : '#FF8899',
+          background: open ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.1)',
+          border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : 'rgba(192,57,43,0.3)'}`,
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#FF8899',
           ...T,
         }}
       >
@@ -230,7 +230,7 @@ export default function CompositorOverlay({
           className="absolute right-0 top-full mt-2 z-50 rounded-2xl p-4 shadow-2xl space-y-3"
           style={{
             width: 360,
-            background: '#0D0618',
+            background: '#080B18',
             border: '1px solid rgba(212,175,55,0.2)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           }}
@@ -329,14 +329,14 @@ export default function CompositorOverlay({
             <button
               onClick={stopStream}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-2 transition-all"
-              style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}
+              style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}
             >
               <Square className="w-4 h-4" /> {status === 'recording' ? 'Stop & Save' : 'End Stream'}
             </button>
           )}
 
           {status === 'error' && (
-            <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+            <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)' }}>
               <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-red-400" />
               <p className="text-[11px] text-red-400">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
             </div>

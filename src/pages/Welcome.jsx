@@ -3,16 +3,49 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
+const BG = '#080B18';
 
 export default function WelcomePage() {
+  const navigate = useNavigate();
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
 
   const { data: liveCount } = useQuery({
     queryKey: ['welcomeLiveCount'],
@@ -25,7 +58,7 @@ export default function WelcomePage() {
   // Redirect logged-in users to home
   React.useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 
@@ -37,7 +70,7 @@ export default function WelcomePage() {
 
       {/* Header */}
       <header className="sticky top-[3px] z-40 px-4 py-4 md:px-8"
-        style={{ background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -58,13 +91,13 @@ export default function WelcomePage() {
       </header>
 
       {/* Hero */}
-      <main className="relative overflow-hidden">
+      <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
-          background: `linear-gradient(180deg, 
-            rgba(10, 7, 16, 0.95) 0%,
-            rgba(20, 15, 30, 0.85) 50%,
-            rgba(10, 7, 16, 0.95) 100%)`,
+          background: `linear-gradient(180deg,
+            rgba(8, 11, 24, 0.95) 0%,
+            rgba(13, 6, 24, 0.85) 50%,
+            rgba(8, 11, 24, 0.95) 100%)`,
           backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -147,7 +180,7 @@ export default function WelcomePage() {
       </main>
 
       {/* Feature Highlights */}
-      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
+      <section className="relative z-20 py-12 px-4 md:px-8" style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
         <div className="max-w-3xl mx-auto">
           <p className="text-center text-xs font-black uppercase tracking-widest mb-6" style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>Platform Features</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -178,11 +211,31 @@ export default function WelcomePage() {
         </div>
       </section>
 
+      <div className="relative z-20 px-4 pb-4 space-y-4">
+        <FeaturedContentSection />
+        <ZEGOMobileAppBanner />
+        <ShareToSocial />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        {!user && <OnboardingFlow onComplete={() => {}} />}
+      </div>
+
       {/* Footer */}
       <footer className="relative z-20 py-8 px-4 md:px-8 text-center text-xs text-white/40"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
         <p>© {new Date().getFullYear()} SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split</p>
       </footer>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
+      </div>
     </div>
   );
 }

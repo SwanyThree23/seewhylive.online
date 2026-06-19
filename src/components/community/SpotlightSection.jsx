@@ -5,8 +5,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Star } from 'lucide-react';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function SpotlightSection({ communityId }) {
@@ -42,7 +42,7 @@ export default function SpotlightSection({ communityId }) {
             className="flex gap-3"
           >
             {/* Avatar */}
-            <div className="w-12 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #FF1564, #D4AF37)' }} />
+            <div className="w-12 h-12 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #C0392B, #D4AF37)' }} />
 
             {/* Info */}
             <div className="flex-1 min-w-0">

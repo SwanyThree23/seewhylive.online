@@ -61,7 +61,7 @@ export default function GlobalSearch({ onClose }) {
                 <p className="text-[10px] text-muted-foreground uppercase px-2 mb-1">Live Rooms</p>
                 {rooms.map(r => (
                   <Link key={r.id} to={createPageUrl('Room') + `?id=${r.id}`} onClick={onClose}>
-                    <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-xl">
+                    <div className="flex items-center gap-3 px-3 py-2 hover:bg-[rgba(255,255,255,0.04)] rounded-xl">
                       <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
                         <Radio className="w-3.5 h-3.5 text-red-600" />
                       </div>
@@ -80,9 +80,9 @@ export default function GlobalSearch({ onClose }) {
                 <p className="text-[10px] text-muted-foreground uppercase px-2 mb-1">Communities</p>
                 {communities.map(c => (
                   <Link key={c.id} to={createPageUrl('Community') + `?id=${c.id}`} onClick={onClose}>
-                    <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-xl">
-                      <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Users className="w-3.5 h-3.5 text-blue-600" />
+                    <div className="flex items-center gap-3 px-3 py-2 hover:bg-[rgba(255,255,255,0.04)] rounded-xl">
+                      <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
+                        <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
                       </div>
                       <p className="text-sm font-medium truncate">{c.name}</p>
                     </div>

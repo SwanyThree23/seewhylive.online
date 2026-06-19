@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import SignalBars from '../components/live/SignalBars';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -9,34 +19,36 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#00E5FF",
+  cyan: "#6DBF7E",
   volt: "#D4AF37",
-  purple: "#BF5FFF",
+  purple: "#D4854A",
   gray: "#888",
   grayDim: "#444",
 };
 
 var BADGE_COLORS = {
-  super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
-  top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#00E5FF", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
-  poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
-  chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
-  watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
-  gifter: { color: "#FF69B4", bg: "rgba(255,105,180,0.12)", icon: "🎁" },
+  super_fan: { color: "#D4AF37", bg: "rgba(212,175,55,0.15)", icon: "👑" },
+  top_supporter: { color: "#C0392B", bg: "rgba(192,57,43,0.15)", icon: "❤️" },
+  raid_master: { color: "#D4AF37", bg: "rgba(212,175,55,0.12)", icon: "⚡" },
+  poll_champion: { color: "#800020", bg: "rgba(128,0,32,0.15)", icon: "🏆" },
+  chat_legend: { color: "#D4AF37", bg: "rgba(212,175,55,0.1)", icon: "💬" },
+  watch_streak: { color: "#D4854A", bg: "rgba(212,133,74,0.15)", icon: "🔥" },
+  gifter: { color: "#C9A84C", bg: "rgba(201,168,76,0.12)", icon: "🎁" },
   first_subscriber: { color: "#d4af37", bg: "rgba(212,175,55,0.15)", icon: "⭐" },
 };
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#00E5FF",
-  epic: "#BF5FFF",
-  legendary: "#FFD700",
+  rare: "#D4AF37",
+  epic: "#800020",
+  legendary: "#C9A84C",
 };
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -162,6 +174,7 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get("id");
   var navigate = useNavigate();
@@ -170,6 +183,12 @@ export default function CreatorPublicProfile() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  var userCommunityId = userCommunity?.id || null;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -223,6 +242,12 @@ export default function CreatorPublicProfile() {
     } else {
       base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
       setFollowToast('Following!');
+      base44.entities.Activity.create({
+        user_id: currentUser.id,
+        type: 'follow',
+        title: `Followed creator: ${profile?.display_name || profile?.full_name || 'Creator'}`,
+        recipient_id: creatorId,
+      }).catch(() => {});
     }
     setTimeout(() => setFollowToast(''), 2500);
   }
@@ -388,7 +413,7 @@ export default function CreatorPublicProfile() {
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           <StatCard icon={Users} label="FOLLOWERS" value={followerCount} color={G.cyan} />
           <StatCard icon={Video} label="STREAMS" value={totalStreams} color={G.gold} />
-          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#30D158" />
+          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#6DBF7E" />
         </div>
       </div>
 
@@ -512,12 +537,28 @@ export default function CreatorPublicProfile() {
                     {t.payment_method?.toUpperCase()}
                   </div>
                 </div>
-                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#30D158" }}>
+                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
                   ${t.creator_payout?.toFixed(2) || "—"}
                 </div>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {creatorId && (
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <VirtualCurrencyTips roomId={roomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
+          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
+          <SignalBars count={5} active={true} size="sm" />
+          <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
         </div>
       )}
     </div>

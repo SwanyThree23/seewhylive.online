@@ -1,7 +1,29 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AudioMixer from '../components/live/AudioMixer';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import VODCard from '../components/vod/VODCard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -9,8 +31,8 @@ const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
-const GREEN  = '#5A7A4A';
+const PURPLE = '#D4854A';
+const GREEN  = '#4A9B5E';
 const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -31,13 +53,19 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ message }) {
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   return (
     <AnimatePresence>
       {message && (
@@ -254,7 +282,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#22c55e', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -474,7 +502,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                       <>
                         <button
                           onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
                         >
                           Confirm
                         </button>
@@ -490,8 +518,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         onClick={() => setDeleteIdx(i)}
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
+                          color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
                         Remove
@@ -508,8 +536,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
               ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
-              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+              background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
+              color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
           >
             Clear All Sources
@@ -592,8 +620,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                   style={{
                     ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
-                    background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
-                    color: alreadyAdded ? '#22c55e' : '#fff',
+                    background: alreadyAdded ? 'rgba(109,191,126,0.1)' : NLM,
+                    color: alreadyAdded ? '#6DBF7E' : '#fff',
                     fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
                     transition: 'all 0.15s',
                   }}
@@ -611,6 +639,14 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -1195,6 +1231,15 @@ export default function PodcastStudio() {
         {tab === 'record' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+            {/* Audio Mixer */}
+            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
+            {/* Enhanced Audio Mixer */}
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+
+            {/* Soundboard */}
+            <SoundboardWidget />
+
             {/* Panel slots */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
@@ -1395,7 +1440,7 @@ export default function PodcastStudio() {
                           onClick={() => deleteEpisode(i)}
                           style={{
                             ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 900,
+                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
                           }}
                         >
                           Confirm
@@ -1416,8 +1461,8 @@ export default function PodcastStudio() {
                         onClick={() => setDeleteConfirmIdx(i)}
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                          color: '#ef4444', fontSize: 13, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
+                          color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >
                         Delete
@@ -1431,7 +1476,30 @@ export default function PodcastStudio() {
         )}
       </div>
 
+      {tab === 'library' && library.length > 0 && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+        </div>
+      )}
+
       <Toast message={toast} />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="podcast" viewerCount={0} />
+        <StreamGoals isHost={true} />
+        <CollaborationMatcher />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={roomId} sessionId={roomId} isHost={true} />
+        <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <GuestInviteGenerator roomId={roomId} isHost={true} />
+        <GuestConnector roomId={roomId} />
+        <RTMPIngestPanel roomId={roomId} />
+        <AdvancedEncoderSettings onApply={() => {}} />
+      </div>
     </div>
   );
 }

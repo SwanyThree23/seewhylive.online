@@ -9,15 +9,15 @@ const COIN_PACKS = [
   { coins: 10,  price: 0.99,  label: '10 🪙',  color: '#d4af37' },
   { coins: 50,  price: 3.99,  label: '50 🪙',  color: '#CC7755' },
   { coins: 100, price: 6.99,  label: '100 🪙', color: '#D4AF37' },
-  { coins: 500, price: 29.99, label: '500 🪙', color: '#FF1564' },
+  { coins: 500, price: 29.99, label: '500 🪙', color: '#C0392B' },
 ];
 
 const TIP_AMOUNTS = [
   { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
-  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
+  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#D4854A' },
   { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
-  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#FF1564' },
+  { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },
 ];
 
 // Floating coin animation
@@ -98,8 +98,8 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       recipient_id: creatorId,
       room_id: roomId,
       amount: usdAmount,
-      platform_cut: usdAmount * 0.1,
-      creator_payout: usdAmount * 0.9,
+      creator_payout: Math.floor(usdAmount  * 90) / 100,
+      platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
       payment_method: 'virtual_coins',
       transaction_type: 'direct_support',
       status: 'completed',
@@ -145,7 +145,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (

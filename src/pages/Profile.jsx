@@ -8,10 +8,24 @@ import {
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -20,7 +34,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
       {children}
     </div>
   );
@@ -36,7 +50,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -80,6 +94,7 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
@@ -88,6 +103,7 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [isOnline]                        = useState(true);
+  const [setupOpen, setSetupOpen]         = useState(false);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -95,6 +111,13 @@ export default function ProfilePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['userReferrals', user?.id],
@@ -133,8 +156,21 @@ export default function ProfilePage() {
       toast.success('Profile updated!');
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Updated profile',
+        }).catch(() => {});
+      }
     },
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   useEffect(() => {
     if (user) {
@@ -385,12 +421,13 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#a78bfa' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00d4ff' },
+                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: GOLD },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4854A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
-                ].map(item => (
-                  <Link key={item.href} to={item.href}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
+                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
+                ].map(item => {
+                  const inner = (
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                         style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
@@ -398,11 +435,18 @@ export default function ProfilePage() {
                       </div>
                       <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
                     </div>
-                  </Link>
-                ))}
+                  );
+                  return item.href
+                    ? <Link key={item.label} to={item.href}>{inner}</Link>
+                    : <div key={item.label} onClick={item.onClick}>{inner}</div>;
+                })}
               </div>
             </DarkCard>
           </>
+        )}
+
+        {activeTab === 'Overview' && user?.id && (
+          <MySubscriptions userId={user.id} />
         )}
 
         {activeTab === 'Streams' && (
@@ -445,8 +489,8 @@ export default function ProfilePage() {
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
-                          background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
                           ...T,
                         }}>
@@ -560,6 +604,23 @@ export default function ProfilePage() {
         )}
 
       </div>
+
+      {user && (
+        <>
+          <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
+          <OnlinePresenceDot isOnline size="sm" />
+        </>
+      )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        {user?.id && <RevenueDashboard userId={user.id} />}
+        <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

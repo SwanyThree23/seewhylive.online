@@ -32,7 +32,7 @@ export default function PartyHypeMeter({ partyId, memberCount, onHypeChange }) {
     onHypeChange?.(rounded);
   }, [reactions.length, memberCount]);
 
-  const hypeColor = hypeLevel >= 80 ? '#FF1564' : hypeLevel >= 50 ? '#FF8C00' : hypeLevel >= 25 ? '#d4af37' : '#D4AF37';
+  const hypeColor = hypeLevel >= 80 ? '#C0392B' : hypeLevel >= 50 ? '#D4854A' : hypeLevel >= 25 ? '#d4af37' : '#D4AF37';
   const hypeLabel = hypeLevel >= 80 ? '🔥 ON FIRE' : hypeLevel >= 50 ? '⚡ HYPED' : hypeLevel >= 25 ? '📈 Building' : '😴 Chill';
 
   return (

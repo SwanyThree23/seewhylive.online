@@ -1,4 +1,21 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ChatModeration from '../components/live/ChatModeration';
+import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -14,11 +31,11 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-green-500/20 text-green-300 border border-green-500/40",
-    pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
+    live:     "bg-[#6DBF7E]/15 text-[#6DBF7E] border border-[#6DBF7E]/35",
+    pending:  "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/35",
     critical: "bg-red-500/20 text-red-300 border border-red-500/40",
-    info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
-    gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
+    info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
+    gold:     "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/35",
     ruby:     "bg-red-900/30 text-red-200 border border-red-800/50",
   };
   return (
@@ -36,7 +53,7 @@ const Code = ({ children, copy = true }) => {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-emerald-300 my-1">
+    <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-[#6DBF7E] my-1">
       <span className="flex-1 break-all">{children}</span>
       {copy && (
         <button onClick={handleCopy} className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white text-[10px] transition-all ml-2 shrink-0">
@@ -74,7 +91,7 @@ const Row = ({ label, value, badge, pending }) => (
 
 const CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-green-400" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
+    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
   </div>
 );
@@ -129,10 +146,10 @@ function RTMPTab() {
           <div key={p.name} className="flex items-center gap-3 py-2 border-b border-white/5">
             <Badge type={p.badge}>{p.badge}</Badge>
             <span className="text-white/70 text-xs w-32 shrink-0">{p.name}</span>
-            <span className="text-emerald-300/70 text-xs font-mono break-all">{p.url}</span>
+            <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
         ))}
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ YouTube Data API v3 key required for auto-stream-title injection — <Badge type="pending">pending</Badge>
         </div>
       </Section>
@@ -226,7 +243,7 @@ function WebhooksTab() {
         ].map((ev) => (
           <div key={ev} className="flex items-center gap-3 py-1.5 border-b border-white/5">
             <Badge type="live">wired</Badge>
-            <span className="text-emerald-300 text-xs font-mono">{ev}</span>
+            <span className="text-[#6DBF7E] text-xs font-mono">{ev}</span>
           </div>
         ))}
         <div className="mt-3 bg-black/30 rounded p-3 text-xs text-white/50 font-mono">
@@ -454,7 +471,7 @@ function SupabaseTab() {
             </div>
             <div className="flex flex-wrap gap-1">
               {t.cols.map((c) => (
-                <span key={c} className="text-emerald-300/70 text-[10px] font-mono bg-emerald-900/20 px-1.5 py-0.5 rounded">{c}</span>
+                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/8 px-1.5 py-0.5 rounded">{c}</span>
               ))}
             </div>
           </div>
@@ -522,12 +539,12 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-green-400">{statusCounts.live}</div>
+        <div className="bg-[#6DBF7E]/10 border border-[#6DBF7E]/40/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-yellow-400">{statusCounts.pending}</div>
+        <div className="bg-[#D4AF37]/8 border border-[#D4AF37]/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#D4AF37]">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
         <div className="bg-red-500/10 border border-red-500/30 rounded p-3 text-center">
@@ -540,7 +557,7 @@ function EnvTab() {
         <div className="text-xs text-white/30 mb-3">Files: /var/www/seewhylive/.env · ecosystem.config.js (env block)</div>
         {envVars.map((v) => (
           <div key={v.key} className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
-            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-yellow-300" : v.status === "critical" ? "text-red-300" : "text-emerald-300"}`}>
+            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-[#D4AF37]/80" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
               {v.key}
             </span>
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -610,13 +627,13 @@ function StatusTab() {
           return (
             <div key={check.id} className="flex items-center gap-3 py-3 border-b border-white/5">
               <div className="w-3 h-3 rounded-full shrink-0"
-                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#22c55e" : "#ef4444") : "#ffffff20" }} />
+                style={{ background: isChecking ? "#D4AF37" : r ? (r.ok ? "#6DBF7E" : "#C0392B") : "#ffffff20" }} />
               <div className="flex-1">
                 <div className="text-white/80 text-xs">{check.label}</div>
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>
               </div>
               <div className="text-right">
-                {isChecking && <span className="text-yellow-300 text-xs animate-pulse">checking...</span>}
+                {isChecking && <span className="text-[#D4AF37]/80 text-xs animate-pulse">checking...</span>}
                 {r && !isChecking && (
                   <div>
                     <Badge type={r.ok ? "live" : "critical"}>{r.ok ? "reachable" : "error"}</Badge>
@@ -838,7 +855,7 @@ function JudgesTab() {
                 <span className="text-[#D4AF37] font-mono text-xs font-bold">{o.control}</span>
               </div>
               <div className="text-white/40 text-xs">Trigger: {o.trigger}</div>
-              <div className="text-emerald-300/60 text-xs mt-0.5">Display: {o.style}</div>
+              <div className="text-[#6DBF7E]/60 text-xs mt-0.5">Display: {o.style}</div>
             </div>
           ))}
         </div>
@@ -886,7 +903,7 @@ function JudgesTab() {
         <Row label="Audit Trail" value="All judge actions signed with JWT sub + timestamp" />
         <Code>POST /api/judge/authenticate  # returns judge session token</Code>
         <Code>GET  /api/judge/my-matches     # active + upcoming assignments</Code>
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ Judge role must be assigned by platform admin before tournament day — allow 24h for propagation
         </div>
       </Section>
@@ -929,6 +946,15 @@ const TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -953,11 +979,17 @@ export default function StreamRefDash() {
               <div className="text-white/20 text-[9px] font-mono mt-1">v41 · Washington Classic 2026</div>
             </div>
           </div>
-          <div className="flex gap-3 mt-3 flex-wrap">
+          <div className="flex gap-3 mt-3 flex-wrap items-center">
             <Badge type="live">Production Live</Badge>
             <Badge type="gold">90/10 Creator Split</Badge>
             <Badge type="pending">4 keys pending</Badge>
             <Badge type="info">9 tabs</Badge>
+            <Link to={createPageUrl('StreamAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(192,57,43,0.15)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.35)' }}>📊 Stream Analytics</span>
+            </Link>
+            <Link to={createPageUrl('AdvancedAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>📈 Advanced Analytics</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -989,11 +1021,30 @@ export default function StreamRefDash() {
         <ActiveContent />
       </div>
 
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <ZEGOConfigPanel roomId={roomId} />
+        <OBSBridge roomId={roomId} isHost={true} />
+        <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={roomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ChatModeration />
+        <StreamMetadata room={null} isHost={false} />
+      </div>
+
       {/* Footer */}
       <div className="border-t border-white/5 mt-8 py-4 text-center">
         <div className="text-white/20 text-[10px] font-mono">
           CREATOR_SHARE 0.90 · PLATFORM_FEE 0.10 · PREVIEW_SECS 120 · MAX_PANEL_GUESTS 20 · SVS_ROUNDS 5
         </div>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
     </div>
   );
