@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -258,8 +258,8 @@ function WinnerOverlay({ winner, onClose }) {
 }
 
 export default function PKBattlePage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const battleId = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const battleId = searchParams.get('id');
   const qc = useQueryClient();
 
   const [leftName, setLeftName] = useState('');
@@ -354,7 +354,7 @@ export default function PKBattlePage() {
     }),
     onSuccess: (b) => {
       battleDurationRef.current = duration;
-      window.location.href = `${window.location.pathname}?id=${b.id}`;
+      setSearchParams({ id: b.id });
     },
   });
 
