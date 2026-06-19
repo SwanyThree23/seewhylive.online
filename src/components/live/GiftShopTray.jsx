@@ -73,7 +73,7 @@ function GiftCard({ gift, onSend, sending }) {
 function GiftLeaderboard({ roomId }) {
   const { data: txns = [] } = useQuery({
     queryKey: ['gift-lb', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'virtual_good' }, '-created_date', 50),
+    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, transaction_type: 'direct_support' }, '-created_date', 50),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
@@ -120,13 +120,13 @@ export default function GiftShopTray({ roomId, currentUser }) {
       await base44.entities.Transaction.create({
         room_id: roomId,
         sender_id: currentUser?.id,
-        sender_name: currentUser?.full_name || currentUser?.email,
-        type: 'virtual_good',
+        recipient_id: recipientId,
+        transaction_type: 'direct_support',
         amount: gift.price,
-        creator_amount: Math.floor(gift.price  * 90) / 100,
-        platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
         status: 'completed',
-        metadata: { gift_id: gift.id, gift_name: gift.name },
+        processed_at: new Date().toISOString(),
       });
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: (gift.times_sent || 0) + 1,

@@ -35,7 +35,7 @@ export default function PayPerViewCard({ event }) {
       const transaction = await base44.entities.Transaction.create({
         type: 'subscription',
         amount: event.price,
-        from_user_id: user.id,
+        sender_id: user.id,
         room_id: event.room_id,
         community_id: event.community_id,
       });

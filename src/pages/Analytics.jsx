@@ -76,7 +76,7 @@ export default function AnalyticsPage() {
   });
   const { data: transactions = [] } = useQuery({
     queryKey: ['analyticsTransactions', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user,
   });
   const { data: subscriptions = [] } = useQuery({

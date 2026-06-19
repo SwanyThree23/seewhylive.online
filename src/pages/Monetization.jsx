@@ -518,7 +518,7 @@ export default function MonetizationPage() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['userEarnings', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id }),
     enabled: !!user?.id,
   });
 

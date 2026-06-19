@@ -33,8 +33,8 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       await base44.entities.Transaction.create({
         type: 'virtual_good',
         amount: gift.price,
-        from_user_id: user.id,
-        to_user_id: recipientId,
+        sender_id: user.id,
+        recipient_id: recipientId,
         room_id: roomId,
         virtual_good_id: gift.id,
         message: `Sent ${gift.name}`,

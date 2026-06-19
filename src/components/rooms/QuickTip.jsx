@@ -16,8 +16,8 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
     mutationFn: async (amount) => {
       // Create transaction
       const transaction = await base44.entities.Transaction.create({
-        from_user_id: (await base44.auth.me()).id,
-        to_user_id: recipientId,
+        sender_id: (await base44.auth.me()).id,
+        recipient_id: recipientId,
         type: 'tip',
         amount: amount,
         status: 'completed',
@@ -26,7 +26,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
 
       // Update loyalty points
       const loyaltyRecords = await base44.entities.ViewerLoyalty.filter({
-        user_id: transaction.from_user_id,
+        user_id: transaction.sender_id,
         creator_id: recipientId,
       });
 
@@ -41,7 +41,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
         });
       } else {
         await base44.entities.ViewerLoyalty.create({
-          user_id: transaction.from_user_id,
+          user_id: transaction.sender_id,
           creator_id: recipientId,
           loyalty_points: pointsEarned,
           total_tips_sent: amount,

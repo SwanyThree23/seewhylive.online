@@ -77,11 +77,11 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
         room_id: roomId,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: Math.floor(gift.price  * 90) / 100,
+        creator_payout: Math.floor(gift.price  * 90) / 100,
         platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
-        to_user_id: recipientId,
+        recipient_id: recipientId,
         status: 'completed',
         metadata: { gift_id: gift.id, gift_name: gift.name },
       });

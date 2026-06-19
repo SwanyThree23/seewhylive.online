@@ -64,7 +64,7 @@ export default function MilestoneAlerts({ creatorId }) {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['milestone-txns', creatorId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: creatorId }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: creatorId }),
     enabled: !!creatorId,
     refetchInterval: 60000,
   });

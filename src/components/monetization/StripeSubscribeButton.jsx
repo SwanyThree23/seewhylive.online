@@ -103,14 +103,14 @@ async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
       expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
     }),
     base44.entities.Transaction.create({
-      from_user_id: viewerId,
-      to_user_id: creatorId,
+      sender_id: viewerId,
+      recipient_id: creatorId,
       amount: grossUsd,
       type: 'subscription',
       status: 'completed',
       description: `Subscription payment`,
       metadata: {
-        creator_amount: creatorAmount,
+        creator_payout: creatorAmount,
         platform_amount: platformAmount,
         split: '90/10',
       },

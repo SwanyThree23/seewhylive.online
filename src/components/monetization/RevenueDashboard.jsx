@@ -25,7 +25,7 @@ function exportCSV(transactions, subscriptions) {
 export default function RevenueDashboard({ userId }) {
   const { data: transactions = [] } = useQuery({
     queryKey: ['userEarnings', userId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: userId }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: userId }),
   });
 
   const { data: subscriptions = [] } = useQuery({

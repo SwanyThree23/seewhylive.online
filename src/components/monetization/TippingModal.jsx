@@ -80,8 +80,8 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     sendTipMutation.mutate({
       type: 'tip',
       amount: tipAmount,
-      from_user_id: currentUser?.id,
-      to_user_id: recipient.user_id || recipient.id,
+      sender_id: currentUser?.id,
+      recipient_id: recipient.user_id || recipient.id,
       room_id: roomId,
       community_id: communityId,
       message: message,

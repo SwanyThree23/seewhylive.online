@@ -37,7 +37,7 @@ export default function VirtualGoodsStore({ userId }) {
       await base44.entities.Transaction.create({
         type: 'virtual_good',
         amount: good.price,
-        from_user_id: userId,
+        sender_id: userId,
         virtual_good_id: good.id,
         status: 'completed',
       });

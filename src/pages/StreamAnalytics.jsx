@@ -68,7 +68,7 @@ export default function StreamAnalytics() {
 
   const { data: tipTransactions = [] } = useQuery({
     queryKey: ['tip-transactions', user?.id, roomId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id, type: 'tip' }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id, type: 'tip' }, '-created_date', 100),
     enabled: !!user?.id,
   });
 
