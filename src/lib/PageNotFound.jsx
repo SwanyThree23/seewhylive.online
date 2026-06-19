@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Home, AlertTriangle } from 'lucide-react';
@@ -9,6 +9,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PageNotFound() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pageName = location.pathname.substring(1);
 
   const { data: authData, isFetched } = useQuery({
