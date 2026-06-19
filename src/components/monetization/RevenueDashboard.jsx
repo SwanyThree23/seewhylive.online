@@ -143,7 +143,7 @@ export default function RevenueDashboard({ userId }) {
                 <span style={{ fontSize: 13, color: '#9ca3af' }}>subscribers</span>
               </div>
               <div style={{ fontSize: 13, color: '#F5E6D3', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${CRIMSON}4D`, ...T }}>
-                Monthly Revenue: <span style={{ fontWeight: 700, color: GOLD }}>${(tier.price * tier.count * 0.9).toFixed(2)}</span>
+                Monthly Revenue: <span style={{ fontWeight: 700, color: GOLD }}>${(Math.floor(tier.price * tier.count * 90) / 100).toFixed(2)}</span>
               </div>
             </div>
           ))}

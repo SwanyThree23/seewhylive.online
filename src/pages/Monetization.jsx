@@ -786,7 +786,7 @@ export default function MonetizationPage() {
                     })}
                     <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 13, color: G, fontWeight: 700, ...T }}>Total MRR (90%)</span>
-                      <span style={{ fontSize: 15, color: G, fontWeight: 700, ...T }}>${(mrr * 0.9).toFixed(2)}</span>
+                      <span style={{ fontSize: 15, color: G, fontWeight: 700, ...T }}>${(Math.floor(mrr * 90) / 100).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

@@ -106,7 +106,7 @@ export default function StreamAnalytics() {
       `Average Viewers: ${avgViewers}`,
       `Total Tips: $${totalTips.toFixed(2)}`,
       `Total Messages: ${totalMessages}`,
-      `Creator Revenue (90%): $${(totalTips * 0.9).toFixed(2)}`,
+      `Creator Revenue (90%): $${(Math.floor(totalTips * 90) / 100).toFixed(2)}`,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -168,7 +168,7 @@ export default function StreamAnalytics() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Peak Viewers',  value: peakViewers, sub: `Avg: ${avgViewers}`,                                    color: CYAN,     icon: Users },
-            { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(totalTips * 0.9).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
+            { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(Math.floor(totalTips * 90) / 100).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
             { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#D4AF37', icon: MessageSquare },
             { label: 'Engagement',    value: `${Math.round(((totalMessages + tipData.length) / Math.max(avgViewers, 1)) * 100)}%`, sub: 'vs. 12% avg', color: GREEN, icon: TrendingUp },
           ].map((kpi, i) => (
