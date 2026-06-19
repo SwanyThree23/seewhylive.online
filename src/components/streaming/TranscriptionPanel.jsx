@@ -52,11 +52,11 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
 
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('translateText', {
-        text: transcription,
-        target_language: LANGUAGES.find(l => l.code === targetLanguage)?.name || targetLanguage
+      const langName = LANGUAGES.find(l => l.code === targetLanguage)?.name || targetLanguage;
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate the following text to ${langName}. Return only the translated text, no explanation:\n\n${transcription}`,
       });
-      setTranslatedText(res.data.translated_text);
+      setTranslatedText(result || '');
       toast.success('Translation complete');
     } catch (err) {
       toast.error('Translation failed. Please try again.');

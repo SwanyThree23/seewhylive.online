@@ -13,14 +13,13 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
   const handleTranslate = async (language) => {
     setTranslating(true);
     try {
-      const res = await base44.functions.invoke('translateText', {
-        text: chatMessage,
-        target_language: language
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate the following text to ${language}. Return only the translated text, no explanation:\n\n${chatMessage}`,
       });
-      onTranslation(res.data.translated_text);
+      onTranslation(res || chatMessage);
       setShowLanguages(false);
       toast.success(`Translated to ${language}`);
-    } catch (err) {
+    } catch {
       toast.error('Translation failed');
     } finally {
       setTranslating(false);

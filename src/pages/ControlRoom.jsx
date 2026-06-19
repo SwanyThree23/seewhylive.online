@@ -275,14 +275,12 @@ export default function ControlRoomPage() {
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
       
-      // Distribute to enabled RTMP destinations
+      // Mark enabled RTMP destinations as live (actual fanout handled by MediaMTX on server)
       const enabledDests = destinations.filter(d => d.is_enabled);
-      if (enabledDests.length > 0 && user?.id) {
-        await base44.functions.invoke('distributeStreamToRTMP', {
-          room_id: roomId,
-          creator_id: user.id,
-          destinations: enabledDests.map(d => ({ id: d.id, platform: d.platform, label: d.label })),
-        });
+      if (enabledDests.length > 0) {
+        await Promise.allSettled(enabledDests.map(d =>
+          base44.entities.RTMPDestination.update(d.id, { status: 'live', last_used: new Date().toISOString() })
+        ));
       }
     },
     onSuccess: () => {

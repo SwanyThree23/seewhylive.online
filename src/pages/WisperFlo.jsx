@@ -175,8 +175,10 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
     var cacheKey = msg.id + '_' + state.translateTarget;
     if (state.translationCache[cacheKey]) return;
     dispatch({ type: 'SET_TRANSLATING', payload: msg.id });
-    var result = await base44.functions.invoke('translateText', { text: msg.content, target_language: state.translateTarget }).catch(() => null);
-    var translated = (result && result.data && result.data.translated_text) || msg.content;
+    var result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Translate the following text to ${state.translateTarget}. Return only the translated text, nothing else.\n\n${msg.content}`,
+    }).catch(() => null);
+    var translated = (typeof result === 'string' ? result : null) || msg.content;
     dispatch({ type: 'SET_TRANSLATION', key: cacheKey, value: translated });
   }
 
