@@ -123,8 +123,8 @@ export default function GiftShopTray({ roomId, currentUser }) {
         sender_name: currentUser?.full_name || currentUser?.email,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: Math.floor(gift.price * 0.90),
-        platform_fee: gift.price - Math.floor(gift.price * 0.90),
+        creator_amount: Math.floor(gift.price  * 90) / 100,
+        platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
         status: 'completed',
         metadata: { gift_id: gift.id, gift_name: gift.name },
       });

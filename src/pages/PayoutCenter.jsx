@@ -238,7 +238,7 @@ export default function PayoutCenter() {
               ))}
             </div>
             <div style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 10, padding: '12px 16px', fontSize: 12, color: 'rgba(212,175,55,0.8)', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1.6 }}>
-              🔒 Revenue enforcement: <strong>creator_cut = Math.floor(gross * 0.90)</strong> · platform_fee = gross - creator_cut · Stripe application_fee_amount = Math.floor(gross * 0.10) in cents · CREATOR_SPLIT is immutable
+              🔒 Revenue enforcement: <strong>creator_cut = Math.floor(gross  * 90) / 100</strong> · platform_fee = gross - creator_cut · Stripe application_fee_amount = Math.floor(gross * 0.10) in cents · CREATOR_SPLIT is immutable
             </div>
           </div>
         )}

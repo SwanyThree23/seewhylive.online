@@ -778,8 +778,8 @@ function MonetizationTab({ user }) {
   const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_amount || 0), 0);
   const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_amount || 0), 0);
   const total = tipTotal + subTotal + giftTotal;
-  const creatorShare = total * 0.9;
-  const platformShare = total * 0.1;
+  const creatorShare = Math.floor(total * 90) / 100;
+  const platformShare = total - creatorShare;
 
   const pieData = [
     { name: 'Tips', value: tipTotal, color: GOLD },

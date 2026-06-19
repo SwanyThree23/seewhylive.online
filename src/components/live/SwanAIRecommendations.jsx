@@ -13,19 +13,22 @@ export default function SwanAIRecommendations({ roomId, currentLayout, viewerCou
   useEffect(() => {
     const getRecommendation = async () => {
       try {
-        const result = await base44.functions.invoke('swanAISceneRecommendation', {
-          room_id: roomId,
-          current_layout: currentLayout,
-          viewer_count: viewerCount,
-          stream_duration_minutes: 30,
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `You are an AI stream layout advisor. Given ${viewerCount} viewers, current layout "${currentLayout}", and 30 minutes of streaming, suggest the optimal layout. Return JSON: { "recommended_layout": string, "reason": string, "confidence": 0.0-1.0 }`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              recommended_layout: { type: 'string' },
+              reason: { type: 'string' },
+              confidence: { type: 'number' },
+            },
+          },
         });
-
-        if (result?.data?.recommended_layout !== currentLayout) {
-          setRecommendation(result.data);
+        if (result?.recommended_layout && result.recommended_layout !== currentLayout) {
+          setRecommendation(result);
           setDismissed(false);
         }
-      } catch (error) {
-      }
+      } catch {}
     };
 
     const interval = setInterval(getRecommendation, 60000);

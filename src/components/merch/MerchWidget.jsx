@@ -64,14 +64,14 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
   var qc = useQueryClient();
 
   var total = item.price_usd * qty;
-  var creatorGets = (total * 0.9).toFixed(2);
+  var creatorGets = (Math.floor(total  * 90) / 100).toFixed(2);
 
   var orderMutation = useMutation({
     mutationFn: () => base44.entities.MerchandiseOrder.create({
       buyer_id: currentUser?.id, buyer_name: currentUser?.full_name || "Viewer",
       creator_id: hostId, item_id: item.id, item_name: item.name,
       size, quantity: qty, total_usd: total,
-      creator_payout: Math.floor(total * 0.90), platform_cut: total - Math.floor(total * 0.90),
+      creator_payout: Math.floor(total  * 90) / 100, platform_cut: total - Math.floor(total  * 90) / 100,
       room_id: roomId, status: "pending",
     }),
     onSuccess: () => {
@@ -90,7 +90,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
             user_id: hostId,
             type: 'tip_received',
             title: `Merch order: ${item.name} x${qty} from ${currentUser.full_name || 'viewer'}`,
-            amount: Math.floor(total * 0.90),
+            amount: Math.floor(total  * 90) / 100,
             sender_id: currentUser.id,
           }),
         ]);
