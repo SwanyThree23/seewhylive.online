@@ -168,14 +168,25 @@ export default function GiftShop({ isOpen, onClose, roomId, user, creatorId, cre
     }
     setSending(true);
     try {
-      await base44.entities.TipAlert.create({
-        room_id:     roomId,
-        sender_id:   user.id,
-        sender_name: user.full_name || user.email || 'Guest',
-        creator_id:  creatorId,
-        amount_usd:  selected.price,
-        message:     `${selected.emoji} ${selected.name}`,
-      });
+      const gemTypeMap = { diamond: 'diamond', crown: 'gold', lightning: 'diamond', fire: 'ruby', heart: 'ruby', rose: 'gold', crystal: 'purple', skull: 'bone' };
+      await Promise.all([
+        base44.entities.TipAlert.create({
+          room_id:     roomId,
+          sender_id:   user.id,
+          sender_name: user.full_name || user.email || 'Guest',
+          creator_id:  creatorId,
+          amount_usd:  selected.price,
+          message:     `${selected.emoji} ${selected.name}`,
+        }),
+        base44.entities.GemTransaction?.create({
+          sender_id:    user.id,
+          recipient_id: creatorId,
+          stream_id:    roomId,
+          gem_type:     gemTypeMap[selected.id] || 'gold',
+          quantity:     1,
+          usd_value:    selected.price,
+        }).catch(() => {}),
+      ]);
       toast.success(`${selected.emoji} ${selected.name} sent to ${creatorName}!`);
       onGiftSent?.(selected, user);
       onClose();
