@@ -52,6 +52,7 @@ export default function WebSourceOverlayV49({ roomId, isHost }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, visible }) => base44.entities.Overlay ? base44.entities.Overlay.update(id, { visible: !visible }) : Promise.reject(new Error('Overlay entity not available')),
+    onError: () => toast.error('Failed to toggle overlay.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['overlays', roomId] }),
   });
 

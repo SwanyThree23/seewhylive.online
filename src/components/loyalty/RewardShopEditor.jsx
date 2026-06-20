@@ -57,11 +57,13 @@ export default function RewardShopEditor({ creatorId }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active: !is_active }),
+    onError: () => toast.error('Failed to update reward.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
+    onError: () => toast.error('Failed to delete reward.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
