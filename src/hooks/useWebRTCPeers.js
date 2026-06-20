@@ -144,13 +144,24 @@ export function useWebRTCPeers(roomId, localStream) {
       }
     }, ICE_TIMEOUT_MS);
 
+    // Store entry early so event handlers can mutate reconnectTimer in-place
+    const entry = { pc, stream: remoteStream, iceTimer, reconnectTimer: null };
+    peersRef.current.set(peerId, entry);
+
     pc.onconnectionstatechange = () => {
       const state = pc.connectionState;
       setPeerStates(prev => new Map(prev).set(peerId, state));
       if (state === 'connected') {
         clearTimeout(iceTimer);
-      } else if (state === 'failed' || state === 'disconnected') {
+        clearTimeout(entry.reconnectTimer);
+        entry.reconnectTimer = null;
+      } else if (state === 'failed') {
         removePeer(peerId);
+      } else if (state === 'disconnected') {
+        // Temporary blip — give ICE restart 8 s to recover before dropping
+        entry.reconnectTimer = setTimeout(() => {
+          if (pc.connectionState !== 'connected') removePeer(peerId);
+        }, 8_000);
       }
     };
 
@@ -158,7 +169,6 @@ export function useWebRTCPeers(roomId, localStream) {
       if (pc.iceConnectionState === 'failed') pc.restartIce();
     };
 
-    peersRef.current.set(peerId, { pc, stream: remoteStream, iceTimer });
     return pc;
   }, [sendSignal]);
 
@@ -176,11 +186,15 @@ export function useWebRTCPeers(roomId, localStream) {
 
   const handleIncomingOffer = useCallback(async (fromPeer, sdp) => {
     const pc = createPeerConnection(fromPeer);
-    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-    const answer = await pc.createAnswer();
-    await pc.setLocalDescription(answer);
-    sendSignal(fromPeer, 'answer', { sdp: answer });
-  }, [createPeerConnection, sendSignal]);
+    try {
+      await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      sendSignal(fromPeer, 'answer', { sdp: answer });
+    } catch {
+      removePeer(fromPeer);
+    }
+  }, [createPeerConnection, sendSignal, removePeer]);
 
   const handleIncomingAnswer = useCallback(async (fromPeer, sdp) => {
     const entry = peersRef.current.get(fromPeer);
@@ -200,6 +214,9 @@ export function useWebRTCPeers(roomId, localStream) {
     const entry = peersRef.current.get(peerId);
     if (entry) {
       clearTimeout(entry.iceTimer);
+      clearTimeout(entry.reconnectTimer);
+      // Stop all remote tracks before closing so consumers see stream end cleanly
+      entry.stream?.getTracks().forEach(t => t.stop());
       entry.pc.close();
       peersRef.current.delete(peerId);
     }
@@ -218,7 +235,12 @@ export function useWebRTCPeers(roomId, localStream) {
 
   const leaveRoom = useCallback(() => {
     sendSignal(null, 'peer_left', {});
-    peersRef.current.forEach(({ pc, iceTimer }) => { clearTimeout(iceTimer); pc.close(); });
+    peersRef.current.forEach(({ pc, iceTimer, reconnectTimer, stream }) => {
+      clearTimeout(iceTimer);
+      clearTimeout(reconnectTimer);
+      stream?.getTracks().forEach(t => t.stop());
+      pc.close();
+    });
     peersRef.current.clear();
     setRemoteStreams(new Map());
     setPeerStates(new Map());
@@ -226,7 +248,12 @@ export function useWebRTCPeers(roomId, localStream) {
 
   useEffect(() => {
     return () => {
-      peersRef.current.forEach(({ pc, iceTimer }) => { clearTimeout(iceTimer); pc.close(); });
+      peersRef.current.forEach(({ pc, iceTimer, reconnectTimer, stream }) => {
+        clearTimeout(iceTimer);
+        clearTimeout(reconnectTimer);
+        stream?.getTracks().forEach(t => t.stop());
+        pc.close();
+      });
       peersRef.current.clear();
     };
   }, []);
