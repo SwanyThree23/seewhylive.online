@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -159,6 +160,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
       viewer_id: currentUser?.id, creator_id: creatorId, room_id: roomId,
       tier_name: tier.name, price_usd: tier.price_usd, status: "active",
     }),
+    onError: () => toast.error('Subscription failed. Please try again.'),
     onSuccess: () => { setSuccess(true); setTimeout(() => { setOpen(false); setSuccess(false); }, 2000); },
   });
 
