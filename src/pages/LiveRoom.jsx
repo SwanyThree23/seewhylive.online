@@ -374,7 +374,7 @@ export default function LiveRoom() {
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
   const hostName   = party ? (members.find(m => m.user_id === party.host_id)?.user_name || 'Host') : 'SwanyThree';
-  const liveCount  = members.length || 20;
+  const liveCount  = members.length;
   const isLive     = !roomId || members.length > 0 || (remoteStreams?.size ?? 0) > 0;
 
   // Local UI state
