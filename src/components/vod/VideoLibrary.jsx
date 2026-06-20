@@ -59,11 +59,13 @@ export default function VideoLibrary({ creatorId }) {
 
   const updateVOD = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
+    onError: () => toast.error('Failed to save changes.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
   });
 
   const createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
+    onError: () => toast.error('Failed to add VOD. Please try again.'),
     onSuccess: (vod) => {
       qc.invalidateQueries({ queryKey: ['vod-library', creatorId] });
       setShowAdd(false);
