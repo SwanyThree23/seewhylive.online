@@ -6,11 +6,9 @@ import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, W
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import DevicePreview from '../components/greenroom/DevicePreview';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import GuestConnector from '../components/live/GuestConnector';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
@@ -19,6 +17,7 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -51,6 +50,10 @@ export default function GuestJoin() {
   const [status, setStatus] = useState('idle');
   const [readyState, setReadyState] = useState(false);
   const [waitingTooLong, setWaitingTooLong] = useState(false);
+
+  // Real local camera via singleton cache — permission granted here carries
+  // forward into LiveRoom without a second getUserMedia prompt.
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
   const { data: room } = useQuery({
     queryKey: ['guestRoom', roomId],
@@ -273,9 +276,33 @@ export default function GuestJoin() {
           )}
         </AnimatePresence>
 
-        {/* Device camera/mic preview */}
+        {/* Device camera preview — wired to real stream from useLocalMedia */}
         <div style={{ marginTop: 8 }}>
-          <DevicePreview />
+          <OctagonalVideoWindow
+            stream={localStream}
+            isLocal={true}
+            label={name || (user?.full_name || 'You')}
+            isHost={false}
+            isMuted={!audioEnabled}
+            isVideoOff={!videoEnabled}
+          />
+          {mediaError && (
+            <div style={{ marginTop: 6, padding: '6px 10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, fontSize: 10, color: '#EF4444', textAlign: 'center' }}>
+              Camera: {mediaError}
+            </div>
+          )}
+          {localStream && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, justifyContent: 'center' }}>
+              <button onClick={toggleAudio} aria-label={audioEnabled ? 'Mute microphone' : 'Unmute microphone'} aria-pressed={!audioEnabled}
+                style={{ minWidth: 44, minHeight: 44, borderRadius: 8, background: audioEnabled ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (audioEnabled ? 'rgba(212,175,55,0.3)' : 'rgba(239,68,68,0.3)'), color: audioEnabled ? GOLD : '#EF4444', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, padding: '0 12px' }}>
+                {audioEnabled ? '🎤 MIC ON' : '🔇 MUTED'}
+              </button>
+              <button onClick={toggleVideo} aria-label={videoEnabled ? 'Turn camera off' : 'Turn camera on'} aria-pressed={!videoEnabled}
+                style={{ minWidth: 44, minHeight: 44, borderRadius: 8, background: videoEnabled ? 'rgba(212,175,55,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid ' + (videoEnabled ? 'rgba(212,175,55,0.3)' : 'rgba(239,68,68,0.3)'), color: videoEnabled ? GOLD : '#EF4444', cursor: 'pointer', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, padding: '0 12px' }}>
+                {videoEnabled ? '📷 CAM ON' : '🚫 CAM OFF'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Waitlist panel when waiting */}
@@ -287,15 +314,13 @@ export default function GuestJoin() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
           <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
-          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
           <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
-          <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <MilestoneAlerts userId={user?.id} roomId={roomId} />
+          <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
           <StreamGoals isHost={false} />
-          {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>
