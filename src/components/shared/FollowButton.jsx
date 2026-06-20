@@ -29,6 +29,7 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
       follower_name: currentUser.full_name || currentUser.email,
       following_name: targetUserName,
     }),
+    onError: () => toast.error('Could not follow. Please try again.'),
     onSuccess: () => {
       toast.success(`Following ${targetUserName || 'creator'}!`);
       qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
@@ -52,6 +53,7 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
 
   const unfollowMutation = useMutation({
     mutationFn: () => base44.entities.Follow.delete(followRecord.id),
+    onError: () => toast.error('Could not unfollow. Please try again.'),
     onSuccess: () => {
       toast.success('Unfollowed');
       qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
