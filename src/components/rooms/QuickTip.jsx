@@ -61,6 +61,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
 
       return { transaction, pointsEarned };
     },
+    onError: () => toast.error('Tip failed. Please try again.'),
     onSuccess: ({ transaction, pointsEarned }) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['loyalty'] });
