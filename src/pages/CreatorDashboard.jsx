@@ -354,8 +354,8 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
             <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => {}} />
-            <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
-            <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <StreamEventBus roomId={activeCreatorRoomId} isHost={true} sessionId={activeCreatorRoomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
             <StreamGoals isHost={true} />
             <SwanAIRecommendations roomId={roomId} currentLayout="dashboard" viewerCount={0} />
             <ContentRecommendations />

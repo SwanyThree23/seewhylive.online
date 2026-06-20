@@ -1,333 +1,227 @@
 import React, { useState, useCallback } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Copy, Check, QrCode, Link, Trash2, Plus, Clock, Users, RefreshCw, Download } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
+import { Link2, Copy, X, Plus, QrCode, CheckCircle, Clock, Users, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const G = '#D4AF37';
+const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-function makeid(len = 12) {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let out = '';
-  for (let i = 0; i < len; i++) out += chars[Math.floor((crypto.getRandomValues(new Uint8Array(1))[0] / 256) * chars.length)];
-  return out;
+function genToken() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
 }
 
-function CopyBtn({ value, label = 'Link' }) {
+function InviteCard({ invite, onRevoke }) {
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+  const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
+
   const copy = () => {
-    navigator.clipboard.writeText(value);
+    navigator.clipboard.writeText(invite.invite_url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success(`${label} copied!`);
-  };
-  return (
-    <button onClick={copy}
-      className="flex items-center gap-1 px-2 py-1 rounded transition-all"
-      style={{ background: copied ? `${G}20` : 'rgba(255,255,255,0.06)', border: `1px solid ${copied ? `${G}40` : 'rgba(255,255,255,0.1)'}` }}>
-      {copied ? <Check className="w-3 h-3" style={{ color: G }} /> : <Copy className="w-3 h-3 text-white/40" />}
-      <span className="text-[10px] font-bold" style={{ ...T, color: copied ? G : 'rgba(255,255,255,0.5)' }}>
-        {copied ? 'Copied' : 'Copy'}
-      </span>
-    </button>
-  );
-}
-
-function InviteCard({ invite, onRevoke, origin }) {
-  const [showQR, setShowQR] = useState(false);
-  const joinUrl = `${origin}/GuestJoin?room=${invite.room_id}&token=${invite.token}`;
-  const expires = invite.expires_at ? new Date(invite.expires_at) : null;
-  const isExpired = expires && expires < new Date();
-
-  const downloadQR = () => {
-    const svg = document.getElementById(`qr-${invite.id}`);
-    if (!svg) return;
-    const xml = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([xml], { type: 'image/svg+xml' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `seewhy-invite-${invite.token.slice(0, 6)}.svg`;
-    a.click();
-    URL.revokeObjectURL(a.href);
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      className="rounded-lg overflow-hidden"
-      style={{ border: `1px solid ${isExpired ? 'rgba(255,255,255,0.06)' : `${G}25`}`, background: 'rgba(8,11,24,0.8)' }}
-    >
-      <div className="flex items-center gap-2 px-3 py-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-[10px] font-black uppercase" style={{ ...T, color: isExpired ? 'rgba(255,255,255,0.25)' : G }}>
-              {invite.label || `Guest Slot ${invite.token.slice(0, 4).toUpperCase()}`}
-            </span>
-            {invite.role && (
-              <span className="px-1 py-0.5 rounded text-[8px] font-black uppercase" style={{ background: `${G}15`, color: G, ...T }}>
-                {invite.role}
-              </span>
-            )}
-            {isExpired && (
-              <span className="px-1 py-0.5 rounded text-[8px] font-black uppercase text-red-400" style={{ background: 'rgba(192,57,43,0.15)' }}>
-                Expired
-              </span>
-            )}
+    <div className="rounded-lg p-2.5 space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${isExpired ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)'}` }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+            style={{ background: isExpired ? 'rgba(239,68,68,0.15)' : 'rgba(109,191,126,0.15)' }}>
+            <Users className="w-3 h-3" style={{ color: isExpired ? '#f87171' : '#6DBF7E' }} />
           </div>
-          {expires && (
-            <div className="flex items-center gap-1 text-[9px] text-white/30">
-              <Clock className="w-2.5 h-2.5" />
-              {isExpired ? 'Expired' : `Expires ${expires.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`}
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-white truncate">{invite.label || `Guest ${invite.token?.slice(0, 6)}`}</p>
+            <div className="flex items-center gap-1.5">
+              {isExpired
+                ? <span className="text-[9px] text-red-400">Expired</span>
+                : <span className="text-[9px] text-[#6DBF7E]">Active</span>}
+              {invite.expires_at && (
+                <span className="text-[9px] text-white/20">
+                  · {isExpired ? 'expired' : 'expires'} {new Date(invite.expires_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </div>
-          )}
+          </div>
         </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => setShowQR(s => !s)}
-            className="w-7 h-7 rounded flex items-center justify-center transition-all"
-            style={{ background: showQR ? `${G}20` : 'rgba(255,255,255,0.05)', border: `1px solid ${showQR ? `${G}40` : 'rgba(255,255,255,0.08)'}` }}
-          >
-            <QrCode className="w-3.5 h-3.5" style={{ color: showQR ? G : 'rgba(255,255,255,0.4)' }} />
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button onClick={() => setShowQR(q => !q)}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 transition-colors"
+            title="Show QR">
+            <QrCode className="w-3 h-3 text-white/40" />
           </button>
-          <CopyBtn value={joinUrl} label="Invite link" />
-          <button
-            onClick={() => onRevoke(invite.id)}
-            className="w-7 h-7 rounded flex items-center justify-center text-white/20 hover:text-red-400 transition-colors"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-          >
-            <Trash2 className="w-3 h-3" />
+          <button onClick={copy}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-white/10 transition-colors">
+            {copied ? <CheckCircle className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-white/40" />}
+          </button>
+          <button onClick={() => onRevoke(invite.id)}
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-red-500/10 transition-colors">
+            <Trash2 className="w-3 h-3 text-red-400/60" />
           </button>
         </div>
       </div>
 
       <AnimatePresence>
-        {showQR && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-white/5"
-          >
-            <div className="flex items-center gap-4 p-3">
-              <div className="flex-shrink-0 p-2 rounded-lg" style={{ background: '#fff' }}>
-                <QRCodeSVG
-                  id={`qr-${invite.id}`}
-                  value={joinUrl}
-                  size={96}
-                  level="M"
-                  includeMargin={false}
-                />
-              </div>
-              <div className="flex-1 min-w-0 space-y-2">
-                <p className="text-[10px] text-white/50 break-all font-mono leading-relaxed">{joinUrl}</p>
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={downloadQR}
-                    className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold transition-all"
-                    style={{ background: `${G}15`, color: G, border: `1px solid ${G}30`, ...T }}
-                  >
-                    <Download className="w-2.5 h-2.5" />
-                    Save QR
-                  </button>
-                  <CopyBtn value={joinUrl} label="Invite link" />
-                </div>
-              </div>
+        {showQR && !isExpired && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+            className="flex justify-center pt-1">
+            <div className="p-2 rounded-lg bg-white">
+              <QRCodeSVG value={invite.invite_url} size={120} level="M" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+
+      <div className="text-[9px] text-white/20 truncate px-0.5">{invite.invite_url}</div>
+    </div>
   );
 }
 
-const ROLES = ['guest', 'co-host', 'speaker'];
-const EXPIRY_OPTIONS = [
-  { label: '1 hour', ms: 60 * 60 * 1000 },
-  { label: '24 hours', ms: 24 * 60 * 60 * 1000 },
-  { label: '7 days', ms: 7 * 24 * 60 * 60 * 1000 },
-  { label: 'Never', ms: null },
-];
-
-export default function GuestInviteGenerator({ roomId, isHost }) {
+export default function GuestInviteGenerator({ userId, roomId, streamId }) {
   const qc = useQueryClient();
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://seewhylive.online';
-
-  const [showForm, setShowForm] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState('');
-  const [role, setRole] = useState('guest');
-  const [expiryIdx, setExpiryIdx] = useState(0);
+  const [expireHours, setExpireHours] = useState(24);
 
-  // Store invites in entity (or fallback to local state if entity unavailable)
-  const [localInvites, setLocalInvites] = useState([]);
+  const baseUrl = typeof window !== 'undefined' ? `${window.location.origin}/guest-join` : '';
 
-  const { data: room } = useQuery({
-    queryKey: ['room-for-invites', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
-    enabled: !!roomId,
+  const { data: invites = [] } = useQuery({
+    queryKey: ['guest-invites', roomId || streamId],
+    queryFn: () => base44.entities.Activity.filter({ user_id: userId, type: 'guest_invite' }),
+    enabled: !!userId,
+    select: (rows) => rows
+      .filter(r => (r.description?.includes(roomId || '') || r.description?.includes(streamId || '')))
+      .map(r => {
+        try { return { ...JSON.parse(r.description || '{}'), id: r.id }; } catch { return null; }
+      })
+      .filter(Boolean),
   });
 
-  const createInvite = useCallback(() => {
-    if (!roomId) { toast.error('No room selected'); return; }
-    const expiryMs = EXPIRY_OPTIONS[expiryIdx].ms;
-    const code = 'SWY-' + makeid(8).toUpperCase();
-    const invite = {
-      id: `inv_${Date.now()}`,
-      room_id: roomId,
-      token: makeid(16),
-      label: label.trim() || undefined,
-      role,
-      created_at: new Date().toISOString(),
-      expires_at: expiryMs ? new Date(Date.now() + expiryMs).toISOString() : null,
-    };
-    setLocalInvites(prev => [invite, ...prev]);
-    setLabel('');
-    setShowForm(false);
-    toast.success('Invite link created');
-    // Persist to InviteLink entity for proper tracking
-    base44.entities.InviteLink?.create({
-      code,
-      role: role === 'guest' ? 'viewer' : role,
-      label: label.trim() || `Guest ${role}`,
-      room_id: roomId,
-      max_uses: 1,
-      uses: 0,
-      expires_at: expiryMs ? new Date(Date.now() + expiryMs).toISOString() : null,
-      created_at: new Date().toISOString(),
-    }).catch(() => {});
-  }, [roomId, label, role, expiryIdx, room]);
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const token = genToken();
+      const expiresAt = new Date(Date.now() + expireHours * 3600 * 1000).toISOString();
+      const params = new URLSearchParams({ token, room: roomId || '', stream: streamId || '' });
+      const inviteUrl = `${baseUrl}?${params}`;
+      const payload = { token, label: label || 'Guest', invite_url: inviteUrl, expires_at: expiresAt, room_id: roomId, stream_id: streamId };
 
-  const revokeInvite = useCallback((id) => {
-    setLocalInvites(prev => prev.filter(i => i.id !== id));
-    toast.success('Invite revoked');
-  }, []);
+      await base44.entities.Activity.create({
+        user_id: userId,
+        type: 'guest_invite',
+        title: `Guest invite: ${label || 'Guest'}`,
+        description: JSON.stringify(payload),
+        is_public: false,
+      });
 
-  if (!isHost) return null;
+      navigator.clipboard.writeText(inviteUrl).catch(() => {});
+      toast.success('Invite link created & copied!');
+      qc.invalidateQueries(['guest-invites', roomId || streamId]);
+      setLabel('');
+      setCreating(false);
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (inviteId) => base44.entities.Activity.delete(inviteId),
+    onSuccess: () => {
+      qc.invalidateQueries(['guest-invites', roomId || streamId]);
+      toast.success('Invite revoked');
+    },
+  });
+
+  const activeInvites = invites.filter(i => !i.expires_at || new Date(i.expires_at) > new Date());
+  const expiredInvites = invites.filter(i => i.expires_at && new Date(i.expires_at) <= new Date());
 
   return (
-    <div className="space-y-2">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Link className="w-3.5 h-3.5" style={{ color: G }} />
-          <span className="text-[11px] font-black uppercase tracking-wider" style={{ ...T, color: G }}>
-            Guest Invites
-          </span>
-          {localInvites.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${G}22`, color: G, ...T }}>
-              {localInvites.length}
+    <div className="rounded-xl border" style={{ background: 'rgba(8,11,24,0.95)', borderColor: 'rgba(212,175,55,0.15)' }}>
+      <div className="flex items-center justify-between p-3 border-b border-white/5">
+        <div className="flex items-center gap-2">
+          <Link2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
+          <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD, ...T }}>Guest Invites</span>
+          {activeInvites.length > 0 && (
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#6DBF7E]/20 text-[#6DBF7E] border border-[#6DBF7E]/30">
+              {activeInvites.length} active
             </span>
           )}
         </div>
         <button
-          onClick={() => setShowForm(f => !f)}
-          className="flex items-center gap-1 px-2 py-1 rounded transition-all"
-          style={{
-            background: showForm ? `${G}15` : 'rgba(255,255,255,0.05)',
-            border: `1px solid ${showForm ? `${G}40` : 'rgba(255,255,255,0.1)'}`,
-            color: showForm ? G : 'rgba(255,255,255,0.4)',
-          }}
+          onClick={() => setCreating(c => !c)}
+          style={{ ...T, height: 24, padding: '0 8px', fontSize: 10, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: creating ? 'rgba(255,255,255,0.05)' : `rgba(212,175,55,0.15)`, color: creating ? 'rgba(255,255,255,0.4)' : GOLD }}
         >
-          <Plus className="w-3 h-3" />
-          <span className="text-[10px] font-bold uppercase" style={T}>New Invite</span>
+          {creating ? <X className="w-3 h-3 inline" /> : <><Plus className="w-3 h-3 inline mr-1" />New</>}
         </button>
       </div>
 
-      {/* Create form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
-          >
-            <div className="p-3 space-y-2.5 rounded-lg" style={{ background: `${G}06`, border: `1px solid ${G}20` }}>
-              {/* Label */}
-              <div>
-                <p className="text-[10px] text-white/30 uppercase mb-1 font-bold" style={T}>Label (optional)</p>
-                <input
-                  value={label}
-                  onChange={e => setLabel(e.target.value)}
-                  placeholder="e.g. Guest Speaker, Co-Host"
-                  className="w-full px-2.5 py-1.5 rounded bg-black/40 border border-white/10 text-[11px] text-white placeholder-white/25 outline-none focus:border-[#d4af37]/40"
-                />
-              </div>
-              {/* Role */}
-              <div>
-                <p className="text-[10px] text-white/30 uppercase mb-1 font-bold" style={T}>Role</p>
-                <div className="flex gap-1">
-                  {ROLES.map(r => (
-                    <button key={r} onClick={() => setRole(r)}
-                      className="flex-1 py-1 rounded text-[10px] font-black uppercase transition-all"
-                      style={{
-                        background: role === r ? `${G}20` : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${role === r ? `${G}50` : 'rgba(255,255,255,0.08)'}`,
-                        color: role === r ? G : 'rgba(255,255,255,0.35)',
-                        ...T,
-                      }}>
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Expiry */}
-              <div>
-                <p className="text-[10px] text-white/30 uppercase mb-1 font-bold" style={T}>Expires</p>
-                <div className="flex gap-1 flex-wrap">
-                  {EXPIRY_OPTIONS.map((opt, i) => (
-                    <button key={opt.label} onClick={() => setExpiryIdx(i)}
-                      className="px-2 py-1 rounded text-[10px] font-bold transition-all"
-                      style={{
-                        background: expiryIdx === i ? `${G}20` : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${expiryIdx === i ? `${G}40` : 'rgba(255,255,255,0.07)'}`,
-                        color: expiryIdx === i ? G : 'rgba(255,255,255,0.35)',
-                        ...T,
-                      }}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+      <div className="p-3 space-y-3">
+        <AnimatePresence>
+          {creating && (
+            <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+              className="rounded-lg p-3 space-y-2.5" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
+              <input
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+                placeholder="Guest name or role (optional)"
+                style={{ width: '100%', padding: '7px 10px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', ...T }}
+              />
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] text-white/40 flex-shrink-0" style={T}>Expires in:</label>
+                <select
+                  value={expireHours}
+                  onChange={e => setExpireHours(Number(e.target.value))}
+                  style={{ flex: 1, padding: '5px 8px', background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 11, outline: 'none', ...T }}
+                >
+                  <option value={1}>1 hour</option>
+                  <option value={6}>6 hours</option>
+                  <option value={24}>24 hours</option>
+                  <option value={72}>3 days</option>
+                  <option value={168}>7 days</option>
+                </select>
               </div>
               <button
-                onClick={createInvite}
-                className="w-full py-2 rounded text-[12px] font-black uppercase transition-all"
-                style={{ background: G, color: '#000', ...T }}
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isPending}
+                style={{ ...T, width: '100%', height: 30, fontSize: 12, fontWeight: 900, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: `linear-gradient(135deg, ${GOLD}, #b8962e)`, color: '#000', opacity: createMutation.isPending ? 0.6 : 1 }}
               >
-                Generate Invite Link
+                <Link2 className="w-3 h-3 inline mr-1.5" />Generate & Copy Link
               </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Invite list */}
-      {localInvites.length === 0 && !showForm ? (
-        <div className="py-5 text-center">
-          <QrCode className="w-7 h-7 mx-auto mb-2" style={{ color: 'rgba(212,175,55,0.2)' }} />
-          <p className="text-[11px] text-white/20" style={T}>No invite links yet</p>
-          <p className="text-[10px] text-white/12 mt-0.5">Generate QR codes for guests to join</p>
-        </div>
-      ) : (
-        <AnimatePresence>
+        {invites.length === 0 && !creating && (
+          <div className="text-center py-4">
+            <Users className="w-5 h-5 text-white/20 mx-auto mb-1" />
+            <p className="text-[10px] text-white/30">No guest invites yet</p>
+            <p className="text-[10px] text-white/20">Create a link to invite guests to your stream</p>
+          </div>
+        )}
+
+        {activeInvites.length > 0 && (
           <div className="space-y-1.5">
-            {localInvites.map(inv => (
-              <InviteCard
-                key={inv.id}
-                invite={inv}
-                onRevoke={revokeInvite}
-                origin={origin}
-              />
+            {activeInvites.map(invite => (
+              <InviteCard key={invite.id} invite={invite} onRevoke={(id) => revokeMutation.mutate(id)} />
             ))}
           </div>
-        </AnimatePresence>
-      )}
+        )}
+
+        {expiredInvites.length > 0 && (
+          <details className="group">
+            <summary className="text-[9px] text-white/20 cursor-pointer select-none hover:text-white/40 transition-colors" style={T}>
+              {expiredInvites.length} expired invite{expiredInvites.length !== 1 ? 's' : ''}
+            </summary>
+            <div className="mt-1.5 space-y-1 opacity-50">
+              {expiredInvites.map(invite => (
+                <InviteCard key={invite.id} invite={invite} onRevoke={(id) => revokeMutation.mutate(id)} />
+              ))}
+            </div>
+          </details>
+        )}
+      </div>
     </div>
   );
 }

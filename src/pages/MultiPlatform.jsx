@@ -6,6 +6,16 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import OBSBridge from '../components/obs/OBSBridge';
+import WebhookHooks from '../components/live/WebhookHooks';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import BitratePresets from '../components/streaming/BitratePresets';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamGoals from '../components/live/StreamGoals';
@@ -221,7 +231,7 @@ export default function MultiPlatform() {
                   <RTMPFanoutPanel userId={user.id} isStreaming={false} />
                 )}
                 {user?.id && (
-                  <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />
+                  <GuestInviteGenerator userId={user.id} roomId={null} />
                 )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                 {PLATFORMS.map(p => {

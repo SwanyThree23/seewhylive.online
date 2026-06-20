@@ -585,9 +585,13 @@ export default function AdminDashboard() {
         <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <ChallengeAnalytics communityId={firstCommunityId} />
           <ReferralConfig communityId={firstCommunityId} />
-          <PerformanceDashboard roomId={roomId} sessionId={roomId} />
+          <PerformanceDashboard roomId={activeAdminRoomId} sessionId={activeAdminRoomId} />
           <AnnouncementScheduler communityId={firstCommunityId} userId={user?.id} />
           <SpotlightBanner communityId={firstCommunityId} isAdmin={true} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <StreamHealthDashboard roomId={null} isHost={true} />
+          <AnnouncementPanel communityId={firstCommunityId} userId={user?.id} />
         </div>
       </div>
         <MilestoneAlerts userId={user?.id} roomId={roomId} />
