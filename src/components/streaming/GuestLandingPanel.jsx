@@ -70,7 +70,7 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
         });
         setTokenValid(found);
       })
-      .catch(() => setTokenValid(true)); // fallback open
+      .catch(() => setTokenValid(false)); // network error → deny access, don't open
   }, [token, roomId]);
 
   // Pre-fill name from user

@@ -590,8 +590,8 @@ export default function RoomPage() {
             )}
             {isHost && (
               <div className="mt-3 space-y-3">
-                <RTMPFanoutPanel roomId={roomId} isHost={isHost} />
-                <GuestInviteGenerator roomId={roomId} isHost={isHost} />
+                <RTMPFanoutPanel userId={user?.id} streamId={roomId} isStreaming={room?.status === 'live'} />
+                <GuestInviteGenerator userId={user?.id} roomId={roomId} streamId={roomId} />
               </div>
             )}
             {/* Live Auctions - visible to all */}

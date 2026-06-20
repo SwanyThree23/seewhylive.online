@@ -1586,7 +1586,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <div className="space-y-3 p-3 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.5)' }}>
                     <WebSourceOverlayV49 />
                     <div className="pt-2 border-t border-white/5">
-                      <WebSourceOverlay isStreamActive={party?.status === 'live'} />
+                      <WebSourceOverlay />
                     </div>
                     <div className="pt-2 border-t border-white/5">
                       <RTMPFanoutPanelV49
