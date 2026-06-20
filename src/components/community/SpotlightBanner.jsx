@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const TYPE_COLORS = { member:C.gold, content:'#C9A84C', achievement:C.volt, stream:'#C0392B' };
@@ -16,6 +17,7 @@ function AddSpotlightModal({ communityId, onClose }) {
   });
   const mut = useMutation({
     mutationFn: () => base44.entities.CommunitySpotlight.create({ community_id: communityId, ...form, start_date: new Date().toISOString(), is_active: true }),
+    onError: () => toast.error('Failed to create spotlight. Please try again.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['spotlight', communityId] }); onClose(); },
   });
   const inp = { width:'100%', padding:'8px 10px', background:'#111', border:'1px solid #2a2a2a', borderRadius:6, color:C.white, fontSize:12, outline:'none', fontFamily:'inherit', boxSizing:'border-box', marginBottom:8 };
