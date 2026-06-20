@@ -175,6 +175,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       return pollList;
     },
     refetchInterval: 3000,
+    enabled: !!roomId,
   });
 
   // Fetch votes
@@ -182,6 +183,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
     queryKey: ['poll-votes', roomId],
     queryFn: () => base44.entities.PollVote.filter({ room_id: roomId }),
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   // Subscribe to real-time polls

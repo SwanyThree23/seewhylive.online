@@ -19,11 +19,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     queryKey: ['polls', roomId],
     queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }, '-created_at', 1),
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   const { data: pollTemplates } = useQuery({
     queryKey: ['pollTemplates', hostId],
     queryFn: () => base44.entities.PollTemplate.filter({ creator_id: hostId }, '-created_at'),
+    enabled: !!hostId,
   });
 
   const { data: pollVotes } = useQuery({
