@@ -91,7 +91,7 @@ export default function GuestJoin() {
         role: 'guest',
         status: 'waiting',
         is_audio_enabled: true,
-        is_video_enabled: false,
+        is_video_enabled: true,
         is_streaming: false,
       });
     },

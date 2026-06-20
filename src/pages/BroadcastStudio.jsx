@@ -393,7 +393,7 @@ export default function BroadcastStudio() {
   const partyId = searchParams.get('id');
   const qc = useQueryClient();
 
-  const [studioMode, setStudioMode] = useState('hybrid');
+  const [studioMode, setStudioMode] = useState(searchParams.get('mode') || 'hybrid');
   const [activeTab, setActiveTab] = useState('chat');
   const [leftOpen, setLeftOpen] = useState(true);
   const [theaterMode, setTheaterMode] = useState(false);

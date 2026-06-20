@@ -362,13 +362,14 @@ export default function SettingsPage() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
+            role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
             style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
             <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
               </div>
-              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
+              <p id="delete-dialog-title" className="font-black text-lg text-white" style={T}>Delete Account?</p>
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
                 This permanently deletes your account, streams, and all data. This cannot be undone.
               </p>
@@ -417,10 +418,11 @@ export default function SettingsPage() {
                   <p className="text-xs font-black" style={{ color: '#EF4444', ...T }}>{deleteReason}</p>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
+                  <label htmlFor="delete-confirm-input" className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
                     Type DELETE to confirm
                   </label>
                   <input
+                    id="delete-confirm-input"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
                     placeholder="DELETE"
