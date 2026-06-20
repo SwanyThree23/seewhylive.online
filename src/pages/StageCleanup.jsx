@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,7 +35,8 @@ const AGE_OPTIONS = [
 export default function StageCleanupPage() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),

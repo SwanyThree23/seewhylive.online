@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, UserX, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ReferralConfig from '../components/admin/ReferralConfig';
@@ -207,8 +207,8 @@ function MembersTab({ communityId, currentUserId }) {
 
 export default function CommunityAdminPage() {
   const [activeTab, setActiveTab] = useState('analytics');
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get('id');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: community } = useQuery({

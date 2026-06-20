@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
@@ -67,7 +67,8 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['analyticsRooms', user?.id],

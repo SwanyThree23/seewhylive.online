@@ -11,7 +11,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 function exportCSV(transactions, subscriptions) {
   const rows = [
     ['Type', 'Amount', 'Date', 'Description'],
-    ...transactions.map(t => [t.type || 'transaction', `$${t.amount || 0}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0) + (t.platform_cut || 0)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
   const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
@@ -34,7 +34,7 @@ export default function RevenueDashboard({ userId }) {
   });
 
   // Calculate earnings with 90/10 split
-  const grossEarnings = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const grossEarnings = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const platformFee = grossEarnings * 0.10;
   const processingFee = transactions.length * 0.30 + (grossEarnings * 0.029);
   const netEarnings = grossEarnings - platformFee - processingFee;

@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trophy, Users, Swords, Calendar, MapPin, Star, ChevronRight, Plus, Radio } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import BattleScoreboard from '../components/live/BattleScoreboard';
 import BattleMode from '../components/streaming/BattleMode';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
@@ -156,7 +156,8 @@ const TABS = [
 ];
 
 export default function WashingtonClassic() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],

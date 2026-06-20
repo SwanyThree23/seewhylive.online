@@ -6,7 +6,7 @@ import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Use
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -37,7 +37,8 @@ function fmtDuration(seconds) {
 }
 
 export default function CreatorDashboardPage() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [timeRange, setTimeRange] = useState('7d');
 
   const { data: user } = useQuery({

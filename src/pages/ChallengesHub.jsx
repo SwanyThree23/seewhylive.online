@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Zap, Trophy, Clock, Users, Check, ChevronRight, Star, Target } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import LeaderboardPanel from '../components/live/LeaderboardPanel';
@@ -186,7 +186,8 @@ export default function ChallengesHubPage() {
     enabled: true,
   });
   const activeChallengeId = activeChallenge?.id || null;
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: activeChallenges = [] } = useQuery({
     queryKey: ['ch-active'],

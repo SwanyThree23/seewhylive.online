@@ -6,7 +6,7 @@ import {
   Settings, DollarSign, Activity, Clock, Share2, Scissors, Sparkles, Layout,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
@@ -94,7 +94,8 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);

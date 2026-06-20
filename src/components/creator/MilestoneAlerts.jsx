@@ -73,7 +73,7 @@ export default function MilestoneAlerts({ creatorId }) {
     const counts = {
       subscribers: subscriptions.length,
       rooms: rooms.length,
-      revenue: transactions.reduce((s, t) => s + (t.amount || 0), 0),
+      revenue: transactions.reduce((s, t) => s + (t.creator_payout || t.amount || 0), 0),
     };
 
     const newMilestones = [];

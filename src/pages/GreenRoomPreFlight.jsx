@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Eye, EyeOff, Copy, Check, X } from 'lucide-react';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -100,7 +100,8 @@ function CopyBtn({ value }) {
 export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const navigate = useNavigate();
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());

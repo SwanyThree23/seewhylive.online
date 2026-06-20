@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   Swords, Trophy, Crown, ArrowLeft, Plus, Users, Zap, Clock,
@@ -654,7 +654,8 @@ var TABS = [
 ];
 
 export default function PKBattleManager() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   var [activeTab, setActiveTab] = useState('invitations');
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [showWinner, setShowWinner] = useState(false);

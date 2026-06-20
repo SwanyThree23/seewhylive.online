@@ -1,4 +1,5 @@
 import React, { useReducer, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Flame, Heart, Star, Award, MapPin, Send, Calendar } from 'lucide-react';
@@ -113,7 +114,8 @@ export default function FallenLegendsPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: dbLegends } = useQuery({
     queryKey: ['fallen-legends'],

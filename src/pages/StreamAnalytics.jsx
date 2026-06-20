@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -48,8 +49,8 @@ function ChartCard({ title, icon: Icon, children, height = 'h-64', colSpan = '' 
 }
 
 export default function StreamAnalytics() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const [mode, setMode] = useState('post');
 

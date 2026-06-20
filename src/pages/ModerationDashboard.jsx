@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ModerationActionModal from '../components/moderation/ModerationActionModal';
@@ -197,8 +197,8 @@ function ReportItem({ report, onAction, user }) {
 }
 
 export default function ModerationDashboardPage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [activeTab, setActiveTab] = useState('flagged');
   const qc = useQueryClient();
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -211,8 +211,8 @@ function EndStreamModal({ onConfirm, onCancel }) {
 }
 
 export default function ControlRoomPage() {
-  const params = new URLSearchParams(window.location.search);
-  const roomId = params.get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const qc = useQueryClient();
 
   const [showStreamKey, setShowStreamKey] = useState(false);
