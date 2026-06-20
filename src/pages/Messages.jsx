@@ -117,12 +117,12 @@ export default function Messages() {
       recipient_id: selectedThread, recipient_name: currentThread?.partnerName || "User",
       content, is_whisper: false,
     }),
-    onSuccess: () => { qc.invalidateQueries(["all-dms", user?.id]); setInput(""); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }); setInput(""); },
   });
 
   var markReadMutation = useMutation({
     mutationFn: (msgId) => base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }),
-    onSuccess: () => qc.invalidateQueries(["all-dms", user?.id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }),
   });
 
   var composeMutation = useMutation({
@@ -132,7 +132,7 @@ export default function Messages() {
       content: composeMsg.trim(), is_whisper: false,
     }),
     onSuccess: () => {
-      qc.invalidateQueries(["all-dms", user?.id]);
+      qc.invalidateQueries({ queryKey: ["all-dms", user?.id] });
       setShowCompose(false);
       setComposeName("");
       setComposeMsg("");

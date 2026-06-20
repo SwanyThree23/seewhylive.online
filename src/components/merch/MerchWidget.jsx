@@ -76,7 +76,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
     }),
     onSuccess: () => {
       setSuccess(true);
-      qc.invalidateQueries(["merch-orders"]);
+      qc.invalidateQueries({ queryKey: ["merch-orders"] });
       if (currentUser?.id) {
         Promise.allSettled([
           base44.entities.Activity.create({

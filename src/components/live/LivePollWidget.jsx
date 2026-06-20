@@ -38,7 +38,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
       total_votes: 0,
     }),
     onSuccess: (poll) => {
-      qc.invalidateQueries(['livepoll', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       toast.success('Poll created!');
       onCreated?.();
       onClose();
@@ -123,12 +123,12 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
         total_votes: (poll.total_votes || 0) + 1,
       });
     },
-    onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
-    onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
   });
 
   const pinResultsMut = useMutation({

@@ -108,7 +108,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
 
     // Show local float
     setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);
-    qc.invalidateQueries(['viewer-coins', currentUser.id]);
+    qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
     toast.success(`${tipDef.emoji} Sent ${tipDef.coins} coins!`);
     setSending(null);
   };
@@ -122,7 +122,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
     } else if (currentUser?.id) {
       await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
     }
-    qc.invalidateQueries(['viewer-coins', currentUser.id]);
+    qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
     toast.success(`+${pack.coins} coins added to your wallet!`);
   };
 

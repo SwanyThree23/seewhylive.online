@@ -71,7 +71,7 @@ export default function LivePoll({ roomId, isHost }) {
     if (!activePoll?.id) return;
     const unsub = base44.entities.PollVote.subscribe((event) => {
       if (event.data?.poll_id !== activePoll.id) return;
-      qc.invalidateQueries(['pollvotes', activePoll.id]);
+      qc.invalidateQueries({ queryKey: ['pollvotes', activePoll.id] });
     });
     return unsub;
   }, [activePoll?.id, qc]);
@@ -98,7 +98,7 @@ export default function LivePoll({ roomId, isHost }) {
       created_at: new Date().toISOString(),
     }),
     onSuccess: () => {
-      qc.invalidateQueries(['livepoll', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       setCreating(false);
       setQuestion('');
       setOptions(['', '']);
@@ -109,7 +109,7 @@ export default function LivePoll({ roomId, isHost }) {
   const endPollMutation = useMutation({
     mutationFn: () => base44.entities.Poll.update(activePoll.id, { status: 'ended' }),
     onSuccess: async () => {
-      qc.invalidateQueries(['livepoll', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       // Post summary to activity feed
       const winner = activePoll.options?.[
         Object.entries(voteTally).sort((a, b) => b[1] - a[1])[0]?.[0]

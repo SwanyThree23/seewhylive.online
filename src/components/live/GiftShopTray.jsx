@@ -140,7 +140,7 @@ export default function GiftShopTray({ roomId, currentUser }) {
       }).catch(() => {});
     },
     onSuccess: (_, gift) => {
-      qc.invalidateQueries(['gift-lb', roomId]);
+      qc.invalidateQueries({ queryKey: ['gift-lb', roomId] });
       setAnim({ gift, sender: currentUser?.full_name || 'Someone' });
       setOpen(false);
       if (currentUser?.id) {

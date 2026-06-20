@@ -156,7 +156,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
     ]),
     onSuccess: (_, gift) => {
       onSend && onSend({ ...gift, sender_name: currentUser?.full_name || "You" });
-      qc.invalidateQueries(["gift-lb", roomId]);
+      qc.invalidateQueries({ queryKey: ["gift-lb", roomId] });
       setOpen(false);
       if (currentUser?.id) {
         Promise.allSettled([

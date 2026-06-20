@@ -358,7 +358,7 @@ function ContentTab({ user }) {
   const createMut = useMutation({
     mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
     onSuccess: (vod) => {
-      qc.invalidateQueries(['db-vods']);
+      qc.invalidateQueries({ queryKey: ['db-vods'] });
       setShowCreate(false);
       toast.success('VOD created!');
       if (user?.id) {
@@ -372,11 +372,11 @@ function ContentTab({ user }) {
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['db-vods']); setEditVod(null); toast.success('Updated!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-vods'] }); setEditVod(null); toast.success('Updated!'); },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.VODVideo.delete(id),
-    onSuccess: () => qc.invalidateQueries(['db-vods']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-vods'] }),
   });
 
   let filtered = vods.filter(v => {
@@ -586,7 +586,7 @@ function CommunityTab({ user }) {
       total_votes: 0,
     }),
     onSuccess: (poll) => {
-      qc.invalidateQueries(['db-polls']);
+      qc.invalidateQueries({ queryKey: ['db-polls'] });
       setShowPollForm(false);
       toast.success('Poll created!');
       if (user?.id) {
@@ -601,7 +601,7 @@ function CommunityTab({ user }) {
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
-    onSuccess: () => qc.invalidateQueries(['db-polls']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-polls'] }),
   });
 
   return (
@@ -771,7 +771,7 @@ function MonetizationTab({ user }) {
   const qc = useQueryClient();
   const toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['db-tiers']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-tiers'] }),
   });
 
   const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
@@ -1005,7 +1005,7 @@ function SettingsTab({ user }) {
     mutationFn: () => creatorProfile?.id
       ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
       : base44.entities.CreatorProfile.create({ user_id: user?.id, ...profile, stream_schedule: schedule }),
-    onSuccess: () => { qc.invalidateQueries(['db-cprofile']); toast.success('Profile saved!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-cprofile'] }); toast.success('Profile saved!'); },
   });
   const savePrefs = useMutation({
     mutationFn: () => userPref?.id
@@ -1015,11 +1015,11 @@ function SettingsTab({ user }) {
   });
   const toggleDest = useMutation({
     mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
-    onSuccess: () => qc.invalidateQueries(['db-rtmp']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
   });
   const deleteDest = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => qc.invalidateQueries(['db-rtmp']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
   });
 
   const SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];

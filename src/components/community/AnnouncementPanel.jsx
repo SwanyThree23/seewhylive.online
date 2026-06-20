@@ -32,7 +32,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       });
     },
     onSuccess: (ann) => {
-      queryClient.invalidateQueries(['announcements']);
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
       setTitle('');
       setContent('');
       setPriority('normal');
@@ -62,7 +62,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       });
     },
     onSuccess: (ann) => {
-      queryClient.invalidateQueries(['announcements']);
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
       setTitle('');
       setContent('');
       toast.success('Announcement scheduled!');

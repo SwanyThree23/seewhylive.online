@@ -354,7 +354,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
         }).catch(() => {});
       }
       toast.success(`Welcome to ${tier.name}! 🎉`);
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
       Promise.allSettled([
         base44.entities.Activity.create({
           user_id: user.id,
@@ -382,7 +382,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
     try {
       await base44.entities.Subscription.update(sub.id, { status: 'cancelled', auto_renew: false });
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
     } catch {
       toast.error('Failed to cancel');
     }

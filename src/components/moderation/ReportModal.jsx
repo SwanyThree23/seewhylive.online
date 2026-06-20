@@ -36,7 +36,7 @@ export default function ReportModal({ isOpen, onClose, reportedUser, roomId, com
     },
     onSuccess: () => {
       toast.success('Report submitted successfully');
-      queryClient.invalidateQueries(['reports']);
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
       onClose();
       setReportType('');
       setDescription('');

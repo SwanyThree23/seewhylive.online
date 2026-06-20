@@ -97,7 +97,7 @@ export default function LoyaltyProgram() {
   const createRewardMutation = useMutation({
     mutationFn: (data) => base44.entities.LoyaltyReward.create(data),
     onSuccess: (reward) => {
-      qc.invalidateQueries(['loyalty-rewards']);
+      qc.invalidateQueries({ queryKey: ['loyalty-rewards'] });
       setShowRewardForm(false);
       toast.success('Reward created!');
       if (user?.id) {
@@ -111,11 +111,11 @@ export default function LoyaltyProgram() {
   });
   const toggleRewardMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
   });
   const deleteRewardMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
   });
 
   const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);

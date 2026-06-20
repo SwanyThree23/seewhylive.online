@@ -26,12 +26,12 @@ function DestRow({ dest, userId }) {
 
   var updateMut = useMutation({
     mutationFn: function(data) { return base44.entities.RTMPDestination.update(dest.id, data); },
-    onSuccess: function() { qc.invalidateQueries(['guest-dests', userId]); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['guest-dests', userId] }); },
   });
 
   var deleteMut = useMutation({
     mutationFn: function() { return base44.entities.RTMPDestination.delete(dest.id); },
-    onSuccess: function() { qc.invalidateQueries(['guest-dests', userId]); toast.success('Removed'); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['guest-dests', userId] }); toast.success('Removed'); },
   });
 
   var validate = async function() {
@@ -122,7 +122,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
   var createMut = useMutation({
     mutationFn: function(data) { return base44.entities.RTMPDestination.create(data); },
     onSuccess: function() {
-      qc.invalidateQueries(['guest-dests', participantUserId]);
+      qc.invalidateQueries({ queryKey: ['guest-dests', participantUserId] });
       setShowAdd(false);
       setLabel('');
       toast.success('Destination added for ' + guestName);

@@ -248,7 +248,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
   useEffect(() => {
     const unsub = base44.entities.LiveAuction.subscribe((event) => {
       if (event.data?.creator_id === creatorId) {
-        qc.invalidateQueries(['live-auctions', creatorId, roomId]);
+        qc.invalidateQueries({ queryKey: ['live-auctions', creatorId, roomId] });
         if (event.type === 'update' && event.data?.status === 'ended') {
           toast.success(`Auction "${event.data.title}" ended — winner: ${event.data.winner_name || 'N/A'}`);
           confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#d4af37', '#fff', '#D4AF37'] });
@@ -260,7 +260,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.LiveAuction.create(data),
-    onSuccess: () => { qc.invalidateQueries(['live-auctions']); setShowCreate(false); toast.success('Auction started!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['live-auctions'] }); setShowCreate(false); toast.success('Auction started!'); },
   });
 
   const bidMutation = useMutation({
@@ -285,8 +285,8 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
       });
     },
     onSuccess: (_, { auction, amount, isBuyout }) => {
-      qc.invalidateQueries(['live-auctions']);
-      qc.invalidateQueries(['auction-bids']);
+      qc.invalidateQueries({ queryKey: ['live-auctions'] });
+      qc.invalidateQueries({ queryKey: ['auction-bids'] });
       toast.success(`Bid of $${amount} placed!`);
       if (currentUser?.id) {
         base44.entities.Activity.create({
@@ -311,7 +311,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         final_amount: auction?.current_bid,
       });
     },
-    onSuccess: () => qc.invalidateQueries(['live-auctions']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['live-auctions'] }),
   });
 
   const handleCreate = () => {

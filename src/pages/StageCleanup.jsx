@@ -74,7 +74,7 @@ export default function StageCleanupPage() {
     onSuccess: (count) => {
       setDeletedCount(prev => prev + count);
       toast.success(`Deleted ${count} ghost stage${count !== 1 ? 's' : ''}.`);
-      qc.invalidateQueries(['all-stages']);
+      qc.invalidateQueries({ queryKey: ['all-stages'] });
     },
     onError: () => toast.error('Cleanup failed. Please try again.'),
   });

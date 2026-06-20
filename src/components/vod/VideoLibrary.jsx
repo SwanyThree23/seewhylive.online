@@ -59,13 +59,13 @@ export default function VideoLibrary({ creatorId }) {
 
   const updateVOD = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['vod-library', creatorId]); toast.success('Saved!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
   });
 
   const createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
     onSuccess: (vod) => {
-      qc.invalidateQueries(['vod-library', creatorId]);
+      qc.invalidateQueries({ queryKey: ['vod-library', creatorId] });
       setShowAdd(false);
       setNewVOD({ title: '', video_url: '', description: '' });
       toast.success('VOD added to library');

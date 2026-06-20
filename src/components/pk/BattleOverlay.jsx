@@ -280,7 +280,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       return base44.entities.PKBattle.update(battle.id, update);
     },
     onSuccess: () => {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       onBattleUpdate?.();
     },
   });
@@ -292,7 +292,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
     base44.entities.PKBattle.update(battle.id, {
       status: 'ended', winner_id: winnerId, winner_name: winnerName, ended_at: new Date().toISOString(),
     }).then(() => {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setEnded(true);
       setShowWinner(true);
     });

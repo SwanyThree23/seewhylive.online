@@ -83,7 +83,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
     },
     onSuccess: (tier) => {
       toast.success(existing ? 'Tier updated!' : 'Tier created!');
-      qc.invalidateQueries(['creatorTiers', creatorId]);
+      qc.invalidateQueries({ queryKey: ['creatorTiers', creatorId] });
       onClose();
       if (!existing && creatorId) {
         base44.entities.Activity.create({

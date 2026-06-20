@@ -55,8 +55,8 @@ export default function VirtualGoodsStore({ userId }) {
     },
     onSuccess: (_, { good }) => {
       toast.success('Item purchased! ✨');
-      queryClient.invalidateQueries(['virtualGoods']);
-      queryClient.invalidateQueries(['userInventory']);
+      queryClient.invalidateQueries({ queryKey: ['virtualGoods'] });
+      queryClient.invalidateQueries({ queryKey: ['userInventory'] });
       if (userId) {
         base44.entities.Activity.create({
           user_id: userId,

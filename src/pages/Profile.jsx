@@ -155,7 +155,7 @@ export default function ProfilePage() {
     mutationFn: async (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile updated!');
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setIsEditing(false);
       if (user?.id) {
         base44.entities.Activity.create({
@@ -186,7 +186,7 @@ export default function ProfilePage() {
     setUploadingAvatar(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     await base44.auth.updateMe({ avatar_url: file_url });
-    queryClient.invalidateQueries(['currentUser']);
+    queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     toast.success('Avatar updated!');
     setUploadingAvatar(false);
   };

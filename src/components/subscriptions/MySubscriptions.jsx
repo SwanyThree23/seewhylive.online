@@ -25,13 +25,13 @@ export default function MySubscriptions({ userId }) {
     mutationFn: (id) => base44.entities.Subscription.update(id, { status: 'cancelled', auto_renew: false }),
     onSuccess: () => {
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['allUserSubs', userId]);
+      qc.invalidateQueries({ queryKey: ['allUserSubs', userId] });
     },
   });
 
   const toggleRenewMutation = useMutation({
     mutationFn: ({ id, auto_renew }) => base44.entities.Subscription.update(id, { auto_renew }),
-    onSuccess: () => qc.invalidateQueries(['allUserSubs', userId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['allUserSubs', userId] }),
   });
 
   if (isLoading) return (

@@ -42,8 +42,8 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       setCustom(false);
       setQuestion('');
       setOptions(['', '', '']);
-      qc.invalidateQueries(['livepoll', roomId]);
-      qc.invalidateQueries(['polls', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
+      qc.invalidateQueries({ queryKey: ['polls', roomId] });
       if (hostId) {
         base44.entities.Activity.create({
           user_id: hostId,
@@ -58,8 +58,8 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => {
       toast.success('Poll ended');
-      qc.invalidateQueries(['livepoll', roomId]);
-      qc.invalidateQueries(['polls', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
+      qc.invalidateQueries({ queryKey: ['polls', roomId] });
     },
   });
 

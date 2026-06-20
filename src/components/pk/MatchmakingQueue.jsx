@@ -78,7 +78,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
       setInQueue(true);
       setMatchingFor(0);
       setMatchedWith(null);
-      qc.invalidateQueries(['pk-queue']);
+      qc.invalidateQueries({ queryKey: ['pk-queue'] });
       intervalRef.current = setInterval(function() {
         setMatchingFor(function(s) { return s + 1; });
       }, 1000);
@@ -96,7 +96,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
       setInQueue(false);
       setMatchingFor(0);
       setMyQueueId(null);
-      qc.invalidateQueries(['pk-queue']);
+      qc.invalidateQueries({ queryKey: ['pk-queue'] });
       toast('Left the matchmaking queue');
     },
   });
@@ -114,7 +114,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
     onSuccess: function(data, opponent) {
       toast.success('Challenged ' + opponent.creator_name + '!');
       if (onMatchFound) { onMatchFound(data); }
-      qc.invalidateQueries(['pk-queue']);
+      qc.invalidateQueries({ queryKey: ['pk-queue'] });
     },
     onError: function(err) { toast.error('Challenge failed: ' + err.message); },
   });

@@ -120,7 +120,7 @@ export default function SettingsPage() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile saved!');
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
   });
 
@@ -131,7 +131,7 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       toast.success('Preferences saved!');
-      queryClient.invalidateQueries(['userPreferences']);
+      queryClient.invalidateQueries({ queryKey: ['userPreferences'] });
     },
   });
 

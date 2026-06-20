@@ -293,7 +293,7 @@ function CreateForm({ userId, onSuccess }) {
       }),
     onSuccess: (template) => {
       toast.success('Template saved!');
-      qc.invalidateQueries(['scene-templates', userId]);
+      qc.invalidateQueries({ queryKey: ['scene-templates', userId] });
       setName('');
       setDesc('');
       setBase('single');
@@ -525,7 +525,7 @@ export default function SceneTemplates() {
     mutationFn: (tpl) => base44.entities.SceneTemplate.delete(tpl.id),
     onSuccess: () => {
       toast.success('Template deleted');
-      qc.invalidateQueries(['scene-templates', user?.id]);
+      qc.invalidateQueries({ queryKey: ['scene-templates', user?.id] });
     },
     onError: () => toast.error('Failed to delete template'),
   });
@@ -534,7 +534,7 @@ export default function SceneTemplates() {
     mutationFn: ({ id, ...fields }) => base44.entities.SceneTemplate.update(id, fields),
     onSuccess: () => {
       toast.success('Template updated');
-      qc.invalidateQueries(['scene-templates', user?.id]);
+      qc.invalidateQueries({ queryKey: ['scene-templates', user?.id] });
       setEditingTpl(null);
     },
     onError: () => toast.error('Failed to update template'),

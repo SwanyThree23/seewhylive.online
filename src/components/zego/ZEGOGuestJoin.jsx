@@ -32,7 +32,7 @@ export default function ZEGOGuestJoin({ roomId, userId, userName, onJoined }) {
     onSuccess: () => {
       setRequestSent(true);
       toast.success('Join request sent to host');
-      qc.invalidateQueries(['participants', roomId]);
+      qc.invalidateQueries({ queryKey: ['participants', roomId] });
       if (userId) {
         base44.entities.Activity.create({
           user_id: userId,

@@ -44,7 +44,7 @@ export default function RewardShopEditor({ creatorId }) {
       toast.success('Reward created!');
       setForm(DEFAULT_FORM);
       setShowForm(false);
-      qc.invalidateQueries(['loyalty-rewards', creatorId]);
+      qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] });
       if (creatorId) {
         base44.entities.Activity.create({
           user_id: creatorId,
@@ -57,12 +57,12 @@ export default function RewardShopEditor({ creatorId }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active: !is_active }),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
   return (

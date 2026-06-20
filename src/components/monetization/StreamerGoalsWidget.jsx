@@ -104,7 +104,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
   useEffect(() => {
     const unsub = base44.entities.StreamerGoal.subscribe((event) => {
       if (event.data?.creator_id === creatorId) {
-        qc.invalidateQueries(['streamer-goals', creatorId, roomId]);
+        qc.invalidateQueries({ queryKey: ['streamer-goals', creatorId, roomId] });
       }
     });
     return unsub;
@@ -113,7 +113,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamerGoal.create(data),
     onSuccess: (goal) => {
-      qc.invalidateQueries(['streamer-goals']);
+      qc.invalidateQueries({ queryKey: ['streamer-goals'] });
       setShowForm(false);
       toast.success('Goal created!');
       if (creatorId) {
@@ -129,12 +129,12 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const updateMutation = useMutation({
     mutationFn: ({ id, amount }) => base44.entities.StreamerGoal.update(id, { current_amount: amount }),
-    onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['streamer-goals'] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.StreamerGoal.delete(id),
-    onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['streamer-goals'] }),
   });
 
   const handleCreate = () => {

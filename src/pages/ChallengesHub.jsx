@@ -213,7 +213,7 @@ export default function ChallengesHubPage() {
       completed: false,
     }),
     onSuccess: (_, challenge) => {
-      qc.invalidateQueries(['ch-mine']);
+      qc.invalidateQueries({ queryKey: ['ch-mine'] });
       toast.success('Joined challenge!');
       if (user?.id) {
         base44.entities.Activity.create({

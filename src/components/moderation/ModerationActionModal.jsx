@@ -25,8 +25,8 @@ export default function ModerationActionModal({ isOpen, onClose, targetUser, roo
     },
     onSuccess: () => {
       toast.success('Moderation action applied');
-      queryClient.invalidateQueries(['moderationActions']);
-      queryClient.invalidateQueries(['participants']);
+      queryClient.invalidateQueries({ queryKey: ['moderationActions'] });
+      queryClient.invalidateQueries({ queryKey: ['participants'] });
       onClose();
       resetForm();
     },

@@ -191,7 +191,7 @@ export default function GuardianAI() {
 
       const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
       toast.success(`Scanned ${scanResults.length} messages — ${violations} flagged`);
-      queryClient.invalidateQueries(['guardian-moderations']);
+      queryClient.invalidateQueries({ queryKey: ['guardian-moderations'] });
     } catch {
       toast.error('Guardian scan failed — try again');
     }

@@ -49,7 +49,7 @@ function DestinationRow({ dest, userId, onRemove }) {
 
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.RTMPDestination.update(dest.id, data),
-    onSuccess: () => qc.invalidateQueries(['guest-rtmp', userId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] }),
   });
 
   const save = () => {
@@ -164,7 +164,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
     onSuccess: () => {
-      qc.invalidateQueries(['guest-rtmp', userId]);
+      qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] });
       setShowAdd(false);
       setLabel('');
       toast.success('Destination added & ready for encryption');
@@ -173,7 +173,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['guest-rtmp', userId]); toast.success('Destination removed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] }); toast.success('Destination removed'); },
   });
 
   const addDestination = () => {

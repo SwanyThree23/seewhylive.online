@@ -155,7 +155,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account connected!');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
       setConnecting(false);
       setStripeId('');
       setBank4('');
@@ -173,7 +173,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account disconnected');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
   });
 
@@ -191,7 +191,7 @@ export default function PayoutsPage() {
     },
     onSuccess: (amount) => {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
   });
 

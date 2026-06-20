@@ -118,7 +118,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
 
       navigator.clipboard.writeText(inviteUrl).catch(() => {});
       toast.success('Invite link created & copied!');
-      qc.invalidateQueries(['guest-invites', roomId || streamId]);
+      qc.invalidateQueries({ queryKey: ['guest-invites', roomId || streamId] });
       setLabel('');
       setCreating(false);
     },
@@ -127,7 +127,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
   const revokeMutation = useMutation({
     mutationFn: (inviteId) => base44.entities.Activity.delete(inviteId),
     onSuccess: () => {
-      qc.invalidateQueries(['guest-invites', roomId || streamId]);
+      qc.invalidateQueries({ queryKey: ['guest-invites', roomId || streamId] });
       toast.success('Invite revoked');
     },
   });

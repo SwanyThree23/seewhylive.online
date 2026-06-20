@@ -83,7 +83,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Message.delete(id),
-    onSuccess: () => qc.invalidateQueries(['chat-messages', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['chat-messages', roomId] }),
   });
 
   const sendMessage = useCallback(() => {

@@ -31,7 +31,7 @@ export default function StreamMetadata({ room, isHost }) {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Room.update(room.id, data),
     onSuccess: () => {
-      qc.invalidateQueries(['room', room.id]);
+      qc.invalidateQueries({ queryKey: ['room', room.id] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     },

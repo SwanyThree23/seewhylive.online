@@ -97,7 +97,7 @@ export default function ViewerDashboard() {
 
   useEffect(() => {
     const unsub = base44.entities.Room.subscribe(() => {
-      qc.invalidateQueries(['all-live-rooms']);
+      qc.invalidateQueries({ queryKey: ['all-live-rooms'] });
     });
     return unsub;
   }, [qc]);
@@ -106,7 +106,7 @@ export default function ViewerDashboard() {
     if (!user) return;
     const unsub = base44.entities.Notification.subscribe((event) => {
       if (event.data?.user_id === user.id) {
-        qc.invalidateQueries(['notifications', user.id]);
+        qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });
     return unsub;
@@ -114,7 +114,7 @@ export default function ViewerDashboard() {
 
   const markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
-    onSuccess: () => qc.invalidateQueries(['notifications']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

@@ -111,7 +111,7 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
       if (!isHost && event.data) {
         onTimeSync(event.data);
       }
-      qc.invalidateQueries(['watchparty', party.id]);
+      qc.invalidateQueries({ queryKey: ['watchparty', party.id] });
     });
     return unsub;
   }, [party?.id, isHost, onTimeSync, qc]);
@@ -495,7 +495,7 @@ export default function WatchPartyPage() {
     if (!partyId) return;
     const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
       if (event.data?.party_id !== partyId) return;
-      qc.invalidateQueries(['watchparty-members', partyId]);
+      qc.invalidateQueries({ queryKey: ['watchparty-members', partyId] });
     });
     return unsub;
   }, [partyId, qc]);
@@ -513,7 +513,7 @@ export default function WatchPartyPage() {
           is_active: true,
         });
         await base44.entities.WatchParty.update(party.id, { participant_count: members.length + 1 });
-        qc.invalidateQueries(['watchparty-members', party.id]);
+        qc.invalidateQueries({ queryKey: ['watchparty-members', party.id] });
       }
     };
     join();
@@ -630,7 +630,7 @@ export default function WatchPartyPage() {
       playback_state: 'paused',
       updated_at_ms: Date.now(),
     });
-    qc.invalidateQueries(['watchparty', partyId]);
+    qc.invalidateQueries({ queryKey: ['watchparty', partyId] });
     toast.success('Video changed!');
   };
 

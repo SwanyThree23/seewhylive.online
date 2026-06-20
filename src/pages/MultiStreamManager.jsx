@@ -98,7 +98,7 @@ export default function MultiStreamManager() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
     onSuccess: (dest) => {
-      qc.invalidateQueries(['rtmp-destinations']);
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
       setShowAddForm(false);
       setNewLabel('');
       toast.success('Destination added');
@@ -114,12 +114,12 @@ export default function MultiStreamManager() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
-    onSuccess: () => qc.invalidateQueries(['rtmp-destinations']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); toast.success('Destination removed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
   });
 
   const testConnection = async (dest) => {
@@ -154,14 +154,14 @@ export default function MultiStreamManager() {
     await new Promise(r => setTimeout(r, 2000));
     await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
     toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
-    qc.invalidateQueries(['rtmp-destinations']);
+    qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
   };
 
   const stopAllFanout = async () => {
     const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
     await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
     toast.success('All streams stopped');
-    qc.invalidateQueries(['rtmp-destinations']);
+    qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
   };
 
   const addDestination = () => {

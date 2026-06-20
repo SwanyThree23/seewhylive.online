@@ -50,7 +50,7 @@ export default function RewardShop({ creatorId, roomId, currentUser }) {
       setRedeeming(null);
       setMessageInput('');
       setShowMessage(null);
-      qc.invalidateQueries(['viewer-loyalty', currentUser?.id, creatorId]);
+      qc.invalidateQueries({ queryKey: ['viewer-loyalty', currentUser?.id, creatorId] });
       if (currentUser?.id) {
         base44.entities.Activity.create({
           user_id: currentUser.id,

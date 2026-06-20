@@ -177,7 +177,7 @@ export default function OverlayBuilderPage() {
       return base44.entities.OverlayLayout.create(data);
     },
     onSuccess: (result) => {
-      qc.invalidateQueries(['overlay-layouts']);
+      qc.invalidateQueries({ queryKey: ['overlay-layouts'] });
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
       if (user?.id) {
@@ -193,7 +193,7 @@ export default function OverlayBuilderPage() {
     mutationFn: async (id) => {
       await Promise.all(layouts.map(l => base44.entities.OverlayLayout.update(l.id, { is_active: l.id === id })));
     },
-    onSuccess: () => qc.invalidateQueries(['overlay-layouts']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['overlay-layouts'] }),
   });
 
   const addElement = (type) => {
