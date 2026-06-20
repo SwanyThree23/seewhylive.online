@@ -62,6 +62,9 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import WebSourceOverlay from '../components/streaming/WebSourceOverlay';
+import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
+import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
+import WebSourceOverlayV49 from '../components/streaming/WebSourceOverlayV49';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import AudioMixer from '../components/live/AudioMixer';
@@ -266,17 +269,25 @@ function OctAvatarThumb({ name, stream, size = 36 }) {
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
 function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   const camRef = useRef(null);
+  const pipRef = useRef(null);
   const screenRef = useRef(null);
-  useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
-  useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+  useEffect(() => {
+    if (camRef.current) camRef.current.srcObject = localStream || null;
+    if (pipRef.current) pipRef.current.srcObject = localStream || null;
+  }, [localStream]);
+  useEffect(() => {
+    if (screenRef.current) screenRef.current.srcObject = screenStream || null;
+  }, [screenStream]);
   const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {screenStream ? (
-        <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
-      ) : localStream && videoEnabled ? (
-        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-      ) : (
+      {/* Screen share — always mounted */}
+      <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain"
+        style={{ display: screenStream ? 'block' : 'none' }} />
+      {/* Camera — always mounted */}
+      <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover"
+        style={{ display: !screenStream && localStream && videoEnabled ? 'block' : 'none' }} />
+      {!screenStream && !(localStream && videoEnabled) && (
         <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
           <VideoOff className="w-12 h-12" />
           <span className="text-xs">Camera off</span>
@@ -287,12 +298,12 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
-      {/* PIP camera (octagonal) when screen sharing */}
+      {/* PIP camera (octagonal) when screen sharing — uses separate pipRef */}
       {screenStream && localStream && videoEnabled && (
         <div className="absolute bottom-2 right-2" style={{ width: 80, height: 80 }}>
           <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.5)' }} />
           <div style={{ position: 'absolute', inset: 2, clipPath: oct, overflow: 'hidden' }}>
-            <video ref={camRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <video ref={pipRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </div>
       )}
@@ -393,7 +404,7 @@ export default function BroadcastStudio() {
   const partyId = searchParams.get('id');
   const qc = useQueryClient();
 
-  const [studioMode, setStudioMode] = useState('hybrid');
+  const [studioMode, setStudioMode] = useState(searchParams.get('mode') || 'hybrid');
   const [activeTab, setActiveTab] = useState('chat');
   const [leftOpen, setLeftOpen] = useState(true);
   const [theaterMode, setTheaterMode] = useState(false);
@@ -1575,7 +1586,18 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Web Overlays + RTMP Fanout + Ingest */}
                 {isHost && (
                   <div className="space-y-3 p-3 rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(8,11,24,0.5)' }}>
-                    <WebSourceOverlay isStreamActive={party?.status === 'live'} />
+                    <WebSourceOverlayV49 />
+                    <div className="pt-2 border-t border-white/5">
+                      <WebSourceOverlay isStreamActive={party?.status === 'live'} />
+                    </div>
+                    <div className="pt-2 border-t border-white/5">
+                      <RTMPFanoutPanelV49
+                        streamKey={partyId || ''}
+                        rtmpIngest="rtmp://76.13.31.91:1935/live/"
+                        onFanoutStart={(cfg) => toast.success(`Fanout live on ${Object.values(cfg.enabled || {}).filter(Boolean).length} platforms`)}
+                        onFanoutStop={() => toast('Fanout stopped')}
+                      />
+                    </div>
                     <div className="pt-2 border-t border-white/5">
                       <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
                     </div>
@@ -1749,12 +1771,35 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
+                {/* V49 enhanced guest invite — UUID links with role/scene selectors */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)', background: 'rgba(8,11,24,0.5)' }}>
+                    <GuestInviteGeneratorV49 roomId={partyId} maxGuests={20} />
+                  </div>
+                )}
                 <GuestInviteGenerator roomId={partyId} isHost={isHost} />
                 {members[0]?.user_id && (
                   <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
                 )}
+                {/* V49 enhanced RTMP fanout — 12 platforms, real RTMP base URLs */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden p-3" style={{ border: '1px solid rgba(128,0,32,0.3)', background: 'rgba(8,11,24,0.5)' }}>
+                    <RTMPFanoutPanelV49
+                      streamKey={partyId || ''}
+                      rtmpIngest="rtmp://76.13.31.91:1935/live/"
+                      onFanoutStart={(cfg) => toast.success(`Fanout started to ${Object.values(cfg.enabled || {}).filter(Boolean).length} platforms`)}
+                      onFanoutStop={() => toast('Fanout stopped')}
+                    />
+                  </div>
+                )}
                 <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
                 <RTMPIngestPanel roomId={partyId} />
+                {/* V49 web source overlay manager */}
+                {isHost && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(0,191,255,0.15)', background: 'rgba(8,11,24,0.5)' }}>
+                    <WebSourceOverlayV49 />
+                  </div>
+                )}
                 <WebSourceOverlay isStreamActive={party?.status === 'live'} />
               </div>
             )}

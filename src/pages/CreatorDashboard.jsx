@@ -6,7 +6,7 @@ import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Use
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -37,7 +37,8 @@ function fmtDuration(seconds) {
 }
 
 export default function CreatorDashboardPage() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [timeRange, setTimeRange] = useState('7d');
 
   const { data: user } = useQuery({
@@ -69,14 +70,14 @@ export default function CreatorDashboardPage() {
 
   const { data: recentTips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
-    queryFn: () => base44.entities.Tip.list('-created_date', 10),
+    queryFn: () => base44.entities.TipAlert.list('-created_date', 10),
     enabled: !!user?.id,
   });
 
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const tipsThisWeek = recentTips
     .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .reduce((sum, t) => sum + (t.amount_usd || 0), 0);
 
   const quickActions = [
     {

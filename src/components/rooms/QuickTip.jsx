@@ -16,17 +16,18 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
     mutationFn: async (amount) => {
       // Create transaction
       const transaction = await base44.entities.Transaction.create({
-        from_user_id: (await base44.auth.me()).id,
-        to_user_id: recipientId,
-        type: 'tip',
-        amount: amount,
+        sender_id: (await base44.auth.me()).id,
+        recipient_id: recipientId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(amount * 90) / 100,
+        platform_cut: amount - Math.floor(amount * 90) / 100,
         status: 'completed',
         description: `Tip to ${recipientName}`,
       });
 
       // Update loyalty points
       const loyaltyRecords = await base44.entities.ViewerLoyalty.filter({
-        user_id: transaction.from_user_id,
+        user_id: transaction.sender_id,
         creator_id: recipientId,
       });
 
@@ -41,7 +42,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
         });
       } else {
         await base44.entities.ViewerLoyalty.create({
-          user_id: transaction.from_user_id,
+          user_id: transaction.sender_id,
           creator_id: recipientId,
           loyalty_points: pointsEarned,
           total_tips_sent: amount,
@@ -53,9 +54,9 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       const me = await base44.auth.me();
       await base44.entities.Notification.create({
         user_id: recipientId,
-        type: 'tip',
+        transaction_type: 'direct_support',
         title: `💰 New tip from ${me.full_name || me.email}!`,
-        message: `You received a $${transaction.amount} tip! +${pointsEarned} loyalty points earned for the tipper.`,
+        message: `You received a $${amount} tip! +${pointsEarned} loyalty points earned for the tipper.`,
         sender_id: me.id,
       });
 
@@ -90,7 +91,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
         origin: { y: 0.6 }
       });
 
-      toast.success(`Tipped $${transaction.amount}! +${pointsEarned} loyalty points 🎉`);
+      toast.success(`Tipped $${amount}! +${pointsEarned} loyalty points 🎉`);
       setSelectedAmount(null);
       onTipSent?.();
     },

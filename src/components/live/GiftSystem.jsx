@@ -102,7 +102,7 @@ export function GiftLeaderboard({ roomId }) {
   var leaders = Object.values(
     transactions.reduce((acc, t) => {
       if (!acc[t.sender_id]) acc[t.sender_id] = { name: t.sender_name || t.sender_id, gems: 0 };
-      acc[t.sender_id].gems += t.amount || 0;
+      acc[t.sender_id].gems += (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b.gems - a.gems).slice(0, 5);
@@ -143,13 +143,13 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: Math.floor(gift.price * 0.1), creator_payout: Math.floor(gift.price * 0.09), platform_cut: Math.floor(gift.price * 0.1) - Math.floor(gift.price * 0.09),
-        transaction_type: "direct_support", status: "completed",
+        amount: gift.price, creator_payout: Math.floor(gift.price * 90) / 100, platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
+        transaction_type: "direct_support", status: "completed", processed_at: new Date().toISOString(),
       }),
       base44.entities.TipAlert.create({
         creator_id: hostId, room_id: roomId,
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
-        amount_usd: Math.floor(gift.price * 0.1), message: "Sent " + (gift.name || gift.id),
+        amount_usd: gift.price, message: "Sent " + (gift.name || gift.id),
         animation_type: gift.rarity === "legendary" ? "fireworks" : gift.rarity === "epic" ? "confetti" : "slide_in",
         is_displayed: false,
       }),

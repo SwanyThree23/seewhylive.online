@@ -14,18 +14,20 @@ export default function MonetizationDashboard({ roomId }) {
       try {
         const [transactions, tips] = await Promise.all([
           base44.entities.Transaction.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
-          base44.entities.Tip.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
+          base44.entities.TipAlert.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
         ]);
-        const grossCents = [...transactions, ...tips].reduce((s, t) => s + (t.amount || 0), 0);
-        const creatorCents = Math.floor(grossCents * 0.90);
-        const platformCents = grossCents - creatorCents;
+        const txnGross = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+        const tipGross = tips.reduce((s, t) => s + (t.amount_usd || 0), 0);
+        const gross = txnGross + tipGross;
+        const creatorEarnings = Math.floor(gross * 90) / 100;
+        const platformCut = gross - creatorEarnings;
         setAnalytics({
-          total_revenue: grossCents / 100,
-          platform_cut: platformCents / 100,
-          creator_earnings: creatorCents / 100,
+          total_revenue: gross,
+          platform_cut: platformCut,
+          creator_earnings: creatorEarnings,
           total_transactions: transactions.length,
           total_paywall_conversions: 0,
-          net_creator_payout: creatorCents / 100,
+          net_creator_payout: creatorEarnings,
         });
       } catch {}
       setLoading(false);

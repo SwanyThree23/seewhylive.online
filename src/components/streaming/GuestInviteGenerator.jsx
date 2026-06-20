@@ -176,6 +176,7 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
   const createInvite = useCallback(() => {
     if (!roomId) { toast.error('No room selected'); return; }
     const expiryMs = EXPIRY_OPTIONS[expiryIdx].ms;
+    const code = 'SWY-' + makeid(8).toUpperCase();
     const invite = {
       id: `inv_${Date.now()}`,
       room_id: roomId,
@@ -189,9 +190,16 @@ export default function GuestInviteGenerator({ roomId, isHost }) {
     setLabel('');
     setShowForm(false);
     toast.success('Invite link created');
-    // Persist to room entity as metadata if possible
-    base44.entities.Room.update(roomId, {
-      guest_invites: [...(room?.guest_invites || []), invite],
+    // Persist to InviteLink entity for proper tracking
+    base44.entities.InviteLink?.create({
+      code,
+      role: role === 'guest' ? 'viewer' : role,
+      label: label.trim() || `Guest ${role}`,
+      room_id: roomId,
+      max_uses: 1,
+      uses: 0,
+      expires_at: expiryMs ? new Date(Date.now() + expiryMs).toISOString() : null,
+      created_at: new Date().toISOString(),
     }).catch(() => {});
   }, [roomId, label, role, expiryIdx, room]);
 

@@ -45,15 +45,15 @@ const GIFTS = [
 
 function OctCamTile({ stream, label, isLocal }) {
   const ref = useRef(null);
-  useEffect(() => { if (ref.current && stream) ref.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (ref.current) ref.current.srcObject = stream || null; }, [stream]);
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />
       <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: '#080B18' }}>
-        {stream ? (
-          <video ref={ref} autoPlay playsInline muted={isLocal}
-            className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
-        ) : (
+        <video ref={ref} autoPlay playsInline muted={isLocal}
+          className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+          style={{ display: stream ? 'block' : 'none' }} />
+        {!stream && (
           <div className="w-full h-full flex items-center justify-center text-white/30 text-[10px]">
             {label?.charAt(0)?.toUpperCase()}
           </div>

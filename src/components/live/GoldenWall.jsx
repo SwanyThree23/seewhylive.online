@@ -74,16 +74,17 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
       if (event.type !== 'create') return;
       const t = event.data;
       if (t.room_id !== roomId) return;
-      if (!['tip', 'gift', 'super_chat'].includes(t.type)) return;
+      if (!['tip', 'gift', 'super_chat'].includes(t.transaction_type)) return;
+      const gross = (t.creator_payout || 0) + (t.platform_cut || 0);
 
       setWallItems(prev => [{
         id: event.id || Date.now(),
         user_name: t.sender_name || 'Anonymous',
-        amount: t.amount || 0,
+        amount: gross,
         message: t.message || t.note,
-        type: t.type,
+        type: t.transaction_type,
         gift_type: t.gift_type,
-        is_super_chat: t.type === 'super_chat' || t.amount >= 25,
+        is_super_chat: t.transaction_type === 'super_chat' || gross >= 25,
       }, ...prev].slice(0, 20));
     });
     return unsub;
@@ -99,16 +100,19 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
         10
       );
       const items = txns
-        .filter(t => ['tip', 'gift', 'super_chat'].includes(t.type))
-        .map(t => ({
+        .filter(t => ['tip', 'gift', 'super_chat'].includes(t.transaction_type))
+        .map(t => {
+          const gross = (t.creator_payout || 0) + (t.platform_cut || 0);
+          return {
           id: t.id,
           user_name: t.sender_name || 'Anonymous',
-          amount: t.amount || 0,
+          amount: gross,
           message: t.message || t.note,
-          type: t.type,
+          type: t.transaction_type,
           gift_type: t.gift_type,
-          is_super_chat: t.type === 'super_chat' || t.amount >= 25,
-        }));
+          is_super_chat: t.transaction_type === 'super_chat' || gross >= 25,
+          };
+        });
       setWallItems(items);
       return items;
     },

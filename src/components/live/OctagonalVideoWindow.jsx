@@ -74,16 +74,17 @@ export default function OctagonalVideoWindow({
           background: 'linear-gradient(145deg, rgba(30,15,30,0.97), rgba(8,11,24,0.97))',
         }}
       >
-        {/* Video or avatar */}
-        {hasVideo ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isLocal || isMuted}
-            className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
-          />
-        ) : (
+        {/* Video — always mounted; shown when hasVideo is true */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={isLocal || isMuted}
+          className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+          style={{ display: hasVideo ? 'block' : 'none' }}
+        />
+        {/* Avatar fallback — shown when no video */}
+        {!hasVideo && (
           <div className="absolute inset-0 flex flex-col items-center justify-center"
             style={{ background: `radial-gradient(circle, ${avatarColor(displayName)}22 0%, transparent 70%)` }}>
             {avatarUrl ? (

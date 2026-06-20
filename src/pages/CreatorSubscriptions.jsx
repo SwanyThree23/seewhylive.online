@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';
@@ -541,8 +541,8 @@ function MySubscriptionsView({ user }) {
 }
 
 export default function CreatorSubscriptionsPage() {
-  const urlParams  = new URLSearchParams(window.location.search);
-  const creatorParam = urlParams.get('creator');
+  const [searchParams] = useSearchParams();
+  const creatorParam = searchParams.get('creator');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const isCreator = !creatorParam && (user?.role === 'admin' || user?.role === 'creator' || true);

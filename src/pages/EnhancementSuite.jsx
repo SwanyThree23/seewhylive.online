@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
@@ -482,7 +483,8 @@ export default function EnhancementSuite() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [activeTab, setActiveTab] = useState("emoji");
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
@@ -504,7 +506,7 @@ export default function EnhancementSuite() {
 
   const { data: clips = [] } = useQuery({
     queryKey: ['enhancement-clips'],
-    queryFn: () => base44.entities.Clip.list('-created_date', 12),
+    queryFn: () => base44.entities.StreamClip.list('-created_date', 12),
   });
 
   const { data: recentMessages = [] } = useQuery({

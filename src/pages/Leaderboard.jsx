@@ -202,8 +202,9 @@ export default function LeaderboardPage() {
 
   // Revenue leaderboard: aggregate by creator
   const revenueByCreator = transactions.reduce((acc, t) => {
-    if (!t.to_user_id) return acc;
-    acc[t.to_user_id] = (acc[t.to_user_id] || 0) + (t.amount || 0);
+    const key = t.recipient_id || t.to_user_id;
+    if (!key) return acc;
+    acc[key] = (acc[key] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
 

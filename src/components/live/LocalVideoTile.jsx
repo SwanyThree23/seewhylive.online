@@ -8,9 +8,9 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = stream || null;
   }, [stream]);
 
   return (
@@ -19,15 +19,15 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
       border: '3px solid #d4af37',
       boxShadow: '0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)'
     }}>
-      {stream && videoEnabled ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-full object-cover scale-x-[-1]"
-        />
-      ) : (
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="w-full h-full object-cover scale-x-[-1]"
+        style={{ display: stream && videoEnabled ? 'block' : 'none' }}
+      />
+      {!(stream && videoEnabled) && (
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-3xl font-bold text-white">
             {userName?.charAt(0)?.toUpperCase()}

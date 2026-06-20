@@ -86,12 +86,11 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
           flexShrink: 0,
           position: 'relative',
         }}>
-        {/* Video feed or avatar */}
-        {hasVideo ? (
-          <video ref={videoRef} autoPlay playsInline muted={isLocal}
-            className="w-full h-full object-cover"
-            style={{ transform: isLocal ? 'scaleX(-1)' : 'none' }} />
-        ) : (
+        {/* Video feed — always mounted; avatar shown when no video */}
+        <video ref={videoRef} autoPlay playsInline muted={isLocal}
+          className="w-full h-full object-cover"
+          style={{ transform: isLocal ? 'scaleX(-1)' : 'none', display: hasVideo ? 'block' : 'none' }} />
+        {!hasVideo && (
           <div className="w-full h-full flex items-center justify-center"
             style={{ background: `linear-gradient(145deg, ${CRIMSON}44, #080B18)` }}>
             {participant?.user_avatar ? (

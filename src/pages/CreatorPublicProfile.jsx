@@ -11,7 +11,7 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Radio, Users, DollarSign, Clock, Star,
@@ -174,9 +174,9 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  var urlParams = new URLSearchParams(window.location.search);
-  var creatorId = urlParams.get("id");
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
+  var creatorId = searchParams.get("id");
   var navigate = useNavigate();
 
   var { data: currentUser } = useQuery({

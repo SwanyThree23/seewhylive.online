@@ -32,7 +32,7 @@ export default function VideoShortRecorder({ roomId, creatorId }) {
   const handlePublish = async () => {
     setPublishing(true);
     try {
-      const result = await base44.entities.VideoShort.create({
+      const result = await base44.entities.VODVideo.create({
         room_id: roomId,
         creator_id: creatorId,
         title: videoTitle || 'Untitled Short',

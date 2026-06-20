@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -48,8 +49,8 @@ function ChartCard({ title, icon: Icon, children, height = 'h-64', colSpan = '' 
 }
 
 export default function StreamAnalytics() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const [mode, setMode] = useState('post');
 
@@ -68,7 +69,7 @@ export default function StreamAnalytics() {
 
   const { data: tipTransactions = [] } = useQuery({
     queryKey: ['tip-transactions', user?.id, roomId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id, type: 'tip' }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id, transaction_type: 'tip' }, '-created_date', 100),
     enabled: !!user?.id,
   });
 
@@ -80,7 +81,7 @@ export default function StreamAnalytics() {
 
   const tipData = tipTransactions.map((t, i) => ({
     time: i * 4,
-    amount: t.amount || 0,
+    amount: (t.creator_payout || 0) + (t.platform_cut || 0),
     event: t.metadata?.event || null,
   }));
 
@@ -106,7 +107,7 @@ export default function StreamAnalytics() {
       `Average Viewers: ${avgViewers}`,
       `Total Tips: $${totalTips.toFixed(2)}`,
       `Total Messages: ${totalMessages}`,
-      `Creator Revenue (90%): $${(totalTips * 0.9).toFixed(2)}`,
+      `Creator Revenue (90%): $${(Math.floor(totalTips * 90) / 100).toFixed(2)}`,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -168,7 +169,7 @@ export default function StreamAnalytics() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Peak Viewers',  value: peakViewers, sub: `Avg: ${avgViewers}`,                                    color: CYAN,     icon: Users },
-            { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(totalTips * 0.9).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
+            { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(Math.floor(totalTips * 90) / 100).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
             { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#D4AF37', icon: MessageSquare },
             { label: 'Engagement',    value: `${Math.round(((totalMessages + tipData.length) / Math.max(avgViewers, 1)) * 100)}%`, sub: 'vs. 12% avg', color: GREEN, icon: TrendingUp },
           ].map((kpi, i) => (

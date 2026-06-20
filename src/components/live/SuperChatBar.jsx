@@ -33,18 +33,28 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
     mutationFn: async (data) => {
       // Create transaction record
       await base44.entities.Transaction.create({
-        type: data.type,
-        amount: data.amount,
-        from_user_id: currentUser?.id,
-        to_user_id: recipientId,
+        sender_id: currentUser?.id,
+        recipient_id: recipientId,
         room_id: roomId,
-        sender_name: currentUser?.full_name || 'Anonymous',
-        message: data.message,
-        gift_type: data.giftType,
+        creator_payout: Math.floor(data.amount * 90) / 100,
+        platform_cut: data.amount - Math.floor(data.amount * 90) / 100,
+        transaction_type: 'direct_support',
         status: 'completed',
-        creator_amount: Math.floor(data.amount  * 90) / 100,
-        platform_fee: data.amount - Math.floor(data.amount  * 90) / 100,
+        processed_at: new Date().toISOString(),
       });
+
+      // Track gem transactions for gift types
+      if (data.type === 'gift' && data.giftType) {
+        const gemTypeMap = { diamond: 'diamond', crown: 'gold', lightning: 'diamond', fire: 'ruby', heart: 'ruby', rose: 'gold' };
+        base44.entities.GemTransaction?.create({
+          sender_id: currentUser?.id,
+          recipient_id: recipientId,
+          stream_id: roomId,
+          gem_type: gemTypeMap[data.giftType] || 'gold',
+          quantity: 1,
+          usd_value: data.amount,
+        }).catch(() => {});
+      }
 
       // Post message to chat
       await base44.entities.Message.create({

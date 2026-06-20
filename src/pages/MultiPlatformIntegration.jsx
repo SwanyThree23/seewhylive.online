@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
@@ -115,7 +115,8 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');

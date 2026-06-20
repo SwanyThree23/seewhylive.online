@@ -64,7 +64,7 @@ export default function MilestoneAlerts({ creatorId }) {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['milestone-txns', creatorId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: creatorId }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: creatorId }),
     enabled: !!creatorId,
     refetchInterval: 60000,
   });
@@ -73,7 +73,7 @@ export default function MilestoneAlerts({ creatorId }) {
     const counts = {
       subscribers: subscriptions.length,
       rooms: rooms.length,
-      revenue: transactions.reduce((s, t) => s + (t.amount || 0), 0),
+      revenue: transactions.reduce((s, t) => s + (t.creator_payout || t.amount || 0), 0),
     };
 
     const newMilestones = [];

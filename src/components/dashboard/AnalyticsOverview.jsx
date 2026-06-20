@@ -28,7 +28,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['creatorTips', creatorId, timeRange],
-    queryFn: () => base44.entities.Tip.filter({ creator_id: creatorId }, '-created_date', 50),
+    queryFn: () => base44.entities.TipAlert.filter({ creator_id: creatorId }, '-created_date', 50),
     enabled: !!creatorId,
   });
 
@@ -41,7 +41,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
   const stats = {
     totalViewers: analytics?.reduce((sum, a) => sum + (a.total_viewers || 0), 0) || 0,
     avgViewers: analytics?.length ? Math.round(analytics.reduce((sum, a) => sum + (a.viewer_count || 0), 0) / analytics.length) : 0,
-    totalRevenue: (tips.reduce((s, t) => s + (t.amount || 0), 0) + subs.reduce((s, sub) => s + (sub.amount || 0), 0)).toFixed(2),
+    totalRevenue: (tips.reduce((s, t) => s + (t.amount_usd || 0), 0) + subs.reduce((s, sub) => s + (sub.amount || 0), 0)).toFixed(2),
     avgEngagement: analytics?.length ? Math.round(analytics.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) / analytics.length) : 0,
   };
 
@@ -60,7 +60,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
   const earningsData = buckets.map(date => {
     const dayTips = tips.filter(t => new Date(t.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
     const daySubs = subs.filter(s => new Date(s.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
-    const tipTotal = dayTips.reduce((s, t) => s + (t.amount || 0), 0);
+    const tipTotal = dayTips.reduce((s, t) => s + (t.amount_usd || 0), 0);
     const subTotal = daySubs.reduce((s, sub) => s + (sub.amount || 0), 0);
     return { date, tips: +tipTotal.toFixed(2), subs: +subTotal.toFixed(2), total: +(tipTotal + subTotal).toFixed(2) };
   });

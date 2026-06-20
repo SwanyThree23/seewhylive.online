@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, Wifi, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
@@ -25,9 +25,9 @@ const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function GuestJoin() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('room') || urlParams.get('id');
-  const inviteToken = urlParams.get('token');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room') || searchParams.get('id');
+  const inviteToken = searchParams.get('token');
 
   // If arriving via invite link, show the enhanced landing panel
   if (inviteToken) {
@@ -91,7 +91,7 @@ export default function GuestJoin() {
         role: 'guest',
         status: 'waiting',
         is_audio_enabled: true,
-        is_video_enabled: false,
+        is_video_enabled: true,
         is_streaming: false,
       });
     },

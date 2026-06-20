@@ -4,6 +4,8 @@
  * Earth-tone palette only — no forbidden colors
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
@@ -1265,6 +1267,8 @@ export default function SeeWhyLIVEv37() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [activeTab, setActiveTab] = useState('stage');
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   const panelMap = {
     stage:     <StagePanel />,
@@ -1343,7 +1347,7 @@ export default function SeeWhyLIVEv37() {
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}
-        <OnlineUsersGrid compact maxVisible={10} />
+        <OnlineUsersGrid compact maxVisible={10} roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} />
         <ContentRecommendations />
         <MilestoneAlerts userId={user?.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />

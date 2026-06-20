@@ -149,7 +149,7 @@ export default function TournamentBracket({ hostId }) {
     // Persist to backend
     setSaving(true);
     var tourneyId = 'tourney_' + Date.now();
-    base44.entities.Tournament?.create({
+    base44.entities.TournamentBracket?.create({
       id: tourneyId,
       name: tournamentName,
       host_id: hostId,

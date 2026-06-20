@@ -4,7 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import PageNotFound from './lib/PageNotFound';
 import Greenroom from './pages/Greenroom';
@@ -176,6 +176,17 @@ const AuthenticatedApp = () => {
 
 
 function App() {
+  useEffect(function() {
+    var style = document.createElement('style');
+    style.textContent = [
+      ':focus-visible { outline: 2px solid #D4AF37 !important; outline-offset: 2px !important; }',
+      ':focus:not(:focus-visible) { outline: none !important; }',
+      '* { -webkit-tap-highlight-color: transparent; }',
+      'body { color-scheme: dark; overscroll-behavior-y: contain; }',
+      'button, [role="button"] { cursor: pointer; }',
+    ].join('\n');
+    document.head.appendChild(style);
+  }, []);
 
   return (
     <ErrorBoundary>

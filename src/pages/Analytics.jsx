@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RevenueDashboard from '../components/monetization/RevenueDashboard';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
@@ -67,7 +67,8 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['analyticsRooms', user?.id],
@@ -76,7 +77,7 @@ export default function AnalyticsPage() {
   });
   const { data: transactions = [] } = useQuery({
     queryKey: ['analyticsTransactions', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user,
   });
   const { data: subscriptions = [] } = useQuery({
@@ -95,7 +96,7 @@ export default function AnalyticsPage() {
   });
 
   const totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
   const liveRooms = rooms.filter(r => r.status === 'live').length;
@@ -105,7 +106,7 @@ export default function AnalyticsPage() {
 
   const revenueByMonth = transactions.reduce((acc, t) => {
     const month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[month] = (acc[month] || 0) + (t.amount || 0);
+    acc[month] = (acc[month] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));

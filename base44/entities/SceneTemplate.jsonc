@@ -1,0 +1,39 @@
+{
+  "name": "SceneTemplate",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "layout": {
+      "type": "string",
+      "description": "JSON string describing the scene layout"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["interview", "gaming", "music", "talk_show", "event", "custom"],
+      "default": "custom"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": false
+    },
+    "use_count": {
+      "type": "number",
+      "default": 0
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

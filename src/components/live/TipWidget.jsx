@@ -162,14 +162,13 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
       const amt = rawAmount;
       await base44.entities.Transaction.create({
         room_id: roomId,
-        type: 'tip',
-        amount: amt,
-        creator_amount: Math.floor(amt * 90) / 100,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(amt * 90) / 100,
         platform_fee: amt - Math.floor(amt * 90) / 100,
-        from_user_id: currentUser.id,
+        sender_id: currentUser.id,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
-        to_user_id: resolvedHostId,
+        recipient_id: resolvedHostId,
         status: 'completed',
         message: message,
         emoji: selectedEmoji,

@@ -106,7 +106,7 @@ function OverviewTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useQuery({
@@ -122,7 +122,7 @@ function OverviewTab({ user }) {
     const total = txns.filter(t => {
       const td = new Date(t.created_date);
       return td.toDateString() === d.toDateString();
-    }).reduce((s, t) => s + (t.creator_amount || 0), 0);
+    }).reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
     return { label, total };
   });
 
@@ -760,7 +760,7 @@ function MonetizationTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: goals = [] } = useQuery({
@@ -774,9 +774,9 @@ function MonetizationTab({ user }) {
     onSuccess: () => qc.invalidateQueries(['db-tiers']),
   });
 
-  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
   const total = tipTotal + subTotal + giftTotal;
   const creatorShare = Math.floor(total * 90) / 100;
   const platformShare = total - creatorShare;

@@ -93,8 +93,8 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
   }, []);
 
   useEffect(() => {
+    if (videoRef.current) videoRef.current.srcObject = localStream || null;
     if (!localStream) return;
-    if (videoRef.current) videoRef.current.srcObject = localStream;
     localStream.getAudioTracks().forEach(t => { t.enabled = audioEnabled; });
     localStream.getVideoTracks().forEach(t => { t.enabled = videoEnabled; });
   }, [localStream, audioEnabled, videoEnabled]);
@@ -149,9 +149,9 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
       {/* Camera preview */}
       <div className="relative w-48 h-48">
         <div style={{ clipPath: OCT, width: '100%', height: '100%', background: 'linear-gradient(135deg, #400010, #1a0008)', overflow: 'hidden', border: `2px solid ${GOLD}` }}>
-          {videoEnabled && localStream ? (
-            <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
+          {/* Always-mounted video — ref valid before stream arrives */}
+          <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: (videoEnabled && localStream) ? 'block' : 'none' }} />
+          {!(videoEnabled && localStream) && (
             <div className="w-full h-full flex items-center justify-center">
               <Camera className="w-10 h-10 text-white/20" />
             </div>

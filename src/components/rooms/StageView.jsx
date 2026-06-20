@@ -98,9 +98,9 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && localStream) {
-      videoRef.current.srcObject = localStream;
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = localStream || null;
   }, [localStream]);
 
   const getRoleColor = (role) => {
@@ -126,17 +126,16 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
         aspectRatio: '4/3',
         boxShadow: `0 0 30px ${getRoleColor(participant?.role)}66, inset 0 0 20px ${getRoleColor(participant?.role)}33`
       }}>
-        {/* Video feed */}
-        {localStream && videoEnabled ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(-1)' }}
-          />
-        ) : (
+        {/* Video feed — always mounted */}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ transform: 'scaleX(-1)', display: localStream && videoEnabled ? 'block' : 'none' }}
+        />
+        {!(localStream && videoEnabled) && (
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #800020, #d4af37)' }}>
@@ -194,7 +193,9 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
     : 'rgba(255,255,255,0.2)';
 
   useEffect(() => {
-    if (videoRef.current && remoteStream) videoRef.current.srcObject = remoteStream;
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = remoteStream || null;
   }, [remoteStream]);
 
   return (
@@ -214,16 +215,21 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
         {/* Inner shell */}
         <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: 'linear-gradient(145deg, #1A0828, #080B18)' }}>
-          {hasVideo ? (
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-          ) : participant.user_avatar ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ display: hasVideo ? 'block' : 'none' }}
+          />
+          {!hasVideo && (participant.user_avatar ? (
             <img src={participant.user_avatar} alt={participant.user_name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black text-white"
               style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
               {participant.user_name?.charAt(0)?.toUpperCase()}
             </div>
-          )}
+          ))}
         </div>
         {/* Muted badge */}
         {!participant.is_audio_enabled && (

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Radio, Swords, Tv2, Mic2,
@@ -157,39 +157,52 @@ function FormatCard({ fmt, onSelect }) {
 
 function CameraPreview({ onStreamReady }) {
   const videoRef = useRef(null);
+  const streamRef = useRef(null);
   const [stream,  setStream]  = useState(null);
   const [camOn,   setCamOn]   = useState(false);
   const [micOn,   setMicOn]   = useState(true);
   const [error,   setError]   = useState(null);
 
+  useEffect(() => { if (videoRef.current) videoRef.current.srcObject = stream || null; }, [stream]);
+
   const start = useCallback(async () => {
     setError(null);
     try {
       const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      streamRef.current = s;
       setStream(s);
       setCamOn(true);
-      if (videoRef.current) videoRef.current.srcObject = s;
-      onStreamReady?.(s);
+      if (onStreamReady) onStreamReady(s);
     } catch {
       setError('Camera/mic access denied');
     }
   }, [onStreamReady]);
 
-  useEffect(() => { start(); return () => stream?.getTracks().forEach(t => t.stop()); }, []);
+  useEffect(() => {
+    start();
+    return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+  }, []);
 
   function toggleMic() {
-    stream?.getAudioTracks().forEach(t => { t.enabled = !micOn; });
+    if (streamRef.current) streamRef.current.getAudioTracks().forEach(t => { t.enabled = !micOn; });
     setMicOn(v => !v);
   }
 
   return (
     <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
-      {camOn
-        ? <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-        : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(8,11,24,0.9)' }}>
-            <CameraOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.2)' }} />
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>Camera off</span>
-          </div>}
+      {/* Always mounted — display toggled so videoRef is ready before getUserMedia resolves */}
+      <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)', display: camOn ? 'block' : 'none' }} />
+      {!camOn && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(8,11,24,0.9)' }}>
+          <CameraOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.2)' }} />
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>{error || 'Starting camera…'}</span>
+          {error && (
+            <button onClick={start} style={{ marginTop: 6, padding: '6px 14px', borderRadius: 8, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontSize: 11, fontFamily: FONT, fontWeight: 900, cursor: 'pointer', minHeight: 44 }}>
+              Retry
+            </button>
+          )}
+        </div>
+      )}
 
       {error && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
@@ -325,6 +338,7 @@ function Countdown({ onDone }) {
 }
 
 export default function GoLive() {
+  const navigate = useNavigate();
   const [step,        setStep]        = useState('pick');
   const [format,      setFormat]      = useState(null);
   const [title,       setTitle]       = useState('');
@@ -431,7 +445,8 @@ export default function GoLive() {
 
   function onCountdownDone() {
     const dest = format?.dest || 'BroadcastStudio';
-    window.location.href = `${createPageUrl(dest)}?id=${partyId}`;
+    const modeParam = format?.id ? `&mode=${format.id}` : '';
+    navigate(`${createPageUrl(dest)}?id=${partyId}${modeParam}`);
   }
 
   const SL = { fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 };
