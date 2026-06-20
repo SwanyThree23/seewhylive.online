@@ -52,11 +52,22 @@ export default function GreenroomQueue({ roomId, isHost }) {
       status: 'admitted',
       role: participant.role === 'viewer' ? 'guest' : participant.role,
     }),
-    onSuccess: (_, p) => toast.success(`✅ ${p.user_name} admitted to stage`),
+    onError: () => toast.error('Failed to admit guest.'),
+    onSuccess: (_, p) => {
+      toast.success(`✅ ${p.user_name} admitted to stage`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${p.user_name} to greenroom stage`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const rejectMutation = useMutation({
     mutationFn: (participant) => base44.entities.Participant.update(participant.id, { status: 'rejected' }),
+    onError: () => toast.error('Failed to remove guest.'),
     onSuccess: (_, p) => toast.error(`${p.user_name} removed from queue`),
   });
 

@@ -205,6 +205,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 
   const cancelMut = useMutation({
     mutationFn: () => base44.entities.GreenroomWaitlist.update(waitlistEntry.id, { status: 'cancelled' }),
+    onError: () => toast.error('Failed to cancel. Please try again.'),
     onSuccess: () => onCancel(),
   });
 
