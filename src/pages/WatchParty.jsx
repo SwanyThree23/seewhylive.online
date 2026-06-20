@@ -461,13 +461,16 @@ export default function WatchPartyPage() {
   const [chatLines, setChatLines] = useState([]);
 
   const handleScreenCapture = async () => {
-    if (screenCaptureStream) {
-      screenCaptureStream.getTracks().forEach(t => t.stop());
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+      // Stop old stream only after successfully acquiring the new one
+      if (screenCaptureStream) screenCaptureStream.getTracks().forEach(t => t.stop());
+      setScreenCaptureStream(stream);
+      stream.getVideoTracks()[0].onended = () => setScreenCaptureStream(null);
+      return stream;
+    } catch {
+      // User cancelled or permission denied — leave existing stream running
     }
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    setScreenCaptureStream(stream);
-    stream.getVideoTracks()[0].onended = () => setScreenCaptureStream(null);
-    return stream;
   };
 
   useEffect(() => () => {
