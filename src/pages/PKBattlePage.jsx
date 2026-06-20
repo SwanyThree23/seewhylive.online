@@ -552,10 +552,14 @@ export default function PKBattlePage() {
   };
 
   const handleBattleScreenCapture = async () => {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    if (!leftCaptureStream) setLeftCaptureStream(stream);
-    else setRightCaptureStream(stream);
-    return stream;
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+      if (!leftCaptureStream) setLeftCaptureStream(stream);
+      else setRightCaptureStream(stream);
+      return stream;
+    } catch {
+      // User cancelled or permission denied — leave existing streams unchanged
+    }
   };
 
   var giftsDisabled = countdown !== null;
