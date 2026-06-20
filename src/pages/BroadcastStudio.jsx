@@ -269,17 +269,25 @@ function OctAvatarThumb({ name, stream, size = 36 }) {
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
 function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
   const camRef = useRef(null);
+  const pipRef = useRef(null);
   const screenRef = useRef(null);
-  useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
-  useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+  useEffect(() => {
+    if (camRef.current) camRef.current.srcObject = localStream || null;
+    if (pipRef.current) pipRef.current.srcObject = localStream || null;
+  }, [localStream]);
+  useEffect(() => {
+    if (screenRef.current) screenRef.current.srcObject = screenStream || null;
+  }, [screenStream]);
   const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
-      {screenStream ? (
-        <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
-      ) : localStream && videoEnabled ? (
-        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-      ) : (
+      {/* Screen share — always mounted */}
+      <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain"
+        style={{ display: screenStream ? 'block' : 'none' }} />
+      {/* Camera — always mounted */}
+      <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover"
+        style={{ display: !screenStream && localStream && videoEnabled ? 'block' : 'none' }} />
+      {!screenStream && !(localStream && videoEnabled) && (
         <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
           <VideoOff className="w-12 h-12" />
           <span className="text-xs">Camera off</span>
@@ -290,12 +298,12 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
-      {/* PIP camera (octagonal) when screen sharing */}
+      {/* PIP camera (octagonal) when screen sharing — uses separate pipRef */}
       {screenStream && localStream && videoEnabled && (
         <div className="absolute bottom-2 right-2" style={{ width: 80, height: 80 }}>
           <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.5)' }} />
           <div style={{ position: 'absolute', inset: 2, clipPath: oct, overflow: 'hidden' }}>
-            <video ref={camRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <video ref={pipRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </div>
       )}
