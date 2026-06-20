@@ -29,6 +29,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const sendGiftMutation = useMutation({
     mutationFn: async (gift) => {
+      if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
         type: 'virtual_good',

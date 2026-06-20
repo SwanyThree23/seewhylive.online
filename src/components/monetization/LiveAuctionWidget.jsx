@@ -253,6 +253,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
 
   const bidMutation = useMutation({
     mutationFn: async ({ auction, amount, isBuyout }) => {
+      if (!currentUser?.id) throw new Error('Not authenticated');
       // Create bid record
       await base44.entities.AuctionBid.create({
         auction_id: auction.id,
