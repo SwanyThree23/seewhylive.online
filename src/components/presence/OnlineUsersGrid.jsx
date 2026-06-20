@@ -20,9 +20,9 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = stream || null;
   }, [stream]);
 
   const name = user?.full_name || user?.user_name || user?.name || 'Guest';
@@ -52,15 +52,15 @@ function UserOctTile({ user, stream, size = 72, isLive = false, isSpeaking = fal
           className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.97), rgba(8,11,24,0.97))` }}
         >
-          {stream ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ display: stream ? 'block' : 'none' }}
+          />
+          {!stream && (
             <>
               <div className="absolute inset-0"
                 style={{ background: `radial-gradient(circle, ${color}22 0%, transparent 70%)` }} />
