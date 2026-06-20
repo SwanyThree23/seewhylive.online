@@ -69,7 +69,7 @@ export default function StreamAnalytics() {
 
   const { data: tipTransactions = [] } = useQuery({
     queryKey: ['tip-transactions', user?.id, roomId],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id, type: 'tip' }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id, transaction_type: 'tip' }, '-created_date', 100),
     enabled: !!user?.id,
   });
 
@@ -81,7 +81,7 @@ export default function StreamAnalytics() {
 
   const tipData = tipTransactions.map((t, i) => ({
     time: i * 4,
-    amount: t.amount || 0,
+    amount: (t.creator_payout || 0) + (t.platform_cut || 0),
     event: t.metadata?.event || null,
   }));
 

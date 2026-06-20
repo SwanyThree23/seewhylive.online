@@ -109,6 +109,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
   const [anim, setAnim] = useState(null);
   const qc = useQueryClient();
 
+  const { data: room } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.Room.get(roomId),
+    enabled: !!roomId,
+    staleTime: 60000,
+  });
+  const recipientId = room?.host_id;
+
   const { data: gifts = [] } = useQuery({
     queryKey: ['gifts-active'],
     queryFn: () => base44.entities.AnimatedGift.filter({ is_active: true }, 'price', 30),
