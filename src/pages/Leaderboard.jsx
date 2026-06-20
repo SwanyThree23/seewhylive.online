@@ -204,7 +204,7 @@ export default function LeaderboardPage() {
   const revenueByCreator = transactions.reduce((acc, t) => {
     const key = t.recipient_id || t.to_user_id;
     if (!key) return acc;
-    acc[key] = (acc[key] || 0) + (t.amount || 0);
+    acc[key] = (acc[key] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
 

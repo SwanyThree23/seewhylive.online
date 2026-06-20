@@ -55,7 +55,7 @@ export default function AdvancedAnalyticsPage() {
     queryFn: () => base44.entities.Transaction.list('-created_date', 500),
   });
 
-  const totalRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const activeRooms = rooms.filter(r => r.status === 'live').length;
   const totalViewers = rooms.reduce((sum, r) => sum + (r.viewer_count || 0), 0);
 
@@ -64,7 +64,7 @@ export default function AdvancedAnalyticsPage() {
 
   const revenueData = transactions.reduce((acc, t) => {
     const date = new Date(t.created_date).toLocaleDateString();
-    acc[date] = (acc[date] || 0) + t.amount;
+    acc[date] = (acc[date] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueData).slice(-14).map(([date, amount]) => ({ date, amount }));
