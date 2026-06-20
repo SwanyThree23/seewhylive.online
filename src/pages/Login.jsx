@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { Radio } from 'lucide-react';
+import { isSafeUrl } from '@/lib/security';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const GOLD = '#C9A84C';
@@ -21,7 +22,13 @@ export default function Login() {
   // Reject any auth-path from_url to prevent infinite redirect loops
   const params = new URLSearchParams(window.location.search);
   const rawFromUrl = params.get('from_url') || appParams.fromUrl || '/';
-  const fromUrl = /\/(api\/apps\/auth|login)/i.test(rawFromUrl) ? '/' : rawFromUrl;
+  // Block auth loops AND external/javascript: URLs — only allow same-origin paths
+  const fromUrl = (() => {
+    if (/\/(api\/apps\/auth|login)/i.test(rawFromUrl)) return '/';
+    if (rawFromUrl.startsWith('/')) return rawFromUrl; // relative path — always safe
+    if (isSafeUrl(rawFromUrl) && new URL(rawFromUrl).origin === window.location.origin) return rawFromUrl;
+    return '/';
+  })();
 
   // If an access_token lands in the URL (OAuth callback), the SDK already
   // stored it via app-params; just navigate home.
