@@ -58,6 +58,11 @@ export default function RoomPage() {
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   // Real local camera/mic stream
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
@@ -74,11 +79,6 @@ export default function RoomPage() {
     announceJoinRef.current?.(user.id);
   }, [localStream, user?.id]);
   useEffect(() => { return () => leaveRoomRef.current?.(); }, []);
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
 
   const { data: room, isLoading } = useQuery({
     queryKey: ['room', roomId],
