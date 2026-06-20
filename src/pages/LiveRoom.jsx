@@ -106,7 +106,7 @@ function avatarColor(name) {
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
   const videoRef = useRef(null);
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (videoRef.current) videoRef.current.srcObject = stream || null; }, [stream]);
 
   const isHost   = p.role === 'host';
   const isCohost = p.role === 'co-host';

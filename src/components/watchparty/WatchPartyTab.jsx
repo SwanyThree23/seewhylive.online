@@ -143,9 +143,7 @@ function ScreenShareMode({ user, party }) {
   var videoRef = useRef(null);
 
   useEffect(function() {
-    if (videoRef.current && screenStream) {
-      videoRef.current.srcObject = screenStream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = screenStream || null;
   }, [screenStream]);
 
   var refreshSettings = useCallback(function(stream) {
@@ -200,15 +198,14 @@ function ScreenShareMode({ user, party }) {
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-        {screenStream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: '100%', aspectRatio: '16/9', background: '#000', display: 'block', objectFit: 'contain' }}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: '100%', aspectRatio: '16/9', background: '#000', objectFit: 'contain', display: screenStream ? 'block' : 'none' }}
+        />
+        {!screenStream && (
           <VideoPlaceholder
             icon={<Monitor style={{ width: 48, height: 48 }} />}
             text="Share Your Screen"
@@ -541,9 +538,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   var videoRef = useRef(null);
 
   useEffect(function() {
-    if (videoRef.current && localStream) {
-      videoRef.current.srcObject = localStream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = localStream || null;
   }, [localStream]);
 
   var refreshSettings = useCallback(function(stream) {
@@ -598,15 +593,14 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-        {localStream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)' }}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: '100%', aspectRatio: '16/9', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)', display: localStream ? 'block' : 'none' }}
+        />
+        {!localStream && (
           <VideoPlaceholder
             icon={<Camera style={{ width: 48, height: 48 }} />}
             text="Enable Camera for 4K Room"
@@ -689,7 +683,7 @@ function RemoteTile({ peerId, stream, members }) {
   var member = members && members.find(function(m) { return String(m.user_id) === String(peerId); });
 
   useEffect(function() {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
 
   return (
@@ -709,14 +703,13 @@ function RemoteTile({ peerId, stream, members }) {
           background: '#080B18',
           overflow: 'hidden',
         }}>
-          {stream ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: stream ? 'block' : 'none' }}
+          />
+          {!stream && (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 20 }}>
               {member ? member.user_name?.charAt(0)?.toUpperCase() || '?' : '?'}
             </div>

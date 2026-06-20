@@ -163,8 +163,7 @@ function CameraPreview({ onStreamReady }) {
   const [micOn,   setMicOn]   = useState(true);
   const [error,   setError]   = useState(null);
 
-  // Always attach srcObject via effect — ref is valid even before stream arrives
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (videoRef.current) videoRef.current.srcObject = stream || null; }, [stream]);
 
   const start = useCallback(async () => {
     setError(null);

@@ -93,10 +93,8 @@ export default function GreenroomEnhanced() {
 
   // Camera stream → video element
   useEffect(() => {
-    if (videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
-      setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
-    }
+    if (videoRef.current) videoRef.current.srcObject = cameraStream || null;
+    if (cameraStream) setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
   }, [cameraStream]);
 
   function handleCameraSource(stream, info) {

@@ -12,7 +12,7 @@ export default function GuestLandingPageV49({ guestName, roomId, onProceed, onBa
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && localStream) videoRef.current.srcObject = localStream;
+    if (videoRef.current) videoRef.current.srcObject = localStream || null;
   }, [localStream]);
 
   const hasVideo = localStream && localStream.getVideoTracks().length > 0;

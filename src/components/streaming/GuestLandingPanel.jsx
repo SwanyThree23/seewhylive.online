@@ -93,8 +93,8 @@ export default function GuestLandingPanel({ token, roomId, onJoin }) {
   }, []);
 
   useEffect(() => {
+    if (videoRef.current) videoRef.current.srcObject = localStream || null;
     if (!localStream) return;
-    if (videoRef.current) videoRef.current.srcObject = localStream;
     localStream.getAudioTracks().forEach(t => { t.enabled = audioEnabled; });
     localStream.getVideoTracks().forEach(t => { t.enabled = videoEnabled; });
   }, [localStream, audioEnabled, videoEnabled]);

@@ -17,7 +17,7 @@ function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, conne
   const borderColor = gold ? 'rgba(212,175,55,0.7)' : 'rgba(201,168,76,0.3)';
 
   useEffect(() => {
-    if (ref.current && stream) ref.current.srcObject = stream;
+    if (ref.current) ref.current.srcObject = stream || null;
   }, [stream]);
 
   return (
@@ -32,6 +32,9 @@ function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, conne
 
       <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
         style={{ clipPath: OCT, background: '#0A0A12' }}>
+        <video ref={ref} autoPlay playsInline muted={!!videoRef}
+          className="w-full h-full object-cover absolute inset-0"
+          style={{ display: stream && !error && !connecting ? 'block' : 'none' }} />
         {error ? (
           <p className="text-[11px] text-center px-2" style={{ color: '#C0392B' }}>{error}</p>
         ) : connecting ? (
@@ -39,15 +42,13 @@ function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, conne
             <div className="w-8 h-8 rounded-full animate-pulse mx-auto mb-1" style={{ background: 'rgba(212,175,55,0.2)' }} />
             <p className="text-[11px]" style={{ color: GOLD }}>Connecting…</p>
           </div>
-        ) : stream ? (
-          <video ref={ref} autoPlay playsInline muted={!!videoRef} className="w-full h-full object-cover" />
-        ) : (
+        ) : !stream ? (
           <div className="text-center px-2">
             <div className="w-10 h-10 rounded-full mx-auto mb-1 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
             {label && <p className="text-[11px] font-bold truncate" style={{ color: GOLD }}>{label}</p>}
             {sublabel && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{sublabel}</p>}
           </div>
-        )}
+        ) : null}
 
         {/* Overlay labels */}
         {stream && (
