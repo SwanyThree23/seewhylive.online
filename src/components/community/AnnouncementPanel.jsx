@@ -31,6 +31,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
         sent_at: new Date().toISOString(),
       });
     },
+    onError: () => toast.error('Failed to send announcement. Please try again.'),
     onSuccess: (ann) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
       setTitle('');
@@ -61,6 +62,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
         scheduled_for: scheduledTime,
       });
     },
+    onError: () => toast.error('Failed to schedule announcement. Please try again.'),
     onSuccess: (ann) => {
       queryClient.invalidateQueries({ queryKey: ['announcements'] });
       setTitle('');
