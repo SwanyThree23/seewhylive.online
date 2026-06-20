@@ -77,7 +77,7 @@ const MILESTONES = [
 function exportCSV(transactions, subscriptions) {
   const rows = [
     ['Type', 'Amount', 'Date', 'Description'],
-    ...transactions.map(t => [t.type || 'transaction', `$${t.amount || 0}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0) + (t.platform_cut || 0)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
   const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
@@ -233,10 +233,11 @@ function TierLadderPanel({ subCount }) {
 
 /* ─── RevenueStreamsPanel ─────────────────────────────────────────────── */
 function RevenueStreamsPanel({ transactions, subscriptions }) {
-  const tipTotal  = transactions.filter(t => t.type === 'tip').reduce((s, t) => s + (t.amount || 0), 0);
-  const ppvTotal  = transactions.filter(t => t.type === 'ppv').reduce((s, t) => s + (t.amount || 0), 0);
+  const txGross = (t) => (t.creator_payout || 0) + (t.platform_cut || 0);
+  const tipTotal  = transactions.filter(t => t.transaction_type === 'tip').reduce((s, t) => s + txGross(t), 0);
+  const ppvTotal  = transactions.filter(t => t.transaction_type === 'ppv').reduce((s, t) => s + txGross(t), 0);
   const subTotal  = subscriptions.reduce((s, sub) => s + (sub.price || 0), 0);
-  const giftTotal = transactions.filter(t => t.type === 'gift').reduce((s, t) => s + (t.amount || 0), 0);
+  const giftTotal = transactions.filter(t => t.transaction_type === 'gift').reduce((s, t) => s + txGross(t), 0);
   const gross     = tipTotal + ppvTotal + subTotal + giftTotal;
 
   const streams = [
@@ -541,7 +542,7 @@ export default function MonetizationPage() {
   });
 
   // Revenue calculations (90/10 split)
-  const grossEarnings  = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const grossEarnings  = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const platformFee    = grossEarnings * 0.10;
   const processingFee  = transactions.length * 0.30 + (grossEarnings * 0.029);
   const netEarnings    = grossEarnings - platformFee - processingFee;
@@ -642,7 +643,7 @@ export default function MonetizationPage() {
                   { label: 'Net Earnings', val: `$${netEarnings.toFixed(2)}`, icon: DollarSign, color: G },
                   { label: 'MRR',          val: `$${mrr.toFixed(2)}`,         icon: TrendingUp, color: TEAL },
                   { label: 'Subscribers',  val: subCount,                      icon: Users,      color: PINK },
-                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#D4854A' },
+                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount_usd || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#D4854A' },
                 ].map(stat => {
                   const Icon = stat.icon;
                   return (

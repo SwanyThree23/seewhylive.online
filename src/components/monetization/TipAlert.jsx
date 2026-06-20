@@ -24,9 +24,10 @@ export default function TipAlert({ roomId, recipientId }) {
         event.data.room_id === roomId &&
         (event.data.recipient_id === recipientId || event.data.to_user_id === recipientId)
       ) {
+        const alertGross = (event.data.creator_payout || 0) + (event.data.platform_cut || 0);
         const newAlert = {
           id: event.data.id,
-          amount: event.data.amount,
+          amount: alertGross,
           from: event.data.sender_id || event.data.from_user_id,
           message: event.data.message,
           timestamp: Date.now(),
@@ -35,7 +36,7 @@ export default function TipAlert({ roomId, recipientId }) {
         setAlerts((prev) => [...prev, newAlert]);
 
         // Trigger confetti for large tips
-        if (event.data.amount >= 25) {
+        if (alertGross >= 25) {
           confetti({
             particleCount: 100,
             spread: 70,
