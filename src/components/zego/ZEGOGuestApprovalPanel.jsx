@@ -24,7 +24,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
     mutationFn: (participantId) =>
       base44.entities.Participant.update(participantId, { status: 'active', approved_at: new Date().toISOString() }),
     onSuccess: (_, participantId) => {
-      qc.invalidateQueries(['pending-guests']);
+      qc.invalidateQueries({ queryKey: ['pending-guests'] });
       toast.success('Guest approved');
       if (user?.id) {
         base44.entities.Activity.create({
@@ -39,7 +39,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const rejectMut = useMutation({
     mutationFn: (participantId) => base44.entities.Participant.delete(participantId),
     onSuccess: () => {
-      qc.invalidateQueries(['pending-guests']);
+      qc.invalidateQueries({ queryKey: ['pending-guests'] });
       toast.success('Guest request declined');
     },
   });

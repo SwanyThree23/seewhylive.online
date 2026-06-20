@@ -31,8 +31,8 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
     }),
     onSuccess: () => {
       toast.success(`Following ${targetUserName || 'creator'}!`);
-      qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
-      qc.invalidateQueries(['followers', targetUserId]);
+      qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
+      qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
       Promise.allSettled([
         base44.entities.Activity.create({
           user_id: currentUser.id,
@@ -54,8 +54,8 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
     mutationFn: () => base44.entities.Follow.delete(followRecord.id),
     onSuccess: () => {
       toast.success('Unfollowed');
-      qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
-      qc.invalidateQueries(['followers', targetUserId]);
+      qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
+      qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
     },
   });
 

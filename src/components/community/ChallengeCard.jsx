@@ -21,8 +21,8 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['challenges']);
-      queryClient.invalidateQueries(['challengeParticipation']);
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipation'] });
       toast.success('Joined challenge successfully!');
       if (userId) {
         base44.entities.Activity.create({

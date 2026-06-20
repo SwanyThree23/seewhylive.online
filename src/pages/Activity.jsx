@@ -110,7 +110,7 @@ export default function ActivityPage() {
   useEffect(() => {
     if (!user?.id) return;
     const unsub = base44.entities.Activity.subscribe(() => {
-      qc.invalidateQueries(['activities', user.id]);
+      qc.invalidateQueries({ queryKey: ['activities', user.id] });
     });
     return unsub;
   }, [user?.id, qc]);
@@ -121,7 +121,7 @@ export default function ActivityPage() {
         base44.entities.Notification.update(n.id, { is_read: true })
       )
     ),
-    onSuccess: () => qc.invalidateQueries(['notifications', user?.id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', user?.id] }),
   });
 
   const myActivities = activities.filter(a =>

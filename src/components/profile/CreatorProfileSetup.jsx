@@ -39,7 +39,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries(['creatorProfile', user?.id]);
+      qc.invalidateQueries({ queryKey: ['creatorProfile', user?.id] });
       toast.success('Creator profile created! Welcome to SeeWhy LIVE 🎉');
       onClose();
       if (user?.id) {

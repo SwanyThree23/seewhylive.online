@@ -112,7 +112,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         bid_count: (auction.bid_count || 0) + 1,
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', auction.room_id]); setBidAmount(''); toast.success('Bid placed!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] }); setBidAmount(''); toast.success('Bid placed!'); },
     onError: () => toast.error('Could not place bid'),
   });
 
@@ -136,7 +136,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         bid_count: (auction.bid_count || 0) + 1,
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', auction.room_id]); toast.success('You won the auction!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] }); toast.success('You won the auction!'); },
   });
 
   return (
@@ -192,7 +192,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
-            <Countdown endsAt={auction.ends_at} onExpired={() => qc.invalidateQueries(['auctions', auction.room_id])} />
+            <Countdown endsAt={auction.ends_at} onExpired={() => qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] })} />
           </div>
         </div>
 
@@ -232,7 +232,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
             <button onClick={async () => {
               const newEnd = new Date(new Date(auction.ends_at).getTime() + 5 * 60 * 1000);
               await base44.entities.LiveAuction.update(auction.id, { ends_at: newEnd.toISOString() });
-              qc.invalidateQueries(['auctions', auction.room_id]);
+              qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] });
               toast.success('+5 min added');
             }}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
@@ -273,7 +273,7 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
         status: 'active',
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', roomId]); onClose(); toast.success('Auction launched!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', roomId] }); onClose(); toast.success('Auction launched!'); },
   });
 
   const types = ['item','one_on_one','shoutout','custom_art','coaching','experience'];
@@ -357,7 +357,7 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
   const active = auctions.filter(a => ['active', 'ending_soon'].includes(a.status));
   const endAuction = async (auction) => {
     await base44.entities.LiveAuction.update(auction.id, { status: 'ended', final_amount: auction.current_bid || 0, winner_id: auction.current_winner_id, winner_name: auction.current_winner_name });
-    qc.invalidateQueries(['auctions', roomId]);
+    qc.invalidateQueries({ queryKey: ['auctions', roomId] });
   };
 
   if (active.length === 0 && !isHost) return null;

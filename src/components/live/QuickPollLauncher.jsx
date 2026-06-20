@@ -35,7 +35,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
       setCustom(false);
       setQuestion('');
       setOptions(['', '']);
-      qc.invalidateQueries(['polls', roomId]);
+      qc.invalidateQueries({ queryKey: ['polls', roomId] });
       if (hostId) {
         base44.entities.Activity.create({
           user_id: hostId,

@@ -86,7 +86,7 @@ export default function RTMPFanoutPanel({ userId, streamId, isStreaming }) {
         }).catch(() => {});
       }
       toast.success(goLive ? 'Fanout started' : 'Fanout stopped');
-      qc.invalidateQueries(['rtmp-destinations', userId]);
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations', userId] });
     } catch {
       toast.error('Failed to update destination');
     } finally {

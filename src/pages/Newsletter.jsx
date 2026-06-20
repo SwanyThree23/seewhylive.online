@@ -91,7 +91,7 @@ export default function NewsletterPage() {
     mutationFn: (data) => base44.entities.Newsletter.create(data),
     onSuccess: (newsletter) => {
       toast.success('Newsletter created!');
-      queryClient.invalidateQueries(['newsletters']);
+      queryClient.invalidateQueries({ queryKey: ['newsletters'] });
       setTitle(''); setContent(''); setPreviewText('');
       if (user?.id) {
         base44.entities.Activity.create({

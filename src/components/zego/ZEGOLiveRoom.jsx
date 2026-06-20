@@ -256,7 +256,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries(['zego-active']);
+      qc.invalidateQueries({ queryKey: ['zego-active'] });
       toast.success('Stream ended');
       if (userId) {
         base44.entities.Activity.create({

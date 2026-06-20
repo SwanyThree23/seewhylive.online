@@ -99,11 +99,11 @@ export default function AdminDashboard() {
 
   const changeRoleMutation = useMutation({
     mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
-    onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries(['adminUsers']); },
+    onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries({ queryKey: ['adminUsers'] }); },
   });
   const endRoomMutation = useMutation({
     mutationFn: (roomId) => base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() }),
-    onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries(['adminRooms']); },
+    onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries({ queryKey: ['adminRooms'] }); },
   });
 
   if (!user || user.role !== 'admin') return (
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
                     {report.status === 'pending' && (
                       <button className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] shrink-0"
                         style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer', ...T }}
-                        onClick={async () => { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries(['adminReports']); toast.success('Report resolved'); }}>
+                        onClick={async () => { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries({ queryKey: ['adminReports'] }); toast.success('Report resolved'); }}>
                         Resolve
                       </button>
                     )}

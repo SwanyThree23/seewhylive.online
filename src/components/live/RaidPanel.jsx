@@ -16,7 +16,7 @@ function RaidCountdownBanner({ raid, onJoin }) {
   useEffect(() => {
     if (count <= 0) {
       base44.entities.RaidEvent.update(raid.id, { status: 'active' }).catch(() => {});
-      qc.invalidateQueries(['raid-incoming', raid.to_room_id]);
+      qc.invalidateQueries({ queryKey: ['raid-incoming', raid.to_room_id] });
       return;
     }
     const t = setTimeout(() => setCount(c => c - 1), 1000);
@@ -117,7 +117,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
       return raid;
     },
     onSuccess: (raid) => {
-      qc.invalidateQueries(['raid-active', room?.id]);
+      qc.invalidateQueries({ queryKey: ['raid-active', room?.id] });
       toast.success('Raid initiated! Countdown starting…');
       onClose();
       Promise.allSettled([

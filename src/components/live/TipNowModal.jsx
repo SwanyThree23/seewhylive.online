@@ -39,7 +39,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
     ]),
     onSuccess: () => {
       setSuccess(true);
-      qc.invalidateQueries(["tip-alerts", roomId]);
+      qc.invalidateQueries({ queryKey: ["tip-alerts", roomId] });
       if (currentUser?.id) {
         Promise.allSettled([
           base44.entities.Activity.create({

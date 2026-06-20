@@ -69,8 +69,8 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
     },
     onSuccess: () => {
       toast.success(`Subscribed to ${tier.name}! 🎉`);
-      qc.invalidateQueries(['userSubs']);
-      qc.invalidateQueries(['creatorSubscriptions']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
+      qc.invalidateQueries({ queryKey: ['creatorSubscriptions'] });
     },
   });
 
@@ -78,7 +78,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
     mutationFn: () => base44.entities.Subscription.update(currentSub.id, { status: 'cancelled', auto_renew: false }),
     onSuccess: () => {
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
     },
   });
 

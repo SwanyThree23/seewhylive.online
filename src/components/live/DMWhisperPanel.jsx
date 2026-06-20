@@ -58,7 +58,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
       recipient_id: recipientId, recipient_name: recipientName,
       content, is_whisper: true,
     }),
-    onSuccess: () => { qc.invalidateQueries(["whispers", roomId, recipientId]); setInput(""); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["whispers", roomId, recipientId] }); setInput(""); },
   });
 
   useEffect(() => {

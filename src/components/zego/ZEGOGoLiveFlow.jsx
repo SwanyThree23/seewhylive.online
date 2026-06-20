@@ -47,8 +47,8 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
     },
     onSuccess: ({ zrId }) => {
       setConnecting(false);
-      qc.invalidateQueries(['cr-room', roomId]);
-      qc.invalidateQueries(['zego-health', roomId]);
+      qc.invalidateQueries({ queryKey: ['cr-room', roomId] });
+      qc.invalidateQueries({ queryKey: ['zego-health', roomId] });
       toast.success('Stream is now LIVE via ZEGOCLOUD!');
       onLive?.();
       if (userId) {

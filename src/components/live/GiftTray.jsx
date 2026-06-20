@@ -90,7 +90,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
       navigator.vibrate?.([60, 30, 60, 30, 120]);
       setSending(gift);
       setOpen(false);
-      qc.invalidateQueries(['gift-senders', roomId]);
+      qc.invalidateQueries({ queryKey: ['gift-senders', roomId] });
       Promise.allSettled([
         base44.entities.Activity.create({
           user_id: currentUser.id,

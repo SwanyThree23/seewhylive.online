@@ -35,7 +35,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     if (!base44.entities.PKBattle) return;
     const unsub = base44.entities.PKBattle.subscribe((event) => {
       if (event.data?.room_id === roomId) {
-        qc.invalidateQueries(['pk_battles', roomId]);
+        qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
       }
     });
     return unsub;
@@ -81,7 +81,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     onSuccess: () => {
       setShowSetup(false);
       toast.success('⚔️ Battle started!');
-      qc.invalidateQueries(['pk_battles', roomId]);
+      qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
     },
     onError: () => toast.error('Could not start battle'),
   });
@@ -96,7 +96,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         : { challenger_score: (battle.challenger_score || 0) + 1 };
       return base44.entities.PKBattle.update(battleId, update);
     },
-    onSuccess: () => qc.invalidateQueries(['pk_battles', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['pk_battles', roomId] }),
   });
 
   const endBattleMutation = useMutation({
@@ -112,7 +112,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     },
     onSuccess: () => {
       toast.success('Battle ended!');
-      qc.invalidateQueries(['pk_battles', roomId]);
+      qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
     },
   });
 

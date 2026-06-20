@@ -47,7 +47,7 @@ export default function ZEGOConfigPanel({ user }) {
         : base44.entities.ZEGOStream.create(data);
     },
     onSuccess: () => {
-      qc.invalidateQueries(['zego-config']);
+      qc.invalidateQueries({ queryKey: ['zego-config'] });
       toast.success('ZEGOCLOUD config saved!');
       if (user?.id) {
         base44.entities.Activity.create({

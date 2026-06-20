@@ -27,7 +27,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
       user_name: currentUser?.full_name || "Viewer",
       role_requested: "speaker", status: "waiting",
     }),
-    onSuccess: () => { setHandRaised(true); qc.invalidateQueries(["greenroom-waitlist"]); },
+    onSuccess: () => { setHandRaised(true); qc.invalidateQueries({ queryKey: ["greenroom-waitlist"] }); },
   });
 
   var reportMutation = useMutation({

@@ -72,7 +72,7 @@ export default function AIModerationPage() {
     },
     onSuccess: () => {
       toast.success('Review submitted');
-      queryClient.invalidateQueries(['moderations']);
+      queryClient.invalidateQueries({ queryKey: ['moderations'] });
     },
   });
 
@@ -97,7 +97,7 @@ export default function AIModerationPage() {
       await Promise.all(scanResults.map(r => base44.entities.ContentModeration.create({ content_type: 'message', content_id: r.id, violation_type: r.violation_type, ai_confidence: r.ai_confidence, ai_explanation: r.ai_explanation || null, action_taken: r.violation_type !== 'safe' ? 'flagged' : 'none' })));
       setScanProgress(100);
       toast.success(`Scanned ${scanResults.length} messages — ${violations.length} violation(s) found.`);
-      queryClient.invalidateQueries(['moderations']);
+      queryClient.invalidateQueries({ queryKey: ['moderations'] });
     } catch (err) {
       toast.error('AI scan failed. Please try again.');
     } finally {

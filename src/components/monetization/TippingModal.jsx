@@ -58,7 +58,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     },
     onSuccess: () => {
       toast.success('Tip sent successfully! 💸');
-      queryClient.invalidateQueries(['transactions']);
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       onClose();
       setAmount('');
       setMessage('');

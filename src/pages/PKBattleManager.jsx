@@ -237,7 +237,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var createMutation = useMutation({
     mutationFn: function(data) { return base44.entities.PKBattle.create(data); },
     onSuccess: function(b) {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setShowCreateForm(false);
       setChallengerName('');
       setChallengerStream('');
@@ -257,7 +257,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var respondMutation = useMutation({
     mutationFn: function(vars) { return base44.entities.PKBattle.update(vars.id, { status: vars.status }); },
     onSuccess: function(_, vars) {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
   });
@@ -488,7 +488,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
     if (!battle || !battle.id) { return; }
     var unsub = base44.entities.PKBattle.subscribe(function(ev) {
       if (ev.id !== battle.id) { return; }
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
     });
     return unsub;
   }, [battle && battle.id]);
@@ -556,7 +556,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
 
       <BattleOverlay
         battle={battle}
-        onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
+        onBattleUpdate={function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); }}
       />
     </div>
   );
@@ -695,7 +695,7 @@ export default function PKBattleManager() {
       winner_name: winnerName,
       ended_at: new Date().toISOString(),
     }).then(function() {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setPendingWinner(Object.assign({}, currentBattle, { winner_id: winnerId, winner_name: winnerName, status: 'ended' }));
       setShowWinner(true);
     });
@@ -709,7 +709,7 @@ export default function PKBattleManager() {
         started_at: new Date().toISOString(),
       });
     },
-    onSuccess: function() { qc.invalidateQueries(['pk-battles']); toast.success('Battle started!'); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); toast.success('Battle started!'); },
   });
 
   function handleBattleSelect(b) {
@@ -822,7 +822,7 @@ export default function PKBattleManager() {
               <InvitationsTab user={user} battles={battles} onBattleSelect={handleBattleSelect} />
             )}
             {activeTab === 'scoreboard' && (
-              <ScoreboardTab battle={currentBattle} user={user} onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }} />
+              <ScoreboardTab battle={currentBattle} user={user} onBattleUpdate={function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); }} />
             )}
             {activeTab === 'matchmaking' && (
               <MatchmakingQueue user={user} />

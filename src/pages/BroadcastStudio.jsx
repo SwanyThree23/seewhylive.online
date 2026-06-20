@@ -142,7 +142,7 @@ function useSyncEngine({ party, isController, onTimeSync }) {
     const unsub = base44.entities.WatchParty.subscribe((event) => {
       if (event.id !== party.id) return;
       if (!isController && event.data) onTimeSync(event.data);
-      qc.invalidateQueries(['broadcast-party', party.id]);
+      qc.invalidateQueries({ queryKey: ['broadcast-party', party.id] });
     });
     return unsub;
   }, [party?.id, isController, onTimeSync, qc]);
@@ -481,7 +481,7 @@ export default function BroadcastStudio() {
     if (!partyId) return;
     const unsub = base44.entities.WatchPartyMember.subscribe((event) => {
       if (event.data?.party_id !== partyId) return;
-      qc.invalidateQueries(['broadcast-members', partyId]);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     });
     return unsub;
   }, [partyId, qc]);
@@ -604,7 +604,7 @@ export default function BroadcastStudio() {
           is_audio_enabled: true,
           is_video_enabled: true,
         });
-        qc.invalidateQueries(['broadcast-members', party.id]);
+        qc.invalidateQueries({ queryKey: ['broadcast-members', party.id] });
       }
     })();
   }, [party?.id, user?.id]);
@@ -727,18 +727,18 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   const promoteCoHost = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
     toast.success(`${member.user_name} promoted to co-host`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
   };
 
   const promoteSpeaker = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
     toast.success(`${member.user_name} added to panel`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
   };
 
   const demoteToAudience = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
   };
 
   const copyLink = () => {
@@ -751,7 +751,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   const kickMember = async (member) => {
     await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
     toast.success(`${member.user_name} removed from broadcast`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
   };
 
   const sendRaiseHand = async () => {
@@ -881,7 +881,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     playback_state: 'paused',
                     updated_at_ms: Date.now(),
                   }).then(() => {
-                    qc.invalidateQueries(['broadcast-party', partyId]);
+                    qc.invalidateQueries({ queryKey: ['broadcast-party', partyId] });
                     setStudioMode('watch');
                   });
                 }}
@@ -1505,7 +1505,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         playback_state: 'paused',
                         updated_at_ms: Date.now(),
                       }).then(() => {
-                        qc.invalidateQueries(['broadcast-party', partyId]);
+                        qc.invalidateQueries({ queryKey: ['broadcast-party', partyId] });
                         setStudioMode('watch');
                         toast.success('Video updated!');
                       });

@@ -37,7 +37,7 @@ export default function ShopDashboard({ creatorId }) {
       is_active: true, times_sold: 0,
     }),
     onSuccess: (item) => {
-      qc.invalidateQueries(["shop-items", creatorId]);
+      qc.invalidateQueries({ queryKey: ["shop-items", creatorId] });
       setShowAdd(false);
       setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] });
       if (creatorId) {
@@ -53,12 +53,12 @@ export default function ShopDashboard({ creatorId }) {
 
   var toggleMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
-    onSuccess: () => qc.invalidateQueries(["shop-items", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-items", creatorId] }),
   });
 
   var updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
-    onSuccess: () => qc.invalidateQueries(["merch-orders", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["merch-orders", creatorId] }),
   });
 
   var totalSold = items.reduce((s, i) => s + (i.times_sold || 0), 0);

@@ -50,7 +50,7 @@ export default function SubscriptionCard({ tier, price, benefits, communityId, c
     },
     onSuccess: () => {
       toast.success(`Subscribed to ${tier} tier! 🎉`);
-      queryClient.invalidateQueries(['subscriptions']);
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
       if (currentUser?.id) {
         Promise.allSettled([
           base44.entities.Activity.create({

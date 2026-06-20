@@ -68,7 +68,7 @@ export default function ReportsManager({ communityId, userId }) {
     },
     onSuccess: () => {
       toast.success('Report updated');
-      queryClient.invalidateQueries(['communityReports']);
+      queryClient.invalidateQueries({ queryKey: ['communityReports'] });
       setSelectedReport(null);
       setResolutionNotes('');
       setActionTaken('');

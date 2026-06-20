@@ -64,7 +64,7 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
       notes: notes.trim(),
     }),
     onSuccess: (item) => {
-      qc.invalidateQueries(['vq', partyId]);
+      qc.invalidateQueries({ queryKey: ['vq', partyId] });
       onAdded(item);
       onClose();
       toast.success(requireApproval ? 'Added — waiting for host approval' : 'Added to queue!');
@@ -129,12 +129,12 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
       [dir === 'up' ? 'votes_up' : 'votes_down']: (item[dir === 'up' ? 'votes_up' : 'votes_down'] || 0) + 1,
       voter_ids: [...(item.voter_ids || []), currentUser.id],
     }),
-    onSuccess: () => qc.invalidateQueries(['vq', item.party_id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['vq', item.party_id] }),
   });
 
   const actionMut = useMutation({
     mutationFn: (data) => base44.entities.VideoQueue.update(item.id, data),
-    onSuccess: () => qc.invalidateQueries(['vq', item.party_id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['vq', item.party_id] }),
   });
 
   const thumb = item.thumbnail_url || getYtThumb(item.video_url);
@@ -318,7 +318,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
             nextPosition={nextPosition}
             requireApproval={requireApproval}
             onClose={() => setShowModal(false)}
-            onAdded={() => qc.invalidateQueries(['vq', partyId])}
+            onAdded={() => qc.invalidateQueries({ queryKey: ['vq', partyId] })}
           />
         )}
       </AnimatePresence>

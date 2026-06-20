@@ -146,15 +146,15 @@ export default function SoundAlertsManager({ creatorId }) {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.SoundAlert.create(data),
-    onSuccess: () => { qc.invalidateQueries(['sound-alerts']); setShowForm(false); toast.success('Alert created!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['sound-alerts'] }); setShowForm(false); toast.success('Alert created!'); },
   });
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SoundAlert.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['sound-alerts']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sound-alerts'] }),
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.SoundAlert.delete(id),
-    onSuccess: () => qc.invalidateQueries(['sound-alerts']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sound-alerts'] }),
   });
 
   return (

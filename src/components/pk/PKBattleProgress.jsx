@@ -36,7 +36,7 @@ export default function PKBattleProgress({ battleId, currentUserId }) {
     },
     onSuccess: (_, { side, amountCents }) => {
       toast.success(`Tipped $${(amountCents / 100).toFixed(2)} to ${side}!`);
-      qc.invalidateQueries(['pkBattle', battleId]);
+      qc.invalidateQueries({ queryKey: ['pkBattle', battleId] });
       if (currentUser?.id) {
         base44.entities.Activity.create({
           user_id: currentUser.id,

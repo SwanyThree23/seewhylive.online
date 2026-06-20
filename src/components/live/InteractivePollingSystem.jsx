@@ -234,7 +234,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
 
   const closePollMutation = useMutation({
     mutationFn: (pollId) => base44.entities.Poll.update(pollId, { status: 'closed' }),
-    onSuccess: () => qc.invalidateQueries(['polls', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['polls', roomId] }),
   });
 
   const voteMutation = useMutation({
@@ -252,7 +252,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
     },
     onSuccess: (_, pollId) => {
       setUserVotes(prev => ({ ...prev, [pollId]: true }));
-      qc.invalidateQueries(['poll-votes', roomId]);
+      qc.invalidateQueries({ queryKey: ['poll-votes', roomId] });
       toast.success('Vote recorded!');
     },
   });

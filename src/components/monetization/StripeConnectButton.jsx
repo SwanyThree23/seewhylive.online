@@ -52,7 +52,7 @@ export default function StripeConnectButton({ creatorId }) {
       return result.onboardingUrl;
     },
     onSuccess: (url) => {
-      qc.invalidateQueries(['creator-payout', creatorId]);
+      qc.invalidateQueries({ queryKey: ['creator-payout', creatorId] });
       setConnecting(false);
       toast.success('Stripe account connected! Redirecting to onboarding...');
       if (creatorId) {
@@ -77,7 +77,7 @@ export default function StripeConnectButton({ creatorId }) {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries(['creator-payout', creatorId]);
+      qc.invalidateQueries({ queryKey: ['creator-payout', creatorId] });
       toast.success('Stripe account disconnected');
     },
   });

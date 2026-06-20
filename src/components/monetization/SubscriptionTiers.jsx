@@ -54,7 +54,7 @@ export default function SubscriptionTiers({ communityId, userId }) {
     },
     onSuccess: (_, { tierId, price }) => {
       toast.success('Subscription activated! 🎉');
-      queryClient.invalidateQueries(['userSubscription']);
+      queryClient.invalidateQueries({ queryKey: ['userSubscription'] });
       if (userId) {
         base44.entities.Activity.create({
           user_id: userId,

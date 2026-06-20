@@ -17,7 +17,7 @@ export default function PointsEarnWidget({ userId, creatorId, roomId, isHost }) 
       }
       return base44.entities.ViewerLoyalty.create({ user_id: userId, creator_id: creatorId, room_id: roomId, loyalty_points: pts, created_at: new Date().toISOString() });
     },
-    onSuccess: () => qc.invalidateQueries(['viewer-loyalty', userId, creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['viewer-loyalty', userId, creatorId] }),
   });
 
   useEffect(() => {

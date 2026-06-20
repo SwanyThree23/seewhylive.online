@@ -49,7 +49,7 @@ export default function AnnouncementScheduler({ communityId, userId }) {
     },
     onSuccess: (announcement) => {
       toast.success('Announcement created!');
-      queryClient.invalidateQueries(['communityAnnouncements']);
+      queryClient.invalidateQueries({ queryKey: ['communityAnnouncements'] });
       resetForm();
       if (userId) {
         base44.entities.Activity.create({
