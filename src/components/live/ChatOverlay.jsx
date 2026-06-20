@@ -20,8 +20,9 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
 
   const { data: roomMessages } = useQuery({
     queryKey: ['roomMessages', roomId],
-    queryFn: () => base44.entities.Message?.filter({ room_id: roomId }, '-created_date', 50) || [],
-    refetchInterval: 1000,
+    queryFn: () => base44.entities.Message.filter({ room_id: roomId }, '-created_date', 50),
+    refetchInterval: 3000,
+    enabled: !!roomId,
   });
 
   useEffect(() => {

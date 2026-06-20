@@ -155,6 +155,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       return msgs;
     },
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   // Subscribe to real-time messages
