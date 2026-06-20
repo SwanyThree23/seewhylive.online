@@ -502,8 +502,10 @@ export default function WatchPartyPage() {
 
   useEffect(() => {
     if (!party || !user) return;
+    let mounted = true;
     const join = async () => {
       const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+      if (!mounted) return;
       if (existing.length === 0) {
         await base44.entities.WatchPartyMember.create({
           party_id: party.id,
@@ -512,11 +514,13 @@ export default function WatchPartyPage() {
           joined_at: new Date().toISOString(),
           is_active: true,
         });
+        if (!mounted) return;
         await base44.entities.WatchParty.update(party.id, { participant_count: members.length + 1 });
-        qc.invalidateQueries({ queryKey: ['watchparty-members', party.id] });
+        if (mounted) qc.invalidateQueries({ queryKey: ['watchparty-members', party.id] });
       }
     };
     join();
+    return () => { mounted = false; };
   }, [party?.id, user?.id]);
 
   useEffect(() => {
