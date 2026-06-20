@@ -30,7 +30,7 @@ function Countdown({ endsAt, onExpired }) {
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
-  }, [endsAt]);
+  }, [endsAt, onExpired]);
 
   const h = Math.floor(remaining / 3600);
   const m = Math.floor((remaining % 3600) / 60);
@@ -69,7 +69,7 @@ function BidHistoryDrawer({ auctionId, open, onClose }) {
             </div>
             <div className="p-3 space-y-1">
               {bids.map((bid, i) => (
-                <div key={bid.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg"
+                <div key={bid.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
                   style={{ background: i === 0 ? `rgba(212,175,55,0.08)` : 'rgba(255,255,255,0.03)', border: i === 0 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <span className="text-[10px] font-bold text-white">{bid.bidder_name}</span>
@@ -317,7 +317,7 @@ function AuctionWinnerBanner({ auction, onDismiss }) {
   useEffect(() => {
     const t = setTimeout(onDismiss, 8000);
     return () => clearTimeout(t);
-  }, []);
+  }, [onDismiss]);
 
   return (
     <motion.div initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
