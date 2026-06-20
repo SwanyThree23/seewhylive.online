@@ -45,6 +45,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
         times_sent: gift.times_sent + 1,
       });
     },
+    onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success(`Sent ${gift.name}! 🎁`);
