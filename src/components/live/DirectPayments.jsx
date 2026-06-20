@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExternalLink, DollarSign, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { isSafeUrl } from '@/lib/security';
 
 const PAYMENT_PLATFORMS = [
   { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-[#0D1022] to-[#080B18]', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
@@ -37,7 +38,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
     if (platform.baseUrl && !val.startsWith('http')) {
       url = platform.baseUrl + val;
     }
-    if (!url.startsWith('http')) {
+    if (!isSafeUrl(url)) {
       toast.info(`Send to: ${val}`);
       navigator.clipboard.writeText(val);
       return;

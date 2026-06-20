@@ -2425,14 +2425,16 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 function PipCameraTile({ localStream, videoEnabled }) {
   const ref = useRef(null);
   useEffect(() => { if (ref.current && localStream) ref.current.srcObject = localStream; }, [localStream]);
+  const showVideo = !!(localStream && videoEnabled);
   return (
     <div className="absolute bottom-3 right-3 rounded-xl overflow-hidden shadow-xl"
       style={{ width: 120, height: 90, border: '2px solid rgba(212,175,55,0.4)', background: '#000', zIndex: 10 }}>
-      {localStream && videoEnabled
-        ? <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover" />
-        : <div className="w-full h-full flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            <VideoOff className="w-5 h-5" />
-          </div>}
+      <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover"
+        style={{ display: showVideo ? 'block' : 'none' }} />
+      <div className="w-full h-full flex items-center justify-center"
+        style={{ color: 'rgba(255,255,255,0.3)', display: showVideo ? 'none' : 'flex' }}>
+        <VideoOff className="w-5 h-5" />
+      </div>
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
     </div>
