@@ -106,7 +106,7 @@ function avatarColor(name) {
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
   const videoRef = useRef(null);
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (videoRef.current) videoRef.current.srcObject = stream || null; }, [stream]);
 
   const isHost   = p.role === 'host';
   const isCohost = p.role === 'co-host';
@@ -135,24 +135,20 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
         <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
           style={{ clipPath: OCT, background: `linear-gradient(145deg, rgba(30,15,30,0.95), rgba(20,10,28,0.95))` }}>
 
-          {stream ? (
-            <video ref={videoRef} autoPlay playsInline muted={isLocal}
-              className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
-          ) : p.avatar ? (
+          {/* Always-mounted video — display toggled so ref is ready before stream arrives */}
+          <video ref={videoRef} autoPlay playsInline muted={isLocal}
+            className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+            style={{ display: stream ? 'block' : 'none' }} />
+          {!stream && (p.avatar ? (
             <img src={p.avatar} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               {/* Ambient glow */}
               <div className="absolute inset-0" style={{ background: `radial-gradient(circle, ${avatarColor(p.name)}33 0%, transparent 70%)` }} />
-              {p.avatar ? (
-                <img src={p.avatar} alt={p.name}
-                  className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
-                  style={{ background: `linear-gradient(135deg, #800020, #D4AF37)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}66, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(212,175,55,0.4)' }}>
-                  {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
-                </div>
-              )}
+              <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0"
+                style={{ background: `linear-gradient(135deg, #800020, #D4AF37)`, color: '#fff', boxShadow: `0 0 20px ${avatarColor(p.name)}66, inset 0 1px 0 rgba(255,255,255,0.2)`, border: '2px solid rgba(212,175,55,0.4)' }}>
+                {p.name.replace(/\s+\S*$/, '').charAt(0).toUpperCase()}
+              </div>
               {/* Audio-only mic indicator */}
               {!p.muted && (
                 <motion.div className="absolute bottom-3 left-0 right-0 flex justify-center items-end gap-[2px]"
@@ -166,7 +162,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
                 </motion.div>
               )}
             </>
-          )}
+          ))}
 
           {/* Speaking waveform bars */}
           {p.speaking && !p.muted && (
@@ -452,9 +448,9 @@ export default function LiveRoom() {
     if (!roomId || !user?.id) return;
     const iv = setInterval(async () => {
       try {
-        const tips = await base44.entities.Tip.filter({ room_id: roomId, type: 'gift' });
+        const tips = await base44.entities.TipAlert.filter({ room_id: roomId });
         const newest = tips
-          .filter(t => t.user_id !== user.id)
+          .filter(t => t.sender_id !== user.id)
           .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
         if (newest) {
           const ts = new Date(newest.created_date).getTime();

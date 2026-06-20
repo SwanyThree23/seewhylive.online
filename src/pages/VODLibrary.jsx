@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Film, Scissors, Sparkles, Eye, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import RecordingManager from '../components/content/RecordingManager';
@@ -35,7 +35,8 @@ export default function VODLibraryPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: stats } = useQuery({
     queryKey: ['vodStats', user?.id],

@@ -46,17 +46,16 @@ function reducer(state, action) {
   }
 }
 
-function VideoOctInner({ stream, size }) {
+function VideoOctInner({ stream, size, show }) {
   const vRef = useRef(null);
   useEffect(() => {
-    if (vRef.current && stream) vRef.current.srcObject = stream;
+    if (vRef.current) vRef.current.srcObject = stream || null;
   }, [stream]);
-  if (!stream) return null;
   return (
     <video
       ref={vRef}
       autoPlay playsInline muted
-      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0, display: show ? 'block' : 'none' }}
     />
   );
 }
@@ -80,10 +79,9 @@ function OctCell({ guest, size, onClick, onDoubleClick, isSpotlight, stream }) {
       <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpotlight ? '#d4af37' : role.color + '60', transition: 'background 0.2s' }} />
       {/* Inner content */}
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {hasLiveCam ? (
-          <VideoOctInner stream={stream} size={size} />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <VideoOctInner stream={stream} size={size} show={hasLiveCam} />
+        {!hasLiveCam && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
             <div style={{ width: size * 0.35, height: size * 0.35, borderRadius: '50%', background: role.color + '30', border: '2px solid ' + role.color + '60', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.18, fontWeight: 900, color: role.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {initials}
             </div>

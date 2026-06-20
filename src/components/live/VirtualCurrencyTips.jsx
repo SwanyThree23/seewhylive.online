@@ -64,10 +64,11 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       if (event.type !== 'create') return;
       const t = event.data;
       if (t?.room_id !== roomId) return;
-      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(t.amount * 10));
+      const tGross = (t.creator_payout || 0) + (t.platform_cut || 0);
+      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(tGross * 10));
       const floatTip = {
         id: Date.now(),
-        coins: Math.round(t.amount * 10),
+        coins: Math.round(tGross * 10),
         emoji: tipDef?.emoji || '🪙',
         color: tipDef?.color || '#d4af37',
         senderName: t.sender_name || 'Viewer',
@@ -97,7 +98,6 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       sender_name: currentUser.full_name || 'Viewer',
       recipient_id: creatorId,
       room_id: roomId,
-      amount: usdAmount,
       creator_payout: Math.floor(usdAmount  * 90) / 100,
       platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
       payment_method: 'virtual_coins',

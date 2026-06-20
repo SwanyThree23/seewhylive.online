@@ -286,7 +286,7 @@ export default function GreenroomPage() {
     },
     onSuccess: (result) => {
       if (result.action === 'navigate') {
-        window.location.href = result.path;
+        navigate(result.path);
       } else if (result.action === 'wait') {
         setWaitlistEntry(result.wlEntry);
       }
@@ -313,7 +313,7 @@ export default function GreenroomPage() {
       }
       return `/LiveRoom?id=${roomId}`;
     },
-    onSuccess: (path) => { window.location.href = path; },
+    onSuccess: (path) => { navigate(path); },
   });
 
   // ─── Waiting Room State ───────────────────────────────────────────────────

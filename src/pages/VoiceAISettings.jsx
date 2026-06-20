@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion } from 'framer-motion';
 import AlertConfig from '../components/live/AlertConfig';
@@ -65,7 +65,8 @@ function Toggle({ value, onChange }) {
 
 export default function VoiceAISettings() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [vs, setVs] = useState(load);
   const [saved, setSaved] = useState(false);
 

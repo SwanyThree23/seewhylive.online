@@ -30,12 +30,12 @@ export default function LoveTap({ roomId, user, creatorId, creatorName }) {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['love-tap-tips', roomId],
-    queryFn: () => base44.entities.Tip.filter({ room_id: roomId, currency: 'usd_micro' }),
+    queryFn: () => base44.entities.TipAlert.filter({ room_id: roomId }),
     enabled: !!roomId,
     refetchInterval: 5000,
   });
 
-  const remoteTotal = tips.reduce((sum, t) => sum + (t.amount || 0.01), 0);
+  const remoteTotal = tips.reduce((sum, t) => sum + (t.amount_usd || 0.01), 0);
   const totalCents  = Math.round((remoteTotal + localTotal) * 100);
 
   const spawnParticles = useCallback(() => {
@@ -66,13 +66,12 @@ export default function LoveTap({ roomId, user, creatorId, creatorName }) {
     showPopup();
     setLocalTotal(prev => prev + 0.01);
     if (roomId && user?.id) {
-      base44.entities.Tip.create({
+      base44.entities.TipAlert.create({
         room_id:    roomId,
-        user_id:    user.id,
+        sender_id:  user.id,
         creator_id: creatorId,
-        amount:     0.01,
-        currency:   'usd_micro',
-        type:       'love_tap',
+        amount_usd: 0.01,
+        message:    'love_tap',
       }).catch(() => {});
     }
   }, [roomId, user, creatorId, spawnParticles, showPopup]);

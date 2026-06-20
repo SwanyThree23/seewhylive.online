@@ -106,8 +106,8 @@ export default function PayoutsPage() {
 
   /* ─── derived ──────────────────────────────────────────────────────── */
   const pendingTips = transactions
-    .filter(t => t.type === 'tip' && t.status !== 'paid_out')
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .filter(t => t.transaction_type === 'tip' && t.status !== 'paid_out')
+    .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
 
   const balance     = payoutRecord?.pending_balance ?? pendingTips;
   const isConnected = payoutRecord?.stripe_connected;
@@ -126,7 +126,7 @@ export default function PayoutsPage() {
           const d = new Date(t.created_date).getTime();
           return d >= dayStart && d < dayEnd;
         })
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
       result.push({ label, earned });
     }
     return result;
@@ -573,7 +573,7 @@ export default function PayoutsPage() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: GREEN, marginBottom: 4 }}>
-                      +${(t.amount || 0).toFixed(2)}
+                      +${((t.creator_payout || 0) + (t.platform_cut || 0)).toFixed(2)}
                     </div>
                     <span style={{
                       display: 'inline-block',

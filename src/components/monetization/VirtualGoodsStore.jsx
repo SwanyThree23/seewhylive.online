@@ -35,9 +35,10 @@ export default function VirtualGoodsStore({ userId }) {
   const purchaseMutation = useMutation({
     mutationFn: async ({ good }) => {
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
-        amount: good.price,
-        from_user_id: userId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(good.price * 90) / 100,
+        platform_cut: good.price - Math.floor(good.price * 90) / 100,
+        sender_id: userId,
         virtual_good_id: good.id,
         status: 'completed',
       });

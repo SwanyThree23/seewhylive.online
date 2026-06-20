@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
@@ -37,7 +37,8 @@ const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const isHost = true;
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -92,10 +93,8 @@ export default function GreenroomEnhanced() {
 
   // Camera stream → video element
   useEffect(() => {
-    if (videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
-      setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
-    }
+    if (videoRef.current) videoRef.current.srcObject = cameraStream || null;
+    if (cameraStream) setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
   }, [cameraStream]);
 
   function handleCameraSource(stream, info) {

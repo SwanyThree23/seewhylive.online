@@ -41,7 +41,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
       await Promise.allSettled([
         base44.entities.Activity.create({
           user_id: currentUser?.id,
-          type: 'tip_sent',
+          transaction_type: 'direct_support',
           title: `Tipped $${tipData.amount} to ${recipient.full_name || recipient.host_name || 'creator'}`,
           amount: tipData.amount,
           recipient_id: recipientId,
@@ -79,9 +79,10 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
     sendTipMutation.mutate({
       type: 'tip',
-      amount: tipAmount,
-      from_user_id: currentUser?.id,
-      to_user_id: recipient.user_id || recipient.id,
+      creator_payout: Math.floor(tipAmount * 90) / 100,
+      platform_cut: tipAmount - Math.floor(tipAmount * 90) / 100,
+      sender_id: currentUser?.id,
+      recipient_id: recipient.user_id || recipient.id,
       room_id: roomId,
       community_id: communityId,
       message: message,

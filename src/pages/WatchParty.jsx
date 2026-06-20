@@ -225,14 +225,13 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
 
 function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52 }) {
   const vRef = useRef(null);
-  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (vRef.current) vRef.current.srcObject = stream || null; }, [stream]);
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s' }} />
       <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {stream ? (
-          <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
+        <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: stream ? 'block' : 'none' }} />
+        {!stream && (
           <span style={{ fontSize: size * 0.28, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
           </span>

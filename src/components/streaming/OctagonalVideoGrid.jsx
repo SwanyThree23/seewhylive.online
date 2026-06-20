@@ -28,10 +28,10 @@ function OctCell({
   const roleColor = ROLE_COLOR[role] || GOLD;
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      if (videoRef.current.srcObject !== stream) {
-        videoRef.current.srcObject = stream;
-      }
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.srcObject !== (stream || null)) {
+      el.srcObject = stream || null;
     }
   }, [stream]);
 
@@ -72,17 +72,16 @@ function OctCell({
         }}
         onClick={onSpotlight}
       >
-        {/* Video feed */}
-        {showVideo ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isLocal}
-            className="w-full h-full object-cover"
-            style={{ transform: isLocal ? 'scaleX(-1)' : 'none' }}
-          />
-        ) : (
+        {/* Video feed — always mounted */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={isLocal}
+          className="w-full h-full object-cover"
+          style={{ transform: isLocal ? 'scaleX(-1)' : 'none', display: showVideo ? 'block' : 'none' }}
+        />
+        {!showVideo && (
           <div className="w-full h-full flex items-center justify-center"
             style={{ background: `linear-gradient(145deg, ${CRIMSON}55, #080B18)` }}>
             {avatarUrl ? (

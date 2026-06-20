@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     </div>
   );
 
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const liveRooms = allRooms.filter(r => r.status === 'live');
   const pendingReports = reports.filter(r => r.status === 'pending');
   const todayUsers = allUsers.filter(u => new Date(u.created_date).toDateString() === new Date().toDateString());
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
 
   const revenueChartData = Object.entries(transactions.reduce((acc, t) => {
     const m = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[m] = (acc[m] || 0) + (t.amount || 0); return acc;
+    acc[m] = (acc[m] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0); return acc;
   }, {})).slice(-8).map(([month, revenue]) => ({ month, revenue }));
 
   const filteredUsers = allUsers.filter(u => !userSearch || u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) || u.email?.toLowerCase().includes(userSearch.toLowerCase()));
@@ -222,9 +222,9 @@ export default function AdminDashboard() {
                       <div key={t.id} className="flex items-center justify-between py-2 border-b text-sm" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                         <div>
                           <p className="font-black text-xs text-white" style={T}>{t.sender_name || 'Anonymous'} → {t.recipient_name || 'Creator'}</p>
-                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.type} · {format(new Date(t.created_date), 'MMM d, h:mm a')}</p>
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.transaction_type} · {format(new Date(t.created_date), 'MMM d, h:mm a')}</p>
                         </div>
-                        <span className="font-black text-sm" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
+                        <span className="font-black text-sm" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${((t.creator_payout || 0) + (t.platform_cut || 0)).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

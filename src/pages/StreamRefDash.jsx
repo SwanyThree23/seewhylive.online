@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
@@ -947,7 +947,8 @@ const TAB_CONTENT = {
 
 export default function StreamRefDash() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', user?.id],
     queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),

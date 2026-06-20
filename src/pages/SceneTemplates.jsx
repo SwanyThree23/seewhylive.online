@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import SceneSwitcher from '../components/live/SceneSwitcher';
@@ -512,7 +512,8 @@ export default function SceneTemplates() {
   const [editingTpl, setEditingTpl]         = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],

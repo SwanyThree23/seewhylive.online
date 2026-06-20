@@ -136,11 +136,24 @@ export default function LivePoll({ roomId, isHost }) {
         user_id: me?.id || 'anonymous',
       });
     },
-    onSuccess: (_, optionIndex) => {
+    onMutate: async (optionIndex) => {
+      await qc.cancelQueries({ queryKey: ['pollvotes', activePoll?.id] });
+      const prevVotes = qc.getQueryData(['pollvotes', activePoll?.id]);
+      // Optimistically add a vote
+      qc.setQueryData(['pollvotes', activePoll?.id], (old) =>
+        (old || []).concat({ poll_id: activePoll.id, option_index: optionIndex, user_id: 'optimistic' })
+      );
       setUserVotedOption(optionIndex);
-      qc.invalidateQueries(['pollvotes', activePoll?.id]);
+      return { prevVotes };
     },
-    onError: () => toast.error('Could not record vote'),
+    onError: (_err, _optionIndex, context) => {
+      if (context) qc.setQueryData(['pollvotes', activePoll?.id], context.prevVotes);
+      setUserVotedOption(null);
+      toast.error('Could not record vote');
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['pollvotes', activePoll?.id] });
+    },
   });
 
   const handleVote = (i) => {

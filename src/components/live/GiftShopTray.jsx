@@ -73,7 +73,7 @@ function GiftCard({ gift, onSend, sending }) {
 function GiftLeaderboard({ roomId }) {
   const { data: txns = [] } = useQuery({
     queryKey: ['gift-lb', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'virtual_good' }, '-created_date', 50),
+    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, transaction_type: 'direct_support' }, '-created_date', 50),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
@@ -81,7 +81,7 @@ function GiftLeaderboard({ roomId }) {
   const senders = Object.entries(
     txns.reduce((acc, t) => {
       const k = t.sender_name || t.sender_id || 'Anonymous';
-      acc[k] = (acc[k] || 0) + (t.amount || 0);
+      acc[k] = (acc[k] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -109,6 +109,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
   const [anim, setAnim] = useState(null);
   const qc = useQueryClient();
 
+  const { data: room } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.Room.get(roomId),
+    enabled: !!roomId,
+    staleTime: 60000,
+  });
+  const recipientId = room?.host_id;
+
   const { data: gifts = [] } = useQuery({
     queryKey: ['gifts-active'],
     queryFn: () => base44.entities.AnimatedGift.filter({ is_active: true }, 'price', 30),
@@ -120,13 +128,12 @@ export default function GiftShopTray({ roomId, currentUser }) {
       await base44.entities.Transaction.create({
         room_id: roomId,
         sender_id: currentUser?.id,
-        sender_name: currentUser?.full_name || currentUser?.email,
-        type: 'virtual_good',
-        amount: gift.price,
-        creator_amount: Math.floor(gift.price  * 90) / 100,
-        platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
+        recipient_id: recipientId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
         status: 'completed',
-        metadata: { gift_id: gift.id, gift_name: gift.name },
+        processed_at: new Date().toISOString(),
       });
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: (gift.times_sent || 0) + 1,

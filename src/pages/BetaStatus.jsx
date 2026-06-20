@@ -1,7 +1,7 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   CheckCircle, AlertCircle, Clock, Radio, Users, DollarSign,
@@ -71,7 +71,8 @@ const STATUS_STYLE = {
 
 export default function BetaStatusPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-beta'],
