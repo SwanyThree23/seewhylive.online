@@ -105,7 +105,10 @@ export function useCanvasCompositor({ slots = [], overlayConfig = {} }) {
     const activeIds = new Set(slots.map(s => s.stream?.id).filter(Boolean));
     Object.keys(videoCache.current).forEach(id => {
       if (!activeIds.has(id)) {
-        videoCache.current[id].srcObject = null;
+        const el = videoCache.current[id];
+        el.pause();
+        el.srcObject = null;
+        el.load(); // resets internal decoder, releases GPU memory
         delete videoCache.current[id];
       }
     });
@@ -158,7 +161,17 @@ export function useCanvasCompositor({ slots = [], overlayConfig = {} }) {
   const stopCompositor = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
-    compositeStreamRef.current = null;
+    if (compositeStreamRef.current) {
+      compositeStreamRef.current.getTracks().forEach(t => t.stop());
+      compositeStreamRef.current = null;
+    }
+    // Release all cached video elements
+    Object.values(videoCache.current).forEach(el => {
+      el.pause();
+      el.srcObject = null;
+      el.load();
+    });
+    videoCache.current = {};
     isRunningRef.current = false;
     setIsRunning(false);
   }, []);
