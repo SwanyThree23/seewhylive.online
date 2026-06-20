@@ -2,6 +2,28 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import AudioMixer from '../components/live/AudioMixer';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import VODCard from '../components/vod/VODCard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import { isSafeUrl } from '@/lib/security';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -462,7 +484,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         </p>
                       )}
                       <a
-                        href={src.url}
+                        href={isSafeUrl(src.url) ? src.url : undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ ...T, fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}

@@ -616,8 +616,10 @@ export default function BroadcastStudio() {
   // Auto-join as member
   useEffect(() => {
     if (!party || !user) return;
+    let mounted = true;
     (async () => {
       const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+      if (!mounted) return;
       if (!existing.length) {
         await base44.entities.WatchPartyMember.create({
           party_id: party.id,
@@ -629,9 +631,10 @@ export default function BroadcastStudio() {
           is_audio_enabled: true,
           is_video_enabled: true,
         });
-        qc.invalidateQueries(['broadcast-members', party.id]);
+        if (mounted) qc.invalidateQueries({ queryKey: ['broadcast-members', party.id] });
       }
     })();
+    return () => { mounted = false; };
   }, [party?.id, user?.id]);
 
   // Leave on unmount
