@@ -159,13 +159,13 @@ export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
 
   const sendTip = useMutation({
     mutationFn: async () => {
+      if (!currentUser?.id) throw new Error('Not authenticated');
       const amt = rawAmount;
       await base44.entities.Transaction.create({
         room_id: roomId,
         transaction_type: 'direct_support',
         creator_payout: Math.floor(amt * 90) / 100,
         platform_fee: amt - Math.floor(amt * 90) / 100,
-        sender_id: currentUser.id,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
         recipient_id: resolvedHostId,

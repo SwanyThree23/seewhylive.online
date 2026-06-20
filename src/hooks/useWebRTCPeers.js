@@ -199,9 +199,9 @@ export function useWebRTCPeers(roomId, localStream) {
   const handleIncomingAnswer = useCallback(async (fromPeer, sdp) => {
     const entry = peersRef.current.get(fromPeer);
     if (entry?.pc) {
-      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(() => {});
+      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(() => removePeer(fromPeer));
     }
-  }, []);
+  }, [removePeer]);
 
   const handleIncomingICE = useCallback(async (fromPeer, candidate) => {
     const entry = peersRef.current.get(fromPeer);

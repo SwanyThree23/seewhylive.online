@@ -818,7 +818,7 @@ export default function GoLive() {
         <WebhookHooks roomId={partyId} userId={user?.id} isHost={true} />
         <RTMPFanoutPanel roomId={partyId} isHost={true} />
         <GuestInviteGenerator roomId={partyId} isHost={true} />
-        <StreamGoals isHost={true} />
+        <StreamGoals roomId={partyId} isHost={true} />
         <SwanAIRecommendations roomId={partyId} currentLayout="broadcast" viewerCount={0} />
         <MilestoneAlerts userId={user?.id} roomId={partyId} />
       </div>
