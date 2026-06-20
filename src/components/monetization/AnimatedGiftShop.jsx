@@ -32,7 +32,8 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       // Create transaction
       await base44.entities.Transaction.create({
         transaction_type: 'direct_support',
-        amount: gift.price,
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
         sender_id: user.id,
         recipient_id: recipientId,
         room_id: roomId,

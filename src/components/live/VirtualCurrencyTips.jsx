@@ -98,7 +98,6 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       sender_name: currentUser.full_name || 'Viewer',
       recipient_id: creatorId,
       room_id: roomId,
-      amount: usdAmount,
       creator_payout: Math.floor(usdAmount  * 90) / 100,
       platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
       payment_method: 'virtual_coins',

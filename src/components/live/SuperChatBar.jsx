@@ -36,7 +36,6 @@ export default function SuperChatBar({ roomId, currentUser, recipientId, recipie
         sender_id: currentUser?.id,
         recipient_id: recipientId,
         room_id: roomId,
-        amount: data.amount,
         creator_payout: Math.floor(data.amount * 90) / 100,
         platform_cut: data.amount - Math.floor(data.amount * 90) / 100,
         transaction_type: 'direct_support',

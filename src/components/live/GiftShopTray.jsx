@@ -130,7 +130,6 @@ export default function GiftShopTray({ roomId, currentUser }) {
         sender_id: currentUser?.id,
         recipient_id: recipientId,
         transaction_type: 'direct_support',
-        amount: gift.price,
         creator_payout: Math.floor(gift.price * 90) / 100,
         platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
         status: 'completed',

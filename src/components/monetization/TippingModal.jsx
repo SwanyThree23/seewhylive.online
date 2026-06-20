@@ -79,7 +79,8 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
     sendTipMutation.mutate({
       type: 'tip',
-      amount: tipAmount,
+      creator_payout: Math.floor(tipAmount * 90) / 100,
+      platform_cut: tipAmount - Math.floor(tipAmount * 90) / 100,
       sender_id: currentUser?.id,
       recipient_id: recipient.user_id || recipient.id,
       room_id: roomId,

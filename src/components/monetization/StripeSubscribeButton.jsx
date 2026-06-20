@@ -105,7 +105,8 @@ async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
     base44.entities.Transaction.create({
       sender_id: viewerId,
       recipient_id: creatorId,
-      amount: grossUsd,
+      creator_payout: Math.floor(grossUsd * 90) / 100,
+      platform_cut: grossUsd - Math.floor(grossUsd * 90) / 100,
       transaction_type: 'subscription',
       status: 'completed',
       description: `Subscription payment`,

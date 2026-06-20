@@ -76,7 +76,6 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
       await base44.entities.Transaction.create({
         room_id: roomId,
         transaction_type: 'direct_support',
-        amount: gift.price,
         creator_payout: Math.floor(gift.price  * 90) / 100,
         platform_fee: gift.price - Math.floor(gift.price  * 90) / 100,
         sender_id: currentUser.id,

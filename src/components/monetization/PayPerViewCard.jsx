@@ -34,7 +34,8 @@ export default function PayPerViewCard({ event }) {
       // Create transaction
       const transaction = await base44.entities.Transaction.create({
         transaction_type: 'ppv',
-        amount: event.price,
+        creator_payout: Math.floor(event.price * 90) / 100,
+        platform_cut: event.price - Math.floor(event.price * 90) / 100,
         sender_id: user.id,
         room_id: event.room_id,
         community_id: event.community_id,
