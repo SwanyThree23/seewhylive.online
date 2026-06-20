@@ -57,7 +57,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   });
   const { data: topSenders = [] } = useQuery({
     queryKey: ['gift-senders', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'virtual_good' }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, transaction_type: 'virtual_good' }, '-created_date', 100),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
@@ -67,7 +67,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   // Aggregate senders for leaderboard
   const senderMap = {};
   topSenders.forEach(t => {
-    senderMap[t.sender_name || 'Anon'] = (senderMap[t.sender_name || 'Anon'] || 0) + (t.amount || 0);
+    senderMap[t.sender_name || 'Anon'] = (senderMap[t.sender_name || 'Anon'] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
   });
   const senderRank = Object.entries(senderMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
 

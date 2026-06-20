@@ -20,11 +20,12 @@ export default function EarningsBreakdown({ creatorId }) {
     enabled: !!creatorId,
   });
 
+  const gross = (t) => (t.creator_payout || 0) + (t.platform_cut || 0);
   const breakdown = {
-    tips: transactions?.filter(t => t.type === 'tip').reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
-    subscriptions: transactions?.filter(t => t.type === 'subscription').reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
-    ppv: transactions?.filter(t => t.type === 'ppv').reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
-    total: transactions?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0,
+    tips: transactions?.filter(t => t.transaction_type === 'tip').reduce((sum, t) => sum + gross(t), 0) || 0,
+    subscriptions: transactions?.filter(t => t.transaction_type === 'subscription').reduce((sum, t) => sum + gross(t), 0) || 0,
+    ppv: transactions?.filter(t => t.transaction_type === 'ppv').reduce((sum, t) => sum + gross(t), 0) || 0,
+    total: transactions?.reduce((sum, t) => sum + gross(t), 0) || 0,
   };
 
   const categories = [

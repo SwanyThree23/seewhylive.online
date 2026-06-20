@@ -102,7 +102,7 @@ export function GiftLeaderboard({ roomId }) {
   var leaders = Object.values(
     transactions.reduce((acc, t) => {
       if (!acc[t.sender_id]) acc[t.sender_id] = { name: t.sender_name || t.sender_id, gems: 0 };
-      acc[t.sender_id].gems += t.amount || 0;
+      acc[t.sender_id].gems += (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b.gems - a.gems).slice(0, 5);

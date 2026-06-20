@@ -81,7 +81,7 @@ function GiftLeaderboard({ roomId }) {
   const senders = Object.entries(
     txns.reduce((acc, t) => {
       const k = t.sender_name || t.sender_id || 'Anonymous';
-      acc[k] = (acc[k] || 0) + (t.amount || 0);
+      acc[k] = (acc[k] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b[1] - a[1]).slice(0, 5);

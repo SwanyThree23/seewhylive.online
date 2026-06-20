@@ -60,7 +60,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
   const earningsData = buckets.map(date => {
     const dayTips = tips.filter(t => new Date(t.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
     const daySubs = subs.filter(s => new Date(s.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
-    const tipTotal = dayTips.reduce((s, t) => s + (t.amount || 0), 0);
+    const tipTotal = dayTips.reduce((s, t) => s + (t.amount_usd || 0), 0);
     const subTotal = daySubs.reduce((s, sub) => s + (sub.amount || 0), 0);
     return { date, tips: +tipTotal.toFixed(2), subs: +subTotal.toFixed(2), total: +(tipTotal + subTotal).toFixed(2) };
   });

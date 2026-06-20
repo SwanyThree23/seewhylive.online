@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
   });
 
   const totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
   const liveRooms = rooms.filter(r => r.status === 'live').length;
@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
 
   const revenueByMonth = transactions.reduce((acc, t) => {
     const month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[month] = (acc[month] || 0) + (t.amount || 0);
+    acc[month] = (acc[month] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
