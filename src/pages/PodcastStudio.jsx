@@ -24,6 +24,7 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import { isSafeUrl } from '@/lib/security';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
@@ -474,7 +475,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         </p>
                       )}
                       <a
-                        href={src.url}
+                        href={isSafeUrl(src.url) ? src.url : undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ ...T, fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}

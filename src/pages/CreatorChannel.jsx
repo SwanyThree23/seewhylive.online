@@ -15,6 +15,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import FollowButton from '../components/shared/FollowButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { isSafeUrl } from '@/lib/security';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
@@ -72,6 +73,7 @@ export default function CreatorChannel() {
       title: `${profile?.display_name} went live!`,
       message: `${profile?.display_name} is now streaming. Join now!`,
     }),
+    onError: () => alert('Failed to set reminder. Please try again.'),
     onSuccess: () => {
       alert('Reminder set!');
       if (currentUser?.id) {
@@ -171,8 +173,9 @@ export default function CreatorChannel() {
           <div className="flex items-center gap-2 shrink-0">
             {profile?.social_links && Object.entries(profile.social_links).map(([platform, url]) => {
               const Icon = socialIcons[platform];
-              return url ? (
-                <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
+              const safeHref = isSafeUrl(url) ? url : undefined;
+              return safeHref ? (
+                <a key={platform} href={safeHref} target="_blank" rel="noopener noreferrer"
                   className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
                   {Icon ? <Icon className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
