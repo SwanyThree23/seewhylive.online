@@ -101,6 +101,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
   });
 
   const createMutation = useMutation({
+    onError: () => toast.error('Failed to create invite link.'),
     mutationFn: async () => {
       const token = genToken();
       const expiresAt = new Date(Date.now() + expireHours * 3600 * 1000).toISOString();

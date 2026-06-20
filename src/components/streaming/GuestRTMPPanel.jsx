@@ -49,6 +49,7 @@ function DestinationRow({ dest, userId, onRemove }) {
 
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.RTMPDestination.update(dest.id, data),
+    onError: () => toast.error('Failed to save destination.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] }),
   });
 
@@ -163,6 +164,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
+    onError: () => toast.error('Failed to add destination.'),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] });
       setShowAdd(false);
@@ -173,6 +175,7 @@ export default function GuestRTMPPanel({ participantId, userId }) {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
+    onError: () => toast.error('Failed to remove destination.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['guest-rtmp', userId] }); toast.success('Destination removed'); },
   });
 
