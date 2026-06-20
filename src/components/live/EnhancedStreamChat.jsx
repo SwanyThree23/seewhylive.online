@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, AlertCircle, Shield, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 const OFFENSIVE_WORDS = [
   'spam', 'scam', 'hack', 'inappropriate', 'offensive',
@@ -195,6 +196,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },
+    onError: () => toast.error('Message failed to send.'),
     onSuccess: (data) => {
       if (data) {
         setInput('');
