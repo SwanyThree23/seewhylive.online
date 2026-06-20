@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -1785,6 +1787,10 @@ export default function SeeWhyLIVEv17() {
 
   useEffect(function(){ base44.auth.me().then(setCurrentUser).catch(function(){}); }, []);
 
+  var roomId = "live-" + (currentUser?.id || "host");
+  var { localStream } = useLocalMedia({ audio: true, video: true });
+  var { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+
   var { data: unreadDMs = [] } = useQuery({
     queryKey: ["unread-dms", currentUser?.id],
     queryFn: function() { return base44.entities.DirectMessage.filter({ recipient_id: currentUser?.id, is_read: false }); },
@@ -1831,7 +1837,7 @@ export default function SeeWhyLIVEv17() {
         {tab === "discover" && (
           <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:16}}>
             <div style={{fontFamily:G.fOrb,fontSize:18,color:G.gold,letterSpacing:3}}>DISCOVER</div>
-            <OnlineUsersGrid compact maxVisible={12} />
+            <OnlineUsersGrid compact maxVisible={12} roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={currentUser} />
             <ContentRecommendations />
         <MilestoneAlerts userId={null} roomId={null} />
         <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />

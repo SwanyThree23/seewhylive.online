@@ -5,6 +5,8 @@
 // Joyce AI Co-Host | INS Forge | SwanyBot Automation | Full Nav
 
 import { useState, useEffect, useRef } from "react";
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -2034,6 +2036,8 @@ export default function SeeWhyLIVEv36() {
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   const currentTab = TABS.find(t=>t.id===activeTab)||TABS[0];
 
@@ -2161,7 +2165,7 @@ export default function SeeWhyLIVEv36() {
         <InteractivePollingSystem roomId={roomId} isHost={false} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
-        <OnlineUsersGrid compact maxVisible={12} />
+        <OnlineUsersGrid compact maxVisible={12} roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} />
         <ContentRecommendations />
         <MilestoneAlerts userId={user?.id} roomId={roomId} />
         <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
