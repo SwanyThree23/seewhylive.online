@@ -52,6 +52,8 @@ function playPreset(preset, volume = 80) {
     osc.start(ctx.currentTime + i * 0.12);
     osc.stop(ctx.currentTime + i * 0.12 + 0.45);
   });
+  const totalDuration = ((presetData.freq.length - 1) * 0.12 + 0.45) * 1000 + 200;
+  setTimeout(() => ctx.close(), totalDuration);
 }
 
 // Live alert overlay component
