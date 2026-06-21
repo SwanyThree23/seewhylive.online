@@ -622,8 +622,7 @@ export default function WatchPartyPage() {
   });
 
   const copyInvite = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Invite link copied!');
+    navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const changeVideo = async (source) => {

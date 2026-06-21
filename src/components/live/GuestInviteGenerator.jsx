@@ -20,10 +20,11 @@ function makeid(len = 12) {
 function CopyBtn({ value, label = 'Link' }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success(`${label} copied!`);
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success(`${label} copied!`);
+    }).catch(() => toast.error('Copy failed.'));
   };
   return (
     <button onClick={copy}

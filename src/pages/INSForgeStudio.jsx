@@ -169,9 +169,10 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
   }
 
   function handleCopy(text) {
-    navigator.clipboard.writeText(text);
-    dispatch({ type: 'SET_COPIED' });
-    setTimeout(() => dispatch({ type: 'RESET_COPIED' }), 2000);
+    navigator.clipboard.writeText(text).then(() => {
+      dispatch({ type: 'SET_COPIED' });
+      setTimeout(() => dispatch({ type: 'RESET_COPIED' }), 2000);
+    }).catch(() => {});
   }
 
   var toneObj = TONES.find(t => t.id === state.tone) || TONES[0];

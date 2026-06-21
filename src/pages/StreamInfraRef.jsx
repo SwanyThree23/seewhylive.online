@@ -45,9 +45,10 @@ const Badge = ({ type, children }) => {
 const Code = ({ children, copy = true }) => {
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
-    navigator.clipboard.writeText(children);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    navigator.clipboard.writeText(children).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }).catch(() => {});
   };
   return (
     <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-[#6DBF7E] my-1">

@@ -224,7 +224,7 @@ export default function TributeWall() {
               <Link to="/StateVsState" style={{ textDecoration: 'none', flex: 1 }}>
                 <Btn label="REGISTER TEAM" variant="tribute" size="sm" style={{ width: '100%' }} />
               </Link>
-              <Btn label="SHARE" variant="ghost" size="sm" onClick={() => { try { navigator.share({ title: 'SeeWhy LIVE Tribute Gaming Event', url: window.location.href }); } catch(_) { navigator.clipboard.writeText(window.location.href); } }} />
+              <Btn label="SHARE" variant="ghost" size="sm" onClick={() => { try { navigator.share({ title: 'SeeWhy LIVE Tribute Gaming Event', url: window.location.href }); } catch(_) { navigator.clipboard.writeText(window.location.href).catch(() => {}); } }} />
               <Btn label="DONATE" variant="ghost" size="sm" onClick={() => window.open('https://seewhy.live/donate', '_blank', 'noopener,noreferrer')} />
             </div>
           </GCard>

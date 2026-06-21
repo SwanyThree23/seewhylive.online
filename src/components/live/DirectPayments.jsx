@@ -40,7 +40,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
     }
     if (!isSafeUrl(url)) {
       toast.info(`Send to: ${val}`);
-      navigator.clipboard.writeText(val);
+      navigator.clipboard.writeText(val).catch(() => {});
       return;
     }
     window.open(url, '_blank', 'noopener,noreferrer');

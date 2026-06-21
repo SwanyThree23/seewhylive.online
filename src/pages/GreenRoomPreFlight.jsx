@@ -90,7 +90,7 @@ function TestRow({ icon, label, status, onTest }) {
 function CopyBtn({ value }) {
   const [copied, setCopied] = useState(false);
   return (
-    <button onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+    <button onClick={() => { navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }).catch(() => {}); }}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? GREEN : TEXTM, padding: 4 }}>
       {copied ? <Check size={14} /> : <Copy size={14} />}
     </button>

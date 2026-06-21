@@ -38,10 +38,11 @@ function PlatformRow({ dest, onRemove, onToggle, onStatusChange, fanoutActive })
 
   const copyKey = () => {
     if (!dest.stream_key) return;
-    navigator.clipboard.writeText(dest.stream_key);
-    setCopiedKey(true);
-    setTimeout(() => setCopiedKey(false), 2000);
-    toast.success('Stream key copied');
+    navigator.clipboard.writeText(dest.stream_key).then(() => {
+      setCopiedKey(true);
+      setTimeout(() => setCopiedKey(false), 2000);
+      toast.success('Stream key copied');
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   return (

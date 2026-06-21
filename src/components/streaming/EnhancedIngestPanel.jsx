@@ -30,10 +30,11 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [copied, setCopied] = useState(null);
 
   const copyToClipboard = (text, label) => {
-    navigator.clipboard.writeText(text);
-    setCopied(label);
-    toast.success(`Copied ${label}`);
-    setTimeout(() => setCopied(null), 2000);
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(label);
+      toast.success(`Copied ${label}`);
+      setTimeout(() => setCopied(null), 2000);
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   if (!isHost) return null;

@@ -60,7 +60,7 @@ function CopyBtn({ value }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={() => { navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1600); }}
+      onClick={() => { navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); }).catch(() => {}); }}
       style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? GREEN : TEXTM, padding: 4, display: 'flex', alignItems: 'center', gap: 4 }}
     >
       {copied ? <Check size={13} /> : <Copy size={13} />}

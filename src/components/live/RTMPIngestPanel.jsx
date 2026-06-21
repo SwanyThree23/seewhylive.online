@@ -17,10 +17,11 @@ function CopyRow({ label, value, secret = false }) {
   const [copied, setCopied] = useState(false);
   const [shown, setShown] = useState(!secret);
   const copy = () => {
-    navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success(`${label} copied!`);
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success(`${label} copied!`);
+    }).catch(() => toast.error('Copy failed.'));
   };
   return (
     <div className="space-y-1">
