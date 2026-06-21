@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast as showToast } from 'sonner';
 import { motion } from 'framer-motion';
 
 
@@ -80,7 +80,7 @@ export default function ClipsLibraryPage() {
 
   const deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
-    onError: () => toast.error('Failed to delete clip.'),
+    onError: () => showToast.error('Failed to delete clip.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
   });
 

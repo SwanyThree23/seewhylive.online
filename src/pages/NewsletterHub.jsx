@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast as showToast } from 'sonner';
 import { motion } from 'framer-motion';
 
 
@@ -92,12 +92,12 @@ export default function NewsletterHubPage() {
 
   const saveMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, subscriber_count: 0, ...data }),
-    onError: () => toast.error('Failed to save newsletter.'),
+    onError: () => showToast.error('Failed to save newsletter.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Saved! ✓'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('drafts'); },
   });
   const sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
-    onError: () => toast.error('Failed to send newsletter.'),
+    onError: () => showToast.error('Failed to send newsletter.'),
     onSuccess: (newsletter) => {
       qc.invalidateQueries({ queryKey:['newsletters'] });
       showToast('Sent! 🚀');
@@ -114,7 +114,7 @@ export default function NewsletterHubPage() {
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
-    onError: () => toast.error('Failed to delete newsletter.'),
+    onError: () => showToast.error('Failed to delete newsletter.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['newsletters'] }),
   });
 
