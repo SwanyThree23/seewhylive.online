@@ -161,9 +161,9 @@ export default function PollManager() {
                 style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
                 Cancel
               </button>
-              <button onClick={handleSubmit}
+              <button onClick={handleSubmit} disabled={createTemplateMutation.isPending}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
+                style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: createTemplateMutation.isPending ? 'not-allowed' : 'pointer', opacity: createTemplateMutation.isPending ? 0.6 : 1 }}>
                 <Save className="w-4 h-4" /> Save Template
               </button>
             </div>
