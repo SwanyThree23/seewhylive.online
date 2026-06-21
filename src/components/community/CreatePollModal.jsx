@@ -179,7 +179,7 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
             <Button variant="outline" onClick={handleClose} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} className="flex-1">
+            <Button onClick={handleSubmit} disabled={createPollMutation.isPending} className="flex-1">
               Create Poll
             </Button>
           </div>
