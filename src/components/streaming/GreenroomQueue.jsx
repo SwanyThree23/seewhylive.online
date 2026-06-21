@@ -80,8 +80,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
   const copyJoinLink = () => {
     const link = `${window.location.origin}/GuestJoin?room=${roomId}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Guest join link copied!');
+    navigator.clipboard.writeText(link).then(() => toast.success('Guest join link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   if (!roomId) return null;

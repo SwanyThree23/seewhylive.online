@@ -202,7 +202,7 @@ export default function DestinationsManager({ userId }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={() => { navigator.clipboard.writeText(dest.server_url + '/' + dest.stream_key_encrypted); toast.success('Copied!'); }}
+                  <button onClick={() => { navigator.clipboard.writeText(dest.server_url + '/' + dest.stream_key_encrypted).then(() => toast.success('Copied!')).catch(() => toast.error('Copy failed.')); }}
                     className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
                     style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
                     <Copy className="w-3.5 h-3.5" style={{ color: GOLD }} />

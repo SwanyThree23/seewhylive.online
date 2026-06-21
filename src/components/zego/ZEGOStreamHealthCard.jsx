@@ -109,7 +109,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
               <p className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>ZEGO Room ID</p>
               <p className="text-[11px]" style={{ color: '#C9A84C', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
             </div>
-            <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id); toast.success('Copied!'); }}>
+            <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id).then(() => toast.success('Copied!')).catch(() => toast.error('Copy failed.')); }}>
               <Copy className="w-3 h-3 text-white/30 hover:text-white/60 transition-colors" />
             </button>
           </div>

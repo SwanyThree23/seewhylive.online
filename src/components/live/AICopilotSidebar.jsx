@@ -119,7 +119,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
   }, [isHost, roomId, recentMessages.length]);
 
   const handleDismiss = (id) => setDismissed(prev => new Set([...prev, id]));
-  const handleCopy = (text) => { navigator.clipboard.writeText(text); toast.success('Copied!'); };
+  const handleCopy = (text) => { navigator.clipboard.writeText(text).then(() => toast.success('Copied!')).catch(() => toast.error('Copy failed.')); };
   const visibleInsights = insights.filter(i => !dismissed.has(i.id));
 
   if (!isHost) return null;

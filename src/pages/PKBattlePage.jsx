@@ -445,7 +445,7 @@ export default function PKBattlePage() {
     return () => clearInterval(timerRef.current);
   }, [battleId, battle?.status]);
 
-  const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
+  const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
   if (!battleId) {
     return (

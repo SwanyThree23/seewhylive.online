@@ -205,7 +205,7 @@ function WinnerOverlay({ battle, onClose }) {
 
         <div className="flex gap-3">
           <Button
-            onClick={function() { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
+            onClick={function() { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.')); }}
             className="flex-1 gap-1.5 text-xs"
             style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.25)' }}
           >
