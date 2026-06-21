@@ -130,6 +130,7 @@ export default function LoyaltyProgram() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'loyalty-data.csv'; a.click();
+    URL.revokeObjectURL(url);
   };
 
   const TABS = isOwnProgram

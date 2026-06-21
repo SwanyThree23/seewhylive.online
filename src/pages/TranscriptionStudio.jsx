@@ -180,9 +180,11 @@ export default function TranscriptionStudio() {
   function downloadSRT() {
     const blob = new Blob([srtText], { type: 'text/plain' });
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    const srtUrl = URL.createObjectURL(blob);
+    a.href = srtUrl;
     a.download = 'transcript.srt';
     a.click();
+    URL.revokeObjectURL(srtUrl);
   }
 
   return (
