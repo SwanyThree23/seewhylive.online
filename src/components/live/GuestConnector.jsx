@@ -149,8 +149,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                     </a>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText(guestJoinUrl);
-                        toast.success('Guest link copied!');
+                        navigator.clipboard.writeText(guestJoinUrl).then(() => toast.success('Guest link copied!')).catch(() => toast.error('Copy failed.'));
                       }}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded text-[11px] font-black uppercase transition-all"
                       style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)', ...T }}
@@ -215,8 +214,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                   <button
                     onClick={() => {
                       const all = vdoLinks.map(l => `${l.name}\nPush: ${l.pushUrl}\nView: ${l.viewUrl}`).join('\n\n');
-                      navigator.clipboard.writeText(all);
-                      toast.success('All VDO.ninja links copied!');
+                      navigator.clipboard.writeText(all).then(() => toast.success('All VDO.ninja links copied!')).catch(() => toast.error('Copy failed.'));
                     }}
                     className="w-full py-1.5 rounded text-[10px] font-black uppercase transition-all"
                     style={{ background: 'rgba(212,175,55,0.08)', color: G, border: `1px solid ${G}25`, ...T }}

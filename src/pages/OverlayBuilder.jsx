@@ -264,7 +264,7 @@ export default function OverlayBuilderPage() {
               {activeLayout?.id === selectedLayout ? '● Active' : 'Set Active'}
             </button>
           )}
-          <button onClick={() => { navigator.clipboard.writeText(obsUrl); toast.success('OBS URL copied!'); }}
+          <button onClick={() => { navigator.clipboard.writeText(obsUrl).then(() => toast.success('OBS URL copied!')).catch(() => toast.error('Copy failed.')); }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
             style={{ background: 'rgba(201,168,76,0.08)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.2)', ...T }}>
             <Copy className="w-3 h-3" /> OBS URL

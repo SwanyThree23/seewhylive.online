@@ -128,8 +128,7 @@ export default function AutomatedHighlightReels({ streamSession }) {
 
   const handleShare = (highlight) => {
     const url = `https://seewhy.live/highlights/${highlight.id}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Share link copied!');
+    navigator.clipboard.writeText(url).then(() => toast.success('Share link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   return (

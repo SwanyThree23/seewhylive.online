@@ -117,8 +117,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
         is_public: false,
       });
 
-      navigator.clipboard.writeText(inviteUrl).catch(() => {});
-      toast.success('Invite link created & copied!');
+      navigator.clipboard.writeText(inviteUrl).catch(() => {}).then(() => toast.success('Invite link created & copied!')).catch(() => toast.error('Copy failed.'));
       qc.invalidateQueries({ queryKey: ['guest-invites', roomId || streamId] });
       setLabel('');
       setCreating(false);

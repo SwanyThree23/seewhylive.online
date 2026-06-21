@@ -441,7 +441,7 @@ export default function PKBattlePage() {
     return () => clearInterval(timerRef.current);
   }, [battleId, battle?.status]);
 
-  const copyLink = () => { navigator.clipboard.writeText(window.location.href); toast.success('Battle link copied!'); };
+  const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
