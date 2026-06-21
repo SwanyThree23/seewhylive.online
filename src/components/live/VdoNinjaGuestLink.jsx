@@ -20,9 +20,10 @@ export default function VdoNinjaGuestLink({ roomId }) {
   ];
 
   const handleCopy = (url) => {
-    navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   };
 
   return (

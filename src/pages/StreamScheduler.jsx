@@ -158,8 +158,7 @@ export default function StreamScheduler() {
 
   const shareStream = (s) => {
     const text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
-    navigator.clipboard.writeText(text);
-    toast.success('Announcement copied!');
+    navigator.clipboard.writeText(text).then(() => toast.success('Announcement copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const getCountdown = (dateStr) => {

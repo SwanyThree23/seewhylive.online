@@ -403,7 +403,7 @@ export default function GoLiveStudio() {
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>STREAM KEY</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' }}>••••••••••••••</div>
             <button
-              onClick={() => navigator.clipboard.writeText(STREAM_KEY)}
+              onClick={() => navigator.clipboard.writeText(STREAM_KEY).catch(() => {})}
               style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, color: '#d4af37', fontSize: 12, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
             >
               Copy Stream Key

@@ -30,8 +30,7 @@ import {
 
 /* ─── Helpers ─── */
 function copyText(val) {
-  navigator.clipboard.writeText(val);
-  toast.success('Copied to clipboard');
+  navigator.clipboard.writeText(val).then(() => toast.success('Copied to clipboard')).catch(() => toast.error('Copy failed.'));
 }
 
 function genKey(prefix, userId) {

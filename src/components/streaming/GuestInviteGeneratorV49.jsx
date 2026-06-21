@@ -42,10 +42,11 @@ export default function GuestInviteGeneratorV49({ roomId, isHost }) {
   });
 
   function copyLink() {
-    navigator.clipboard.writeText(generatedLink).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success('Link copied!');
+    navigator.clipboard.writeText(generatedLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success('Link copied!');
+    }).catch(() => toast.error('Copy failed.'));
   }
 
   if (!isHost) return null;

@@ -1930,7 +1930,7 @@ function SettingsPanel() {
           <div style={{fontSize:10,color:C.textM,letterSpacing:1,marginBottom:5}}>RTMP INGEST URL</div>
           <div style={{display:"flex",alignItems:"center",gap:6}}>
             <div style={{flex:1,background:C.bg2,borderRadius:R.sm,padding:"8px 10px",fontSize:11,color:C.textD,fontFamily:F.mono}}>{rtmpUrl}</div>
-            <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(rtmpUrl)}}
+            <button onClick={()=>{navigator.clipboard&&navigator.clipboard.writeText(rtmpUrl).catch(()=>{})}}
               style={{fontSize:12,padding:"6px 10px",background:C.slate,color:C.textD,border:`1px solid ${C.slateL}`,borderRadius:R.sm,cursor:"pointer"}}>
               COPY
             </button>

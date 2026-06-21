@@ -75,10 +75,11 @@ export default function InviteUsersPage() {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
-    toast.success('Beta invite link copied!');
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+      toast.success('Beta invite link copied!');
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   return (

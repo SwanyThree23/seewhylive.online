@@ -132,10 +132,11 @@ export default function CommunitySettingsPage() {
 
   const copyInviteLink = () => {
     const link = `${window.location.origin}${createPageUrl('Community')}?id=${communityId}`;
-    navigator.clipboard.writeText(link);
-    setCopiedInvite(true);
-    setTimeout(() => setCopiedInvite(false), 2500);
-    toast.success('Invite link copied!');
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+      toast.success('Invite link copied!');
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   if (!communityId) return (

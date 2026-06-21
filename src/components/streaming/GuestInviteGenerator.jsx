@@ -20,9 +20,10 @@ function InviteCard({ invite, onRevoke }) {
   const isExpired = invite.expires_at && new Date(invite.expires_at) < new Date();
 
   const copy = () => {
-    navigator.clipboard.writeText(invite.invite_url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(invite.invite_url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   };
 
   return (

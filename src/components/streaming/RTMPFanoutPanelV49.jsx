@@ -42,10 +42,11 @@ export default function RTMPFanoutPanelV49({ roomId, isHost }) {
 
   function copyRTMP(platform) {
     const url = platform.rtmpBase + (keys[platform.id] || '');
-    navigator.clipboard.writeText(url).catch(() => {});
-    setCopied(platform.id);
-    setTimeout(() => setCopied(''), 2000);
-    toast.success('RTMP URL copied!');
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(platform.id);
+      setTimeout(() => setCopied(''), 2000);
+      toast.success('RTMP URL copied!');
+    }).catch(() => toast.error('Copy failed.'));
   }
 
   function toggleFanout() {

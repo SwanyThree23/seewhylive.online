@@ -107,9 +107,10 @@ export default function ClipsLibraryPage() {
   });
 
   const share = (clip) => {
-    navigator.clipboard.writeText(`${window.location.origin}/clips/${clip.id}`);
-    setToast('Link copied! 🔗');
-    setTimeout(() => setToast(''), 2500);
+    navigator.clipboard.writeText(`${window.location.origin}/clips/${clip.id}`).then(() => {
+      setToast('Link copied! 🔗');
+      setTimeout(() => setToast(''), 2500);
+    }).catch(() => {});
   };
 
   return (
