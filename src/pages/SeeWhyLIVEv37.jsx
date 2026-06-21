@@ -334,7 +334,7 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const [tributes, setTributes] = useState(() => JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'));
+  const [tributes, setTributes] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'); } catch { return []; } });
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
   const [era, setEra] = useState('');
@@ -398,7 +398,7 @@ function PodcastPanel() {
   const [toastMsg, setToastMsg] = useState('');
   const [nlmUrl, setNlmUrl] = useState('');
   const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'));
+  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'); } catch { return []; } });
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
