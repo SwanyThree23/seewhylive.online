@@ -296,7 +296,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setEnded(true);
       setShowWinner(true);
-    });
+    }).catch(() => toast.error('Failed to end battle.'));
   }, [battle, creatorScore, challengerScore]);
 
   const sendGift = (side, gift) => {
