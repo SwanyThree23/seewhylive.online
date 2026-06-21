@@ -186,8 +186,7 @@ export default function ProfilePage() {
     if (navigator.share) {
       navigator.share({ title: user?.full_name, url: window.location.href }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Profile link copied!');
+      navigator.clipboard.writeText(window.location.href).then(() => toast.success('Profile link copied!')).catch(() => toast.error('Copy failed.'));
     }
   };
 

@@ -62,7 +62,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
   };
 
   const copyStreamUrl = (url, key) => {
-    navigator.clipboard.writeText(`${url}/${key}`);
+    navigator.clipboard.writeText(`${url}/${key}`).catch(() => {});
   };
 
   const platforms = [

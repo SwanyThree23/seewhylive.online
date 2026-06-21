@@ -40,10 +40,11 @@ Write an engaging summary that captures the energy of the stream. Include highli
 
   const copyToClipboard = () => {
     if (!summary) return;
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    toast.success('Summary copied!');
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(summary).then(() => {
+      setCopied(true);
+      toast.success('Summary copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   return (

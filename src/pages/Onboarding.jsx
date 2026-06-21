@@ -177,12 +177,8 @@ function Step3({ onboarding, onDone }) {
   const [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
-  const copy = () => { navigator.clipboard.writeText(RTMP); setCopied(true); setTimeout(() => setCopied(false), 2000); };
-  const save = async () => {
-    setSaving(true);
-    onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 });
-    setSaving(false);
-  };
+  const copy = () => { navigator.clipboard.writeText(RTMP).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); };
+  const save = async () => { setSaving(true); onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 }); setSaving(false); };
   return (
     <div style={{ padding: '20px' }}>
       <h2 style={{ fontFamily: 'Barlow Condensed', fontSize: 22, color: C.gold, marginBottom: 16 }}>Streaming Setup</h2>

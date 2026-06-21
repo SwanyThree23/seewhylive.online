@@ -516,8 +516,7 @@ export default function AudioRoom() {
               if (navigator.share) {
                 navigator.share({ title: party?.title || 'Audio Room', url: window.location.href }).catch(() => {});
               } else {
-                navigator.clipboard.writeText(window.location.href);
-                toast.success('Link copied!');
+                navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.'));
               }
             }}
             className="w-10 h-10 rounded-full flex items-center justify-center"

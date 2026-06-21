@@ -50,16 +50,17 @@ function msToSrt(ms) {
   return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs,2)}`;
 }
 
-function buildSrt(captions) {
-  return captions.map((c, i) => `${i+1}\n${msToSrt(c.startMs)} --> ${msToSrt(c.endMs)}\n${c.text}\n`).join('\n');
-}
-
-function downloadBlob(content, filename, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+function CopyBtn({ value }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1600); }).catch(() => {}); }}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied ? GREEN : TEXTM, padding: 4, display: 'flex', alignItems: 'center', gap: 4 }}
+    >
+      {copied ? <Check size={13} /> : <Copy size={13} />}
+      <span style={{ ...MONO, fontSize: 9, letterSpacing: '0.06em' }}>{copied ? 'COPIED' : 'COPY'}</span>
+    </button>
+  );
 }
 
 export default function TranscriptionStudio() {

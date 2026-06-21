@@ -34,7 +34,7 @@ const PLATFORMS = [
 
 function CopyField({ label, value, mono = true, secret = false }) {
   const [shown, setShown] = useState(!secret);
-  const copy = () => { navigator.clipboard.writeText(value); toast.success(`${label} copied!`); };
+  const copy = () => { navigator.clipboard.writeText(value).then(() => toast.success(`${label} copied!`)).catch(() => toast.error('Copy failed.')); };
   return (
     <div className="space-y-1">
       <label className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{label}</label>

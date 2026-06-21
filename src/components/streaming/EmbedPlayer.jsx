@@ -244,7 +244,7 @@ export default function EmbedPlayer({
               {embedCode}
             </pre>
             <button
-              onClick={() => { navigator.clipboard.writeText(embedCode); }}
+              onClick={() => { navigator.clipboard.writeText(embedCode).catch(() => {}); }}
               style={{ background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, padding:'6px 12px', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:6, fontFamily:'Barlow Condensed, sans-serif', fontSize:13 }}
             >
               <Copy className="w-3 h-3" /> Copy Code
