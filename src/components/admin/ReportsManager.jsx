@@ -73,6 +73,7 @@ export default function ReportsManager({ communityId, userId }) {
       setResolutionNotes('');
       setActionTaken('');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleResolve = (report, status) => {

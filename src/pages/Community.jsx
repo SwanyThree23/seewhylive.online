@@ -101,11 +101,13 @@ export default function CommunityPage() {
         description: community.description || '',
       }).catch(() => {});
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const leaveMut = useMutation({
     mutationFn: () => base44.entities.CommunityMember.delete(membership.id),
     onSuccess: () => { toast.success('Left community'); qc.invalidateQueries({ queryKey: ['my-membership'] }); qc.invalidateQueries({ queryKey: ['community-member-count-page'] }); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const isMember = !!membership;

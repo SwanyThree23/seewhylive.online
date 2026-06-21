@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -96,6 +97,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
         ]);
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (

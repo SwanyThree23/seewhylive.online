@@ -45,6 +45,7 @@ export default function CoStreamPanel({ roomId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endSessionMutation = useMutation({
@@ -59,6 +60,7 @@ export default function CoStreamPanel({ roomId }) {
       stopMediaStream();
       toast.success('Co-stream ended');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   // Assign srcObject once video element mounts (after isStreaming flips true)

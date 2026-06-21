@@ -35,6 +35,7 @@ export default function StreamMetadata({ room, isHost }) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleSave = () => {

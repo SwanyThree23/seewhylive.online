@@ -189,6 +189,7 @@ export default function RoomPage() {
         }
       } catch (_) {}
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const leaveRoomMutation = useMutation({
@@ -200,12 +201,14 @@ export default function RoomPage() {
     onSuccess: () => {
       navigate(createPageUrl('Home'));
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateParticipantMutation = useMutation({
     mutationFn: async ({ id, updates }) => {
       return await base44.entities.Participant.update(id, updates);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const startRecordingMutation = useMutation({
@@ -227,6 +230,7 @@ export default function RoomPage() {
       setIsRecording(true);
       toast.success('Recording started');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const stopRecordingMutation = useMutation({
@@ -244,6 +248,7 @@ export default function RoomPage() {
       recordingRef.current = null;
       toast.success('Recording saved to Past Streams');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const raiseHandMutation = useMutation({
@@ -256,6 +261,7 @@ export default function RoomPage() {
     onSuccess: () => {
       toast.success(currentParticipant.hand_raised ? 'Hand lowered' : 'Hand raised!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {

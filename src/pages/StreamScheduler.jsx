@@ -99,14 +99,17 @@ export default function StreamScheduler() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onError: () => toast.error('Action failed.'),
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const year = calendarDate.getFullYear();

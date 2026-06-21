@@ -68,6 +68,7 @@ export default function PayPerViewCard({ event }) {
       queryClient.invalidateQueries({ queryKey: ['ppv-events'] });
       toast.success('Access granted! Enjoy the event 🎉');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const statusColors = {

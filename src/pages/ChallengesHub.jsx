@@ -223,6 +223,7 @@ export default function ChallengesHubPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const myCompleted = myParticipations.filter(p => p.completed);

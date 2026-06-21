@@ -80,6 +80,7 @@ export default function RecordingManager({ userId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const batchUploadMutation = useMutation({
@@ -145,6 +146,7 @@ export default function RecordingManager({ userId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
@@ -154,6 +156,7 @@ export default function RecordingManager({ userId }) {
       setEditDialogOpen(false);
       toast.success('Recording updated!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
@@ -162,6 +165,7 @@ export default function RecordingManager({ userId }) {
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       toast.success('Recording deleted');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleUpload = () => {

@@ -40,6 +40,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (!isHost) return null;

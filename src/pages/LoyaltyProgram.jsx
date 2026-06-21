@@ -108,14 +108,17 @@ export default function LoyaltyProgram() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const toggleRewardMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
+    onError: () => toast.error('Action failed.'),
   });
   const deleteRewardMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);

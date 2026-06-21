@@ -264,10 +264,12 @@ export default function ControlRoomPage() {
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }),
+    onError: () => toast.error('Action failed.'),
   });
   const reconnectDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }); toast.success('Reconnecting…'); },
+    onError: () => toast.error('Action failed.'),
   });
   const goLiveMut = useMutation({
     mutationFn: async () => {
@@ -294,6 +296,7 @@ export default function ControlRoomPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
@@ -312,6 +315,7 @@ export default function ControlRoomPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const latestHealth = healthMetrics[0];

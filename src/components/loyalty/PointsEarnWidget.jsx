@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -18,6 +19,7 @@ export default function PointsEarnWidget({ userId, creatorId, roomId, isHost }) 
       return base44.entities.ViewerLoyalty.create({ user_id: userId, creator_id: creatorId, room_id: roomId, loyalty_points: pts, created_at: new Date().toISOString() });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['viewer-loyalty', userId, creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {

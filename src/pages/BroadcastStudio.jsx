@@ -647,6 +647,7 @@ export default function BroadcastStudio() {
       }
       setSearchParams({ id: p.id });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endMut = useMutation({
@@ -662,6 +663,7 @@ export default function BroadcastStudio() {
       }
       setSearchParams({});
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────

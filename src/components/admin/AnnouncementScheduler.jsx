@@ -59,6 +59,7 @@ export default function AnnouncementScheduler({ communityId, userId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const resetForm = () => {

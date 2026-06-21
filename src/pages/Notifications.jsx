@@ -62,6 +62,7 @@ export default function NotificationsPage() {
   const markReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const markAllReadMutation = useMutation({
@@ -73,11 +74,13 @@ export default function NotificationsPage() {
       toast.success('All marked as read');
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

@@ -26,6 +26,7 @@ export default function AIHighlightGenerator({ recording }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const generateHighlights = async () => {

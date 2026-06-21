@@ -93,6 +93,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const addBenefit = () => {

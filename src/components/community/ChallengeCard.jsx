@@ -32,6 +32,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const isParticipating = !!userParticipation;

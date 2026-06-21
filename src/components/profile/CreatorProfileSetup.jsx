@@ -51,6 +51,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (!isOpen) return null;

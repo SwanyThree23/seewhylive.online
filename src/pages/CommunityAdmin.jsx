@@ -125,11 +125,13 @@ function MembersTab({ communityId, currentUserId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const removeMut = useMutation({
     mutationFn: (id) => base44.entities.CommunityMember.delete(id),
     onSuccess: () => { toast.success('Member removed'); qc.invalidateQueries({ queryKey: ['community-members-admin'] }); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const filtered = members.filter(m => {
