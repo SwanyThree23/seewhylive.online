@@ -131,6 +131,7 @@ Messages:\n${msgLines}`,
       setInsights(prev => [...newInsights, ...prev].slice(0, 6));
       setLastAnalyzed(new Date());
     },
+    onError: () => toast.error('Failed to analyze chat.'),
   });
 
   useEffect(() => {

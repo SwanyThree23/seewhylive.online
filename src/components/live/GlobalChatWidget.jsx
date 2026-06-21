@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Smile, Globe, ChevronDown, Minimize2 } from 'lucide-react';
 
@@ -69,6 +70,7 @@ export default function GlobalChatWidget() {
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.Message.create(data),
+    onError: () => toast.error('Failed to send message.'),
   });
 
   const sendMessage = useCallback(async () => {

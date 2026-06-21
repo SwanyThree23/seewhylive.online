@@ -11,6 +11,7 @@ import SelectSheet from '../components/shared/SelectSheet';
 import QuickTip from '../components/rooms/QuickTip';
 import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -590,9 +591,11 @@ export default function OnboardingPage() {
 
   const updateOnboarding = useMutation({
     mutationFn: async (data) => {
+      if (!user?.id) throw new Error('Not authenticated');
       if (onboarding?.id) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
       return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
     },
+    onError: () => toast.error('Failed to save progress. Please try again.'),
     onSuccess: (_, data) => {
       qc.invalidateQueries({ queryKey: ['onboarding', user?.id] });
       if (data.is_complete && user?.id) {

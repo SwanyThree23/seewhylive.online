@@ -32,6 +32,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to save clip.'),
   });
 
   const handleTrackMouseDown = useCallback((handle) => (e) => {

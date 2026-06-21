@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Flame, Heart, Star, Award, MapPin, Send, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ShareToSocial from '../components/social/ShareToSocial';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
@@ -33,6 +34,7 @@ function reducer(state, action) {
     case 'SET_FORM': return { ...state, form: { ...state.form, [action.key]: action.value } };
     case 'SUBMIT_START': return { ...state, submitting: true };
     case 'SUBMIT_DONE': return { ...state, submitting: false, submitted: true, form: { name: '', years: '', region: '', quote: '', tribute: '' } };
+    case 'SUBMIT_FAIL': return { ...state, submitting: false };
     case 'LIGHT_CANDLE':
       return { ...state, localCandles: { ...state.localCandles, [action.id]: (state.localCandles[action.id] || 0) + 1 } };
     default: return state;
@@ -141,7 +143,7 @@ export default function FallenLegendsPage() {
       dispatch({ type: 'SUBMIT_DONE' });
       qc.invalidateQueries({ queryKey: ['fallen-legends'] });
     },
-    onError: () => dispatch({ type: 'SUBMIT_DONE' }),
+    onError: () => { dispatch({ type: 'SUBMIT_FAIL' }); toast.error('Failed to submit. Please try again.'); },
   });
 
   function handleSubmit() {
