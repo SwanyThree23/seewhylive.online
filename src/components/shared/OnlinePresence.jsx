@@ -33,13 +33,13 @@ export function usePresence(roomId) {
     const unsub = base44.entities.Participant.subscribe((event) => {
       if (event.data?.room_id === roomId) {
         base44.entities.Participant.filter({ room_id: roomId, status: 'listening' })
-          .then(list => setOnlineCount(list.length));
+          .then(list => setOnlineCount(list.length)).catch(() => {});
       }
     });
 
     // Initial count
     base44.entities.Participant.filter({ room_id: roomId })
-      .then(list => setOnlineCount(list.length));
+      .then(list => setOnlineCount(list.length)).catch(() => {});
 
     return () => unsub();
   }, [user?.id, roomId]);
