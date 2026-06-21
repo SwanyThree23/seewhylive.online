@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Volume2, Trash2, Play } from 'lucide-react';
 import SelectSheet from '@/components/shared/SelectSheet';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -45,6 +46,7 @@ export default function AlertConfig({ creatorId }) {
       setShowForm(false);
       setFormData({ name: '', trigger_type: 'donation_amount', trigger_value: 5, sound_preset: 'cash_register', volume: 80, color: G });
     },
+    onError: () => toast.error('Failed to create alert.'),
   });
 
   return (

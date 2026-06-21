@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
 
@@ -45,8 +46,12 @@ export default function PollManager() {
   });
 
   const createTemplateMutation = useMutation({
-    mutationFn: (data) => base44.entities.PollTemplate.create({ ...data, creator_id: user.id }),
-    onSuccess: () => {
+    mutationFn: (data) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      return base44.entities.PollTemplate.create({ ...data, creator_id: user.id });
+    },
+    onError: () => toast.error('Failed to create template.'),
+    onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
@@ -55,6 +60,7 @@ export default function PollManager() {
 
   const deleteTemplateMutation = useMutation({
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
+    onError: () => toast.error('Failed to delete template.'),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
   });
 

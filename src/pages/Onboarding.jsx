@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -424,10 +425,21 @@ export default function OnboardingPage() {
 
   const updateOnboarding = useMutation({
     mutationFn: async (data) => {
+      if (!user?.id) throw new Error('Not authenticated');
       if (onboarding?.id) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
       return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['onboarding', user?.id] }),
+    onError: () => toast.error('Failed to save progress. Please try again.'),
+    onSuccess: (_, data) => {
+      qc.invalidateQueries({ queryKey: ['onboarding', user?.id] });
+      if (data.is_complete && user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Completed creator onboarding',
+        }).catch(() => {});
+      }
+    },
   });
 
   const handleDone = async (data) => {

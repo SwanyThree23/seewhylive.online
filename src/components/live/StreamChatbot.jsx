@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { Bot, Power, Settings2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const COMMANDS = [
   { trigger: '!uptime', description: 'Show stream uptime' },
@@ -31,6 +32,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
         content,
         message_type: 'cohost',
       }),
+    onError: () => toast.error('Failed to send bot message.'),
   });
 
   const formatUptime = (s) => {

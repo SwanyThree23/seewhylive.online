@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
 
@@ -91,14 +92,29 @@ export default function NewsletterHubPage() {
 
   const saveMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, subscriber_count: 0, ...data }),
+    onError: () => toast.error('Failed to save newsletter.'),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Saved! ✓'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('drafts'); },
   });
   const sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Sent! 🚀'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('sent'); },
+    onError: () => toast.error('Failed to send newsletter.'),
+    onSuccess: (newsletter) => {
+      qc.invalidateQueries({ queryKey:['newsletters'] });
+      showToast('Sent! 🚀');
+      setForm({title:'',content:'',preview_text:'',scheduled_for:''});
+      setTab('sent');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Sent newsletter: ${newsletter?.title || 'Newsletter'}`,
+        }).catch(() => {});
+      }
+    },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
+    onError: () => toast.error('Failed to delete newsletter.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['newsletters'] }),
   });
 

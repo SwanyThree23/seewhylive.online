@@ -673,7 +673,18 @@ export default function WatchPartyPage() {
 
   const endPartyMutation = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Watch party ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Watch party ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Ended watch party: ${party?.title || 'Watch Party'}`,
+        }).catch(() => {});
+      }
+      setSearchParams({});
+    },
+    onError: () => toast.error('Failed to end watch party.'),
   });
 
   const copyInvite = () => {
