@@ -59,6 +59,7 @@ export default function GreenroomEnhanced() {
   const analyserRef = useRef(null);
   const animFrameRef = useRef(null);
   const countdownTimerRef = useRef(null);
+  const audioCtxRef = useRef(null);
 
   useEffect(() => () => clearInterval(countdownTimerRef.current), []);
 
@@ -69,6 +70,7 @@ export default function GreenroomEnhanced() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         const ctx = new AudioContext();
+        audioCtxRef.current = ctx;
         const source = ctx.createMediaStreamSource(stream);
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
@@ -91,6 +93,7 @@ export default function GreenroomEnhanced() {
     return () => {
       if (stream) stream.getTracks().forEach(t => t.stop());
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      audioCtxRef.current?.close();
     };
   }, []);
 
