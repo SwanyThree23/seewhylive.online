@@ -184,7 +184,7 @@ export default function ClipsLibraryPage() {
                           type: 'clip_created',
                           title: `Created clip: ${clip?.title || 'AI Highlight Clip'}`,
                         }).catch(() => {});
-                      });
+                      }).catch(() => setToast('Failed to create clip'));
                     }}
                     style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>
                     CREATE CLIP

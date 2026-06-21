@@ -616,7 +616,7 @@ export default function BroadcastStudio() {
   useEffect(() => () => {
     if (!party?.id || !user?.id) return;
     base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
-      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })));
+      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {}))).catch(() => {});
   }, [party?.id, user?.id]);
 
   const createMut = useMutation({
@@ -889,7 +889,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }).then(() => {
                     qc.invalidateQueries({ queryKey: ['broadcast-party', partyId] });
                     setStudioMode('watch');
-                  });
+                  }).catch(() => toast.error('Failed to update video.'));
                 }}
               />
             )}
@@ -1514,7 +1514,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         qc.invalidateQueries({ queryKey: ['broadcast-party', partyId] });
                         setStudioMode('watch');
                         toast.success('Video updated!');
-                      });
+                      }).catch(() => toast.error('Failed to update video.'));
                     }}
                   />
                 </div>
