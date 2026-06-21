@@ -601,8 +601,8 @@ export default function WatchPartyPage() {
       if (!party || !user) return;
       base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
         .then(members => members.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })
-        ));
+          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
+        )).catch(() => {});
     };
   }, [party?.id, user?.id]);
 
@@ -1208,7 +1208,7 @@ export default function WatchPartyPage() {
                 currentUser={user}
                 onPlayVideo={(url) => {
                   if (isHost && party?.id) {
-                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() });
+                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {});
                   }
                 }}
               />
@@ -1263,7 +1263,7 @@ export default function WatchPartyPage() {
                       playback_state: type === 'play' ? 'playing' : type === 'pause' ? 'paused' : undefined,
                       current_time: payload?.time,
                       updated_at_ms: Date.now(),
-                    });
+                    }).catch(() => {});
                   }
                 }}
                 syncEvent={party ? { type: party.playback_state === 'playing' ? 'play' : 'pause', payload: { time: party.current_time }, ts: party.updated_at_ms } : null}
