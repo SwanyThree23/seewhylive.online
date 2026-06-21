@@ -255,6 +255,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       toast.success('Battle invitation sent!');
       if (onBattleSelect) { onBattleSelect(b); }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var respondMutation = useMutation({
@@ -263,6 +264,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       qc.invalidateQueries(['pk-battles']);
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleCreate() {
@@ -710,7 +712,8 @@ export default function PKBattleManager() {
         started_at: new Date().toISOString(),
       });
     },
-    onSuccess: function() { qc.invalidateQueries(['pk-battles']); toast.success('Battle started!'); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); toast.success('Battle started!'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleBattleSelect(b) {

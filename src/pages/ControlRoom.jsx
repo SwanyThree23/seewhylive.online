@@ -377,11 +377,13 @@ export default function ControlRoomPage() {
 
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
-    onSuccess: () => qc.invalidateQueries(['cr-rtmp', user?.id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }),
+    onError: () => toast.error('Action failed.'),
   });
   const reconnectDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
-    onSuccess: () => { qc.invalidateQueries(['cr-rtmp', user?.id]); toast.success('Reconnecting…'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }); toast.success('Reconnecting…'); },
+    onError: () => toast.error('Action failed.'),
   });
   const goLiveMut = useMutation({
     mutationFn: async () => {
@@ -399,14 +401,26 @@ export default function ControlRoomPage() {
         });
       }
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onError: () => toast.error('Action failed.'),
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cr-room', roomId] });
+      setShowEndModal(false);
+      toast.success('Stream ended.');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended via Control Room`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const latestHealth = healthMetrics[0];

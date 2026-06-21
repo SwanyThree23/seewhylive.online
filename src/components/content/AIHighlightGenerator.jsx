@@ -17,6 +17,7 @@ export default function AIHighlightGenerator({ recording }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['highlights'] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const generateHighlights = async () => {

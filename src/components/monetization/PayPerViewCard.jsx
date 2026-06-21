@@ -66,7 +66,7 @@ export default function PayPerViewCard({ event }) {
       queryClient.invalidateQueries({ queryKey: ['ppv-events'] });
       toast.success('Access granted! Enjoy the event 🎉');
     },
-    onError: () => toast.error('Purchase failed — please try again'),
+    onError: () => toast.error('Action failed.'),
   });
 
   const isSoldOut = event.max_participants && (event.current_participants || 0) >= event.max_participants;

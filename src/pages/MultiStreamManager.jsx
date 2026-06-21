@@ -84,17 +84,32 @@ export default function MultiStreamManager() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onSuccess: (dest) => {
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+      setShowAddForm(false);
+      setNewLabel('');
+      toast.success('Destination added');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
-    onSuccess: () => qc.invalidateQueries(['rtmp-destinations']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); toast.success('Destination removed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const testConnection = async (dest) => {

@@ -271,6 +271,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       qc.invalidateQueries(['pk-battles']);
       onBattleUpdate?.();
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleAutoEnd = useCallback(() => {

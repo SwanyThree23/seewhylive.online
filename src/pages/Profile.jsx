@@ -151,6 +151,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {

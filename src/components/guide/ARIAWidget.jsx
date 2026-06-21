@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -109,6 +110,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotPreferences', user?.id] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   // Save conversation
@@ -132,6 +134,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotHistory', user?.id] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {

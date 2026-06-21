@@ -360,6 +360,7 @@ export default function PKBattlePage() {
       battleDurationRef.current = duration;
       window.location.href = `${window.location.pathname}?id=${b.id}`;
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var addVote = function(side, pts, combo) {

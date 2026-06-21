@@ -42,6 +42,76 @@ export default function CommunityPage() {
     enabled: !!user?.id,
   });
 
+  const { data: membership } = useQuery({
+    queryKey: ['my-membership', community?.id, user?.id],
+    queryFn: () => base44.entities.CommunityMember.filter({ community_id: community.id, user_id: user.id }).then(r => r[0]),
+    enabled: !!community?.id && !!user?.id,
+  });
+
+  const { data: memberCount = 0 } = useQuery({
+    queryKey: ['community-member-count-page', community?.id],
+    queryFn: async () => {
+      const members = await base44.entities.CommunityMember.filter({ community_id: community.id });
+      return members?.length || 0;
+    },
+    enabled: !!community?.id,
+  });
+
+  const { data: liveRooms = [] } = useQuery({
+    queryKey: ['community-live-rooms', community?.id],
+    queryFn: () => base44.entities.Room.filter({ community_id: community.id, status: 'live' }, '-viewer_count', 10),
+    enabled: !!community?.id,
+    refetchInterval: 20000,
+  });
+
+  const joinMut = useMutation({
+    mutationFn: () => base44.entities.CommunityMember.create({ community_id: community.id, user_id: user.id, role: 'member', joined_date: new Date().toISOString() }),
+    onSuccess: () => {
+      toast.success(`Joined ${community.name}!`);
+      qc.invalidateQueries({ queryKey: ['my-membership'] });
+      qc.invalidateQueries({ queryKey: ['community-member-count-page'] });
+      base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'community_joined',
+        title: `Joined ${community.name}`,
+        description: community.description || '',
+      }).catch(() => {});
+    },
+    onError: () => toast.error('Action failed.'),
+  });
+
+  const leaveMut = useMutation({
+    mutationFn: () => base44.entities.CommunityMember.delete(membership.id),
+    onSuccess: () => { toast.success('Left community'); qc.invalidateQueries({ queryKey: ['my-membership'] }); qc.invalidateQueries({ queryKey: ['community-member-count-page'] }); },
+    onError: () => toast.error('Action failed.'),
+  });
+
+  const isMember = !!membership;
+  const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
+  const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
+
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+      <div className="w-10 h-10 rounded-full animate-spin" style={{ border: `3px solid ${G}`, borderTopColor: 'transparent' }} />
+    </div>
+  );
+
+  if (!community) return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center px-4" style={{ background: BG }}>
+      <Users className="w-16 h-16 mb-4" style={{ color: 'rgba(255,255,255,0.08)' }} />
+      <h2 className="text-2xl font-black text-white mb-2" style={T}>No Community Yet</h2>
+      <p className="text-sm mb-6" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {communityIdParam ? 'Community not found.' : "You haven't joined or created a community."}
+      </p>
+      <Link to={createPageUrl('CreateCommunity')}>
+        <button className="flex items-center gap-2 px-6 py-3 rounded-xl font-black uppercase text-sm"
+          style={{ background: `linear-gradient(90deg, ${CRIMSON}, ${G})`, color: '#000', border: 'none', cursor: 'pointer', ...T }}>
+          <Plus className="w-4 h-4" /> Create Community
+        </button>
+      </Link>
+    </div>
+  );
+
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Header */}

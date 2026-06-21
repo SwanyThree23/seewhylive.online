@@ -69,15 +69,15 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     onSuccess: () => {
       toast.success('Connected to room');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   // Leave signaling mutation
   const leaveSignalingMut = useMutation({
-    mutationFn: (participantId) => base44.functions.invoke('zegoSignaling', {
-      action: 'leave',
-      roomId,
-      participantId,
-    }),
+    mutationFn: (participantId) => participantId
+      ? base44.entities.Participant.delete(participantId)
+      : Promise.resolve(),
+    onError: () => toast.error('Action failed.'),
   });
 
   // Initialize local media once and announce presence to peers
@@ -168,6 +168,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       qc.invalidateQueries(['zego-active']);
       toast.success('Stream ended');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleEndStream = () => {

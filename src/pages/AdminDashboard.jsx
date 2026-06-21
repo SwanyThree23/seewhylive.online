@@ -98,11 +98,13 @@ export default function AdminDashboard() {
 
   const changeRoleMutation = useMutation({
     mutationFn: ({ userId, role }) => base44.entities.User.update(userId, { role }),
-    onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries(['adminUsers']); },
+    onSuccess: () => { toast.success('Role updated'); qc.invalidateQueries({ queryKey: ['adminUsers'] }); },
+    onError: () => toast.error('Action failed.'),
   });
   const endRoomMutation = useMutation({
     mutationFn: (roomId) => base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() }),
-    onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries(['adminRooms']); },
+    onSuccess: () => { toast.success('Room ended'); qc.invalidateQueries({ queryKey: ['adminRooms'] }); },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (!user || user.role !== 'admin') return (

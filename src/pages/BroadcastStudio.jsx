@@ -665,11 +665,23 @@ export default function BroadcastStudio() {
       setStudioMode(mode);
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endMut = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Broadcast ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Broadcast ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended`,
+        }).catch(() => {});
+      }
+      setSearchParams({});
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────

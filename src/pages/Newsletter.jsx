@@ -77,6 +77,7 @@ export default function NewsletterPage() {
       queryClient.invalidateQueries(['newsletters']);
       setTitle(''); setContent(''); setPreviewText('');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const generateWithAI = async () => {

@@ -115,7 +115,26 @@ function RaidLauncher({ room, currentUser, onClose }) {
       });
       return raid;
     },
-    onSuccess: () => { qc.invalidateQueries(['raid-active', room?.id]); toast.success('Raid initiated! Countdown starting…'); onClose(); },
+    onSuccess: (raid) => {
+      qc.invalidateQueries({ queryKey: ['raid-active', room?.id] });
+      toast.success('Raid initiated! Countdown starting…');
+      onClose();
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'raid_sent',
+          title: `Raided ${raid?.to_creator_username || 'a room'} with ${raid?.viewer_count_sent || 0} viewers`,
+          recipient_id: raid?.to_creator_id,
+        }),
+        raid?.to_creator_id && base44.entities.Activity.create({
+          user_id: raid.to_creator_id,
+          type: 'raid_received',
+          title: `Received raid from ${currentUser.full_name || currentUser.email}`,
+          sender_id: currentUser.id,
+        }),
+      ]);
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (

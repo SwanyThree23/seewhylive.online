@@ -53,6 +53,7 @@ export default function DestinationsManager({ userId }) {
       toast.success('Destination added!');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteDest = useMutation({
@@ -61,6 +62,7 @@ export default function DestinationsManager({ userId }) {
       toast.success('Destination removed');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const platform = selectedPlatform ? PLATFORMS.find(p => p.id === selectedPlatform) : null;
