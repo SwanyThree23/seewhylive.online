@@ -141,7 +141,31 @@ export default function ClipsLibraryPage() {
                     <div style={{ fontFamily:'Barlow Condensed', fontSize:12, color:C.white }}>{h.description || 'AI-detected moment'}</div>
                     <div style={{ fontSize:10, color:C.gray }}>Confidence: {Math.round((h.ai_confidence||0.8)*100)}%</div>
                   </div>
-                  <button style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>CREATE CLIP</button>
+                  <button
+                    onClick={() => {
+                      if (!user?.id) return;
+                      base44.entities.StreamClip.create({
+                        title: h.description || 'AI Highlight Clip',
+                        clipped_by_id: user.id,
+                        start_timestamp_seconds: h.start_timestamp_seconds || 0,
+                        end_timestamp_seconds: h.end_timestamp_seconds || 30,
+                        duration_seconds: (h.end_timestamp_seconds || 30) - (h.start_timestamp_seconds || 0),
+                        source_room_id: h.room_id,
+                        highlight_type: h.highlight_type,
+                      }).then((clip) => {
+                        qc.invalidateQueries({ queryKey: ['clips'] });
+                        setToast('Clip created! ✂️');
+                        setTimeout(() => setToast(''), 2500);
+                        base44.entities.Activity.create({
+                          user_id: user.id,
+                          type: 'clip_created',
+                          title: `Created clip: ${clip?.title || 'AI Highlight Clip'}`,
+                        }).catch(() => {});
+                      }).catch(() => setToast('Failed to create clip'));
+                    }}
+                    style={{ padding:'5px 10px', background:`rgba(128,0,32,0.15)`, border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1, flexShrink:0 }}>
+                    CREATE CLIP
+                  </button>
                 </div>
               ))}
             </div>
