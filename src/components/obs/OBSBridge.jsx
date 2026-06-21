@@ -62,7 +62,8 @@ export default function OBSBridge() {
     };
 
     socket.onmessage = (evt) => {
-      const msg = JSON.parse(evt.data);
+      let msg;
+      try { msg = JSON.parse(evt.data); } catch { return; }
 
       // OBS WS v5 protocol
       if (msg.op === 0) {
