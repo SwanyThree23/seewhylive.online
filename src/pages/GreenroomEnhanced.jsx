@@ -58,6 +58,9 @@ export default function GreenroomEnhanced() {
   const videoRef = useRef(null);
   const analyserRef = useRef(null);
   const animFrameRef = useRef(null);
+  const countdownTimerRef = useRef(null);
+
+  useEffect(() => () => clearInterval(countdownTimerRef.current), []);
 
   // Test mic level
   useEffect(() => {
@@ -118,10 +121,11 @@ export default function GreenroomEnhanced() {
   }
 
   function startCountdown(seconds = 5) {
+    clearInterval(countdownTimerRef.current);
     setCountdown(seconds);
-    const t = setInterval(() => {
+    countdownTimerRef.current = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) { clearInterval(t); setIsLive(true); return null; }
+        if (prev <= 1) { clearInterval(countdownTimerRef.current); setIsLive(true); return null; }
         return prev - 1;
       });
     }, 1000);
