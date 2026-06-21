@@ -276,7 +276,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
                       <button onClick={() => handleCopy(state.generatedContent)} style={{ padding: '4px 10px', background: state.copied ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: state.copied ? '#6DBF7E' : 'rgba(255,255,255,0.6)', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                         {state.copied ? <Check size={12} /> : <Copy size={12} />} {state.copied ? 'COPIED' : 'COPY'}
                       </button>
-                      <button onClick={handleSave} style={{ padding: '4px 10px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, color: '#d4af37', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                      <button onClick={handleSave} disabled={saveContent.isPending} style={{ padding: '4px 10px', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, color: '#d4af37', fontSize: 11, cursor: saveContent.isPending ? 'not-allowed' : 'pointer', opacity: saveContent.isPending ? 0.6 : 1, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                         <Save size={12} /> SAVE
                       </button>
                     </div>
