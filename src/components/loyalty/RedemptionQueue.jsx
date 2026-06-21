@@ -28,6 +28,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (redemptions.length === 0) return null;

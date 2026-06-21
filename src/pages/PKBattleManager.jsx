@@ -252,6 +252,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var respondMutation = useMutation({
@@ -260,6 +261,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       qc.invalidateQueries({ queryKey: ['pk-battles'] });
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleCreate() {
@@ -710,6 +712,7 @@ export default function PKBattleManager() {
       });
     },
     onSuccess: function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); toast.success('Battle started!'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleBattleSelect(b) {

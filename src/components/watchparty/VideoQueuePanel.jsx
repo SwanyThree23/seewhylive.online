@@ -76,6 +76,7 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (
@@ -130,11 +131,13 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
       voter_ids: [...(item.voter_ids || []), currentUser.id],
     }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['vq', item.party_id] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const actionMut = useMutation({
     mutationFn: (data) => base44.entities.VideoQueue.update(item.id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['vq', item.party_id] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const thumb = item.thumbnail_url || getYtThumb(item.video_url);

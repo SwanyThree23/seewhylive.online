@@ -165,6 +165,7 @@ export default function ProfilePage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],

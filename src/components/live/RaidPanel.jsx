@@ -135,6 +135,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
         }),
       ]);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (

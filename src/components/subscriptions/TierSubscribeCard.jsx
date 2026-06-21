@@ -72,6 +72,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       qc.invalidateQueries({ queryKey: ['userSubs'] });
       qc.invalidateQueries({ queryKey: ['creatorSubscriptions'] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const cancelMutation = useMutation({
@@ -80,6 +81,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       toast.info('Subscription cancelled');
       qc.invalidateQueries({ queryKey: ['userSubs'] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const activeFeatures = FEATURE_LABELS.filter(f => tier[f.key]);

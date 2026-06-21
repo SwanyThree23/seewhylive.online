@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
@@ -118,11 +119,13 @@ export default function Messages() {
       content, is_whisper: false,
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }); setInput(""); },
+    onError: () => toast.error('Action failed.'),
   });
 
   var markReadMutation = useMutation({
     mutationFn: (msgId) => base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["all-dms", user?.id] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var composeMutation = useMutation({
@@ -144,6 +147,7 @@ export default function Messages() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleReaction(msgId, emoji) {

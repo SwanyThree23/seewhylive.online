@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -177,6 +178,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
         ]);
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (

@@ -92,6 +92,7 @@ export default function GuestQueue({ roomId, isHost }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const rejectMutation = useMutation({
@@ -102,6 +103,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries({ queryKey: ['guest-queue', roomId] });
       qc.invalidateQueries({ queryKey: ['admitted-guests', roomId] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const removeMutation = useMutation({
@@ -112,6 +114,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries({ queryKey: ['guest-queue', roomId] });
       qc.invalidateQueries({ queryKey: ['admitted-guests', roomId] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const isEmpty = waitingGuests.length === 0 && admittedGuests.length === 0;

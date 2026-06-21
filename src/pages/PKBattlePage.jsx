@@ -356,6 +356,7 @@ export default function PKBattlePage() {
       battleDurationRef.current = duration;
       setSearchParams({ id: b.id });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var addVote = function(side, pts, combo) {

@@ -369,14 +369,17 @@ function ContentTab({ user }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-vods'] }); setEditVod(null); toast.success('Updated!'); },
+    onError: () => toast.error('Action failed.'),
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.VODVideo.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-vods'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   let filtered = vods.filter(v => {
@@ -597,11 +600,13 @@ function CommunityTab({ user }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-polls'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   return (
@@ -772,6 +777,7 @@ function MonetizationTab({ user }) {
   const toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-tiers'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
@@ -1006,20 +1012,24 @@ function SettingsTab({ user }) {
       ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
       : base44.entities.CreatorProfile.create({ user_id: user?.id, ...profile, stream_schedule: schedule }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-cprofile'] }); toast.success('Profile saved!'); },
+    onError: () => toast.error('Action failed.'),
   });
   const savePrefs = useMutation({
     mutationFn: () => userPref?.id
       ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
       : base44.entities.UserPreference.create({ user_id: user?.id, notification_preferences: prefs }),
     onSuccess: () => toast.success('Preferences saved!'),
+    onError: () => toast.error('Action failed.'),
   });
   const toggleDest = useMutation({
     mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
+    onError: () => toast.error('Action failed.'),
   });
   const deleteDest = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];

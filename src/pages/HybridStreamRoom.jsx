@@ -117,6 +117,7 @@ export default function HybridStreamRoom() {
     onSuccess: () => {
       navigate('/Home');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (isLoading) {

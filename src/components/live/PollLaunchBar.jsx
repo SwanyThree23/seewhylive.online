@@ -52,6 +52,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endPollMutation = useMutation({
@@ -61,6 +62,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       qc.invalidateQueries({ queryKey: ['polls', roomId] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (!isHost) return null;

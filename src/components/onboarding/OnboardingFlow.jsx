@@ -38,6 +38,7 @@ export default function OnboardingFlow({ isOpen, onClose }) {
       }
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['userPreferences'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const toggle = (id) => {

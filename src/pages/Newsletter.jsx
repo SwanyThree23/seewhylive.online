@@ -101,6 +101,7 @@ export default function NewsletterPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const generateWithAI = async () => {

@@ -57,6 +57,7 @@ export default function ZEGOConfigPanel({ user }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;

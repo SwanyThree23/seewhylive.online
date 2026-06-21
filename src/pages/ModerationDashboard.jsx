@@ -235,6 +235,7 @@ export default function ModerationDashboardPage() {
       return base44.entities.ContentModeration.update(id, updates);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['mod-content'] }); toast.success('Action taken'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const chatActionMut = useMutation({
@@ -249,6 +250,7 @@ export default function ModerationDashboardPage() {
       auto_detected: false,
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['chat-mods', roomId] }); toast.success('Action applied'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const reportMut = useMutation({
@@ -258,6 +260,7 @@ export default function ModerationDashboardPage() {
       updated_date: new Date().toISOString(),
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['reports'] }); toast.success('Report updated'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const flagged = moderations.filter(m => m.action_taken === 'flagged' || (m.violation_type !== 'safe' && !m.reviewed_by));

@@ -188,12 +188,14 @@ export default function OverlayBuilderPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
   const toggleActiveMut = useMutation({
     mutationFn: async (id) => {
       await Promise.all(layouts.map(l => base44.entities.OverlayLayout.update(l.id, { is_active: l.id === id })));
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['overlay-layouts'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const addElement = (type) => {

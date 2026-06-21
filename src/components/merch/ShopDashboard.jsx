@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -49,16 +50,19 @@ export default function ShopDashboard({ creatorId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var toggleMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-items", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["merch-orders", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var totalSold = items.reduce((s, i) => s + (i.times_sold || 0), 0);
