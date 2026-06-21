@@ -133,19 +133,19 @@ export default function TranscriptionStudio() {
     setTranslating(false);
   }
 
-  function handleExport(fmt) {
-    if (captionHistory.length === 0) return;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `seewhy-captions-${timestamp}.${fmt.ext}`;
-    let content;
-    if (fmt.key === 'srt') {
-      content = buildSrt(captionHistory);
-    } else if (fmt.key === 'json') {
-      content = JSON.stringify({ session: timestamp, lang: activeLang, captions: captionHistory }, null, 2);
-    } else {
-      content = captionHistory.map((c, i) => `[${i+1}] ${c.text}`).join('\n');
-    }
-    downloadBlob(content, filename, fmt.mime);
+  useEffect(() => () => { liveRef.current = false; recRef.current?.stop?.(); }, []);
+
+  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+  const srtText  = buildSRT(lines);
+
+  function downloadSRT() {
+    const blob = new Blob([srtText], { type: 'text/plain' });
+    const a = document.createElement('a');
+    const srtUrl = URL.createObjectURL(blob);
+    a.href = srtUrl;
+    a.download = 'transcript.srt';
+    a.click();
+    URL.revokeObjectURL(srtUrl);
   }
 
   function clearHistory() {

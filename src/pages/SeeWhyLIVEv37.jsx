@@ -4,6 +4,10 @@
  * Earth-tone palette only — no forbidden colors
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { isSafeUrl } from '@/lib/security';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -504,7 +508,7 @@ function PodcastPanel() {
                   <div style={{ color: C.textM, fontSize: 10, marginTop: 4 }}>{s.notebookId.slice(0, 12)}… {s.artifactId ? `/ ${s.artifactId.slice(0, 8)}…` : ''}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <a href={s.url} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
+                  <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
                   <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); sessionStorage.setItem('v37_nlm_sources', JSON.stringify(u)); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
