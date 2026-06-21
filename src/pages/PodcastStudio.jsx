@@ -663,8 +663,8 @@ export default function PodcastStudio() {
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState('');
   const [script, setScript] = useState(null);
-  const [library, setLibrary] = useState(() => JSON.parse(sessionStorage.getItem('podcast_library') || '[]'));
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(sessionStorage.getItem('podcast_nlm_sources') || '[]'));
+  const [library, setLibrary] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_library') || '[]'); } catch { return []; } });
+  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_nlm_sources') || '[]'); } catch { return []; } });
   const [editingIdx, setEditingIdx] = useState(null);
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
