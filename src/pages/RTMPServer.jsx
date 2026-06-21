@@ -168,7 +168,7 @@ export default function RTMPServer() {
                   </div>
                   <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
                     <code className="flex-1 text-sm font-mono text-white/80 truncate">{'•'.repeat(24)}</code>
-                    <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
+                    <button onClick={() => { navigator.clipboard.writeText(streamKey).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>

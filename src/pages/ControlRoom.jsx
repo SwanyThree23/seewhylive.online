@@ -397,7 +397,7 @@ export default function ControlRoomPage() {
             <button onClick={() => setShowStreamKey(s => !s)}>
               {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
             </button>
-            <button onClick={() => { navigator.clipboard.writeText(session.stream_key); toast.success('Stream key copied!'); }}>
+            <button onClick={() => { navigator.clipboard.writeText(session.stream_key).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }}>
               <Copy className="w-3 h-3 text-white/40" />
             </button>
           </div>

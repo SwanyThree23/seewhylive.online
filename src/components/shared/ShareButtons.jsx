@@ -48,8 +48,7 @@ const PLATFORMS = [
     // Instagram has no direct web share URL; open Stories share intent via clipboard
     getUrl: null,
     action: (url) => {
-      navigator.clipboard.writeText(url);
-      toast.success('Link copied! Paste it in your Instagram story or bio.');
+      navigator.clipboard.writeText(url).then(() => toast.success('Link copied! Paste it in your Instagram story or bio.')).catch(() => toast.error('Copy failed.'));
     },
   },
 ];
@@ -67,8 +66,7 @@ export default function ShareButtons({ url, title, className = '' }) {
   const shareTitle = title || 'Join me on SeeWhy LIVE!';
 
   const copyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    toast.success('Link copied!');
+    navigator.clipboard.writeText(shareUrl).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const handlePlatform = (platform) => {

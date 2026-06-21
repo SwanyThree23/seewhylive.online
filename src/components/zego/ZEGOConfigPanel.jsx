@@ -163,7 +163,7 @@ export default function ZEGOConfigPanel({ user }) {
         </button>
 
         <button
-          onClick={() => { navigator.clipboard.writeText(obsUrl); toast.success('OBS ingest URL copied!'); }}
+          onClick={() => { navigator.clipboard.writeText(obsUrl).then(() => toast.success('OBS ingest URL copied!')).catch(() => toast.error('Copy failed.')); }}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-[10px]"
           style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
           <Copy className="w-3.5 h-3.5" /> Copy OBS Ingest URL
