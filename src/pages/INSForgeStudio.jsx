@@ -1,6 +1,7 @@
 import React, { useReducer } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Sparkles, Copy, Edit, Calendar, Check, Clock, Save, Trash2, Send } from 'lucide-react';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -119,16 +120,19 @@ export default function INSForgeStudio() {
 
   const saveContent = useMutation({
     mutationFn: (data) => base44.entities.ContentLibrary.create(data),
+    onError: () => toast.error('Failed to save content.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['content-library'] }),
   });
 
   const deleteContent = useMutation({
     mutationFn: (id) => base44.entities.ContentLibrary.delete(id),
+    onError: () => toast.error('Failed to delete content.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['content-library'] }),
   });
 
   const scheduleContent = useMutation({
     mutationFn: ({ id, scheduledFor }) => base44.entities.ContentLibrary.update(id, { scheduled_for: scheduledFor, scheduled_status: 'scheduled' }),
+    onError: () => toast.error('Failed to schedule content.'),
     onSuccess: () => { dispatch({ type: 'SET_SCHEDULING', payload: null }); qc.invalidateQueries({ queryKey: ['content-library'] }); },
   });
 

@@ -108,6 +108,7 @@ export default function GuestJoin() {
       return base44.entities.Participant.update(participantId, { status: ready ? 'ready' : 'waiting' });
     },
     onSuccess: (_, ready) => { setReadyState(ready); toast.success(ready ? '✅ Marked as ready!' : 'Status set to waiting'); },
+    onError: () => toast.error('Failed to update status.'),
   });
 
   const card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const LAYOUTS = [
@@ -65,6 +66,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
       return base44.entities.SwanAIDirector.create({ room_id: roomId, host_id: hostId, ...data });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey:['swan', roomId] }),
+    onError: () => toast.error('Failed to update director settings.'),
   });
   const upd = (data) => mut.mutate(data);
 

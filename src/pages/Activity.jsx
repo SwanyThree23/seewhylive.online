@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Activity as ActivityIcon, Radio, Users, Trophy, Gift, Award, Bell,
@@ -121,6 +122,7 @@ export default function ActivityPage() {
         base44.entities.Notification.update(n.id, { is_read: true })
       )
     ),
+    onError: () => toast.error('Failed to mark notifications as read.'),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', user?.id] }),
   });
 

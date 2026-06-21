@@ -160,7 +160,7 @@ export default function PayoutsPage() {
       setStripeId('');
       setBank4('');
     },
-    onError: () => setConnecting(false),
+    onError: () => { setConnecting(false); toast.error('Failed to connect Stripe account.'); },
   });
 
   const disconnectMutation = useMutation({
@@ -175,6 +175,7 @@ export default function PayoutsPage() {
       toast.success('Stripe account disconnected');
       qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
+    onError: () => toast.error('Failed to disconnect Stripe account.'),
   });
 
   const payoutMutation = useMutation({
@@ -193,6 +194,7 @@ export default function PayoutsPage() {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
       qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
+    onError: (e) => toast.error(e?.message === 'No balance to pay out' ? 'No balance to pay out.' : 'Payout request failed. Please try again.'),
   });
 
   /* ─── loading ──────────────────────────────────────────────────────── */

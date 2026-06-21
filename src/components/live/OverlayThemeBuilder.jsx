@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Palette, Save, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0D1022';
@@ -50,6 +51,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to save theme.'),
   });
 
   return (

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Volume2, Trash2, Play } from 'lucide-react';
 import SelectSheet from '@/components/shared/SelectSheet';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0D1022';
@@ -52,6 +53,7 @@ export default function AlertConfig({ creatorId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to create alert.'),
   });
 
   return (

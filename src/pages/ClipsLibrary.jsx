@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
@@ -95,6 +96,7 @@ export default function ClipsLibraryPage() {
 
   const deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
+    onError: () => toast.error('Failed to delete clip.'),
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
   });
 

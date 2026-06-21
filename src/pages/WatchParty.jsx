@@ -618,6 +618,7 @@ export default function WatchPartyPage() {
       }
       setSearchParams({});
     },
+    onError: () => toast.error('Failed to end watch party.'),
   });
 
   const copyInvite = () => {
