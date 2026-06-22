@@ -1,48 +1,123 @@
 'use strict';
-var express=require('express'), https=require('https'), router=express.Router();
-var SB='rxlgywvfclyjdfyvfvyc.supabase.co';
-function sb(method,path,body,cb){
-  var key=process.env.SUPABASE_SERVICE_ROLE_KEY, payload=body?JSON.stringify(body):null;
-  var opts={hostname:SB,port:443,path:path,method:method,headers:{'apikey':key,'Content-Type':'application/json','Prefer':'return=representation'}};
-  if(payload) opts.headers['Content-Length']=Buffer.byteLength(payload);
-  var req=https.request(opts,function(res){var c=[];res.on('data',function(d){c.push(d);});res.on('end',function(){var raw=Buffer.concat(c).toString();var p=null;try{p=JSON.parse(raw);}catch(e){p=raw;}cb(null,res.statusCode,p);});});
-  req.on('error',function(e){cb(e);});
-  if(payload) req.write(payload);
+
+var express = require('express');
+var https   = require('https');
+var router  = express.Router();
+
+var SB_HOST = 'rxlgywvfclyjdfyvfvyc.supabase.co';
+
+function sbReq(method, path, body, cb) {
+  var key     = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  var payload = body ? JSON.stringify(body) : null;
+  var opts = {
+    hostname: SB_HOST,
+    port:     443,
+    path:     path,
+    method:   method,
+    headers: {
+      'apikey':        key,
+      'Authorization': 'Bearer ' + key,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=representation',
+    },
+  };
+  if (payload) opts.headers['Content-Length'] = Buffer.byteLength(payload);
+  var req = https.request(opts, function(res) {
+    var chunks = [];
+    res.on('data', function(c) { chunks.push(c); });
+    res.on('end', function() {
+      var raw = Buffer.concat(chunks).toString();
+      var parsed = null;
+      try { parsed = JSON.parse(raw); } catch(e) { parsed = raw; }
+      cb(null, res.statusCode, parsed);
+    });
+  });
+  req.on('error', function(e) { cb(e); });
+  if (payload) req.write(payload);
   req.end();
 }
-router.post('/start',function(req,res){
-  var b=req.body||{};
-  if(!b.stream_id||!b.creator_id) return res.status(400).json({error:'stream_id and creator_id required'});
-  sb('POST','/rest/v1/vods',{stream_id:b.stream_id,creator_id:b.creator_id,title:b.title||'Live Recording',storage_path:'pending/'+b.stream_id+'/'+Date.now(),is_public:false,view_count:0},function(err,status,data){
-    if(err) return res.status(500).json({error:'DB error'});
-    if(status>=400) return res.status(status).json({error:'Supabase error',detail:data});
-    return res.json(Array.isArray(data)?data[0]:data);
+
+// POST /api/vod/start
+// Body: { stream_id, creator_id, title? }
+router.post('/start', function(req, res) {
+  var body      = req.body || {};
+  var streamId  = body.stream_id  || '';
+  var creatorId = body.creator_id || '';
+  var title     = body.title      || 'Live Recording';
+
+  if (!streamId)  return res.status(400).json({ error: 'stream_id is required' });
+  if (!creatorId) return res.status(400).json({ error: 'creator_id is required' });
+
+  var row = {
+    stream_id:    streamId,
+    creator_id:   creatorId,
+    title:        title,
+    storage_path: 'pending/' + streamId + '/' + Date.now(),
+    is_public:    false,
+    view_count:   0,
+  };
+
+  sbReq('POST', '/rest/v1/vods', row, function(err, status, data) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    var created = Array.isArray(data) ? data[0] : data;
+    return res.json(created);
   });
 });
-router.post('/stop',function(req,res){
-  var b=req.body||{};
-  if(!b.vod_id) return res.status(400).json({error:'vod_id required'});
-  var patch={duration_seconds:Math.floor(b.duration_seconds||0),is_public:true};
-  if(b.playback_url) patch.playback_url=b.playback_url;
-  sb('PATCH','/rest/v1/vods?id=eq.'+encodeURIComponent(b.vod_id),patch,function(err,status,data){
-    if(err) return res.status(500).json({error:'DB error'});
-    if(status>=400) return res.status(status).json({error:'Supabase error',detail:data});
-    return res.json(Array.isArray(data)?data[0]:(data||{ok:true}));
+
+// POST /api/vod/stop
+// Body: { vod_id, duration_seconds, playback_url? }
+router.post('/stop', function(req, res) {
+  var body        = req.body || {};
+  var vodId       = body.vod_id            || '';
+  var durationSec = body.duration_seconds  || body.duration_sec || 0;
+  var playbackUrl = body.playback_url      || '';
+
+  if (!vodId) return res.status(400).json({ error: 'vod_id is required' });
+
+  var patch = {
+    duration_seconds: Math.floor(durationSec),
+    is_public:        true,
+  };
+  if (playbackUrl) patch.playback_url = playbackUrl;
+
+  sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), patch, function(err, status, data) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    var updated = Array.isArray(data) ? data[0] : data;
+    return res.json(updated || { ok: true });
   });
 });
-router.get('/list',function(req,res){
-  var cid=req.query.creator_id||'';
-  if(!cid) return res.status(400).json({error:'creator_id required'});
-  var limit=Math.min(parseInt(req.query.limit,10)||20,100);
-  sb('GET','/rest/v1/vods?creator_id=eq.'+encodeURIComponent(cid)+'&order=created_at.desc&limit='+limit,null,function(err,status,data){
-    if(err) return res.status(500).json({error:'DB error'});
-    return res.json(Array.isArray(data)?data:[]);
+
+// GET /api/vod/list
+// Query: ?stream_id=<uuid>&limit=20
+router.get('/list', function(req, res) {
+  var streamId = req.query.stream_id || '';
+  var limit    = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+
+  if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
+
+  var path = '/rest/v1/vods'
+           + '?stream_id=eq.' + encodeURIComponent(streamId)
+           + '&order=created_at.desc'
+           + '&limit=' + limit;
+
+  sbReq('GET', path, null, function(err, status, data) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    return res.json(Array.isArray(data) ? data : []);
   });
 });
-router.delete('/:id',function(req,res){
-  sb('DELETE','/rest/v1/vods?id=eq.'+encodeURIComponent(req.params.id),null,function(err){
-    if(err) return res.status(500).json({error:'DB error'});
-    return res.json({ok:true});
+
+// DELETE /api/vod/:id
+router.delete('/:id', function(req, res) {
+  var vodId = req.params.id || '';
+  if (!vodId) return res.status(400).json({ error: 'id is required' });
+  sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), null, function(err, status, data) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    return res.json({ ok: true, deleted: vodId });
   });
 });
-module.exports=router;
+
+module.exports = router;
