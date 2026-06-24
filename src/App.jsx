@@ -3,6 +3,10 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
+import WashingtonClassicRegistration from '../pages/WashingtonClassicRegistration';
+import CreatorOnboarding from '../pages/CreatorOnboarding';
+import SubscriptionTiers from '../pages/SubscriptionTiers';
+import StreamClips from '../pages/StreamClips';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import PageNotFound from './lib/PageNotFound';

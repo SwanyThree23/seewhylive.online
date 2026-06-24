@@ -10,10 +10,7 @@ import {
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
-import { useLocalMedia }
-import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49.jsx';
-import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
-import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate'; from '../hooks/useLocalMedia';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
@@ -385,11 +382,6 @@ export default function BroadcastStudio() {
 
   // Local media
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
-
-  var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
-  var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
-  var speakGate=useAutoSpeakGate({stream:localStream,enabled:false});
-  var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
@@ -1808,14 +1800,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
-
-        {isHost&&(<button onClick={vodRecording?stopRecording:startRecording}
-          style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
-            background:vodRecording?'rgba(255,21,100,0.18)':'rgba(255,255,255,0.05)',
-            border:vodRecording?'1px solid rgba(255,21,100,0.5)':'1px solid rgba(255,255,255,0.1)',
-            color:vodRecording?'#FF1564':'rgba(255,255,255,0.4)',fontSize:14}}>
-          {vodRecording?'⏹':'⏺'}</button>)}
-        {vodRecording&&(<span style={{fontSize:11,fontWeight:900,color:'#FF1564',fontFamily:'Barlow Condensed,sans-serif'}}>{formatDuration(vodDuration)}</span>)}
         {!isHost ? (
           <motion.button whileTap={{ scale: 0.92 }}
             onClick={() => { window.location.href = '/'; }}
@@ -1852,9 +1836,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         />
       )}
 
-      
-      <GlobalMicButtonV49 audioEnabled={audioEnabled} toggleAudio={toggleAudio}
-        isSpeaking={isSpeaking} micLevel={micLevelVal} visible={true}/>
       {partyId && (
         <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
       )}

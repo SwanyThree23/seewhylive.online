@@ -5,7 +5,7 @@
  * Express + Socket.io + mediasoup SFU + Stripe + SwanyBot
  */
 
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('dotenv').config({ path: '/opt/seewhy/.env' });
 
 var express       = require('express');
 var { createServer } = require('http');
@@ -276,6 +276,9 @@ var aiRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
+var vodRouter = require('./routes/vod');
+app.use('/api/vod', vodRouter);
+
 app.use('/api/ai', aiRateLimit);
 
 app.use(express.json({ limit: '2mb' }));

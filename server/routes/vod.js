@@ -16,6 +16,7 @@ function sbReq(method, path, body, cb) {
     method:   method,
     headers: {
       'apikey':        key,
+      'Authorization': 'Bearer ' + key,
       'Content-Type':  'application/json',
       'Prefer':        'return=representation',
     },
