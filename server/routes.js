@@ -642,10 +642,11 @@ router.post('/n8n/test', function(req, res) {
 
 // ── STREAM SYNC → Supabase ────────────────────────────────────
 var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-var SUPA_KEY = '***REMOVED_SUPABASE_SERVICE_ROLE_KEY***';
+var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 router.post('/stream-sync', async function(req, res) {
   try {
+    if (!SUPA_KEY) { return res.status(500).json({ success:false, error:'missing SUPABASE_SERVICE_KEY' }); }
     var b = req.body;
     var creatorId = b.creator_id;
     // If not a UUID, look up by username

@@ -134,6 +134,8 @@ async function createWebRtcTransport(routerId) {
     initialAvailableOutgoingBitrate: 1000000
   });
 
+  transport.routerId = router.id;
+
   transports[transport.id] = transport;
 
   var params = {
@@ -254,6 +256,8 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
     rtpCapabilities: rtpCapabilities,
     paused: false
   });
+
+  consumer.routerId = router.id;
 
   consumers[consumer.id] = consumer;
 
