@@ -1,0 +1,7 @@
+src/*.bak*
+src/App.jsx.bak*
+../data/
+../server/*.bak*
+../server/*.save*
+__pycache__/
+patch_*.py
