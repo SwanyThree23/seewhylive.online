@@ -22,6 +22,7 @@ try { search = require('./search'); } catch (e) { console.warn('[routes] search 
 
 var notifications = null;
 try { notifications = require('./notifications'); } catch (e) { console.warn('[routes] notifications module unavailable'); }
+if (notifications) { notifications.setVAPIDKeys(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY, process.env.VAPID_SUBJECT); }
 
 var aura = null;
 try { aura = require('./aura'); } catch (e) { console.warn('[routes] aura module unavailable'); }
