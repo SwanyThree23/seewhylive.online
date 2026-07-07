@@ -817,7 +817,7 @@ app.post('/api/ai/chat', function(req, res) {
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
   var client = require('./llm').getClient();
   client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-sonnet-5',
     max_tokens: 512,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
