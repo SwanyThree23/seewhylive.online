@@ -114,6 +114,7 @@ var TABS = [
   { id: "watchparty", label: "Watch Party" },
   { id: "vsbattle", label: "VS Battle" },
   { id: "livesync", label: "Live Sync" },
+  { id: "health", label: "Platform Health" },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -222,6 +223,118 @@ function LiveSyncDashboard() {
         })));
 }
 /* ===== END SOCKET.IO CLIENT ===== */
+
+
+/* ===== PLATFORM HEALTH MONITOR ===== */
+function PlatformHealthMonitor() {
+  var checks = [
+    {id:"server", label:"VPS Server", url:"/api/n8n/ping", key:"pong"},
+    {id:"hls", label:"HLS Stream", url:"https://seewhylive.online/hls/live/index.m3u8", key:null},
+    {id:"n8n", label:"n8n Automation", url:"https://n8n.srv1587098.hstgr.cloud/healthz", key:null},
+  ];
+
+  var statusState = useState({});
+  var statuses = statusState[0];
+  var setStatuses = statusState[1];
+  var lastCheckState = useState(null);
+  var lastCheck = lastCheckState[0];
+  var setLastCheck = lastCheckState[1];
+  var loadingState = useState(false);
+  var loading = loadingState[0];
+  var setLoading = loadingState[1];
+  var socketState = useState(null);
+  var socketInfo = socketState[0];
+  var setSocketInfo = socketState[1];
+
+  async function runChecks() {
+    setLoading(true);
+    var next = {};
+    for (var i = 0; i < checks.length; i++) {
+      var check = checks[i];
+      try {
+        var r = await fetch(check.url, { signal: AbortSignal.timeout(5000) });
+        if (check.key) {
+          var d = await r.json();
+          next[check.id] = d[check.key] ? "ok" : "error";
+        } else {
+          next[check.id] = r.ok || r.status === 200 || r.status === 404 ? "ok" : "error";
+        }
+      } catch(e) {
+        next[check.id] = "error";
+      }
+    }
+    // Get socket client count
+    try {
+      var hr = await fetch("/api/n8n/health");
+      var hd = await hr.json();
+      setSocketInfo(hd);
+    } catch(e) {}
+    setStatuses(next);
+    setLastCheck(new Date().toLocaleTimeString());
+    setLoading(false);
+  }
+
+  useEffect(function() { runChecks(); }, []);
+
+  var metrics = [
+    {label:"Stream ID", value:"6991033b"},
+    {label:"RTMP Ingest", value:"rtmp://seewhylive.online/live"},
+    {label:"HLS Playback", value:"seewhylive.online/hls/live"},
+    {label:"VDO Room", value:"SeeWhy_6991033b"},
+    {label:"n8n Webhooks", value:"seewhylive.online/api/n8n"},
+    {label:"Supabase", value:"rxlgywvfclyjdfyvfvyc"},
+  ];
+
+  var endpoints = [
+    {method:"GET", path:"/api/n8n/ping", desc:"Server heartbeat"},
+    {method:"POST", path:"/api/n8n/stream-live", desc:"Stream start alert"},
+    {method:"POST", path:"/api/n8n/gem-transaction", desc:"Gem send + 90/10 split"},
+    {method:"POST", path:"/api/n8n/guardian-flag", desc:"Auto-moderation action"},
+    {method:"POST", path:"/api/n8n/battle-result", desc:"Battle outcome broadcast"},
+    {method:"POST", path:"/api/n8n/viewer-milestone", desc:"Viewer count celebration"},
+  ];
+
+  var pillColor = {ok:"#3C5C2A", error:"#5C2A2A", unknown:"#2A2A30"};
+  var pillText = {ok:"#7AD45A", error:"#C06060", unknown:"#8A8678"};
+
+  return React.createElement("div",{style:{color:"#EDE7D9"}},
+    React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}},
+      React.createElement("h2",{style:{margin:0,color:"#D4AF37",fontSize:22}},"Platform Health"),
+      React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+        lastCheck?React.createElement("span",{style:{fontSize:10,color:"#8A8678"}},"Last check: "+lastCheck):null,
+        React.createElement("button",{onClick:runChecks,disabled:loading,style:{background:"#D4AF37",color:"#0B0B0D",border:"none",borderRadius:4,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer"}},loading?"Checking...":"Run Checks"))),
+
+    React.createElement("div",{style:{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}},
+      checks.map(function(c){
+        var s = statuses[c.id] || "unknown";
+        return React.createElement("div",{key:c.id,style:{flex:"1 1 140px",background:pillColor[s],border:"1px solid #2A2A30",borderRadius:6,padding:12,textAlign:"center"}},
+          React.createElement("div",{style:{fontSize:18,marginBottom:4}},s==="ok"?"\u2705":s==="error"?"\u274C":"\u23F3"),
+          React.createElement("div",{style:{fontSize:12,fontWeight:700,color:pillText[s]}},c.label),
+          React.createElement("div",{style:{fontSize:10,color:"#8A8678",marginTop:2}},s.toUpperCase()));
+      }),
+      socketInfo?React.createElement("div",{style:{flex:"1 1 140px",background:"#1A2A1A",border:"1px solid #3C5C2A",borderRadius:6,padding:12,textAlign:"center"}},
+        React.createElement("div",{style:{fontSize:18,marginBottom:4}},"\uD83D\uDD0C"),
+        React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#7AD45A"}},"Socket.IO"),
+        React.createElement("div",{style:{fontSize:10,color:"#8A8678",marginTop:2}},(socketInfo.socket_clients||0)+" clients")):null),
+
+    React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8,marginBottom:14}},
+      metrics.map(function(m){
+        return React.createElement("div",{key:m.label,style:{background:"#1A1A1F",border:"1px solid #2A2A30",borderRadius:6,padding:10}},
+          React.createElement("div",{style:{fontSize:9,color:"#8A8678",textTransform:"uppercase",letterSpacing:1,marginBottom:3}},m.label),
+          React.createElement("div",{style:{fontSize:11,color:"#6A9AF0",fontFamily:"monospace",wordBreak:"break-all"}},m.value));
+      })),
+
+    React.createElement("div",{style:{background:"#1A1A1F",border:"1px solid #2A2A30",borderRadius:6,overflow:"hidden"}},
+      React.createElement("div",{style:{padding:"7px 12px",background:"#151518",fontSize:10,color:"#8A8678",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}},"n8n Webhook Endpoints"),
+      endpoints.map(function(ep){
+        return React.createElement("div",{key:ep.path,style:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderBottom:"1px solid #151518"}},
+          React.createElement("span",{style:{fontSize:9,fontWeight:700,background:ep.method==="GET"?"#1A3A1A":"#1A2A3A",color:ep.method==="GET"?"#7AD45A":"#6A9AF0",padding:"2px 6px",borderRadius:3,minWidth:36,textAlign:"center"}},ep.method),
+          React.createElement("div",{style:{flex:1}},
+            React.createElement("div",{style:{fontSize:11,fontFamily:"monospace",color:"#D4AF37"}},ep.path),
+            React.createElement("div",{style:{fontSize:10,color:"#8A8678"}},ep.desc)));
+      })));
+}
+/* ===== END PLATFORM HEALTH MONITOR ===== */
 
 export default function App() {
   var [splash, setSplash] = useState(true);

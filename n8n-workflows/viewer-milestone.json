@@ -1,0 +1,21 @@
+{
+  "name": "SeeWhy - Viewer Milestones",
+  "active": true,
+  "nodes": [
+    {"id":"1","name":"Schedule","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1,
+     "position":[250,300],"parameters":{"rule":{"interval":[{"field":"minutes","minutesInterval":5}]}}},
+    {"id":"2","name":"Get Viewer Count","type":"n8n-nodes-base.httpRequest","typeVersion":3,
+     "position":[500,300],"parameters":{"method":"GET","url":"https://seewhylive.online/api/n8n/health","options":{}}},
+    {"id":"3","name":"Check Milestone","type":"n8n-nodes-base.if","typeVersion":1,
+     "position":[750,300],"parameters":{"conditions":{"number":[{"value1":"={{ $json.socket_clients }}","operation":"largerEqual","value2":50}]}}},
+    {"id":"4","name":"Broadcast Milestone","type":"n8n-nodes-base.httpRequest","typeVersion":3,
+     "position":[1000,200],"parameters":{"method":"POST","url":"https://seewhylive.online/api/n8n/viewer-milestone",
+     "sendBody":true,"bodyContentType":"json",
+     "jsonBody":"={"count":{{ $json.socket_clients }},"streamId":"6991033b"}","options":{}}}
+  ],
+  "connections":{
+    "Schedule":{"main":[[{"node":"Get Viewer Count","type":"main","index":0}]]},
+    "Get Viewer Count":{"main":[[{"node":"Check Milestone","type":"main","index":0}]]},
+    "Check Milestone":{"main":[[{"node":"Broadcast Milestone","type":"main","index":0}],[]]}
+  }
+}

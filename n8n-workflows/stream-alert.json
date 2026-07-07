@@ -1,0 +1,13 @@
+{
+  "name": "SeeWhy - Stream Live Alert",
+  "active": true,
+  "nodes": [
+    {"id":"1","name":"Stream Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,
+     "position":[250,300],"parameters":{"path":"mediamtx-live","httpMethod":"POST","responseMode":"onReceived"}},
+    {"id":"2","name":"Notify SeeWhy","type":"n8n-nodes-base.httpRequest","typeVersion":3,
+     "position":[500,300],"parameters":{"method":"POST","url":"https://seewhylive.online/api/n8n/stream-live",
+     "sendBody":true,"bodyContentType":"json","jsonBody":"={{ JSON.stringify($json) }}",
+     "options":{"response":{"response":{"responseFormat":"json"}}}}}
+  ],
+  "connections":{"Stream Webhook":{"main":[[{"node":"Notify SeeWhy","type":"main","index":0}]]}}
+}
