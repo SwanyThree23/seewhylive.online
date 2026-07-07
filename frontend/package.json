@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^9.9.0",
     "hls.js": "^1.6.16",
     "mediasoup-client": "^3.18.7",
     "react": "^18.3.0",
