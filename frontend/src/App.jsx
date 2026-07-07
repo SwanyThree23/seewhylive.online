@@ -113,6 +113,7 @@ var TABS = [
   { id: "panel", label: "Panel Studio" },
   { id: "watchparty", label: "Watch Party" },
   { id: "vsbattle", label: "VS Battle" },
+  { id: "livesync", label: "Live Sync" },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -133,6 +134,94 @@ function CountdownClock({ targetTs }) {
     </div>
   );
 }
+
+
+/* ===== SOCKET.IO CLIENT SYNC ===== */
+var SOCKET_URL = "https://seewhylive.online";
+
+function useSocket(room) {
+  var sockState = useState(null);
+  var sock = sockState[0];
+  var setSock = sockState[1];
+  var viewersState = useState(0);
+  var viewers = viewersState[0];
+  var setViewers = viewersState[1];
+  var eventsState = useState([]);
+  var events = eventsState[0];
+  var setEvents = eventsState[1];
+
+  useEffect(function() {
+    if (typeof window === "undefined" || !window.io) return undefined;
+    var s = window.io(SOCKET_URL, { transports: ["websocket"] });
+    setSock(s);
+    s.emit("join-room", { room: room || "main" });
+    s.on("viewer-count", function(d) { setViewers(d.count); });
+    s.on("reaction", function(d) { setEvents(function(prev) { return [Object.assign({type:"reaction"},d)].concat(prev).slice(0,20); }); });
+    s.on("vote", function(d) { setEvents(function(prev) { return [Object.assign({type:"vote"},d)].concat(prev).slice(0,20); }); });
+    s.on("gem-send", function(d) { setEvents(function(prev) { return [Object.assign({type:"gem"},d)].concat(prev).slice(0,20); }); });
+    s.on("chat-msg", function(d) { setEvents(function(prev) { return [Object.assign({type:"chat"},d)].concat(prev).slice(0,20); }); });
+    s.on("poll-vote", function(d) { setEvents(function(prev) { return [Object.assign({type:"poll"},d)].concat(prev).slice(0,20); }); });
+    s.on("battle-vote", function(d) { setEvents(function(prev) { return [Object.assign({type:"battle"},d)].concat(prev).slice(0,20); }); });
+    return function() { s.disconnect(); };
+  }, [room]);
+
+  function emit(event, data) {
+    if (sock) sock.emit(event, Object.assign({ room: room || "main" }, data));
+  }
+
+  return { sock: sock, viewers: viewers, events: events, emit: emit };
+}
+
+function LiveSyncDashboard() {
+  var sync = useSocket("main");
+  var reacts = { fire: 0, clap: 0, gem: 0 };
+  sync.events.forEach(function(e) {
+    if (e.type === "reaction" && e.emoji === "fire") reacts.fire++;
+    if (e.type === "reaction" && e.emoji === "clap") reacts.clap++;
+    if (e.type === "gem") reacts.gem++;
+  });
+
+  function sendReact(emoji) {
+    sync.emit("reaction", { emoji: emoji, user: "You", ts: Date.now() });
+  }
+  function sendGem(amount) {
+    sync.emit("gem-send", { amount: amount, user: "You", ts: Date.now() });
+  }
+
+  return React.createElement("div", { style: { color: "#EDE7D9" } },
+    React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 } },
+      React.createElement("h2", { style: { margin: 0, color: "#D4AF37", fontSize: 22 } }, "Live Sync"),
+      React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+        React.createElement("div", { style: { width: 8, height: 8, borderRadius: "50%", background: sync.sock ? "#7AD45A" : "#A03A3A", boxShadow: sync.sock ? "0 0 6px #7AD45A" : "none" } }),
+        React.createElement("span", { style: { fontSize: 12, color: "#8A8678" } }, sync.sock ? "Connected" : "Connecting..."),
+        React.createElement("span", { style: { background: "#800020", color: "#EDE7D9", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 3 } }, sync.viewers + " watching"))),
+
+    React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" } },
+      [["fire", "\uD83D\uDD25"], ["clap", "\uD83D\uDC4F"], ["hype", "\uD83C\uDF89"]].map(function(r) {
+        return React.createElement("button", {
+          key: r[0],
+          onClick: function() { sendReact(r[0]); },
+          style: { background: "#1A1A1F", color: "#EDE7D9", border: "1px solid #2A2A30", borderRadius: 4, padding: "8px 16px", fontSize: 16, cursor: "pointer" }
+        }, r[1]);
+      }),
+      React.createElement("button", {
+        onClick: function() { sendGem(10); },
+        style: { background: "#D4AF37", color: "#0B0B0D", border: "none", borderRadius: 4, padding: "8px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer" }
+      }, "\uD83D\uDC8E Send 10 Gems")),
+
+    React.createElement("div", { style: { background: "#1A1A1F", border: "1px solid #2A2A30", borderRadius: 6, overflow: "hidden" } },
+      React.createElement("div", { style: { padding: "7px 12px", background: "#151518", fontSize: 10, color: "#8A8678", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" } }, "Live Event Feed"),
+      sync.events.length === 0
+        ? React.createElement("div", { style: { padding: 20, textAlign: "center", color: "#8A8678", fontSize: 12 } }, "Waiting for live events...")
+        : sync.events.map(function(e, i) {
+          var icon = { reaction: e.emoji === "fire" ? "\uD83D\uDD25" : e.emoji === "clap" ? "\uD83D\uDC4F" : "\uD83C\uDF89", gem: "\uD83D\uDC8E", vote: "\uD83D\uDDF3", chat: "\uD83D\uDCAC", poll: "\uD83D\uDCCA", battle: "\u2694\uFE0F" }[e.type] || "•";
+          var label = { reaction: e.user + " reacted " + icon, gem: e.user + " sent " + (e.amount || 1) + " gems " + icon, vote: e.user + " voted " + icon, chat: e.user + ": " + (e.text || "") + " " + icon, poll: e.user + " voted in poll " + icon, battle: e.user + " voted in battle " + icon }[e.type] || e.type;
+          return React.createElement("div", { key: i, style: { padding: "8px 12px", borderBottom: "1px solid #151518", fontSize: 12, display: "flex", justifyContent: "space-between" } },
+            React.createElement("span", null, label),
+            React.createElement("span", { style: { fontSize: 10, color: "#8A8678" } }, new Date(e.ts).toLocaleTimeString()));
+        })));
+}
+/* ===== END SOCKET.IO CLIENT ===== */
 
 export default function App() {
   var [splash, setSplash] = useState(true);
