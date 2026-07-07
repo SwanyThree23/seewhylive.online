@@ -255,8 +255,6 @@ app.use(helmet());
 var _corsOrigins = (process.env.FRONTEND_ORIGIN || '*').split(',').map(function(s) { return s.trim(); });
 var _corsOrigin  = _corsOrigins.length === 1 ? _corsOrigins[0] : _corsOrigins;
 app.use(cors({ origin: _corsOrigin }));
-var n8nRouter = require('./n8nWebhooks');
-app.use('/api/n8n', n8nRouter);
 
 /* Global rate limit — generous for a live streaming app */
 app.use(rateLimit({
@@ -280,6 +278,8 @@ var aiRateLimit = rateLimit({
 app.use('/api/ai', aiRateLimit);
 
 app.use(express.json({ limit: '2mb' }));
+var n8nRouter = require('./n8nWebhooks');
+app.use('/api/n8n', n8nRouter);
 app.use(xssClean());
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
