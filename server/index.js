@@ -815,10 +815,9 @@ app.post('/api/ai/chat', function(req, res) {
   var system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
-  var { Anthropic } = require('@anthropic-ai/sdk');
-  var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  var client = require('./llm').getClient();
   client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
@@ -859,8 +858,7 @@ app.post('/api/summarize-chat', function(req, res) {
   var messages = typeof req.body.messages === 'string' ? req.body.messages.slice(0, 4000) : '';
   if (!messages) { res.json({ summary: 'No chat to summarize.' }); return; }
   try {
-    var Anthropic = require('@anthropic-ai/sdk').Anthropic;
-    var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    var client = require('./llm').getClient();
     client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,

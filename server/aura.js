@@ -1,16 +1,11 @@
 'use strict';
 
-var Anthropic = require('@anthropic-ai/sdk');
-
 // ---------------------------------------------------------------------------
-// Client
+// Client (OpenRouter-primary via llm.js, with Anthropic fallback)
 // ---------------------------------------------------------------------------
-var _anthropicClient = null;
+var llm = require('./llm');
 function getClient() {
-  if (!_anthropicClient) {
-    _anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  }
-  return _anthropicClient;
+  return llm.getClient();
 }
 
 // ---------------------------------------------------------------------------
