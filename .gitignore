@@ -38,3 +38,4 @@ dist-ssr
 .verceldata/
 server/database.sqlite
 frontend/src/App.jsx.bak
+data/
