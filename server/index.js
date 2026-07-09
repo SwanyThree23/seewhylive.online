@@ -1,3 +1,7 @@
+const battleRoutes = require('./routes/battles');
+const rewardsRoutes = require('./routes/rewards');
+const publicPreviewRoutes = require('./routes/publicPreview');
+const { registerBattleHandlers } = require('./socket/battleHandlers');
 'use strict';
 
 /**
@@ -276,6 +280,9 @@ var aiRateLimit = rateLimit({
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
 app.use('/api/ai', aiRateLimit);
+app.use('/api/battles', battleRoutes);
+app.use('/api/rewards', rewardsRoutes);
+app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
 var n8nRouter = require('./n8nWebhooks');
@@ -1044,6 +1051,7 @@ io.use(function(socket, next) {
 // ─── Socket.io Connection Handler ────────────────────────────────────────
 
 io.on('connection', function(socket) {
+  registerBattleHandlers(io, socket);
   logger.info('[socket] Connected: ' + socket.id + ' role=' + socket.data.role);
 
   // ── join-room ──────────────────────────────────────────────────────────
