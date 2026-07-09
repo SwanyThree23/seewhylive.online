@@ -396,23 +396,23 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
 
                   {/* Host action buttons */}
                   {isHost && !isSelf && (
-                    <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
                       <button
                         onClick={function() { isMuted ? unmuteGuest(id) : muteGuest(id); }}
                         title={isMuted ? 'Unmute' : 'Mute'}
-                        style={{ width: 26, height: 26, borderRadius: 5, background: isMuted ? 'rgba(201,168,76,.2)' : 'rgba(255,26,60,.12)', border: '1px solid ' + (isMuted ? 'rgba(201,168,76,.4)' : 'rgba(255,26,60,.3)'), color: isMuted ? '#C9A84C' : '#FF6B81', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ width: 44, height: 44, borderRadius: 8, background: isMuted ? 'rgba(201,168,76,.2)' : 'rgba(255,26,60,.12)', border: '1px solid ' + (isMuted ? 'rgba(201,168,76,.4)' : 'rgba(255,26,60,.3)'), color: isMuted ? '#C9A84C' : '#FF6B81', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {isMuted ? '🔊' : '🔇'}
                       </button>
                       <button
                         onClick={function() { isOnStage ? removeFromStage(id) : inviteToStage(id); }}
                         title={isOnStage ? 'Remove from stage' : 'Add to stage'}
-                        style={{ width: 26, height: 26, borderRadius: 5, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(212,133,74,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(212,133,74,.4)'), color: isOnStage ? '#FF6B35' : '#C9A84C', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
+                        style={{ width: 44, height: 44, borderRadius: 8, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(212,133,74,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(212,133,74,.4)'), color: isOnStage ? '#FF6B35' : '#C9A84C', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
                         {isOnStage ? '↓' : '↑'}
                       </button>
                       <button
                         onClick={function() { kickGuest(id, g.username); }}
                         title="Kick from room"
-                        style={{ width: 26, height: 26, borderRadius: 5, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', color: '#FF1A3C', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', color: '#FF1A3C', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         ✕
                       </button>
                     </div>
@@ -943,8 +943,8 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
               </div>
               <button
                 onClick={togglePaywall}
-                style={{ flexShrink: 0, width: 52, height: 28, borderRadius: 14, background: paywallOn ? '#C9A84C' : '#3D3020', border: '2px solid ' + (paywallOn ? '#C9A84C' : '#3D3020'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
-                <div style={{ position: 'absolute', top: 3, left: paywallOn ? 26 : 3, width: 18, height: 18, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
+                style={{ flexShrink: 0, width: 64, height: 40, borderRadius: 20, background: paywallOn ? '#C9A84C' : '#3D3020', border: '2px solid ' + (paywallOn ? '#C9A84C' : '#3D3020'), position: 'relative', cursor: 'pointer', transition: 'background .2s' }}>
+                <div style={{ position: 'absolute', top: 3, left: paywallOn ? 27 : 3, width: 34, height: 34, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
               </button>
             </div>
             <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid ' + (paywallOn ? 'rgba(201,168,76,.2)' : '#1A1510') }}>
@@ -971,7 +971,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                           setPaywallInput(amt.toFixed(2));
                           if (paywallOn && socket) socket.emit('room-paywall', { roomId: roomId, paywallEnabled: true, amountCents: amt * 100 });
                         }}
-                        style={{ background: active ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 6, padding: '5px 8px', color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer' }}>
+                        style={{ background: active ? 'rgba(201,168,76,.2)' : 'rgba(26,21,16,.6)', border: '1px solid ' + (active ? 'rgba(201,168,76,.4)' : '#3D3020'), borderRadius: 8, padding: '12px 14px', minHeight: 44, color: active ? '#C9A84C' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                         ${amt}
                       </button>
                     );
