@@ -826,7 +826,7 @@ app.post('/api/ai/chat', function(req, res) {
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
   var client = require('./llm').getClient();
   client.messages.create({
-    model: 'claude-sonnet-5',
+    model: 'anthropic/claude-sonnet-5',
     max_tokens: 512,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
@@ -869,7 +869,7 @@ app.post('/api/summarize-chat', function(req, res) {
   try {
     var client = require('./llm').getClient();
     client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'anthropic/claude-haiku-4.5',
       max_tokens: 200,
       messages: [{ role: 'user', content: 'Summarize this live stream chat in 2-3 sentences, highlighting key topics and viewer sentiment:\n\n' + messages }]
     }).then(function(resp) {
