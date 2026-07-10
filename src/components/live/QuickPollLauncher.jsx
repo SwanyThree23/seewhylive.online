@@ -37,6 +37,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
       setOptions(['', '']);
       qc.invalidateQueries(['polls', roomId]);
     },
+    onError: () => toast.error('Failed to launch poll.'),
   });
 
   if (!isHost) return null;

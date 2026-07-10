@@ -135,7 +135,8 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         bid_count: (auction.bid_count || 0) + 1,
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', auction.room_id]); toast.success('You won the auction!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] }); toast.success('You won the auction!'); },
+    onError: () => toast.error('Buyout failed. Please try again.'),
   });
 
   return (
@@ -272,7 +273,8 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
         status: 'active',
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', roomId]); onClose(); toast.success('Auction launched!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', roomId] }); onClose(); toast.success('Auction launched!'); },
+    onError: () => toast.error('Failed to launch auction.'),
   });
 
   const types = ['item','one_on_one','shoutout','custom_art','coaching','experience'];

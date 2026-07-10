@@ -46,6 +46,7 @@ export default function RewardShopEditor({ creatorId }) {
       setShowForm(false);
       qc.invalidateQueries(['loyalty-rewards', creatorId]);
     },
+    onError: () => toast.error('Failed to create reward.'),
   });
 
   const toggleMutation = useMutation({

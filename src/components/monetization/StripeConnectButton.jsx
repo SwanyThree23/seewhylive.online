@@ -71,6 +71,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
       qc.invalidateQueries(['creator-payout', creatorId]);
       toast.success('Stripe account disconnected');
     },
+    onError: () => toast.error('Failed to disconnect Stripe.'),
   });
 
   const isConnected = payout?.stripe_connected;

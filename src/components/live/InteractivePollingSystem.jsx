@@ -255,6 +255,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       qc.invalidateQueries(['poll-votes', roomId]);
       toast.success('Vote recorded!');
     },
+    onError: () => toast.error('Failed to record vote.'),
   });
 
   const togglePin = (pollId) => {
