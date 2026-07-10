@@ -96,6 +96,10 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1941,6 +1945,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
+      {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
+      {isHost && <StreamingPresets onApply={() => {}} />}
+      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Live Stream'} viewerCount={0} />}
+      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
       <ZEGOMobileAppBanner />

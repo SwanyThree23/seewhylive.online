@@ -81,6 +81,10 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1185,6 +1189,10 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
+      {isHost && <StreamingPresets onApply={() => {}} />}
+      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Watch Party'} viewerCount={0} />}
+      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
       <ZEGOMobileAppBanner />

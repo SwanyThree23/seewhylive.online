@@ -52,6 +52,10 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -635,6 +639,10 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
+      {isHost && <StreamingPresets onApply={() => {}} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Greenroom'} viewerCount={0} />}
+      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
       <ZEGOMobileAppBanner />

@@ -54,6 +54,10 @@ import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -757,6 +761,10 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
+      {<StreamingPresets onApply={() => {}} />}
+      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={0} />}
+      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
