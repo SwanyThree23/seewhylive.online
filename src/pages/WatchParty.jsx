@@ -85,6 +85,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1189,6 +1193,10 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={partyId} isHost={isHost} />}
+      {isHost && partyId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={partyId} />}
+      {partyId && <RewardShop creatorId={party?.host_id || user?.id} roomId={partyId} currentUser={user} />}
+      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Watch Party'} viewerCount={0} />}

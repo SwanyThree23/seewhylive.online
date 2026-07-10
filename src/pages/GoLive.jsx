@@ -58,6 +58,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -761,6 +765,10 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={partyId} isHost={true} />}
+      {partyId && <RedemptionQueue creatorId={user?.id} roomId={partyId} />}
+      {partyId && <RewardShop creatorId={user?.id} roomId={partyId} currentUser={user} />}
+      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={0} />}

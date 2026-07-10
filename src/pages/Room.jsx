@@ -89,6 +89,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -657,6 +661,10 @@ export default function RoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={room?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <RedemptionQueue creatorId={room?.host_id || user?.id} roomId={roomId} />}
+      {roomId && <RewardShop creatorId={room?.host_id || user?.id} roomId={roomId} currentUser={user} />}
+      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={room?.host_id || user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Live Stream'} viewerCount={0} />}

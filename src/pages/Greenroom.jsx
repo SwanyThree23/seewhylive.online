@@ -56,6 +56,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -639,6 +643,10 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={room?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <RedemptionQueue creatorId={room?.host_id || user?.id} roomId={roomId} />}
+      {roomId && <RewardShop creatorId={room?.host_id || user?.id} roomId={roomId} currentUser={user} />}
+      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={room?.host_id || user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Greenroom'} viewerCount={0} />}

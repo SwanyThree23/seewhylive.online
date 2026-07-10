@@ -100,6 +100,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1945,6 +1949,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
+      {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={partyId} isHost={isHost} />}
+      {isHost && partyId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={partyId} />}
+      {partyId && <RewardShop creatorId={party?.host_id || user?.id} roomId={partyId} currentUser={user} />}
+      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Live Stream'} viewerCount={0} />}

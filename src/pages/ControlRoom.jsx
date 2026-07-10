@@ -70,6 +70,10 @@ import GreenroomQueue from '../components/streaming/GreenroomQueue';
 import StreamingPresets from '../components/streaming/StreamingPresets';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
 import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -452,6 +456,10 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={roomId} isHost={true} />}
+      {roomId && <RedemptionQueue creatorId={user?.id} roomId={roomId} />}
+      {roomId && <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />}
+      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={0} />}
