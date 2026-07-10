@@ -76,6 +76,15 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import GiftShopTray from '../components/live/GiftShopTray';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import ClipCreator from '../components/live/ClipCreator';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import GoldenWall from '../components/live/GoldenWall';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import GiftTray from '../components/live/GiftTray';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -829,6 +838,14 @@ export default function GoLive() {
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
       {!true && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
+      {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={user?.id} />}
+      {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
+      {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={user?.id} currentUser={user} isHost={true} />}
+      {partyId && <GoldenWall roomId={partyId} />}
+      {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={0} currentUser={user} />}
+      {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={0} isHost={true} />}
+      {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} />}
+      <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
