@@ -476,10 +476,14 @@ export default function RoomPage() {
               </button>
               <button
                 onClick={async () => {
-                  if (isRecording) await stopRecordingMutation.mutateAsync();
-                  await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
-                  toast.success('Stream ended');
-                  queryClient.invalidateQueries(['room', roomId]);
+                  try {
+                    if (isRecording) await stopRecordingMutation.mutateAsync();
+                    await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
+                    toast.success('Stream ended');
+                    queryClient.invalidateQueries({ queryKey: ['room', roomId] });
+                  } catch {
+                    toast.error('Failed to end stream.');
+                  }
                 }}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
