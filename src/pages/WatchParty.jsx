@@ -69,6 +69,12 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import QuickTip from '../components/rooms/QuickTip';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import ShareToSocial from '../components/social/ShareToSocial';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1173,6 +1179,12 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && <StreamerMonetizationCenter />}
+      {!isHost && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => {}} />}
+      {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
+      {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
+      <ShareToSocial content={{text: ''}} />
+      {isHost && partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
       {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}

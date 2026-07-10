@@ -54,6 +54,12 @@ import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightR
 import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import QuickTip from '../components/rooms/QuickTip';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import ShareToSocial from '../components/social/ShareToSocial';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -436,6 +442,12 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {<StreamerMonetizationCenter />}
+      {!true && roomId && <AnimatedGiftShop recipientId={user?.id} roomId={roomId} onClose={() => {}} />}
+      {user?.id && <VirtualGoodsStore userId={user.id} />}
+      {<SoundAlertsManager creatorId={user?.id} />}
+      <ShareToSocial content={{text: ''}} />
+      {roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {<BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
