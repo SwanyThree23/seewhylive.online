@@ -63,6 +63,11 @@ import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import MerchWidget from '../components/merch/MerchWidget';
+import NotificationBell from '../components/shared/NotificationBell';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -646,6 +651,11 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
+      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
+      <MerchWidget />
+      <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
       {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}

@@ -107,6 +107,11 @@ import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import MerchWidget from '../components/merch/MerchWidget';
+import NotificationBell from '../components/shared/NotificationBell';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1952,6 +1957,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
+      {partyId && <TipAlert roomId={partyId} recipientId={party?.host_id || user?.id} />}
+      {!isHost && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
+      {partyId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} currentUser={user} />}
+      <MerchWidget />
+      <NotificationBell />
       {partyId && <PKBattleInterface roomId={partyId} />}
       {partyId && <CoStreamPanel roomId={partyId} />}
       {isHost && partyId && <CollaborativeWhiteboard roomId={partyId} />}
