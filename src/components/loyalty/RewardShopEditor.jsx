@@ -53,6 +53,7 @@ export default function RewardShopEditor({ creatorId }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to create reward.'),
   });
 
   const toggleMutation = useMutation({

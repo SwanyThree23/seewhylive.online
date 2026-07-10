@@ -48,6 +48,7 @@ export default function WebSourceOverlayV49({ roomId, isHost }) {
   const removeMutation = useMutation({
     mutationFn: (id) => base44.entities.Overlay ? base44.entities.Overlay.delete(id) : Promise.reject(new Error('Overlay entity not available')),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['overlays', roomId] }); toast.success('Overlay removed'); },
+    onError: () => toast.error('Failed to remove overlay.'),
   });
 
   const toggleMutation = useMutation({

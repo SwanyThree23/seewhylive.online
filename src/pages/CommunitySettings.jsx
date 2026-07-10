@@ -119,6 +119,7 @@ export default function CommunitySettingsPage() {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to save community settings.'),
   });
 
   const handleSave = () => {

@@ -104,6 +104,7 @@ export default function LivePoll({ roomId, isHost }) {
       setOptions(['', '']);
       toast.success('Poll launched!');
     },
+    onError: () => toast.error('Failed to launch poll.'),
   });
 
   const endPollMutation = useMutation({
@@ -125,6 +126,7 @@ export default function LivePoll({ roomId, isHost }) {
       }
       toast.success('Poll ended');
     },
+    onError: () => toast.error('Failed to end poll.'),
   });
 
   const voteMutation = useMutation({

@@ -32,6 +32,7 @@ function DestRow({ dest, userId }) {
   var deleteMut = useMutation({
     mutationFn: function() { return base44.entities.RTMPDestination.delete(dest.id); },
     onSuccess: function() { qc.invalidateQueries({ queryKey: ['guest-dests', userId] }); toast.success('Removed'); },
+    onError: function() { toast.error('Failed to remove destination.'); },
   });
 
   var validate = async function() {

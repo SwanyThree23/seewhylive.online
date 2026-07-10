@@ -44,6 +44,7 @@ export default function QuickPollLauncher({ roomId, hostId, isHost }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to launch poll.'),
   });
 
   if (!isHost) return null;

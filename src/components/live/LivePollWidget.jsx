@@ -50,6 +50,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
         }).catch(() => {});
       }
     },
+    onError: () => toast.error('Failed to create poll.'),
   });
 
   const addOpt = () => setForm(f => ({ ...f, options: [...f.options, ''] }));

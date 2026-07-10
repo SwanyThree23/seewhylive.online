@@ -131,6 +131,7 @@ export default function GuestInviteGenerator({ userId, roomId, streamId }) {
       qc.invalidateQueries({ queryKey: ['guest-invites', roomId || streamId] });
       toast.success('Invite revoked');
     },
+    onError: () => toast.error('Failed to revoke invite.'),
   });
 
   const activeInvites = invites.filter(i => !i.expires_at || new Date(i.expires_at) > new Date());

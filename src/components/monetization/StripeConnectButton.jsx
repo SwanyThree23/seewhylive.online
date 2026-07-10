@@ -81,6 +81,7 @@ export default function StripeConnectButton({ creatorId }) {
       qc.invalidateQueries({ queryKey: ['creator-payout', creatorId] });
       toast.success('Stripe account disconnected');
     },
+    onError: () => toast.error('Failed to disconnect Stripe.'),
   });
 
   const isConnected = payout?.stripe_connected;
