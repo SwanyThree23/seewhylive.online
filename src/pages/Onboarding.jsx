@@ -85,12 +85,17 @@ function Step1({ onboarding, user, onDone }) {
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
-    const profiles = await base44.entities.CreatorProfile.filter({ user_id: user.id });
-    const data = { user_id: user.id, display_name: form.display_name, bio: form.bio, avatar_url: form.avatar, category: form.category };
-    if (profiles.length) await base44.entities.CreatorProfile.update(profiles[0].id, data);
-    else await base44.entities.CreatorProfile.create(data);
-    onDone({ step_1_profile: true, current_step: 2 });
-    setSaving(false);
+    try {
+      const profiles = await base44.entities.CreatorProfile.filter({ user_id: user.id });
+      const data = { user_id: user.id, display_name: form.display_name, bio: form.bio, avatar_url: form.avatar, category: form.category };
+      if (profiles.length) await base44.entities.CreatorProfile.update(profiles[0].id, data);
+      else await base44.entities.CreatorProfile.create(data);
+      onDone({ step_1_profile: true, current_step: 2 });
+    } catch {
+      toast.error('Failed to save profile.');
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <div style={{ padding: '20px' }}>
@@ -216,11 +221,16 @@ function Step4({ user, onDone }) {
   const addTier = () => setTiers(ts => [...ts, { id: Date.now(), name: 'Custom', price: 14.99, benefits: '' }]);
   const save = async () => {
     setSaving(true);
-    for (const tier of tiers) {
-      await base44.entities.SubscriptionTier.create({ creator_id: user.id, name: tier.name, price: tier.price, description: tier.benefits });
+    try {
+      for (const tier of tiers) {
+        await base44.entities.SubscriptionTier.create({ creator_id: user.id, name: tier.name, price: tier.price, description: tier.benefits });
+      }
+      onDone({ step_4_subscription: true, current_step: 5 });
+    } catch {
+      toast.error('Failed to save subscription tiers.');
+    } finally {
+      setSaving(false);
     }
-    onDone({ step_4_subscription: true, current_step: 5 });
-    setSaving(false);
   };
   return (
     <div style={{ padding: '20px' }}>
@@ -252,9 +262,14 @@ function Step5({ user, onDone }) {
   const [saving, setSaving] = useState(false);
   const save = async () => {
     setSaving(true);
-    await base44.entities.Community.create({ name: form.name, description: form.description, category: form.category, owner_id: user.id });
-    onDone({ step_5_community: true, current_step: 6 });
-    setSaving(false);
+    try {
+      await base44.entities.Community.create({ name: form.name, description: form.description, category: form.category, owner_id: user.id });
+      onDone({ step_5_community: true, current_step: 6 });
+    } catch {
+      toast.error('Failed to create community.');
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <div style={{ padding: '20px' }}>
@@ -295,12 +310,18 @@ function Step6({ user, onDone }) {
     return () => clearInterval(t);
   }, [started]);
   const startStream = async () => {
-    const room = await base44.entities.Room.create({ title: `Test Stream — ${user?.full_name||'Creator'}`, status: 'live', creator_id: user.id });
-    setRoomId(room.id);
-    setStarted(true);
+    try {
+      const room = await base44.entities.Room.create({ title: `Test Stream — ${user?.full_name || 'Creator'}`, status: 'live', creator_id: user.id });
+      setRoomId(room.id);
+      setStarted(true);
+    } catch {
+      toast.error('Failed to start test stream.');
+    }
   };
   const finishStream = async () => {
-    if (roomId) await base44.entities.Room.update(roomId, { status: 'ended' });
+    try {
+      if (roomId) await base44.entities.Room.update(roomId, { status: 'ended' });
+    } catch {}
     setDone(true);
   };
   const save = async () => {
@@ -439,7 +460,9 @@ export default function OnboardingPage() {
   });
 
   const handleDone = async (data) => {
-    await updateOnboarding.mutateAsync(data);
+    try {
+      await updateOnboarding.mutateAsync(data);
+    } catch { return; }
     if (data.current_step) setStep(data.current_step);
   };
 
