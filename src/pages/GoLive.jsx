@@ -32,6 +32,11 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -735,6 +740,11 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {<LowerThirdsBanner onBannerChange={() => {}} />}
+      {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      <NotificationHub />
+      {<SoundboardWidget isVisible={true} />}
+      {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}
       {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
       {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={0} elapsedSeconds={0} />}

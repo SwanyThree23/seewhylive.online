@@ -49,6 +49,11 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -809,6 +814,11 @@ export default function LiveRoom() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      <NotificationHub />
+      {isHost && <SoundboardWidget isVisible={true} />}
+      {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={0} elapsedSeconds={0} />}

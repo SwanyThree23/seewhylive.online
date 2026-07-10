@@ -59,6 +59,11 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1163,6 +1168,11 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      <NotificationHub />
+      {isHost && <SoundboardWidget isVisible={true} />}
+      {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
       {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={0} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
       {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={0} elapsedSeconds={0} />}

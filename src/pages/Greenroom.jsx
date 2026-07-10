@@ -30,6 +30,11 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -613,6 +618,11 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      <NotificationHub />
+      {isHost && <SoundboardWidget isVisible={true} />}
+      {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
