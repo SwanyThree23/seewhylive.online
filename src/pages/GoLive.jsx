@@ -20,6 +20,12 @@ import LiveTranscription from '../components/live/LiveTranscription';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -723,6 +729,12 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      <HostAlertCenter />
+      {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
+      {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
+      {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

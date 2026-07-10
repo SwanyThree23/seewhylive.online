@@ -31,6 +31,13 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -412,6 +419,13 @@ export default function ControlRoomPage() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
+      {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      <HostAlertCenter />
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
+      {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
+      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={0} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}

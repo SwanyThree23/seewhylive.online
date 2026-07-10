@@ -62,6 +62,12 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1907,6 +1913,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
+      <HostAlertCenter />
+      {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={0} />}
+      {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}
+      {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={0} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}

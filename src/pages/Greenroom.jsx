@@ -18,6 +18,12 @@ import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -601,6 +607,12 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      <HostAlertCenter />
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
+      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

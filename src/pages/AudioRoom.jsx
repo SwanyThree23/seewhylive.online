@@ -31,6 +31,13 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
@@ -479,6 +486,13 @@ export default function AudioRoom() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      <HostAlertCenter />
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={party?.host_id || user?.id} isHost={isHost} />}
+      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={''} elapsedSeconds={0} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
