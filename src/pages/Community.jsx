@@ -7,6 +7,11 @@ import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const G = '#D4AF37';
 const BG = '#080B18';
 
@@ -71,6 +76,11 @@ export default function CommunityPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

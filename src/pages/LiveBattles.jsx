@@ -7,6 +7,11 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -197,6 +202,11 @@ export default function LiveBattles() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="battles" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

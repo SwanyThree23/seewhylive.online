@@ -8,6 +8,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
 function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
@@ -404,6 +409,11 @@ export default function MultiStreamManager() {
           </motion.div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="multistream" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

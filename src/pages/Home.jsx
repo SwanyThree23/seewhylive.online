@@ -7,6 +7,11 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -614,6 +619,11 @@ export default function Home() {
         </AnimatePresence>
       </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

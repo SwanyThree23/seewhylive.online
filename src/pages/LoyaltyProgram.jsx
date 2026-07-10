@@ -13,6 +13,11 @@ function Toggle({ checked, onChange }) {
 }
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -340,6 +345,11 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

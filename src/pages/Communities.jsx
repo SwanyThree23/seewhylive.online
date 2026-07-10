@@ -8,6 +8,11 @@ import CommunityCard from '../components/communities/CommunityCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
@@ -228,6 +233,11 @@ export default function CommunitiesPage() {
           </>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="communities" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

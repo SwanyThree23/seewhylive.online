@@ -5,6 +5,11 @@ import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords 
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
   { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
@@ -394,6 +399,11 @@ export default function LeaderboardPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="leaderboard" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }
