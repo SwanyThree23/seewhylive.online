@@ -53,6 +53,12 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1157,6 +1163,12 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={0} />}
+      {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
+      {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && <ChatModeration collapsed={true} />}
+      <BrandChyron />
+      {!isHost && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={0} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}

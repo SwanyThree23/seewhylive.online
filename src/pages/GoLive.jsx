@@ -26,6 +26,12 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -729,6 +735,12 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={0} />}
+      {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
+      {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={0} elapsedSeconds={0} />}
+      {<ChatModeration collapsed={true} />}
+      <BrandChyron />
+      {!true && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}

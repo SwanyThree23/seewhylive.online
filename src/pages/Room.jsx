@@ -57,6 +57,12 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -625,6 +631,12 @@ export default function RoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
+      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && <ChatModeration collapsed={true} />}
+      <BrandChyron />
+      {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}

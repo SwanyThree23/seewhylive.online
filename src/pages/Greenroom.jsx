@@ -24,6 +24,12 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -607,6 +613,12 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
+      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && <ChatModeration collapsed={true} />}
+      <BrandChyron />
+      {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
