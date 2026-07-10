@@ -26,6 +26,16 @@ import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
+import ClipCreator from '../components/live/ClipCreator';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import LiveTranscription from '../components/live/LiveTranscription';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import GoldenWall from '../components/live/GoldenWall';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import GiftTray from '../components/live/GiftTray';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -780,6 +790,16 @@ export default function LiveRoom() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
       {user && <ZEGOConfigPanel user={user} />}
+      {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={party?.host_id || user?.id} />}
+      {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
+      {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
+      {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
+      {roomId && <GoldenWall roomId={roomId} />}
+      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={0} currentUser={user} />}
+      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
+      {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
+      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
     </div>
   );
