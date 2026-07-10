@@ -12,6 +12,14 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -382,6 +390,14 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
+      <SwanAIRecommendations roomId={roomId} currentLayout="control" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={true} />}
+      {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

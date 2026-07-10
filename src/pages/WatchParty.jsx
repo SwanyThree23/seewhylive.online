@@ -27,6 +27,14 @@ import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1119,6 +1127,14 @@ export default function WatchPartyPage() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={partyId} currentLayout="watch" viewerCount={members?.length || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={partyId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {party?.host_id && <ShopDashboard creatorId={party.host_id} />}
+      {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={isHost} />}
+      {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

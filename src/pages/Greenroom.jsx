@@ -10,6 +10,13 @@ import {
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -587,6 +594,13 @@ export default function GreenroomPage() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={roomId} currentLayout="greenroom" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      <BackgroundCustomizer />
     </div>
   );
 }
