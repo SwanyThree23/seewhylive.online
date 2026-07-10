@@ -18,14 +18,17 @@ export default function GlobalSearch({ onClose }) {
     if (!query.trim()) { setRooms([]); setCommunities([]); return; }
     const timer = setTimeout(async () => {
       setLoading(true);
-      const [r, c] = await Promise.all([
-        base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 10),
-        base44.entities.Community.list('-member_count', 10),
-      ]);
-      const q = query.toLowerCase();
-      setRooms(r.filter(x => x.title?.toLowerCase().includes(q)));
-      setCommunities(c.filter(x => x.name?.toLowerCase().includes(q)));
-      setLoading(false);
+      try {
+        const [r, c] = await Promise.all([
+          base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 10),
+          base44.entities.Community.list('-member_count', 10),
+        ]);
+        const q = query.toLowerCase();
+        setRooms(r.filter(x => x.title?.toLowerCase().includes(q)));
+        setCommunities(c.filter(x => x.name?.toLowerCase().includes(q)));
+      } catch {} finally {
+        setLoading(false);
+      }
     }, 300);
     return () => clearTimeout(timer);
   }, [query]);

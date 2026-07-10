@@ -151,20 +151,28 @@ export default function MultiStreamManager() {
       return;
     }
     toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
-    // Set all to connecting
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
-    // Simulate MediaMTX RTMP push delay then set live
-    await new Promise(r => setTimeout(r, 2000));
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
-    toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
-    qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    try {
+      // Set all to connecting
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
+      // Simulate MediaMTX RTMP push delay then set live
+      await new Promise(r => setTimeout(r, 2000));
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
+      toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to start fanout. Please try again.', { id: 'fanout' });
+    }
   };
 
   const stopAllFanout = async () => {
     const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
-    await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
-    toast.success('All streams stopped');
-    qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    try {
+      await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
+      toast.success('All streams stopped');
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to stop streams.');
+    }
   };
 
   const addDestination = () => {
