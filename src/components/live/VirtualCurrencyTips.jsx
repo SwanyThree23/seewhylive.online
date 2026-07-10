@@ -85,32 +85,36 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       return;
     }
     setSending(tipDef.coins);
+    try {
+      // Deduct from viewer
+      const usdAmount = tipDef.coins / 10;
+      if (pointsData?.id) {
+        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
+      }
 
-    // Deduct from viewer
-    const usdAmount = tipDef.coins / 10;
-    if (pointsData?.id) {
-      await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
+      // Log transaction
+      await base44.entities.Transaction.create({
+        sender_id: currentUser.id,
+        sender_name: currentUser.full_name || 'Viewer',
+        recipient_id: creatorId,
+        room_id: roomId,
+        creator_payout: Math.floor(usdAmount  * 90) / 100,
+        platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
+        payment_method: 'virtual_coins',
+        transaction_type: 'direct_support',
+        status: 'completed',
+        processed_at: new Date().toISOString(),
+      });
+
+      // Show local float
+      setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);
+      qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
+      toast.success(`${tipDef.emoji} Sent ${tipDef.coins} coins!`);
+    } catch {
+      toast.error('Failed to send tip. Please try again.');
+    } finally {
+      setSending(null);
     }
-
-    // Log transaction
-    await base44.entities.Transaction.create({
-      sender_id: currentUser.id,
-      sender_name: currentUser.full_name || 'Viewer',
-      recipient_id: creatorId,
-      room_id: roomId,
-      creator_payout: Math.floor(usdAmount  * 90) / 100,
-      platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
-      payment_method: 'virtual_coins',
-      transaction_type: 'direct_support',
-      status: 'completed',
-      processed_at: new Date().toISOString(),
-    });
-
-    // Show local float
-    setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);
-    qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
-    toast.success(`${tipDef.emoji} Sent ${tipDef.coins} coins!`);
-    setSending(null);
   };
 
   const buyCoins = async (pack) => {
