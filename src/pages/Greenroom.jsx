@@ -68,6 +68,12 @@ import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import MerchWidget from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -651,6 +657,12 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {isHost && roomId && <StreamerGoalsWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
+      {isHost && roomId && <PayPerViewManager roomId={roomId} />}
+      {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
+      {roomId && <GiftShopTray roomId={roomId} currentUser={user} />}
+      {roomId && <GiftLeaderboard roomId={roomId} />}
+      {isHost && <SubscriptionManager creatorId={room?.host_id || user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
       {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}

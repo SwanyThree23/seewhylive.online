@@ -70,6 +70,12 @@ import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import MerchWidget from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -773,6 +779,12 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {partyId && <StreamerGoalsWidget creatorId={user?.id} roomId={partyId} isCreator={true} embedded={true} />}
+      {partyId && <PayPerViewManager roomId={partyId} />}
+      {partyId && <MonetizationDashboard roomId={partyId} />}
+      {partyId && <GiftShopTray roomId={partyId} currentUser={user} />}
+      {partyId && <GiftLeaderboard roomId={partyId} />}
+      {<SubscriptionManager creatorId={user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={user?.id} />}
       {!true && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
       {partyId && <LiveAuctionWidget creatorId={user?.id} roomId={partyId} isCreator={true} currentUser={user} />}

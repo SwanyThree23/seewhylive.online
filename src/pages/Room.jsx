@@ -96,6 +96,12 @@ import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
 import PKBattleInterface from '../components/pk/PKBattleInterface';
 import CoStreamPanel from '../components/collaboration/CoStreamPanel';
 import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -351,6 +357,12 @@ export default function RoomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      {isHost && roomId && <StreamerGoalsWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
+      {isHost && roomId && <PayPerViewManager roomId={roomId} />}
+      {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
+      {roomId && <GiftShopTray roomId={roomId} currentUser={user} />}
+      {roomId && <GiftLeaderboard roomId={roomId} />}
+      {isHost && <SubscriptionManager creatorId={room?.host_id || user?.id} />}
       {/* Tip Alert */}
       <TipAlert roomId={roomId} recipientId={room?.host_id} />
 

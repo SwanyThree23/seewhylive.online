@@ -97,6 +97,12 @@ import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import MerchWidget from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1201,6 +1207,12 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && partyId && <StreamerGoalsWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} embedded={true} />}
+      {isHost && partyId && <PayPerViewManager roomId={partyId} />}
+      {isHost && partyId && <MonetizationDashboard roomId={partyId} />}
+      {partyId && <GiftShopTray roomId={partyId} currentUser={user} />}
+      {partyId && <GiftLeaderboard roomId={partyId} />}
+      {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={party?.host_id || user?.id} />}
       {!isHost && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
       {partyId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} currentUser={user} />}
