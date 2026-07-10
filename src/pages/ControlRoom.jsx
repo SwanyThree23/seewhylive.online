@@ -49,6 +49,11 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -431,6 +436,11 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {<BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
+      {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
+      <StreamHealthDashboard isLive={roomId != null} />
+      {!true && roomId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
       {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
       <NotificationHub />

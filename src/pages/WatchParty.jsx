@@ -64,6 +64,11 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1168,6 +1173,11 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
+      {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
+      <StreamHealthDashboard isLive={partyId != null} />
+      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
       {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
       <NotificationHub />

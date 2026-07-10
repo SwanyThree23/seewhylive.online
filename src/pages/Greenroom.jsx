@@ -35,6 +35,11 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -618,6 +623,11 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
+      {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
+      <StreamHealthDashboard isLive={roomId != null} />
+      {!isHost && roomId && <QuickTip recipientId={room?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
       {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
       <NotificationHub />

@@ -37,6 +37,11 @@ import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -740,6 +745,11 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {<BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
+      {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
+      <StreamHealthDashboard isLive={partyId != null} />
+      {!true && partyId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
       {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
       <NotificationHub />
