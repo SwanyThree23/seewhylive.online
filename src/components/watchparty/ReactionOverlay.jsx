@@ -51,13 +51,13 @@ export default function ReactionOverlay({ partyId, currentUser }) {
     setReactions(p => [...p.slice(-(LIMITS.REACTION_BUFFER - 1)), { id, emoji, x }]);
     setTimeout(() => setReactions(p => p.filter(r => r.id !== id)), 2400);
     // Broadcast to all party members
-    await base44.entities.Message.create({
+    base44.entities.Message.create({
       room_id: partyId,
       user_id: currentUser.id,
       user_name: currentUser.full_name || currentUser.email,
       content: emoji,
       message_type: 'poll',
-    });
+    }).catch(() => {});
   };
 
   return (

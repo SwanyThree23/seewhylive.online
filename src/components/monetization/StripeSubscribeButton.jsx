@@ -19,26 +19,30 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
       return;
     }
     setLoading(tier.id);
+    try {
+      const sub = await base44.entities.ViewerSubscription.create({
+        viewer_id: currentUserId,
+        creator_id: creatorId,
+        tier: tier.id,
+        price_usd: tier.price,
+        status: 'pending',
+        started_at: new Date().toISOString(),
+      });
 
-    const sub = await base44.entities.ViewerSubscription.create({
-      viewer_id: currentUserId,
-      creator_id: creatorId,
-      tier: tier.id,
-      price_usd: tier.price,
-      status: 'pending',
-      started_at: new Date().toISOString(),
-    });
+      const sessionId = `cs_${Date.now()}_${sub.id.slice(0, 8)}`;
+      await base44.entities.ViewerSubscription.update(sub.id, {
+        stripe_checkout_session_id: sessionId,
+      });
 
-    const sessionId = `cs_${Date.now()}_${sub.id.slice(0, 8)}`;
-    await base44.entities.ViewerSubscription.update(sub.id, {
-      stripe_checkout_session_id: sessionId,
-    });
+      await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
 
-    await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
-
-    setLoading(null);
-    setSuccess(tier.id);
-    toast.success(`Subscribed to ${tier.label} tier! 🎉`);
+      setSuccess(tier.id);
+      toast.success(`Subscribed to ${tier.label} tier! 🎉`);
+    } catch {
+      toast.error('Subscription failed. Please try again.');
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (

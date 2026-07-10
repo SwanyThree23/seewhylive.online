@@ -762,14 +762,18 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
   const sendRaiseHand = async () => {
     if (!partyId || !user?.id) return;
-    await base44.entities.Message.create({
-      room_id: partyId,
-      user_id: user.id,
-      user_name: user.full_name || user.email,
-      content: JSON.stringify({ action: 'raise-hand', userId: user.id, userName: user.full_name || user.email }),
-      type: 'system',
-    });
-    toast.success('✋ Hand raised — waiting for host');
+    try {
+      await base44.entities.Message.create({
+        room_id: partyId,
+        user_id: user.id,
+        user_name: user.full_name || user.email,
+        content: JSON.stringify({ action: 'raise-hand', userId: user.id, userName: user.full_name || user.email }),
+        type: 'system',
+      });
+      toast.success('✋ Hand raised — waiting for host');
+    } catch {
+      toast.error('Failed to raise hand.');
+    }
   };
 
   const dismissRaisedHand = (userId) => {

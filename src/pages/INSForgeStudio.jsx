@@ -151,8 +151,13 @@ User prompt: ${state.prompt}
 
 Write the content now. Make it authentic, platform-native, and ready to post. Include relevant hashtags if appropriate.`;
 
-    var result = await base44.integrations.Core.InvokeLLM({ prompt: fullPrompt, model: 'claude_sonnet_4_6' });
-    dispatch({ type: 'GENERATED', payload: typeof result === 'string' ? result : (result && result.content) || 'Content generated. Edit as needed.' });
+    try {
+      var result = await base44.integrations.Core.InvokeLLM({ prompt: fullPrompt, model: 'claude_sonnet_4_6' });
+      dispatch({ type: 'GENERATED', payload: typeof result === 'string' ? result : (result && result.content) || 'Content generated. Edit as needed.' });
+    } catch {
+      toast.error('Failed to generate content.');
+      dispatch({ type: 'GENERATED', payload: '' });
+    }
   }
 
   async function handleSave() {

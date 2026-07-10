@@ -45,7 +45,7 @@ function usePullToRefresh(onRefresh) {
     if (pullY >= THRESHOLD && !refreshing) {
       setRefreshing(true);
       setPullY(THRESHOLD);
-      await onRefresh();
+      try { await onRefresh(); } catch {}
       setRefreshing(false);
     }
     setPullY(0);

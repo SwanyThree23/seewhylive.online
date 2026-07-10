@@ -91,18 +91,22 @@ Generate highlight segments with:
   };
 
   const saveHighlight = async (highlight) => {
-    await createHighlightMutation.mutateAsync({
-      recording_id: recording.id,
-      title: highlight.title,
-      description: highlight.description,
-      start_time: highlight.start_time,
-      end_time: highlight.start_time + highlight.duration,
-      highlight_type: highlight.highlight_type,
-      ai_generated: true,
-      ai_confidence: highlight.confidence,
-      thumbnail_url: recording.thumbnail_url,
-    });
-    toast.success('Highlight saved!');
+    try {
+      await createHighlightMutation.mutateAsync({
+        recording_id: recording.id,
+        title: highlight.title,
+        description: highlight.description,
+        start_time: highlight.start_time,
+        end_time: highlight.start_time + highlight.duration,
+        highlight_type: highlight.highlight_type,
+        ai_generated: true,
+        ai_confidence: highlight.confidence,
+        thumbnail_url: recording.thumbnail_url,
+      });
+      toast.success('Highlight saved!');
+    } catch {
+      toast.error('Failed to save highlight.');
+    }
   };
 
   const formatTime = (seconds) => {
