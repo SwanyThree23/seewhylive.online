@@ -10,10 +10,10 @@ import {
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
-import { useLocalMedia }
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49.jsx';
 import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
-import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate'; from '../hooks/useLocalMedia';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
@@ -43,6 +43,14 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import { Hand } from 'lucide-react';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD = '#D4AF37';
 const BG = '#080B18';
@@ -1877,6 +1885,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+      <SwanAIRecommendations roomId={partyId} currentLayout="studio" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={partyId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {party?.host_id && <ShopDashboard creatorId={party.host_id} />}
+      {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={isHost} />}
+      {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

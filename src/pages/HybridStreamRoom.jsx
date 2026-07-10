@@ -7,6 +7,15 @@ import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
 import { toast } from 'sonner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -191,6 +200,15 @@ export default function HybridStreamRoom() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={roomId} currentLayout="hybrid" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
+      {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

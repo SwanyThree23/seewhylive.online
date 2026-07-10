@@ -31,6 +31,14 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -587,6 +595,14 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {room?.host_id && <ShopDashboard creatorId={room.host_id} />}
+      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
+      {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

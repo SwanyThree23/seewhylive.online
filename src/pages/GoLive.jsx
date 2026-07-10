@@ -10,11 +10,20 @@ import {
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import LiveTranscription from '../components/live/LiveTranscription';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT = 'Barlow Condensed, sans-serif';
 
@@ -705,6 +714,15 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
+      <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={partyId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={true} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
+      {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
+      <BackgroundCustomizer />
     </div>
   );
 }
