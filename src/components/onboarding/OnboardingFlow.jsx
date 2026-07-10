@@ -50,13 +50,17 @@ export default function OnboardingFlow({ isOpen, onClose }) {
     const next = selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id];
     setSelected(next);
     if (next.length >= 3 && step === 1) {
-      await saveMutation.mutateAsync({ categories: next, onboarding_step: 1 });
-      setStep(2);
+      try {
+        await saveMutation.mutateAsync({ categories: next, onboarding_step: 1 });
+        setStep(2);
+      } catch {}
     }
   };
 
   const finish = async () => {
-    await saveMutation.mutateAsync({ categories: selected, onboarding_completed: true });
+    try {
+      await saveMutation.mutateAsync({ categories: selected, onboarding_completed: true });
+    } catch { return; }
     toast.success('Welcome to SeeWhy LIVE! 🎉');
     if (user?.id) {
       base44.entities.Activity.create({
@@ -69,7 +73,9 @@ export default function OnboardingFlow({ isOpen, onClose }) {
   };
 
   const skip = async () => {
-    await saveMutation.mutateAsync({ onboarding_completed: true, onboarding_step: 0 });
+    try {
+      await saveMutation.mutateAsync({ onboarding_completed: true, onboarding_step: 0 });
+    } catch { return; }
     onClose();
   };
 
