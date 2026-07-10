@@ -13,16 +13,20 @@ export default function LiveTranscription({ isLive = false, roomId }) {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
+  const intervalRef = useRef(null);
 
   // Start transcription stream
   useEffect(() => {
     if (!isLive || !showTranscription) return;
 
-    const startTranscription = async () => {
+    let cancelled = false;
+
+    (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
-        
+
         const mediaRecorder = new MediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
@@ -37,9 +41,6 @@ export default function LiveTranscription({ isLive = false, roomId }) {
 
           // Upload audio and transcribe
           try {
-            const formData = new FormData();
-            formData.append('file', audioBlob);
-
             const uploadRes = await base44.integrations.Core.UploadFile({ file: audioBlob });
             const transcribeRes = await base44.functions.invoke('transcribeAudio', {
               audio_url: uploadRes.file_url,
@@ -48,35 +49,35 @@ export default function LiveTranscription({ isLive = false, roomId }) {
             if (transcribeRes?.data?.text) {
               addCaption(transcribeRes.data.text);
             }
-          } catch (error) {
-            console.error('Transcription error:', error);
-          }
+          } catch {}
         };
 
         mediaRecorder.start();
         setIsTranscribing(true);
 
         // Process audio in 5-second chunks
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
           if (mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
             setTimeout(() => mediaRecorder.start(), 100);
           }
         }, 5000);
-
-        return () => {
-          clearInterval(interval);
-          if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-          stream.getTracks().forEach(track => track.stop());
-        };
-      } catch (error) {
-        console.error('Transcription setup error:', error);
+      } catch {
         setIsTranscribing(false);
       }
-    };
+    })();
 
-    const cleanup = startTranscription();
-    return cleanup;
+    return () => {
+      cancelled = true;
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+      setIsTranscribing(false);
+    };
   }, [isLive, showTranscription]);
 
   const addCaption = (text) => {
