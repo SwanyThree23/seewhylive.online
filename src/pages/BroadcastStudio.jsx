@@ -90,6 +90,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -1935,6 +1941,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
+      {isHost && user?.id && <RecordingManager userId={user.id} />}
+      {isHost && <OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {isHost && partyId && <AutomatedClipGenerator streamSession={{room_id: partyId}} isLive={partyId != null} />}
+      {partyId && <InteractivePollWidget roomId={partyId} isHost={isHost} />}
+      {isHost && <StreamMetadataEditor initialTitle={party?.title || 'Live Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
       {!isHost && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => {}} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}

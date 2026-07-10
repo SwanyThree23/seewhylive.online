@@ -55,6 +55,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -251,6 +257,12 @@ export default function HybridStreamRoom() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
+      {isHost && user?.id && <RecordingManager userId={user.id} />}
+      {isHost && <OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {isHost && roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
+      {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
+      {isHost && <StreamMetadataEditor initialTitle={room?.title || 'Hybrid Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
       {!isHost && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => {}} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}

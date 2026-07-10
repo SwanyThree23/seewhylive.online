@@ -48,6 +48,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -751,6 +757,12 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {user?.id && <RecordingManager userId={user.id} />}
+      {<OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {partyId && <AutomatedClipGenerator streamSession={{room_id: partyId}} isLive={partyId != null} />}
+      {partyId && <InteractivePollWidget roomId={partyId} isHost={true} />}
+      {<StreamMetadataEditor initialTitle={'Live Stream'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
       {!true && partyId && <AnimatedGiftShop recipientId={user?.id} roomId={partyId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}

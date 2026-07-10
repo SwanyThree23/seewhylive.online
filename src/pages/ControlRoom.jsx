@@ -60,6 +60,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -442,6 +448,12 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {user?.id && <RecordingManager userId={user.id} />}
+      {<OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
+      {roomId && <InteractivePollWidget roomId={roomId} isHost={true} />}
+      {<StreamMetadataEditor initialTitle={room?.title || 'Control Room'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
       {!true && roomId && <AnimatedGiftShop recipientId={user?.id} roomId={roomId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}

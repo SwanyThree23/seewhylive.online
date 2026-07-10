@@ -46,6 +46,12 @@ import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import ShareToSocial from '../components/social/ShareToSocial';
 import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -629,6 +635,12 @@ export default function GreenroomPage() {
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
       <BackgroundCustomizer />
+      {isHost && user?.id && <RecordingManager userId={user.id} />}
+      {isHost && <OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {isHost && roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
+      {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
+      {isHost && <StreamMetadataEditor initialTitle={room?.title || 'Greenroom'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
       {!isHost && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => {}} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
