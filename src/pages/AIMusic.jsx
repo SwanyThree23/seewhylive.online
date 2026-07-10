@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
@@ -1499,6 +1505,11 @@ Return ONLY valid JSON (no markdown, no backticks):
 
       {/* ── Toast ── */}
       <Toast message={toast.message} visible={toast.visible} />
+      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

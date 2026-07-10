@@ -4,6 +4,12 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const G = '#D4AF37';
 const BG = '#0A0710';
 const PANEL = '#0F0B1A';
@@ -280,6 +286,11 @@ export default function PlatformShowcase() {
           </motion.a>
         </motion.div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

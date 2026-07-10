@@ -13,6 +13,12 @@ import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -453,6 +459,11 @@ function EmptyState({ icon: Icon, title, desc }) {
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
+      <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

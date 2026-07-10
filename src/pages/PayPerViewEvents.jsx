@@ -6,6 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lock, TrendingUp, Calendar, DollarSign } from 'lucide-react';
 import PayPerViewCard from '../components/monetization/PayPerViewCard';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 export default function PayPerViewEventsPage() {
   const [filter, setFilter] = useState('all');
 
@@ -130,6 +136,11 @@ export default function PayPerViewEventsPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="ppv" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

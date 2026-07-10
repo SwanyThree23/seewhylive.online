@@ -7,6 +7,12 @@ import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -83,6 +89,11 @@ export default function CommunityAdminPage() {
         {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={user?.id} />}
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -5,6 +5,12 @@ import { base44 } from '@/api/base44Client';
 import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -307,6 +313,11 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="overlay" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

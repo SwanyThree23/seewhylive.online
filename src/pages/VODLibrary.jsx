@@ -5,6 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Film, Scissors } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const G = '#D4AF37';
 const BG = '#0A0710';
 
@@ -62,6 +68,11 @@ export default function VODLibraryPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {user?.id && <VODLibraryComponent creatorId={user.id} />}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

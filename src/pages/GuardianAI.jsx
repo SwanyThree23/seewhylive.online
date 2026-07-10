@@ -4,6 +4,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
 const BG3   = '#13101C';
@@ -377,6 +383,11 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
+      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

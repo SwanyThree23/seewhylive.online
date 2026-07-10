@@ -18,6 +18,12 @@ import BattleOverlay from '../components/pk/BattleOverlay';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
     <button onClick={onClick} disabled={disabled} {...rest}
@@ -833,6 +839,11 @@ export default function PKBattleManager() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

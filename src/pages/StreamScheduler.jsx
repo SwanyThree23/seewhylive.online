@@ -10,6 +10,12 @@ import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
   { id: 'education', label: '📚 Education' }, { id: 'talk', label: '🎙 Talk' },
@@ -470,6 +476,11 @@ export default function StreamScheduler() {
           </>
         )}
       </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="schedule" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -4,6 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -780,6 +786,11 @@ export default function StreamInfra() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="infra" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -9,6 +9,12 @@ import {
 } from 'recharts';
 import { TrendingUp, Users, DollarSign, MessageSquare, Download, BarChart2 } from 'lucide-react';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const GOLD = '#D4AF37';
 const CYAN = '#C9A84C';
 const CRIMSON = '#800020';
@@ -335,6 +341,11 @@ export default function StreamAnalytics() {
           </ChartCard>
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

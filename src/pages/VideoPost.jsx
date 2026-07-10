@@ -8,6 +8,12 @@ import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 const GOLD = '#D4AF37';
 
 const MAX_DURATION_SECONDS = 600; // 10 minutes
@@ -315,6 +321,11 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <BackgroundCustomizer />
     </div>
   );
 }
