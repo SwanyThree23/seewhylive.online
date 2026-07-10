@@ -74,6 +74,9 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShop from '../components/loyalty/RewardShop';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#FF1564';
@@ -523,6 +526,9 @@ export default function AudioRoom() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {roomId && <PKBattleInterface roomId={roomId} />}
+      {roomId && <CoStreamPanel roomId={roomId} />}
+      {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
       {isHost && roomId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={roomId} />}
       {roomId && <RewardShop creatorId={party?.host_id || user?.id} roomId={roomId} currentUser={user} />}

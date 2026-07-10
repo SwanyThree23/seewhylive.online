@@ -62,6 +62,9 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShop from '../components/loyalty/RewardShop';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -765,6 +768,9 @@ export default function GoLive() {
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
+      {partyId && <PKBattleInterface roomId={partyId} />}
+      {partyId && <CoStreamPanel roomId={partyId} />}
+      {partyId && <CollaborativeWhiteboard roomId={partyId} />}
       {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={partyId} isHost={true} />}
       {partyId && <RedemptionQueue creatorId={user?.id} roomId={partyId} />}
       {partyId && <RewardShop creatorId={user?.id} roomId={partyId} currentUser={user} />}

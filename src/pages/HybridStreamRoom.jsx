@@ -69,6 +69,9 @@ import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import RedemptionQueue from '../components/loyalty/RedemptionQueue';
 import RewardShop from '../components/loyalty/RewardShop';
 import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -265,6 +268,9 @@ export default function HybridStreamRoom() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
+      {roomId && <PKBattleInterface roomId={roomId} />}
+      {roomId && <CoStreamPanel roomId={roomId} />}
+      {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={room?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
       {isHost && roomId && <RedemptionQueue creatorId={room?.host_id || user?.id} roomId={roomId} />}
       {roomId && <RewardShop creatorId={room?.host_id || user?.id} roomId={roomId} currentUser={user} />}
