@@ -506,7 +506,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         onClick={() => setDeleteIdx(i)}
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
                           color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
@@ -524,8 +524,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
               ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
-              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+              background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
+              color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
           >
             Clear All Sources
@@ -608,7 +608,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                   style={{
                     ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
-                    background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
+                    background: alreadyAdded ? 'rgba(109,191,126,0.1)' : NLM,
                     color: alreadyAdded ? '#6DBF7E' : '#fff',
                     fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
                     transition: 'all 0.15s',
@@ -1432,7 +1432,7 @@ export default function PodcastStudio() {
                         onClick={() => setDeleteConfirmIdx(i)}
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
                           color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >

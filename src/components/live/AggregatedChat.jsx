@@ -314,7 +314,7 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
       {pinnedMsg && Date.now() < pinnedMsg.expiresAt && (
         <div style={{
           margin: '4px 8px',
-          background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(255,21,100,0.1))',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(192,57,43,0.1))',
           border: '1px solid rgba(212,175,55,0.4)',
           borderRadius: 12,
           padding: '8px 12px',

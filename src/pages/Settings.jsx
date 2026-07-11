@@ -249,13 +249,13 @@ export default function SettingsPage() {
             <button
               onClick={() => base44.auth.logout()}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#C0392B', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', userSelect: 'none', ...T }}>
               Log Out
             </button>
             <button
               onClick={() => setShowDeleteDialog(true)}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
-              style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.6)', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', color: 'rgba(192,57,43,0.6)', userSelect: 'none', ...T }}>
               <Trash2 className="w-3.5 h-3.5" />
               Delete Account
             </button>
@@ -268,10 +268,10 @@ export default function SettingsPage() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
-            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
+            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: '#C0392B' }} />
               </div>
               <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
             </div>
             <div className="p-5 space-y-3">
               <div>
-                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
                   Type DELETE to confirm
                 </label>
                 <input
@@ -289,11 +289,11 @@ export default function SettingsPage() {
                   onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
                   placeholder="DELETE"
                   className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
-                  style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(239,68,68,0.2)'}`, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+                  style={{ background: 'rgba(192,57,43,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.2)'}`, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
               </div>
               <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
                 className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                style={{ background: deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                style={{ background: deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(192,57,43,0.4)', userSelect: 'none', ...T }}>
                 {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
               </button>
               <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}

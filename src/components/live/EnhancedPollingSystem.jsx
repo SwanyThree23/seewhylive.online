@@ -211,7 +211,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <button
             onClick={closePoll}
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
-            style={{ background: 'rgba(255,21,100,0.15)' }}
+            style={{ background: 'rgba(192,57,43,0.15)' }}
           >
             <X className="w-4 h-4 text-red-400" />
           </button>

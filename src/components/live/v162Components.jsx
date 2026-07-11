@@ -142,7 +142,7 @@ export function ViewerControlsV2({ onClose }) {
           </div>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7}}>
-          <button onClick={togglePip} style={{padding:"8px",borderRadius:7,border:"1px solid "+(pip?G.cyan:G.grayDim),background:pip?"rgba(0,229,255,.1)":"none",color:pip?G.cyan:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{pip?"✓":"⧉"} PIP</button>
+          <button onClick={togglePip} style={{padding:"8px",borderRadius:7,border:"1px solid "+(pip?G.cyan:G.grayDim),background:pip?"rgba(74,138,122,.1)":"none",color:pip?G.cyan:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{pip?"✓":"⧉"} PIP</button>
           <button onClick={toggleFS} style={{padding:"8px",borderRadius:7,border:"1px solid "+G.grayDim,background:"none",color:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>⛶ FULL</button>
           <button onClick={function(){setMuted(function(m){return !m;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(muted?G.red:G.grayDim),background:muted?"rgba(255,59,48,.1)":"none",color:muted?G.red:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{muted?"🔇 UNMUTE":"🔊 MUTE"}</button>
           <button onClick={function(){setHandRaised(function(h){return !h;});}} style={{padding:"8px",borderRadius:7,border:"1px solid "+(handRaised?G.orange:G.grayDim),background:handRaised?"rgba(255,149,0,.1)":"none",color:handRaised?G.orange:G.gray,fontFamily:G.fRaj,fontSize:11,fontWeight:700,cursor:"pointer"}}>{handRaised?"✋ LOWER":"✋ RAISE"}</button>
@@ -151,7 +151,7 @@ export function ViewerControlsV2({ onClose }) {
           <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37"}}>{quality}</span>
           <span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.1)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>{volume}% vol</span>
           {muted&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(196,30,58,.2)",border:"1px solid #C41E3A",color:"#FF6B6B",fontFamily:G.fMon,fontWeight:700}}>MUTED</span>}
-          {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(0,229,255,.15)",border:"1px solid #4A8A7A",color:"#4A8A7A",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
+          {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(74,138,122,.15)",border:"1px solid #4A8A7A",color:"#4A8A7A",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
           {handRaised&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.15)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>✋ RAISED</span>}
         </div>
       </div>

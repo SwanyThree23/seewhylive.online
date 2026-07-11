@@ -132,12 +132,12 @@ function FanbaseRoomCard({ room }) {
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#D4854A', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}

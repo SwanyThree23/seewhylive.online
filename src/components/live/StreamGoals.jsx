@@ -120,7 +120,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                 {goal.reward_text && <p className="text-[10px] text-white/40 mt-0.5">{goal.reward_text}</p>}
               </div>
               <div className="flex items-center gap-2">
-                {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.2)', color:'#6DBF7E', border:'1px solid rgba(34,197,94,0.3)' }}>✓ REACHED</span>}
+                {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
                   <button onClick={() => setGoals(prev => prev.filter(g => g.id !== goal.id))}
                     className="text-white/20 hover:text-red-400">

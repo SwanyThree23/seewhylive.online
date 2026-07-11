@@ -783,7 +783,7 @@ export default function WatchPartyPage() {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <h2 className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</h2>
             <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             <span className="shrink-0 text-[11px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
@@ -1046,7 +1046,7 @@ export default function WatchPartyPage() {
             {/* Guardian Section */}
             <div style={{
               borderRadius: 12, padding: '14px 16px', marginBottom: 12,
-              background: 'rgba(255,21,100,0.05)', border: '1px solid rgba(255,21,100,0.15)',
+              background: 'rgba(192,57,43,0.05)', border: '1px solid rgba(192,57,43,0.15)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff' }}>
@@ -1056,8 +1056,8 @@ export default function WatchPartyPage() {
                   <span style={{
                     fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
-                    background: wpGuardianOn ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.08)',
-                    border: `1px solid ${wpGuardianOn ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    background: wpGuardianOn ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)',
+                    border: `1px solid ${wpGuardianOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
                     color: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.3)',
                     textTransform: 'uppercase',
                   }}>

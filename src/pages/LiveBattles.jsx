@@ -58,7 +58,7 @@ function BattleCard({ battle, index }) {
             <div>
               {isActive && (
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
-                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B' }}>
+                  style={{ ...T, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                   ⚡ LIVE
                 </span>
               )}
@@ -95,7 +95,7 @@ function BattleCard({ battle, index }) {
           </div>
           <div className="flex-1 text-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-red-300 mx-auto mb-1"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.15)', border: '2px solid rgba(192,57,43,0.4)' }}>
               {rightName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>

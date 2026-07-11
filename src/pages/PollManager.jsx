@@ -102,7 +102,7 @@ export default function PollManager() {
                   <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
-                      className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
+                      className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
                       <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
@@ -165,7 +165,7 @@ export default function PollManager() {
                   </span>
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
-                  className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
+                  className="p-1.5 rounded-lg" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', cursor: 'pointer' }}>
                   <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>

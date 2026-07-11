@@ -72,7 +72,7 @@ export default function CreatorBridge({ user }) {
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)' }}>
+        <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(109,191,126,0.1)' }}>
           <CheckCircle2 className="w-4 h-4 text-green-400" />
           <div>
             <p className="text-xs font-semibold text-green-400">Connected</p>

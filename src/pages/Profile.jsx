@@ -462,8 +462,8 @@ export default function ProfilePage() {
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
-                          background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
                           ...T,
                         }}>

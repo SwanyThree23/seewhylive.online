@@ -84,7 +84,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
   const minBid = Math.ceil((auction.current_bid || auction.starting_bid) + (auction.bid_increment || 1));
 
   const cardBorder =
-    auction.status === 'ending_soon' ? '1px solid rgba(239,68,68,0.5)' :
+    auction.status === 'ending_soon' ? '1px solid rgba(192,57,43,0.5)' :
     auction.status === 'active' ? '1px solid rgba(212,175,55,0.2)' :
     isEnded ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(255,255,255,0.1)';
 

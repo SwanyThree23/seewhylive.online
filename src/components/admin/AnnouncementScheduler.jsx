@@ -17,7 +17,7 @@ const priorityBadgeColors = {
   low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
   normal: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
   high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
-  urgent: { background:'rgba(239,68,68,0.15)',   color:'#C0392B' },
+  urgent: { background:'rgba(192,57,43,0.15)',   color:'#C0392B' },
 };
 
 function Badge({ label, style }) {

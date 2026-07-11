@@ -89,7 +89,9 @@ export default function GreenroomEnhanced() {
   }
 
   async function generatePin() {
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    const pin = (1000 + (arr[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {
@@ -141,7 +143,7 @@ export default function GreenroomEnhanced() {
             )}
             {isLive && (
               <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-full"
-                style={{ background: 'rgba(255,21,100,0.9)' }}>
+                style={{ background: 'rgba(192,57,43,0.9)' }}>
                 <motion.div className="w-1.5 h-1.5 rounded-full bg-white"
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
                 <span className="text-[11px] font-black text-white">LIVE</span>

@@ -166,7 +166,7 @@ function OverviewTab({ user }) {
           { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
-          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(255,21,100,0.08)' },
+          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
           { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
@@ -785,11 +785,11 @@ function MonetizationTab({ user }) {
               <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
                   style={{ background: 'linear-gradient(90deg, #6DBF7E, #D4854A)' }} />
-                <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
+                <div className="h-full flex-1" style={{ background: 'rgba(192,57,43,0.3)' }} />
               </div>
               <div className="flex items-center justify-between text-[11px] mt-1">
-                <span style={{ color: 'rgba(255,21,100,0.7)' }}>Platform 10%</span>
-                <span style={{ color: 'rgba(255,21,100,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)' }}>Platform 10%</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
               </div>
             </div>
             <div className="pt-1 space-y-1">

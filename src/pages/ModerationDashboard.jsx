@@ -28,10 +28,10 @@ const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
 const VIOLATION_STYLES = {
-  harassment:    { color: '#D4854A', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
+  harassment:    { color: '#D4854A', bg: 'rgba(212,133,74,0.12)',  border: 'rgba(212,133,74,0.3)' },
   spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
-  hate_speech:   { color: '#C0392B', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
-  inappropriate: { color: '#D4854A', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
+  hate_speech:   { color: '#C0392B', bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.3)' },
+  inappropriate: { color: '#D4854A', bg: 'rgba(212,133,74,0.12)',   border: 'rgba(212,133,74,0.3)' },
   safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
@@ -155,7 +155,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ))}
         <button onClick={() => onQuickAction(entry, 'ban')}
           className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-          style={{ background: 'rgba(255,21,100,0.1)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.1)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Ban
         </button>
       </div>

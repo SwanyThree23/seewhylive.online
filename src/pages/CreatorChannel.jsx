@@ -90,7 +90,7 @@ export default function CreatorChannel() {
         {liveRoom && (
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
-              style={{ background: 'rgba(255,21,100,0.85)', color: '#fff', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.85)', color: '#fff', ...T }}>
               <div className="w-2 h-2 rounded-full bg-white" /> LIVE NOW
             </span>
           </div>
@@ -132,7 +132,7 @@ export default function CreatorChannel() {
             {liveRoom ? (
               <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                   <Radio className="w-4 h-4" /> Watch Now
                 </button>
               </Link>
@@ -196,7 +196,7 @@ export default function CreatorChannel() {
                 <div className="p-4">
                   <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                     <button className="w-full py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2"
-                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                      style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                       <Play className="w-4 h-4" /> Join Stream
                     </button>
                   </Link>

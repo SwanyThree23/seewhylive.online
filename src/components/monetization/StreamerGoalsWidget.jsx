@@ -29,7 +29,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
   }, [pct]);
 
   return (
-    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(34,197,94,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(34,197,94,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
+    <motion.div layout style={{ borderRadius: 12, border: isComplete ? '1px solid rgba(109,191,126,0.5)' : '1px solid rgba(255,255,255,0.1)', background: isComplete ? 'rgba(109,191,126,0.05)' : 'rgba(255,255,255,0.03)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 20 }}>{GOAL_ICONS[goal.goal_type] || '🎯'}</span>
@@ -40,7 +40,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {isComplete && (
-            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#6DBF7E', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.2)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ✓ Complete!
             </span>
           )}

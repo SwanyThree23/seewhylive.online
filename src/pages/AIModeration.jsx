@@ -22,7 +22,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const VIOLATION_STYLE = {
   spam:         { bg: 'rgba(255,200,0,0.1)',   border: 'rgba(255,200,0,0.3)',   color: '#ffc800' },
   harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
-  hate_speech:  { bg: 'rgba(255,21,100,0.1)',  border: 'rgba(255,21,100,0.3)',  color: '#C0392B' },
+  hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
   safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#00ff88' },
 };
@@ -215,7 +215,7 @@ export default function AIModerationPage() {
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'reversed', action: 'none' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#C0392B', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         <XCircle className="w-3.5 h-3.5" /> Reverse
                       </button>
                     </div>

@@ -120,7 +120,7 @@ function FlyingGift({ emoji, side }) {
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
   var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#D4854A' : '#D4AF37';
-  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
       key={combo}
@@ -730,7 +730,7 @@ export default function PKBattlePage() {
           )}
           {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.4)', color: '#fca5a5', border: '1px solid rgba(192,57,43,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}

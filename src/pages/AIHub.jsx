@@ -490,7 +490,7 @@ export default function AIHub() {
                   onClick={scanGuardian}
                   style={{
                     ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
-                    background: guardianLoading ? 'rgba(255,21,100,0.06)' : 'rgba(255,21,100,0.12)',
+                    background: guardianLoading ? 'rgba(192,57,43,0.06)' : 'rgba(192,57,43,0.12)',
                     border: `1px solid ${PINK}40`,
                     color: PINK, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
                     textTransform: 'uppercase', cursor: guardianLoading ? 'not-allowed' : 'pointer',
@@ -558,7 +558,7 @@ export default function AIHub() {
                 whileTap={{ scale: 0.97 }}
                 style={{
                   ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
-                  background: 'rgba(255,21,100,0.12)', border: `1px solid ${PINK}40`,
+                  background: 'rgba(192,57,43,0.12)', border: `1px solid ${PINK}40`,
                   color: PINK, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em',
                   textTransform: 'uppercase', cursor: 'pointer',
                 }}
@@ -883,12 +883,12 @@ export default function AIHub() {
           <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{
               margin: '0 16px 16px',
-              background: 'rgba(255,21,100,0.08)',
-              border: '1px solid rgba(255,21,100,0.2)', borderRadius: 10,
+              background: 'rgba(192,57,43,0.08)',
+              border: '1px solid rgba(192,57,43,0.2)', borderRadius: 10,
               padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
                   <div style={{ ...T, fontSize: 12, color: '#C0392B', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>

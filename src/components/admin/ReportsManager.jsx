@@ -16,13 +16,13 @@ const priorityBadge = {
   low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
   medium: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
   high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
-  urgent: { background:'rgba(239,68,68,0.15)',   color:'#C0392B' },
+  urgent: { background:'rgba(192,57,43,0.15)',   color:'#C0392B' },
 };
 
 const statusBadge = {
   pending:      { background:'rgba(234,179,8,0.15)',   color:'#facc15' },
   under_review: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
-  resolved:     { background:'rgba(34,197,94,0.15)',   color:'#6DBF7E' },
+  resolved:     { background:'rgba(109,191,126,0.15)',   color:'#6DBF7E' },
   dismissed:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
 };
 

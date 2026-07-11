@@ -386,9 +386,9 @@ export default function AudioStageTab({
             height: 40,
             borderRadius: '50%',
             background: isMuted
-              ? 'rgba(239,68,68,0.18)'
+              ? 'rgba(192,57,43,0.18)'
               : `linear-gradient(135deg, ${GOLD}, #B8960C)`,
-            border: isMuted ? '1px solid rgba(239,68,68,0.5)' : 'none',
+            border: isMuted ? '1px solid rgba(192,57,43,0.5)' : 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -547,8 +547,8 @@ export default function AudioStageTab({
                         gap: 4,
                         padding: '4px 8px',
                         borderRadius: 6,
-                        background: 'rgba(239,68,68,0.1)',
-                        border: '1px solid rgba(239,68,68,0.3)',
+                        background: 'rgba(192,57,43,0.1)',
+                        border: '1px solid rgba(192,57,43,0.3)',
                         color: '#C0392B',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',

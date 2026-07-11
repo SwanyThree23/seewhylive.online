@@ -7,11 +7,11 @@ import { toast } from 'sonner';
 
 const INSIGHT_CONFIG = {
   conversation_starter: { icon: MessageSquare, color: '#C9A84C', label: 'Talk About',  bg: 'rgba(201,168,76,0.08)' },
-  thank_you:            { icon: Heart,          color: '#C0392B', label: 'Thank You',   bg: 'rgba(255,21,100,0.08)' },
+  thank_you:            { icon: Heart,          color: '#C0392B', label: 'Thank You',   bg: 'rgba(192,57,43,0.08)' },
   chat_spike:           { icon: Zap,            color: '#FFB800', label: '⚡ Spike',    bg: 'rgba(255,184,0,0.08)' },
   trending_topic:       { icon: TrendingUp,     color: '#D4AF37', label: 'Trending',    bg: 'rgba(212,175,55,0.08)' },
   performance_tip:      { icon: TrendingUp,     color: '#6DBF7E', label: 'Pro Tip',     bg: 'rgba(109,191,126,0.08)' },
-  sentiment_shift:      { icon: AlertTriangle,  color: '#D4854A', label: 'Mood Shift',  bg: 'rgba(255,140,0,0.08)' },
+  sentiment_shift:      { icon: AlertTriangle,  color: '#D4854A', label: 'Mood Shift',  bg: 'rgba(212,133,74,0.08)' },
 };
 
 function SentimentMeter({ score }) {

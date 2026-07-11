@@ -211,11 +211,11 @@ function StreamTab({ user }) {
             <CopyField label="Stream Key" value={streamKey} mono={true} />
             <button
               onClick={function() { setStreamKey(genKey('sw', userId)); toast.success('Key regenerated'); }}
-              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(255,21,100,0.12)', color:'#C0392B', border:'1px solid rgba(255,21,100,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(192,57,43,0.12)', color:'#C0392B', border:'1px solid rgba(192,57,43,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <RefreshCw className="w-3 h-3" /> Regenerate Key
             </button>
-            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(255,21,100,0.04)', border: '1px solid rgba(255,21,100,0.08)' }}>
+            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.08)' }}>
               <p className="text-[10px] text-white/40 font-bold uppercase">OBS Quick Config</p>
               <p className="text-[10px] text-white/25">Service: Custom RTMP</p>
               <p className="text-[10px] text-white/25">Bitrate: 4000–8000 kbps · Keyframe: 2s · H.264</p>
@@ -412,7 +412,7 @@ function LiveRoomTab({ user }) {
         <div className="flex items-center gap-2">
           <button
             onClick={function() { setRoomActive(!roomActive); }}
-            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#C0392B' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(255,21,100,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#C0392B' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(192,57,43,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
           >
             {roomActive ? <><Square className="w-3 h-3" /> End Room</> : <><Play className="w-3 h-3" /> Start Room</>}
           </button>
@@ -525,7 +525,7 @@ function LiveRoomTab({ user }) {
               <button
                 onClick={function() { setMicOn(!micOn); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(255,21,100,0.2)') }}
+                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(192,57,43,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(192,57,43,0.2)') }}
               >
                 {micOn ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
                 <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#C0392B' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
@@ -652,7 +652,7 @@ function StudioTab({ user }) {
                   </button>
                   <button
                     onClick={function() { removeRoom(room.id); }}
-                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(255,21,100,0.08)', color:'rgba(255,21,100,0.38)', border:'1px solid rgba(255,21,100,0.15)', cursor:'pointer' }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(192,57,43,0.08)', color:'rgba(192,57,43,0.38)', border:'1px solid rgba(192,57,43,0.15)', cursor:'pointer' }}
                   >
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
@@ -699,7 +699,7 @@ function StudioTab({ user }) {
             { label: 'Auto-Clip Highlights', desc: 'AI detects peak moments', active: true },
           ].map(function(item) {
             return (
-              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(255,21,100,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)') }}>
+              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(192,57,43,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)') }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-white/80">{item.label}</p>

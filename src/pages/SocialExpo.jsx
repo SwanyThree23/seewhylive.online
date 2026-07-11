@@ -313,7 +313,7 @@ export default function SocialExpo() {
                       return (
                         <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                           <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(13,6,24,0.9)',
-                            border: '1px solid rgba(255,21,100,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+                            border: '1px solid rgba(192,57,43,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                             <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0d0620)' }}>
                               <img src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} alt={video.title}
                                 onError={e => { e.target.style.display = 'none'; }}
@@ -518,7 +518,7 @@ export default function SocialExpo() {
               </div>
 
               {/* Tournament section */}
-              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.18)' }}>
+              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(123,93,166,0.06)', border: '1px solid rgba(123,93,166,0.18)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                   <Trophy style={{ width: 20, height: 20, color: '#7B5DA6' }} />
                   <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', ...T }}>Domino Entertainment Tournaments</span>
@@ -531,7 +531,7 @@ export default function SocialExpo() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
                   {['Weekly Brackets', 'Sponsored Prize Pools', 'Community Wagers', 'Live Commentary', 'Cross-Platform Chat', 'Replay Archive'].map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', borderRadius: 8,
-                      background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)' }}>
+                      background: 'rgba(123,93,166,0.08)', border: '1px solid rgba(123,93,166,0.15)' }}>
                       <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#7B5DA6', flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', ...T }}>{f}</span>
                     </div>
@@ -621,10 +621,10 @@ export default function SocialExpo() {
 
               {/* Headline */}
               <div style={{ padding: 28, borderRadius: 18, marginBottom: 28,
-                background: `linear-gradient(135deg, rgba(34,197,94,0.12), rgba(0,245,255,0.08))`,
-                border: '1px solid rgba(34,197,94,0.22)' }}>
+                background: `linear-gradient(135deg, rgba(109,191,126,0.12), rgba(74,138,122,0.08))`,
+                border: '1px solid rgba(109,191,126,0.22)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(34,197,94,0.18)',
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(109,191,126,0.18)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Percent style={{ width: 22, height: 22, color: '#6DBF7E' }} />
                   </div>
@@ -645,8 +645,8 @@ export default function SocialExpo() {
                     { label: 'Instant Wallet Credit', sub: 'No 30-day delay' },
                     { label: 'Unlimited Referrals', sub: 'Earn on every one' },
                   ].map((item, i) => (
-                    <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.07)',
-                      border: '1px solid rgba(34,197,94,0.18)' }}>
+                    <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(109,191,126,0.07)',
+                      border: '1px solid rgba(109,191,126,0.18)' }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: '#6DBF7E', margin: '0 0 3px', ...T }}>{item.label}</p>
                       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
                     </div>

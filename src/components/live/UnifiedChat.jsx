@@ -142,12 +142,12 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7c3aed' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7B5DA6' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
                 <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
-                  style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)' }}>
+                  style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
               </motion.div>

@@ -284,9 +284,9 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var statusStyle = {
     pending: { bg: 'rgba(212,175,55,0.1)', color: '#d4af37', border: 'rgba(212,175,55,0.25)' },
     accepted: { bg: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: 'rgba(109,191,126,0.25)' },
-    active: { bg: 'rgba(255,21,100,0.1)', color: '#C0392B', border: 'rgba(255,21,100,0.25)' },
+    active: { bg: 'rgba(192,57,43,0.1)', color: '#C0392B', border: 'rgba(192,57,43,0.25)' },
     ended: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.1)' },
-    declined: { bg: 'rgba(255,21,100,0.05)', color: 'rgba(255,21,100,0.5)', border: 'rgba(255,21,100,0.1)' },
+    declined: { bg: 'rgba(192,57,43,0.05)', color: 'rgba(192,57,43,0.5)', border: 'rgba(192,57,43,0.1)' },
     cancelled: { bg: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.25)', border: 'rgba(255,255,255,0.06)' },
   };
 
@@ -305,7 +305,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
             {pendingReceived.map(function(b) {
               return (
                 <div key={b.id} className="flex items-center gap-4 px-4 py-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                     {b.creator_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -326,7 +326,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                       size="sm"
                       onClick={function() { respondMutation.mutate({ id: b.id, status: 'declined' }); }}
                       className="h-8 text-xs gap-1"
-                      style={{ background: 'rgba(255,21,100,0.08)', color: '#C0392B60', border: '1px solid rgba(255,21,100,0.15)' }}
+                      style={{ background: 'rgba(192,57,43,0.08)', color: '#C0392B60', border: '1px solid rgba(192,57,43,0.15)' }}
                     >
                       <XCircle className="w-3 h-3" />
                     </Button>
@@ -367,7 +367,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                     onChange={function(e) { setChallengerName(e.target.value); }}
                     placeholder="@creator or display name..."
                     className="w-full rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
-                    style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.2)' }}
+                    style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.2)' }}
                   />
                 </div>
                 <div>
@@ -446,10 +446,10 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                   key={b.id}
                   onClick={function() { onBattleSelect(b); }}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: isLive ? '1px solid rgba(255,21,100,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ background: 'rgba(255,255,255,0.03)', border: isLive ? '1px solid rgba(192,57,43,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.08)', border: isLive ? '1px solid rgba(255,21,100,0.3)' : '1px solid rgba(212,175,55,0.15)' }}>
+                    style={{ background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.08)', border: isLive ? '1px solid rgba(192,57,43,0.3)' : '1px solid rgba(212,175,55,0.15)' }}>
                     <Swords className="w-4 h-4" style={{ color: isLive ? '#C0392B' : '#D4AF37' }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -594,7 +594,7 @@ function HistoryTab({ battles, user }) {
               {Math.round((wins.length / ended.length) * 100)}%
             </span>
           </div>
-          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,21,100,0.2)' }}>
+          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(192,57,43,0.2)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }}
@@ -621,8 +621,8 @@ function HistoryTab({ battles, user }) {
               return (
                 <div key={b.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{
-                    background: isWin ? 'rgba(212,175,55,0.15)' : isParticipant ? 'rgba(255,21,100,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: '1px solid ' + (isWin ? 'rgba(212,175,55,0.3)' : isParticipant ? 'rgba(255,21,100,0.2)' : 'rgba(255,255,255,0.08)')
+                    background: isWin ? 'rgba(212,175,55,0.15)' : isParticipant ? 'rgba(192,57,43,0.1)' : 'rgba(255,255,255,0.05)',
+                    border: '1px solid ' + (isWin ? 'rgba(212,175,55,0.3)' : isParticipant ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.08)')
                   }}>
                     {isWin ? <Crown className="w-4 h-4 text-yellow-400" /> : <Swords className="w-4 h-4 text-white/30" />}
                   </div>
@@ -751,7 +751,7 @@ export default function PKBattleManager() {
             </div>
             <div className="flex items-center gap-2">
               {activeBattleCount > 0 && (
-                <Badge className="text-xs animate-pulse" style={{ background: 'rgba(255,21,100,0.15)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.3)' }}>
+                <Badge className="text-xs animate-pulse" style={{ background: 'rgba(192,57,43,0.15)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}>
                   {activeBattleCount} LIVE
                 </Badge>
               )}

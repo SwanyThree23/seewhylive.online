@@ -61,7 +61,10 @@ export default function RTMPServer() {
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    return stored || `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+    if (stored) return stored;
+    const arr = new Uint8Array(18);
+    crypto.getRandomValues(arr);
+    return `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
 
@@ -72,7 +75,9 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const newKey = `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+      const arr = new Uint8Array(18);
+      crypto.getRandomValues(arr);
+      const newKey = `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);

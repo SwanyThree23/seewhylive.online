@@ -110,7 +110,7 @@ export default function PublicProfile() {
                 </span>
               )}
               {liveRoom && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase animate-pulse" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase animate-pulse" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
                   🔴 LIVE
                 </span>
               )}
@@ -130,7 +130,7 @@ export default function PublicProfile() {
           <div className="sm:pt-10 flex gap-2 flex-wrap">
             {liveRoom && (
               <Link to={createPageUrl('Room') + `?id=${liveRoom.id}`}>
-                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
+                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
                   <Radio className="w-3.5 h-3.5" /> Watch Live
                 </button>
               </Link>

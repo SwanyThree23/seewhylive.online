@@ -26,7 +26,7 @@ function GoldenWallItem({ item, onExpire }) {
         isSuperChat
           ? 'border-[#FFB800] shadow-[0_0_20px_rgba(255,184,0,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
           : isGift
-          ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(255,21,100,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
+          ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(192,57,43,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
           : 'border-[#FFB800]/30 bg-[#10101E]'
       } px-3 py-2.5`}
     >

@@ -33,7 +33,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
 
   const statusBadgeStyle = {
     upcoming: { background: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
-    active:   { background: 'rgba(34,197,94,0.2)',  color: '#6DBF7E' },
+    active:   { background: 'rgba(109,191,126,0.2)',  color: '#6DBF7E' },
     completed:{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
   };
 

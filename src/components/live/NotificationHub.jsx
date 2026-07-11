@@ -34,15 +34,15 @@ const CATEGORY_TYPES = {
 const PRIORITY_COLORS = {
   low: 'rgba(100,116,139,0.1)',
   normal: 'rgba(212,175,55,0.1)',
-  high: 'rgba(255,140,0,0.15)',
-  urgent: 'rgba(239,68,68,0.15)',
+  high: 'rgba(212,133,74,0.15)',
+  urgent: 'rgba(192,57,43,0.15)',
 };
 
 const PRIORITY_BORDERS = {
   low: 'rgba(100,116,139,0.2)',
   normal: `${G}20`,
-  high: 'rgba(255,140,0,0.3)',
-  urgent: 'rgba(239,68,68,0.4)',
+  high: 'rgba(212,133,74,0.3)',
+  urgent: 'rgba(192,57,43,0.4)',
 };
 
 export default function NotificationHub() {

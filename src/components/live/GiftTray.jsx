@@ -159,7 +159,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
                             <p className="text-[11px] font-bold text-center leading-tight" style={{ color: CREAM }}>{gift.name}</p>
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="text-[7px] font-black uppercase" style={{ color: rarity.color, fontFamily: 'Barlow Condensed, sans-serif' }}>{rarity.label}</span>
-                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(255,21,100,0.2)', color: '#C0392B' }}>LIMITED</span>}
+                              {gift.is_limited && <span className="text-[6px] px-1 py-0.5 rounded font-black uppercase" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>LIMITED</span>}
                             </div>
                             <span className="font-black text-[11px]" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>${gift.price}</span>
                           </button>

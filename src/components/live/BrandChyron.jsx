@@ -46,7 +46,7 @@ export default function BrandChyron() {
       className="fixed bottom-0 left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden"
       style={{
         background: 'linear-gradient(90deg, #03030A 0%, #07070F 50%, #03030A 100%)',
-        borderTop: '1px solid rgba(255,21,100,0.25)',
+        borderTop: '1px solid rgba(192,57,43,0.25)',
       }}
     >
       {/* Top accent line */}

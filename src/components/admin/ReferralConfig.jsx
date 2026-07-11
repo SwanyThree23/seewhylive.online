@@ -129,7 +129,7 @@ export default function ReferralConfig({ communityId }) {
               {sortedReferrers.map((referrer, idx) => (
                 <div key={referrer.userId} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, background:'rgba(255,255,255,0.03)', borderRadius:8 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#7c3aed,#db2777)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
+                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#7B5DA6,#db2777)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
                       #{idx + 1}
                     </div>
                     <div>
@@ -139,7 +139,7 @@ export default function ReferralConfig({ communityId }) {
                       </p>
                     </div>
                   </div>
-                  <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.15)', color:'#6DBF7E' }}>
+                  <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.15)', color:'#6DBF7E' }}>
                     {referrer.completed} successful
                   </span>
                 </div>

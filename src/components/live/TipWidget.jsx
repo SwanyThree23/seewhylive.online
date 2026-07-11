@@ -17,7 +17,7 @@ const TIERS = [
   { amount: 5,   label: 'Silver', color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)' },
   { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)' },
   { amount: 50,  label: 'Plat',   color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)' },
-  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(255,21,100,0.6)' },
+  { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(192,57,43,0.6)' },
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];

@@ -465,7 +465,7 @@ export default function RoomPage() {
                 onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
                 disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
+                style={{ background: isRecording ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                 {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
               </button>
               <button

@@ -41,7 +41,7 @@ var G = {
 var BADGE_COLORS = {
   super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
   top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#4A8A7A", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
+  raid_master: { color: "#4A8A7A", bg: "rgba(74,138,122,0.12)", icon: "⚡" },
   poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
   chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
   watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },

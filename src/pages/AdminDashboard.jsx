@@ -54,7 +54,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
   const filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
 
   const roomStatusStyle = (status) => ({
-    live:      { bg: 'rgba(255,21,100,0.12)', border: 'rgba(255,21,100,0.35)', color: '#C0392B' },
+    live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
     scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
@@ -174,11 +174,11 @@ export default function AdminDashboard() {
         {/* KPI grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
-          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(255,21,100,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
+          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(192,57,43,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
           <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />
           <StatCard label="Messages" value={messages.length} icon={MessageSquare} color="rgba(212,175,55,0.6)" />
-          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(255,21,100,0.7)' : 'rgba(255,255,255,0.15)'} />
+          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(192,57,43,0.7)' : 'rgba(255,255,255,0.15)'} />
         </div>
 
         {/* OVERVIEW */}
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
                             className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
-                            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                            style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
                             End
                           </button>
                         )}

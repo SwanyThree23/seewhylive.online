@@ -674,7 +674,7 @@ export default function LiveRoom() {
               { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
+              { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)', action: () => setPayOpen(true) },
               { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
@@ -758,7 +758,7 @@ export default function LiveRoom() {
           {/* Mic */}
           <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}>
+              style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
               {!audioEnabled
                 ? <MicOff className="w-4 h-4 text-red-400" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}

@@ -117,7 +117,7 @@ export default function MonetizationWidgets() {
 
         {/* Sound Alerts */}
         {activeTab === 'alerts' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(34,197,94,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>

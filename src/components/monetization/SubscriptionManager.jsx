@@ -7,7 +7,7 @@ import { Crown, Edit2, Trash2, Eye } from 'lucide-react';
 const G = '#D4AF37';
 const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 const TIER_ICONS = ['bronze', 'silver', 'gold', 'diamond'];
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#ffd700', '#0891b2'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#ffd700', '#5B7FA6'];
 
 export default function SubscriptionManager({ creatorId }) {
   const [showForm, setShowForm] = useState(false);

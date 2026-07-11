@@ -235,7 +235,7 @@ export default function LoveTap({ roomId, user, creatorId, creatorName }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: `0 4px 18px rgba(255,21,100,0.35)`,
+          boxShadow: `0 4px 18px rgba(192,57,43,0.35)`,
           userSelect: 'none',
           opacity: disabled ? 0.4 : 1,
           touchAction: 'none',

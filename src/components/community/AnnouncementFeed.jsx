@@ -21,7 +21,7 @@ export default function AnnouncementFeed({ communityId }) {
     low:    { background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
     normal: { background: 'rgba(59,130,246,0.2)',  color: '#60a5fa' },
     high:   { background: 'rgba(249,115,22,0.2)',  color: '#fb923c' },
-    urgent: { background: 'rgba(239,68,68,0.2)',   color: '#C0392B' },
+    urgent: { background: 'rgba(192,57,43,0.2)',   color: '#C0392B' },
   };
 
   const priorityIcons = {
@@ -51,7 +51,7 @@ export default function AnnouncementFeed({ communityId }) {
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div style={{
               width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: announcement.priority === 'urgent' ? 'rgba(239,68,68,0.15)' : 'rgba(212,175,55,0.15)',
+              background: announcement.priority === 'urgent' ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)',
               flexShrink: 0,
             }}>
               {announcement.is_pinned ? (

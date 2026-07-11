@@ -141,7 +141,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
             <button onClick={() => setCcOn(c => !c)} style={{
               padding: "10px", borderRadius: 8,
               border: "1px solid " + (ccOn ? C.cyan : "#333"),
-              background: ccOn ? "rgba(0,229,255,0.08)" : C.surface,
+              background: ccOn ? "rgba(74,138,122,0.08)" : C.surface,
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>CC</span>

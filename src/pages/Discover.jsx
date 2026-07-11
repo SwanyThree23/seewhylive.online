@@ -84,7 +84,7 @@ function FanbaseRoomCard({ room }) {
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-          style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
@@ -435,7 +435,7 @@ function CreatorCard({ creator }) {
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-            style={{ background: 'rgba(255,21,100,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
         )}

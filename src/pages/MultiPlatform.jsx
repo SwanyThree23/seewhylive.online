@@ -327,7 +327,7 @@ export default function MultiPlatform() {
                               {wh.events.map(ev => <span key={ev} style={{ ...T, fontSize:10, padding:'1px 7px', borderRadius:999, background:`${CYAN}15`, border:`1px solid ${CYAN}30`, color:CYAN }}>{ev}</span>)}
                             </div>
                           </div>
-                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(255,21,100,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
+                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(192,57,43,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
                         </div>
                       ))}
                     </div>

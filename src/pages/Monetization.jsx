@@ -304,7 +304,7 @@ function PayoutPanel({ netEarnings }) {
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Available Balance</p>
           <p style={{ fontSize: 24, fontWeight: 700, color: G, margin: 0, ...T }}>${netEarnings.toFixed(2)}</p>
         </div>
-        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, padding: 14 }}>
+        <div style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 10, padding: 14 }}>
           <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', ...T }}>Next Payout Date</p>
           <p style={{ fontSize: 20, fontWeight: 700, color: '#6DBF7E', margin: 0, ...T }}>{nextDate}</p>
         </div>
@@ -326,7 +326,7 @@ function PayoutPanel({ netEarnings }) {
       </div>
 
       {pct >= 100 ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)' }}>
           <CheckCircle style={{ width: 14, height: 14, color: '#6DBF7E' }} />
           <span style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 700, ...T }}>Payout eligible — auto-processed on {nextDate}</span>
         </div>

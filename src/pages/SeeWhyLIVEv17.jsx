@@ -84,7 +84,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
 .pill-r{background:rgba(196,30,58,.2);border:1px solid #C41E3A;color:#FF6B6B}
 .pill-g{background:rgba(212,175,55,.2);border:1px solid #D4AF37;color:#FFD700}
-.pill-c{background:rgba(0,229,255,.15);border:1px solid #4A8A7A;color:#4A8A7A}
+.pill-c{background:rgba(74,138,122,.15);border:1px solid #4A8A7A;color:#4A8A7A}
 .pill-v{background:rgba(200,255,0,.12);border:1px solid #D4AF37;color:#D4AF37}
 .pill-p{background:rgba(191,95,255,.15);border:1px solid #BF5FFF;color:#BF5FFF}
 .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;transition:all .2s}
@@ -414,7 +414,7 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
           </div>
           <div style={{display:"flex",gap:6}}>
             <button onClick={function(){setBigoOpen(true);}} style={{padding:"3px 8px",background:"rgba(200,255,0,0.1)",border:"1px solid "+G.volt,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.volt}}>⬡ BIGO</button>
-            <button onClick={function(){setViewMode(viewMode==="panel"?"mini":"panel");}} style={{padding:"3px 8px",background:"rgba(0,229,255,0.08)",border:"1px solid "+G.cyan,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.cyan}}>
+            <button onClick={function(){setViewMode(viewMode==="panel"?"mini":"panel");}} style={{padding:"3px 8px",background:"rgba(74,138,122,0.08)",border:"1px solid "+G.cyan,borderRadius:5,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:G.cyan}}>
               {viewMode==="panel"?"▦ MINI":"▤ FULL"}
             </button>
           </div>
@@ -440,7 +440,7 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
                 {participants[focusedIdx].speaking?" · 🔊 SPEAKING":""}
               </div>
             </div>
-            <button onClick={function(){toggleMic(focusedIdx);}} style={{padding:"4px 10px",background:participants[focusedIdx].micOn?"rgba(139,0,0,0.4)":"rgba(0,229,255,0.1)",border:"1px solid "+(participants[focusedIdx].micOn?G.crimsonBright:G.cyan),borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:participants[focusedIdx].micOn?G.crimsonBright:G.cyan}}>
+            <button onClick={function(){toggleMic(focusedIdx);}} style={{padding:"4px 10px",background:participants[focusedIdx].micOn?"rgba(139,0,0,0.4)":"rgba(74,138,122,0.1)",border:"1px solid "+(participants[focusedIdx].micOn?G.crimsonBright:G.cyan),borderRadius:6,cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:participants[focusedIdx].micOn?G.crimsonBright:G.cyan}}>
               {participants[focusedIdx].micOn?"MUTE":"UNMUTE"}
             </button>
           </div>
@@ -921,7 +921,7 @@ function PKBattleEngine({ myName, onEnd }) {
 
       {/* Who's winning banner */}
       <div style={{textAlign:"center",marginBottom:10}}>
-        <span className="pill" style={{background:meWinning?"rgba(139,0,0,0.3)":"rgba(0,229,255,0.1)",border:"1px solid "+(meWinning?G.crimsonBright:G.cyan),color:meWinning?G.crimsonBright:G.cyan,fontFamily:G.fOrb,fontSize:9,letterSpacing:2}}>
+        <span className="pill" style={{background:meWinning?"rgba(139,0,0,0.3)":"rgba(74,138,122,0.1)",border:"1px solid "+(meWinning?G.crimsonBright:G.cyan),color:meWinning?G.crimsonBright:G.cyan,fontFamily:G.fOrb,fontSize:9,letterSpacing:2}}>
           {meWinning ? "🔴 "+( myName||"YOU")+" LEADING" : "🔵 "+opponentName+" LEADING"}
         </span>
       </div>
@@ -951,7 +951,7 @@ function PKBattleEngine({ myName, onEnd }) {
           {events.map(function(ev) {
             var isMe = ev.side === "me";
             return (
-              <div key={ev.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 6px",borderRadius:6,background:isMe?"rgba(139,0,0,0.15)":"rgba(0,229,255,0.07)",borderLeft:"2px solid "+(isMe?G.crimsonBright:G.cyan)}}>
+              <div key={ev.id} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 6px",borderRadius:6,background:isMe?"rgba(139,0,0,0.15)":"rgba(74,138,122,0.07)",borderLeft:"2px solid "+(isMe?G.crimsonBright:G.cyan)}}>
                 <span style={{fontSize:14}}>{ev.gift.emoji}</span>
                 <span style={{fontFamily:G.fRaj,fontSize:11,color:isMe?G.crimsonBright:G.cyan,flex:1}}>{ev.name}</span>
                 <span style={{fontFamily:G.fMon,fontSize:9,color:G.gold}}>+💎{ev.gift.gems}</span>
@@ -1198,7 +1198,7 @@ function StreamControls({ camOn, setCamOn, micOn, setMicOn, bitrate, fps, latenc
         {/* Cam / Mic toggles */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
           <button onClick={function(){setCamOn(!camOn);}}
-            style={{padding:"10px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+            style={{padding:"10px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(74,138,122,0.1)":"#161616",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
             <span style={{fontSize:22}}>{camOn?"📷":"📵"}</span>
             <span style={{fontFamily:G.fMon,fontSize:9,color:camOn?G.cyan:G.grayDim}}>CAM {camOn?"ON":"OFF"}</span>
           </button>
@@ -1215,7 +1215,7 @@ function StreamControls({ camOn, setCamOn, micOn, setMicOn, bitrate, fps, latenc
             {["480p","720p","1080p","4K"].map(function(q){
               return (
                 <button key={q} onClick={function(){setQuality(q);}}
-                  style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(quality===q?G.cyan:"#333"),background:quality===q?"rgba(0,229,255,0.1)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:quality===q?G.cyan:G.grayDim}}>
+                  style={{flex:1,padding:"5px 0",borderRadius:6,border:"1px solid "+(quality===q?G.cyan:"#333"),background:quality===q?"rgba(74,138,122,0.1)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:9,color:quality===q?G.cyan:G.grayDim}}>
                   {q}
                 </button>
               );
@@ -1564,7 +1564,7 @@ function LiveCameraFeed({ camOn, micOn, onToggleCam, onToggleMic }) {
 
       {/* Cam / Mic quick toggles */}
       <div style={{position:"absolute",bottom:10,left:0,right:0,display:"flex",justifyContent:"center",gap:12}}>
-        <button onClick={onToggleCam} style={{width:44,height:44,borderRadius:"50%",border:"2px solid "+(camOn?G.cyan:"#555"),background:camOn?"rgba(0,229,255,0.2)":"rgba(0,0,0,0.6)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <button onClick={onToggleCam} style={{width:44,height:44,borderRadius:"50%",border:"2px solid "+(camOn?G.cyan:"#555"),background:camOn?"rgba(74,138,122,0.2)":"rgba(0,0,0,0.6)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
           {camOn?"📷":"📵"}
         </button>
         <button onClick={onToggleMic} style={{width:44,height:44,borderRadius:"50%",border:"2px solid "+(micOn?G.green:"#555"),background:micOn?"rgba(48,209,88,0.2)":"rgba(0,0,0,0.6)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -1647,7 +1647,7 @@ function StreamTab({ autoStart, currentUser }) {
           <div style={{fontFamily:G.fBeb,fontSize:26,color:G.white,textAlign:"center"}}>READY TO GO LIVE?</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             <button onClick={function(){setCamOn(!camOn);}}
-              style={{padding:"12px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(0,229,255,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:camOn?G.cyan:G.grayDim}}>
+              style={{padding:"12px",borderRadius:8,border:"1px solid "+(camOn?G.cyan:"#333"),background:camOn?"rgba(74,138,122,0.08)":"#161616",cursor:"pointer",fontFamily:G.fMon,fontSize:10,color:camOn?G.cyan:G.grayDim}}>
               {camOn?"📷 CAM ON":"📵 CAM OFF"}
             </button>
             <button onClick={function(){setMicOn(!micOn);}}

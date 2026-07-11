@@ -148,9 +148,9 @@ export default function OBSBridge() {
         </div>
         <span style={{
           fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, fontFamily:'Barlow Condensed, sans-serif',
-          background: connected ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
+          background: connected ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
           color: connected ? '#6DBF7E' : 'rgba(255,255,255,0.4)',
-          border: `1px solid ${connected ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          border: `1px solid ${connected ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.1)'}`,
           display:'flex', alignItems:'center', gap:4,
         }}>
           {connected
@@ -199,7 +199,7 @@ export default function OBSBridge() {
               </button>
               <button
                 onClick={toggleRecord}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(239,68,68,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#C0392B' : 'rgba(255,255,255,0.6)' }}
+                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'transparent', border: recording ? '1px solid rgba(192,57,43,0.5)' : '1px solid rgba(255,255,255,0.1)', borderRadius:8, fontWeight:700, cursor:'pointer', fontSize:13, fontFamily:'Barlow Condensed, sans-serif', color: recording ? '#C0392B' : 'rgba(255,255,255,0.6)' }}
               >
                 <Circle style={{ width:16, height:16, fill: recording ? '#C0392B' : 'transparent', color: recording ? '#C0392B' : 'currentColor' }} />
                 {recording ? 'Stop Rec' : 'Start Rec'}

@@ -5,7 +5,7 @@ import { DollarSign } from 'lucide-react';
 const TIER_COLORS = {
   1:  { bg: 'rgba(201,168,76,0.12)',  border: 'rgba(201,168,76,0.3)',  text: '#C9A84C'  },
   5:  { bg: 'rgba(212,175,55,0.15)', border: 'rgba(212,175,55,0.4)', text: '#D4AF37'  },
-  10: { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(255,21,100,0.5)', text: '#C0392B'  },
+  10: { bg: 'rgba(128,0,32,0.25)',   border: 'rgba(192,57,43,0.5)', text: '#C0392B'  },
   20: { bg: 'rgba(212,175,55,0.25)', border: 'rgba(212,175,55,0.5)', text: '#D4AF37'  },
 };
 
