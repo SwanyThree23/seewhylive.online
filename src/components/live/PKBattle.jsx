@@ -18,6 +18,10 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
   const timerRef = useRef(null);
   const qc = useQueryClient();
 
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const startBattle = () => {
     if (!opponentName) { toast.error('Enter opponent name'); return; }
     setActive(true);
