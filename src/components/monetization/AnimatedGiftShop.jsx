@@ -50,6 +50,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       toast.success(`Sent ${gift.name}! 🎁`);
       onClose?.();
     },
+    onError: () => { toast.error('Failed to send gift. Please try again.'); },
   });
 
   const categories = [

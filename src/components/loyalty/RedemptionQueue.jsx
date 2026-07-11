@@ -21,6 +21,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
       toast.success('Reward updated!');
       qc.invalidateQueries(['redemptions', creatorId, roomId]);
     },
+    onError: () => { toast.error('Failed to update reward. Please try again.'); },
   });
 
   if (redemptions.length === 0) return null;

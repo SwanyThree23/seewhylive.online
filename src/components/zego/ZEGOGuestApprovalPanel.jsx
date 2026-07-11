@@ -31,6 +31,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
       qc.invalidateQueries(['pending-guests']);
       toast.success('Guest approved');
     },
+    onError: () => { toast.error('Failed to approve guest. Please try again.'); },
   });
 
   const rejectMut = useMutation({
@@ -39,6 +40,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
       qc.invalidateQueries(['pending-guests']);
       toast.success('Guest request declined');
     },
+    onError: () => { toast.error('Failed to decline guest. Please try again.'); },
   });
 
   if (!isHost || pendingGuests.length === 0) return null;

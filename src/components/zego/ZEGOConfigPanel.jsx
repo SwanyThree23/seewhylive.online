@@ -47,6 +47,7 @@ export default function ZEGOConfigPanel({ user }) {
         : base44.entities.ZEGOStream.create(data);
     },
     onSuccess: () => { qc.invalidateQueries(['zego-config']); toast.success('ZEGOCLOUD config saved!'); },
+    onError: () => { toast.error('Failed to save ZEGOCLOUD config. Please try again.'); },
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;

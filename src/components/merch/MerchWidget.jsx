@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -75,6 +76,7 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
       room_id: roomId, status: "pending",
     }),
     onSuccess: () => { setSuccess(true); qc.invalidateQueries(["merch-orders"]); },
+    onError: () => { toast.error('Failed to place order. Please try again.'); },
   });
 
   return (

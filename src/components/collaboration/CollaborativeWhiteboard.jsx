@@ -56,6 +56,7 @@ export default function CollaborativeWhiteboard({ roomId }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['whiteboard', roomId] });
     },
+    onError: () => { toast.error('Failed to save element. Please try again.'); },
   });
 
   const clearBoardMutation = useMutation({
@@ -69,6 +70,7 @@ export default function CollaborativeWhiteboard({ roomId }) {
       queryClient.invalidateQueries({ queryKey: ['whiteboard', roomId] });
       toast.success('Whiteboard cleared');
     },
+    onError: () => { toast.error('Failed to clear whiteboard. Please try again.'); },
   });
 
   const startDrawing = (e) => {

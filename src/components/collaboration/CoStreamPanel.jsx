@@ -38,6 +38,7 @@ export default function CoStreamPanel({ roomId }) {
       queryClient.invalidateQueries({ queryKey: ['costream-sessions'] });
       toast.success('Co-stream started!');
     },
+    onError: () => { toast.error('Failed to start co-stream. Please try again.'); },
   });
 
   const endSessionMutation = useMutation({
@@ -52,6 +53,7 @@ export default function CoStreamPanel({ roomId }) {
       stopMediaStream();
       toast.success('Co-stream ended');
     },
+    onError: () => { toast.error('Failed to end co-stream. Please try again.'); },
   });
 
   // Cleanup on unmount

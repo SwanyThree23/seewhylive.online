@@ -12,6 +12,7 @@ export default function PointsEarnWidget({ userId, creatorId, roomId, isHost }) 
     mutationFn: ({ reason, metadata }) =>
       base44.functions.invoke('awardLoyaltyPoints', { user_id: userId, creator_id: creatorId, room_id: roomId, reason, metadata }),
     onSuccess: () => qc.invalidateQueries(['viewer-loyalty', userId, creatorId]),
+    onError: () => {},
   });
 
   useEffect(() => {

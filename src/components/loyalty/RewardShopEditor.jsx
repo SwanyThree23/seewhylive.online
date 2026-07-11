@@ -46,16 +46,19 @@ export default function RewardShopEditor({ creatorId }) {
       setShowForm(false);
       qc.invalidateQueries(['loyalty-rewards', creatorId]);
     },
+    onError: () => { toast.error('Failed to create reward. Please try again.'); },
   });
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active: !is_active }),
     onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onError: () => { toast.error('Failed to update reward. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
     onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onError: () => { toast.error('Failed to delete reward. Please try again.'); },
   });
 
   return (

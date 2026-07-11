@@ -112,16 +112,19 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamerGoal.create(data),
     onSuccess: () => { qc.invalidateQueries(['streamer-goals']); setShowForm(false); toast.success('Goal created!'); },
+    onError: () => { toast.error('Failed to create goal. Please try again.'); },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, amount }) => base44.entities.StreamerGoal.update(id, { current_amount: amount }),
     onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onError: () => { toast.error('Failed to update goal. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.StreamerGoal.delete(id),
     onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onError: () => { toast.error('Failed to delete goal. Please try again.'); },
   });
 
   const handleCreate = () => {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Lock, Users, DollarSign, Calendar, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -46,6 +47,7 @@ export default function PayPerViewManager({ roomId }) {
       setShowForm(false);
       setFormData({ title: '', description: '', price: 9.99, event_date: '', duration_minutes: 60, max_participants: null });
     },
+    onError: () => { toast.error('Failed to create pay-per-view event. Please try again.'); },
   });
 
   return (
