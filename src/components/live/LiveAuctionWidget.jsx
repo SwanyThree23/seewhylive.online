@@ -358,8 +358,10 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
 
   const active = auctions.filter(a => ['active', 'ending_soon'].includes(a.status));
   const endAuction = async (auction) => {
-    await base44.entities.LiveAuction.update(auction.id, { status: 'ended', final_amount: auction.current_bid || 0, winner_id: auction.current_winner_id, winner_name: auction.current_winner_name });
-    qc.invalidateQueries(['auctions', roomId]);
+    try {
+      await base44.entities.LiveAuction.update(auction.id, { status: 'ended', final_amount: auction.current_bid || 0, winner_id: auction.current_winner_id, winner_name: auction.current_winner_name });
+      qc.invalidateQueries({ queryKey: ['auctions', roomId] });
+    } catch { toast.error('Failed to end auction. Please try again.'); }
   };
 
   if (active.length === 0 && !isHost) return null;
