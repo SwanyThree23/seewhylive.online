@@ -43,6 +43,7 @@ export default function AIModerationPage() {
       toast.success('Review submitted');
       queryClient.invalidateQueries(['moderations']);
     },
+    onError: () => { toast.error('Failed to submit review. Please try again.'); },
   });
 
   const handleAIScan = async () => {

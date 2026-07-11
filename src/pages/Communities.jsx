@@ -61,6 +61,7 @@ export default function CommunitiesPage() {
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');
     },
+    onError: () => { toast.error('Failed to join community. Please try again.'); },
   });
 
   const q        = searchQuery.toLowerCase();
