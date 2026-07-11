@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, Radio, Check } from 'lucide-react';
 import { isSafeUrl } from '@/lib/security';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -77,6 +78,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.update(id, { is_read: true });
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => { toast.error('Failed to mark notification as read.'); },
   });
 
   // Delete notification
@@ -85,6 +87,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.delete(id);
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => { toast.error('Failed to delete notification.'); },
   });
 
   // Mark all read
@@ -94,6 +97,7 @@ export default function NotificationHub() {
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => { toast.error('Failed to mark all notifications as read.'); },
   });
 
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;

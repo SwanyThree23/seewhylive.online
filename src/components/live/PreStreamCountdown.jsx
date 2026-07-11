@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Radio } from 'lucide-react';
+import { toast } from 'sonner';
 
 function FlipUnit({ value, label }) {
   return (
@@ -68,6 +69,7 @@ export default function PreStreamCountdown({ room, currentUser, onGoLive }) {
       message: `Your stream reminder for "${room?.title}" is set.`,
     }),
     onSuccess: () => setReminderSet(true),
+    onError: () => { toast.error('Failed to set reminder. Please try again.'); },
   });
 
   if (!timeLeft && timeLeft !== 0) return null;

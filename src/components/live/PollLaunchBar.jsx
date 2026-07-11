@@ -45,6 +45,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       qc.invalidateQueries(['livepoll', roomId]);
       qc.invalidateQueries(['polls', roomId]);
     },
+    onError: () => { toast.error('Failed to launch poll. Please try again.'); },
   });
 
   const endPollMutation = useMutation({
@@ -54,6 +55,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       qc.invalidateQueries(['livepoll', roomId]);
       qc.invalidateQueries(['polls', roomId]);
     },
+    onError: () => { toast.error('Failed to end poll. Please try again.'); },
   });
 
   if (!isHost) return null;

@@ -107,6 +107,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
       setInsights(prev => [...newInsights, ...prev].slice(0, 6));
       setLastAnalyzed(new Date());
     },
+    onError: () => { toast.error('AI analysis failed. Will retry shortly.'); },
   });
 
   useEffect(() => {

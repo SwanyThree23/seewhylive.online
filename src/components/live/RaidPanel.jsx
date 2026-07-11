@@ -116,6 +116,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
       return raid;
     },
     onSuccess: () => { qc.invalidateQueries(['raid-active', room?.id]); toast.success('Raid initiated! Countdown starting…'); onClose(); },
+    onError: () => { toast.error('Failed to initiate raid. Please try again.'); },
   });
 
   return (

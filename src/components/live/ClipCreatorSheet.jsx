@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast as sonnerToast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 
@@ -37,6 +38,7 @@ export default function ClipCreatorSheet({ roomId, sessionId, creatorId, elapsed
       setToast('Clip saved! 🎬');
       setTimeout(() => { setToast(''); onClose(); }, 1800);
     },
+    onError: () => { sonnerToast.error('Failed to save clip. Please try again.'); },
   });
 
   return (

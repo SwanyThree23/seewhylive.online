@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -38,6 +39,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
       }),
     ]),
     onSuccess: () => { setSuccess(true); qc.invalidateQueries(["tip-alerts", roomId]); },
+    onError: () => { toast.error('Failed to send tip. Please try again.'); },
   });
 
   if (success) return (
@@ -139,6 +141,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
       tier_name: tier.name, price_usd: tier.price_usd, status: "active",
     }),
     onSuccess: () => { setSuccess(true); setTimeout(() => { setOpen(false); setSuccess(false); }, 2000); },
+    onError: () => { toast.error('Failed to subscribe. Please try again.'); },
   });
 
   return (

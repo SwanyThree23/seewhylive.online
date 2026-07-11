@@ -103,10 +103,12 @@ export default function LivePoll({ roomId, isHost }) {
       setOptions(['', '']);
       toast.success('Poll launched!');
     },
+    onError: () => { toast.error('Failed to launch poll. Please try again.'); },
   });
 
   const endPollMutation = useMutation({
     mutationFn: () => base44.entities.Poll.update(activePoll.id, { status: 'ended' }),
+    onError: () => { toast.error('Failed to end poll. Please try again.'); },
     onSuccess: () => {
       qc.invalidateQueries(['livepoll', roomId]);
       // Post summary to activity feed (fire-and-forget)

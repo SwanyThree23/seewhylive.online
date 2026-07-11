@@ -33,6 +33,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
       setTimeout(() => setCaptured(null), 2000);
       setOpen(false);
     },
+    onError: () => { toast.error('Failed to capture moment. Please try again.'); },
   });
 
   if (!isHost) return null;
