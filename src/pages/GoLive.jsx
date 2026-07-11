@@ -94,6 +94,30 @@ import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GlobalChatWidget from '../components/live/GlobalChatWidget';
+import GuestConnector from '../components/live/GuestConnector';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import PointsNotification from '../components/live/PointsNotification';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChatOverlay from '../components/live/ChatOverlay';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import PrivatePanel from '../components/live/PrivatePanel';
+import StreamChatbot from '../components/live/StreamChatbot';
+import StreamEventBus from '../components/live/StreamEventBus';
+import TippingOverlay from '../components/live/TippingOverlay';
+import UnifiedChat from '../components/live/UnifiedChat';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AudioMixer from '../components/live/AudioMixer';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -859,6 +883,30 @@ export default function GoLive() {
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
+      <PanelMusicPlayer />
+      {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={true} />}
+      {null && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      <PrivatePanel isHost={true} currentUser={user} />
+      {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || ''} room={null} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {partyId && <TippingOverlay roomId={partyId} creatorId={user?.id} isVisible={true} />}
+      {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={true} />}
+      {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
+      {<AudioMixer micMuted={false} onMicToggle={() => {}} />}
+      {<EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      {<ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
+      {partyId && <BattleScoreboard roomId={partyId} />}
+      {partyId && user?.id && <EnhancedStreamChat roomId={partyId} userId={user.id} userName={user?.full_name || ''} userRole={true ? 'host' : 'viewer'} />}
+      <GlobalChatWidget />
+      {partyId && <GuestConnector roomId={partyId} roomName={''} />}
+      {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
+      {partyId && <LeaderboardPanel roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={partyId} />}
+      {user?.id && <PointsNotification userId={user.id} />}
+      {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
+      {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={true} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={'auto'} onChange={() => {}} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
