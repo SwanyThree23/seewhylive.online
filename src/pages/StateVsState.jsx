@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 
 
@@ -755,6 +757,7 @@ function JudgesView() {
 const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
 

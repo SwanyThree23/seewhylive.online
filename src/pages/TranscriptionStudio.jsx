@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import { Check, Copy } from 'lucide-react';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -74,6 +75,8 @@ export default function TranscriptionStudio() {
   const [demoActive, setDemoActive] = useState(false);
   const demoRef = useRef(null);
   const startMsRef = useRef(Date.now());
+  const liveRef = useRef(true);
+  const recRef = useRef(null);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -134,6 +137,10 @@ export default function TranscriptionStudio() {
     setTranslating(false);
   }
 
+  const lines = captionHistory.map(c => ({ time: msToSrt(c.startMs), text: c.text }));
+  function buildSRT(lines) {
+    return lines.map((l, i) => `${i + 1}\n${l.time} --> ${l.time}\n${l.text}\n`).join('\n');
+  }
   useEffect(() => () => { liveRef.current = false; recRef.current?.stop?.(); }, []);
 
   const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
@@ -147,6 +154,26 @@ export default function TranscriptionStudio() {
     a.download = 'transcript.srt';
     a.click();
     URL.revokeObjectURL(srtUrl);
+  }
+
+  function handleExport(fmt) {
+    let content, mime, ext;
+    if (fmt.key === 'json') {
+      content = JSON.stringify(captionHistory, null, 2);
+      mime = 'application/json'; ext = 'json';
+    } else if (fmt.key === 'txt') {
+      content = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+      mime = 'text/plain'; ext = 'txt';
+    } else {
+      content = buildSRT(lines);
+      mime = 'text/plain'; ext = 'srt';
+    }
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `transcript.${ext}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   function clearHistory() {

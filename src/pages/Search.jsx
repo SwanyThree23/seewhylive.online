@@ -32,6 +32,7 @@ const TABS = [
 ];
 
 export default function SearchPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [query, setQuery]     = useState('');
   const [activeTab, setActiveTab] = useState('rooms');
 

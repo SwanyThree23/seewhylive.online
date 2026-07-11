@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
 
 
@@ -113,6 +115,7 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
   const [vaultPassword, setVaultPassword]   = useState('');

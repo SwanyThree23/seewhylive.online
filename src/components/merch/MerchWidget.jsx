@@ -13,6 +13,7 @@ var C = {
 
 // Merch strip shown in-room
 export function MerchStrip({ roomId, currentUser, hostId }) {
+
   var [selected, setSelected] = useState(null);
 
   var { data: items = [] } = useQuery({
@@ -158,3 +159,6 @@ function ProductSheet({ item, roomId, currentUser, hostId, onClose }) {
     </div>
   );
 }
+
+// Default export — alias of MerchStrip for pages that import MerchWidget as default
+export default MerchStrip;

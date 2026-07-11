@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -108,6 +110,7 @@ const TICKET_TIERS = [
 const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoentertainment');
 
 export default function SocialExpo() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
 

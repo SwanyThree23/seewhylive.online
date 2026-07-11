@@ -686,7 +686,7 @@ export default function WatchPartyPage() {
           title: `Ended watch party: ${party?.title || 'Watch Party'}`,
         }).catch(() => {});
       }
-      setSearchParams({});
+      window.history.replaceState(null, '', window.location.pathname);
     },
     onError: () => toast.error('Failed to end watch party.'),
   });
