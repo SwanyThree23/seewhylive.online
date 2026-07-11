@@ -151,6 +151,16 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import AudioMixer from '../components/live/AudioMixer';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import WebhookHooks from '../components/live/WebhookHooks';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -2050,6 +2060,16 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={0} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
+      {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => {}} />}
+      <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
+      {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
+      {partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => {}} />}
+      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
+      {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
+      {partyId && <VdoNinjaGuestLink roomId={partyId} />}
+      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      {isHost && partyId && <WebhookHooks roomId={partyId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
       {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={isHost} />}

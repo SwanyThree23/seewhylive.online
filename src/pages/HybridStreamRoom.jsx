@@ -116,6 +116,16 @@ import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import AudioMixer from '../components/live/AudioMixer';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import WebhookHooks from '../components/live/WebhookHooks';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -366,6 +376,16 @@ export default function HybridStreamRoom() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
+      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
+      <PaywallGate isHost={isHost} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
+      {roomId && <SubscriptionGate creatorId={room?.host_id || user?.id} roomId={roomId} />}
+      {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
+      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
+      {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
+      {roomId && <VdoNinjaGuestLink roomId={roomId} />}
+      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
