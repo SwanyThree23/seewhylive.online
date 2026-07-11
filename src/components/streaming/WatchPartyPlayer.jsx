@@ -49,8 +49,7 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
 
   const broadcastSync = async (state, timestamp) => {
     if (!isHost) return;
-
-    await base44.entities.Message.create({
+    base44.entities.Message.create({
       room_id: roomId,
       user_id: 'system',
       user_name: 'Watch Party',
@@ -60,7 +59,7 @@ export default function WatchPartyPlayer({ roomId, isHost, videoUrl }) {
         timestamp,
       }),
       type: 'system',
-    });
+    }).catch(() => {});
   };
 
   const handlePlayPause = () => {

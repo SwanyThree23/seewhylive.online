@@ -27,7 +27,7 @@ export function usePresence(roomId) {
       }
     };
 
-    join();
+    join().catch(() => {});
 
     // Subscribe to participant changes
     const unsub = base44.entities.Participant.subscribe((event) => {
