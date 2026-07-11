@@ -237,6 +237,7 @@ export default function ModerationDashboardPage() {
       return base44.entities.ContentModeration.update(id, updates);
     },
     onSuccess: () => { qc.invalidateQueries(['mod-content']); toast.success('Action taken'); },
+    onError: () => { toast.error('Failed to apply action. Please try again.'); },
   });
 
   const chatActionMut = useMutation({
@@ -251,6 +252,7 @@ export default function ModerationDashboardPage() {
       auto_detected: false,
     }),
     onSuccess: () => { qc.invalidateQueries(['chat-mods', roomId]); toast.success('Action applied'); },
+    onError: () => { toast.error('Failed to apply chat action. Please try again.'); },
   });
 
   const reportMut = useMutation({
@@ -260,6 +262,7 @@ export default function ModerationDashboardPage() {
       updated_date: new Date().toISOString(),
     }),
     onSuccess: () => { qc.invalidateQueries(['reports']); toast.success('Report updated'); },
+    onError: () => { toast.error('Failed to update report. Please try again.'); },
   });
 
   const flagged = moderations.filter(m => m.action_taken === 'flagged' || (m.violation_type !== 'safe' && !m.reviewed_by));

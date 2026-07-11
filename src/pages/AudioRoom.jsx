@@ -166,6 +166,7 @@ export default function AudioRoom() {
   const promoteMutation = useMutation({
     mutationFn: ({ memberId }) => base44.entities.WatchPartyMember.update(memberId, { role: 'speaker', hand_raised: false }),
     onSuccess: (_, { memberName }) => { qc.invalidateQueries(['audio-room-members', roomId]); toast.success(`${memberName} is now on stage`); setInviting(null); },
+    onError: () => { toast.error('Failed to promote member. Please try again.'); },
   });
 
   async function toggleHandRaise() {

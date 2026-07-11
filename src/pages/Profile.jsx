@@ -169,6 +169,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
     },
+    onError: () => { toast.error('Failed to update profile. Please try again.'); },
   });
 
   useEffect(() => {

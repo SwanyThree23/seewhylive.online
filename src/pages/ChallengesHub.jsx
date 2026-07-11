@@ -184,6 +184,7 @@ export default function ChallengesHubPage() {
       completed: false,
     }),
     onSuccess: () => { qc.invalidateQueries(['ch-mine']); toast.success('Joined challenge!'); },
+    onError: () => { toast.error('Failed to join challenge. Please try again.'); },
   });
 
   const myCompleted = myParticipations.filter(p => p.completed);

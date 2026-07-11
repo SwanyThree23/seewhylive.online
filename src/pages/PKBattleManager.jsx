@@ -239,6 +239,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       toast.success('Battle invitation sent!');
       if (onBattleSelect) { onBattleSelect(b); }
     },
+    onError: function() { toast.error('Failed to create battle. Please try again.'); },
   });
 
   var respondMutation = useMutation({
@@ -247,6 +248,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       qc.invalidateQueries(['pk-battles']);
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
+    onError: function() { toast.error('Failed to respond to battle. Please try again.'); },
   });
 
   function handleCreate() {
@@ -852,6 +854,7 @@ export default function PKBattleManager() {
       });
     },
     onSuccess: function() { qc.invalidateQueries(['pk-battles']); toast.success('Battle started!'); },
+    onError: function() { toast.error('Failed to start battle. Please try again.'); },
   });
 
   function handleBattleSelect(b) {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
@@ -163,6 +164,7 @@ export default function ClipsLibraryPage() {
   const deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
+    onError: () => { toast.error('Failed to delete clip. Please try again.'); },
   });
 
   const sorted = [...clips].sort((a,b) => {
