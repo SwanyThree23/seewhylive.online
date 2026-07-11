@@ -74,12 +74,14 @@ export default function DevicePreview({ user, onDeviceState }) {
   useEffect(() => {
     const enumerate = async () => {
       if (!navigator.mediaDevices?.enumerateDevices) return;
-      const list = await navigator.mediaDevices.enumerateDevices();
-      setDevices({
-        video: list.filter(d => d.kind === 'videoinput'),
-        audio: list.filter(d => d.kind === 'audioinput'),
-        output: list.filter(d => d.kind === 'audiooutput'),
-      });
+      try {
+        const list = await navigator.mediaDevices.enumerateDevices();
+        setDevices({
+          video: list.filter(d => d.kind === 'videoinput'),
+          audio: list.filter(d => d.kind === 'audioinput'),
+          output: list.filter(d => d.kind === 'audiooutput'),
+        });
+      } catch {}
     };
     enumerate();
   }, []);

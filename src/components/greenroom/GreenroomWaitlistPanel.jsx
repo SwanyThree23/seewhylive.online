@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Users, CheckCircle, XCircle, CheckCheck, X, Clock } from 'lucide-react';
 import { clampStr, safeSrc, LIMITS } from '@/lib/security';
+import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -120,6 +121,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
       qc.invalidateQueries(['greenroom-waitlist', roomId]);
       onAdmit?.(entry);
     },
+    onError: () => toast.error('Failed to admit guest.'),
   });
 
   const denyMut = useMutation({
@@ -129,7 +131,8 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
       admitted_by: currentUser.id,
       resolved_at: new Date().toISOString(),
     }),
-    onSuccess: () => qc.invalidateQueries(['greenroom-waitlist', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['greenroom-waitlist', roomId] }),
+    onError: () => toast.error('Failed to deny guest.'),
   });
 
   const admitAll = async () => {
