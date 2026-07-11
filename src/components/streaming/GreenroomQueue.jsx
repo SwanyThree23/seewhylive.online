@@ -53,11 +53,13 @@ export default function GreenroomQueue({ roomId, isHost }) {
       role: participant.role === 'viewer' ? 'guest' : participant.role,
     }),
     onSuccess: (_, p) => toast.success(`✅ ${p.user_name} admitted to stage`),
+    onError: () => { toast.error('Failed to admit participant. Please try again.'); },
   });
 
   const rejectMutation = useMutation({
     mutationFn: (participant) => base44.entities.Participant.update(participant.id, { status: 'rejected' }),
     onSuccess: (_, p) => toast.error(`${p.user_name} removed from queue`),
+    onError: () => { toast.error('Failed to remove participant. Please try again.'); },
   });
 
   const waitingGuests = participants.filter(p =>

@@ -34,6 +34,7 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
       toast.success('Poll created!');
       handleClose();
     },
+    onError: () => { toast.error('Failed to create poll. Please try again.'); },
   });
 
   const handleClose = () => {

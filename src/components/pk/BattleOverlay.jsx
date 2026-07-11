@@ -271,6 +271,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       qc.invalidateQueries(['pk-battles']);
       onBattleUpdate?.();
     },
+    onError: () => { toast.error('Failed to record gift. Please try again.'); },
   });
 
   const handleAutoEnd = useCallback(() => {

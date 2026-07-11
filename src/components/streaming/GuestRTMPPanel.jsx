@@ -50,6 +50,7 @@ function DestinationRow({ dest, userId, onRemove }) {
   const updateMutation = useMutation({
     mutationFn: ({ data }) => base44.entities.RTMPDestination.update(dest.id, data),
     onSuccess: () => qc.invalidateQueries(['guest-rtmp', userId]),
+    onError: () => { toast.error('Failed to save RTMP settings. Please try again.'); },
   });
 
   const save = () => {

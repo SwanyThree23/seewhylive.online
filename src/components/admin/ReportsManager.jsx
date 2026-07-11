@@ -73,6 +73,7 @@ export default function ReportsManager({ communityId, userId }) {
       setResolutionNotes('');
       setActionTaken('');
     },
+    onError: () => { toast.error('Failed to update report. Please try again.'); },
   });
 
   const handleResolve = (report, status) => {

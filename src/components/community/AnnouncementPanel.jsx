@@ -39,6 +39,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       setTargetAudience('all');
       toast.success('Announcement sent successfully!');
     },
+    onError: () => { toast.error('Failed to send announcement. Please try again.'); },
   });
 
   const scheduleAnnouncementMutation = useMutation({
@@ -60,6 +61,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       setContent('');
       toast.success('Announcement scheduled!');
     },
+    onError: () => { toast.error('Failed to schedule announcement. Please try again.'); },
   });
 
   const btnBase = {

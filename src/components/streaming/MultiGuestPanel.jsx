@@ -1024,6 +1024,7 @@ export default function MultiGuestPanel({
       toast.success(p.is_streaming ? `${p.user_name} stream stopped` : `${p.user_name} is now live`);
       qc.invalidateQueries(['participants', roomId]);
     },
+    onError: () => { toast.error('Failed to toggle stream. Please try again.'); },
   });
 
   const streamAll = () => {

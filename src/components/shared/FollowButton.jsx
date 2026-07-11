@@ -34,6 +34,7 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
       qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
       qc.invalidateQueries(['followers', targetUserId]);
     },
+    onError: () => { toast.error('Failed to follow. Please try again.'); },
   });
 
   const unfollowMutation = useMutation({
@@ -43,6 +44,7 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
       qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
       qc.invalidateQueries(['followers', targetUserId]);
     },
+    onError: () => { toast.error('Failed to unfollow. Please try again.'); },
   });
 
   // Don't show button for own profile

@@ -68,6 +68,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onUpdat
       setTimeout(() => setSaved(false), 2000);
       if (onUpdate) onUpdate({ audio, video, screen, record, quality });
     },
+    onError: () => { toast.error('Failed to save permissions. Please try again.'); },
   });
 
   if (!isHost) return null;

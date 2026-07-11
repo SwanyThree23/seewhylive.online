@@ -61,6 +61,7 @@ export default function DestinationsManager({ userId }) {
       toast.success('Destination removed');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
     },
+    onError: () => { toast.error('Failed to remove destination. Please try again.'); },
   });
 
   const platform = selectedPlatform ? PLATFORMS.find(p => p.id === selectedPlatform) : null;

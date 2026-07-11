@@ -52,6 +52,7 @@ export default function AnnouncementScheduler({ communityId, userId }) {
       queryClient.invalidateQueries(['communityAnnouncements']);
       resetForm();
     },
+    onError: () => { toast.error('Failed to create announcement. Please try again.'); },
   });
 
   const resetForm = () => {

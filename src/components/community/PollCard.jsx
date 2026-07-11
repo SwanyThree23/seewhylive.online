@@ -55,6 +55,7 @@ export default function PollCard({ poll }) {
       queryClient.invalidateQueries({ queryKey: ['poll-vote'] });
       toast.success('Vote submitted!');
     },
+    onError: () => { toast.error('Failed to submit vote. Please try again.'); },
   });
 
   const handleVote = () => {

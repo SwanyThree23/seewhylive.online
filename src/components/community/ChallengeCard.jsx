@@ -25,6 +25,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       queryClient.invalidateQueries(['challengeParticipation']);
       toast.success('Joined challenge successfully!');
     },
+    onError: () => { toast.error('Failed to join challenge. Please try again.'); },
   });
 
   const isParticipating = !!userParticipation;
