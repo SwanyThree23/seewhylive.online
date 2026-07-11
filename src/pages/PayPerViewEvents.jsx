@@ -61,7 +61,7 @@ export default function PayPerViewEventsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
+      <div className="bg-gradient-to-r from-[#7B5DA6] to-[#C0392B] text-white py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center">
             <Lock className="w-16 h-16 mx-auto mb-4" />

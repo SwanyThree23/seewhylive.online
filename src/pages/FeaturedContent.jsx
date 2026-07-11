@@ -36,7 +36,7 @@ const CHANNELS = [
     handle: '@memoirsofashygirl',
     url: 'https://youtube.com/@memoirsofashygirl',
     description: 'Personal stories, lifestyle, and real conversations',
-    color: 'from-pink-900 to-rose-900',
+    color: 'from-[#C0392B] to-rose-900',
     accent: '#ff85a1',
     emoji: '📖',
   },
@@ -56,7 +56,7 @@ const CHANNELS = [
     handle: '@aiversepodcast',
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
-    color: 'from-blue-900 to-cyan-900',
+    color: 'from-blue-900 to-[#4A8A7A]',
     accent: '#00d4ff',
     emoji: '🤖',
   },
@@ -211,7 +211,7 @@ export default function FeaturedContent() {
         </div>
 
         {/* Memoirs Studio Pro Link */}
-        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-[#C0392B]/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-[#C0392B]/50 to-rose-900/50 border border-[#C0392B]/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="text-4xl">📖</span>
             <div>
