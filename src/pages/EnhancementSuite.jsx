@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { base44 } from "@/api/base44Client";
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -527,6 +529,7 @@ const SHARE_ANALYTICS_DATA = [
 ];
 
 export default function EnhancementSuite() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState("emoji");
   const [messages, setMessages] = useState(INITIAL_MSGS);
   const [chatInput, setChatInput] = useState("");

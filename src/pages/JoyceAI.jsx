@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -81,6 +82,7 @@ function ThinkDots() {
 }
 
 export default function JoyceAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);

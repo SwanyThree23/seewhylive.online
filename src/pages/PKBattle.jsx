@@ -42,6 +42,7 @@ export default function PKBattlePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = null;
 
   const { data: battles } = useQuery({
     queryKey: ['activePKBattles'],

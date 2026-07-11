@@ -166,6 +166,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const user = currentUser;
 
   const { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],

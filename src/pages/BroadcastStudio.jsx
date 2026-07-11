@@ -524,7 +524,7 @@ export default function BroadcastStudio() {
   // Local media
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
 
-  var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
+  var vodResult=useVODRecording({streamId:partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:false});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
@@ -681,7 +681,7 @@ export default function BroadcastStudio() {
           title: `Stream ended`,
         }).catch(() => {});
       }
-      setSearchParams({});
+      window.history.replaceState(null, '', window.location.pathname);
     },
     onError: () => toast.error('Action failed.'),
   });

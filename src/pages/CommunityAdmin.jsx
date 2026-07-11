@@ -158,7 +158,7 @@ function MembersTab({ communityId, currentUserId }) {
         {[
           { label: 'Total', value: members.length, color: GOLD },
           { label: 'Admins', value: adminCount, color: '#D4854A' },
-          { label: 'Members', value: memberCount, color: GREEN },
+          { label: 'Members', value: memberCount, color: '#6DBF7E' },
         ].map(s => (
           <div key={s.label} className="p-3 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: s.color }}>{s.value}</p>

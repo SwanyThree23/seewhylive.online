@@ -121,6 +121,8 @@ function BattleCard({ battle, index }) {
 }
 
 export default function LiveBattles() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = null;
   const [filter, setFilter] = useState('active');
 
   const { data: battles = [], isLoading } = useQuery({

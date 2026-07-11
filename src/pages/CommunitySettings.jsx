@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings } from 'lucide-react';
+import { createPageUrl } from '../utils';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -55,6 +56,14 @@ export default function CommunitySettingsPage() {
   const [description, setDescription] = useState('');
   const [rules, setRules] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const [requireApproval, setRequireApproval] = useState(false);
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState([]);
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [copiedInvite, setCopiedInvite] = useState(false);
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const user = currentUser;
 
   const { data: community } = useQuery({
     queryKey: ['community', communityId],

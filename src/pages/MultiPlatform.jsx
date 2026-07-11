@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -99,6 +101,7 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('platforms');
   const [connections, setConnections] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('platform_connections') || '{}'); } catch { return {}; }

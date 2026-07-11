@@ -15,9 +15,9 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
 import NotificationHub from '../components/live/NotificationHub';
-import BroadcastAnalyticsDashboard from '../components/live/BroadcastAnalyticsDashboard';
-import ShareToSocial from '../components/live/ShareToSocial';
-import StreamHealthDashboard from '../components/live/StreamHealthDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import GlobalSearch from '../components/shared/GlobalSearch';
 

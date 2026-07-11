@@ -187,6 +187,7 @@ export default function CreatorPublicProfile() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  var user = currentUser;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],

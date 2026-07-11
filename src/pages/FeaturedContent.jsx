@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -116,6 +118,7 @@ function YouTubeEmbed({ videoId, title }) {
 }
 
 export default function FeaturedContent() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
