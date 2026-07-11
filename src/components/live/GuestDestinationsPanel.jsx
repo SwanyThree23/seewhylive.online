@@ -27,6 +27,7 @@ function DestRow({ dest, userId }) {
   var updateMut = useMutation({
     mutationFn: function(data) { return base44.entities.RTMPDestination.update(dest.id, data); },
     onSuccess: function() { qc.invalidateQueries({ queryKey: ['guest-dests', userId] }); },
+    onError: function() { toast.error('Failed to update destination.'); },
   });
 
   var deleteMut = useMutation({
@@ -128,6 +129,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
       setLabel('');
       toast.success('Destination added for ' + guestName);
     },
+    onError: function() { toast.error('Failed to add destination.'); },
   });
 
   var addDest = function() {

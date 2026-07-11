@@ -125,11 +125,13 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
+    onError: () => toast.error('Failed to record vote.'),
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
+    onError: () => toast.error('Failed to end poll.'),
   });
 
   const pinResultsMut = useMutation({
@@ -149,6 +151,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
       });
       toast.success('Results pinned to chat');
     },
+    onError: () => toast.error('Failed to pin results.'),
   });
 
   const activePoll = polls[0];

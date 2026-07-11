@@ -99,6 +99,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
       qc.invalidateQueries({ queryKey: ['pk-queue'] });
       toast('Left the matchmaking queue');
     },
+    onError: function() { toast.error('Failed to leave queue.'); },
   });
 
   var challengeMutation = useMutation({

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -28,6 +29,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
       role_requested: "speaker", status: "waiting",
     }),
     onSuccess: () => { setHandRaised(true); qc.invalidateQueries({ queryKey: ["greenroom-waitlist"] }); },
+    onError: () => toast.error('Failed to raise hand.'),
   });
 
   var reportMutation = useMutation({
@@ -37,6 +39,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
       reason: reportReason, status: "pending",
     }),
     onSuccess: () => { setShowReport(false); },
+    onError: () => toast.error('Failed to submit report.'),
   });
 
   function togglePiP() {

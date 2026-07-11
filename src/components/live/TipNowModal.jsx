@@ -60,6 +60,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         ]);
       }
     },
+    onError: () => toast.error('Tip failed. Please try again.'),
   });
 
   if (success) return (
