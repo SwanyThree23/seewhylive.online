@@ -120,14 +120,16 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   const buyCoins = async (pack) => {
     // Simulate purchase — in production this would go through Stripe
     toast.info(`💳 In production, this opens Stripe checkout for $${pack.price}`);
-    // For demo: grant coins directly
-    if (pointsData?.id) {
-      await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
-    } else if (currentUser?.id) {
-      await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
-    }
-    qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
-    toast.success(`+${pack.coins} coins added to your wallet!`);
+    try {
+      // For demo: grant coins directly
+      if (pointsData?.id) {
+        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
+      } else if (currentUser?.id) {
+        await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
+      }
+      qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
+      toast.success(`+${pack.coins} coins added to your wallet!`);
+    } catch { toast.error('Failed to add coins. Please try again.'); }
   };
 
   if (isHost) {
