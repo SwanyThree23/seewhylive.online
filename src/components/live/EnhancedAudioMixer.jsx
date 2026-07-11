@@ -60,7 +60,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   }, [gain, noiseSuppression, echoCancellation, bgMusic, mono]);
 
   const avgLevel = vuLevels.reduce((a, b) => a + b) / vuLevels.length;
-  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#f59e0b' : '#6DBF7E';
+  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#C9A84C' : '#6DBF7E';
 
   return (
     <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
@@ -95,7 +95,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#f59e0b' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
                 />
               ))}
             </div>

@@ -91,15 +91,15 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('StreamScheduler'),
       gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
       border: 'rgba(212,175,55,0.45)',
-      iconColor: '#a78bfa',
+      iconColor: '#7B5DA6',
     },
     {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
-      border: 'rgba(0,212,255,0.4)',
-      iconColor: '#00d4ff',
+      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.2), rgba(74,138,122,0.05))',
+      border: 'rgba(74,138,122,0.4)',
+      iconColor: '#4A8A7A',
     },
     {
       icon: Scissors,
@@ -129,9 +129,9 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
-      border: 'rgba(0,212,255,0.3)',
-      iconColor: '#00d4ff',
+      gradient: `linear-gradient(135deg, rgba(74,138,122,0.15), rgba(74,138,122,0.04))`,
+      border: 'rgba(74,138,122,0.3)',
+      iconColor: '#4A8A7A',
     },
   ];
 

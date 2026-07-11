@@ -524,7 +524,7 @@ export default function MultiPlatform() {
                   <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:10 }}>When someone follows on any platform, ARIA generates a welcome automatically.</p>
                   <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
                     {shoutouts.map((s, i) => (
-                      <div key={i} style={{ padding:'8px 12px', background:'rgba(167,139,250,0.06)', borderRadius:8, border:'1px solid rgba(167,139,250,0.12)' }}>
+                      <div key={i} style={{ padding:'8px 12px', background:'rgba(123,93,166,0.06)', borderRadius:8, border:'1px solid rgba(123,93,166,0.12)' }}>
                         <span style={{ ...T, fontSize:12, color:PURPLE, fontWeight:700 }}>🎙️ ARIA: </span>
                         <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)' }}>{s}</span>
                       </div>

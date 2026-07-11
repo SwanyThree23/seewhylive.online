@@ -108,7 +108,7 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#00d4ff',
+    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#4A8A7A',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
     Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
@@ -221,8 +221,8 @@ var SPOTLIGHT_ITEMS = [
   { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
   { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
   { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI' },
-  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
-  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
+  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#4A8A7A', page: 'PodcastStudio' },
+  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#7B5DA6', page: 'AIMusic' },
   { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
   { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform' },
 ];

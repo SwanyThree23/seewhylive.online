@@ -23,7 +23,7 @@ import CreatorBridge from '../components/social/CreatorBridge';
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
 const PINK    = "#C0392B";
-const CYAN    = "#00d4ff";
+const CYAN    = "#4A8A7A";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 

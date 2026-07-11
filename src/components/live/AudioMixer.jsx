@@ -56,7 +56,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#f59e0b' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
                 />
               ))}
             </div>

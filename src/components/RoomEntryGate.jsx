@@ -310,7 +310,7 @@ function DisplayNameStep({ user, onPass }) {
           height: 46,
           padding: '0 14px',
           background: 'rgba(255,255,255,0.06)',
-          border: `1px solid ${error ? '#EF4444' : 'rgba(212,175,55,0.25)'}`,
+          border: `1px solid ${error ? '#C0392B' : 'rgba(212,175,55,0.25)'}`,
           borderRadius: 10,
           color: '#fff',
           fontSize: 15,
@@ -320,7 +320,7 @@ function DisplayNameStep({ user, onPass }) {
         }}
       />
       {error && (
-        <p style={{ ...T, color: '#EF4444', fontSize: 12, marginBottom: 14 }}>{error}</p>
+        <p style={{ ...T, color: '#C0392B', fontSize: 12, marginBottom: 14 }}>{error}</p>
       )}
       <button onClick={handleSave} disabled={!valid || saving} style={primaryBtn(valid && !saving)}>
         {saving ? 'Saving…' : 'Save & Continue'}

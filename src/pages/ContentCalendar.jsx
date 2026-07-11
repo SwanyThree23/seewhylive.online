@@ -29,7 +29,7 @@ const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, san
 
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
-  scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
+  scheduled:  { bg: 'rgba(74,138,122,0.1)',    border: 'rgba(74,138,122,0.3)',    color: '#4A8A7A' },
   published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
   cancelled:  { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
 };

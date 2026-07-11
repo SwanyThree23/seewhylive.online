@@ -87,7 +87,7 @@ export const FEATURED_VIDEOS = [
     channelId: 'dominoentertainment',
     channelColor: PINK,
     tag: 'Event',
-    tagColor: '#f97316',
+    tagColor: '#D4854A',
   },
 ];
 

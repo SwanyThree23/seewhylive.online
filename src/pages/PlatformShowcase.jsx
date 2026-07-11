@@ -120,7 +120,7 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#00d4ff',
+    color: '#4A8A7A',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },

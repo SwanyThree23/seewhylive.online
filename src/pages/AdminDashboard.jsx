@@ -137,7 +137,7 @@ export default function AdminDashboard() {
 
   const roomStatusStyle = (status) => ({
     live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
-    scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
+    scheduled: { bg: 'rgba(74,138,122,0.1)',   border: 'rgba(74,138,122,0.3)',   color: '#4A8A7A' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
 

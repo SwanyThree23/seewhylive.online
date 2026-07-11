@@ -166,7 +166,7 @@ export default function PollManager() {
                 <div>
                   <h3 className="font-black text-sm text-white" style={T}>{template.name}</h3>
                   <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase mt-1 inline-block"
-                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#a78bfa' }}>
+                    style={{ ...T, background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#7B5DA6' }}>
                     {categories[template.category]}
                   </span>
                 </div>

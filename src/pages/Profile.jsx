@@ -407,8 +407,8 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#a78bfa' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00d4ff' },
+                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#7B5DA6' },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#4A8A7A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
                 ].map(item => (
                   <Link key={item.href} to={item.href}>

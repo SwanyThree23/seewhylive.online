@@ -25,7 +25,7 @@ const CRIMSON = '#800020';
 const BLUE  = '#5B7FA6';
 const RED2  = '#C62828';
 const TEAL  = '#4A8A7A';
-const CYAN  = '#00d4ff';
+const CYAN  = '#4A8A7A';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATES_DATA = [

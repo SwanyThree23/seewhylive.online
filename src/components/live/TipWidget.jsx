@@ -16,13 +16,13 @@ const TIERS = [
   { amount: 1,   label: 'Bronze', color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)' },
   { amount: 5,   label: 'Silver', color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)' },
   { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)' },
-  { amount: 50,  label: 'Plat',   color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)' },
+  { amount: 50,  label: 'Plat',   color: '#4A8A7A', icon: '💎', glow: 'rgba(74,138,122,0.5)' },
   { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(192,57,43,0.6)' },
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#6DBF7E'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#4A8A7A', '#7B5DA6', '#6DBF7E'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;

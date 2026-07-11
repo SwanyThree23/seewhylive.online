@@ -36,7 +36,7 @@ export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', 
     if (reached && !celebrated) setCelebrated(true);
   }, [reached]);
 
-  const segColor = pct >= 100 ? '#22c55e' : pct >= 75 ? G : pct >= 50 ? G : pct >= 25 ? '#C9A84C' : CRIMSON;
+  const segColor = pct >= 100 ? '#6DBF7E' : pct >= 75 ? G : pct >= 50 ? G : pct >= 25 ? '#C9A84C' : CRIMSON;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -85,7 +85,7 @@ export default function TipGoalBar({ roomId, goal = 500, label = 'Stream Goal', 
             style={{
               height: '100%', borderRadius: 99,
               background: reached
-                ? `linear-gradient(90deg, #22c55e, ${G})`
+                ? `linear-gradient(90deg, #6DBF7E, ${G})`
                 : `linear-gradient(90deg, ${CRIMSON}, ${segColor})`,
               boxShadow: `0 0 8px ${segColor}60`,
             }}

@@ -32,8 +32,8 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
     return () => clearInterval(intervalRef.current);
   }, [isLive]);
 
-  const healthColor = health >= 80 ? '#6DBF7E' : health >= 50 ? '#f59e0b' : '#C0392B';
-  const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#f59e0b' : '#C0392B';
+  const healthColor = health >= 80 ? '#6DBF7E' : health >= 50 ? '#C9A84C' : '#C0392B';
+  const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#C9A84C' : '#C0392B';
   const networkBars = Math.ceil((health / 100) * 5);
 
   const ringCircumference = 2 * Math.PI * 20;

@@ -190,7 +190,7 @@ export default function StreamAnalytics() {
           {[
             { label: 'Peak Viewers',  value: peakViewers, sub: `Avg: ${avgViewers}`,                                    color: CYAN,     icon: Users },
             { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(totalTips * 0.9).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
-            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#a78bfa', icon: MessageSquare },
+            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#7B5DA6', icon: MessageSquare },
             { label: 'Engagement',    value: `${Math.round(((totalMessages + tipData.length) / Math.max(avgViewers, 1)) * 100)}%`, sub: 'vs. 12% avg', color: GREEN, icon: TrendingUp },
           ].map((kpi, i) => (
             <motion.div key={kpi.label}

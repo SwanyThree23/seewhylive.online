@@ -90,7 +90,7 @@ export default function InviteUsersPage() {
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
             { label: 'Slots Available', value: '∞', color: '#00ff88' },
-            { label: 'Beta Access', value: 'Free', color: '#00d4ff' },
+            { label: 'Beta Access', value: 'Free', color: '#4A8A7A' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -154,7 +154,7 @@ export default function InviteUsersPage() {
             <input
               readOnly
               value={referralLink}
-              style={{ ...inp, flex: 1, fontSize: 11, color: '#00d4ff', fontFamily: 'monospace' }}
+              style={{ ...inp, flex: 1, fontSize: 11, color: '#4A8A7A', fontFamily: 'monospace' }}
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"

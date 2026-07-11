@@ -13,7 +13,7 @@ const inputStyle = {
 };
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
-const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#6DBF7E', '#f97316', '#f472b6'];
+const GOAL_COLORS = ['#d4af37', '#4A8A7A', '#7B5DA6', '#6DBF7E', '#D4854A', '#D4854A'];
 
 function GoalBar({ goal, onUpdate, isCreator }) {
   const pct = Math.min(100, ((goal.current_amount || 0) / goal.target_amount) * 100);
@@ -22,7 +22,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
 
   useEffect(() => {
     if (pct >= 100 && prevPct.current < 100) {
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#d4af37', '#fff', '#00d4ff'] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: [goal.color || '#d4af37', '#fff', '#4A8A7A'] });
       toast.success(`🎉 Goal "${goal.title}" reached!`);
     }
     prevPct.current = pct;

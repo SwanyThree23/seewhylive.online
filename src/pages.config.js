@@ -111,6 +111,11 @@ const AuraAI                   = lazy(() => import('./pages/AuraAI'));
 const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
+const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
+const EmbedPage                = lazy(() => import('./pages/EmbedPage'));
+const MerchStore               = lazy(() => import('./pages/MerchStore'));
+const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
+const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -215,6 +220,11 @@ export const PAGES = {
     "SwanyBotPage": SwanyBotPage,
     "TranscriptionStudio": TranscriptionStudio,
     "RoomsManager": RoomsManager,
+    "PKBattleArena": PKBattleArena,
+    "EmbedPage": EmbedPage,
+    "MerchStore": MerchStore,
+    "StreamShareHub": StreamShareHub,
+    "SeeWhyLIVEv41": SeeWhyLIVEv41,
 }
 
 export const pagesConfig = {

@@ -57,7 +57,7 @@ const CHANNELS = [
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
     color: 'from-blue-900 to-[#4A8A7A]',
-    accent: '#00d4ff',
+    accent: '#4A8A7A',
     emoji: '🤖',
   },
 ];

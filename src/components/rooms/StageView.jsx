@@ -116,7 +116,7 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
       case 'host': return '#d4af37';
       case 'co-host': return '#60a5fa';
       case 'speaker': return '#34d399';
-      default: return '#a78bfa';
+      default: return '#7B5DA6';
     }
   };
 

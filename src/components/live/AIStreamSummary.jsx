@@ -63,7 +63,7 @@ Write an engaging summary that captures the energy of the stream. Include highli
         <button
           onClick={generateSummary}
           disabled={loading}
-          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: 'rgba(212,175,55,0.2)', color: '#a78bfa', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ height: 24, padding: '0 8px', fontSize: 10, fontWeight: 700, background: 'rgba(212,175,55,0.2)', color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
           <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} style={{ marginRight: 2 }} />
           {loading ? 'Writing...' : summary ? 'Refresh' : 'Generate'}
         </button>

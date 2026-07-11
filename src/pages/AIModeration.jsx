@@ -291,7 +291,7 @@ export default function AIModerationPage() {
                 <div className="space-y-4">
                   {[
                     { label: 'Average Confidence', value: moderations.reduce((acc, m) => acc + (m.ai_confidence || 0), 0) / moderations.length * 100, color: GOLD },
-                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#00d4ff' },
+                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#4A8A7A' },
                     { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#C0392B' },
                   ].map(({ label, value, color }) => (
                     <div key={label}>

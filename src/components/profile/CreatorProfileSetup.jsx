@@ -56,7 +56,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       <div style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Sparkles style={{ width: 20, height: 20, color: '#f59e0b' }} />
+            <Sparkles style={{ width: 20, height: 20, color: '#C9A84C' }} />
             <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Set Up Your Creator Profile</p>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>
@@ -122,7 +122,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
             <button
               onClick={() => createProfileMutation.mutate()}
               disabled={createProfileMutation.isPending || !displayName.trim()}
-              style={{ flex: 1, padding: '10px 0', background: '#f59e0b', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (createProfileMutation.isPending || !displayName.trim()) ? 'not-allowed' : 'pointer', opacity: (createProfileMutation.isPending || !displayName.trim()) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: '#C9A84C', border: 'none', borderRadius: 8, color: '#000', fontSize: 14, fontWeight: 700, cursor: (createProfileMutation.isPending || !displayName.trim()) ? 'not-allowed' : 'pointer', opacity: (createProfileMutation.isPending || !displayName.trim()) ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {createProfileMutation.isPending ? 'Creating...' : 'Create Profile'}
             </button>

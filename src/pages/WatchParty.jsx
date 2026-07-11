@@ -741,7 +741,7 @@ export default function WatchPartyPage() {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
-                { id: 'direct', label: 'Direct URL', icon: Video, color: '#00d4ff', placeholder: 'https://example.com/video.mp4' },
+                { id: 'direct', label: 'Direct URL', icon: Video, color: '#4A8A7A', placeholder: 'https://example.com/video.mp4' },
               ].map(opt => (
                 <button key={opt.id}
                   onClick={() => { setVideoUrl(''); }}
@@ -759,7 +759,7 @@ export default function WatchPartyPage() {
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
             {videoUrl && (
-              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#00d4ff' }}>
+              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#4A8A7A' }}>
                 {detectType(videoUrl) === 'youtube'
                   ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
                   : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
@@ -1104,7 +1104,7 @@ export default function WatchPartyPage() {
             {/* AI Music Section */}
             <div style={{
               borderRadius: 12, padding: '14px 16px',
-              background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)',
+              background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.15)',
             }}>
               <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff', display: 'block', marginBottom: 10 }}>
                 🎵 AI Music
@@ -1112,9 +1112,9 @@ export default function WatchPartyPage() {
               {wpDjTrack ? (
                 <div style={{
                   padding: '8px 12px', borderRadius: 8, marginBottom: 10,
-                  background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)',
+                  background: 'rgba(74,138,122,0.08)', border: '1px solid rgba(74,138,122,0.2)',
                 }}>
-                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#00d4ff', fontWeight: 700, margin: 0 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#4A8A7A', fontWeight: 700, margin: 0 }}>
                     Now Playing: {wpDjTrack.emoji && `${wpDjTrack.emoji} `}{wpDjTrack.title}
                   </p>
                 </div>
@@ -1126,8 +1126,8 @@ export default function WatchPartyPage() {
               <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={() => setAiPanelOpen(false)}>
                 <div style={{
                   fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 8,
-                  textAlign: 'center', background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.25)',
-                  color: '#00d4ff', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  textAlign: 'center', background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.25)',
+                  color: '#4A8A7A', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
                   cursor: 'pointer',
                 }}>
                   Open Music Studio →

@@ -29,7 +29,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
       label:      'Viewer Link',
       desc:       'Anyone can watch — no account needed',
       Icon:       Eye,
-      color:      '#22c55e',
+      color:      '#6DBF7E',
       url:        roomUrl,
       badge:      'PUBLIC',
     },
@@ -180,9 +180,9 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
                       title="Copy link"
                       style={{
                         width: 36, height: 36, borderRadius: 8, cursor: 'pointer',
-                        border: `1px solid ${copiedKey === type.key ? '#22c55e' : 'rgba(255,255,255,0.12)'}`,
+                        border: `1px solid ${copiedKey === type.key ? '#6DBF7E' : 'rgba(255,255,255,0.12)'}`,
                         background: copiedKey === type.key ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.05)',
-                        color: copiedKey === type.key ? '#22c55e' : 'rgba(255,255,255,0.6)',
+                        color: copiedKey === type.key ? '#6DBF7E' : 'rgba(255,255,255,0.6)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                       {copiedKey === type.key
@@ -239,7 +239,7 @@ export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost
 
               {/* Public note */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4, padding: '10px 0', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 10 }}>
-                <Eye style={{ width: 12, height: 12, color: '#22c55e' }} />
+                <Eye style={{ width: 12, height: 12, color: '#6DBF7E' }} />
                 <span style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>
                   Anyone can watch with the Viewer link — no sign-in required
                 </span>

@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 import { speakReply } from '../utils/tts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import GlobalSearch from '../components/shared/GlobalSearch';
+import StreamGoals from '../components/live/StreamGoals';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -11,13 +16,13 @@ const SLATE = '#1A1530';
 const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
-const PURPLE = '#a78bfa';
+const PURPLE = '#7B5DA6';
 const CYAN   = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
 const GLOBAL_CSS = `
-@keyframes aura-pulse{0%,100%{box-shadow:0 0 12px #a78bfa44;}50%{box-shadow:0 0 32px #a78bfa99;}}
+@keyframes aura-pulse{0%,100%{box-shadow:0 0 12px #7B5DA644;}50%{box-shadow:0 0 32px #7B5DA699;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes dot-blink{0%,100%{opacity:1;}50%{opacity:.3;}}
 .aura-glow{animation:aura-pulse 2.8s ease infinite;}
@@ -60,7 +65,7 @@ const AURA_MODES = {
   },
   EDUCATOR: {
     label: '📚 Educator',
-    color: '#22c55e',
+    color: '#6DBF7E',
     hint: 'Educational content & structured teaching',
     system: `You are AURA in EDUCATOR MODE — a calm, structured teaching co-host for SeeWhy LIVE. You help creators deliver educational content: clear explanations, step-by-step breakdowns, quiz prompts for the chat, and engaging lesson frameworks. Your tone is warm, authoritative, and pedagogically sound. You suggest interactive elements (polls, Q&A, chat challenges) and help pace the educational content for live streaming. Keep answers focused and actionable.`,
   },
@@ -276,7 +281,7 @@ export default function AuraAI() {
               background: m.role === 'user'
                 ? `linear-gradient(135deg, ${PURPLE}22, rgba(109,40,217,0.2))`
                 : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${m.role === 'user' ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              border: `1px solid ${m.role === 'user' ? 'rgba(123,93,166,0.3)' : 'rgba(255,255,255,0.08)'}`,
               borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
               padding: '12px 16px',
             }}>
@@ -297,7 +302,7 @@ export default function AuraAI() {
         ))}
         {loading && (
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, ${PURPLE}, #6d28d9)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>✨</div>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, ${PURPLE}, #7B5DA6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>✨</div>
             <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px 18px 18px 4px', padding: '12px 16px' }}>
               <ThinkDots />
             </div>
@@ -318,7 +323,7 @@ export default function AuraAI() {
             disabled={loading}
             style={{
               flex: 1, resize: 'none', background: 'rgba(255,255,255,0.05)',
-              border: `1px solid rgba(167,139,250,0.25)`, borderRadius: 12,
+              border: `1px solid rgba(123,93,166,0.25)`, borderRadius: 12,
               color: TEXT, fontSize: 14, padding: '10px 14px', outline: 'none',
               fontFamily: 'inherit', lineHeight: 1.45,
             }}
@@ -328,7 +333,7 @@ export default function AuraAI() {
             disabled={loading || !input.trim()}
             style={{
               width: 44, height: 44, borderRadius: 12, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-              background: loading || !input.trim() ? 'rgba(167,139,250,0.2)' : `linear-gradient(135deg, ${PURPLE}, #6d28d9)`,
+              background: loading || !input.trim() ? 'rgba(123,93,166,0.2)' : `linear-gradient(135deg, ${PURPLE}, #7B5DA6)`,
               color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 0.15s', flexShrink: 0,
             }}
@@ -341,5 +346,10 @@ export default function AuraAI() {
         </div>
       </div>
     </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GlobalSearch />
+      <StreamGoals isHost={false} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ContentRecommendations />
   );
 }

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import ViewerCount from '../components/live/ViewerCount';
 
 // ── Brand constants ───────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -467,5 +469,7 @@ export default function EmbedPage() {
         </div>
       )}
     </div>
+      <StreamHealthMonitor isStreaming={true} />
+      <ViewerCount count={0} peakViewers={0} />
   );
 }

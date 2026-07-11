@@ -20,7 +20,7 @@ const ACCESS_LABELS = {
 
 const STATUS_CONFIG = {
   upcoming: { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD,    label: 'Upcoming'  },
-  live:     { bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.4)',   color: '#C0392B', label: '🔴 LIVE' },
+  live:     { bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.4)',   color: '#C0392B', label: '🔴 LIVE' },
   ended:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)', label: 'Ended' },
 };
 

@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -12,7 +18,7 @@ const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const CYAN  = '#D4AF37';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
@@ -398,5 +404,11 @@ export default function TranscriptionStudio() {
         </div>
       </div>
     </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <AIStreamSummary roomId={null} isHost={true} />
+      <SwanAIRecommendations roomId={null} currentLayout='transcription' viewerCount={0} />
+      <AIHighlightGenerator roomId={null} isHost={true} />
+      <StreamHealthMonitor isStreaming={false} />
   );
 }

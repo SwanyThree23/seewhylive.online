@@ -61,7 +61,7 @@ const REVENUE_STREAMS = [
   { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: G,         desc: 'Monthly recurring tiers', split: '90%' },
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
-  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
+  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#D4854A', desc: 'Animated gift shop',       split: '80%' },
   { id: 'music',         label: 'AI Music',      icon: Music,      color: '#a855f7', desc: 'Stream your AI tracks',    split: '70%' },
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
@@ -627,7 +627,7 @@ export default function MonetizationPage() {
                   { label: 'Net Earnings', val: `$${netEarnings.toFixed(2)}`, icon: DollarSign, color: G },
                   { label: 'MRR',          val: `$${mrr.toFixed(2)}`,         icon: TrendingUp, color: TEAL },
                   { label: 'Subscribers',  val: subCount,                      icon: Users,      color: PINK },
-                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#f97316' },
+                  { label: 'Avg Tip',      val: tips.length ? `$${(tips.reduce((s, t) => s + (t.amount || 0), 0) / tips.length).toFixed(2)}` : '$0', icon: Heart, color: '#D4854A' },
                 ].map(stat => {
                   const Icon = stat.icon;
                   return (

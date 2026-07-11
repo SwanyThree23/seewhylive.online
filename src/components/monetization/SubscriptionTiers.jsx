@@ -18,7 +18,7 @@ const tierConfig = {
   elite: {
     icon: Crown,
     gradient: 'linear-gradient(135deg, #d97706, #ea580c)',
-    badgeColor: '#f59e0b',
+    badgeColor: '#C9A84C',
   },
 };
 

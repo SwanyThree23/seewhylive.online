@@ -116,7 +116,7 @@ export default function PKBattleInterface({ roomId }) {
           style={{
             width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
             gap: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', borderRadius: 8,
-            background: '#f59e0b', color: '#000', border: 'none',
+            background: '#C9A84C', color: '#000', border: 'none',
           }}
         >
           <Swords className="w-4 h-4" />

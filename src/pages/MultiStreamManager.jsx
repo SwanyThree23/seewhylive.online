@@ -219,7 +219,7 @@ export default function MultiStreamManager() {
             <div className="flex items-center gap-6 flex-wrap">
               <div>
                 <p className="text-[10px] text-white/40 uppercase">Active Destinations</p>
-                <p className="text-2xl font-bold text-[#00d4ff]">{enabledCount}</p>
+                <p className="text-2xl font-bold text-[#4A8A7A]">{enabledCount}</p>
               </div>
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
@@ -398,7 +398,7 @@ export default function MultiStreamManager() {
                             <button
                               onClick={() => testConnection(dest)}
                               disabled={isTesting}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff] hover:border-[#00d4ff]/30 disabled:opacity-50"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A] hover:border-[#4A8A7A]/30 disabled:opacity-50"
                             >
                               {isTesting
                                 ? <RefreshCw className="w-3 h-3 animate-spin" />

@@ -30,7 +30,7 @@ const TEXTM = '#8A7A94';
 const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#00d4ff';
+const CYAN = '#4A8A7A';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };

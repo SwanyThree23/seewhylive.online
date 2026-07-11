@@ -69,9 +69,9 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
   const checkLabel = (state) => {
     if (state === 'idle' || state === 'testing') return { label: 'TESTING…', color: 'rgba(255,255,255,0.3)' };
-    if (state === 'ready') return { label: '✓ READY', color: '#22c55e' };
-    if (state === 'warn')  return { label: '⚠ SLOW', color: '#f59e0b' };
-    return { label: '✗ FAIL', color: '#ef4444' };
+    if (state === 'ready') return { label: '✓ READY', color: '#6DBF7E' };
+    if (state === 'warn')  return { label: '⚠ SLOW', color: '#C9A84C' };
+    return { label: '✗ FAIL', color: '#C0392B' };
   };
 
   const ROWS = [
@@ -135,7 +135,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                     {copied === 'rtmp' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] mt-1 font-mono" style={{ color: '#22c55e' }}>Ingest: {ingestUrl}</p>
+                <p className="text-[10px] mt-1 font-mono" style={{ color: '#6DBF7E' }}>Ingest: {ingestUrl}</p>
               </div>
 
               {/* VDO.ninja */}

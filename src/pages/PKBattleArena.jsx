@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import GiftSystem from '../components/live/GiftSystem';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 
 const BG    = '#080B18';
 const BG2   = 'rgba(13,6,24,0.95)';
@@ -9,8 +17,8 @@ const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const CRIMSON = '#800020';
-const RED   = '#ef4444';
-const GREEN = '#22c55e';
+const RED   = '#C0392B';
+const GREEN = '#6DBF7E';
 const CYAN  = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
@@ -332,5 +340,13 @@ export default function PKBattleArena() {
         )}
       </div>
     </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GiftSystem roomId={null} userId={null} isHost={true} />
+      <GiftLeaderboard roomId={null} />
+      <ViewerCount count={0} peakViewers={0} />
+      <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={0} />
+      <HostAlertCenter />
+      <StreamHealthMonitor isStreaming={false} />
   );
 }

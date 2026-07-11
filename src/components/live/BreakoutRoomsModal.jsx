@@ -223,7 +223,7 @@ function RoomCard({ room, unassigned, onAssign, onRemoveParticipant, onDelete, i
                   fontSize: 10,
                   fontWeight: 700,
                   background: 'rgba(34,197,94,0.18)',
-                  color: '#22c55e',
+                  color: '#6DBF7E',
                   border: '1px solid rgba(34,197,94,0.4)',
                   borderRadius: 999,
                   padding: '1px 8px',

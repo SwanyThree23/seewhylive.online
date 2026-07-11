@@ -7,6 +7,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import CoStreamHub from '../components/live/CoStreamHub';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import NotificationBell from '../components/shared/NotificationBell';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import GiftSystem from '../components/live/GiftSystem';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import ViewerCount from '../components/live/ViewerCount';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/analytics/BroadcastAnalyticsDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import RewardShop from '../components/loyalty/RewardShop';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import LocalVideoTile from '../components/streaming/LocalVideoTile';
+import OctagonalVideoWindow from '../components/streaming/OctagonalVideoWindow';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -24,17 +42,17 @@ const C = {
   text:    '#F0E8D4',
   textD:   '#C4B596',
   textM:   '#8A7A62',
-  green:   '#2ECC71',
+  green:   '#6DBF7E',
   red:     '#E74C3C',
-  blue:    '#3498DB',
+  blue:    '#5B7FA6',
   purple:  '#8B44B0',
   amber:   '#D4854A',
-  orange:  '#FF6B35',
+  orange:  '#D4854A',
   teal:    '#6DBF7E',
   warn:    '#F39C12',
   tribute: '#7B5EA7',
   tribL:   '#A07BC4',
-  state1:  '#1565C0',
+  state1:  '#5B7FA6',
   state2:  '#C62828',
 };
 
@@ -2112,5 +2130,21 @@ export default function SeeWhyLIVEv41() {
         {panelMap[activeTab]}
       </div>
     </div>
+      <SwanyBotWidget />
+      <SwanyBotEnhanced />
+      <NotificationBell />
+      <SwanDirectorHUD roomId={null} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
+      <GiftSystem roomId={null} userId={null} isHost={true} />
+      <GiftLeaderboard roomId={null} />
+      <ViewerCount count={0} peakViewers={0} />
+      <HostAlertCenter />
+      <StreamHealthMonitor isStreaming={false} />
+      <SwanAIRecommendations roomId={null} currentLayout='v41' viewerCount={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <MilestoneAlerts userId={null} roomId={null} />
+      <BroadcastAnalyticsDashboard />
+      <StreamerMonetizationCenter />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <BackgroundCustomizer />
   );
 }

@@ -26,8 +26,8 @@ const BG2    = 'rgba(13,6,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK   = '#C0392B';
-const CYAN   = '#00d4ff';
-const PURPLE = '#a78bfa';
+const CYAN   = '#4A8A7A';
+const PURPLE = '#7B5DA6';
 const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -238,7 +238,7 @@ export default function AIHub() {
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#C0392B';
-    if (status === 'warning') return '#f59e0b';
+    if (status === 'warning') return '#C9A84C';
     return GREEN;
   }
 
@@ -355,7 +355,7 @@ export default function AIHub() {
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(74,138,122,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -695,7 +695,7 @@ export default function AIHub() {
             ].map(item => (
               <div key={item.title} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)',
+                background: 'rgba(123,93,166,0.06)', border: '1px solid rgba(123,93,166,0.15)',
               }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.icon}</div>
                 <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{item.title}</p>

@@ -19,7 +19,7 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', minHeight:200, padding:32, textAlign:'center' }}>
-          <AlertTriangle style={{ width:40, height:40, color:'#f59e0b', marginBottom:12 }} />
+          <AlertTriangle style={{ width:40, height:40, color:'#C9A84C', marginBottom:12 }} />
           <p style={{ fontWeight:600, fontSize:14, marginBottom:4 }}>Something went wrong</p>
           <p style={{ fontSize:12, color:'rgba(255,255,255,0.5)', marginBottom:16, maxWidth:280 }}>
             An unexpected error occurred in this section. Please try again.
