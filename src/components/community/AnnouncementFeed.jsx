@@ -21,7 +21,7 @@ export default function AnnouncementFeed({ communityId }) {
     low:    { background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
     normal: { background: 'rgba(59,130,246,0.2)',  color: '#60a5fa' },
     high:   { background: 'rgba(249,115,22,0.2)',  color: '#fb923c' },
-    urgent: { background: 'rgba(239,68,68,0.2)',   color: '#f87171' },
+    urgent: { background: 'rgba(239,68,68,0.2)',   color: '#C0392B' },
   };
 
   const priorityIcons = {
@@ -57,7 +57,7 @@ export default function AnnouncementFeed({ communityId }) {
               {announcement.is_pinned ? (
                 <Pin className="w-5 h-5" style={{ color: '#a78bfa' }} />
               ) : (
-                <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#f87171' : '#a78bfa' }} />
+                <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#C0392B' : '#a78bfa' }} />
               )}
             </div>
 

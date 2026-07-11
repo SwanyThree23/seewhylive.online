@@ -32,7 +32,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
         <span className="text-[10px] font-bold uppercase text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
           Pending Redemptions
         </span>
-        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171' }}>
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#C0392B' }}>
           {redemptions.length}
         </span>
       </div>

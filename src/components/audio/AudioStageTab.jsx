@@ -132,7 +132,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: '#EF4444',
+            background: '#C0392B',
             border: `2px solid ${BG}`,
             display: 'flex',
             alignItems: 'center',
@@ -185,7 +185,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
                 textAlign: 'left',
                 fontSize: 11,
                 fontFamily: 'Barlow Condensed, sans-serif',
-                color: '#EF4444',
+                color: '#C0392B',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -397,7 +397,7 @@ export default function AudioStageTab({
           }}
         >
           {isMuted
-            ? <MicOff style={{ width: 16, height: 16, color: '#EF4444' }} />
+            ? <MicOff style={{ width: 16, height: 16, color: '#C0392B' }} />
             : <Mic style={{ width: 16, height: 16, color: '#000' }} />}
         </motion.button>
 
@@ -428,7 +428,7 @@ export default function AudioStageTab({
               minWidth: 16,
               height: 16,
               borderRadius: 8,
-              background: '#FF1564',
+              background: '#C0392B',
               color: '#fff',
               fontSize: 11,
               fontWeight: 900,
@@ -549,7 +549,7 @@ export default function AudioStageTab({
                         borderRadius: 6,
                         background: 'rgba(239,68,68,0.1)',
                         border: '1px solid rgba(239,68,68,0.3)',
-                        color: '#EF4444',
+                        color: '#C0392B',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',
                         fontWeight: 700,

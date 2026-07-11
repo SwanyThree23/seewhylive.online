@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#FF1564';
+const PINK = '#C0392B';
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.97)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -22,7 +22,7 @@ const TIERS = [
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#22c55e'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#6DBF7E'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;

@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace",
 };
@@ -145,7 +145,7 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
               cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             }}>
               <span style={{ fontSize: 20 }}>CC</span>
-              <span style={{ fontFamily: C.fMon, fontSize: 11, color: ccOn ? "#00E5FF" : C.gray }}>CAPTIONS</span>
+              <span style={{ fontFamily: C.fMon, fontSize: 11, color: ccOn ? "#4A8A7A" : C.gray }}>CAPTIONS</span>
             </button>
 
             {/* Report */}

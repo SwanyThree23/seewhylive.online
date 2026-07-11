@@ -201,7 +201,7 @@ export default function PKBattleInterface({ roomId }) {
             style={{
               width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 600, fontSize: 14, cursor: 'pointer', borderRadius: 8,
-              background: '#22c55e', color: '#fff', border: 'none',
+              background: '#6DBF7E', color: '#fff', border: 'none',
             }}
           >
             View Results

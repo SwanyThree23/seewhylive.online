@@ -6,7 +6,7 @@ import { Eye, EyeOff, Wifi, Lock, KeyRound, Trash2, Plus, RefreshCw, CheckCircle
 import { toast } from 'sonner';
 
 var PLATFORM_PRESETS = [
-  { id: 'youtube',   label: 'YouTube',   color: '#ff4444', server: 'rtmp://a.rtmp.youtube.com/live2' },
+  { id: 'youtube',   label: 'YouTube',   color: '#C0392B', server: 'rtmp://a.rtmp.youtube.com/live2' },
   { id: 'twitch',    label: 'Twitch',    color: '#9146ff', server: 'rtmp://live.twitch.tv/live' },
   { id: 'facebook',  label: 'Facebook',  color: '#1877f2', server: 'rtmps://live-api-s.facebook.com:443/rtmp' },
   { id: 'tiktok',    label: 'TikTok',    color: '#d4af37', server: 'rtmp://push.tiktokv.com/rtmp' },

@@ -102,7 +102,7 @@ function WinnerCelebration({ battle, onClose }) {
   const winScore = winnerIsCreator ? (battle.creator_score || 0) : (battle.challenger_score || 0);
   const loseScore = winnerIsCreator ? (battle.challenger_score || 0) : (battle.creator_score || 0);
   const winTips = winnerIsCreator ? (battle.creator_tips || 0) : (battle.challenger_tips || 0);
-  const winColor = winnerIsCreator ? '#3b82f6' : '#ef4444';
+  const winColor = winnerIsCreator ? '#3b82f6' : '#C0392B';
 
   const particles = [...Array(30)].map((_, i) => ({
     id: i,
@@ -301,7 +301,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
   const urgency = timeLeft < 30 ? 'critical' : timeLeft < 60 ? 'warning' : 'normal';
-  const timerColor = urgency === 'critical' ? '#FF1564' : urgency === 'warning' ? '#FF8C00' : '#d4af37';
+  const timerColor = urgency === 'critical' ? '#C0392B' : urgency === 'warning' ? '#D4854A' : '#d4af37';
 
   if (!battle) return null;
 
@@ -341,7 +341,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             <Swords className="w-3 md:w-4 h-3 md:h-4 text-yellow-400 animate-pulse flex-shrink-0" />
             {isActive ? (
               <span className="font-black uppercase animate-pulse truncate"
-                style={{ color: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', fontSize: '8px' }}>
+                style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em', fontSize: '8px' }}>
                 ● LIVE
               </span>
             ) : (
@@ -409,15 +409,15 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             transition={{ duration: 2, repeat: Infinity }}
             style={{ background: 'rgba(239,68,68,0.06)', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>
             <div className="flex items-center justify-between w-full">
-              <ViewerBar count={challengerViewers} side="left" color="#ef4444" />
+              <ViewerBar count={challengerViewers} side="left" color="#C0392B" />
               <div className="w-6 md:w-8 h-6 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm flex-shrink-0"
-                style={{ background: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
+                style={{ background: 'rgba(239,68,68,0.2)', color: '#C0392B' }}>
                 {(battle.challenger_name || '?').charAt(0).toUpperCase()}
               </div>
             </div>
             <p className="text-[10px] md:text-xs font-bold text-white truncate mt-0.5 text-right">{battle.challenger_name || 'Challenger'}</p>
             <motion.p layout className="text-2xl md:text-3xl font-black tabular-nums text-right"
-              style={{ fontFamily: 'Orbitron, monospace', color: '#ef4444' }}>
+              style={{ fontFamily: 'Orbitron, monospace', color: '#C0392B' }}>
               {challengerScore.toLocaleString()}
             </motion.p>
             <p className="text-[11px] md:text-[11px] text-right" style={{ color: 'rgba(239,68,68,0.6)' }}>
@@ -432,11 +432,11 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             <motion.div className="h-full rounded-l-full transition-all duration-700"
               style={{ width: `${creatorPct}%`, background: 'linear-gradient(90deg, #2563eb, #3b82f6)' }} />
             <motion.div className="h-full rounded-r-full transition-all duration-700"
-              style={{ width: `${challengerPct}%`, background: 'linear-gradient(90deg, #ef4444, #dc2626)' }} />
+              style={{ width: `${challengerPct}%`, background: 'linear-gradient(90deg, #C0392B, #dc2626)' }} />
           </div>
           <div className="flex justify-between mt-0.5 md:mt-1">
             <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#3b82f6' }}>{creatorPct}%</span>
-            <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#ef4444' }}>{challengerPct}%</span>
+            <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#C0392B' }}>{challengerPct}%</span>
           </div>
         </div>
       </div>
@@ -447,7 +447,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
           <SupporterBoard supporters={creatorSupporters} color="#3b82f6" name={battle.creator_name} />
         </div>
         <div className="p-2 md:p-3 rounded-xl md:rounded-2xl" style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)' }}>
-          <SupporterBoard supporters={challengerSupporters} color="#ef4444" name={battle.challenger_name || 'Challenger'} />
+          <SupporterBoard supporters={challengerSupporters} color="#C0392B" name={battle.challenger_name || 'Challenger'} />
         </div>
       </div>
 
@@ -468,7 +468,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1">
                 <span className="text-xs md:text-sm flex-shrink-0">{t.emoji}</span>
                 <span className="text-[11px] md:text-[10px] text-white/60 flex-1 truncate">{t.name}</span>
-                <span className="text-[11px] font-black flex-shrink-0" style={{ color: t.side === 'creator' ? '#3b82f6' : '#ef4444' }}>
+                <span className="text-[11px] font-black flex-shrink-0" style={{ color: t.side === 'creator' ? '#3b82f6' : '#C0392B' }}>
                   +{t.pts}
                 </span>
               </motion.div>
@@ -513,7 +513,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
           {/* Challenger gifts */}
           <div className="rounded-xl md:rounded-2xl p-2 md:p-3" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
             <p className="text-[7px] md:text-[11px] font-black uppercase text-center mb-1.5 md:mb-2 truncate"
-              style={{ color: '#ef4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+              style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
               {battle.challenger_name || 'Challenger'}
             </p>
             <div className="grid grid-cols-3 gap-0.5 md:gap-1">
@@ -523,7 +523,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
                   className="flex flex-col items-center py-1.5 md:py-2 rounded-lg md:rounded-xl"
                   style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
                   <span className="text-sm md:text-base">{g.emoji}</span>
-                  <span className="text-[7px] md:text-[11px] font-black" style={{ color: '#ef4444' }}>+{g.pts}</span>
+                  <span className="text-[7px] md:text-[11px] font-black" style={{ color: '#C0392B' }}>+{g.pts}</span>
                 </motion.button>
               ))}
             </div>
@@ -534,7 +534,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
                   className="flex flex-col items-center py-1.5 md:py-2 rounded-lg md:rounded-xl"
                   style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
                   <span className="text-sm md:text-base">{g.emoji}</span>
-                  <span className="text-[7px] md:text-[11px] font-black" style={{ color: '#ef4444' }}>+{g.pts}</span>
+                  <span className="text-[7px] md:text-[11px] font-black" style={{ color: '#C0392B' }}>+{g.pts}</span>
                 </motion.button>
               ))}
             </div>

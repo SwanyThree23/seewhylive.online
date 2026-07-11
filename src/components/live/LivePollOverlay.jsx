@@ -25,7 +25,7 @@ function PollCountdown({ endsAt, onExpire }) {
     <motion.span
       animate={urgent ? { scale: [1, 1.15, 1] } : {}}
       transition={{ duration: 0.5, repeat: urgent ? Infinity : 0 }}
-      style={{ color: rem === 0 ? 'rgba(255,255,255,0.3)' : rem < 30 ? '#FF4444' : G }}
+      style={{ color: rem === 0 ? 'rgba(255,255,255,0.3)' : rem < 30 ? '#C0392B' : G }}
     >
       {rem === 0 ? 'Ended' : `${m}:${String(s).padStart(2, '0')}`}
     </motion.span>

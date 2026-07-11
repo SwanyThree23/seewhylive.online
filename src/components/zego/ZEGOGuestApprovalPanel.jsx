@@ -86,7 +86,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
                 onClick={() => rejectMut.mutate(guest.id)}
                 disabled={rejectMut.isPending}
                 className="flex items-center justify-center w-7 h-7 rounded transition-all"
-                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444' }}>
+                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#C0392B' }}>
                 <X className="w-3.5 h-3.5" />
               </motion.button>
             </div>

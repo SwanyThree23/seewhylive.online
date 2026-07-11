@@ -167,7 +167,7 @@ export default function PayPerViewManager({ roomId }) {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 className="p-2 rounded text-xs"
-                style={{ background: 'rgba(255,0,0,0.1)', color: '#FF4444' }}
+                style={{ background: 'rgba(255,0,0,0.1)', color: '#C0392B' }}
               >
                 <Trash2 className="w-4 h-4" />
               </motion.button>

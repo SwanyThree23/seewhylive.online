@@ -16,11 +16,11 @@ const ICON_MAP = {
   raid_incoming:         <Users className="w-4 h-4" />,
   raid_outgoing:         <Zap className="w-4 h-4" />,
   engagement_milestone:  <Trophy className="w-4 h-4" />,
-  tip:                   <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
-  love_tap:              <Heart className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  tip:                   <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
+  love_tap:              <Heart className="w-4 h-4" style={{ color: '#C0392B' }} />,
   gift:                  <Gift className="w-4 h-4" style={{ color: '#D4AF37' }} />,
   subscription:          <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />,
-  live_started:          <Radio className="w-4 h-4" style={{ color: '#FF1564' }} />,
+  live_started:          <Radio className="w-4 h-4" style={{ color: '#C0392B' }} />,
   system:                <Bell className="w-4 h-4" />,
 };
 
@@ -126,13 +126,13 @@ export default function NotificationHub() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#FF8C00' : 'rgba(255,255,255,0.5)' }} />
+        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#D4854A' : 'rgba(255,255,255,0.5)' }} />
         {unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-            style={{ background: '#FF8C00', color: '#000' }}
+            style={{ background: '#D4854A', color: '#000' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.div>
@@ -152,7 +152,7 @@ export default function NotificationHub() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <h3 className="text-sm font-bold uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Notifications {unreadCount > 0 && <span style={{ color: '#FF8C00' }}>({unreadCount})</span>}
+                Notifications {unreadCount > 0 && <span style={{ color: '#D4854A' }}>({unreadCount})</span>}
               </h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (

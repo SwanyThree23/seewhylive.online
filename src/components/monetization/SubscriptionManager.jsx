@@ -131,7 +131,7 @@ export default function SubscriptionManager({ creatorId }) {
               <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: `${TIER_COLORS[idx % 4]}20`, color: TIER_COLORS[idx % 4] }}>
                 <Edit2 className="w-3 h-3 mx-auto" />
               </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: 'rgba(255,0,0,0.1)', color: '#FF4444' }}>
+              <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: 'rgba(255,0,0,0.1)', color: '#C0392B' }}>
                 <Trash2 className="w-3 h-3 mx-auto" />
               </motion.button>
             </div>

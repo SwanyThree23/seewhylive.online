@@ -175,13 +175,13 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#ef4444'}` }}>
+            style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#C0392B'}` }}>
             {audioEnabled ? <Mic className="w-3.5 h-3.5 text-green-400" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#ef4444'}` }}>
+            style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(239,68,68,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#C0392B'}` }}>
             {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
         </div>

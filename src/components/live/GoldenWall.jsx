@@ -26,7 +26,7 @@ function GoldenWallItem({ item, onExpire }) {
         isSuperChat
           ? 'border-[#FFB800] shadow-[0_0_20px_rgba(255,184,0,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
           : isGift
-          ? 'border-[#FF1564]/50 shadow-[0_0_16px_rgba(255,21,100,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
+          ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(255,21,100,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
           : 'border-[#FFB800]/30 bg-[#10101E]'
       } px-3 py-2.5`}
     >
@@ -35,7 +35,7 @@ function GoldenWallItem({ item, onExpire }) {
 
       <div className="flex items-center gap-2">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${
-          isSuperChat ? 'bg-[#FFB800]/20 text-[#FFB800]' : 'bg-[#FF1564]/20 text-[#FF1564]'
+          isSuperChat ? 'bg-[#FFB800]/20 text-[#FFB800]' : 'bg-[#C0392B]/20 text-[#C0392B]'
         }`}>
           {isGift ? (GIFT_EMOJIS[item.gift_type] || '🎁') : <DollarSign className="w-4 h-4" />}
         </div>
@@ -45,7 +45,7 @@ function GoldenWallItem({ item, onExpire }) {
             {isSuperChat && <Crown className="w-3 h-3 text-[#FFB800] shrink-0" />}
           </div>
           <div className="flex items-center gap-1">
-            <span className={`text-sm font-black font-mono ${isSuperChat ? 'text-[#FFB800]' : 'text-[#FF1564]'}`}>
+            <span className={`text-sm font-black font-mono ${isSuperChat ? 'text-[#FFB800]' : 'text-[#C0392B]'}`}>
               ${item.amount?.toFixed(2)}
             </span>
             {item.message && (

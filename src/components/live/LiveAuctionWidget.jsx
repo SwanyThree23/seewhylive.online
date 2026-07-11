@@ -14,7 +14,7 @@ const TYPE_COLORS = {
   shoutout:   { color: '#D4AF37', label: 'SHOUTOUT' },
   custom_art: { color: '#FF6B00', label: 'ART' },
   coaching:   { color: '#6DBF7E', label: 'COACHING' },
-  experience: { color: '#FF1564', label: 'EXPERIENCE' },
+  experience: { color: '#C0392B', label: 'EXPERIENCE' },
 };
 
 function Countdown({ endsAt, onExpired }) {
@@ -38,7 +38,7 @@ function Countdown({ endsAt, onExpired }) {
   const fmt = h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
 
   return (
-    <span className="font-mono text-[11px] font-black" style={{ color: isUrgent ? '#FF4444' : GOLD }}>
+    <span className="font-mono text-[11px] font-black" style={{ color: isUrgent ? '#C0392B' : GOLD }}>
       {remaining === 0 ? 'ENDED' : fmt}
     </span>
   );
@@ -157,7 +157,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
               </span>
               {isEndingSoon && (
                 <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded animate-pulse"
-                  style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)' }}>
+                  style={{ background: 'rgba(255,68,68,0.15)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.3)' }}>
                   🔥 ENDING SOON
                 </span>
               )}
@@ -240,7 +240,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
             </button>
             <button onClick={() => onEnd(auction)}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
-              style={{ background: 'rgba(255,68,68,0.08)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,68,68,0.08)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Cancel
             </button>
           </div>

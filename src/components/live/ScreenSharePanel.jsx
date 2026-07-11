@@ -73,7 +73,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
               {isSharing ? (
                 <button
                   onClick={handleStopShare}
-                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(239,68,68,0.5)', background:'rgba(127,29,29,0.5)', color:'#f87171', cursor:'pointer', fontSize:13 }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(239,68,68,0.5)', background:'rgba(127,29,29,0.5)', color:'#C0392B', cursor:'pointer', fontSize:13 }}
                 >
                   <StopCircle className="w-4 h-4" />
                   Stop Sharing

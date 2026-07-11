@@ -9,8 +9,8 @@ const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const PRESETS = [
-  { name: 'Gold Empire', colors: { primary: G, secondary: '#FF8C00', bg: '#0A0710' } },
-  { name: 'Cyber Neon', colors: { primary: '#C9A84C', secondary: '#FF1564', bg: '#0A0710' } },
+  { name: 'Gold Empire', colors: { primary: G, secondary: '#D4854A', bg: '#0A0710' } },
+  { name: 'Cyber Neon', colors: { primary: '#C9A84C', secondary: '#C0392B', bg: '#0A0710' } },
   { name: 'Forest Chill', colors: { primary: '#6DBF7E', secondary: '#C9A84C', bg: '#0A1510' } },
   { name: 'Purple Haze', colors: { primary: '#D4AF37', secondary: '#C9A84C', bg: '#0A0710' } },
 ];

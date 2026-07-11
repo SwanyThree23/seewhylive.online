@@ -7,7 +7,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
     excellent: '#6DBF7E',
     good: '#d4af37',
     warning: '#FFB800',
-    critical: '#FF1564'
+    critical: '#C0392B'
   };
 
   return (

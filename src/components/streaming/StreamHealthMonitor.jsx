@@ -21,7 +21,7 @@ export default function StreamHealthMonitor({ isStreaming = false }) {
     return () => clearInterval(t);
   }, [isStreaming]);
 
-  const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#FFD700' : '#FF4444';
+  const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#FFD700' : '#C0392B';
 
   if (!isStreaming) return (
     <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg"
@@ -43,7 +43,7 @@ export default function StreamHealthMonitor({ isStreaming = false }) {
         {(stats.bitrate / 1000).toFixed(1)}Mbps · {stats.fps}fps · {stats.latency}ms
       </span>
       {stats.packetLoss > 0 && (
-        <span className="text-[11px] px-1 rounded font-bold" style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444' }}>
+        <span className="text-[11px] px-1 rounded font-bold" style={{ background: 'rgba(255,68,68,0.15)', color: '#C0392B' }}>
           {stats.packetLoss}% loss
         </span>
       )}

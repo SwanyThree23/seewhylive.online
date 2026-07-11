@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 var G = {
   black:"#080808", darkBg:"#0D0D0D", cardBg:"#111111",
   surfaceBg:"#161616", crimson:"#8B0000", crimsonBright:"#C41E3A",
-  gold:"#D4AF37", goldBright:"#FFD700", cyan:"#00E5FF",
+  gold:"#D4AF37", goldBright:"#FFD700", cyan:"#4A8A7A",
   volt:"#D4AF37", white:"#FFFFFF", gray:"#888888",
-  grayDim:"#444444", red:"#FF3B30", green:"#30D158",
+  grayDim:"#444444", red:"#FF3B30", green:"#6DBF7E",
   purple:"#BF5FFF", orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif", fRaj:"'Rajdhani',sans-serif",
   fMon:"'Share Tech Mono',monospace", fBeb:"'Bebas Neue',cursive",
@@ -26,7 +26,7 @@ var MERCH_ITEMS = [
   {id:"m1",name:"Domino King Tee",price:29.99,icon:"👕",category:"Apparel",color:"#C41E3A",desc:"Premium crimson+gold tee"},
   {id:"m2",name:"Washington Classic Cap",price:24.99,icon:"🧢",category:"Apparel",color:"#D4AF37",desc:"Structured 6-panel embroidered"},
   {id:"m3",name:"SeeWhy LIVE Hoodie",price:54.99,icon:"🧥",category:"Apparel",color:"#BF5FFF",desc:"Heavy fleece · logo back print"},
-  {id:"m4",name:"Domino Set (Full)",price:39.99,icon:"🎲",category:"Games",color:"#00E5FF",desc:"Double-6 · laser engraved tiles"},
+  {id:"m4",name:"Domino Set (Full)",price:39.99,icon:"🎲",category:"Games",color:"#4A8A7A",desc:"Double-6 · laser engraved tiles"},
   {id:"m5",name:"VibeN'Bones Mug",price:14.99,icon:"☕",category:"Lifestyle",color:"#FF9500",desc:"15oz ceramic · microwave safe"},
   {id:"m6",name:"Washington Classic Poster",price:19.99,icon:"🖼️",category:"Art",color:"#D4AF37",desc:"18×24 · glossy · tournament art"},
 ];
@@ -151,7 +151,7 @@ export function ViewerControlsV2({ onClose }) {
           <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"2px 9px",borderRadius:20,fontSize:7,fontWeight:700,fontFamily:G.fRaj,background:"rgba(200,255,0,.12)",border:"1px solid #D4AF37",color:"#D4AF37"}}>{quality}</span>
           <span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.1)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>{volume}% vol</span>
           {muted&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(196,30,58,.2)",border:"1px solid #C41E3A",color:"#FF6B6B",fontFamily:G.fMon,fontWeight:700}}>MUTED</span>}
-          {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(0,229,255,.15)",border:"1px solid #00E5FF",color:"#00E5FF",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
+          {pip&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(0,229,255,.15)",border:"1px solid #4A8A7A",color:"#4A8A7A",fontFamily:G.fMon,fontWeight:700}}>PIP</span>}
           {handRaised&&<span style={{display:"inline-flex",fontSize:7,padding:"2px 7px",borderRadius:10,background:"rgba(255,149,0,.15)",border:"1px solid "+G.orange,color:G.orange,fontFamily:G.fMon,fontWeight:700}}>✋ RAISED</span>}
         </div>
       </div>

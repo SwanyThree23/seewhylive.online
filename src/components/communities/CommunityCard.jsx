@@ -9,10 +9,10 @@ const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const CATEGORY_COLORS = {
-  music:         '#FF1564',
+  music:         '#C0392B',
   gaming:        '#00d4ff',
   tech:          '#D4AF37',
-  education:     '#4ade80',
+  education:     '#6DBF7E',
   business:      '#fb923c',
   entertainment: '#a78bfa',
   sports:        '#38bdf8',

@@ -13,7 +13,7 @@ const inputStyle = {
 };
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
-const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#22c55e', '#f97316', '#f472b6'];
+const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#6DBF7E', '#f97316', '#f472b6'];
 
 function GoalBar({ goal, onUpdate, isCreator }) {
   const pct = Math.min(100, ((goal.current_amount || 0) / goal.target_amount) * 100);
@@ -40,7 +40,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {isComplete && (
-            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.2)', color: '#6DBF7E', border: '1px solid rgba(34,197,94,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               ✓ Complete!
             </span>
           )}
@@ -69,7 +69,7 @@ function GoalBar({ goal, onUpdate, isCreator }) {
             initial={{ width: 0 }}
             animate={{ width: `${pct}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
-            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#22c55e' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
+            style={{ height: '100%', borderRadius: 99, position: 'relative', overflow: 'hidden', background: isComplete ? '#6DBF7E' : `linear-gradient(90deg, ${goal.color || '#d4af37'}88, ${goal.color || '#d4af37'})` }}
           >
             {/* Shimmer */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)', animation: 'pulse 2s infinite' }} />

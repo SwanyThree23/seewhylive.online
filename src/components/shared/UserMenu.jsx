@@ -152,7 +152,7 @@ export default function UserMenu({ user, isAdmin }) {
             <div style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }} />
             <button
               onClick={handleLogout}
-              style={{ ...menuItemStyle, color:'#ef4444', marginBottom:4 }}
+              style={{ ...menuItemStyle, color:'#C0392B', marginBottom:4 }}
               onMouseEnter={e => e.currentTarget.style.background='rgba(239,68,68,0.1)'}
               onMouseLeave={e => e.currentTarget.style.background='transparent'}
             >

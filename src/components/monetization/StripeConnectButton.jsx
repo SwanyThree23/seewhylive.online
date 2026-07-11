@@ -76,7 +76,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
   const isConnected = payout?.stripe_connected;
 
   const cardStyle = {
-    border: `2px solid ${isConnected ? '#22c55e' : '#e2e8f0'}`,
+    border: `2px solid ${isConnected ? '#6DBF7E' : '#e2e8f0'}`,
     borderRadius: 12,
     background: 'rgba(13,6,24,0.95)',
     color: '#fff',
@@ -91,7 +91,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
           <CreditCard style={{ width: 20, height: 20 }} />
           <span style={{ fontWeight: 900, fontSize: 16 }}>Stripe Connect</span>
           {isConnected
-            ? <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)', marginLeft: 'auto' }}>Connected</span>
+            ? <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.15)', color: '#6DBF7E', border: '1px solid rgba(34,197,94,0.3)', marginLeft: 'auto' }}>Connected</span>
             : <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(234,179,8,0.1)', color: '#f97316', border: '1px solid rgba(249,115,22,0.3)', marginLeft: 'auto' }}>Not Connected</span>}
         </div>
       </div>
@@ -140,9 +140,9 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
               </div>
             </div>
             <ul style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#22c55e' }} /> Bronze: $1/mo · Silver: $5/mo · Gold: $15/mo</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#22c55e' }} /> 90% creator revenue split on all transactions</li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#22c55e' }} /> Weekly automatic payouts to your bank</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> Bronze: $1/mo · Silver: $5/mo · Gold: $15/mo</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> 90% creator revenue split on all transactions</li>
+              <li style={{ display: 'flex', alignItems: 'center', gap: 8 }}><DollarSign style={{ width: 12, height: 12, color: '#6DBF7E' }} /> Weekly automatic payouts to your bank</li>
             </ul>
             <button
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 14px', background: '#635bff', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: (connectMutation.isPending || connecting) ? 0.7 : 1 }}
