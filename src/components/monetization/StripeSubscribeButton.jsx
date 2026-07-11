@@ -19,41 +19,30 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
       return;
     }
     setLoading(tier.id);
+    try {
+      const sub = await base44.entities.ViewerSubscription.create({
+        viewer_id: currentUserId,
+        creator_id: creatorId,
+        tier: tier.id,
+        price_usd: tier.price,
+        status: 'pending',
+        started_at: new Date().toISOString(),
+      });
 
-    const sub = await base44.entities.ViewerSubscription.create({
-      viewer_id: currentUserId,
-      creator_id: creatorId,
-      tier: tier.id,
-      price_usd: tier.price,
-      status: 'pending',
-      started_at: new Date().toISOString(),
-    });
+      const sessionId = `cs_${Date.now()}_${sub.id.slice(0, 8)}`;
+      await base44.entities.ViewerSubscription.update(sub.id, {
+        stripe_checkout_session_id: sessionId,
+      });
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Generate a mock Stripe Checkout session response JSON for a subscription:
-- Customer subscribes to "${tier.label}" tier at $${tier.price}/month
-- Creator: ${creatorName}
-- Subscription record ID: ${sub.id}
-- Return a JSON with: { session_id: "cs_test_xxx", checkout_url: "https://checkout.stripe.com/pay/cs_test_xxx" }
-Only return valid JSON.`,
-      response_json_schema: {
-        type: 'object',
-        properties: {
-          session_id: { type: 'string' },
-          checkout_url: { type: 'string' },
-        },
-      },
-    });
+      await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
 
-    await base44.entities.ViewerSubscription.update(sub.id, {
-      stripe_checkout_session_id: result.session_id,
-    });
-
-    await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
-
-    setLoading(null);
-    setSuccess(tier.id);
-    toast.success(`Subscribed to ${tier.label} tier! 🎉`);
+      setSuccess(tier.id);
+      toast.success(`Subscribed to ${tier.label} tier! 🎉`);
+    } catch {
+      toast.error('Subscription failed. Please try again.');
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (

@@ -67,17 +67,17 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
   const shareTitle = title || 'Join me LIVE on SeeWhy!';
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    toast.success('Link copied!');
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      toast.success('Link copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   const handleShare = (platform) => {
     const shareLink = platform.action(shareUrl, shareTitle);
     if (platform.name === 'Instagram' || platform.name === 'TikTok' || platform.name === 'YouTube') {
-      navigator.clipboard.writeText(shareUrl);
-      toast.success(`Link copied — paste it in ${platform.name}!`);
+      navigator.clipboard.writeText(shareUrl).then(() => toast.success(`Link copied — paste it in ${platform.name}!`)).catch(() => toast.error('Copy failed.'));
     } else {
       window.open(shareLink, '_blank', 'width=600,height=400,noopener,noreferrer');
     }

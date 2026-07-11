@@ -59,9 +59,10 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
   };
 
   const handleCopyUrl = (url) => {
-    navigator.clipboard.writeText(url);
-    setCopied(url);
-    setTimeout(() => setCopied(null), 2000);
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(url);
+      setTimeout(() => setCopied(null), 2000);
+    }).catch(() => {});
   };
 
   return (

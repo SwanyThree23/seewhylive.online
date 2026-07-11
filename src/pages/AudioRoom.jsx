@@ -319,8 +319,8 @@ export default function AudioRoom() {
       base44.entities.WatchPartyMember
         .filter({ party_id: roomId, user_id: user.id, is_active: true })
         .then(ms => ms.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })
-        ));
+          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
+        )).catch(() => {});
     }
     window.history.back();
   }
@@ -516,8 +516,7 @@ export default function AudioRoom() {
               if (navigator.share) {
                 navigator.share({ title: party?.title || 'Audio Room', url: window.location.href }).catch(() => {});
               } else {
-                navigator.clipboard.writeText(window.location.href);
-                toast.success('Link copied!');
+                navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.'));
               }
             }}
             className="w-10 h-10 rounded-full flex items-center justify-center"

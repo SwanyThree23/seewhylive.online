@@ -377,11 +377,13 @@ export default function ControlRoomPage() {
 
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
-    onSuccess: () => qc.invalidateQueries(['cr-rtmp', user?.id]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }),
+    onError: () => toast.error('Action failed.'),
   });
   const reconnectDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
-    onSuccess: () => { qc.invalidateQueries(['cr-rtmp', user?.id]); toast.success('Reconnecting…'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cr-rtmp', user?.id] }); toast.success('Reconnecting…'); },
+    onError: () => toast.error('Action failed.'),
   });
   const goLiveMut = useMutation({
     mutationFn: async () => {
@@ -399,14 +401,26 @@ export default function ControlRoomPage() {
         });
       }
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onError: () => toast.error('Action failed.'),
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cr-room', roomId] });
+      setShowEndModal(false);
+      toast.success('Stream ended.');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended via Control Room`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const latestHealth = healthMetrics[0];
@@ -478,19 +492,42 @@ export default function ControlRoomPage() {
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>
         )}
-        {/* Stream key */}
-        <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
-            {showStreamKey ? streamKey : '●'.repeat(Math.min(streamKey.length, 16))}
-          </span>
-          <button onClick={() => setShowStreamKey(s => !s)}>
-            {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
-          </button>
-          <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }}>
-            <Copy className="w-3 h-3 text-white/40" />
-          </button>
-        </div>
+        {/* Stream key — only show when a real session key exists */}
+        {session?.stream_key && (
+          <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-lg"
+            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              {showStreamKey ? session.stream_key : '●'.repeat(Math.min(session.stream_key.length, 16))}
+            </span>
+            <button onClick={() => setShowStreamKey(s => !s)}>
+              {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(session.stream_key).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }}>
+              <Copy className="w-3 h-3 text-white/40" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Tools Toolbar */}
+      <div className="px-4 md:px-8 py-2 flex items-center gap-2 flex-wrap"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        {[
+          { label: '🎨 Scenes',       page: 'SceneTemplates',       color: 'rgba(212,175,55,0.12)' },
+          { label: '🔔 Alerts',       page: 'StreamAlerts',         color: 'rgba(212,133,74,0.12)' },
+          { label: '🛡️ Guardian AI',  page: 'GuardianAI',           color: 'rgba(192,57,43,0.12)' },
+          { label: '📡 Multi-Stream', page: 'MultiStreamManager',   color: 'rgba(109,191,126,0.1)' },
+          { label: '📊 Analytics',    page: 'AdvancedAnalytics',    color: 'rgba(212,175,55,0.08)' },
+          { label: '📅 Schedule',     page: 'StreamScheduler',      color: 'rgba(107,124,74,0.12)' },
+          { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
+        ].map(t => (
+          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+              {t.label}
+            </button>
+          </Link>
+        ))}
       </div>
 
       {/* ZEGOCLOUD Health Card */}

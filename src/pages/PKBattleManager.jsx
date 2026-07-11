@@ -205,7 +205,7 @@ function WinnerOverlay({ battle, onClose }) {
 
         <div className="flex gap-3">
           <Button
-            onClick={function() { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!'); }}
+            onClick={function() { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.')); }}
             className="flex-1 gap-1.5 text-xs"
             style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.25)' }}
           >
@@ -255,6 +255,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       toast.success('Battle invitation sent!');
       if (onBattleSelect) { onBattleSelect(b); }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   var respondMutation = useMutation({
@@ -263,6 +264,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       qc.invalidateQueries(['pk-battles']);
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleCreate() {
@@ -699,7 +701,7 @@ export default function PKBattleManager() {
       qc.invalidateQueries(['pk-battles']);
       setPendingWinner(Object.assign({}, currentBattle, { winner_id: winnerId, winner_name: winnerName, status: 'ended' }));
       setShowWinner(true);
-    });
+    }).catch(function() { toast.error('Failed to end battle. Please try again.'); });
   }, [currentBattle && currentBattle.id, currentBattle && currentBattle.status]);
 
   // Start a battle (host control)
@@ -710,7 +712,8 @@ export default function PKBattleManager() {
         started_at: new Date().toISOString(),
       });
     },
-    onSuccess: function() { qc.invalidateQueries(['pk-battles']); toast.success('Battle started!'); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); toast.success('Battle started!'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   function handleBattleSelect(b) {

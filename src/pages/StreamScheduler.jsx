@@ -83,15 +83,30 @@ export default function StreamScheduler() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setForm(blankForm); toast.success('Stream scheduled!'); },
+    onSuccess: (created) => {
+      qc.invalidateQueries({ queryKey: ['scheduled-streams'] });
+      setShowForm(false);
+      setForm(blankForm);
+      toast.success('Stream scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled: ${created?.title || 'Stream'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onError: () => toast.error('Action failed.'),
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); toast.success('Stream cancelled'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const year = calendarDate.getFullYear();
@@ -140,8 +155,7 @@ export default function StreamScheduler() {
 
   const shareStream = (s) => {
     const text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
-    navigator.clipboard.writeText(text);
-    toast.success('Announcement copied!');
+    navigator.clipboard.writeText(text).then(() => toast.success('Announcement copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const getCountdown = (dateStr) => {

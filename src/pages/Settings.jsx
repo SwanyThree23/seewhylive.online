@@ -121,6 +121,7 @@ export default function SettingsPage() {
       toast.success('Profile saved!');
       queryClient.invalidateQueries(['currentUser']);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const savePreferencesMutation = useMutation({
@@ -132,6 +133,7 @@ export default function SettingsPage() {
       toast.success('Preferences saved!');
       queryClient.invalidateQueries(['userPreferences']);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   async function handleDeleteAccount() {

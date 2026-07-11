@@ -192,11 +192,13 @@ function useSyncEngine({ party, isController, onTimeSync }) {
 
   const pushState = useCallback(async (playerState) => {
     if (!isController || !party?.id) return;
-    await base44.entities.WatchParty.update(party.id, {
-      playback_state: playerState.playing ? 'playing' : 'paused',
-      current_time: playerState.currentTime,
-      updated_at_ms: Date.now(),
-    });
+    try {
+      await base44.entities.WatchParty.update(party.id, {
+        playback_state: playerState.playing ? 'playing' : 'paused',
+        current_time: playerState.currentTime,
+        updated_at_ms: Date.now(),
+      });
+    } catch {}
   }, [isController, party?.id]);
 
   useEffect(() => {
@@ -616,29 +618,34 @@ export default function BroadcastStudio() {
   // Auto-join as member
   useEffect(() => {
     if (!party || !user) return;
+    let mounted = true;
     (async () => {
-      const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
-      if (!existing.length) {
-        await base44.entities.WatchPartyMember.create({
-          party_id: party.id,
-          user_id: user.id,
-          user_name: user.full_name || user.email,
-          joined_at: new Date().toISOString(),
-          is_active: true,
-          role: party.host_id === user.id ? 'host' : 'audience',
-          is_audio_enabled: true,
-          is_video_enabled: true,
-        });
-        qc.invalidateQueries(['broadcast-members', party.id]);
-      }
+      try {
+        const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+        if (!mounted) return;
+        if (!existing.length) {
+          await base44.entities.WatchPartyMember.create({
+            party_id: party.id,
+            user_id: user.id,
+            user_name: user.full_name || user.email,
+            joined_at: new Date().toISOString(),
+            is_active: true,
+            role: party.host_id === user.id ? 'host' : 'audience',
+            is_audio_enabled: true,
+            is_video_enabled: true,
+          });
+          if (mounted) qc.invalidateQueries({ queryKey: ['broadcast-members', party.id] });
+        }
+      } catch {}
     })();
+    return () => { mounted = false; };
   }, [party?.id, user?.id]);
 
   // Leave on unmount
   useEffect(() => () => {
     if (!party?.id || !user?.id) return;
     base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
-      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })));
+      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {}))).catch(() => {});
   }, [party?.id, user?.id]);
 
   const createMut = useMutation({
@@ -662,11 +669,23 @@ export default function BroadcastStudio() {
       setStudioMode(mode);
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const endMut = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Broadcast ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Broadcast ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Stream ended`,
+        }).catch(() => {});
+      }
+      setSearchParams({});
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────
@@ -733,45 +752,58 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   };
 
   const promoteCoHost = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
-    toast.success(`${member.user_name} promoted to co-host`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
+      toast.success(`${member.user_name} promoted to co-host`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to promote member.'); }
   };
 
   const promoteSpeaker = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
-    toast.success(`${member.user_name} added to panel`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
+      toast.success(`${member.user_name} added to panel`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to add to panel.'); }
   };
 
   const demoteToAudience = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to update member role.'); }
   };
 
   const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Invite link copied!');
-    setLinkCopied(true);
-    setTimeout(() => setLinkCopied(false), 2000);
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      toast.success('Invite link copied!');
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   const kickMember = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
-    toast.success(`${member.user_name} removed from broadcast`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
+      toast.success(`${member.user_name} removed from broadcast`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to remove member.'); }
   };
 
   const sendRaiseHand = async () => {
     if (!partyId || !user?.id) return;
-    await base44.entities.Message.create({
-      room_id: partyId,
-      user_id: user.id,
-      user_name: user.full_name || user.email,
-      content: JSON.stringify({ action: 'raise-hand', userId: user.id, userName: user.full_name || user.email }),
-      type: 'system',
-    });
-    toast.success('✋ Hand raised — waiting for host');
+    try {
+      await base44.entities.Message.create({
+        room_id: partyId,
+        user_id: user.id,
+        user_name: user.full_name || user.email,
+        content: JSON.stringify({ action: 'raise-hand', userId: user.id, userName: user.full_name || user.email }),
+        type: 'system',
+      });
+      toast.success('✋ Hand raised — waiting for host');
+    } catch {
+      toast.error('Failed to raise hand.');
+    }
   };
 
   const dismissRaisedHand = (userId) => {
@@ -890,7 +922,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }).then(() => {
                     qc.invalidateQueries(['broadcast-party', partyId]);
                     setStudioMode('watch');
-                  });
+                  }).catch(() => toast.error('Failed to update video.'));
                 }}
               />
             )}
@@ -1462,7 +1494,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         qc.invalidateQueries(['broadcast-party', partyId]);
                         setStudioMode('watch');
                         toast.success('Video updated!');
-                      });
+                      }).catch(() => toast.error('Failed to update video.'));
                     }}
                   />
                 </div>
@@ -1870,7 +1902,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <code className="text-[11px] break-all" style={{ color: 'rgba(255,255,255,0.3)' }}>
                     {`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`}
                   </code>
-                  <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`); }}
+                  <button onClick={() => { navigator.clipboard.writeText(`<iframe src="${window.location.href}" width="100%" height="600" frameborder="0" allow="camera;microphone"></iframe>`).catch(() => {}); }}
                     className="mt-1.5 text-[11px] px-2 py-0.5 rounded"
                     style={{ background: 'rgba(212,175,55,0.08)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     Copy Embed

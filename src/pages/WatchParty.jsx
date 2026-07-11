@@ -209,11 +209,13 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
 
   const pushState = useCallback(async (playerState) => {
     if (!isHost || !party?.id) return;
-    await base44.entities.WatchParty.update(party.id, {
-      playback_state: playerState.playing ? 'playing' : 'paused',
-      current_time: playerState.currentTime,
-      updated_at_ms: Date.now(),
-    });
+    try {
+      await base44.entities.WatchParty.update(party.id, {
+        playback_state: playerState.playing ? 'playing' : 'paused',
+        current_time: playerState.currentTime,
+        updated_at_ms: Date.now(),
+      });
+    } catch {}
   }, [isHost, party?.id]);
 
   useEffect(() => {
@@ -575,21 +577,27 @@ export default function WatchPartyPage() {
 
   useEffect(() => {
     if (!party || !user) return;
+    let mounted = true;
     const join = async () => {
-      const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
-      if (existing.length === 0) {
-        await base44.entities.WatchPartyMember.create({
-          party_id: party.id,
-          user_id: user.id,
-          user_name: user.full_name || user.email,
-          joined_at: new Date().toISOString(),
-          is_active: true,
-        });
-        await base44.entities.WatchParty.update(party.id, { participant_count: members.length + 1 });
-        qc.invalidateQueries(['watchparty-members', party.id]);
-      }
+      try {
+        const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+        if (!mounted) return;
+        if (existing.length === 0) {
+          await base44.entities.WatchPartyMember.create({
+            party_id: party.id,
+            user_id: user.id,
+            user_name: user.full_name || user.email,
+            joined_at: new Date().toISOString(),
+            is_active: true,
+          });
+          if (!mounted) return;
+          await base44.entities.WatchParty.update(party.id, { participant_count: members.length + 1 });
+          if (mounted) qc.invalidateQueries({ queryKey: ['watchparty-members', party.id] });
+        }
+      } catch {}
     };
     join();
+    return () => { mounted = false; };
   }, [party?.id, user?.id]);
 
   useEffect(() => {
@@ -597,8 +605,8 @@ export default function WatchPartyPage() {
       if (!party || !user) return;
       base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
         .then(members => members.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })
-        ));
+          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
+        )).catch(() => {});
     };
   }, [party?.id, user?.id]);
 
@@ -669,25 +677,37 @@ export default function WatchPartyPage() {
 
   const endPartyMutation = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => { toast.success('Watch party ended'); window.location.href = window.location.pathname; },
+    onSuccess: () => {
+      toast.success('Watch party ended');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_ended',
+          title: `Ended watch party: ${party?.title || 'Watch Party'}`,
+        }).catch(() => {});
+      }
+      setSearchParams({});
+    },
+    onError: () => toast.error('Failed to end watch party.'),
   });
 
   const copyInvite = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success('Invite link copied!');
+    navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const changeVideo = async (source) => {
     if (!isHost || !party?.id) return;
-    await base44.entities.WatchParty.update(party.id, {
-      video_url: source.url,
-      video_type: source.type === 'youtube' ? 'youtube' : 'direct',
-      current_time: 0,
-      playback_state: 'paused',
-      updated_at_ms: Date.now(),
-    });
-    qc.invalidateQueries(['watchparty', partyId]);
-    toast.success('Video changed!');
+    try {
+      await base44.entities.WatchParty.update(party.id, {
+        video_url: source.url,
+        video_type: source.type === 'youtube' ? 'youtube' : 'direct',
+        current_time: 0,
+        playback_state: 'paused',
+        updated_at_ms: Date.now(),
+      });
+      qc.invalidateQueries({ queryKey: ['watchparty', partyId] });
+      toast.success('Video changed!');
+    } catch { toast.error('Failed to change video.'); }
   };
 
   var handlePip = function() {
@@ -1194,7 +1214,7 @@ export default function WatchPartyPage() {
                 currentUser={user}
                 onPlayVideo={(url) => {
                   if (isHost && party?.id) {
-                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() });
+                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {});
                   }
                 }}
               />
@@ -1249,7 +1269,7 @@ export default function WatchPartyPage() {
                       playback_state: type === 'play' ? 'playing' : type === 'pause' ? 'paused' : undefined,
                       current_time: payload?.time,
                       updated_at_ms: Date.now(),
-                    });
+                    }).catch(() => {});
                   }
                 }}
                 syncEvent={party ? { type: party.playback_state === 'playing' ? 'play' : 'pause', payload: { time: party.current_time }, ts: party.updated_at_ms } : null}

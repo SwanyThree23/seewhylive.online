@@ -46,13 +46,17 @@ export default function CollaborativeWhiteboard({ roomId }) {
   }, [roomId]);
 
   const saveElementMutation = useMutation({
-    mutationFn: (elementData) => base44.entities.WhiteboardData.create({
-      room_id: roomId,
-      user_id: user.id,
-      element_type: tool,
-      data: elementData,
-      order: elements.length,
-    }),
+    mutationFn: (elementData) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      return base44.entities.WhiteboardData.create({
+        room_id: roomId,
+        user_id: user.id,
+        element_type: tool,
+        data: elementData,
+        order: elements.length,
+      });
+    },
+    onError: () => toast.error('Failed to save drawing. Please try again.'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['whiteboard', roomId] });
     },
@@ -63,6 +67,7 @@ export default function CollaborativeWhiteboard({ roomId }) {
       const items = await base44.entities.WhiteboardData.filter({ room_id: roomId });
       await Promise.all(items.map(item => base44.entities.WhiteboardData.delete(item.id)));
     },
+    onError: () => toast.error('Failed to clear whiteboard. Please try again.'),
     onSuccess: () => {
       setElements([]);
       clearCanvas();

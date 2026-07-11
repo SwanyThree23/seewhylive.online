@@ -111,17 +111,32 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamerGoal.create(data),
-    onSuccess: () => { qc.invalidateQueries(['streamer-goals']); setShowForm(false); toast.success('Goal created!'); },
+    onSuccess: (goal) => {
+      qc.invalidateQueries({ queryKey: ['streamer-goals'] });
+      setShowForm(false);
+      toast.success('Goal created!');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created stream goal: ${goal?.title || 'Goal'}`,
+          amount: goal?.target_amount,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, amount }) => base44.entities.StreamerGoal.update(id, { current_amount: amount }),
-    onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['streamer-goals'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.StreamerGoal.delete(id),
-    onSuccess: () => qc.invalidateQueries(['streamer-goals']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['streamer-goals'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleCreate = () => {

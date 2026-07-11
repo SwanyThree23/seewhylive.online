@@ -206,6 +206,7 @@ export default function HybridStreamRoom() {
     onSuccess: () => {
       window.location.href = '/Home';
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (isLoading) {

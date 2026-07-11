@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Heart, MessageCircle, Pin } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -38,7 +39,8 @@ export default function DiscussionFeed({ communityId }) {
         content,
       });
     },
-    onSuccess: () => {
+    onError: () => toast.error('Failed to post. Please try again.'),
+    onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions', communityId] });
       setNewPost('');
     },

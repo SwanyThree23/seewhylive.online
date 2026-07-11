@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Palette, Save, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -43,6 +44,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['overlayLayouts', creatorId] });
     },
+    onError: () => toast.error('Failed to save theme.'),
   });
 
   return (

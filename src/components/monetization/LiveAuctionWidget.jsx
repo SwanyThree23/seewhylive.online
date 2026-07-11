@@ -248,11 +248,13 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.LiveAuction.create(data),
-    onSuccess: () => { qc.invalidateQueries(['live-auctions']); setShowCreate(false); toast.success('Auction started!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['live-auctions'] }); setShowCreate(false); toast.success('Auction started!'); },
+    onError: () => toast.error('Failed to start auction.'),
   });
 
   const bidMutation = useMutation({
     mutationFn: async ({ auction, amount, isBuyout }) => {
+      if (!currentUser?.id) throw new Error('Not authenticated');
       // Create bid record
       await base44.entities.AuctionBid.create({
         auction_id: auction.id,
@@ -290,7 +292,8 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         final_amount: auction?.current_bid,
       });
     },
-    onSuccess: () => qc.invalidateQueries(['live-auctions']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['live-auctions'] }),
+    onError: () => toast.error('Failed to end auction.'),
   });
 
   const handleCreate = () => {

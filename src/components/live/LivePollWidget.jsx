@@ -37,7 +37,20 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
       status: 'active',
       total_votes: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(['livepoll', roomId]); toast.success('Poll created!'); onCreated?.(); onClose(); },
+    onSuccess: (poll) => {
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
+      toast.success('Poll created!');
+      onCreated?.();
+      onClose();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Created live poll: ${poll?.question || form.question || 'Poll'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Failed to create poll.'),
   });
 
   const addOpt = () => setForm(f => ({ ...f, options: [...f.options, ''] }));
@@ -111,12 +124,14 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
         total_votes: (poll.total_votes || 0) + 1,
       });
     },
-    onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
+    onError: () => toast.error('Failed to record vote.'),
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
-    onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['livepoll', roomId] }),
+    onError: () => toast.error('Failed to end poll.'),
   });
 
   const pinResultsMut = useMutation({
@@ -136,6 +151,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
       });
       toast.success('Results pinned to chat');
     },
+    onError: () => toast.error('Failed to pin results.'),
   });
 
   const activePoll = polls[0];

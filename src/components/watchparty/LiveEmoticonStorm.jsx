@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +47,7 @@ export default function LiveEmoticonStorm({ partyId, currentUser }) {
       emoji,
       reaction_at: new Date().toISOString(),
     }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const fireReaction = useCallback((emoji) => {

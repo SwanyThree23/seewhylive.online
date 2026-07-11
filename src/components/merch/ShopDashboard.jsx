@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -36,17 +37,32 @@ export default function ShopDashboard({ creatorId }) {
       price_usd: parseFloat(newItem.price_usd) || 0,
       is_active: true, times_sold: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(["shop-items", creatorId]); setShowAdd(false); setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] }); },
+    onSuccess: (item) => {
+      qc.invalidateQueries({ queryKey: ["shop-items", creatorId] });
+      setShowAdd(false);
+      setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Added merch item: ${item?.name || 'New Item'}`,
+          amount: item?.price_usd,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   var toggleMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
-    onSuccess: () => qc.invalidateQueries(["shop-items", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-items", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
-    onSuccess: () => qc.invalidateQueries(["merch-orders", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["merch-orders", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var totalSold = items.reduce((s, i) => s + (i.times_sold || 0), 0);

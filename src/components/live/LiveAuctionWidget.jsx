@@ -29,7 +29,7 @@ function Countdown({ endsAt, onExpired }) {
     tick();
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
-  }, [endsAt]);
+  }, [endsAt, onExpired]);
 
   const h = Math.floor(remaining / 3600);
   const m = Math.floor((remaining % 3600) / 60);
@@ -68,7 +68,7 @@ function BidHistoryDrawer({ auctionId, open, onClose }) {
             </div>
             <div className="p-3 space-y-1">
               {bids.map((bid, i) => (
-                <div key={bid.id || i} className="flex items-center justify-between px-3 py-2 rounded-lg"
+                <div key={bid.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
                   style={{ background: i === 0 ? `rgba(212,175,55,0.08)` : 'rgba(255,255,255,0.03)', border: i === 0 ? `1px solid rgba(212,175,55,0.2)` : '1px solid rgba(255,255,255,0.05)' }}>
                   <div>
                     <span className="text-[10px] font-bold text-white">{bid.bidder_name}</span>
@@ -135,7 +135,8 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         bid_count: (auction.bid_count || 0) + 1,
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', auction.room_id]); toast.success('You won the auction!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] }); toast.success('You won the auction!'); },
+    onError: () => toast.error('Buyout failed. Please try again.'),
   });
 
   return (
@@ -229,10 +230,12 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         {isHost && auction.status === 'active' && (
           <div className="flex gap-1.5">
             <button onClick={async () => {
-              const newEnd = new Date(new Date(auction.ends_at).getTime() + 5 * 60 * 1000);
-              await base44.entities.LiveAuction.update(auction.id, { ends_at: newEnd.toISOString() });
-              qc.invalidateQueries(['auctions', auction.room_id]);
-              toast.success('+5 min added');
+              try {
+                const newEnd = new Date(new Date(auction.ends_at).getTime() + 5 * 60 * 1000);
+                await base44.entities.LiveAuction.update(auction.id, { ends_at: newEnd.toISOString() });
+                qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] });
+                toast.success('+5 min added');
+              } catch { toast.error('Failed to extend auction.'); }
             }}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
               style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -272,7 +275,8 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
         status: 'active',
       });
     },
-    onSuccess: () => { qc.invalidateQueries(['auctions', roomId]); onClose(); toast.success('Auction launched!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['auctions', roomId] }); onClose(); toast.success('Auction launched!'); },
+    onError: () => toast.error('Failed to launch auction.'),
   });
 
   const types = ['item','one_on_one','shoutout','custom_art','coaching','experience'];
@@ -315,7 +319,7 @@ function AuctionWinnerBanner({ auction, onDismiss }) {
   useEffect(() => {
     const t = setTimeout(onDismiss, 8000);
     return () => clearTimeout(t);
-  }, []);
+  }, [onDismiss]);
 
   return (
     <motion.div initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -80, opacity: 0 }}
@@ -354,8 +358,10 @@ export default function LiveAuctionWidget({ roomId, currentUser, isHost }) {
 
   const active = auctions.filter(a => ['active', 'ending_soon'].includes(a.status));
   const endAuction = async (auction) => {
-    await base44.entities.LiveAuction.update(auction.id, { status: 'ended', final_amount: auction.current_bid || 0, winner_id: auction.current_winner_id, winner_name: auction.current_winner_name });
-    qc.invalidateQueries(['auctions', roomId]);
+    try {
+      await base44.entities.LiveAuction.update(auction.id, { status: 'ended', final_amount: auction.current_bid || 0, winner_id: auction.current_winner_id, winner_name: auction.current_winner_name });
+      qc.invalidateQueries({ queryKey: ['auctions', roomId] });
+    } catch { toast.error('Failed to end auction. Please try again.'); }
   };
 
   if (active.length === 0 && !isHost) return null;

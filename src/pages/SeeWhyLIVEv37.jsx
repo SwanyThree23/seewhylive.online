@@ -4,6 +4,10 @@
  * Earth-tone palette only — no forbidden colors
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { isSafeUrl } from '@/lib/security';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -331,7 +335,7 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const [tributes, setTributes] = useState(() => JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'));
+  const [tributes, setTributes] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'); } catch { return []; } });
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
   const [era, setEra] = useState('');
@@ -395,7 +399,7 @@ function PodcastPanel() {
   const [toastMsg, setToastMsg] = useState('');
   const [nlmUrl, setNlmUrl] = useState('');
   const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'));
+  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'); } catch { return []; } });
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
@@ -504,7 +508,7 @@ function PodcastPanel() {
                   <div style={{ color: C.textM, fontSize: 10, marginTop: 4 }}>{s.notebookId.slice(0, 12)}… {s.artifactId ? `/ ${s.artifactId.slice(0, 8)}…` : ''}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <a href={s.url} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
+                  <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
                   <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); sessionStorage.setItem('v37_nlm_sources', JSON.stringify(u)); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>

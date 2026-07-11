@@ -32,6 +32,7 @@ export default function PollCard({ poll }) {
 
   const voteMutation = useMutation({
     mutationFn: async () => {
+      if (!user?.id) throw new Error('Not authenticated');
       // Create vote record
       await base44.entities.PollVote.create({
         poll_id: poll.id,
@@ -50,6 +51,7 @@ export default function PollCard({ poll }) {
         total_votes: poll.total_votes + 1,
       });
     },
+    onError: () => toast.error('Failed to submit vote. Please try again.'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       queryClient.invalidateQueries({ queryKey: ['poll-vote'] });

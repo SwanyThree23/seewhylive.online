@@ -151,6 +151,7 @@ export default function ProfilePage() {
       queryClient.invalidateQueries(['currentUser']);
       setIsEditing(false);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {
@@ -164,11 +165,16 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingAvatar(true);
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    await base44.auth.updateMe({ avatar_url: file_url });
-    queryClient.invalidateQueries(['currentUser']);
-    toast.success('Avatar updated!');
-    setUploadingAvatar(false);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      await base44.auth.updateMe({ avatar_url: file_url });
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast.success('Avatar updated!');
+    } catch {
+      toast.error('Failed to upload avatar.');
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   /* ── loading ── */
@@ -185,8 +191,7 @@ export default function ProfilePage() {
     if (navigator.share) {
       navigator.share({ title: user?.full_name, url: window.location.href }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success('Profile link copied!');
+      navigator.clipboard.writeText(window.location.href).then(() => toast.success('Profile link copied!')).catch(() => toast.error('Copy failed.'));
     }
   };
 

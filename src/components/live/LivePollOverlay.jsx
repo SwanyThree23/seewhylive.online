@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart2, Trophy, Clock, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -99,7 +100,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
         setActivePoll(polls[0]);
         setIsVisible(true);
       }
-    });
+    }).catch(() => {});
 
     // Load my existing vote
     if (currentUser?.id) {
@@ -108,7 +109,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
           const v = votes.find(v => v.poll_id === activePoll.id);
           if (v) setMyVote(v.option_index);
         }
-      });
+      }).catch(() => {});
     }
 
     return unsub;
@@ -120,7 +121,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
     base44.entities.PollVote.filter({ poll_id: activePoll.id, user_id: currentUser.id }, '-created_date', 1).then(votes => {
       if (votes.length > 0) setMyVote(votes[0].option_index);
       else setMyVote(null);
-    });
+    }).catch(() => {});
   }, [activePoll?.id, currentUser?.id]);
 
   const voteMut = useMutation({
@@ -142,6 +143,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
       });
       setMyVote(optionIndex);
     },
+    onError: () => toast.error('Failed to submit vote.'),
   });
 
   const positionClass = {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 
@@ -37,6 +38,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
       return base44.entities.AuraAICoHost.create({ room_id: roomId, host_id: hostId, ...data });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey:['aura', roomId] }),
+    onError: () => toast.error('Failed to update settings.'),
   });
 
   const upd = (data) => mut.mutate(data);
@@ -50,22 +52,28 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
   const askAura = async () => {
     if (!askInput.trim()) return;
     setLoading(true);
-    const res = await base44.integrations.Core.InvokeLLM({ prompt: `You are Aura, a ${aura?.persona_style||'hype'} AI co-host. Answer this host question concisely: "${askInput}"`, model:'claude_sonnet_4_6' });
-    setAiResponse(res);
-    upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count: (aura?.interventions_count||0)+1 });
-    setLoading(false);
-    setAskInput('');
-    setShowAsk(false);
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({ prompt: `You are Aura, a ${aura?.persona_style||'hype'} AI co-host. Answer this host question concisely: "${askInput}"`, model:'claude_sonnet_4_6' });
+      setAiResponse(res);
+      upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count: (aura?.interventions_count||0)+1 });
+      setAskInput('');
+      setShowAsk(false);
+    } catch { toast.error('Aura is unavailable right now.'); }
+    finally { setLoading(false); }
   };
 
   const hypeRoom = async () => {
-    const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura, a ${aura?.persona_style||'hype'} live stream AI co-host. Generate ONE short hype line (max 15 words) to energize the room right now!` });
-    upd({ last_message: res, last_message_at: new Date().toISOString(), hype_moments:(aura?.hype_moments||0)+1, interventions_count:(aura?.interventions_count||0)+1 });
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura, a ${aura?.persona_style||'hype'} live stream AI co-host. Generate ONE short hype line (max 15 words) to energize the room right now!` });
+      upd({ last_message: res, last_message_at: new Date().toISOString(), hype_moments:(aura?.hype_moments||0)+1, interventions_count:(aura?.interventions_count||0)+1 });
+    } catch { toast.error('Aura is unavailable right now.'); }
   };
 
   const summarize = async () => {
-    const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura. Give a 2-sentence summary of what's happening in this live stream room: "${roomId}". Make it exciting and relevant.`, model:'claude_sonnet_4_6' });
-    upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count:(aura?.interventions_count||0)+1 });
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura. Give a 2-sentence summary of what's happening in this live stream room: "${roomId}". Make it exciting and relevant.`, model:'claude_sonnet_4_6' });
+      upd({ last_message: res, last_message_at: new Date().toISOString(), interventions_count:(aura?.interventions_count||0)+1 });
+    } catch { toast.error('Aura is unavailable right now.'); }
   };
 
   const statusColor = { active:'#6DBF7E', idle:'#666', paused:'#FFB800', ended:'#ff6666' };

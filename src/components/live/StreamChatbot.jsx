@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 import { Bot, Power, Settings2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const COMMANDS = [
   { trigger: '!uptime', description: 'Show stream uptime' },
@@ -31,6 +32,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
         content,
         message_type: 'cohost',
       }),
+    onError: () => toast.error('Failed to send bot message.'),
   });
 
   const formatUptime = (s) => {
@@ -71,12 +73,14 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
 
       // AI-powered Q&A for questions
       if (content.endsWith('?') && content.length > 10) {
-        const aiReply = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are a helpful live stream chatbot named SeeWhyBot. A viewer asked: "${content}". 
+        try {
+          const aiReply = await base44.integrations.Core.InvokeLLM({
+            prompt: `You are a helpful live stream chatbot named SeeWhyBot. A viewer asked: "${content}".
           Stream context: hosted by ${hostName}, room: "${room?.title}", category: ${room?.category}.
           Give a friendly, concise answer in 1-2 sentences. If you don't know, say so politely.`,
-        });
-        setTimeout(() => sendBotMessage.mutate(`💬 ${aiReply}`), 1000);
+          });
+          setTimeout(() => sendBotMessage.mutate(`💬 ${aiReply}`), 1000);
+        } catch {}
       }
     });
     return unsub;

@@ -271,6 +271,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       qc.invalidateQueries(['pk-battles']);
       onBattleUpdate?.();
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleAutoEnd = useCallback(() => {
@@ -283,7 +284,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       qc.invalidateQueries(['pk-battles']);
       setEnded(true);
       setShowWinner(true);
-    });
+    }).catch(() => toast.error('Failed to end battle.'));
   }, [battle, creatorScore, challengerScore]);
 
   const sendGift = (side, gift) => {

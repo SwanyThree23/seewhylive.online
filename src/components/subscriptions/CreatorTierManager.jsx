@@ -29,7 +29,8 @@ export default function CreatorTierManager({ creatorId }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['creatorTiers', creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['creatorTiers', creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
@@ -38,6 +39,7 @@ export default function CreatorTierManager({ creatorId }) {
       toast.success('Tier deleted');
       qc.invalidateQueries(['creatorTiers', creatorId]);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const monthlyRevenue = subscriptions.reduce((sum, s) => sum + (s.price || 0), 0);

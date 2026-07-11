@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, Video, Clock, Lock, Globe, Tag, Play, Share2, X, CheckCircle } from 'lucide-react';
@@ -31,6 +31,9 @@ const MAX_DURATION_SECONDS = 600; // 10 minutes
 export default function VideoPost() {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
+  const videoUrlRef = useRef(null);
+
+  useEffect(() => () => { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); }, []);
 
   const [step, setStep] = useState('upload'); // upload | details | published
   const [selectedFile, setSelectedFile] = useState(null);
@@ -70,7 +73,9 @@ export default function VideoPost() {
       return;
     }
 
+    if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current);
     const url = URL.createObjectURL(file);
+    videoUrlRef.current = url;
     setSelectedFile(file);
     setVideoUrl(url);
     setForm(prev => ({ ...prev, title: file.name.replace(/\.[^/.]+$/, '') }));

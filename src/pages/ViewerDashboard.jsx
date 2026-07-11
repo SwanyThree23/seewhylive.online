@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
   Radio, Heart, Bell, Clock, DollarSign, Scissors,
@@ -116,7 +117,8 @@ export default function ViewerDashboard() {
 
   const markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
-    onSuccess: () => qc.invalidateQueries(['notifications']),
+    onError: () => toast.error('Failed to mark notifications as read.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -37,7 +38,29 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
         is_displayed: false,
       }),
     ]),
-    onSuccess: () => { setSuccess(true); qc.invalidateQueries(["tip-alerts", roomId]); },
+    onSuccess: () => {
+      setSuccess(true);
+      qc.invalidateQueries({ queryKey: ["tip-alerts", roomId] });
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'tip_sent',
+            title: `Tipped $${finalAmount.toFixed(2)}`,
+            amount: finalAmount,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'tip_received',
+            title: `Received $${finalAmount.toFixed(2)} tip from ${currentUser.full_name || 'viewer'}`,
+            amount: finalAmount,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
+    },
+    onError: () => toast.error('Tip failed. Please try again.'),
   });
 
   if (success) return (
@@ -138,6 +161,7 @@ export function SubscribeButton({ creatorId, roomId, currentUser }) {
       viewer_id: currentUser?.id, creator_id: creatorId, room_id: roomId,
       tier_name: tier.name, price_usd: tier.price_usd, status: "active",
     }),
+    onError: () => toast.error('Subscription failed. Please try again.'),
     onSuccess: () => { setSuccess(true); setTimeout(() => { setOpen(false); setSuccess(false); }, 2000); },
   });
 

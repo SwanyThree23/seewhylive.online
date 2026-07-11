@@ -22,8 +22,9 @@ export default function AIStreamSummary({ roomId, isHost, streamTitle, viewerCou
     const mins = Math.floor(elapsed / 60);
     const chatSnippet = recentMessages.slice(0, 20).map(m => `${m.user_name}: ${m.content}`).join('\n');
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a live stream summarizer. Summarize this stream session in 3-4 punchy sentences suitable for social sharing.
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a live stream summarizer. Summarize this stream session in 3-4 punchy sentences suitable for social sharing.
 
 Stream: "${streamTitle || 'Live Stream'}"
 Duration: ${mins} minutes live
@@ -32,18 +33,22 @@ Recent chat (sample):
 ${chatSnippet || '(no messages yet)'}
 
 Write an engaging summary that captures the energy of the stream. Include highlights if chat shows them. End with a hype call-to-action. Keep it under 100 words.`,
-    });
-
-    setSummary(result);
-    setLoading(false);
+      });
+      setSummary(result);
+    } catch {
+      toast.error('Failed to generate summary.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copyToClipboard = () => {
     if (!summary) return;
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    toast.success('Summary copied!');
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(summary).then(() => {
+      setCopied(true);
+      toast.success('Summary copied!');
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   return (

@@ -69,11 +69,13 @@ export default function ContentCalendarPage() {
       setFormData({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
       toast.success('Content scheduled!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.ScheduledContent.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scheduled-content'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const filteredContent = scheduledContent.filter(item => {

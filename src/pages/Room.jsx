@@ -180,6 +180,11 @@ export default function RoomPage() {
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   // Real local camera/mic stream
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
@@ -196,11 +201,6 @@ export default function RoomPage() {
     announceJoinRef.current?.(user.id);
   }, [localStream, user?.id]);
   useEffect(() => { return () => leaveRoomRef.current?.(); }, []);
-
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
 
   const { data: room, isLoading } = useQuery({
     queryKey: ['room', roomId],
@@ -311,6 +311,7 @@ export default function RoomPage() {
         }
       } catch (_) {}
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const leaveRoomMutation = useMutation({
@@ -322,12 +323,14 @@ export default function RoomPage() {
     onSuccess: () => {
       window.location.href = createPageUrl('Home');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateParticipantMutation = useMutation({
     mutationFn: async ({ id, updates }) => {
       return await base44.entities.Participant.update(id, updates);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const startRecordingMutation = useMutation({
@@ -349,6 +352,7 @@ export default function RoomPage() {
       setIsRecording(true);
       toast.success('Recording started');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const stopRecordingMutation = useMutation({
@@ -366,6 +370,7 @@ export default function RoomPage() {
       recordingRef.current = null;
       toast.success('Recording saved to Past Streams');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const raiseHandMutation = useMutation({
@@ -378,6 +383,7 @@ export default function RoomPage() {
     onSuccess: () => {
       toast.success(currentParticipant.hand_raised ? 'Hand lowered' : 'Hand raised!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {
@@ -470,10 +476,14 @@ export default function RoomPage() {
               </button>
               <button
                 onClick={async () => {
-                  if (isRecording) await stopRecordingMutation.mutateAsync();
-                  await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
-                  toast.success('Stream ended');
-                  queryClient.invalidateQueries(['room', roomId]);
+                  try {
+                    if (isRecording) await stopRecordingMutation.mutateAsync();
+                    await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
+                    toast.success('Stream ended');
+                    queryClient.invalidateQueries({ queryKey: ['room', roomId] });
+                  } catch {
+                    toast.error('Failed to end stream.');
+                  }
                 }}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>

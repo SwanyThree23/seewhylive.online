@@ -68,8 +68,44 @@ export default function CommunitySettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Community.update(communityId, data),
-    onSuccess: () => { toast.success('Community updated!'); queryClient.invalidateQueries(['community']); },
+    onSuccess: () => {
+      toast.success('Community settings saved!');
+      queryClient.invalidateQueries({ queryKey: ['community-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['search-communities'] });
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Updated community settings: ${community?.name || 'Community'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Failed to save community settings.'),
   });
+
+  const handleSave = () => {
+    if (!name.trim()) { toast.error('Community name is required'); return; }
+    updateMutation.mutate({ name, description, rules, is_public: isPublic, require_approval: requireApproval, category, tags, banner_url: bannerUrl, avatar_url: avatarUrl });
+  };
+
+  const toggleTag = (tag) => {
+    setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const copyInviteLink = () => {
+    const link = `${window.location.origin}${createPageUrl('Community')}?id=${communityId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+      toast.success('Invite link copied!');
+    }).catch(() => toast.error('Copy failed.'));
+  };
+
+  if (!communityId) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+      <p className="text-white/40" style={T}>No community selected</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>

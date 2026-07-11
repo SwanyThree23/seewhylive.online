@@ -29,6 +29,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const sendGiftMutation = useMutation({
     mutationFn: async (gift) => {
+      if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
         type: 'virtual_good',
@@ -45,6 +46,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
         times_sent: gift.times_sent + 1,
       });
     },
+    onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success(`Sent ${gift.name}! 🎁`);

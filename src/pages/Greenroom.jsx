@@ -205,6 +205,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 
   const cancelMut = useMutation({
     mutationFn: () => base44.entities.GreenroomWaitlist.update(waitlistEntry.id, { status: 'cancelled' }),
+    onError: () => toast.error('Failed to cancel. Please try again.'),
     onSuccess: () => onCancel(),
   });
 
@@ -437,7 +438,8 @@ export default function GreenroomPage() {
       }
       return `/LiveRoom?id=${roomId}`;
     },
-    onSuccess: (path) => { window.location.href = path; },
+    onSuccess: (path) => { navigate(path); },
+    onError: () => toast.error('Something went wrong — please try again'),
   });
 
   // ─── Waiting Room State ───────────────────────────────────────────────────

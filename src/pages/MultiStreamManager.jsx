@@ -84,17 +84,32 @@ export default function MultiStreamManager() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onSuccess: (dest) => {
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+      setShowAddForm(false);
+      setNewLabel('');
+      toast.success('Destination added');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
-    onSuccess: () => qc.invalidateQueries(['rtmp-destinations']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); toast.success('Destination removed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const testConnection = async (dest) => {
@@ -123,20 +138,28 @@ export default function MultiStreamManager() {
       return;
     }
     toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
-    // Set all to connecting
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
-    // Simulate MediaMTX RTMP push delay then set live
-    await new Promise(r => setTimeout(r, 2000));
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
-    toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
-    qc.invalidateQueries(['rtmp-destinations']);
+    try {
+      // Set all to connecting
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
+      // Simulate MediaMTX RTMP push delay then set live
+      await new Promise(r => setTimeout(r, 2000));
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
+      toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to start fanout. Please try again.', { id: 'fanout' });
+    }
   };
 
   const stopAllFanout = async () => {
     const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
-    await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
-    toast.success('All streams stopped');
-    qc.invalidateQueries(['rtmp-destinations']);
+    try {
+      await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
+      toast.success('All streams stopped');
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to stop streams.');
+    }
   };
 
   const addDestination = () => {
