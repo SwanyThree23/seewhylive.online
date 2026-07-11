@@ -10,8 +10,8 @@ const EVENTS = [
   { id: 'viewer.join', label: 'Viewer Joined', color: 'text-blue-400' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
-  { id: 'subscription.new', label: 'New Subscriber', color: 'text-purple-400' },
-  { id: 'goal.reached', label: 'Goal Reached', color: 'text-emerald-400' },
+  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#7B5DA6]' },
+  { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#6DBF7E]' },
   { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-orange-400' },
 ];
 

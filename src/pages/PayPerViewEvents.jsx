@@ -66,7 +66,7 @@ export default function PayPerViewEventsPage() {
           <div className="text-center">
             <Lock className="w-16 h-16 mx-auto mb-4" />
             <h1 className="text-5xl font-bold mb-4">Premium Events</h1>
-            <p className="text-xl text-purple-100 mb-8">
+            <p className="text-xl text-[#7B5DA6] mb-8">
               Exclusive access to special rooms and premium content
             </p>
             <div className="flex gap-4 justify-center">

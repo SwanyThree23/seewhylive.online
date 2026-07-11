@@ -117,12 +117,12 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
               {/* Background music toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Music className="w-3.5 h-3.5 text-purple-400" />
+                  <Music className="w-3.5 h-3.5 text-[#7B5DA6]" />
                   <span className="text-xs text-white">Background Music</span>
                 </div>
                 <button
                   onClick={() => setBgMusic(!bgMusic)}
-                  className={`w-9 h-5 rounded-full transition-all relative ${bgMusic ? 'bg-purple-600' : 'bg-white/10'}`}
+                  className={`w-9 h-5 rounded-full transition-all relative ${bgMusic ? 'bg-[#7B5DA6]' : 'bg-white/10'}`}
                 >
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${bgMusic ? 'left-4' : 'left-0.5'}`} />
                 </button>

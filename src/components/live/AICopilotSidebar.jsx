@@ -130,7 +130,7 @@ export default function AICopilotSidebar({ roomId, isHost, viewerCount }) {
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(201,168,76,0.3))' }}>
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <Sparkles className="w-3.5 h-3.5 text-[#7B5DA6]" />
           </div>
           <span className="text-xs font-black uppercase" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#D4AF37', letterSpacing: '0.08em' }}>
             AI Copilot

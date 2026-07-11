@@ -106,7 +106,7 @@ Generate highlight segments with:
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-500" />
+          <Sparkles className="w-5 h-5 text-[#7B5DA6]" />
           AI Highlight Generator
         </CardTitle>
       </CardHeader>

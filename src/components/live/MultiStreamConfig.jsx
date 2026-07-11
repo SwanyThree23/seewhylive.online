@@ -110,7 +110,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-[#d4af37]" />
             <span className="text-sm font-semibold text-white">Stream Destinations</span>
-            <span className="text-xs px-2 py-1 rounded-full bg-purple-900/30 text-purple-300">
+            <span className="text-xs px-2 py-1 rounded-full bg-[#7B5DA6]/30 text-[#7B5DA6]">
               {destinations.length}
             </span>
           </div>

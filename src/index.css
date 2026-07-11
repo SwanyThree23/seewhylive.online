@@ -107,19 +107,19 @@
   .font-mono-sw { font-family: var(--font-mono); }
   .font-heading { font-family: var(--font-heading); }
 
-  .text-gold { color: #d4af37; }
-  .text-blood { color: #FF1564; }
-  .text-cyan-sw { color: #00F5FF; }
-  .text-emerald-sw { color: #00FF88; }
-  .text-purple-sw { color: #8B5CF6; }
+  .text-gold { color: #D4AF37; }
+  .text-blood { color: #C0392B; }
+  .text-cyan-sw { color: #4A8A7A; }
+  .text-emerald-sw { color: #6DBF7E; }
+  .text-purple-sw { color: #7B5DA6; }
 
   .bg-abyss { background-color: #0B0B18; }
   .bg-bunker { background-color: #07070F; }
-  .bg-gold { background-color: #d4af37; }
-  .bg-blood { background-color: #FF1564; }
+  .bg-gold { background-color: #D4AF37; }
+  .bg-blood { background-color: #C0392B; }
 
   .border-gold { border-color: rgba(212,175,55,0.2); }
-  .border-blood { border-color: rgba(255,21,100,0.3); }
+  .border-blood { border-color: rgba(192,57,43,0.3); }
 
   .glow-gold { box-shadow: 0 0 20px rgba(212,175,55,0.25); }
   .glow-blood { box-shadow: 0 0 20px rgba(255,21,100,0.3); }

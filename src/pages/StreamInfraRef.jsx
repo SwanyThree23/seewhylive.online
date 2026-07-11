@@ -44,7 +44,7 @@ const Code = ({ children, copy = true }) => {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-emerald-300 my-1">
+    <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-[#6DBF7E] my-1">
       <span className="flex-1 break-all">{children}</span>
       {copy && (
         <button onClick={handleCopy} className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white text-[10px] transition-all ml-2 shrink-0">
@@ -136,7 +136,7 @@ function RTMPTab() {
           <div key={p.name} className="flex items-center gap-3 py-2 border-b border-white/5">
             <Badge type={p.badge}>{p.badge}</Badge>
             <span className="text-white/70 text-xs w-32 shrink-0">{p.name}</span>
-            <span className="text-emerald-300/70 text-xs font-mono break-all">{p.url}</span>
+            <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
         ))}
         <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
@@ -235,7 +235,7 @@ function WebhooksTab() {
         ].map((ev) => (
           <div key={ev} className="flex items-center gap-3 py-1.5 border-b border-white/5">
             <Badge type="live">wired</Badge>
-            <span className="text-emerald-300 text-xs font-mono">{ev}</span>
+            <span className="text-[#6DBF7E] text-xs font-mono">{ev}</span>
           </div>
         ))}
         <div className="mt-3 bg-black/30 rounded p-3 text-xs text-white/50 font-mono">
@@ -461,7 +461,7 @@ function SupabaseTab() {
             </div>
             <div className="flex flex-wrap gap-1">
               {t.cols.map((c) => (
-                <span key={c} className="text-emerald-300/70 text-[10px] font-mono bg-emerald-900/20 px-1.5 py-0.5 rounded">{c}</span>
+                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/20 px-1.5 py-0.5 rounded">{c}</span>
               ))}
             </div>
           </div>
@@ -545,7 +545,7 @@ function EnvTab() {
         <div className="text-xs text-white/30 mb-3">Files: /var/www/seewhylive/.env · ecosystem.config.js (env block)</div>
         {envVars.map((v) => (
           <div key={v.key} className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
-            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-yellow-300" : v.status === "critical" ? "text-red-300" : "text-emerald-300"}`}>
+            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-yellow-300" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
               {v.key}
             </span>
             <div className="flex items-center gap-2 flex-wrap justify-end">

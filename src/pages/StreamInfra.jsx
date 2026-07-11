@@ -99,7 +99,7 @@ function CopyField({ label, value, mono }) {
           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
           style={{ background: copied ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#6DBF7E60' : '#d4af3740') }}
         >
-          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-yellow-400" />}
+          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-yellow-400" />}
         </button>
       </div>
     </div>
@@ -527,7 +527,7 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(255,21,100,0.2)') }}
               >
-                {micOn ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4 text-red-400" />}
+                {micOn ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
                 <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#C0392B' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
               </button>
               <button
@@ -535,7 +535,7 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: videoOn ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.08)') }}
               >
-                {videoOn ? <Video className="w-4 h-4 text-cyan-400" /> : <VideoOff className="w-4 h-4 text-white/40" />}
+                {videoOn ? <Video className="w-4 h-4 text-[#4A8A7A]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
                 <span className="text-xs" style={{ color: videoOn ? '#C9A84C' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
               </button>
               <button
@@ -750,7 +750,7 @@ export default function StreamInfra() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
               <span className="text-xs font-bold" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>ALL SYSTEMS OPERATIONAL</span>
             </div>
           </div>

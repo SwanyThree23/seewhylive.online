@@ -211,13 +211,13 @@ export default function FeaturedContent() {
         </div>
 
         {/* Memoirs Studio Pro Link */}
-        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-pink-700/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-pink-900/50 to-rose-900/50 border border-[#C0392B]/30 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="text-4xl">📖</span>
             <div>
               <h3 className="text-white font-bold text-lg">Memoirs Studio Pro</h3>
               <p className="text-white/50 text-sm">Professional streaming studio by Memoirs of a Shy Girl</p>
-              <p className="text-[11px] text-pink-300/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
+              <p className="text-[11px] text-[#C0392B]/60 mt-0.5">memoirs-studio-pro-d081db27.base44.app</p>
             </div>
           </div>
           <a href="https://memoirs-studio-pro-d081db27.base44.app" target="_blank" rel="noopener noreferrer">
