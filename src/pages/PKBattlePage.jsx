@@ -29,6 +29,11 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -765,6 +770,11 @@ export default function PKBattlePage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

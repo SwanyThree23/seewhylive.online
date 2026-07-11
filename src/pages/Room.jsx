@@ -106,6 +106,11 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -723,6 +728,11 @@ export default function RoomPage() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
+      {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
+      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
+      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

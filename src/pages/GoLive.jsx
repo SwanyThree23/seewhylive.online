@@ -89,6 +89,11 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -854,6 +859,11 @@ export default function GoLive() {
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {partyId && <BattleMode roomId={partyId} isHost={true} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
+      {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

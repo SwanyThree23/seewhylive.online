@@ -92,6 +92,11 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -528,6 +533,11 @@ export default function ControlRoomPage() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
