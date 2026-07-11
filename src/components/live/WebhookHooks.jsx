@@ -39,21 +39,17 @@ export default function WebhookHooks({ roomId, isHost }) {
 
   const testHook = async (hook) => {
     setTesting(hook.id);
-    const payload = {
-      event: 'test',
-      roomId,
-      timestamp: new Date().toISOString(),
-      data: { message: 'SeeWhy LIVE webhook test', source: 'seewhy.live' },
-    };
-    // We fire the test call via a message (simulated — real impl needs backend function)
-    await base44.entities.Message.create({
-      room_id: roomId,
-      user_id: 'bot',
-      user_name: '🤖 SeeWhyBot',
-      content: `🔌 Webhook test fired to: ${hook.url.slice(0, 40)}...`,
-      message_type: 'cohost',
-    });
-    setTimeout(() => { setTesting(null); toast.success('Test event sent to webhook'); }, 800);
+    try {
+      // We fire the test call via a message (simulated — real impl needs backend function)
+      await base44.entities.Message.create({
+        room_id: roomId,
+        user_id: 'bot',
+        user_name: '🤖 SeeWhyBot',
+        content: `🔌 Webhook test fired to: ${hook.url.slice(0, 40)}...`,
+        message_type: 'cohost',
+      });
+      setTimeout(() => { setTesting(null); toast.success('Test event sent to webhook'); }, 800);
+    } catch { setTesting(null); toast.error('Webhook test failed.'); }
   };
 
   const toggleEvent = (ev) => setSelectedEvents(p =>
