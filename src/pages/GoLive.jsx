@@ -137,6 +137,15 @@ import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import GlobalSearch from '../components/shared/GlobalSearch';
+import AudioPanel from '../components/live/AudioPanel';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -902,6 +911,15 @@ export default function GoLive() {
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
+      {<EvmuxWebSource isActive={false} onClose={() => {}} />}
+      {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
+      {<StripeConnectButton creatorId={user?.id} />}
+      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
+      {<SubscriptionTiers communityId={null} userId={user?.id} />}
+      {null && <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />}
+      {partyId && user?.id && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
+      {partyId && <PaymentMethodSelector creatorId={user?.id} roomId={partyId} onPaymentComplete={() => {}} />}
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}

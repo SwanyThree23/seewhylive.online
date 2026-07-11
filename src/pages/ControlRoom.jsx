@@ -140,6 +140,15 @@ import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import GlobalSearch from '../components/shared/GlobalSearch';
+import AudioPanel from '../components/live/AudioPanel';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -576,6 +585,15 @@ export default function ControlRoomPage() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
+      {<EvmuxWebSource isActive={false} onClose={() => {}} />}
+      {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
+      {<StripeConnectButton creatorId={user?.id} />}
+      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
+      {<SubscriptionTiers communityId={null} userId={user?.id} />}
+      {room && <WatchPartyAnalytics party={room} members={[]} pollCount={0} reactionCount={0} />}
+      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
+      {roomId && <PaymentMethodSelector creatorId={user?.id} roomId={roomId} onPaymentComplete={() => {}} />}
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
