@@ -17,6 +17,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -374,6 +375,7 @@ export default function AnalyticsPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

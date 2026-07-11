@@ -22,6 +22,11 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import GridLines from '../components/home/GridLines';
+import NebulaBg from '../components/home/NebulaBg';
+import StarField from '../components/home/StarField';
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -633,6 +638,11 @@ export default function Home() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      <GridLines />
+      <NebulaBg />
+      <StarField count={80} />
+      <QuickActionPanel isOpen={false} onClose={() => {}} />
+      <OnboardingFlow isOpen={false} onClose={() => {}} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

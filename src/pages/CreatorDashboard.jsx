@@ -24,6 +24,12 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
@@ -325,6 +331,12 @@ export default function CreatorDashboardPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <RewardShopEditor creatorId={user?.id} />
+      <QuickActionPanel isOpen={false} onClose={() => {}} />
+      <OnboardingFlow isOpen={false} onClose={() => {}} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

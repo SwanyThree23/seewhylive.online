@@ -25,6 +25,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -172,6 +173,7 @@ export default function PublicProfile() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
