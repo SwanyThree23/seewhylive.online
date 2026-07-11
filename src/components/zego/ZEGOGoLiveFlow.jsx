@@ -59,7 +59,7 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
         }).catch(() => {});
       }
     },
-    onError: () => { setConnecting(false); },
+    onError: () => { setConnecting(false); toast.error('Failed to start stream. Please try again.'); },
   });
 
   const handleGoLive = () => {

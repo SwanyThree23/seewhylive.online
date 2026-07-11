@@ -65,7 +65,7 @@ export default function StripeConnectButton({ creatorId }) {
       }
       if (url && isSafeUrl(url)) window.location.href = url;
     },
-    onError: () => setConnecting(false),
+    onError: () => { setConnecting(false); toast.error('Failed to connect Stripe. Please try again.'); },
   });
 
   const disconnectMutation = useMutation({
