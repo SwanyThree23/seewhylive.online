@@ -202,8 +202,9 @@ export default function AudioRoom() {
       base44.entities.WatchPartyMember
         .filter({ party_id: roomId, user_id: user.id, is_active: true })
         .then(ms => ms.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() })
-        ));
+          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
+        ))
+        .catch(() => {});
     }
     window.history.back();
   }

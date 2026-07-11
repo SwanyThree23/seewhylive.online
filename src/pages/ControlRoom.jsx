@@ -239,18 +239,17 @@ export default function ControlRoomPage() {
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
     onSuccess: () => qc.invalidateQueries(['cr-rtmp', user?.id]),
+    onError: () => { toast.error('Failed to toggle destination. Please try again.'); },
   });
   const reconnectDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
     onSuccess: () => { qc.invalidateQueries(['cr-rtmp', user?.id]); toast.success('Reconnecting…'); },
+    onError: () => { toast.error('Failed to reconnect destination. Please try again.'); },
   });
   const goLiveMut = useMutation({
     mutationFn: async () => {
-      // Update room & session status
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
       if (session?.id) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
-      
-      // Distribute to enabled RTMP destinations
       const enabledDests = destinations.filter(d => d.is_enabled);
       if (enabledDests.length > 0 && user?.id) {
         await base44.functions.invoke('distributeStreamToRTMP', {
@@ -261,6 +260,7 @@ export default function ControlRoomPage() {
       }
     },
     onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); toast.success('Stream is now LIVE!'); },
+    onError: () => { toast.error('Failed to go live. Please try again.'); },
   });
   const endStreamMut = useMutation({
     mutationFn: async () => {
@@ -268,6 +268,7 @@ export default function ControlRoomPage() {
       if (session?.id) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
     onSuccess: () => { qc.invalidateQueries(['cr-room', roomId]); setShowEndModal(false); toast.success('Stream ended.'); },
+    onError: () => { toast.error('Failed to end stream. Please try again.'); },
   });
 
   const latestHealth = healthMetrics[0];
