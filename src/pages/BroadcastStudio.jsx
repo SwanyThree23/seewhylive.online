@@ -869,7 +869,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }).then(() => {
                     qc.invalidateQueries(['broadcast-party', partyId]);
                     setStudioMode('watch');
-                  });
+                  }).catch(() => {});
                 }}
               />
             )}
@@ -1483,7 +1483,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                         qc.invalidateQueries(['broadcast-party', partyId]);
                         setStudioMode('watch');
                         toast.success('Video updated!');
-                      });
+                      }).catch(() => {});
                     }}
                   />
                 </div>

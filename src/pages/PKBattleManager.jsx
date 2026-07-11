@@ -840,7 +840,7 @@ export default function PKBattleManager() {
       qc.invalidateQueries(['pk-battles']);
       setPendingWinner(Object.assign({}, currentBattle, { winner_id: winnerId, winner_name: winnerName, status: 'ended' }));
       setShowWinner(true);
-    });
+    }).catch(function() {});
   }, [currentBattle && currentBattle.id, currentBattle && currentBattle.status]);
 
   // Start a battle (host control)
