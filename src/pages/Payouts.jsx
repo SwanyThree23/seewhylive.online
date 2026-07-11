@@ -147,7 +147,7 @@ export default function PayoutsPage() {
       setStripeId('');
       setBank4('');
     },
-    onError: () => setConnecting(false),
+    onError: () => { setConnecting(false); toast.error('Failed to connect Stripe. Please try again.'); },
   });
 
   const disconnectMutation = useMutation({

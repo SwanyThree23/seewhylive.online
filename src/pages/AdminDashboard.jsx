@@ -341,7 +341,7 @@ export default function AdminDashboard() {
                     {report.status === 'pending' && (
                       <button className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] shrink-0"
                         style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer', ...T }}
-                        onClick={async () => { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries(['adminReports']); toast.success('Report resolved'); }}>
+                        onClick={async () => { try { await base44.entities.Report.update(report.id, { status: 'resolved', reviewed_by: user?.id, reviewed_at: new Date().toISOString() }); qc.invalidateQueries(['adminReports']); toast.success('Report resolved'); } catch { toast.error('Failed to resolve report. Please try again.'); } }}>
                         Resolve
                       </button>
                     )}

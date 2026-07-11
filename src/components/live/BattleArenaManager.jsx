@@ -130,7 +130,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
       base44.entities.BattleArena
         ? base44.entities.BattleArena.create(payload)
         : Promise.resolve(payload),
-    onError: () => {},
+    onError: () => { toast.error('Failed to save battle. Please try again.'); },
   });
 
   // ── Cleanup on unmount ───────────────────────────────────────────────────────

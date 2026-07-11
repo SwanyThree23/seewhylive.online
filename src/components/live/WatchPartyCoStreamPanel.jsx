@@ -166,7 +166,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
       base44.entities.WatchPartySync
         ? base44.entities.WatchPartySync.create(payload)
         : Promise.resolve(payload),
-    onError: () => {},
+    onError: () => { toast.error('Sync failed. Please try again.'); },
   });
 
   // ── Queue actions ────────────────────────────────────────────────────────────
