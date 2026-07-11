@@ -59,7 +59,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#FF1564', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -189,9 +189,9 @@ export default function DiscoverPage() {
               Discover
             </h1>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FF1564] animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
               <span className="text-sm font-bold text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {liveRooms.length} <span style={{ color: '#FF1564' }}>LIVE</span>
+                {liveRooms.length} <span style={{ color: '#C0392B' }}>LIVE</span>
               </span>
             </div>
           </div>
@@ -367,12 +367,12 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#FF8C00'];
+  const rankColors = ['#FFB800', '#5A5A7A', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#FF1564]/30 transition-all cursor-pointer"
+        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
         style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
       >
         {room.thumbnail_url && (
@@ -380,12 +380,12 @@ function TrendingCard({ room, rank }) {
         )}
         {!room.thumbnail_url && (
           <div className="w-full h-28 bg-gradient-to-br from-[#1a0010] to-[#0B0B18] flex items-center justify-center">
-            <Radio className="w-10 h-10 text-[#FF1564]/30" />
+            <Radio className="w-10 h-10 text-[#C0392B]/30" />
           </div>
         )}
         <div className="absolute top-2 left-2 flex items-center gap-1.5">
           <span className="text-xs font-black font-mono" style={{ color: rankColors[rank - 1] }}>#{rank}</span>
-          <span style={{ background: '#FF1564', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, display: 'flex', alignItems: 'center', gap: 4, border: 'none', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE
           </span>
         </div>

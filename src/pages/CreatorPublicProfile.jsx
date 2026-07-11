@@ -31,7 +31,7 @@ var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#00E5FF",
+  cyan: "#4A8A7A",
   volt: "#D4AF37",
   purple: "#BF5FFF",
   gray: "#888",
@@ -41,7 +41,7 @@ var G = {
 var BADGE_COLORS = {
   super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
   top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#00E5FF", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
+  raid_master: { color: "#4A8A7A", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
   poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
   chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
   watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
@@ -51,7 +51,7 @@ var BADGE_COLORS = {
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#00E5FF",
+  rare: "#4A8A7A",
   epic: "#BF5FFF",
   legendary: "#FFD700",
 };
@@ -405,7 +405,7 @@ export default function CreatorPublicProfile() {
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           <StatCard icon={Users} label="FOLLOWERS" value={followerCount} color={G.cyan} />
           <StatCard icon={Video} label="STREAMS" value={totalStreams} color={G.gold} />
-          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#30D158" />
+          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#6DBF7E" />
         </div>
       </div>
 
@@ -529,7 +529,7 @@ export default function CreatorPublicProfile() {
                     {t.payment_method?.toUpperCase()}
                   </div>
                 </div>
-                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#30D158" }}>
+                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
                   ${t.creator_payout?.toFixed(2) || "—"}
                 </div>
               </div>

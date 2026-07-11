@@ -103,7 +103,7 @@ export default function PollManager() {
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
                       className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
-                      <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                      <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
                 </div>
@@ -166,7 +166,7 @@ export default function PollManager() {
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
                   className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
-                  <Trash2 className="w-4 h-4" style={{ color: '#FF1564' }} />
+                  <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>
               <p className="text-xs mb-3" style={{ color: 'rgba(255,255,255,0.5)' }}>{template.question}</p>

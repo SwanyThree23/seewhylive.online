@@ -102,6 +102,11 @@ const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegra
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
 const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
+const SeeWhyLIVEv36            = lazy(() => import('./pages/SeeWhyLIVEv36'));
+const SeeWhyLIVEv17            = lazy(() => import('./pages/SeeWhyLIVEv17'));
+const BackPage                 = lazy(() => import('./pages/BackPage'));
+const CoverPage                = lazy(() => import('./pages/CoverPage'));
+const Login                    = lazy(() => import('./pages/Login'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -197,6 +202,11 @@ export const PAGES = {
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
     "SeeWhyLIVEv37": SeeWhyLIVEv37,
+    "SeeWhyLIVEv36": SeeWhyLIVEv36,
+    "SeeWhyLIVEv17": SeeWhyLIVEv17,
+    "BackPage": BackPage,
+    "CoverPage": CoverPage,
+    "Login": Login,
 }
 
 export const pagesConfig = {

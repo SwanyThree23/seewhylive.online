@@ -28,16 +28,16 @@ const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
 const VIOLATION_STYLES = {
-  harassment:    { color: '#FF6B35', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
+  harassment:    { color: '#D4854A', bg: 'rgba(255,107,53,0.12)',  border: 'rgba(255,107,53,0.3)' },
   spam:          { color: '#FFD700', bg: 'rgba(255,215,0,0.12)',   border: 'rgba(255,215,0,0.3)' },
-  hate_speech:   { color: '#FF1564', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
-  inappropriate: { color: '#FF8C00', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
+  hate_speech:   { color: '#C0392B', bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.3)' },
+  inappropriate: { color: '#D4854A', bg: 'rgba(255,140,0,0.12)',   border: 'rgba(255,140,0,0.3)' },
   safe:          { color: '#6DBF7E', bg: 'rgba(109,191,126,0.08)',   border: 'rgba(109,191,126,0.2)' },
 };
 
 const PRIORITY_STYLES = {
-  urgent: { color: '#FF1564', label: 'URGENT' },
-  high:   { color: '#FF6B35', label: 'HIGH' },
+  urgent: { color: '#C0392B', label: 'URGENT' },
+  high:   { color: '#D4854A', label: 'HIGH' },
   medium: { color: GOLD,       label: 'MEDIUM' },
   low:    { color: 'rgba(255,255,255,0.3)', label: 'LOW' },
 };
@@ -100,7 +100,7 @@ function FlaggedItem({ mod, onAction, user }) {
       <div className="flex gap-1.5 flex-wrap">
         {[
           { label: 'Hide', action: 'hidden', color: GOLD },
-          { label: 'Delete', action: 'deleted', color: '#FF4444' },
+          { label: 'Delete', action: 'deleted', color: '#C0392B' },
           { label: 'Warn', action: 'warned', color: '#FFD700' },
           { label: '✓ Safe', action: 'none_safe', color: '#6DBF7E' },
         ].map(({ label, action, color }) => (
@@ -155,7 +155,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ))}
         <button onClick={() => onQuickAction(entry, 'ban')}
           className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-          style={{ background: 'rgba(255,21,100,0.1)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(255,21,100,0.1)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           Ban
         </button>
       </div>
@@ -185,7 +185,7 @@ function ReportItem({ report, onAction, user }) {
         {[
           { label: 'Investigate', action: 'investigating', color: GOLD },
           { label: 'Dismiss', action: 'dismissed', color: 'rgba(255,255,255,0.4)' },
-          { label: 'Escalate', action: 'escalated', color: '#FF4444' },
+          { label: 'Escalate', action: 'escalated', color: '#C0392B' },
         ].map(({ label, action, color }) => (
           <button key={action} onClick={() => onAction(report, action)}
             className="flex-1 py-1 rounded text-[11px] font-black uppercase"
@@ -286,7 +286,7 @@ export default function ModerationDashboardPage() {
       {/* Stats row */}
       <div className="px-4 md:px-8 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          <StatCard icon={Flag} label="Flags Today" value={todayFlags.length} color="#FF6B35" />
+          <StatCard icon={Flag} label="Flags Today" value={todayFlags.length} color="#D4854A" />
           <StatCard icon={Zap} label="Actions Taken" value={moderations.filter(m => m.action_taken && m.action_taken !== 'none').length} color={GOLD} />
           <StatCard icon={Eye} label="Auto-Detected" value={autoDetected.length} color="#D4AF37" />
           <StatCard icon={TrendingUp} label="Human Overrides" value={humanOverrides.length} color="#C9A84C" />
@@ -297,13 +297,13 @@ export default function ModerationDashboardPage() {
             <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AI Confidence Level
             </span>
-            <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#FF4444' : avgConf > 0.4 ? GOLD : '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            <span className="text-[10px] font-black" style={{ color: avgConf > 0.7 ? '#C0392B' : avgConf > 0.4 ? GOLD : '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {Math.round(avgConf * 100)}%
             </span>
           </div>
           <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
             <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #FF4444, #FF1564)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
+              style={{ width: `${avgConf * 100}%`, background: avgConf > 0.7 ? 'linear-gradient(90deg, #C0392B, #C0392B)' : avgConf > 0.4 ? 'linear-gradient(90deg, #FFD700, #FF6B00)' : 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }} />
           </div>
         </div>
       </div>

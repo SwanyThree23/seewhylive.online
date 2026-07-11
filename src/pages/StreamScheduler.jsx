@@ -39,8 +39,8 @@ const DURATIONS = [
 ];
 const CAT_COLORS = {
   gaming: '#a78bfa', music: '#f472b6', education: '#60a5fa', talk: '#34d399',
-  fitness: '#fb923c', cooking: '#fbbf24', art: '#f87171', tech: '#00d4ff',
-  irl: '#22c55e', other: '#d4af37',
+  fitness: '#fb923c', cooking: '#fbbf24', art: '#C0392B', tech: '#00d4ff',
+  irl: '#6DBF7E', other: '#d4af37',
 };
 
 function getDaysInMonth(year, month) {

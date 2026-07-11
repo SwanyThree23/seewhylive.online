@@ -445,7 +445,7 @@ export default function RoomPage() {
           </h1>
           {room.status === 'live' && (
             <span className="shrink-0 px-2 py-0.5 rounded-md text-white font-black text-[11px] uppercase animate-pulse"
-              style={{ background: '#FF1564', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+              style={{ background: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
           )}
           <span className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] uppercase"
             style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -465,7 +465,7 @@ export default function RoomPage() {
                 onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
                 disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#EF4444' : 'rgba(255,255,255,0.4)' }}>
+                style={{ background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                 {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
               </button>
               <button

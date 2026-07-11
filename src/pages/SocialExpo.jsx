@@ -27,7 +27,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CreatorBridge from '../components/social/CreatorBridge';
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const TEAL    = '#00F5FF';
 const BG      = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -38,7 +38,7 @@ const PLATFORMS = [
   { name: 'Clubhouse', color: '#F4C542', icon: Mic,     desc: 'Live audio rooms & stages' },
   { name: 'Discord',   color: '#5865F2', icon: Users,   desc: 'Community servers & events' },
   { name: 'GoBrunch',  color: '#00B4D8', icon: Globe,   desc: 'Virtual events & networking' },
-  { name: 'Poldit',    color: '#FF6B35', icon: Star,    desc: 'Debate rooms & live polls' },
+  { name: 'Poldit',    color: '#D4854A', icon: Star,    desc: 'Debate rooms & live polls' },
   { name: 'Calibones', color: '#8B5CF6', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
 ];
 
@@ -205,7 +205,7 @@ export default function SocialExpo() {
               { label: 'Weekly Shows', icon: Radio, color: G },
               { label: '$0.99–$4.99 Tickets', icon: Ticket, color: PINK },
               { label: '10% Affiliate', icon: Percent, color: '#8B5CF6' },
-              { label: '90% Creator Split', icon: DollarSign, color: '#22c55e' },
+              { label: '90% Creator Split', icon: DollarSign, color: '#6DBF7E' },
             ].map((s, i) => {
               const Icon = s.icon;
               return (
@@ -336,7 +336,7 @@ export default function SocialExpo() {
                                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                                     padding: '6px', borderRadius: 8, textDecoration: 'none',
                                     background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)',
-                                    color: '#ff4444', fontSize: 11, fontWeight: 700, ...T }}>
+                                    color: '#C0392B', fontSize: 11, fontWeight: 700, ...T }}>
                                   <Play style={{ width: 10, height: 10 }} /> Watch
                                 </a>
                                 <Link to={wpUrl}
@@ -626,11 +626,11 @@ export default function SocialExpo() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(34,197,94,0.18)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Percent style={{ width: 22, height: 22, color: '#22c55e' }} />
+                    <Percent style={{ width: 22, height: 22, color: '#6DBF7E' }} />
                   </div>
                   <div>
                     <p style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0, ...T }}>10% Affiliate Program</p>
-                    <p style={{ fontSize: 11, color: '#22c55e', margin: 0, letterSpacing: 2, ...T }}>SOCIAL CONTACT NETWORK</p>
+                    <p style={{ fontSize: 11, color: '#6DBF7E', margin: 0, letterSpacing: 2, ...T }}>SOCIAL CONTACT NETWORK</p>
                   </div>
                 </div>
                 <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', margin: '0 0 18px', lineHeight: 1.65 }}>
@@ -647,7 +647,7 @@ export default function SocialExpo() {
                   ].map((item, i) => (
                     <div key={i} style={{ padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.07)',
                       border: '1px solid rgba(34,197,94,0.18)' }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', margin: '0 0 3px', ...T }}>{item.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#6DBF7E', margin: '0 0 3px', ...T }}>{item.label}</p>
                       <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
                     </div>
                   ))}

@@ -27,7 +27,7 @@ import CreatorBridge from '../components/social/CreatorBridge';
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const TEAL    = '#C9A84C';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 

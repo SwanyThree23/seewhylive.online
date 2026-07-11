@@ -86,7 +86,7 @@ export default function AdvancedAnalyticsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#00ff88' },
-            { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#FF1564' },
+            { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#C0392B' },
             { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#00d4ff' },
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
           ].map(({ label, value, icon: Icon, color }) => (

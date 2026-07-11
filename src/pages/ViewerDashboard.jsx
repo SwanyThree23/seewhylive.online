@@ -177,7 +177,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -202,7 +202,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>

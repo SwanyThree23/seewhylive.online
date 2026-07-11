@@ -24,8 +24,8 @@ const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
-  room_created:        { icon: Radio,        color: '#FF1564' },
-  room_joined:         { icon: Radio,        color: '#FF1564' },
+  room_created:        { icon: Radio,        color: '#C0392B' },
+  room_joined:         { icon: Radio,        color: '#C0392B' },
   community_joined:    { icon: Users,        color: '#C9A84C' },
   subscription:        { icon: Users,        color: '#C9A84C' },
   tip_sent:            { icon: Gift,         color: GOLD      },

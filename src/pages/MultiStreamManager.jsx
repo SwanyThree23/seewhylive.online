@@ -201,7 +201,7 @@ export default function MultiStreamManager() {
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
                   <p className="text-[10px] text-white/40">Total Outbound Bandwidth</p>
-                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#ef4444' : '#22c55e' }}>
+                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#C0392B' : '#6DBF7E' }}>
                     {(totalBitrate / 1000).toFixed(1)} Mbps
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export default function MultiStreamManager() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${Math.min(100, (totalBitrate / recommendedMax) * 100)}%`,
-                      background: totalBitrate > recommendedMax ? '#ef4444' : 'linear-gradient(90deg, #22c55e, #d4af37)',
+                      background: totalBitrate > recommendedMax ? '#C0392B' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
                     }}
                   />
                 </div>

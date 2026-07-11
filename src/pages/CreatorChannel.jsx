@@ -132,7 +132,7 @@ export default function CreatorChannel() {
             {liveRoom ? (
               <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                   <Radio className="w-4 h-4" /> Watch Now
                 </button>
               </Link>
@@ -187,7 +187,7 @@ export default function CreatorChannel() {
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-                      <span className="font-black text-sm uppercase" style={{ color: '#FF1564', ...T }}>LIVE NOW</span>
+                      <span className="font-black text-sm uppercase" style={{ color: '#C0392B', ...T }}>LIVE NOW</span>
                     </div>
                     <h3 className="text-xl font-black text-white" style={T}>{liveRoom.title}</h3>
                     <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>{liveRoom.viewer_count || 0} viewers watching</p>
@@ -196,7 +196,7 @@ export default function CreatorChannel() {
                 <div className="p-4">
                   <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                     <button className="w-full py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2"
-                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                       <Play className="w-4 h-4" /> Join Stream
                     </button>
                   </Link>

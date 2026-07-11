@@ -47,7 +47,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
@@ -270,7 +270,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#22c55e', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -490,7 +490,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                       <>
                         <button
                           onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
                         >
                           Confirm
                         </button>
@@ -507,7 +507,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
                           background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                          color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
                         Remove
@@ -609,7 +609,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                     ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
                     background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
-                    color: alreadyAdded ? '#22c55e' : '#fff',
+                    color: alreadyAdded ? '#6DBF7E' : '#fff',
                     fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
                     transition: 'all 0.15s',
                   }}
@@ -1411,7 +1411,7 @@ export default function PodcastStudio() {
                           onClick={() => deleteEpisode(i)}
                           style={{
                             ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 900,
+                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
                           }}
                         >
                           Confirm
@@ -1433,7 +1433,7 @@ export default function PodcastStudio() {
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
                           background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                          color: '#ef4444', fontSize: 13, fontWeight: 800,
+                          color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >
                         Delete

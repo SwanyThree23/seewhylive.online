@@ -21,7 +21,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#5B7FA6', w: 4, l: 1, pts: 1820 },
   { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
   { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
   { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },

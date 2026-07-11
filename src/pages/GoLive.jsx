@@ -330,7 +330,7 @@ function CameraPreview({ onStreamReady }) {
         }}>
           {micOn
             ? <Mic style={{ width: 14, height: 14, color: GOLD }} />
-            : <MicOff style={{ width: 14, height: 14, color: '#EF4444' }} />}
+            : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
         </button>
       </div>
     </div>

@@ -54,7 +54,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
   if (!user || user.role !== 'admin') return (
     <div className="min-h-screen flex items-center justify-center text-center" style={{ background: BG }}>
       <div>
-        <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#FF1564' }} />
+        <Shield className="w-16 h-16 mx-auto mb-4" style={{ color: '#C0392B' }} />
         <h2 className="text-2xl font-black mb-2 text-white" style={T}>Admin Access Required</h2>
         <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>You don't have permission to view this page.</p>
       </div>
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
   const filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
 
   const roomStatusStyle = (status) => ({
-    live:      { bg: 'rgba(255,21,100,0.12)', border: 'rgba(255,21,100,0.35)', color: '#FF1564' },
+    live:      { bg: 'rgba(255,21,100,0.12)', border: 'rgba(255,21,100,0.35)', color: '#C0392B' },
     scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5" style={{ color: '#FF1564' }} />
+              <Shield className="w-5 h-5" style={{ color: '#C0392B' }} />
               <div>
                 <h1 className="text-xl font-black text-white leading-none" style={T}>Admin Dashboard</h1>
                 <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Platform management & oversight</p>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-black text-xs" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>{value}</span>
-                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#6DBF7E' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#FF1564' }} />}
+                        {ok ? <CheckCircle className="w-3 h-3" style={{ color: '#6DBF7E' }} /> : <AlertTriangle className="w-3 h-3" style={{ color: '#C0392B' }} />}
                       </div>
                     </div>
                   ))}
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
                             className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
-                            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', cursor: 'pointer', ...T }}>
+                            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
                             End
                           </button>
                         )}
@@ -385,8 +385,8 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,68,68,0.15)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🚫</span>
-                <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
-                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#C0392B', ...T }}>IP Bans</span>
+                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
               </div>
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
@@ -395,7 +395,7 @@ export default function AdminDashboard() {
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <button onClick={() => { if(newBanIP.trim()) { setBannedIPs(p => [...p, { ip: newBanIP.trim(), reason: banReason, date: new Date().toISOString() }]); setNewBanIP(''); setBanReason(''); toast.success('IP banned'); }}}
                   className="h-9 px-3 rounded-xl text-xs font-black"
-                  style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
+                  style={{ background: 'rgba(255,68,68,0.15)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
                   Ban IP
                 </button>
               </div>

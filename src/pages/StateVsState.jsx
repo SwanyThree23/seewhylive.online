@@ -22,9 +22,9 @@ const BG2  = '#0D1022';
 const BG3  = '#13182C';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const BLUE  = '#1565C0';
+const BLUE  = '#5B7FA6';
 const RED2  = '#C62828';
-const TEAL  = '#1ABC9C';
+const TEAL  = '#4A8A7A';
 const CYAN  = '#00d4ff';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -762,7 +762,7 @@ export default function StateVsState() {
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <a href="/Leaderboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 12 }} aria-label="Back to Leaderboard">← Leaderboard</a>
       <div style={{
-        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #1565C0 200%)`,
+        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #5B7FA6 200%)`,
         borderRadius: 16,
         padding: '20px 16px',
         marginBottom: 18,

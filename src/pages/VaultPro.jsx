@@ -325,7 +325,7 @@ export default function VaultPro() {
         {/* Error banner */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold"
-            style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+            style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.25)', color: '#C0392B', ...T }}>
             {error}
             <button onClick={() => setError('')} className="ml-3 underline opacity-70">Dismiss</button>
           </div>
@@ -418,7 +418,7 @@ export default function VaultPro() {
                     </div>
                     <button onClick={() => handleRevealKey(key)}
                       className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 shrink-0"
-                      style={{ background: revealedKeys[key.id] ? 'rgba(255,21,100,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#FF1564' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(255,21,100,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
+                      style={{ background: revealedKeys[key.id] ? 'rgba(255,21,100,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(255,21,100,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
                   </div>

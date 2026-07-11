@@ -108,7 +108,7 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#FF1564', Gaming: '#D4AF37', Tech: '#00d4ff',
+    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#00d4ff',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
     Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
@@ -132,12 +132,12 @@ function FanbaseRoomCard({ room }) {
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(255,140,0,0.15)', color: '#D4854A', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
@@ -217,14 +217,14 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#1565C0', page: 'StateVsState' },
+  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#5B7FA6', page: 'StateVsState' },
   { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
   { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
-  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#FF1564', page: 'GuardianAI' },
+  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI' },
   { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
   { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
   { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
-  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#22c55e', page: 'MultiPlatform' },
+  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform' },
 ];
 
 function SpotlightStrip() {

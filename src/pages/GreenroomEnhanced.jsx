@@ -155,7 +155,7 @@ export default function GreenroomEnhanced() {
               <span className="text-sm">🎤</span>
               <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 <motion.div className="h-full rounded-full"
-                  style={{ background: audioLevel > 70 ? '#FF4444' : audioLevel > 40 ? GOLD : GREEN }}
+                  style={{ background: audioLevel > 70 ? '#C0392B' : audioLevel > 40 ? GOLD : GREEN }}
                   animate={{ width: audioLevel + '%' }}
                   transition={{ duration: 0.1 }} />
               </div>

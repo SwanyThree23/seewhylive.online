@@ -23,13 +23,13 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const GOLD = '#D4AF37';
-const PINK = '#FF1564';
+const PINK = '#C0392B';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
   tip:          { icon: Gift,      color: '#D4AF37' },
   subscription: { icon: Users,     color: '#C9A84C' },
-  room_invite:  { icon: Radio,     color: '#FF1564' },
+  room_invite:  { icon: Radio,     color: '#C0392B' },
   challenge:    { icon: Trophy,    color: '#D4AF37' },
   announcement: { icon: Megaphone, color: '#D4AF37' },
   referral:     { icon: Gift,      color: '#6DBF7E' },

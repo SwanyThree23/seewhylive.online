@@ -178,7 +178,7 @@ function StatusBadge({ status }) {
     live:        { label: 'LIVE',        bg: 'rgba(109,191,126,0.12)', color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', pulse: true },
     connecting:  { label: 'CONNECTING',  bg: `rgba(212,175,55,0.12)`, color: GOLD, border: `rgba(212,175,55,0.3)`, spin: true },
     offline:     { label: 'OFFLINE',     bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
-    error:       { label: 'ERROR',       bg: 'rgba(255,50,50,0.12)', color: '#FF4444', border: 'rgba(255,50,50,0.3)', flash: true },
+    error:       { label: 'ERROR',       bg: 'rgba(255,50,50,0.12)', color: '#C0392B', border: 'rgba(255,50,50,0.3)', flash: true },
   }[status] || { label: status?.toUpperCase(), bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' };
 
   return (
@@ -198,14 +198,14 @@ function BitrateSparkline({ data, degraded }) {
   return (
     <ResponsiveContainer width="100%" height={28}>
       <LineChart data={chartData}>
-        <Line type="monotone" dataKey="v" stroke={degraded ? '#FF4444' : GOLD} strokeWidth={1.5} dot={false} />
+        <Line type="monotone" dataKey="v" stroke={degraded ? '#C0392B' : GOLD} strokeWidth={1.5} dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
 }
 
 function StatPill({ label, value, color }) {
-  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#FF4444' : GOLD);
+  const c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#C0392B' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
       style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
@@ -269,13 +269,13 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-[7px] font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>BITRATE</span>
-          <span className="text-[11px] font-bold" style={{ color: bitrateDegraded ? '#FF4444' : GOLD }}>
+          <span className="text-[11px] font-bold" style={{ color: bitrateDegraded ? '#C0392B' : GOLD }}>
             {bitrate.toLocaleString()} / {target.toLocaleString()} kbps
           </span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
           <motion.div className="h-full rounded-full"
-            style={{ background: bitrateDegraded ? '#FF4444' : GOLD }}
+            style={{ background: bitrateDegraded ? '#C0392B' : GOLD }}
             animate={{ width: `${Math.min(100, bitrateRatio * 100)}%` }}
             transition={{ duration: 0.5 }} />
         </div>
@@ -286,9 +286,9 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
 
       {/* Stats */}
       <div className="flex gap-1.5">
-        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#FF4444'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#FF4444'} />
+        <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#C0392B'} />
+        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#C0392B'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#C0392B'} />
       </div>
 
       {/* Force reconnect */}
@@ -415,7 +415,7 @@ export default function ControlRoomPage() {
   const hasError = destinations.some(d => d.status === 'error');
   const hasDegraded = destinations.some(d => d.status !== 'live' && d.is_enabled);
   const overallHealth = hasError ? 'CRITICAL' : hasDegraded ? 'DEGRADED' : 'ALL HEALTHY';
-  const healthColor = overallHealth === 'ALL HEALTHY' ? '#6DBF7E' : overallHealth === 'DEGRADED' ? GOLD : '#FF4444';
+  const healthColor = overallHealth === 'ALL HEALTHY' ? '#6DBF7E' : overallHealth === 'DEGRADED' ? GOLD : '#C0392B';
   const streamKey = session?.stream_key || 'sk-live-XXXXXXXXXXXX';
   const isLive = room?.status === 'live';
 
@@ -448,7 +448,7 @@ export default function ControlRoomPage() {
           ) : (
             <button onClick={() => setShowEndModal(true)}
               className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
-              style={{ background: 'rgba(255,50,50,0.15)', color: '#FF4444', border: '1px solid rgba(255,50,50,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(255,50,50,0.15)', color: '#C0392B', border: '1px solid rgba(255,50,50,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <StopCircle className="w-4 h-4" /> END STREAM
             </button>
           )}
@@ -473,7 +473,7 @@ export default function ControlRoomPage() {
           <div className="flex items-center gap-1.5">
             <Cpu className="w-3 h-3" style={{ color: GOLD }} />
             <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-              <div className="h-full rounded-full" style={{ width: `${latestHealth.cpu_usage_pct}%`, background: latestHealth.cpu_usage_pct > 85 ? '#FF4444' : GOLD }} />
+              <div className="h-full rounded-full" style={{ width: `${latestHealth.cpu_usage_pct}%`, background: latestHealth.cpu_usage_pct > 85 ? '#C0392B' : GOLD }} />
             </div>
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>

@@ -5,6 +5,17 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
+import NotificationHub from '../components/live/NotificationHub';
+import BroadcastAnalyticsDashboard from '../components/live/BroadcastAnalyticsDashboard';
+import ShareToSocial from '../components/live/ShareToSocial';
+import StreamHealthDashboard from '../components/live/StreamHealthDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -22,18 +33,18 @@ const C = {
   text:    '#F0E8D4',
   textD:   '#C4B596',
   textM:   '#8A7A62',
-  green:   '#2ECC71',
-  red:     '#E74C3C',
-  blue:    '#3498DB',
-  purple:  '#8B44B0',
+  green:   '#6DBF7E',
+  red:     '#C0392B',
+  blue:    '#5B7FA6',
+  purple:  '#7B5DA6',
   amber:   '#D4854A',
-  orange:  '#FF6B35',
-  teal:    '#1ABC9C',
-  warn:    '#F39C12',
-  tribute: '#7B5EA7',
-  tribL:   '#A07BC4',
-  state1:  '#1565C0',
-  state2:  '#C62828',
+  orange:  '#D4854A',
+  teal:    '#4A8A7A',
+  warn:    '#C9A84C',
+  tribute: '#7B5DA6',
+  tribL:   '#9B7DC4',
+  state1:  '#5B7FA6',
+  state2:  '#C0392B',
 };
 
 // ── Small reusable components ──────────────────────────────────────────────
@@ -1318,6 +1329,17 @@ export default function SeeWhyLIVEv37() {
         </div>
         {panelMap[activeTab]}
       </div>
+      <SwanAIRecommendations roomId={null} currentUser={null} isHost={true} />
+      <SwanyBotWidget />
+      <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+      <StreamGoals hostId={null} roomId={null} isHost={true} />
+      <ViewerCount roomId={null} />
+      <NotificationHub userId={null} roomId={null} />
+      <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
+      <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
+      <StreamHealthDashboard roomId={null} isHost={true} />
+      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <GlobalSearch onClose={() => {}} />
     </div>
   );
 }

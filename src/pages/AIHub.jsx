@@ -25,10 +25,10 @@ const BG     = '#080B18';
 const BG2    = 'rgba(13,6,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#FF1564';
+const PINK   = '#C0392B';
 const CYAN   = '#00d4ff';
 const PURPLE = '#a78bfa';
-const GREEN  = '#22c55e';
+const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -237,7 +237,7 @@ export default function AIHub() {
 
   // Guardian status badge color
   function guardianStatusColor(status) {
-    if (status === 'alert')   return '#ef4444';
+    if (status === 'alert')   return '#C0392B';
     if (status === 'warning') return '#f59e0b';
     return GREEN;
   }
@@ -824,7 +824,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#1565C0">
+        <Card accentColor="#5B7FA6">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -838,7 +838,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #1565C0, #C62828)',
+              background: 'linear-gradient(90deg, #5B7FA6, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -875,7 +875,7 @@ export default function AIHub() {
         <Card style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📋 Content Review Queue</p>
-            <span style={{ ...T, fontSize: 11, color: '#FF1564', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
+            <span style={{ ...T, fontSize: 11, color: '#C0392B', fontWeight: 700, letterSpacing: '0.05em' }}>ADMIN TOOL</span>
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
             Review AI-flagged messages, approve or dismiss violations, and track moderation history for your streams.
@@ -890,11 +890,11 @@ export default function AIHub() {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
-                  <div style={{ ...T, fontSize: 12, color: '#FF1564', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
+                  <div style={{ ...T, fontSize: 12, color: '#C0392B', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>
                 </div>
               </div>
-              <span style={{ ...T, fontSize: 13, color: '#FF1564', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              <span style={{ ...T, fontSize: 13, color: '#C0392B', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>
                 Review →
               </span>
             </div>

@@ -25,7 +25,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CreatorBridge from '../components/social/CreatorBridge';
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
-const PINK  = '#FF1564';
+const PINK  = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT  = 'Barlow Condensed, sans-serif';
 

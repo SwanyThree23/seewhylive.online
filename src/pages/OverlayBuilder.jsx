@@ -126,7 +126,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
           {ELEMENT_TYPES.find(t => t.id === element.type)?.label}
         </p>
         <button onClick={onRemove} className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-          style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>Remove</button>
+          style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>Remove</button>
       </div>
       <div className="space-y-2">
         {fields.map(([key, label, type = 'text', opts]) => field(key, label, type, opts))}

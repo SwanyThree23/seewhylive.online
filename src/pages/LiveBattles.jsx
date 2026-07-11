@@ -58,7 +58,7 @@ function BattleCard({ battle, index }) {
             <div>
               {isActive && (
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
-                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564' }}>
+                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B' }}>
                   ⚡ LIVE
                 </span>
               )}
@@ -99,14 +99,14 @@ function BattleCard({ battle, index }) {
               {rightName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#f87171' }}>{rightVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#C0392B' }}>{rightVotes.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Score bar */}
         <div className="h-2 rounded-full flex overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
           <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#3b82f6' }} />
-          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#ef4444' }} />
+          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#C0392B' }} />
         </div>
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>

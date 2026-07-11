@@ -123,7 +123,7 @@ function OverviewTab({ user }) {
         <StatTile label="Pending Balance" value={`$${Math.floor(payout?.pending_balance || 0)}`} icon={DollarSign} color={GOLD} />
         <StatTile label="Subscribers" value={(profile?.subscriber_count || 0).toLocaleString()} icon={Users} color="#C9A84C" />
         <StatTile label="Hours Streamed" value={`${Math.floor(profile?.total_hours_streamed || 0)}h`} icon={Clock} color="#D4AF37" />
-        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#FF1564" sub="right now" />
+        <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#C0392B" sub="right now" />
       </div>
 
       <Card>
@@ -219,7 +219,7 @@ function AnalyticsTab({ user }) {
     viewers: Math.floor(Math.random() * 200 + 50),
   }));
 
-  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#FF1564', '#6DBF7E'];
+  const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
 
   return (
     <div className="space-y-5">
@@ -228,7 +228,7 @@ function AnalyticsTab({ user }) {
         <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#C9A84C" />
         <StatTile label="New Followers" value={follows.length} icon={Users} color="#6DBF7E" />
         <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#D4AF37" />
-        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#FF1564" />
+        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#C0392B" />
         <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
       </div>
 
@@ -387,7 +387,7 @@ function ContentTab({ user }) {
                   </button>
                   <button onClick={() => deleteMut.mutate(v.id)}
                     className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B' }}>
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
                 </div>
@@ -565,7 +565,7 @@ function CommunityTab({ user }) {
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
                   <button onClick={() => endPollMut.mutate(poll.id)}
                     className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>End</button>
                 </div>
                 <div className="space-y-1.5">
                   {opts.map((o, i) => {
@@ -747,7 +747,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
+              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#C0392B', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}

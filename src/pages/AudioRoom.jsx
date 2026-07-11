@@ -154,7 +154,7 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
 const GREEN   = '#6DBF7E';
@@ -211,7 +211,7 @@ function SpeakerTile({ member, size = 80 }) {
         {isMuted && (
           <div
             className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: '#EF4444', border: `2px solid ${BG}` }}
+            style={{ background: '#C0392B', border: `2px solid ${BG}` }}
           >
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
@@ -410,7 +410,7 @@ export default function AudioRoom() {
           <span className="text-sm font-bold">{memberCount}</span>
         </div>
         <button onClick={sendLove} className="flex items-center gap-1">
-          <Heart className="w-4 h-4 text-red-500" fill="#ef4444" />
+          <Heart className="w-4 h-4 text-red-500" fill="#C0392B" />
           <span className="text-sm font-bold" style={{ color: '#555' }}>{loveCount}</span>
         </button>
         <button>
@@ -479,7 +479,7 @@ export default function AudioRoom() {
         <button
           onClick={leaveRoom}
           className="text-[14px] font-black uppercase"
-          style={{ color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif' }}
+          style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}
         >
           Leave
         </button>
@@ -506,7 +506,7 @@ export default function AudioRoom() {
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)' }}
             >
-              <Heart className="w-4 h-4 text-red-400" fill="#EF4444" />
+              <Heart className="w-4 h-4 text-red-400" fill="#C0392B" />
             </div>
             <span className="text-[11px] font-bold" style={{ color: GOLD }}>{loveCount}</span>
           </button>

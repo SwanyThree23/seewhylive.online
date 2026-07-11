@@ -17,9 +17,9 @@ import { MerchShopV2, ViewerControlsV2, InRoomSubWidgetV2, TipAlertConfig, Engag
 var G = {
   black:"#080808",darkBg:"#0D0D0D",cardBg:"#111111",
   surfaceBg:"#161616",crimson:"#8B0000",crimsonBright:"#C41E3A",
-  gold:"#D4AF37",goldBright:"#FFD700",cyan:"#00E5FF",
+  gold:"#D4AF37",goldBright:"#FFD700",cyan:"#4A8A7A",
   volt:"#D4AF37",white:"#FFFFFF",gray:"#888888",
-  grayDim:"#444444",red:"#FF3B30",green:"#30D158",
+  grayDim:"#444444",red:"#FF3B30",green:"#6DBF7E",
   purple:"#BF5FFF",orange:"#FF9500",
   fOrb:"'Orbitron',sans-serif",fRaj:"'Rajdhani',sans-serif",
   fMon:"'Share Tech Mono',monospace",fBar:"'Barlow Condensed',sans-serif",
@@ -79,12 +79,12 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .nav-btn.on{color:#D4AF37}.nav-ico{font-size:19px;line-height:1}
 .notif-dot{position:absolute;top:6px;right:calc(50% - 18px);width:14px;height:14px;border-radius:50%;background:#C41E3A;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-weight:700}
 .card{background:#111;border:1px solid #1a1a1a;border-radius:12px;overflow:hidden}
-.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#00E5FF}.card-v{border-color:#D4AF37}.card-p{border-color:#BF5FFF}
+.card-r{border-color:#8B0000}.card-g{border-color:#D4AF37}.card-c{border-color:#4A8A7A}.card-v{border-color:#D4AF37}.card-p{border-color:#BF5FFF}
 .sec-title{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;color:#D4AF37;letter-spacing:3px;padding:14px 16px 6px;text-transform:uppercase}
 .pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:.5px}
 .pill-r{background:rgba(196,30,58,.2);border:1px solid #C41E3A;color:#FF6B6B}
 .pill-g{background:rgba(212,175,55,.2);border:1px solid #D4AF37;color:#FFD700}
-.pill-c{background:rgba(0,229,255,.15);border:1px solid #00E5FF;color:#00E5FF}
+.pill-c{background:rgba(0,229,255,.15);border:1px solid #4A8A7A;color:#4A8A7A}
 .pill-v{background:rgba(200,255,0,.12);border:1px solid #D4AF37;color:#D4AF37}
 .pill-p{background:rgba(191,95,255,.15);border:1px solid #BF5FFF;color:#BF5FFF}
 .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;transition:all .2s}
@@ -118,7 +118,7 @@ body{background:#080808;color:#fff;font-family:'Rajdhani',sans-serif;overflow-x:
 .panel-tile{aspect-ratio:9/14;position:relative;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;background:#161616;border:1px solid #1a1a1a}
 .panel-tile:hover{transform:scale(1.04)}
 .panel-tile.focused{border:2px solid #D4AF37;box-shadow:0 0 12px #D4AF3766;z-index:2}
-.panel-tile.speaking{border:2px solid #00E5FF;box-shadow:0 0 8px #00E5FF55}
+.panel-tile.speaking{border:2px solid #4A8A7A;box-shadow:0 0 8px #4A8A7A55}
 .panel-tile.muted{opacity:.7}
 .pt-avatar{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative}
 .pt-name{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-family:'Share Tech Mono',monospace;font-size:7px;color:#fff;letter-spacing:.5px;text-shadow:0 1px 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px}
@@ -215,7 +215,7 @@ function ZEGOLiveRoom({ roomID, userID, userName, role, appID, serverSecret, onL
 }
 
 // ── PANEL GRID + BIGO OCTAGONAL VIEW ─────────────────────────────
-var TILE_COLORS = [G.crimsonBright,G.gold,G.cyan,G.volt,G.purple,G.orange,G.green,"#FF69B4","#FF8C00","#39FF14","#FF007F","#1E90FF","#FFD700","#FF4500","#00CED1","#9400D3","#ADFF2F","#DC143C","#00BFFF","#FF6347"];
+var TILE_COLORS = [G.crimsonBright,G.gold,G.cyan,G.volt,G.purple,G.orange,G.green,"#FF69B4","#D4854A","#39FF14","#FF007F","#1E90FF","#FFD700","#FF4500","#00CED1","#9400D3","#ADFF2F","#DC143C","#4A8A7A","#FF6347"];
 var REACTION_EMOJIS = ["🔥","❤️","😂","👏","💯","🚀","💎","👑","😍","🤩"];
 var DEMO_NAMES = ["Host","MixMaster","StarGirl","DrumKing","VibezQn","LitKid","GoldenFlo","CyphaBoss","SlickTalk","WaveRider","HypeLord","ReggaeQ","BeatDrop","SoulSis","TrapGod","NeonKing","PopDiva","JazzHnd","UrbanVibe","CloudTop"];
 
@@ -871,7 +871,7 @@ function PKBattleEngine({ myName, onEnd }) {
           <div style={{width:pctMe+"%",background:"linear-gradient(90deg,#8B0000,#C41E3A)",transition:"width 1s ease",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <span style={{fontFamily:G.fMon,fontSize:10,color:G.white}}>{pctMe}%</span>
           </div>
-          <div style={{flex:1,background:"linear-gradient(90deg,#1a3a5c,#00E5FF33)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{flex:1,background:"linear-gradient(90deg,#1a3a5c,#4A8A7A33)",display:"flex",alignItems:"center",justifyContent:"center"}}>
             <span style={{fontFamily:G.fMon,fontSize:10,color:G.cyan}}>{pctThem}%</span>
           </div>
           <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:14,zIndex:2}}>⚔️</div>
@@ -913,7 +913,7 @@ function PKBattleEngine({ myName, onEnd }) {
         <div className="battle-bar-l" style={{width:pctMe+"%",background:"linear-gradient(90deg,#8B0000,#C41E3A)",display:"flex",alignItems:"center",paddingLeft:8,minWidth:0}}>
           <span style={{fontFamily:G.fMon,fontSize:10,color:G.white,whiteSpace:"nowrap"}}>{pctMe}%</span>
         </div>
-        <div className="battle-bar-r" style={{flex:1,background:"linear-gradient(90deg,#00445555,#00E5FF44)",display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8,minWidth:0}}>
+        <div className="battle-bar-r" style={{flex:1,background:"linear-gradient(90deg,#00445555,#4A8A7A44)",display:"flex",alignItems:"center",justifyContent:"flex-end",paddingRight:8,minWidth:0}}>
           <span style={{fontFamily:G.fMon,fontSize:10,color:G.cyan,whiteSpace:"nowrap"}}>{pctThem}%</span>
         </div>
         <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:16,zIndex:2,filter:"drop-shadow(0 0 6px #fff)"}}>⚔️</div>

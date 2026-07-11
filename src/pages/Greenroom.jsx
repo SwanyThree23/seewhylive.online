@@ -162,7 +162,7 @@ const ROLES = ['audience', 'speaker', 'guest', 'co-host'];
 function PermissionPill({ label, status }) {
   const cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
-    denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
+    denied:  { color: '#C0392B', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
     prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
@@ -526,7 +526,7 @@ export default function GreenroomPage() {
                   <p className="font-black text-sm text-white truncate">{room.title}</p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-[11px] uppercase font-bold px-1.5 py-0.5 rounded"
-                      style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#FF1564' : 'rgba(255,255,255,0.4)' }}>
+                      style={{ background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.07)', color: room.status === 'live' ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                       {room.status}
                     </span>
                     <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>

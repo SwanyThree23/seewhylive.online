@@ -324,7 +324,7 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
         </div>
       )}
       <div className="absolute top-3 left-3 flex items-center gap-1 text-[11px] px-2 py-1 rounded"
-        style={{ background: 'rgba(255,21,100,0.2)', border: '1px solid rgba(255,21,100,0.4)', color: '#FF1564', ...T }}>
+        style={{ background: 'rgba(255,21,100,0.2)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
@@ -847,7 +847,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</span>
             <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
+              style={{ background: 'rgba(255,21,100,0.18)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.35)', ...T }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isExclusive && (
@@ -913,7 +913,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {isHost && (
               <button onClick={() => endMut.mutate()}
                 className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
-                style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#FF1564', ...T }}>
+                style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.25)', color: '#C0392B', ...T }}>
                 <LogOut className="w-3 h-3" /> End
               </button>
             )}
@@ -1389,7 +1389,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           )}
                           <button onClick={() => kickMember(mem)}
                             className="text-[11px] px-1.5 py-0.5 rounded"
-                            style={{ background: 'rgba(255,21,100,0.08)', color: '#FF1564', border: '1px solid rgba(255,21,100,0.2)', ...T }}
+                            style={{ background: 'rgba(255,21,100,0.08)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.2)', ...T }}
                             title="Remove from broadcast">
                             Kick
                           </button>
@@ -1473,7 +1473,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <p className="text-[11px] font-black uppercase mb-2" style={{ color: '#FF6680', ...T }}>End Broadcast</p>
                     <button onClick={() => endMut.mutate()}
                       className="w-full py-2 rounded-lg text-[10px] font-black uppercase flex items-center justify-center gap-1"
-                      style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#FF1564', ...T }}>
+                      style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>
                       <LogOut className="w-3.5 h-3.5" /> End Broadcast for Everyone
                     </button>
                   </div>
@@ -1826,7 +1826,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                   <button onClick={copyLink}
                     className="h-9 px-3 rounded-xl text-[10px] font-black transition-all"
-                    style={{ background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#22c55e' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    style={{ background: linkCopied ? 'rgba(34,197,94,0.2)' : 'rgba(212,175,55,0.15)', color: linkCopied ? '#6DBF7E' : '#D4AF37', border: `1px solid ${linkCopied ? 'rgba(34,197,94,0.3)' : 'rgba(212,175,55,0.3)'}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {linkCopied ? '✓ Copied' : 'Copy'}
                   </button>
                 </div>
@@ -1891,7 +1891,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           style={{
             background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
             border: audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: audioEnabled ? '#6DBF7E' : '#FF4444',
+            color: audioEnabled ? '#6DBF7E' : '#C0392B',
           }}>
           {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </motion.button>
@@ -1901,7 +1901,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           style={{
             background: videoEnabled ? 'rgba(201,168,76,0.12)' : 'rgba(255,68,68,0.15)',
             border: videoEnabled ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: videoEnabled ? '#C9A84C' : '#FF4444',
+            color: videoEnabled ? '#C9A84C' : '#C0392B',
           }}>
           {videoEnabled ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
         </motion.button>
@@ -1951,21 +1951,21 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
             background:vodRecording?'rgba(255,21,100,0.18)':'rgba(255,255,255,0.05)',
             border:vodRecording?'1px solid rgba(255,21,100,0.5)':'1px solid rgba(255,255,255,0.1)',
-            color:vodRecording?'#FF1564':'rgba(255,255,255,0.4)',fontSize:14}}>
+            color:vodRecording?'#C0392B':'rgba(255,255,255,0.4)',fontSize:14}}>
           {vodRecording?'⏹':'⏺'}</button>)}
-        {vodRecording&&(<span style={{fontSize:11,fontWeight:900,color:'#FF1564',fontFamily:'Barlow Condensed,sans-serif'}}>{formatDuration(vodDuration)}</span>)}
+        {vodRecording&&(<span style={{fontSize:11,fontWeight:900,color:'#C0392B',fontFamily:'Barlow Condensed,sans-serif'}}>{formatDuration(vodDuration)}</span>)}
         {!isHost ? (
           <motion.button whileTap={{ scale: 0.92 }}
             onClick={() => { window.location.href = '/'; }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
-            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', ...T }}>
+            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#C0392B', ...T }}>
             <PhoneOff className="w-3.5 h-3.5" /> Leave
           </motion.button>
         ) : (
           <motion.button whileTap={{ scale: 0.92 }}
             onClick={() => endMut.mutate()}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
-            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', ...T }}>
+            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#C0392B', ...T }}>
             <PhoneOff className="w-3.5 h-3.5" /> End Broadcast
           </motion.button>
         )}

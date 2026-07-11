@@ -160,7 +160,7 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#FF1564';
+const PINK    = '#C0392B';
 const BG      = '#080B18';
 const BG2     = '#0d0618';
 const BG3     = '#110822';
@@ -250,7 +250,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
         {/* Muted badge */}
         {p.muted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center"
-            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
+            style={{ background: '#C0392B', border: `2px solid ${BG}` }}>
             <MicOff className="w-2 h-2 text-white" />
           </div>
         )}
