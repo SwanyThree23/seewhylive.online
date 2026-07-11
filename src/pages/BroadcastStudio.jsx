@@ -192,11 +192,13 @@ function useSyncEngine({ party, isController, onTimeSync }) {
 
   const pushState = useCallback(async (playerState) => {
     if (!isController || !party?.id) return;
-    await base44.entities.WatchParty.update(party.id, {
-      playback_state: playerState.playing ? 'playing' : 'paused',
-      current_time: playerState.currentTime,
-      updated_at_ms: Date.now(),
-    });
+    try {
+      await base44.entities.WatchParty.update(party.id, {
+        playback_state: playerState.playing ? 'playing' : 'paused',
+        current_time: playerState.currentTime,
+        updated_at_ms: Date.now(),
+      });
+    } catch {}
   }, [isController, party?.id]);
 
   useEffect(() => {
@@ -618,21 +620,23 @@ export default function BroadcastStudio() {
     if (!party || !user) return;
     let mounted = true;
     (async () => {
-      const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
-      if (!mounted) return;
-      if (!existing.length) {
-        await base44.entities.WatchPartyMember.create({
-          party_id: party.id,
-          user_id: user.id,
-          user_name: user.full_name || user.email,
-          joined_at: new Date().toISOString(),
-          is_active: true,
-          role: party.host_id === user.id ? 'host' : 'audience',
-          is_audio_enabled: true,
-          is_video_enabled: true,
-        });
-        if (mounted) qc.invalidateQueries({ queryKey: ['broadcast-members', party.id] });
-      }
+      try {
+        const existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
+        if (!mounted) return;
+        if (!existing.length) {
+          await base44.entities.WatchPartyMember.create({
+            party_id: party.id,
+            user_id: user.id,
+            user_name: user.full_name || user.email,
+            joined_at: new Date().toISOString(),
+            is_active: true,
+            role: party.host_id === user.id ? 'host' : 'audience',
+            is_audio_enabled: true,
+            is_video_enabled: true,
+          });
+          if (mounted) qc.invalidateQueries({ queryKey: ['broadcast-members', party.id] });
+        }
+      } catch {}
     })();
     return () => { mounted = false; };
   }, [party?.id, user?.id]);
