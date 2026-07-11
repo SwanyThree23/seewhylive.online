@@ -8,6 +8,10 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import BattleArenaManager from '../components/live/BattleArenaManager';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import GuestControls from '../components/live/GuestControls';
+import LivePoll from '../components/live/LivePoll';
 
 const BG    = '#080B18';
 const BG2   = 'rgba(13,6,24,0.95)';
@@ -349,6 +353,10 @@ export default function PKBattleArena() {
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={false} />
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
+      <PKBattleInterface roomId={null} />
+      <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+      <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+      <LivePoll roomId={null} isHost={true} />
     </div>
   );
 }

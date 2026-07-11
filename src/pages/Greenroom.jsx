@@ -147,6 +147,9 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
+import AuraPanel from '../components/live/AuraPanel';
+import LivePoll from '../components/live/LivePoll';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -861,6 +864,8 @@ export default function GreenroomPage() {
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
+      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={''} viewerCount={0} isLive={false} userTier="free" />
+      {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}
     </div>
   );
 }

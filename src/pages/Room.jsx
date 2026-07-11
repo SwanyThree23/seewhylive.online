@@ -161,6 +161,9 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import InviteSheet from '../components/live/InviteSheet';
+import AuraPanel from '../components/live/AuraPanel';
+import GuestControls from '../components/live/GuestControls';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -860,6 +863,10 @@ export default function RoomPage() {
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+      <InviteSheet isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={room?.title || ''} isHost={isHost} isCoHost={false} />
+      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} isLive={false} userTier="free" />
+      {isHost && <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />}
+      {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={false} />}
     </div>
   );
 }

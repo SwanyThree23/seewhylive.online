@@ -168,6 +168,7 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import WatchPartyCoStreamPanel from '../components/live/WatchPartyCoStreamPanel';
+import VideoQueue from '../components/watchparty/VideoQueue';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -1419,6 +1420,7 @@ export default function WatchPartyPage() {
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
       <WatchPartyCoStreamPanel roomId={null} currentUser={null} isHost={true} />
+      <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={''} onPlayVideo={() => {}} />
     </div>
   );
 }
