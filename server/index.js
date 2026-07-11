@@ -1,7 +1,9 @@
 const battleRoutes = require('./routes/battles');
 const rewardsRoutes = require('./routes/rewards');
 const publicPreviewRoutes = require('./routes/publicPreview');
+const panelRoomsRoutes = require('./routes/panelRooms');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
+const { registerPanelHandlers } = require('./socket/panelHandlers');
 'use strict';
 
 /**
@@ -282,6 +284,7 @@ var aiRateLimit = rateLimit({
 app.use('/api/ai', aiRateLimit);
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
+app.use('/api/rooms', panelRoomsRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
@@ -1052,6 +1055,7 @@ io.use(function(socket, next) {
 
 io.on('connection', function(socket) {
   registerBattleHandlers(io, socket);
+  registerPanelHandlers(io, socket);
   logger.info('[socket] Connected: ' + socket.id + ' role=' + socket.data.role);
 
   // ── join-room ──────────────────────────────────────────────────────────
