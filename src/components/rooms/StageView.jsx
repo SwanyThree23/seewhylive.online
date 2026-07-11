@@ -165,8 +165,8 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             <Badge variant="outline" className="text-[11px] px-1 py-0 border-white/30 text-white/70">You</Badge>
           </div>
           <div className="flex items-center gap-1">
-            {audioEnabled ? <Mic className="w-3 h-3 text-green-400" /> : <MicOff className="w-3 h-3 text-red-400" />}
-            {videoEnabled ? <Video className="w-3 h-3 text-blue-400" /> : <VideoOff className="w-3 h-3 text-red-400" />}
+            {audioEnabled ? <Mic className="w-3 h-3 text-[#6DBF7E]" /> : <MicOff className="w-3 h-3 text-[#C0392B]" />}
+            {videoEnabled ? <Video className="w-3 h-3 text-blue-400" /> : <VideoOff className="w-3 h-3 text-[#C0392B]" />}
           </div>
         </div>
 
@@ -176,13 +176,13 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#C0392B'}` }}>
-            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-green-400" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
+            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-[#C0392B]" />}
           </button>
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
             style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#C0392B'}` }}>
-            {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
+            {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-[#C0392B]" />}
           </button>
         </div>
       </div>
@@ -207,7 +207,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
     switch(role) {
       case 'host': return 'bg-[#7B5DA6]';
       case 'co-host': return 'bg-blue-500';
-      case 'speaker': return 'bg-green-500';
+      case 'speaker': return 'bg-[#6DBF7E]';
       case 'guest': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
@@ -253,7 +253,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
               {/* Status Indicator */}
               <div className="absolute top-2 right-2 flex gap-1">
                 {participant.is_streaming && (
-                  <Badge className="bg-red-500 text-white text-xs animate-pulse">
+                  <Badge className="bg-[#C0392B] text-white text-xs animate-pulse">
                     LIVE
                   </Badge>
                 )}
@@ -261,7 +261,7 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
 
               {/* Audio Status */}
               <div className={`absolute bottom-2 right-2 p-2 rounded-full ${
-                participant.is_audio_enabled ? 'bg-green-500' : 'bg-red-500'
+                participant.is_audio_enabled ? 'bg-[#6DBF7E]' : 'bg-[#C0392B]'
               }`}>
                 {participant.is_audio_enabled ? (
                   <Mic className="w-4 h-4 text-white" />

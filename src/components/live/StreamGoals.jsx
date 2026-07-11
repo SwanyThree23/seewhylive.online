@@ -123,7 +123,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                 {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
                   <button onClick={() => setGoals(prev => prev.filter(g => g.id !== goal.id))}
-                    className="text-white/20 hover:text-red-400">
+                    className="text-white/20 hover:text-[#C0392B]">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}

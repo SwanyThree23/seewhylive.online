@@ -190,9 +190,9 @@ export default function PKBattleInterface({ roomId }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center"
+          className="bg-[#6DBF7E]/20 border border-green-500/50 rounded-lg p-4 text-center"
         >
-          <Trophy className="w-6 h-6 mx-auto mb-2 text-green-400" />
+          <Trophy className="w-6 h-6 mx-auto mb-2 text-[#6DBF7E]" />
           <p className="text-sm font-bold text-white mb-2">
             {winner === 'creator' ? creator.name : challenger.name} Wins!
           </p>

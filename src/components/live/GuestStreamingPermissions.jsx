@@ -55,11 +55,11 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                     permissions.canMultistream ? 'bg-green-600/30 border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
                 >
-                  {permissions.canMultistream && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+                  {permissions.canMultistream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
                 </button>
               </div>
               {permissions.canMultistream && (
-                <p className="text-[11px] text-green-400/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
+                <p className="text-[11px] text-[#6DBF7E]/70 ml-6">✓ Guest can send to YouTube, Twitch, etc.</p>
               )}
             </div>
 
@@ -79,7 +79,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                     permissions.canStream ? 'bg-green-600/30 border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
                 >
-                  {permissions.canStream && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+                  {permissions.canStream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
                 </button>
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   {permissions.recordingAllowed ? (
                     <CheckCircle2 className="w-4 h-4 text-blue-400" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <XCircle className="w-4 h-4 text-[#C0392B]" />
                   )}
                 </button>
               </div>
@@ -113,7 +113,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#4A8A7A]" /> : <EyeOff className="w-4 h-4 text-red-400" />}
+                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#4A8A7A]" /> : <EyeOff className="w-4 h-4 text-[#C0392B]" />}
                   <div>
                     <p className="text-xs font-semibold text-white">Visible to Viewers</p>
                     <p className="text-[10px] text-white/40">Show this guest in the public stream?</p>

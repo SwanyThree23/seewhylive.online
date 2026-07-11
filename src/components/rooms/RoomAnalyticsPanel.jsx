@@ -34,13 +34,13 @@ export default function RoomAnalyticsPanel({ roomId }) {
       label: 'Current Viewers',
       value: room?.viewer_count || 0,
       icon: Users,
-      color: 'text-blue-500',
+      color: 'text-[#5B7FA6]',
     },
     {
       label: 'Peak Viewers',
       value: latest.peak_viewers || 0,
       icon: TrendingUp,
-      color: 'text-green-500',
+      color: 'text-[#6DBF7E]',
     },
     {
       label: 'Total Viewers',
@@ -64,7 +64,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
       label: 'Tips Received',
       value: `$${latest.tips_received || 0}`,
       icon: DollarSign,
-      color: 'text-green-600',
+      color: 'text-[#6DBF7E]',
     },
   ];
 
@@ -92,7 +92,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">Engagement Rate</CardTitle>
-              <Badge className="bg-green-500">
+              <Badge className="bg-[#6DBF7E]">
                 {Math.round(latest.engagement_rate)}%
               </Badge>
             </div>

@@ -269,7 +269,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                           <button onClick={() => playFromPlaylist(item)} className="flex-1 text-left text-xs text-white/70 hover:text-white truncate transition-colors">
                             {item.title || item.url}
                           </button>
-                          <button onClick={() => removeFromPlaylist(i)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400/60 hover:text-red-400">
+                          <button onClick={() => removeFromPlaylist(i)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#C0392B]/60 hover:text-[#C0392B]">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>

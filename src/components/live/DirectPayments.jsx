@@ -4,13 +4,13 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const PAYMENT_PLATFORMS = [
-  { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-blue-600 to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
+  { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-[#5B7FA6] to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
   { id: 'cashapp', name: 'Cash App', emoji: '💚', color: 'from-[#6DBF7E] to-[#6DBF7E]', baseUrl: 'https://cash.app/$', placeholder: 'YourCashtag' },
   { id: 'venmo', name: 'Venmo', emoji: '💙', color: 'from-[#5B7FA6] to-blue-600', baseUrl: 'https://venmo.com/', placeholder: 'your-username' },
   { id: 'zelle', name: 'Zelle', emoji: '💜', color: 'from-[#7B5DA6] to-[#7B5DA6]', baseUrl: null, placeholder: 'phone or email' },
   { id: 'chime', name: 'Chime', emoji: '🟢', color: 'from-[#6DBF7E] to-[#4A8A7A]', baseUrl: 'https://chime.com/', placeholder: 'your-tag' },
   { id: 'applepay', name: 'Apple Pay', emoji: '🍎', color: 'from-gray-700 to-gray-900', baseUrl: null, placeholder: 'phone or email' },
-  { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-blue-500 to-[#5B7FA6]', baseUrl: null, placeholder: 'phone or email' },
+  { id: 'googlepay', name: 'Google Pay', emoji: '🔵', color: 'from-[#5B7FA6] to-[#5B7FA6]', baseUrl: null, placeholder: 'phone or email' },
   { id: 'custom', name: 'Custom Link', emoji: '🔗', color: 'from-amber-500 to-orange-600', baseUrl: '', placeholder: 'https://...' },
 ];
 

@@ -81,8 +81,8 @@ export default function OctagonalVideoWindow({
             onClick={onMicToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isMuted
-                ? 'bg-red-900/50 border border-red-600 text-red-400'
-                : 'bg-green-900/50 border border-green-600 text-green-400'
+                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
+                : 'bg-green-900/50 border border-green-600 text-[#6DBF7E]'
             }`}
           >
             {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
@@ -93,7 +93,7 @@ export default function OctagonalVideoWindow({
             onClick={onVideoToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isVideoOff
-                ? 'bg-red-900/50 border border-red-600 text-red-400'
+                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
                 : 'bg-blue-900/50 border border-blue-600 text-blue-400'
             }`}
           >

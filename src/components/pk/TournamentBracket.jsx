@@ -233,7 +233,7 @@ export default function TournamentBracket() {
                       />
                       <button
                         onClick={function() { setPlayerNames(function(prev) { return prev.filter(function(_, j) { return j !== i; }); }); }}
-                        className="text-white/20 hover:text-red-400 text-xs"
+                        className="text-white/20 hover:text-[#C0392B] text-xs"
                       >×</button>
                     </div>
                   );

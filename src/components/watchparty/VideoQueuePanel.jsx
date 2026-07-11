@@ -33,7 +33,7 @@ function StatusBadge({ status }) {
   return (
     <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded flex items-center gap-1"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
-      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.label}
     </span>
   );
@@ -193,7 +193,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
               <button onClick={() => actionMut.mutate({ host_approved: true })}
                 className="w-6 h-6 rounded flex items-center justify-center"
                 style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
-                <CheckCircle className="w-3 h-3 text-green-400" />
+                <CheckCircle className="w-3 h-3 text-[#6DBF7E]" />
               </button>
             )}
             {item.status === 'queued' && (
@@ -207,7 +207,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
               <button onClick={() => actionMut.mutate({ status: 'skipped', ended_at: new Date().toISOString() })}
                 className="w-6 h-6 rounded flex items-center justify-center"
                 style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.3)' }}>
-                <Trash2 className="w-3 h-3 text-red-400" />
+                <Trash2 className="w-3 h-3 text-[#C0392B]" />
               </button>
             )}
           </div>

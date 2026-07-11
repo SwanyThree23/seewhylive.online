@@ -266,7 +266,7 @@ export default function CoStreamPanel({ roomId }) {
                     <VideoOff className="w-12 h-12 text-gray-500" />
                   </div>
                 )}
-                <Badge className="absolute top-2 left-2 bg-red-500">
+                <Badge className="absolute top-2 left-2 bg-[#C0392B]">
                   LIVE
                 </Badge>
                 <Badge className="absolute top-2 right-2" variant="secondary">
@@ -333,7 +333,7 @@ export default function CoStreamPanel({ roomId }) {
                       </Badge>
                     </div>
                   </div>
-                  <Badge className="bg-red-500">LIVE</Badge>
+                  <Badge className="bg-[#C0392B]">LIVE</Badge>
                 </div>
               </CardContent>
             </Card>

@@ -106,7 +106,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-red-700/20">
               <div className="flex items-center gap-1.5">
-                <Swords className="w-4 h-4 text-red-400 animate-pulse" />
+                <Swords className="w-4 h-4 text-[#C0392B] animate-pulse" />
                 <span className="text-xs font-bold text-red-300 uppercase tracking-wide">PK Battle</span>
               </div>
               <div className="flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                 <div className="text-[#d4af37]/60 font-black text-lg">VS</div>
                 <div className="text-center">
                   <p className="font-bold text-white truncate max-w-[80px]">{opponentName}</p>
-                  <p className="text-2xl font-black text-red-400 font-mono">{theirScore.toLocaleString()}</p>
+                  <p className="text-2xl font-black text-[#C0392B] font-mono">{theirScore.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -140,13 +140,13 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
                   style={{ width: `${myPct}%` }}
                 />
                 <motion.div
-                  className="bg-red-500 transition-all duration-500"
+                  className="bg-[#C0392B] transition-all duration-500"
                   style={{ width: `${theirPct}%` }}
                 />
               </div>
               <div className="flex justify-between mt-0.5">
                 <span className="text-[11px] text-[#d4af37]/60">{myPct}%</span>
-                <span className="text-[11px] text-red-400/60">{theirPct}%</span>
+                <span className="text-[11px] text-[#C0392B]/60">{theirPct}%</span>
               </div>
 
               {/* Gift buttons (host) */}

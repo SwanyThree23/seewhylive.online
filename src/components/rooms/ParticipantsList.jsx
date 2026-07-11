@@ -175,7 +175,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
   const getRoleIcon = () => {
     switch(participant.role) {
       case 'host': return <Crown className="w-4 h-4 text-yellow-500" />;
-      case 'co-host': return <Shield className="w-4 h-4 text-blue-500" />;
+      case 'co-host': return <Shield className="w-4 h-4 text-[#5B7FA6]" />;
       default: return null;
     }
   };
@@ -199,18 +199,18 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {participant.is_audio_enabled ? (
-            <Mic className="w-3 h-3 text-green-500" />
+            <Mic className="w-3 h-3 text-[#6DBF7E]" />
           ) : (
             <MicOff className="w-3 h-3 text-muted-foreground" />
           )}
           {participant.is_video_enabled && (
-            <Video className="w-3 h-3 text-blue-500" />
+            <Video className="w-3 h-3 text-[#5B7FA6]" />
           )}
           {participant.hand_raised && (
             <Hand className="w-3 h-3 text-yellow-500" />
           )}
           {participant.is_streaming && (
-            <Badge className="text-xs bg-red-500">LIVE</Badge>
+            <Badge className="text-xs bg-[#C0392B]">LIVE</Badge>
           )}
         </div>
       </div>
@@ -249,7 +249,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
               <DropdownMenuItem onClick={() => onInviteToStage(participant)}>
                 Invite to Stage
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-500">
+              <DropdownMenuItem className="text-[#C0392B]">
                 Remove from Room
               </DropdownMenuItem>
             </>

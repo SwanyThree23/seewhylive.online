@@ -163,7 +163,7 @@ export default function GlobalChatWidget() {
                 <span className="font-black text-sm" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                   GLOBAL CHAT
                 </span>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
               </div>
               <div className="flex items-center gap-1.5">
                 {/* Language picker */}

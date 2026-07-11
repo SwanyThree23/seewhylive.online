@@ -585,7 +585,7 @@ export default function SwanyBotWidget() {
                     >
                       {listening
                         ? <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.7 }}>
-                            <Mic className="w-3.5 h-3.5 text-red-400" />
+                            <Mic className="w-3.5 h-3.5 text-[#C0392B]" />
                           </motion.div>
                         : <Mic className="w-3.5 h-3.5" style={{ color: G }} />
                       }

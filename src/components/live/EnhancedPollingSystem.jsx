@@ -217,7 +217,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
             style={{ background: 'rgba(192,57,43,0.15)' }}
           >
-            <X className="w-4 h-4 text-red-400" />
+            <X className="w-4 h-4 text-[#C0392B]" />
           </button>
         )}
       </div>

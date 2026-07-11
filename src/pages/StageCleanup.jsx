@@ -143,7 +143,7 @@ export default function StageCleanupPage() {
         ) : ghostStages.length === 0 ? (
           <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
             <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
-              <CheckCircle className="w-14 h-14 mx-auto text-green-500" />
+              <CheckCircle className="w-14 h-14 mx-auto text-[#6DBF7E]" />
               <p className="text-lg font-semibold">All clean!</p>
               <p className="text-sm text-muted-foreground">No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
             </div>

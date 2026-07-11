@@ -162,7 +162,7 @@ export default function AlertConfig({ creatorId }) {
               <p className="font-bold text-sm text-white">{alert.name}</p>
               <p className="text-[10px] text-white/60">{alert.trigger_type} • 🔊 {alert.sound_preset}</p>
             </div>
-            <motion.button whileHover={{ scale: 1.1 }} className="p-2 text-red-500">
+            <motion.button whileHover={{ scale: 1.1 }} className="p-2 text-[#C0392B]">
               <Trash2 className="w-4 h-4" />
             </motion.button>
           </motion.div>

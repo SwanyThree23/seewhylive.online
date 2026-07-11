@@ -54,7 +54,7 @@ export default function ActivitySidebar({ isOpen, onClose }) {
               <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Radio className="w-5 h-5 text-red-500" />
+                    <Radio className="w-5 h-5 text-[#C0392B]" />
                     Live Now
                   </CardTitle>
                 </CardHeader>
@@ -67,7 +67,7 @@ export default function ActivitySidebar({ isOpen, onClose }) {
                     >
                       <Link to={createPageUrl('Room') + `?id=${room.id}`}>
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                          <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
                           <p className="font-semibold text-sm line-clamp-1">{room.title}</p>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">

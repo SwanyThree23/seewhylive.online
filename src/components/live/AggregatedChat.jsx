@@ -31,7 +31,7 @@ function ModBadge({ status, onAppeal, msgId, roomId }) {
   const isFlagged = status === 'flagged';
   return (
     <span
-      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-red-400'}`}
+      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-[#C0392B]'}`}
       title={`${isFlagged ? 'Flagged for review' : status} — click to appeal`}
       onClick={() => onAppeal?.(msgId, roomId)}
     >

@@ -760,7 +760,7 @@ export default function LiveRoom() {
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
               style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
               {!audioEnabled
-                ? <MicOff className="w-4 h-4 text-red-400" />
+                ? <MicOff className="w-4 h-4 text-[#C0392B]" />
                 : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
             </div>
             <span className="text-[11px] text-white/35"> </span>

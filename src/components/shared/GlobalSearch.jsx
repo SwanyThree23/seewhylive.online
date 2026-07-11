@@ -85,7 +85,7 @@ export default function GlobalSearch({ onClose }) {
                   <Link key={c.id} to={createPageUrl('Community') + `?id=${c.id}`} onClick={onClose}>
                     <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 rounded-xl">
                       <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Users className="w-3.5 h-3.5 text-blue-600" />
+                        <Users className="w-3.5 h-3.5 text-[#5B7FA6]" />
                       </div>
                       <p className="text-sm font-medium truncate">{c.name}</p>
                     </div>

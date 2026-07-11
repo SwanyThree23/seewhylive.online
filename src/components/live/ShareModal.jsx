@@ -12,7 +12,7 @@ const PLATFORMS = [
   },
   {
     name: 'Facebook',
-    color: 'from-blue-600 to-blue-700',
+    color: 'from-[#5B7FA6] to-blue-700',
     emoji: '👥',
     action: (url, title) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`,
     note: 'Opens Facebook share dialog',

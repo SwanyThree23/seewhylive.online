@@ -233,7 +233,7 @@ export default function GreenroomEnhanced() {
           ) : isLive ? (
             <div className="text-center py-2">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <motion.div className="w-3 h-3 rounded-full bg-red-500"
+                <motion.div className="w-3 h-3 rounded-full bg-[#C0392B]"
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
                 <span className="text-lg font-black text-white">YOU ARE LIVE</span>
               </div>

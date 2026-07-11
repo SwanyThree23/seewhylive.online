@@ -195,7 +195,7 @@ export default function DevicePreview({ user, onDeviceState }) {
             : permDenied
               ? <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4"
                   style={{ background: 'rgba(128,0,32,0.15)' }}>
-                  <CameraOff className="w-8 h-8 text-red-400" />
+                  <CameraOff className="w-8 h-8 text-[#C0392B]" />
                   <p className="text-[11px] text-center font-bold text-red-300">Camera access blocked</p>
                   <p className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Check your browser settings to allow camera access</p>
                 </div>

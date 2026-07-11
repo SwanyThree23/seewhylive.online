@@ -41,7 +41,7 @@ function QueueItem({ item, index, total, isHost, isCurrent, onRemove, onMoveUp, 
         <p className="text-[10px] font-bold text-white/80 truncate">{item.title || item.url}</p>
         <div className="flex items-center gap-1 mt-0.5">
           {item.type === 'youtube'
-            ? <Youtube className="w-2.5 h-2.5 text-red-400" />
+            ? <Youtube className="w-2.5 h-2.5 text-[#C0392B]" />
             : <Video className="w-2.5 h-2.5 text-white/30" />}
           <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Added by {item.addedBy}
@@ -74,7 +74,7 @@ function QueueItem({ item, index, total, isHost, isCurrent, onRemove, onMoveUp, 
           <button onClick={() => onRemove(index)}
             className="w-5 h-5 flex items-center justify-center rounded"
             style={{ background: 'rgba(180,50,30,0.15)', border: '1px solid rgba(180,50,30,0.25)' }}>
-            <X className="w-3 h-3 text-red-400" />
+            <X className="w-3 h-3 text-[#C0392B]" />
           </button>
         </div>
       )}

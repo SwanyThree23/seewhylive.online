@@ -70,7 +70,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-all hover:bg-white/5 active:scale-95">
                 <span className="text-base">{m.icon}</span>
                 <span className="text-[11px] font-bold" style={{ color: m.color }}>{m.label}</span>
-                {captured === m.id && <Check className="w-3 h-3 ml-auto text-green-400" />}
+                {captured === m.id && <Check className="w-3 h-3 ml-auto text-[#6DBF7E]" />}
               </button>
             ))}
           </motion.div>

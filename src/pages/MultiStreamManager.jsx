@@ -50,16 +50,16 @@ const PLATFORMS = [
 
 function StatusDot({ status }) {
   const styles = {
-    live: 'bg-green-400 animate-pulse',
+    live: 'bg-[#6DBF7E] animate-pulse',
     connecting: 'bg-yellow-400 animate-pulse',
-    error: 'bg-red-400',
+    error: 'bg-[#C0392B]',
     offline: 'bg-white/20',
   };
   const labels = { live: 'LIVE', connecting: '...', error: 'ERR', offline: 'OFF' };
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
-      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-green-400' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
+      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-[#C0392B]' : 'text-white/30'}`}>
         {labels[status] || 'OFF'}
       </span>
     </div>
@@ -238,7 +238,7 @@ export default function MultiStreamManager() {
                   />
                 </div>
                 {totalBitrate > recommendedMax && (
-                  <p className="text-[10px] text-red-400 mt-1 flex items-center gap-1">
+                  <p className="text-[10px] text-[#C0392B] mt-1 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Consider disabling a destination to stay under budget
                   </p>
                 )}
@@ -406,7 +406,7 @@ export default function MultiStreamManager() {
                             </button>
                             <button
                               onClick={() => { if (window.confirm('Remove this destination?')) deleteMutation.mutate(dest.id); }}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-red-400 hover:border-red-700/40"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#C0392B] hover:border-red-700/40"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -429,9 +429,9 @@ export default function MultiStreamManager() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="bg-green-950/40 border-green-500/30">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-green-400">MediaMTX Fanout Active</p>
+                  <p className="text-sm font-bold text-[#6DBF7E]">MediaMTX Fanout Active</p>
                   <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
                 </div>
                 <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">

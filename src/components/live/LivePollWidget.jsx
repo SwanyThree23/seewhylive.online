@@ -187,7 +187,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
               {activePoll ? 'Live Poll' : 'Polls'}
             </span>
             {activePoll && (
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
             )}
           </div>
           {expanded ? <ChevronUp className="w-4 h-4 text-white/30" /> : <ChevronDown className="w-4 h-4 text-white/30" />}

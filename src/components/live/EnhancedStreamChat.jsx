@@ -118,11 +118,11 @@ const ModerationAlert = ({ message, onDismiss }) => (
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
     style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
   >
-    <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
+    <AlertCircle className="w-3 h-3 text-[#C0392B] flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>
     <button
       onClick={onDismiss}
-      className="text-red-400/50 hover:text-red-400 transition"
+      className="text-[#C0392B]/50 hover:text-[#C0392B] transition"
     >
       ✕
     </button>
@@ -223,7 +223,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
         </div>
-        <Shield className="w-3 h-3 text-green-400" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}

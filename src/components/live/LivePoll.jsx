@@ -186,7 +186,7 @@ export default function LivePoll({ roomId, isHost }) {
               onEnd={isHost ? () => endPollMutation.mutate() : null}
             />
             {userVotedOption !== null && (
-              <p className="text-[10px] text-green-400 flex items-center gap-1 mt-1">
+              <p className="text-[10px] text-[#6DBF7E] flex items-center gap-1 mt-1">
                 <Check className="w-3 h-3" /> Your vote was recorded
               </p>
             )}

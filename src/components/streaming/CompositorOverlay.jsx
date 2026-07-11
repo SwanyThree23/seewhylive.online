@@ -337,8 +337,8 @@ export default function CompositorOverlay({
 
           {status === 'error' && (
             <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)' }}>
-              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-red-400" />
-              <p className="text-[11px] text-red-400">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#C0392B]" />
+              <p className="text-[11px] text-[#C0392B]">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
             </div>
           )}
         </div>

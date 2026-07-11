@@ -23,9 +23,9 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-green-500/20 text-green-300 border border-green-500/40",
+    live:     "bg-[#6DBF7E]/20 text-green-300 border border-green-500/40",
     pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
-    critical: "bg-red-500/20 text-red-300 border border-red-500/40",
+    critical: "bg-[#C0392B]/20 text-red-300 border border-red-500/40",
     info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
     gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
   };
@@ -83,7 +83,7 @@ const Row = ({ label, value, badge, pending }) => (
 
 const CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-green-400" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
+    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
   </div>
 );
@@ -169,7 +169,7 @@ function WebRTCTab() {
       </Section>
 
       <Section title="LiveKit Credentials (VPS .env)">
-        <div className="bg-red-500/10 border border-red-500/30 rounded p-3 mb-3 text-xs text-red-200">
+        <div className="bg-[#C0392B]/10 border border-red-500/30 rounded p-3 mb-3 text-xs text-red-200">
           🔴 All 3 LiveKit keys are pending — add to /var/www/seewhylive/.env and ecosystem.config.js
         </div>
         <Row label="LIVEKIT_URL"        pending />
@@ -528,16 +528,16 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-green-400">{statusCounts.live}</div>
+        <div className="bg-[#6DBF7E]/10 border border-green-500/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
           <div className="text-2xl font-mono text-yellow-400">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
-        <div className="bg-red-500/10 border border-red-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-red-400">{statusCounts.critical}</div>
+        <div className="bg-[#C0392B]/10 border border-red-500/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#C0392B]">{statusCounts.critical}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Critical</div>
         </div>
       </div>
@@ -564,7 +564,7 @@ function EnvTab() {
         <Code>{"sed -i 's/STRIPE_WEBHOOK_SECRET=.*/STRIPE_WEBHOOK_SECRET=whsec_xxx/' .env"}</Code>
         <Code>pm2 restart seewhylive-backend</Code>
         <Code>{"pm2 env 0  # verify injected"}</Code>
-        <div className="mt-2 bg-red-500/10 border border-red-500/20 rounded p-2 text-xs text-red-200">
+        <div className="mt-2 bg-[#C0392B]/10 border border-red-500/20 rounded p-2 text-xs text-red-200">
           ⚠ Never paste live secret keys in this chat — use terminal only
         </div>
       </Section>

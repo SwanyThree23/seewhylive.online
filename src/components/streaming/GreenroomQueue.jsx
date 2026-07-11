@@ -165,7 +165,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                       className="w-6 h-6 rounded flex items-center justify-center bg-green-800/50 hover:bg-green-600 border border-green-500/30 transition-all"
                       title="Admit"
                     >
-                      <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                      <CheckCircle className="w-3.5 h-3.5 text-[#6DBF7E]" />
                     </button>
                     <button
                       onClick={() => rejectMutation.mutate(p)}
@@ -173,7 +173,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                       className="w-6 h-6 rounded flex items-center justify-center bg-red-900/50 hover:bg-red-700 border border-red-500/20 transition-all"
                       title="Reject"
                     >
-                      <XCircle className="w-3.5 h-3.5 text-red-400" />
+                      <XCircle className="w-3.5 h-3.5 text-[#C0392B]" />
                     </button>
                   </div>
                 )}
@@ -203,9 +203,9 @@ function GuestRow({ participant, status }) {
 function StatusDot({ status }) {
   const colors = {
     waiting: 'bg-yellow-400',
-    ready: 'bg-green-400 animate-pulse',
+    ready: 'bg-[#6DBF7E] animate-pulse',
     admitted: 'bg-blue-400',
-    rejected: 'bg-red-400',
+    rejected: 'bg-[#C0392B]',
   };
   return <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-white/20'}`} />;
 }

@@ -336,7 +336,7 @@ export default function StreamScheduler() {
                           <Pencil className="w-4 h-4" />
                         </button>
                         <button onClick={() => { if (window.confirm('Cancel this stream?')) deleteMutation.mutate(s.id); }}
-                          className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-red-400">
+                          className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-[#C0392B]">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

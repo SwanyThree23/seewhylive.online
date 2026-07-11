@@ -57,7 +57,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Deleted</p>
-              <p className="text-sm font-bold text-red-400">{stats.deletes}</p>
+              <p className="text-sm font-bold text-[#C0392B]">{stats.deletes}</p>
             </div>
           </div>
 

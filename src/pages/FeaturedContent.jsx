@@ -195,7 +195,7 @@ export default function FeaturedContent() {
                         rel="noreferrer"
                         className="flex flex-col items-center gap-3 text-white/60 hover:text-white transition-all"
                       >
-                        <Youtube className="w-12 h-12 text-red-500" />
+                        <Youtube className="w-12 h-12 text-[#C0392B]" />
                         <span className="text-sm">Open on YouTube →</span>
                       </a>
                     </div>

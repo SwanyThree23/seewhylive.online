@@ -5,8 +5,8 @@ import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
 const EVENTS = [
-  { id: 'stream.start', label: 'Stream Started', color: 'text-green-400' },
-  { id: 'stream.end', label: 'Stream Ended', color: 'text-red-400' },
+  { id: 'stream.start', label: 'Stream Started', color: 'text-[#6DBF7E]' },
+  { id: 'stream.end', label: 'Stream Ended', color: 'text-[#C0392B]' },
   { id: 'viewer.join', label: 'Viewer Joined', color: 'text-blue-400' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
@@ -139,7 +139,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                       >
                         {testing === hook.id ? '...' : 'Test'}
                       </button>
-                      <button onClick={() => removeHook(hook.id)} className="text-red-400/50 hover:text-red-400">
+                      <button onClick={() => removeHook(hook.id)} className="text-[#C0392B]/50 hover:text-[#C0392B]">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

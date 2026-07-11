@@ -197,7 +197,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           className="relative rounded-xl overflow-hidden"
           style={{ background: '#000', border: '1px solid rgba(201,168,76,0.2)' }}>
           {error ? (
-            <div className="inset-0 flex items-center justify-center text-center p-4 text-red-400 text-sm">
+            <div className="inset-0 flex items-center justify-center text-center p-4 text-[#C0392B] text-sm">
               <p>{error}</p>
             </div>
           ) : (

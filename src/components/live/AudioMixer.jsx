@@ -68,8 +68,8 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
               onClick={onMicToggle}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
-                  ? 'bg-red-900/50 border border-red-600/50 text-red-400'
-                  : 'bg-green-900/30 border border-green-600/40 text-green-400'
+                  ? 'bg-red-900/50 border border-red-600/50 text-[#C0392B]'
+                  : 'bg-green-900/30 border border-green-600/40 text-[#6DBF7E]'
               }`}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}

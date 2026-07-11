@@ -60,7 +60,7 @@ function InsightCard({ insight, onDismiss, onCopy }) {
             <Copy className="w-3 h-3" />
           </button>
           <button onClick={() => onDismiss(insight.id)}
-            className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-red-400 transition-colors">
+            className="w-5 h-5 flex items-center justify-center rounded text-white/30 hover:text-[#C0392B] transition-colors">
             <X className="w-3 h-3" />
           </button>
         </div>

@@ -112,13 +112,13 @@ export default function AIModeration({ roomId, isHost = false }) {
                       onClick={() => handleAction(flag.id, 'approve')}
                       className="p-1 rounded hover:bg-white/10 transition-colors"
                     >
-                      <Check className="w-3 h-3 text-green-400" />
+                      <Check className="w-3 h-3 text-[#6DBF7E]" />
                     </button>
                     <button
                       onClick={() => handleAction(flag.id, 'remove')}
                       className="p-1 rounded hover:bg-white/10 transition-colors"
                     >
-                      <X className="w-3 h-3 text-red-400" />
+                      <X className="w-3 h-3 text-[#C0392B]" />
                     </button>
                   </div>
                 </div>

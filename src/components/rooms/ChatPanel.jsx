@@ -238,7 +238,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
             {format(new Date(message.created_date), 'h:mm a')}
           </span>
           {message.is_pinned && (
-            <Pin className="w-3 h-3 text-blue-500" />
+            <Pin className="w-3 h-3 text-[#5B7FA6]" />
           )}
         </div>
 
@@ -255,7 +255,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-6 w-6 bg-red-500 hover:bg-red-600 text-white"
+                className="h-6 w-6 bg-[#C0392B] hover:bg-red-600 text-white"
                 onClick={onDelete}
               >
                 <Trash2 className="w-3 h-3" />

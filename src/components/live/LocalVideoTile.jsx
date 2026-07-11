@@ -43,11 +43,11 @@ export default function LocalVideoTile({ stream, audioEnabled, videoEnabled, use
         </div>
         <div className="flex items-center gap-1">
           {audioEnabled
-            ? <Mic className="w-3 h-3 text-green-400" />
-            : <MicOff className="w-3 h-3 text-red-400" />}
+            ? <Mic className="w-3 h-3 text-[#6DBF7E]" />
+            : <MicOff className="w-3 h-3 text-[#C0392B]" />}
           {videoEnabled
             ? <Video className="w-3 h-3 text-blue-400" />
-            : <VideoOff className="w-3 h-3 text-red-400" />}
+            : <VideoOff className="w-3 h-3 text-[#C0392B]" />}
         </div>
       </div>
 

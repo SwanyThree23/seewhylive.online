@@ -132,7 +132,7 @@ export default function OverlayThemeBuilder({ creatorId }) {
                 <span className="text-white/70">{layout.name}</span>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
-                  className="text-red-500"
+                  className="text-[#C0392B]"
                 >
                   <Trash2 className="w-3 h-3" />
                 </motion.button>
