@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Settings, Flag, Megaphone, TrendingUp, Users } from 'lucide-react';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';

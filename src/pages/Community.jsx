@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Users, MessageSquare } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Users, MessageSquare, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
+import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
@@ -26,14 +29,19 @@ import SpotlightBanner from '../components/community/SpotlightBanner';
 import OnlinePresence from '../components/shared/OnlinePresence';
 const G = '#D4AF37';
 const BG = '#080B18';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function CommunityPage() {
+  const qc = useQueryClient();
+  const communityIdParam = new URLSearchParams(window.location.search).get('id');
+
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
 
-  const { data: community } = useQuery({
+  const { data: community, isLoading } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
