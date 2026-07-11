@@ -53,7 +53,7 @@ const FEATURE_STATUS = [
 ];
 
 const STATUS_STYLE = {
-  live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#00ff88', dot: '#00ff88' },
+  live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#6DBF7E', dot: '#6DBF7E' },
   beta:    { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD,      dot: GOLD },
   planned: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', dot: 'rgba(255,255,255,0.2)' },
 };
@@ -74,7 +74,7 @@ export default function BetaStatusPage() {
       <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center justify-between gap-3 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 gap-3">
-          <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#00ff88' }} />
+          <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#6DBF7E' }} />
           <div>
             <h1 className="text-xl font-black text-white leading-none" style={T}>Platform Status</h1>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>SeeWhy LIVE — all systems operational</p>
@@ -92,7 +92,7 @@ export default function BetaStatusPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Features Live', value: liveCount, color: '#00ff88' },
+            { label: 'Features Live', value: liveCount, color: '#6DBF7E' },
             { label: 'In Beta Preview', value: betaCount, color: GOLD },
             { label: 'Live Rooms Now', value: liveRooms, color: '#4A8A7A' },
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
@@ -109,7 +109,7 @@ export default function BetaStatusPage() {
         <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" style={{ color: '#00ff88' }} />
+              <CheckCircle className="w-4 h-4" style={{ color: '#6DBF7E' }} />
               <p className="font-black text-sm text-white" style={T}>Feature Checklist</p>
             </div>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>

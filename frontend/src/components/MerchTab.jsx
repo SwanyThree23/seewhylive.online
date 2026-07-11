@@ -9,7 +9,7 @@ var TEAL_H = '#C9A84C';
 var LIME   = '#B4E628';
 var PURP_H = '#C9A84C';
 var AMBER  = '#F59E0B';
-var ORANGE = '#FF6B35';
+var ORANGE = '#D4854A';
 var MUTED  = '#6B5F82';
 var TEXT   = '#EDE8F4';
 var TEXT_M = '#A89CC8';
@@ -35,7 +35,7 @@ var MERCH_ITEMS = [
   {id:'m5', name:'Washington Classic 2026 Tee', price:40, stock:20, emoji:'🏆', color:'#FFD700', limited:true, sold:52, cat:'apparel'},
   {id:'m6', name:'Cali Bones Domino Set (Premium)', price:120, stock:5, emoji:'🎲', color:'#E8C46A', limited:true, sold:19, cat:'collectibles'},
   {id:'m7', name:"VibeN'Bones Phone Case", price:30, stock:35, emoji:'📱', color:'#B4E628', limited:false, sold:87, cat:'accessories'},
-  {id:'m8', name:'SwanyThree Signed Poster', price:80, stock:3, emoji:'🖼', color:'#FF6B35', limited:true, sold:47, cat:'collectibles'},
+  {id:'m8', name:'SwanyThree Signed Poster', price:80, stock:3, emoji:'🖼', color:'#D4854A', limited:true, sold:47, cat:'collectibles'},
 ];
 
 export default function MerchTab({ addToast, isLive, socket, roomId, username }) {

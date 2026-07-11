@@ -121,7 +121,7 @@ export default function ContentRecommendations() {
             >
               <ThumbsUp
                 className="w-3 h-3"
-                style={{ color: liked.has(rec.id) ? '#EC4899' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#EC4899' : 'none' }}
+                style={{ color: liked.has(rec.id) ? '#C0392B' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#C0392B' : 'none' }}
               />
             </motion.button>
           </motion.a>

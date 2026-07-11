@@ -74,7 +74,7 @@ const EXPORT_SETS = [
   { id: 'activity', label: 'Activity History', description: 'All your platform activities and events', entity: 'Activity', filterKey: 'user_id', accentColor: '#4A8A7A' },
   { id: 'subscriptions', label: 'My Subscriptions', description: 'Your active and past creator subscriptions', entity: 'Subscription', filterKey: 'user_id', accentColor: '#D4AF37' },
   { id: 'notifications', label: 'Notifications', description: 'Your notification history', entity: 'Notification', filterKey: 'user_id', accentColor: GOLD },
-  { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#00ff88' },
+  { id: 'transactions', label: 'Transactions', description: 'All tips, purchases, and payments', entity: 'Transaction', filterKey: 'user_id', accentColor: '#6DBF7E' },
 ];
 
 export default function DataExportPage() {
@@ -153,7 +153,7 @@ export default function DataExportPage() {
         {/* Privacy note */}
         <div className="rounded-2xl p-4 flex items-start gap-3"
           style={{ background: 'rgba(13,6,24,0.6)', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00ff88' }} />
+          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#6DBF7E' }} />
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
           </p>

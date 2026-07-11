@@ -27,7 +27,7 @@ const CHANNELS = [
     url: 'https://youtube.com/@dominoentertainment5513',
     description: 'Live entertainment, shows, and exclusive content',
     color: 'from-red-900 to-orange-900',
-    accent: '#ff6b35',
+    accent: '#D4854A',
     emoji: '🎭',
   },
   {

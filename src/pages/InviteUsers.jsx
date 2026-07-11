@@ -89,7 +89,7 @@ export default function InviteUsersPage() {
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
-            { label: 'Slots Available', value: '∞', color: '#00ff88' },
+            { label: 'Slots Available', value: '∞', color: '#6DBF7E' },
             { label: 'Beta Access', value: 'Free', color: '#4A8A7A' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
@@ -158,7 +158,7 @@ export default function InviteUsersPage() {
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"
-              style={{ ...T, background: copiedLink ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#00ff88' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              style={{ ...T, background: copiedLink ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.06)', border: `1px solid ${copiedLink ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.12)'}`, color: copiedLink ? '#6DBF7E' : 'rgba(255,255,255,0.5)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               {copiedLink ? <><Check className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
             </button>
           </div>
@@ -176,7 +176,7 @@ export default function InviteUsersPage() {
                 <div key={i} className="flex items-center justify-between p-3 rounded-xl"
                   style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.15)' }}>
                   <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5" style={{ color: '#00ff88' }} />
+                    <Check className="w-3.5 h-3.5" style={{ color: '#6DBF7E' }} />
                     <span className="text-sm font-black text-white" style={T}>{inv.email}</span>
                   </div>
                   <div className="flex items-center gap-2">

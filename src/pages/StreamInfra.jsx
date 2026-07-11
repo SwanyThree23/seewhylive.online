@@ -36,7 +36,8 @@ function copyText(val) {
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
-  return prefix + '_' + id + '_' + Math.random().toString(36).slice(2, 10);
+  const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+  return prefix + '_' + id + '_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
 }
 
 /* ─── Sub-components ─── */
@@ -131,7 +132,10 @@ function StreamTab({ user }) {
   var userId = (user && user.id) || 'demo0000';
   var [streamKey, setStreamKey] = useState(function() { return genKey('sw', userId); });
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
-  var [vdoRoom] = useState(function() { return 'sw_' + Math.random().toString(36).slice(2, 10); });
+  var [vdoRoom] = useState(function() {
+    const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+    return 'sw_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
+  });
   var [perms, setPerms] = useState({
     speakers_can_share_screen: true,
     listeners_can_react: true,

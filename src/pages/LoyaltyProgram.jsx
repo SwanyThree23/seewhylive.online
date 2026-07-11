@@ -177,7 +177,7 @@ export default function LoyaltyProgram() {
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
                 { label: 'Active Viewers', value: leaderboard.length, color: '#4A8A7A', icon: Users },
-                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#00ff88', icon: Gift },
+                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>

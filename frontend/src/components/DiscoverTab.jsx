@@ -29,7 +29,7 @@ var GENRE_COLORS = {
   Podcast: '#7B5DA6',
   Lifestyle: '#4A8A7A',
   Tech: '#C9A84C',
-  Talk: '#FF8C00',
+  Talk: '#D4854A',
 };
 
 var CATEGORIES = ['ALL', 'MUSIC', 'GAMING', 'TECH', 'EDUCATION', 'BUSINESS', 'SPORTS', 'LIFESTYLE'];
@@ -724,7 +724,7 @@ export default function DiscoverTab(props) {
               padding: '2px 8px',
               fontFamily: "'DM Mono',monospace",
               fontSize: 9,
-              color: '#FF4444',
+              color: '#C0392B',
               letterSpacing: 1,
               cursor: 'pointer',
             }

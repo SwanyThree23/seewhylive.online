@@ -201,7 +201,7 @@ export default function NewsletterPage() {
                         <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{new Date(nl.created_date).toLocaleDateString()}</p>
                       </div>
                       <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0 uppercase"
-                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(109,191,126,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#00ff88' : GOLD }}>
+                        style={{ ...T, background: nl.status === 'sent' ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: `1px solid ${nl.status === 'sent' ? 'rgba(109,191,126,0.25)' : 'rgba(212,175,55,0.2)'}`, color: nl.status === 'sent' ? '#6DBF7E' : GOLD }}>
                         {nl.status}
                       </span>
                     </div>

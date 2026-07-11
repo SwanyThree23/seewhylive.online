@@ -244,7 +244,7 @@ export default function AIHub() {
 
   // Real status bar values
   const statusItems = [
-    { dot: guardianOn ? '#00ff88' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
+    { dot: guardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
     { dot: ariaOn ? GOLD : 'rgba(255,255,255,0.2)',           label: ariaOn ? 'ARIA Online' : 'ARIA Offline' },
     { dot: djTrack ? CYAN : 'rgba(255,255,255,0.2)',          label: djTrack ? `DJ: ${djTrack.title}` : 'No DJ Track' },
     { dot: PINK,                                              label: '0 panel members' },
@@ -469,7 +469,7 @@ export default function AIHub() {
         <Card accentColor={PINK}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🛡️ Guardian AI Moderation</p>
-            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#00ff88" />
+            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#6DBF7E" />
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Real-time chat moderation. Auto-removes hate speech, spam, and toxic content.
@@ -706,7 +706,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 6: AI Analytics ── */}
-        <Card accentColor="#00ff88">
+        <Card accentColor="#6DBF7E">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📊 AI Insights</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
             AI-powered stream analytics and growth recommendations.
@@ -715,7 +715,7 @@ export default function AIHub() {
           {/* Metric cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
-              { label: 'Avg Session',   value: '23min',        color: '#00ff88' },
+              { label: 'Avg Session',   value: '23min',        color: '#6DBF7E' },
               { label: 'Retention',     value: '68%',          color: CYAN },
               { label: 'Peak Viewers',  value: 'calculating…', color: GOLD },
               { label: 'Best Time',     value: '7–9pm',        color: PURPLE },
@@ -736,7 +736,7 @@ export default function AIHub() {
               style={{
                 ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
                 background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)',
-                color: '#00ff88', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                color: '#6DBF7E', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
                 textTransform: 'uppercase', cursor: 'pointer',
               }}
             >

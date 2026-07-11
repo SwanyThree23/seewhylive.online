@@ -284,7 +284,7 @@ export default function ViewerDashboard() {
                       <p className="text-sm font-black text-white" style={T}>{s.tier_name || 'Subscription'}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>${s.price}/mo · since {s.start_date ? new Date(s.start_date).toLocaleDateString() : new Date(s.created_date).toLocaleDateString()}</p>
                     </div>
-                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#00ff88', ...T }}>Active</span>
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', ...T }}>Active</span>
                   </div>
                 ))
               }

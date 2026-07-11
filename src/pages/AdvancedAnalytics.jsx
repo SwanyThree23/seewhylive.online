@@ -85,7 +85,7 @@ export default function AdvancedAnalyticsPage() {
         {/* KPI cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#00ff88' },
+            { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#6DBF7E' },
             { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#C0392B' },
             { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#4A8A7A' },
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
@@ -174,7 +174,7 @@ export default function AdvancedAnalyticsPage() {
               <div className="space-y-3">
                 {[
                   { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#4A8A7A' },
-                  { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#00ff88' },
+                  { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#6DBF7E' },
                   { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#D4AF37' },
                 ].map(({ title, desc, color }) => (
                   <div key={title} className="p-3 rounded-xl"
@@ -190,7 +190,7 @@ export default function AdvancedAnalyticsPage() {
               <p className="font-black text-sm text-white mb-4" style={T}>Platform Health</p>
               <div className="space-y-4">
                 {[
-                  { label: 'System Performance', value: 95, text: 'Excellent', color: '#00ff88' },
+                  { label: 'System Performance', value: 95, text: 'Excellent', color: '#6DBF7E' },
                   { label: 'User Satisfaction', value: 88, text: 'High', color: '#4A8A7A' },
                   { label: 'Content Quality', value: 82, text: 'Good', color: '#D4AF37' },
                 ].map(({ label, value, text, color }) => (

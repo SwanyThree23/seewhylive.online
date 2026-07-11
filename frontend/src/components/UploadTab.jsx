@@ -169,7 +169,7 @@ export default function UploadTab({ addToast, isLive }) {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,rgba(255,0,0,.08),rgba(128,0,32,.1))', border: '1px solid rgba(255,0,0,.2)', borderRadius: 10, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#FF4444', letterSpacing: 3 }}>📤 UPLOAD CENTER</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C0392B', letterSpacing: 3 }}>📤 UPLOAD CENTER</div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62' }}>YouTube · Device · Clips</div>
         </div>
         <div style={{ fontSize: 28 }}>🎬</div>

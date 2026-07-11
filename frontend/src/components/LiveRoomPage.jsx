@@ -1024,7 +1024,7 @@ export default function LiveRoomPage({
                           <button
                             onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); }}
                             title="Invite to stage"
-                            style={{ padding: '4px 8px', background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 7, color: '#FF8C00', cursor: 'pointer', fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, letterSpacing: .5 }}>
+                            style={{ padding: '4px 8px', background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 7, color: '#D4854A', cursor: 'pointer', fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, letterSpacing: .5 }}>
                             + STAGE
                           </button>
                         )}
@@ -1275,7 +1275,7 @@ export default function LiveRoomPage({
                   In the Room
                 </span>
                 {Object.keys(raisedHands).length > 0 && (
-                  <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF8C00', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
+                  <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
                     ✋ {Object.keys(raisedHands).length} raised
                   </span>
                 )}

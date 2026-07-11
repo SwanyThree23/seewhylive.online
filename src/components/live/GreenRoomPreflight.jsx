@@ -9,7 +9,11 @@ const T  = { fontFamily: 'Barlow Condensed, sans-serif' };
 function genToken(userId) {
   const stored = localStorage.getItem(`sw_session_token_${userId}`);
   if (stored) return stored;
-  const t = `sw_${Math.random().toString(36).substring(2, 10)}_${Math.random().toString(36).substring(2, 10)}?session=${Date.now()}`;
+  const a1 = new Uint8Array(6); crypto.getRandomValues(a1);
+  const a2 = new Uint8Array(6); crypto.getRandomValues(a2);
+  const p1 = Array.from(a1).map(b => b.toString(36)).join('').slice(0, 8);
+  const p2 = Array.from(a2).map(b => b.toString(36)).join('').slice(0, 8);
+  const t = `sw_${p1}_${p2}?session=${Date.now()}`;
   localStorage.setItem(`sw_session_token_${userId}`, t);
   return t;
 }

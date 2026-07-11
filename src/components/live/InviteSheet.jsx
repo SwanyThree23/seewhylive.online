@@ -10,7 +10,9 @@ const BG3     = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function genToken() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+  const arr = new Uint8Array(6);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(36)).join('').toUpperCase().slice(0, 8);
 }
 
 export default function InviteSheet({ isOpen, onClose, roomId, roomTitle, isHost, isCoHost }) {

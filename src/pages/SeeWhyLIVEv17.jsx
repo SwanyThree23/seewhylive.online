@@ -215,7 +215,7 @@ function ZEGOLiveRoom({ roomID, userID, userName, role, appID, serverSecret, onL
 }
 
 // ── PANEL GRID + BIGO OCTAGONAL VIEW ─────────────────────────────
-var TILE_COLORS = [G.crimsonBright,G.gold,G.cyan,G.volt,G.purple,G.orange,G.green,"#FF69B4","#D4854A","#39FF14","#FF007F","#1E90FF","#FFD700","#FF4500","#00CED1","#9400D3","#ADFF2F","#DC143C","#4A8A7A","#FF6347"];
+var TILE_COLORS = [G.crimsonBright,G.gold,G.cyan,G.volt,G.purple,G.orange,G.green,"#FF69B4","#D4854A","#39FF14","#FF007F","#1E90FF","#FFD700","#D4854A","#00CED1","#9400D3","#ADFF2F","#DC143C","#4A8A7A","#FF6347"];
 var REACTION_EMOJIS = ["🔥","❤️","😂","👏","💯","🚀","💎","👑","😍","🤩"];
 var DEMO_NAMES = ["Host","MixMaster","StarGirl","DrumKing","VibezQn","LitKid","GoldenFlo","CyphaBoss","SlickTalk","WaveRider","HypeLord","ReggaeQ","BeatDrop","SoulSis","TrapGod","NeonKing","PopDiva","JazzHnd","UrbanVibe","CloudTop"];
 

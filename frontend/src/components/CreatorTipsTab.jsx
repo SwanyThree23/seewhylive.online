@@ -25,7 +25,7 @@ var CAT_COLORS = {
   'COMMUNITY': '#4DA6FF',
   'ANALYTICS': '#E8FF47',
   'AI':        '#C9A84C',
-  'TECH':      '#FF6B35',
+  'TECH':      '#D4854A',
 };
 
 var TIPS = [

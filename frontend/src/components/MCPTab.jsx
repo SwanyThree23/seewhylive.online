@@ -36,7 +36,7 @@ var MCP_TOOLS = [
   {id:'t8',  name:'create_clip',         table:'clips',         status:'healthy', latency:'12ms',  calls:143,  color:LIME},
   {id:'t9',  name:'get_tourn_standings', table:'tournament',    status:'healthy', latency:'7ms',   calls:521,  color:LIME},
   {id:'t10', name:'send_gift',           table:'gifts',         status:'healthy', latency:'9ms',   calls:388,  color:LIME},
-  {id:'t11', name:'fanout_status',       table:'rtmp_fanout',   status:'healthy', latency:'14ms',  calls:124,  color:'#FF6B35'},
+  {id:'t11', name:'fanout_status',       table:'rtmp_fanout',   status:'healthy', latency:'14ms',  calls:124,  color:'#D4854A'},
   {id:'t12', name:'vault_access_check',  table:'vault_content', status:'healthy', latency:'6ms',   calls:91,   color:TEAL_H},
 ];
 

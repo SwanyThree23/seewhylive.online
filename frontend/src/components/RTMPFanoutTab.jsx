@@ -172,7 +172,7 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
           {pingingServer ? '⟳ PINGING...' : '📡 PING SERVER'}
         </button>
         {pingMs !== null && (
-          <div style={{ background: pingMs < 150 ? 'rgba(201,168,76,.12)' : 'rgba(255,107,0,.12)', border: '1px solid ' + (pingMs < 150 ? 'rgba(201,168,76,.4)' : 'rgba(255,107,0,.4)'), borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: pingMs < 150 ? '#C9A84C' : '#FF6B35', flexShrink: 0 }}>
+          <div style={{ background: pingMs < 150 ? 'rgba(201,168,76,.12)' : 'rgba(255,107,0,.12)', border: '1px solid ' + (pingMs < 150 ? 'rgba(201,168,76,.4)' : 'rgba(255,107,0,.4)'), borderRadius: 6, padding: '4px 10px', fontFamily: "'DM Mono',monospace", fontSize: 10, color: pingMs < 150 ? '#C9A84C' : '#D4854A', flexShrink: 0 }}>
             {'● ' + pingMs + 'ms'}
           </div>
         )}

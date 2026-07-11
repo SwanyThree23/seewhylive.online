@@ -22,7 +22,7 @@ const C = {
   blue: '#2979FF',
   cyan: '#00BCD4',
   orange: '#FF6D00',
-  purple: '#7C3AED',
+  purple: '#7B5DA6',
 };
 
 const CREATOR_SPLIT = function(t) { return Math.floor(t * 90 / 100); };
@@ -78,7 +78,7 @@ function fmtK(n) {
 function fmtTime(s) { return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
 function fmtMoney(cents) { return '$' + (Math.floor(cents) / 100).toFixed(2); }
 function avatarColor(name) {
-  var palette = [C.burgundy, '#1565C0', '#2E7D32', '#6A1B9A', '#E65100', '#00695C', '#37474F', '#C62828'];
+  var palette = [C.burgundy, '#5B7FA6', '#2E7D32', '#6A1B9A', '#E65100', '#00695C', '#37474F', '#C62828'];
   var h = 0;
   for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % palette.length;
   return palette[h];
@@ -472,7 +472,7 @@ function PKBattleModal(props) {
             <div style={{ color: C.muted, fontSize: 11, letterSpacing: 1 }}>REMAINING</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            {[{ name: hostName, score: scoreA, color: C.burgundy }, { name: opponent, score: scoreB, color: '#1565C0' }].map(function(side, i) {
+            {[{ name: hostName, score: scoreA, color: C.burgundy }, { name: opponent, score: scoreB, color: '#5B7FA6' }].map(function(side, i) {
               return (
                 <div key={i} style={{ background: 'linear-gradient(135deg,' + side.color + '33,' + C.charcoal + ')', border: '2px solid ' + side.color, borderRadius: 12, padding: 14, textAlign: 'center' }}>
                   <div style={{ color: '#fff', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>{side.name}</div>
@@ -487,7 +487,7 @@ function PKBattleModal(props) {
               <div style={{ width: pctA + '%', background: C.burgundy, transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>{pctA}%</span>
               </div>
-              <div style={{ width: pctB + '%', background: '#1565C0', transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: pctB + '%', background: '#5B7FA6', transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>{pctB}%</span>
               </div>
             </div>
@@ -2063,7 +2063,7 @@ function BattlesPage(props) {
             <div style={{ color: C.white, fontWeight: 800, fontSize: 14, margin: '4px 0 10px' }}>State vs State: WA vs CA 🔥</div>
             <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 20, marginBottom: 8 }}>
               <div style={{ width: '54%', background: C.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>WA 54%</span></div>
-              <div style={{ width: '46%', background: '#1565C0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>CA 46%</span></div>
+              <div style={{ width: '46%', background: '#5B7FA6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>CA 46%</span></div>
             </div>
             <div style={{ color: C.muted, fontSize: 11 }}>👁 1,204 watching · Tap to join</div>
           </div>

@@ -271,7 +271,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           {auraMessages.map(function(msg) {
             return (
               <div key={msg.id} style={{ background: 'rgba(139,92,246,.08)', border: '1px solid rgba(139,92,246,.25)', borderRadius: 8, padding: '8px 10px', marginBottom: 5 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 3 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7B5DA6', letterSpacing: 1, marginBottom: 3 }}>
                   {msg.mode.toUpperCase()}
                 </div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.4 }}>
@@ -390,7 +390,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                 padding: '7px 10px'
               }}>
                 {isTrigger && (
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 2 }}>⚡ AURA TRIGGER</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7B5DA6', letterSpacing: 1, marginBottom: 2 }}>⚡ AURA TRIGGER</div>
                 )}
                 {m.role === 'aura' && (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
