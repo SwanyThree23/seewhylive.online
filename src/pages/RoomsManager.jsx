@@ -3,9 +3,8 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import GlobalSearch from '../components/shared/GlobalSearch';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
-import BroadcastAnalyticsDashboard from '../components/analytics/BroadcastAnalyticsDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import StreamScheduler from '../components/live/StreamScheduler';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -401,13 +400,12 @@ export default function RoomsManager() {
           </div>
         )}
       </div>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <GlobalSearch />
       <QuickActionPanel />
       <BroadcastAnalyticsDashboard />
       <SwanAIRecommendations roomId={null} currentLayout='rooms' viewerCount={0} />
-      <StreamScheduler />
+    </div>
   );
 }

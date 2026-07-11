@@ -403,12 +403,12 @@ export default function TranscriptionStudio() {
           </a>
         </div>
       </div>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <AIStreamSummary roomId={null} isHost={true} />
       <SwanAIRecommendations roomId={null} currentLayout='transcription' viewerCount={0} />
       <AIHighlightGenerator roomId={null} isHost={true} />
       <StreamHealthMonitor isStreaming={false} />
+    </div>
   );
 }

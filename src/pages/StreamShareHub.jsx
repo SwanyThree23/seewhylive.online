@@ -455,13 +455,13 @@ export default function StreamShareHub() {
           </div>
         )}
       </div>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <ContentRecommendations />
       <CollaborationMatcher />
       <CreatorBridge user={null} />
       <GlobalSearch />
+    </div>
   );
 }
 

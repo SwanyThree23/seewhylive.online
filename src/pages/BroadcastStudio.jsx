@@ -11,7 +11,6 @@ import {
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
-import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49.jsx';
 import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
@@ -63,14 +62,12 @@ import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import HostAlertCenter from '../components/live/HostAlertCenter';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
-import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
 import { WhisperPanel } from '../components/live/DMWhisperPanel';
@@ -110,7 +107,7 @@ import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWh
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import MerchWidget from '../components/merch/MerchWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
@@ -2025,8 +2022,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       )}
 
       
-      <GlobalMicButtonV49 audioEnabled={audioEnabled} toggleAudio={toggleAudio}
-        isSpeaking={isSpeaking} micLevel={micLevelVal} visible={true}/>
       {partyId && (
         <LoveHearts roomId={partyId} currentUser={user} creatorId={party?.host_id} />
       )}
@@ -2205,8 +2200,8 @@ function PipCameraTile({ localStream, videoEnabled }) {
           </div>}
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
-    </div>
       <TipGoalBar roomId={null} goal={100} current={0} />
       <TopTippers roomId={null} />
+    </div>
   );
 }

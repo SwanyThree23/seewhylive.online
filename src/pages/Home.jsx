@@ -655,7 +655,7 @@ export default function Home() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-    </div>
       <OnlinePresence userId={null} />
+    </div>
   );
 }

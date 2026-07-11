@@ -327,7 +327,7 @@ export default function SettingsPage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-    </div>
       <VoiceAISettings />
+    </div>
   );
 }

@@ -175,7 +175,11 @@ function Step2({ onboarding, onDone }) {
 // ── STEP 3: Streaming Setup ──────────────────────────────────────
 function Step3({ onboarding, onDone }) {
   const RTMP = 'rtmp://ingest.seewhy.live/live';
-  const [streamKey] = useState('sk_' + Math.random().toString(36).slice(2,10).toUpperCase());
+  const [streamKey] = useState(() => {
+    const arr = new Uint8Array(9);
+    crypto.getRandomValues(arr);
+    return 'sk_' + Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,16).toUpperCase();
+  });
   const [showKey, setShowKey] = useState(false);
   const [zegoId, setZegoId] = useState('');
   const [zegoSign, setZegoSign] = useState('');

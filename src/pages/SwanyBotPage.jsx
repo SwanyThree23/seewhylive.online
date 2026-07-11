@@ -256,7 +256,7 @@ export default function SwanyBotPage() {
         </div>
         <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
       </div>
-    </div>
       <VoiceAISettings />
+    </div>
   );
 }

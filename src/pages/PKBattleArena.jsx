@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
-import GiftSystem from '../components/live/GiftSystem';
+import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -340,7 +340,6 @@ export default function PKBattleArena() {
           </div>
         )}
       </div>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <GiftSystem roomId={null} userId={null} isHost={true} />
@@ -350,5 +349,6 @@ export default function PKBattleArena() {
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={false} />
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
+    </div>
   );
 }

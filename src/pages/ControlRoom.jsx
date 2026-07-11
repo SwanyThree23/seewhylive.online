@@ -17,7 +17,6 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
@@ -80,7 +79,7 @@ import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWh
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import MerchWidget from '../components/merch/MerchWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';

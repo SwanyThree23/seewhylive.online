@@ -142,8 +142,10 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
               Done
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      )}
+
     </>
   );
 }

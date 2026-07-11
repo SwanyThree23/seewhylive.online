@@ -468,8 +468,8 @@ export default function EmbedPage() {
           </div>
         </div>
       )}
-    </div>
       <StreamHealthMonitor isStreaming={true} />
       <ViewerCount count={0} peakViewers={0} />
+    </div>
   );
 }

@@ -35,7 +35,7 @@ export default function RevenueDashboard({ userId }) {
 
   // Calculate earnings with 90/10 split
   const grossEarnings = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
-  const platformFee = grossEarnings * 0.10;
+  const platformFee = Math.floor(grossEarnings * 0.10);
   const processingFee = transactions.length * 0.30 + (grossEarnings * 0.029);
   const netEarnings = grossEarnings - platformFee - processingFee;
 

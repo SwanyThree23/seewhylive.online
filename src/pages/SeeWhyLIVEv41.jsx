@@ -11,7 +11,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import NotificationBell from '../components/shared/NotificationBell';
 import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
-import GiftSystem from '../components/live/GiftSystem';
+import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import ViewerCount from '../components/live/ViewerCount';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -19,12 +19,10 @@ import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import BroadcastAnalyticsDashboard from '../components/analytics/BroadcastAnalyticsDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import RewardShop from '../components/loyalty/RewardShop';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import LocalVideoTile from '../components/streaming/LocalVideoTile';
-import OctagonalVideoWindow from '../components/streaming/OctagonalVideoWindow';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -2129,7 +2127,6 @@ export default function SeeWhyLIVEv41() {
         </div>
         {panelMap[activeTab]}
       </div>
-    </div>
       <SwanyBotWidget />
       <SwanyBotEnhanced />
       <NotificationBell />
@@ -2146,5 +2143,6 @@ export default function SeeWhyLIVEv41() {
       <StreamerMonetizationCenter />
       <RewardShop creatorId={null} roomId={null} currentUser={null} />
       <BackgroundCustomizer />
+    </div>
   );
 }

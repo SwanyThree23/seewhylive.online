@@ -68,7 +68,7 @@ import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWh
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import MerchWidget from '../components/merch/MerchWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
@@ -981,7 +981,7 @@ export default function GoLive() {
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
-    </div>
       <TipGoalBar roomId={null} goal={100} current={0} />
+    </div>
   );
 }

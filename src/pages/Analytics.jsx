@@ -22,8 +22,8 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import {
 import TopTippers from '../components/monetization/TopTippers';
+import {
   TrendingUp, Users, DollarSign, Radio, Eye, Activity,
   MessageSquare, Star, Crown, Zap
 } from 'lucide-react';
@@ -388,7 +388,7 @@ export default function AnalyticsPage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-    </div>
       <TopTippers roomId={null} />
+    </div>
   );
 }

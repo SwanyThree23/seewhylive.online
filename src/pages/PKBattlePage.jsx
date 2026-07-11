@@ -788,7 +788,7 @@ export default function PKBattlePage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-    </div>
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
+    </div>
   );
 }

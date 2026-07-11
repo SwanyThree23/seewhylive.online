@@ -75,7 +75,7 @@ import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWh
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import MerchWidget from '../components/merch/MerchWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
@@ -471,7 +471,7 @@ export default function HybridStreamRoom() {
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
-    </div>
       <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
+    </div>
   );
 }

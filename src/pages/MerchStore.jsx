@@ -537,11 +537,11 @@ export default function MerchStorePage() {
           <AddItemModal creatorId={targetCreatorId} onClose={() => setShowAdd(false)} />
         )}
       </AnimatePresence>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <RewardShop creatorId={null} roomId={null} currentUser={null} />
       <StreamerMonetizationCenter />
       <SwanAIRecommendations roomId={null} currentLayout='merch' viewerCount={0} />
+    </div>
   );
 }

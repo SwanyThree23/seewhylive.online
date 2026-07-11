@@ -346,12 +346,12 @@ export default function AuraAI() {
           ENTER to send · SHIFT+ENTER for new line
         </div>
       </div>
-    </div>
       <SwanyBotWidget />
       <NotificationBell />
       <GlobalSearch />
       <StreamGoals isHost={false} currentTips={0} currentSubs={0} currentViewers={0} />
       <ContentRecommendations />
       <VoiceAISettings />
+    </div>
   );
 }
