@@ -748,20 +748,26 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   };
 
   const promoteCoHost = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
-    toast.success(`${member.user_name} promoted to co-host`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
+      toast.success(`${member.user_name} promoted to co-host`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to promote member.'); }
   };
 
   const promoteSpeaker = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
-    toast.success(`${member.user_name} added to panel`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
+      toast.success(`${member.user_name} added to panel`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to add to panel.'); }
   };
 
   const demoteToAudience = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to update member role.'); }
   };
 
   const copyLink = () => {
@@ -773,9 +779,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   };
 
   const kickMember = async (member) => {
-    await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
-    toast.success(`${member.user_name} removed from broadcast`);
-    qc.invalidateQueries(['broadcast-members', partyId]);
+    try {
+      await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
+      toast.success(`${member.user_name} removed from broadcast`);
+      qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
+    } catch { toast.error('Failed to remove member.'); }
   };
 
   const sendRaiseHand = async () => {

@@ -230,10 +230,12 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
         {isHost && auction.status === 'active' && (
           <div className="flex gap-1.5">
             <button onClick={async () => {
-              const newEnd = new Date(new Date(auction.ends_at).getTime() + 5 * 60 * 1000);
-              await base44.entities.LiveAuction.update(auction.id, { ends_at: newEnd.toISOString() });
-              qc.invalidateQueries(['auctions', auction.room_id]);
-              toast.success('+5 min added');
+              try {
+                const newEnd = new Date(new Date(auction.ends_at).getTime() + 5 * 60 * 1000);
+                await base44.entities.LiveAuction.update(auction.id, { ends_at: newEnd.toISOString() });
+                qc.invalidateQueries({ queryKey: ['auctions', auction.room_id] });
+                toast.success('+5 min added');
+              } catch { toast.error('Failed to extend auction.'); }
             }}
               className="flex-1 py-1 rounded text-[11px] font-black uppercase"
               style={{ background: 'rgba(109,191,126,0.08)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>

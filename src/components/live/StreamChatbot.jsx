@@ -73,12 +73,14 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
 
       // AI-powered Q&A for questions
       if (content.endsWith('?') && content.length > 10) {
-        const aiReply = await base44.integrations.Core.InvokeLLM({
-          prompt: `You are a helpful live stream chatbot named SeeWhyBot. A viewer asked: "${content}". 
+        try {
+          const aiReply = await base44.integrations.Core.InvokeLLM({
+            prompt: `You are a helpful live stream chatbot named SeeWhyBot. A viewer asked: "${content}".
           Stream context: hosted by ${hostName}, room: "${room?.title}", category: ${room?.category}.
           Give a friendly, concise answer in 1-2 sentences. If you don't know, say so politely.`,
-        });
-        setTimeout(() => sendBotMessage.mutate(`💬 ${aiReply}`), 1000);
+          });
+          setTimeout(() => sendBotMessage.mutate(`💬 ${aiReply}`), 1000);
+        } catch {}
       }
     });
     return unsub;
