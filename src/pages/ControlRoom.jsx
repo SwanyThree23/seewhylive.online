@@ -131,6 +131,15 @@ import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import TierBadge from '../components/subscriptions/TierBadge';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import GuestGrid from '../components/live/GuestGrid';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -567,6 +576,15 @@ export default function ControlRoomPage() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
+      {<CreatorTierManager creatorId={user?.id} />}
+      {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
+      {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
+      {roomId && <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />}
+      {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
+      <YouTubeDiscovery />
+      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <GlobalSearch onClose={() => {}} />
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={true} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
