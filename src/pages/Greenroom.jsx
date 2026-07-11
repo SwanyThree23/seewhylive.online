@@ -438,7 +438,8 @@ export default function GreenroomPage() {
       }
       return `/LiveRoom?id=${roomId}`;
     },
-    onSuccess: (path) => { window.location.href = path; },
+    onSuccess: (path) => { navigate(path); },
+    onError: () => toast.error('Something went wrong — please try again'),
   });
 
   // ─── Waiting Room State ───────────────────────────────────────────────────

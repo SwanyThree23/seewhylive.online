@@ -292,7 +292,8 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         final_amount: auction?.current_bid,
       });
     },
-    onSuccess: () => qc.invalidateQueries(['live-auctions']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['live-auctions'] }),
+    onError: () => toast.error('Failed to end auction.'),
   });
 
   const handleCreate = () => {
