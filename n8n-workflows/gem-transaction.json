@@ -1,0 +1,13 @@
+{
+  "name": "SeeWhy - Gem Transaction",
+  "active": true,
+  "nodes": [
+    {"id":"1","name":"Gem Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,
+     "position":[250,300],"parameters":{"path":"gem-send","httpMethod":"POST","responseMode":"onReceived"}},
+    {"id":"2","name":"Forward to SeeWhy","type":"n8n-nodes-base.httpRequest","typeVersion":3,
+     "position":[500,300],"parameters":{"method":"POST","url":"https://seewhylive.online/api/n8n/gem-transaction",
+     "sendBody":true,"bodyContentType":"json","jsonBody":"={{ JSON.stringify($json) }}",
+     "options":{}}}
+  ],
+  "connections":{"Gem Webhook":{"main":[[{"node":"Forward to SeeWhy","type":"main","index":0}]]}}
+}

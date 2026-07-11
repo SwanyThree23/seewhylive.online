@@ -1,3 +1,7 @@
+const battleRoutes = require('./routes/battles');
+const rewardsRoutes = require('./routes/rewards');
+const publicPreviewRoutes = require('./routes/publicPreview');
+const { registerBattleHandlers } = require('./socket/battleHandlers');
 'use strict';
 
 /**
@@ -5,7 +9,7 @@
  * Express + Socket.io + mediasoup SFU + Stripe + SwanyBot
  */
 
-require('dotenv').config({ path: '/opt/seewhy/.env' });
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 var express       = require('express');
 var { createServer } = require('http');
@@ -38,7 +42,6 @@ var rtmp         = require('./rtmp');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
-var ttsRouter = require('./tts');
 var translation  = require('./translation');
 var aura         = require('./aura');
 var whisper      = require('./whisper');
@@ -276,12 +279,14 @@ var aiRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
-var vodRouter = require('./routes/vod');
-app.use('/api/vod', vodRouter);
-
 app.use('/api/ai', aiRateLimit);
+app.use('/api/battles', battleRoutes);
+app.use('/api/rewards', rewardsRoutes);
+app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
+var n8nRouter = require('./n8nWebhooks');
+app.use('/api/n8n', n8nRouter);
 app.use(xssClean());
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
@@ -511,21 +516,6 @@ setInterval(function() {
 // ─── REST API Routes ──────────────────────────────────────────────────────
 
 // GET /api/health
-app.get('/api/config/public', function(req, res) {
-  res.json({
-    handles: {
-      venmo: 'SwanyThree23',
-      cashapp: 'SwanyThree23',
-      zelle: '+16026986110'
-    },
-    platform: 'SeeWhy LIVE',
-    support: 'seewhylive.online'
-  });
-});
-
-
-app.use('/api/tts', ttsRouter);
-
 app.get('/api/health', function(req, res) {
   var mem = process.memoryUsage();
   var dbOk = true;
@@ -834,10 +824,9 @@ app.post('/api/ai/chat', function(req, res) {
   var system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
-  var { Anthropic } = require('@anthropic-ai/sdk');
-  var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  var client = require('./llm').getClient();
   client.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'anthropic/claude-sonnet-5',
     max_tokens: 512,
     system: system || 'You are a helpful assistant for SeeWhy LIVE.',
     messages: [{ role: 'user', content: message }]
@@ -878,10 +867,9 @@ app.post('/api/summarize-chat', function(req, res) {
   var messages = typeof req.body.messages === 'string' ? req.body.messages.slice(0, 4000) : '';
   if (!messages) { res.json({ summary: 'No chat to summarize.' }); return; }
   try {
-    var Anthropic = require('@anthropic-ai/sdk').Anthropic;
-    var client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    var client = require('./llm').getClient();
     client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'anthropic/claude-haiku-4.5',
       max_tokens: 200,
       messages: [{ role: 'user', content: 'Summarize this live stream chat in 2-3 sentences, highlighting key topics and viewer sentiment:\n\n' + messages }]
     }).then(function(resp) {
@@ -1026,79 +1014,6 @@ var apiRoutes = null;
 try {
   apiRoutes = require('./routes');
   app.use('/api', apiRoutes);
-
-// ── INLINE FANOUT ROUTES (before static) ─────────────────────
-var activeFanouts = {};
-app.get('/api/fanout-status', function(req, res) {
-  res.json({ ok: true, active_streams: Object.keys(activeFanouts), count: Object.keys(activeFanouts).length });
-});
-app.post('/api/fanout-start', function(req, res) {
-  res.json({ ok: true, msg: 'fanout armed', destinations: (req.body.destinations || []).length });
-});
-app.post('/api/fanout-stop', function(req, res) {
-  res.json({ ok: true, msg: 'fanout stopped' });
-});
-
-// Stream sync route — called by MediaMTX runOnReady + client go-live
-app.post('/api/stream-sync', async function(req, res) {
-  try {
-    var body = req.body || {};
-    var streamId = body.streamId || body.stream_id || ('stream-' + Date.now());
-    var creatorId = body.creatorId || body.creator_id || null;
-    var status = body.status || 'live';
-    var title = body.title || body.streamId || 'Live Stream';
-    var category = body.category || 'General';
-    if (!creatorId) {
-      return res.status(400).json({ error: 'creatorId required' });
-    }
-    var https = require('https');
-    var SUPABASE_HOST = 'rxlgywvfclyjdfyvfvyc.supabase.co';
-    var SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || 'process.env.SUPABASE_SERVICE_ROLE_KEY';
-    var payload = JSON.stringify({
-      id: streamId,
-      creator_id: creatorId,
-      title: title,
-      category: category,
-      status: status,
-      started_at: status === 'live' ? new Date().toISOString() : null,
-      ended_at: status === 'ended' ? new Date().toISOString() : null
-    });
-    await new Promise(function(resolve, reject) {
-      var opts = {
-        hostname: SUPABASE_HOST,
-        path: '/rest/v1/streams',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Prefer': 'resolution=merge-duplicates',
-          'Content-Length': Buffer.byteLength(payload)
-        }
-      };
-      var req = https.request(opts, function(r) {
-        var body = '';
-        r.on('data', function(d) { body += d; });
-        r.on('end', function() {
-          logger.info('[stream-sync] ' + r.statusCode + ' ' + body.slice(0, 200));
-          res.json({ ok: r.statusCode < 300, status: r.statusCode, body: body.slice(0, 200) });
-          resolve();
-        });
-      });
-      req.on('error', reject);
-      req.write(payload);
-      req.end();
-    });
-  } catch(err) {
-    logger.error('[stream-sync] ' + err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-// ─────────────────────────────────────────────────────────────
-app.post('/api/stream/on-publish', function(req, res) { var streamPath = req.body.stream_path || req.query.stream_path || '/live'; logger.info('[on-publish] stream started: ' + streamPath); var https = require('https'); var key = process.env.SUPABASE_SERVICE_ROLE_KEY; var payload = JSON.stringify({status:'live',started_at:new Date().toISOString()}); var opts = {hostname:'rxlgywvfclyjdfyvfvyc.supabase.co',port:443,path:'/rest/v1/streams?stream_key=eq.sw_6991033b_n8gf2vyf',method:'PATCH',headers:{'apikey':key,'Content-Type':'application/json','Content-Length':Buffer.byteLength(payload),'Prefer':'return=minimal'}}; var req2 = https.request(opts,function(r){logger.info('[on-publish] supabase '+r.statusCode);}); req2.on('error',function(e){logger.error('[on-publish] '+e.message);}); req2.write(payload); req2.end(); res.json({ ok: true }); });
-app.post('/api/stream/on-unpublish', function(req, res) { var streamPath = req.body.stream_path || req.query.stream_path || '/live'; logger.info('[on-unpublish] stream ended: ' + streamPath); var https = require('https'); var key = process.env.SUPABASE_SERVICE_ROLE_KEY; var payload = JSON.stringify({status:'ended',ended_at:new Date().toISOString()}); var opts = {hostname:'rxlgywvfclyjdfyvfvyc.supabase.co',port:443,path:'/rest/v1/streams?stream_key=eq.sw_6991033b_n8gf2vyf',method:'PATCH',headers:{'apikey':key,'Content-Type':'application/json','Content-Length':Buffer.byteLength(payload),'Prefer':'return=minimal'}}; var req2 = https.request(opts,function(r){logger.info('[on-unpublish] supabase '+r.statusCode);}); req2.on('error',function(e){logger.error('[on-unpublish] '+e.message);}); req2.write(payload); req2.end(); res.json({ ok: true }); });
-
-app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
   logger.info('[routes] New API routes mounted at /api');
 } catch (routesErr) {
   logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
@@ -1136,6 +1051,7 @@ io.use(function(socket, next) {
 // ─── Socket.io Connection Handler ────────────────────────────────────────
 
 io.on('connection', function(socket) {
+  registerBattleHandlers(io, socket);
   logger.info('[socket] Connected: ' + socket.id + ' role=' + socket.data.role);
 
   // ── join-room ──────────────────────────────────────────────────────────
@@ -2385,32 +2301,6 @@ io.on('connection', function(socket) {
 
   // ── go-live ────────────────────────────────────────────────────────────
   socket.on('go-live', function(data, ack) {
-    // R2: GoHighLevel CRM tag on stream start
-    try {
-      var https = require('https');
-      var ghlBody = JSON.stringify({
-        locationId: 'XkBtBOyDUhc9UgaeKLa9',
-        tags: ['active-streamer'],
-        customFields: [
-          { key: 'last_stream_start', value: new Date().toISOString() },
-          { key: 'stream_title', value: (data && data.title) || 'Live Stream' }
-        ],
-        contactId: (data && data.userId) || ''
-      });
-      var ghlReq = https.request({
-        hostname: 'services.leadconnectorhq.com',
-        path: '/contacts/' + ((data && data.userId) || '') + '/tags',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + (process.env.GHL_API_KEY || ''),
-          'Version': '2021-07-28'
-        }
-      }, function(r) { logger.info('[GHL] tag response: ' + r.statusCode); });
-      ghlReq.on('error', function(e) { logger.warn('[GHL] webhook error: ' + e.message); });
-      ghlReq.write(ghlBody);
-      ghlReq.end();
-    } catch(ghlErr) { logger.warn('[GHL] failed: ' + ghlErr.message); }
     var roomId      = data.roomId || socket.data.roomId;
     var destinations = data.destinations;
 
@@ -3125,7 +3015,6 @@ var PORT = parseInt(process.env.PORT || '3001', 10);
 mediasoup.createWorkers()
   .then(function() {
     logger.info('mediasoup workers ready');
-app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
     server.listen(PORT, '0.0.0.0', function() {
       logger.info('SeeWhy LIVE v33.0 server listening on port ' + PORT);
     });
@@ -3173,26 +3062,3 @@ process.on('SIGINT', function() {
 });
 
 module.exports = { app, server, io };
-
-// ZEGO token generation endpoint
-app.post('/api/zego/token', function(req, res) {
-  var crypto = require('crypto');
-  var appId = parseInt(process.env.ZEGO_APP_ID);
-  var secret = process.env.ZEGO_SERVER_SECRET;
-  var userId = req.body.userId || 'guest_' + Math.floor(Date.now()/1000);
-  var roomId = req.body.roomId || 'room_1';
-  var expire = Math.floor(Date.now()/1000) + 3600;
-  var nonce = Math.floor(Math.random()*Math.pow(2,31));
-  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now()/1000) + '&userid=' + userId + '&version=1';
-  var hmacToken = crypto.createHmac('sha256', secret).update(plain).digest('hex');
-  var payload = Buffer.from(JSON.stringify({ver:1,hash:hmacToken,expired:expire,nonce:nonce,appsign:''})).toString('base64');
-  return res.json({ token: '04' + Buffer.from(JSON.stringify({app_id:appId,user_id:userId,nonce:nonce,ctime:Math.floor(Date.now()/1000),expired:expire,payload:payload})).toString('base64'), appId: appId, userId: userId, roomId: roomId, expire: expire });
-  var userId = req.query.userId || 'guest_' + Date.now();
-  var roomId = req.query.roomId || 'room_1';
-  var expire = Math.floor(Date.now() / 1000) + 3600;
-  var nonce = Math.floor(Math.random() * 2147483647);
-  var crypto = require('crypto');
-  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now() / 1000) + '&userid=' + userId + '&version=1';
-  var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
-  res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
-});

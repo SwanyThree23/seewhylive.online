@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
+    "@supabase/supabase-js": "^2.109.0",
     "axios": "^1.6.8",
     "better-sqlite3": "^9.4.3",
     "cors": "^2.8.5",
@@ -20,12 +21,14 @@
     "mediasoup": "^3.14.14",
     "node-wav": "^0.0.2",
     "openai": "^4.47.1",
+    "pg": "^8.22.0",
     "socket.io": "^4.7.2",
     "stripe": "^14.18.0",
     "uuid": "^9.0.1",
     "web-push": "^3.6.7",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",
+    "ws": "^8.21.0",
     "xss-clean": "^0.1.4"
   }
 }

@@ -86,6 +86,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
           size="sm"
           variant={selectedAmount === amount ? "default" : "outline"}
           onClick={() => {
+            if (navigator.vibrate) navigator.vibrate(10);
             setSelectedAmount(amount);
             tipMutation.mutate(amount);
           }}

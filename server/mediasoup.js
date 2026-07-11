@@ -322,6 +322,34 @@ function getWorkerCount() {
   return workers.length;
 }
 
+
+// ---- Load monitoring (added for perf visibility) ----------------------
+var lastCpuUsage = process.cpuUsage();
+
+function logResourceSnapshot() {
+  var cpu = process.cpuUsage(lastCpuUsage);
+  lastCpuUsage = process.cpuUsage();
+  var cpuMs = (cpu.user + cpu.system) / 1000;
+
+  var routerCount = Object.keys(routers).length;
+  var transportCount = Object.keys(transports).length;
+  var producerCount = Object.keys(producers).length;
+  var consumerCount = Object.keys(consumers).length;
+
+  console.log('[mediasoup-monitor]', JSON.stringify({
+    timestamp: new Date().toISOString(),
+    workers: workers.length,
+    routers: routerCount,
+    transports: transportCount,
+    producers: producerCount,
+    consumers: consumerCount,
+    cpuMsSinceLastCheck: Math.round(cpuMs),
+    memRssMb: Math.round(process.memoryUsage().rss / 1024 / 1024)
+  }));
+}
+
+setInterval(logResourceSnapshot, 30000);
+
 module.exports = {
   createWorkers: createWorkers,
   getOrCreateRouter: getOrCreateRouter,

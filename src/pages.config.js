@@ -107,6 +107,10 @@ const SeeWhyLIVEv17            = lazy(() => import('./pages/SeeWhyLIVEv17'));
 const BackPage                 = lazy(() => import('./pages/BackPage'));
 const CoverPage                = lazy(() => import('./pages/CoverPage'));
 const Login                    = lazy(() => import('./pages/Login'));
+const AuraAI                   = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
+const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
+const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -207,6 +211,10 @@ export const PAGES = {
     "BackPage": BackPage,
     "CoverPage": CoverPage,
     "Login": Login,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "TranscriptionStudio": TranscriptionStudio,
+    "RoomsManager": RoomsManager,
 }
 
 export const pagesConfig = {

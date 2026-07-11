@@ -6,6 +6,66 @@ import {
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from 'recharts';
+
+const BG      = '#080B18';
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const PINK    = '#C0392B';
+const GREEN   = '#6DBF7E';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+/* ─── tiny helpers ─────────────────────────────────────────────────────── */
+const card = {
+  background: 'rgba(13,6,24,0.9)',
+  border: `1px solid rgba(212,175,55,0.1)`,
+  borderRadius: 16,
+  padding: '20px 20px',
+};
+
+const inputStyle = {
+  ...T,
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 14,
+  padding: '9px 12px',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const labelStyle = {
+  ...T,
+  fontSize: 12,
+  color: 'rgba(255,255,255,0.5)',
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  marginBottom: 6,
+  display: 'block',
+};
+
+/* ─── custom recharts tooltip ──────────────────────────────────────────── */
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      ...T,
+      background: '#0d0618',
+      border: `1px solid ${GOLD}44`,
+      borderRadius: 8,
+      padding: '8px 14px',
+      fontSize: 13,
+      color: '#fff',
+    }}>
+      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 2 }}>{label}</div>
+      <div style={{ color: GREEN, fontWeight: 700 }}>${(payload[0].value || 0).toFixed(2)}</div>
+    </div>
+  );
+}
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';

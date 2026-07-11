@@ -1,0 +1,21 @@
+{
+  "name": "SeeWhy - Guardian AI Moderation",
+  "active": true,
+  "nodes": [
+    {"id":"1","name":"Chat Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,
+     "position":[250,300],"parameters":{"path":"guardian-check","httpMethod":"POST","responseMode":"onReceived"}},
+    {"id":"2","name":"Score Filter","type":"n8n-nodes-base.if","typeVersion":1,
+     "position":[500,300],"parameters":{"conditions":{"number":[{"value1":"={{ $json.score }}","operation":"largerEqual","value2":50}]}}},
+    {"id":"3","name":"Flag User","type":"n8n-nodes-base.httpRequest","typeVersion":3,
+     "position":[750,200],"parameters":{"method":"POST","url":"https://seewhylive.online/api/n8n/guardian-flag",
+     "sendBody":true,"bodyContentType":"json","jsonBody":"={{ JSON.stringify($json) }}","options":{}}},
+    {"id":"4","name":"Allow","type":"n8n-nodes-base.noOp","typeVersion":1,"position":[750,400],"parameters":{}}
+  ],
+  "connections":{
+    "Chat Webhook":{"main":[[{"node":"Score Filter","type":"main","index":0}]]},
+    "Score Filter":{"main":[
+      [{"node":"Flag User","type":"main","index":0}],
+      [{"node":"Allow","type":"main","index":0}]
+    ]}
+  }
+}

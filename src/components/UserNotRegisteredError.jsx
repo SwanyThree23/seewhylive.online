@@ -1,31 +1,42 @@
 import React from 'react';
+import { Radio, ShieldAlert } from 'lucide-react';
 
-const UserNotRegisteredError = () => {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-white to-slate-50">
-      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg border border-slate-100">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-orange-100">
-            <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">Access Restricted</h1>
-          <p className="text-slate-600 mb-8">
-            You are not registered to use this application. Please contact the app administrator to request access.
-          </p>
-          <div className="p-4 bg-slate-50 rounded-md text-sm text-slate-600">
-            <p>If you believe this is an error, you can:</p>
-            <ul className="list-disc list-inside mt-2 space-y-1">
-              <li>Verify you are logged in with the correct account</li>
-              <li>Contact the app administrator for access</li>
-              <li>Try logging out and back in again</li>
-            </ul>
-          </div>
-        </div>
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const GOLD = '#D4AF37';
+const BG = '#080B18';
+const CRIMSON = '#800020';
+
+const UserNotRegisteredError = () => (
+  <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+      <Radio style={{ width: 28, height: 28, color: GOLD }} />
+      <span style={{ fontSize: 28, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', ...T }}>SeeWhy LIVE</span>
+    </div>
+
+    <div style={{ width: '100%', maxWidth: 400, borderRadius: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(128,0,32,0.4)', padding: 32, textAlign: 'center' }}>
+      <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <ShieldAlert style={{ width: 28, height: 28, color: '#FF6680' }} />
+      </div>
+
+      <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 10, ...T }}>Account Not Found</h1>
+      <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28, lineHeight: 1.6, ...T }}>
+        The account you signed in with isn't registered on SeeWhy LIVE. Try a different account or reach out to our team.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button
+          onClick={() => window.location.href = '/login'}
+          style={{ height: 46, borderRadius: 12, background: `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontSize: 14, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', cursor: 'pointer', ...T }}>
+          Sign In with Different Account
+        </button>
+        <button
+          onClick={() => window.open('mailto:support@seewhylive.online', '_blank', 'noopener,noreferrer')}
+          style={{ height: 42, borderRadius: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)', fontSize: 13, cursor: 'pointer', ...T }}>
+          Contact Support
+        </button>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default UserNotRegisteredError;
