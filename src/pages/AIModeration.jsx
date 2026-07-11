@@ -4,6 +4,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Zap, RefreshCw, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -12,7 +22,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const VIOLATION_STYLE = {
   spam:         { bg: 'rgba(255,200,0,0.1)',   border: 'rgba(255,200,0,0.3)',   color: '#ffc800' },
   harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
-  hate_speech:  { bg: 'rgba(255,21,100,0.1)',  border: 'rgba(255,21,100,0.3)',  color: '#C0392B' },
+  hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
   safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#00ff88' },
 };
@@ -205,7 +215,7 @@ export default function AIModerationPage() {
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'reversed', action: 'none' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#C0392B', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         <XCircle className="w-3.5 h-3.5" /> Reverse
                       </button>
                     </div>
@@ -280,7 +290,7 @@ export default function AIModerationPage() {
                 <div className="space-y-4">
                   {[
                     { label: 'Average Confidence', value: moderations.reduce((acc, m) => acc + (m.ai_confidence || 0), 0) / moderations.length * 100, color: GOLD },
-                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#D4AF37' },
+                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#00d4ff' },
                     { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#C0392B' },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
@@ -299,6 +309,15 @@ export default function AIModerationPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

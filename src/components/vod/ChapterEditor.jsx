@@ -32,7 +32,7 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-sm text-white/70">
-        <BookOpen className="w-4 h-4 text-[#D4AF37]" />
+        <BookOpen className="w-4 h-4 text-[#00d4ff]" />
         <span>Chapter Markers</span>
         <span className="ml-auto text-xs text-white/30">{chapters.length} chapters</span>
       </div>
@@ -43,7 +43,7 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
         )}
         {chapters.map((ch, i) => (
           <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2">
-            <span className="text-[#D4AF37] font-mono text-xs w-10 shrink-0">{fmt(ch.time)}</span>
+            <span className="text-[#00d4ff] font-mono text-xs w-10 shrink-0">{fmt(ch.time)}</span>
             <span className="text-sm text-white flex-1 truncate">{ch.title}</span>
             <button onClick={() => remove(i)} className="text-white/30 hover:text-red-400" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <Trash2 className="w-3.5 h-3.5" />
@@ -90,7 +90,7 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
           style={{
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6,
             fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 8, cursor: 'pointer',
-            background: '#D4AF37', color: '#000', border: 'none',
+            background: '#00d4ff', color: '#000', border: 'none',
           }}
         >
           <Save className="w-3.5 h-3.5" /> Save Chapters

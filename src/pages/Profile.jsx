@@ -8,11 +8,24 @@ import {
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fadeUp, fadeIn, scaleIn, stagger, staggerFast } from '../lib/animations';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
-import OnlinePresenceDot from '../components/shared/OnlinePresence';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -32,7 +45,7 @@ function DarkCard({ children, className = '', style = {} }) {
 
 function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
   return (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
+    <div className="relative cursor-pointer shrink-0" style={{ width: size, height: size }} onClick={onClick}>
       {/* gold border layer */}
       <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
       {/* inner filled layer */}
@@ -56,7 +69,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
             : <Camera className="w-5 h-5 text-white" />}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -79,35 +92,7 @@ function StatTile({ label, value, icon: Icon, color = GOLD }) {
   );
 }
 
-const ACHIEVEMENTS = [
-  { id: 'first_stream',    emoji: '🎬', label: 'First Stream',    desc: 'Go live for the first time',          unlocked: (u,r,s,c) => (r||[]).length >= 1 },
-  { id: 'gift_king',       emoji: '👑', label: 'Gift King',       desc: 'Receive 10+ gifts',                   unlocked: (u,r,s,c) => (u?.total_gifts_received||0) >= 10 },
-  { id: 'referral_pro',    emoji: '🤝', label: 'Referral Pro',    desc: 'Complete 3+ referrals',               unlocked: (u,r,s,c) => (c||0) >= 3 },
-  { id: 'subscriber',      emoji: '💎', label: 'Diamond Member',  desc: 'Hold an active subscription',        unlocked: (u,r,s,c) => (s||[]).length > 0 },
-  { id: 'veteran',         emoji: '🏅', label: 'Veteran',         desc: 'Member for 30+ days',                 unlocked: (u,r,s,c) => u?.created_date && (Date.now()-new Date(u.created_date).getTime()) > 30*86400000 },
-  { id: 'social_butterfly',emoji: '🦋', label: 'Social Butterfly',desc: 'Profile shared 5+ times',            unlocked: (u,r,s,c) => (u?.profile_shares||0) >= 5 },
-  { id: 'clip_creator',    emoji: '✂️', label: 'Clip Creator',    desc: 'Create your first clip',             unlocked: (u,r,s,c) => (r||[]).length >= 1 },
-  { id: 'community_star',  emoji: '⭐', label: 'Community Star',  desc: 'Join 2+ communities',                unlocked: (u,r,s,c) => (u?.community_count||0) >= 2 },
-];
-
 const TABS = ['Overview', 'Streams', 'Clips', 'About'];
-
-function AchievementBadge({ badge, earned }) {
-  return (
-    <div className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
-      style={{
-        background: earned ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${earned ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}`,
-        opacity: earned ? 1 : 0.4,
-        minWidth: 72,
-      }}>
-      <span style={{ fontSize: 24, filter: earned ? 'none' : 'grayscale(1)' }}>{badge.emoji}</span>
-      <span className="text-[10px] font-black text-center leading-tight" style={{ color: earned ? '#D4AF37' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-        {badge.label}
-      </span>
-    </div>
-  );
-}
 
 /* ── main page ──────────────────────────────────────────────────────── */
 
@@ -115,14 +100,11 @@ export default function ProfilePage() {
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
-  const [setupOpen, setSetupOpen]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [isOnline]                        = useState(true);
-  const [socialLinks, setSocialLinks]     = useState({ instagram: '', twitter: '', youtube: '', tiktok: '' });
-  const [editingSocial, setEditingSocial] = useState(false);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -175,12 +157,6 @@ export default function ProfilePage() {
     if (user) {
       setBio(user.bio || '');
       setDisplayName(user.full_name || '');
-      setSocialLinks({
-        instagram: user.social_instagram || '',
-        twitter:   user.social_twitter   || '',
-        youtube:   user.social_youtube   || '',
-        tiktok:    user.social_tiktok    || '',
-      });
     }
   }, [user]);
 
@@ -256,24 +232,16 @@ export default function ProfilePage() {
       <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <h1 className="font-black text-lg text-white" style={T}>My Profile</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSetupOpen(true)}
-            className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
-            style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#c0392b', ...T }}>
-            Creator Setup
-          </button>
-          <button
-            onClick={() => setIsEditing(e => !e)}
-            className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
-            style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
-            {isEditing ? 'Cancel' : 'Edit Profile'}
-          </button>
-        </div>
+        <button
+          onClick={() => setIsEditing(e => !e)}
+          className="px-3 py-1.5 rounded-xl font-black uppercase text-[10px] transition-all"
+          style={{ background: 'rgba(212,175,55,0.12)', border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+          {isEditing ? 'Cancel' : 'Edit Profile'}
+        </button>
       </div>
 
       {/* ── hero banner ── */}
-      <motion.div initial="hidden" animate="visible" variants={fadeIn} className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
+      <div className="relative w-full overflow-hidden" style={{ background: 'linear-gradient(145deg, #1a0824, #080B18)', minHeight: 160 }}>
         {/* glow spot */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 pointer-events-none"
           style={{ background: `radial-gradient(ellipse at center, ${CRIMSON}33 0%, transparent 70%)` }} />
@@ -326,14 +294,12 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-4 space-y-4">
 
         {/* ── edit form ── */}
-        <AnimatePresence>
         {isEditing && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
           <DarkCard>
             <div className="p-4 space-y-3">
               <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Edit Profile</p>
@@ -368,24 +334,22 @@ export default function ProfilePage() {
               </div>
             </div>
           </DarkCard>
-          </motion.div>
         )}
-        </AnimatePresence>
 
         {/* ── stats row ── */}
-        <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3" variants={stagger} initial="hidden" animate="visible">
-          <motion.div variants={fadeUp}><StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} /></motion.div>
-          <motion.div variants={fadeUp}><StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" /></motion.div>
-          <motion.div variants={fadeUp}><StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" /></motion.div>
-          <motion.div variants={fadeUp}><StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" /></motion.div>
-        </motion.div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <StatTile label="Followers"   value={user?.followers_count || user?.points || 0} icon={User}       color={GOLD} />
+          <StatTile label="Streams"     value={myRooms.length}                             icon={Radio}      color="#C9A84C" />
+          <StatTile label="Clips"       value={myClips.length}                             icon={Scissors}   color="#D4AF37" />
+          <StatTile label="Tips Earned" value={inventory.length}                           icon={DollarSign} color="#6DBF7E" />
+        </div>
 
         {/* ── section tabs ── */}
-        <motion.div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1" variants={staggerFast} initial="hidden" animate="visible">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
           {TABS.map(tab => {
             const active = activeTab === tab;
             return (
-              <motion.button key={tab} variants={fadeUp} whileTap={{ scale: 0.92 }} onClick={() => setActiveTab(tab)}
+              <button key={tab} onClick={() => setActiveTab(tab)}
                 className="relative shrink-0 px-4 py-2 rounded-full font-black text-[11px] uppercase transition-all"
                 style={{
                   background: active ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
@@ -398,63 +362,14 @@ export default function ProfilePage() {
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full"
                     style={{ background: GOLD }} />
                 )}
-              </motion.button>
+              </button>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* ── tab content ── */}
-        <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
         {activeTab === 'Overview' && (
           <>
-            {/* Achievement Badges */}
-            <DarkCard>
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.5)', ...T, letterSpacing: '0.08em' }}>
-                    Achievements
-                  </h3>
-                  <span className="text-[11px] font-black" style={{ color: GOLD, ...T }}>
-                    {ACHIEVEMENTS.filter(b => b.unlocked(user, myRooms, subscriptions, completedReferrals)).length}/{ACHIEVEMENTS.length}
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {ACHIEVEMENTS.map(badge => (
-                    <AchievementBadge
-                      key={badge.id}
-                      badge={badge}
-                      earned={badge.unlocked(user, myRooms, subscriptions, completedReferrals)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </DarkCard>
-
-            {/* Weekly Viewer Trend */}
-            <DarkCard>
-              <div className="p-4">
-                <h3 className="font-black text-sm uppercase mb-3" style={{ color: 'rgba(255,255,255,0.5)', ...T, letterSpacing: '0.08em' }}>
-                  Viewer Trend (7 days)
-                </h3>
-                <div className="flex items-end gap-1.5" style={{ height: 48 }}>
-                  {[40,65,45,80,55,90,70].map((v, i) => (
-                    <div key={i} className="flex-1 rounded-t-sm"
-                      style={{
-                        height: `${v}%`,
-                        background: `linear-gradient(to top, ${CRIMSON}, ${GOLD}88)`,
-                        opacity: i === 6 ? 1 : 0.5 + i * 0.07,
-                      }} />
-                  ))}
-                </div>
-                <div className="flex justify-between mt-1">
-                  {['M','T','W','T','F','S','S'].map((d, i) => (
-                    <span key={i} className="flex-1 text-center text-[9px]" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>{d}</span>
-                  ))}
-                </div>
-              </div>
-            </DarkCard>
-
             {/* activity feed */}
             <DarkCard>
               <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -463,9 +378,9 @@ export default function ProfilePage() {
                   <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>Recent Activity</p>
                 </div>
               </div>
-              <motion.div className="p-3 space-y-2" variants={stagger} initial="hidden" animate="visible">
+              <div className="p-3 space-y-2">
                 {activityItems.map(item => (
-                  <motion.div key={item.id} variants={fadeUp} className="flex items-center gap-3 p-3 rounded-2xl" whileHover={{ x: 4 }}
+                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-2xl"
                     style={{ background: `${item.color}08`, borderLeft: `2px solid ${item.color}30` }}>
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
                       style={{ background: `${item.color}15`, border: `1px solid ${item.color}25` }}>
@@ -473,9 +388,9 @@ export default function ProfilePage() {
                     </div>
                     <p className="flex-1 font-black text-[12px] text-white" style={T}>{item.desc}</p>
                     <span className="text-[11px] shrink-0" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.time}</span>
-                  </motion.div>
+                  </div>
                 ))}
-              </motion.div>
+              </div>
             </DarkCard>
 
             {/* quick links */}
@@ -488,7 +403,7 @@ export default function ProfilePage() {
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
                   { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#a78bfa' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4AF37' },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00d4ff' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
                 ].map(item => (
                   <Link key={item.href} to={item.href}>
@@ -547,8 +462,8 @@ export default function ProfilePage() {
                       )}
                       <span className="px-1.5 py-0.5 rounded text-[11px] font-black uppercase shrink-0"
                         style={{
-                          background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${isLive ? 'rgba(255,21,100,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                          background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)',
+                          border: `1px solid ${isLive ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
                           color: isLive ? PINK : 'rgba(255,255,255,0.4)',
                           ...T,
                         }}>
@@ -637,83 +552,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
-              {/* Social Links */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-black text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Social Links</p>
-                  <button
-                    onClick={() => {
-                      if (editingSocial) {
-                        base44.auth.updateMe({
-                          social_instagram: socialLinks.instagram,
-                          social_twitter:   socialLinks.twitter,
-                          social_youtube:   socialLinks.youtube,
-                          social_tiktok:    socialLinks.tiktok,
-                        }).then(() => { toast.success('Social links saved!'); queryClient.invalidateQueries(['currentUser']); }).catch(() => {});
-                      }
-                      setEditingSocial(e => !e);
-                    }}
-                    className="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg"
-                    style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.25)`, color: GOLD, ...T }}>
-                    {editingSocial ? 'Save' : 'Edit'}
-                  </button>
-                </div>
-                {editingSocial ? (
-                  <div className="space-y-2">
-                    {[
-                      { key: 'instagram', label: '📸 Instagram', placeholder: '@handle' },
-                      { key: 'twitter',   label: '🐦 X / Twitter', placeholder: '@handle' },
-                      { key: 'youtube',   label: '▶️ YouTube',    placeholder: 'Channel name or @handle' },
-                      { key: 'tiktok',    label: '🎵 TikTok',     placeholder: '@handle' },
-                    ].map(({ key, label, placeholder }) => (
-                      <div key={key}>
-                        <p className="text-[10px] mb-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
-                        <input
-                          value={socialLinks[key]}
-                          onChange={e => setSocialLinks(l => ({ ...l, [key]: e.target.value }))}
-                          placeholder={placeholder}
-                          className="w-full px-3 py-2 rounded-xl text-sm text-white outline-none"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', ...T }}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { key: 'instagram', emoji: '📸', base: 'https://instagram.com/' },
-                      { key: 'twitter',   emoji: '🐦', base: 'https://x.com/' },
-                      { key: 'youtube',   emoji: '▶️', base: 'https://youtube.com/@' },
-                      { key: 'tiktok',    emoji: '🎵', base: 'https://tiktok.com/@' },
-                    ].map(({ key, emoji, base }) => socialLinks[key] ? (
-                      <a key={key}
-                        href={base + socialLinks[key].replace(/^@/, '')}
-                        target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[11px] uppercase"
-                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', ...T }}>
-                        <span>{emoji}</span>
-                        <span>{socialLinks[key]}</span>
-                      </a>
-                    ) : null)}
-                    {!Object.values(socialLinks).some(Boolean) && (
-                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>No social links added yet. Tap Edit to add.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Founding Member status */}
-              {user?.is_founding_member && (
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                  style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.35)' }}>
-                  <span className="text-lg">🏅</span>
-                  <div>
-                    <p className="font-black text-sm" style={{ color: '#FF9944', ...T }}>Founding Member</p>
-                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Your [FM] badge appears in Live Chat</p>
-                  </div>
-                </div>
-              )}
-
               {subscriptions.length > 0 && (
                 <div>
                   <p className="font-black text-[10px] uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Active Subscriptions</p>
@@ -737,17 +575,24 @@ export default function ProfilePage() {
             </div>
           </DarkCard>
         )}
-        </motion.div>
-        </AnimatePresence>
 
       </div>
-
-      {user && (
-        <>
-          <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
-          <OnlinePresenceDot isOnline size="sm" />
-        </>
-      )}
+      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

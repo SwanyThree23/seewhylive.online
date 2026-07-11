@@ -53,7 +53,7 @@ export default function NotificationBell() {
               style={{
                 position:'absolute', top:-4, right:-4,
                 width:20, height:20, borderRadius:'50%',
-                background:'#ef4444', color:'#fff', fontSize:10, fontWeight:700,
+                background:'#C0392B', color:'#fff', fontSize:10, fontWeight:700,
                 display:'flex', alignItems:'center', justifyContent:'center',
                 border:'2px solid #fff',
               }}

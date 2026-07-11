@@ -4,6 +4,22 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const G = '#D4AF37';
 const BG = '#0A0710';
 const PANEL = '#0F0B1A';
@@ -14,7 +30,7 @@ const FEATURES = [
     title: 'Guest Destinations',
     description: 'Multi-guest co-streaming with automated camera direction via SwanAI Director.',
     icon: '🎬',
-    color: '#FF8C00',
+    color: '#D4854A',
     highlights: ['Real-time layout switching', 'AI spotlight detection', 'Multi-platform RTMP'],
     link: '/ControlRoom',
   },
@@ -68,7 +84,7 @@ const FEATURES = [
     title: 'State vs State Tournaments',
     description: 'Full bracket domino tournament system with live matches, rosters, and real-time standings.',
     icon: '⚔️',
-    color: '#1565C0',
+    color: '#5B7FA6',
     highlights: ['Live brackets', 'State rosters', 'Season standings'],
     link: '/StateVsState',
   },
@@ -104,7 +120,7 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#D4AF37',
+    color: '#00d4ff',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },
@@ -274,12 +290,27 @@ export default function PlatformShowcase() {
             href="/LiveRoom"
             whileHover={{ scale: 1.05 }}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold"
-            style={{ background: `linear-gradient(135deg, ${G}, #FF8C00)` }}
+            style={{ background: `linear-gradient(135deg, ${G}, #D4854A)` }}
           >
             Go Live Now <Radio className="w-5 h-5" />
           </motion.a>
         </motion.div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

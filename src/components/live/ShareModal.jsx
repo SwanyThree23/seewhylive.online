@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 const PLATFORMS = [
   {
     name: 'Instagram',
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-[#7B5DA6] to-[#C0392B]',
     emoji: '📸',
     action: (url, title) => `https://www.instagram.com/`,
     note: 'Copy link → paste in your Story or Bio',
@@ -33,14 +33,14 @@ const PLATFORMS = [
   },
   {
     name: 'Twitter/X',
-    color: 'from-sky-500 to-sky-600',
+    color: 'from-[#5B7FA6] to-[#5B7FA6]',
     emoji: '🐦',
     action: (url, title) => `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me: ' + title)}`,
     note: 'Tweet your live link',
   },
   {
     name: 'WhatsApp',
-    color: 'from-green-500 to-green-600',
+    color: 'from-[#6DBF7E] to-[#6DBF7E]',
     emoji: '💬',
     action: (url, title) => `https://wa.me/?text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy! ' + title + ' → ' + url)}`,
     note: 'Share via WhatsApp',
@@ -54,7 +54,7 @@ const PLATFORMS = [
   },
   {
     name: 'Telegram',
-    color: 'from-sky-400 to-blue-500',
+    color: 'from-[#5B7FA6] to-blue-500',
     emoji: '✈️',
     action: (url, title) => `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🔴 LIVE on SeeWhy: ' + title)}`,
     note: 'Share via Telegram',

@@ -4,74 +4,30 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import {
   Radio, Users, CheckCircle, Share2, Bell, Play, Clock,
-  Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown, ShoppingBag
+  Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
-import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
-import TierBadge from '../components/subscriptions/TierBadge';
-import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#0d0618';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = ['live', 'videos', 'schedule', 'memberships', 'merch', 'about'];
-
-function MerchPreview({ creatorId }) {
-  const { data: items = [], isLoading } = useQuery({
-    queryKey: ['cc-merch', creatorId],
-    queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: creatorId, is_active: true }),
-    enabled: !!creatorId,
-  });
-
-  if (isLoading) return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      {[...Array(4)].map((_, i) => <div key={i} className="h-48 rounded-2xl animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />)}
-    </div>
-  );
-
-  if (items.length === 0) return (
-    <div className="flex flex-col items-center py-16">
-      <ShoppingBag className="w-12 h-12 mb-3" style={{ color: 'rgba(255,255,255,0.1)' }} />
-      <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No merch yet</p>
-    </div>
-  );
-
-  return (
-    <div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-        {items.slice(0, 8).map(item => (
-          <motion.div key={item.id} whileHover={{ y: -4, scale: 1.02 }}
-            className="rounded-2xl overflow-hidden cursor-pointer"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}
-            onClick={() => window.location.href = createPageUrl('MerchStore') + `?id=${creatorId}`}>
-            <div className="h-36 flex items-center justify-center"
-              style={{ background: item.image_url ? undefined : `linear-gradient(135deg, ${CRIMSON}44, rgba(13,6,24,0.8))` }}>
-              {item.image_url
-                ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                : <span className="text-4xl">👕</span>}
-            </div>
-            <div className="p-3">
-              <p className="font-black text-xs text-white truncate" style={T}>{item.name}</p>
-              <p className="font-black text-sm mt-0.5" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-      <Link to={createPageUrl('MerchStore') + `?id=${creatorId}`}>
-        <button className="w-full py-2.5 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-2"
-          style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', ...T }}>
-          <ShoppingBag className="w-3.5 h-3.5" /> View Full Store →
-        </button>
-      </Link>
-    </div>
-  );
-}
+const TABS = ['live', 'videos', 'schedule', 'memberships', 'about'];
 
 export default function CreatorChannel() {
   const [activeTab, setActiveTab] = useState('live');
@@ -134,7 +90,7 @@ export default function CreatorChannel() {
         {liveRoom && (
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
-              style={{ background: 'rgba(255,21,100,0.85)', color: '#fff', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.85)', color: '#fff', ...T }}>
               <div className="w-2 h-2 rounded-full bg-white" /> LIVE NOW
             </span>
           </div>
@@ -159,7 +115,7 @@ export default function CreatorChannel() {
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
+              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#00d4ff' }} />}
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                 {category}
@@ -176,7 +132,7 @@ export default function CreatorChannel() {
             {liveRoom ? (
               <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                   <Radio className="w-4 h-4" /> Watch Now
                 </button>
               </Link>
@@ -217,9 +173,7 @@ export default function CreatorChannel() {
             <button key={tab} onClick={() => setActiveTab(tab)}
               className="flex-1 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all capitalize flex items-center justify-center gap-1"
               style={{ ...T, color: activeTab === tab ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab ? GOLD : 'transparent', background: activeTab === tab ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
-              {tab === 'memberships' && <Crown className="w-3 h-3" />}
-              {tab === 'merch' && <ShoppingBag className="w-3 h-3" />}
-              {tab}
+              {tab === 'memberships' && <Crown className="w-3 h-3" />}{tab}
             </button>
           ))}
         </div>
@@ -242,7 +196,7 @@ export default function CreatorChannel() {
                 <div className="p-4">
                   <Link to={createPageUrl('LiveRoom') + `?id=${liveRoom.id}`}>
                     <button className="w-full py-3 rounded-xl font-black uppercase text-sm flex items-center justify-center gap-2"
-                      style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                      style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', cursor: 'pointer', ...T }}>
                       <Play className="w-4 h-4" /> Join Stream
                     </button>
                   </Link>
@@ -282,14 +236,14 @@ export default function CreatorChannel() {
             ))}
             {scheduledRooms.map(r => (
               <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
+                  <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
                 </div>
                 <div className="flex-1">
                   <p className="font-black text-sm text-white" style={T}>{r.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
               </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (
@@ -308,24 +262,6 @@ export default function CreatorChannel() {
             <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
               <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
             </div>
-            <TierSubscribeCard
-              tier={null}
-              currentSub={null}
-              userId={currentUser?.id}
-              creatorId={userId}
-              isHighlighted={false}
-            />
-            {currentUser?.id && (
-              <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
-            )}
-            <TierBadge tier="bronze" size="sm" showName />
-          </div>
-        )}
-
-        {/* Merch */}
-        {activeTab === 'merch' && (
-          <div className="pb-16">
-            <MerchPreview creatorId={userId} />
           </div>
         )}
 
@@ -351,6 +287,15 @@ export default function CreatorChannel() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="channel" viewerCount={0} />
+      <MilestoneAlerts userId={currentUser?.id} roomId={null} />
+      {currentUser?.id && <AlertConfig creatorId={currentUser.id} />}
+      {currentUser?.id && <ShopDashboard creatorId={currentUser.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

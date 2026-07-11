@@ -12,7 +12,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#FF4444';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#C0392B';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (

@@ -10,9 +10,9 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const CATEGORY_COLORS = {
   music:         '#C0392B',
-  gaming:        '#D4AF37',
+  gaming:        '#00d4ff',
   tech:          '#D4AF37',
-  education:     '#4ade80',
+  education:     '#6DBF7E',
   business:      '#fb923c',
   entertainment: '#a78bfa',
   sports:        '#38bdf8',
@@ -44,7 +44,7 @@ export default function CommunityCard({ community, isMember, isAdmin, onJoin }) 
         <div className="absolute top-2 right-2 flex gap-1.5">
           {community.verified && (
             <span className="flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black uppercase"
-              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: '#D4AF37', ...T }}>
+              style={{ background: 'rgba(0,212,255,0.15)', border: '1px solid rgba(0,212,255,0.35)', color: '#00d4ff', ...T }}>
               <CheckCircle className="w-2.5 h-2.5" />Verified
             </span>
           )}

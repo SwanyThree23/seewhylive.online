@@ -8,14 +8,32 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
-import PKBattleInterface from '../components/pk/PKBattleInterface';
-import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
-import BattleScoreboard from '../components/live/BattleScoreboard';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -101,8 +119,8 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#FF6B35' : combo >= 3 ? '#FF8C00' : '#D4AF37';
-  var glow = combo >= 10 ? '0 0 12px rgba(255,21,100,0.8)' : 'none';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#D4854A' : '#D4AF37';
+  var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
       key={combo}
@@ -170,7 +188,7 @@ function CircularTimer({ timeLeft, totalTime }) {
   var circumference = 2 * Math.PI * radius;
   var pct = totalTime > 0 ? timeLeft / totalTime : 0;
   var offset = circumference * (1 - pct);
-  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#FF8C00' : '#FF3030';
+  var color = pct > 0.5 ? '#D4AF37' : pct > 0.25 ? '#D4854A' : '#FF3030';
   var mm = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   var ss = String(timeLeft % 60).padStart(2, '0');
   return (
@@ -551,20 +569,6 @@ export default function PKBattlePage() {
         {winner && <WinnerOverlay winner={winner} onClose={() => setWinner(null)} />}
       </AnimatePresence>
 
-      {/* PKBattleInterface widget — battle controls */}
-      {battleId && (
-        <div className="absolute top-2 left-2 z-30 max-w-xs">
-          <PKBattleInterface roomId={battleId} />
-        </div>
-      )}
-
-      {battleId && (
-        <div className="absolute top-2 right-2 z-30 max-w-xs space-y-2">
-          <BattleScoreboard roomId={battleId} />
-          <PKBattleSoundboard battleId={battleId} isBattleActive={!!battle} />
-        </div>
-      )}
-
       <CountdownOverlay countdown={countdown} />
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
@@ -726,7 +730,7 @@ export default function PKBattlePage() {
           )}
           {Array.from(rightSupporters).slice(0, 5).map((uid, i) => (
             <div key={uid} className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
-              style={{ background: 'rgba(239,68,68,0.4)', color: '#fca5a5', border: '1px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.4)', color: '#fca5a5', border: '1px solid rgba(192,57,43,0.4)' }}>
               {uid.charAt(0).toUpperCase()}
             </div>
           ))}
@@ -762,6 +766,26 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

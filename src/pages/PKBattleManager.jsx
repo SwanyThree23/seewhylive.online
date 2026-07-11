@@ -9,7 +9,7 @@ import {
   Swords, Trophy, Crown, ArrowLeft, Plus, Users, Zap, Clock,
   Gift, Send, CheckCircle, XCircle, Star, Flame, Search,
   BarChart2, Shield, AlertCircle, Copy, Share2, Sparkles,
-  ChevronRight, Play, Square, RefreshCw, Medal, DollarSign, ExternalLink
+  ChevronRight, Play, Square, RefreshCw, Medal
 } from 'lucide-react';
 import MatchmakingQueue from '../components/pk/MatchmakingQueue';
 import TournamentBracket from '../components/pk/TournamentBracket';
@@ -18,6 +18,22 @@ import BattleOverlay from '../components/pk/BattleOverlay';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
     <button onClick={onClick} disabled={disabled} {...rest}
@@ -91,7 +107,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
         <span style={{ color: leftColor || '#3b82f6' }}>{leftName}</span>
-        <span style={{ color: rightColor || '#ef4444' }}>{rightName}</span>
+        <span style={{ color: rightColor || '#C0392B' }}>{rightName}</span>
       </div>
       <div className="h-4 rounded-full flex overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
         <motion.div
@@ -100,12 +116,12 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
         />
         <motion.div
           className="h-full rounded-r-full transition-all duration-700"
-          style={{ width: rp + '%', background: rightColor || '#ef4444' }}
+          style={{ width: rp + '%', background: rightColor || '#C0392B' }}
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-black font-mono">
         <span style={{ color: leftColor || '#3b82f6' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
-        <span style={{ color: rightColor || '#ef4444' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
+        <span style={{ color: rightColor || '#C0392B' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
       </div>
     </div>
   );
@@ -268,9 +284,9 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var statusStyle = {
     pending: { bg: 'rgba(212,175,55,0.1)', color: '#d4af37', border: 'rgba(212,175,55,0.25)' },
     accepted: { bg: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: 'rgba(109,191,126,0.25)' },
-    active: { bg: 'rgba(255,21,100,0.1)', color: '#C0392B', border: 'rgba(255,21,100,0.25)' },
+    active: { bg: 'rgba(192,57,43,0.1)', color: '#C0392B', border: 'rgba(192,57,43,0.25)' },
     ended: { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.1)' },
-    declined: { bg: 'rgba(255,21,100,0.05)', color: 'rgba(255,21,100,0.5)', border: 'rgba(255,21,100,0.1)' },
+    declined: { bg: 'rgba(192,57,43,0.05)', color: 'rgba(192,57,43,0.5)', border: 'rgba(192,57,43,0.1)' },
     cancelled: { bg: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.25)', border: 'rgba(255,255,255,0.06)' },
   };
 
@@ -289,7 +305,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
             {pendingReceived.map(function(b) {
               return (
                 <div key={b.id} className="flex items-center gap-4 px-4 py-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg shrink-0" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                     {b.creator_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -310,7 +326,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                       size="sm"
                       onClick={function() { respondMutation.mutate({ id: b.id, status: 'declined' }); }}
                       className="h-8 text-xs gap-1"
-                      style={{ background: 'rgba(255,21,100,0.08)', color: '#C0392B60', border: '1px solid rgba(255,21,100,0.15)' }}
+                      style={{ background: 'rgba(192,57,43,0.08)', color: '#C0392B60', border: '1px solid rgba(192,57,43,0.15)' }}
                     >
                       <XCircle className="w-3 h-3" />
                     </Button>
@@ -351,7 +367,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                     onChange={function(e) { setChallengerName(e.target.value); }}
                     placeholder="@creator or display name..."
                     className="w-full rounded-lg px-3 py-2 text-sm text-white focus:outline-none"
-                    style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.2)' }}
+                    style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.2)' }}
                   />
                 </div>
                 <div>
@@ -430,10 +446,10 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
                   key={b.id}
                   onClick={function() { onBattleSelect(b); }}
                   className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: isLive ? '1px solid rgba(255,21,100,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
+                  style={{ background: 'rgba(255,255,255,0.03)', border: isLive ? '1px solid rgba(192,57,43,0.25)' : '1px solid rgba(255,255,255,0.06)' }}
                 >
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: isLive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.08)', border: isLive ? '1px solid rgba(255,21,100,0.3)' : '1px solid rgba(212,175,55,0.15)' }}>
+                    style={{ background: isLive ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.08)', border: isLive ? '1px solid rgba(192,57,43,0.3)' : '1px solid rgba(212,175,55,0.15)' }}>
                     <Swords className="w-4 h-4" style={{ color: isLive ? '#C0392B' : '#D4AF37' }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -545,163 +561,6 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
         battle={battle}
         onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
       />
-
-      {/* ── Direct Pay Support Panel ────────────────────────────────────────── */}
-      {battle.status === 'active' && <DirectPaySupportPanel battle={battle} user={user} onTipRecorded={function() { qc.invalidateQueries(['pk-battles']); }} />}
-    </div>
-  );
-}
-
-/* ─── Direct Pay Support ─────────────────────────────────────────────────── */
-var DIRECT_PAY_PLATFORMS = [
-  { id: 'cashapp',  name: 'Cash App',  emoji: '💚', baseUrl: 'https://cash.app/$' },
-  { id: 'paypal',   name: 'PayPal',    emoji: '🅿️', baseUrl: 'https://paypal.me/' },
-  { id: 'venmo',    name: 'Venmo',     emoji: '💙', baseUrl: 'https://venmo.com/' },
-  { id: 'zelle',    name: 'Zelle',     emoji: '💜', baseUrl: null },
-  { id: 'chime',    name: 'Chime',     emoji: '🟢', baseUrl: 'https://chime.com/' },
-];
-var TIP_AMOUNTS = [1, 3, 5, 10, 25, 50];
-
-function DirectPaySupportPanel({ battle, user, onTipRecorded }) {
-  var [supportSide, setSupportSide] = useState(null); // 'creator' | 'challenger'
-  var [tipAmount, setTipAmount] = useState(5);
-  var [pendingPlatform, setPendingPlatform] = useState(null);
-  var [awaitingConfirm, setAwaitingConfirm] = useState(false);
-  var [confirmed, setConfirmed] = useState(false);
-
-  var creatorHandle = battle.creator_payment_handle || battle.creator_name || 'Creator';
-  var challengerHandle = battle.challenger_payment_handle || battle.challenger_name || 'Challenger';
-
-  function openPay(platform) {
-    var handle = supportSide === 'creator' ? creatorHandle : challengerHandle;
-    var url = platform.baseUrl ? (platform.baseUrl + handle.replace(/^@/, '')) : null;
-    setPendingPlatform(platform);
-    setAwaitingConfirm(true);
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
-    else {
-      navigator.clipboard.writeText(handle);
-      toast.success('Handle copied — send via ' + platform.name);
-    }
-  }
-
-  async function confirmPayment() {
-    var side = supportSide === 'creator' ? 'creator' : 'challenger';
-    var pts = tipAmount * 10;
-    var update = side === 'creator'
-      ? { creator_score: (battle.creator_score || 0) + pts }
-      : { challenger_score: (battle.challenger_score || 0) + pts };
-    try {
-      await base44.entities.PKBattle.update(battle.id, update);
-      await base44.entities.Transaction.create({
-        user_id: user?.id,
-        amount: tipAmount,
-        transaction_type: 'battle_tip',
-        description: 'Direct tip supporting ' + (side === 'creator' ? battle.creator_name : battle.challenger_name) + ' in PK Battle',
-        status: 'completed',
-      });
-      setConfirmed(true);
-      onTipRecorded();
-      toast.success('+' + pts + ' pts for your team! 🔥');
-      setTimeout(() => { setAwaitingConfirm(false); setConfirmed(false); setSupportSide(null); }, 2500);
-    } catch {
-      toast.error('Could not record tip');
-    }
-  }
-
-  return (
-    <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
-      <div className="flex items-center gap-2">
-        <DollarSign className="w-4 h-4" style={{ color: '#D4AF37' }} />
-        <span className="text-sm font-black uppercase tracking-wider" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Support a Side — Direct Pay</span>
-      </div>
-      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Money goes straight to the creator. Confirm payment → your side earns battle points.</p>
-
-      {!supportSide ? (
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { side: 'creator', name: battle.creator_name || 'Creator', score: battle.creator_score || 0, color: '#3B82F6' },
-            { side: 'challenger', name: battle.challenger_name || 'Challenger', score: battle.challenger_score || 0, color: '#EF4444' },
-          ].map(function(t) {
-            return (
-              <button key={t.side} onClick={function() { setSupportSide(t.side); }}
-                className="flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
-                style={{ background: t.color + '15', border: '1px solid ' + t.color + '40', cursor: 'pointer' }}>
-                <span className="text-base font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{t.name}</span>
-                <span className="text-[10px]" style={{ color: t.color }}>{t.score.toLocaleString()} pts</span>
-                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full mt-1"
-                  style={{ background: t.color + '25', color: t.color, fontFamily: 'Barlow Condensed, sans-serif' }}>Support</span>
-              </button>
-            );
-          })}
-        </div>
-      ) : awaitingConfirm ? (
-        <div className="space-y-3 text-center">
-          {confirmed ? (
-            <div className="py-4">
-              <CheckCircle className="w-10 h-10 mx-auto mb-2" style={{ color: '#6DBF7E' }} />
-              <p className="font-black text-sm text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Payment confirmed! Points added.</p>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-white/70">Did you complete the ${tipAmount} payment via {pendingPlatform?.name}?</p>
-              <div className="flex gap-3">
-                <button onClick={confirmPayment}
-                  className="flex-1 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'linear-gradient(135deg, #6DBF7E, #26A69A)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  ✓ Yes, I Paid
-                </button>
-                <button onClick={function() { setAwaitingConfirm(false); setPendingPlatform(null); }}
-                  className="flex-1 py-2 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  ✗ Cancel
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <button onClick={function() { setSupportSide(null); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>← Back</button>
-            <span className="text-xs font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Supporting: {supportSide === 'creator' ? battle.creator_name : battle.challenger_name}
-            </span>
-          </div>
-          <div>
-            <p className="text-[10px] text-white/40 mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Amount</p>
-            <div className="flex gap-1.5 flex-wrap">
-              {TIP_AMOUNTS.map(function(a) {
-                return (
-                  <button key={a} onClick={function() { setTipAmount(a); }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-black transition-all"
-                    style={{ background: tipAmount === a ? '#D4AF37' : 'rgba(255,255,255,0.06)', color: tipAmount === a ? '#080B18' : 'rgba(255,255,255,0.6)', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                    ${a}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div>
-            <p className="text-[10px] text-white/40 mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Pay via</p>
-            <div className="grid grid-cols-5 gap-1.5">
-              {DIRECT_PAY_PLATFORMS.map(function(p) {
-                return (
-                  <button key={p.id} onClick={function() { openPay(p); }}
-                    className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer' }}>
-                    <span style={{ fontSize: 18 }}>{p.emoji}</span>
-                    <span className="text-[9px] text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{p.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <p className="text-[10px] text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
-            ${tipAmount} = {tipAmount * 10} battle pts · Creator keeps 90%
-          </p>
-        </div>
-      )}
     </div>
   );
 }
@@ -735,7 +594,7 @@ function HistoryTab({ battles, user }) {
               {Math.round((wins.length / ended.length) * 100)}%
             </span>
           </div>
-          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,21,100,0.2)' }}>
+          <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(192,57,43,0.2)' }}>
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{ width: Math.round((wins.length / ended.length) * 100) + '%', background: 'linear-gradient(90deg, #6DBF7E, #C9A84C)' }}
@@ -762,8 +621,8 @@ function HistoryTab({ battles, user }) {
               return (
                 <div key={b.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{
-                    background: isWin ? 'rgba(212,175,55,0.15)' : isParticipant ? 'rgba(255,21,100,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: '1px solid ' + (isWin ? 'rgba(212,175,55,0.3)' : isParticipant ? 'rgba(255,21,100,0.2)' : 'rgba(255,255,255,0.08)')
+                    background: isWin ? 'rgba(212,175,55,0.15)' : isParticipant ? 'rgba(192,57,43,0.1)' : 'rgba(255,255,255,0.05)',
+                    border: '1px solid ' + (isWin ? 'rgba(212,175,55,0.3)' : isParticipant ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.08)')
                   }}>
                     {isWin ? <Crown className="w-4 h-4 text-yellow-400" /> : <Swords className="w-4 h-4 text-white/30" />}
                   </div>
@@ -892,7 +751,7 @@ export default function PKBattleManager() {
             </div>
             <div className="flex items-center gap-2">
               {activeBattleCount > 0 && (
-                <Badge className="text-xs animate-pulse" style={{ background: 'rgba(255,21,100,0.15)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.3)' }}>
+                <Badge className="text-xs animate-pulse" style={{ background: 'rgba(192,57,43,0.15)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)' }}>
                   {activeBattleCount} LIVE
                 </Badge>
               )}
@@ -990,6 +849,21 @@ export default function PKBattleManager() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

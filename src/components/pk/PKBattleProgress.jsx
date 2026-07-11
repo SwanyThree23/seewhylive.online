@@ -64,7 +64,7 @@ export default function PKBattleProgress({ battleId }) {
         </div>
         <div className="text-xs px-2 py-1 rounded-full"
           style={{
-            background: isActive ? 'rgba(109,191,126,0.15)' : isEnded ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)',
+            background: isActive ? 'rgba(109,191,126,0.15)' : isEnded ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)',
             color: isActive ? '#6DBF7E' : isEnded ? '#C0392B' : G,
             fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 'bold',
@@ -194,7 +194,7 @@ export default function PKBattleProgress({ battleId }) {
           <button
             style={{
               fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
-              background: 'rgba(255,21,100,0.2)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.3)',
+              background: 'rgba(192,57,43,0.2)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)',
             }}
           >
             💰 Tip Creator

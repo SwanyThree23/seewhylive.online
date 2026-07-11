@@ -144,7 +144,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
             <button
               onClick={handleSendTip}
               disabled={sendTipMutation.isPending}
-              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #9333ea, #ec4899)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #7B5DA6, #C0392B)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {sendTipMutation.isPending ? 'Sending...' : 'Send Tip'}
             </button>

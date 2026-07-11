@@ -5,12 +5,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158", red: "#FF3B30",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E", red: "#FF3B30",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
-var STATUS_COLORS = { pending: C.gold, confirmed: "#00E5FF", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
+var STATUS_COLORS = { pending: C.gold, confirmed: "#4A8A7A", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
 
 export default function ShopDashboard({ creatorId }) {
   var [view, setView] = useState("items"); // items | orders
@@ -57,7 +57,7 @@ export default function ShopDashboard({ creatorId }) {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, padding: "12px 0 8px" }}>
         {[
-          { label: "ITEMS", value: items.length, color: "#00E5FF" },
+          { label: "ITEMS", value: items.length, color: "#4A8A7A" },
           { label: "SOLD", value: totalSold, color: C.volt },
           { label: "REVENUE", value: "$" + totalRevenue.toFixed(0), color: C.gold },
         ].map(s => (

@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, Users, DollarSign, Radio, Zap, Target, Download } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, Radio, Zap, Target } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -21,7 +33,7 @@ const TOOLTIP_STYLE = {
 const TICK = { fill: 'rgba(255,255,255,0.35)', fontSize: 10 };
 const GRID = { stroke: 'rgba(255,255,255,0.06)' };
 
-const TABS = ['revenue', 'engagement', 'performance', 'insights', 'retention', 'schedule'];
+const TABS = ['revenue', 'engagement', 'performance', 'insights'];
 
 export default function AdvancedAnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
@@ -58,54 +70,7 @@ export default function AdvancedAnalyticsPage() {
   const roomPerformance = rooms.filter(r => r.viewer_count > 0).slice(0, 10)
     .map(r => ({ title: r.title.substring(0, 20), viewers: r.viewer_count }));
 
-  const tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', insights: 'AI Insights', retention: 'Retention Curve', schedule: 'Best Stream Time' };
-
-  // Retention Curve data
-  const retentionData = metrics.filter(m => m.metric_type === 'viewer_retention').length > 0
-    ? metrics.filter(m => m.metric_type === 'viewer_retention').slice(0, 10).map((m, i) => ({ minute: i * 5, retention: m.value }))
-    : Array.from({ length: 12 }, (_, i) => ({ minute: i * 5, retention: Math.max(20, 100 - i * 6 - Math.random() * 5) }));
-
-  // Best Stream Time heatmap data
-  const heatmap = {};
-  metrics.forEach(m => {
-    const d = new Date(m.timestamp);
-    const key = `${d.getDay()}-${d.getHours()}`;
-    if (!heatmap[key]) heatmap[key] = { total: 0, count: 0 };
-    heatmap[key].total += m.value;
-    heatmap[key].count++;
-  });
-  const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const HOURS = [0, 6, 12, 15, 18, 20, 22];
-
-  const heatmapValues = DAYS.flatMap((_, di) => HOURS.map((h) => {
-    const cell = heatmap[`${di}-${h}`];
-    return cell ? cell.total / cell.count : 0;
-  }));
-  const heatmapMin = Math.min(...heatmapValues);
-  const heatmapMax = Math.max(...heatmapValues) || 1;
-  let bestKey = null, bestVal = -Infinity;
-  DAYS.forEach((_, di) => HOURS.forEach((h) => {
-    const cell = heatmap[`${di}-${h}`];
-    const val = cell ? cell.total / cell.count : 0;
-    if (val > bestVal) { bestVal = val; bestKey = `${di}-${h}`; }
-  }));
-
-  // CSV Export
-  function exportCSV() {
-    const headers = ['Date', 'Amount', 'Type', 'Description'];
-    const rows = transactions.map(t => [
-      new Date(t.created_date).toLocaleDateString(),
-      t.amount,
-      t.transaction_type || 'payment',
-      (t.description || '').replace(/,/g, ';'),
-    ]);
-    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'analytics.csv'; a.click();
-    URL.revokeObjectURL(url);
-  }
+  const tabLabels = { revenue: 'Revenue Trends', engagement: 'Engagement', performance: 'Room Performance', insights: 'AI Insights' };
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -114,14 +79,6 @@ export default function AdvancedAnalyticsPage() {
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <TrendingUp className="w-5 h-5" style={{ color: GOLD }} />
         <h1 className="text-xl font-black text-white" style={T}>Advanced Analytics</h1>
-        <div className="ml-auto">
-          <button onClick={exportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase"
-            style={{ ...T, border: `1px solid ${GOLD}`, color: GOLD, background: 'rgba(212,175,55,0.06)' }}>
-            <Download size={14} />
-            Export CSV
-          </button>
-        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-5">
@@ -130,7 +87,7 @@ export default function AdvancedAnalyticsPage() {
           {[
             { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#00ff88' },
             { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#C0392B' },
-            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#D4AF37' },
+            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#00d4ff' },
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
@@ -183,7 +140,7 @@ export default function AdvancedAnalyticsPage() {
                 <XAxis dataKey="date" tick={TICK} axisLine={false} tickLine={false} />
                 <YAxis tick={TICK} axisLine={false} tickLine={false} />
                 <Tooltip {...TOOLTIP_STYLE} />
-                <Line type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="value" stroke="#00d4ff" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -191,125 +148,83 @@ export default function AdvancedAnalyticsPage() {
 
         {/* Performance */}
         {activeTab === 'performance' && (
-          <div className="space-y-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
-              <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={roomPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" {...GRID} />
-                  <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
-                  <YAxis tick={TICK} axisLine={false} tickLine={false} />
-                  <Tooltip {...TOOLTIP_STYLE} />
-                  <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            {/* Live stream analytics panel */}
-            {rooms.find(r => r.status === 'live') && (
-              <StreamAnalyticsDashboard roomId={rooms.find(r => r.status === 'live').id} />
-            )}
-            <PerformanceDashboard
-              roomId={rooms.find(r => r.status === 'live')?.id || null}
-              sessionId={rooms.find(r => r.status === 'live')?.id || null}
-            />
-            {rooms.find(r => r.status === 'live') && (
-              <>
-                <AutomatedClipGenerator
-                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
-                  isLive
-                />
-                <AutomatedHighlightReels
-                  streamSession={{ id: rooms.find(r => r.status === 'live').id }}
-                />
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Retention Curve */}
-        {activeTab === 'retention' && (
           <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-            <p className="font-black text-sm text-white mb-1" style={T}>Viewer Retention Curve</p>
-            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Drop-off over stream duration</p>
+            <p className="font-black text-sm text-white mb-1" style={T}>Top Performing Rooms</p>
+            <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>By viewer count</p>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={retentionData}>
+              <BarChart data={roomPerformance}>
                 <CartesianGrid strokeDasharray="3 3" {...GRID} />
-                <XAxis dataKey="minute" tick={TICK} axisLine={false} tickLine={false} label={{ value: 'Minutes', position: 'insideBottom', offset: -2, fill: 'rgba(255,255,255,0.35)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif' }} />
-                <YAxis domain={[0, 100]} unit="%" tick={TICK} axisLine={false} tickLine={false} />
+                <XAxis dataKey="title" tick={TICK} axisLine={false} tickLine={false} />
+                <YAxis tick={TICK} axisLine={false} tickLine={false} />
                 <Tooltip {...TOOLTIP_STYLE} />
-                <Line type="monotone" dataKey="retention" stroke="#D4AF37" strokeWidth={2} dot={false} />
-              </LineChart>
+                <Bar dataKey="viewers" fill={CRIMSON} radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
-          </div>
-        )}
-
-        {/* Best Stream Time */}
-        {activeTab === 'schedule' && (
-          <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-            <p className="font-black text-sm text-white mb-1" style={T}>Best Stream Time</p>
-            <p className="text-[11px] mb-5" style={{ color: 'rgba(255,255,255,0.35)' }}>Predicted engagement by day and hour</p>
-            <div className="overflow-x-auto">
-              <table className="border-separate" style={{ borderSpacing: 4 }}>
-                <thead>
-                  <tr>
-                    <th className="w-10" />
-                    {HOURS.map(h => (
-                      <th key={h} className="text-center text-[9px] font-black uppercase pb-1"
-                        style={{ ...T, color: 'rgba(255,255,255,0.35)', minWidth: 36 }}>
-                        {h === 0 ? '12a' : h < 12 ? `${h}a` : h === 12 ? '12p' : `${h - 12}p`}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {DAYS.map((day, di) => (
-                    <tr key={day}>
-                      <td className="text-[9px] font-black uppercase pr-2 text-right"
-                        style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{day}</td>
-                      {HOURS.map(h => {
-                        const key = `${di}-${h}`;
-                        const cell = heatmap[key];
-                        const val = cell ? cell.total / cell.count : 0;
-                        const norm = heatmapMax > heatmapMin ? (val - heatmapMin) / (heatmapMax - heatmapMin) : 0;
-                        const opacity = 0.05 + norm * 0.35;
-                        const isBest = key === bestKey;
-                        return (
-                          <td key={h} className="relative">
-                            <div className="rounded-lg flex items-center justify-center"
-                              style={{
-                                width: 36, height: 36,
-                                background: `rgba(212,175,55,${opacity})`,
-                                border: isBest ? `2px solid ${GOLD}` : '1px solid rgba(212,175,55,0.08)',
-                              }}>
-                              {isBest && (
-                                <span className="text-[8px] font-black text-center leading-tight"
-                                  style={{ ...T, color: GOLD }}>⭐<br/>Best</span>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
         )}
 
         {/* Insights */}
         {activeTab === 'insights' && (
-          <div className="space-y-4">
-            {/* AI-powered recommendations (live room context if one is active) */}
-            <SwanAIRecommendations
-              roomId={rooms.find(r => r.status === 'live')?.id || null}
-              currentLayout="analytics"
-              viewerCount={activeRooms}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-4 h-4" style={{ color: GOLD }} />
+                <p className="font-black text-sm text-white" style={T}>Growth Opportunities</p>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#00d4ff' },
+                  { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#00ff88' },
+                  { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#D4AF37' },
+                ].map(({ title, desc, color }) => (
+                  <div key={title} className="p-3 rounded-xl"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.06)` }}>
+                    <p className="font-black text-xs" style={{ color, ...T }}>{title}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <p className="font-black text-sm text-white mb-4" style={T}>Platform Health</p>
+              <div className="space-y-4">
+                {[
+                  { label: 'System Performance', value: 95, text: 'Excellent', color: '#00ff88' },
+                  { label: 'User Satisfaction', value: 88, text: 'High', color: '#00d4ff' },
+                  { label: 'Content Quality', value: 82, text: 'Good', color: '#D4AF37' },
+                ].map(({ label, value, text, color }) => (
+                  <div key={label}>
+                    <div className="flex justify-between text-xs mb-1.5">
+                      <span style={{ color: 'rgba(255,255,255,0.5)', ...T }}>{label}</span>
+                      <span className="font-black" style={{ color, ...T }}>{text}</span>
+                    </div>
+                    <div className="rounded-full h-1.5 overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div className="h-full rounded-full" style={{ width: `${value}%`, background: color }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

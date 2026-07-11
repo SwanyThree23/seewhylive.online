@@ -10,7 +10,7 @@ const SUPER_AMOUNTS = [
   { value: 5, label: '$5', color: '#C9A84C', emoji: '💙' },
   { value: 10, label: '$10', color: '#6DBF7E', emoji: '💚' },
   { value: 20, label: '$20', color: '#FFB800', emoji: '⭐' },
-  { value: 50, label: '$50', color: '#FF8C00', emoji: '🔥' },
+  { value: 50, label: '$50', color: '#D4854A', emoji: '🔥' },
   { value: 100, label: '$100', color: '#C0392B', emoji: '👑' },
 ];
 

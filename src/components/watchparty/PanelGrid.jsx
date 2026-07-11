@@ -198,7 +198,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
               {menuOpen && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, minWidth: 100, overflow: 'hidden' }}
                   onMouseLeave={() => setMenuOpen(false)}>
-                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#f87171' }].map(item => (
+                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#C0392B' }].map(item => (
                     <button key={item.label} onClick={() => setMenuOpen(false)}
                       style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}

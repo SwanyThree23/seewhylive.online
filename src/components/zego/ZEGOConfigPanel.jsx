@@ -68,7 +68,7 @@ export default function ZEGOConfigPanel({ user }) {
         <span className="text-[11px] font-black uppercase px-2 py-1 rounded-full"
           style={{
             background: isConfigured ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)',
-            color: isConfigured ? '#6DBF7E' : '#FF4444',
+            color: isConfigured ? '#6DBF7E' : '#C0392B',
             border: `1px solid ${isConfigured ? 'rgba(109,191,126,0.3)' : 'rgba(255,68,68,0.3)'}`,
           }}>
           {isConfigured ? '● CONFIGURED' : '● NOT CONFIGURED'}

@@ -1,13 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords, Flame } from 'lucide-react';
+import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { motion } from 'framer-motion';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#1565C0', w: 4, l: 1, pts: 1820 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#5B7FA6', w: 4, l: 1, pts: 1820 },
   { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
   { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
   { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
@@ -149,43 +163,6 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
   );
 }
 
-/* ── Activity ticker ────────────────────────────────────────────────── */
-const TICKER_EVENTS = [
-  '🔥 SwanyThree just went LIVE',
-  '👑 Eagle received a Crown gift',
-  '💎 DomQueen reached #1 Subscribers',
-  '⚡ FastHandsR won a PK Battle',
-  '🎁 BigBoneEarl sent 5 gifts',
-  '🏆 Washington leads State vs State',
-  '🎬 StoneWall clipped a highlight',
-  '💸 SwanyThree earned $250 today',
-];
-
-function ActivityTicker() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const t = setInterval(() => setIdx(i => (i + 1) % TICKER_EVENTS.length), 3500);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <div className="overflow-hidden" style={{ background: 'rgba(212,175,55,0.06)', borderBottom: '1px solid rgba(212,175,55,0.12)', height: 32 }}>
-      <motion.div
-        key={idx}
-        initial={{ y: 32, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -32, opacity: 0 }}
-        transition={{ duration: 0.35, ease: 'easeOut' }}
-        className="flex items-center justify-center h-8 gap-2 px-4"
-      >
-        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-        <span className="text-[11px] font-black uppercase truncate" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
-          {TICKER_EVENTS[idx]}
-        </span>
-      </motion.div>
-    </div>
-  );
-}
-
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -257,12 +234,11 @@ export default function LeaderboardPage() {
     <div className="min-h-screen pb-8" style={{ background: '#080B18' }}>
 
       {/* ── sticky header ── */}
-      <div className="sticky top-0 z-20"
+      <div className="sticky top-0 z-20 px-4 py-3"
         style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
-        <div className="px-4 py-3">
-          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <Trophy className="w-5 h-5" style={{ color: GOLD }} />
             </div>
@@ -289,8 +265,6 @@ export default function LeaderboardPage() {
             ))}
           </div>
         </div>
-        </div>
-        <ActivityTicker />
       </div>
 
       <div className="max-w-3xl mx-auto px-4 pt-5 space-y-5">
@@ -434,40 +408,22 @@ export default function LeaderboardPage() {
             </div>
           </div>
         )}
-
-        {/* ── Your Rank card ── */}
-        {activeTab !== 'svs' && currentUser && (() => {
-          const myIdx = list.findIndex(e => e.user?.id === currentUser.id);
-          if (myIdx >= 3) return null; // already shown in rest list
-          if (myIdx === -1) {
-            return (
-              <div className="rounded-2xl p-4 flex items-center gap-3"
-                style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <div className="w-8 text-center shrink-0">
-                  <span className="font-black text-sm" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Orbitron, monospace' }}>—</span>
-                </div>
-                <OctAvatar size={40} src={currentUser?.avatar_url}
-                  initials={currentUser?.full_name?.charAt(0)?.toUpperCase() || '?'}
-                  rankColor={GOLD} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-sm text-white flex items-center gap-1.5" style={T}>
-                    {currentUser?.full_name || 'You'}
-                    <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md"
-                      style={{ background: 'rgba(212,175,55,0.15)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', ...T }}>You</span>
-                  </p>
-                  <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Keep streaming to rank up 🔥</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="font-black text-sm" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Orbitron, monospace' }}>Unranked</p>
-                  <p className="text-[10px] uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>{label}</p>
-                </div>
-              </div>
-            );
-          }
-          return null;
-        })()}
-
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="leaderboard" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

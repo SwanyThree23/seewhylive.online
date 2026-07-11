@@ -1,0 +1,15 @@
+node_modules/
+.env
+*.log
+.env*
+.env*
+database.sqlite
+*.bak*
+*.broken*
+*.backup*
+*.bak
+*.bak.*
+*.save
+data/stream_keys.json
+data/users.json
+pm2.config.js

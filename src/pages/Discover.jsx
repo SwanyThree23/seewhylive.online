@@ -4,18 +4,31 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter, Sparkles
+  Zap, Eye, Clock, ChevronRight, Filter
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
 import { formatDistanceToNow } from 'date-fns';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -46,26 +59,15 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
-function scoreRoom(room, watchedTags) {
-  const viewers = room.viewer_count || 0;
-  const followers = room.follower_count || 0;
-  const engagement = room.like_count || 0;
-  const ageMs = Date.now() - new Date(room.created_date || 0).getTime();
-  const recencyScore = Math.max(0, 1 - ageMs / (4 * 3600 * 1000)); // decay over 4h
-  const tagBoost = (room.tags || []).some(t => watchedTags.includes(t)) ? 0.25 : 0;
-  return followers * 0.3 + viewers * 0.4 + engagement * 0.2 + recencyScore * 100 * 0.1 + tagBoost * 50;
-}
-
-function FanbaseRoomCard({ room, onCardClick }) {
+function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (CAT_COLOR[tag] || '#D4AF37') : '#D4AF37';
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
-      onClick={() => onCardClick && onCardClick(room)}>
+      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -82,7 +84,7 @@ function FanbaseRoomCard({ room, onCardClick }) {
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-          style={{ background: 'rgba(192,57,43,0.90)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
         </div>
         {viewers > 0 && (
@@ -107,10 +109,7 @@ export default function DiscoverPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');
-  const [tab, setTab] = useState('foryou'); // foryou | live | trending | scheduled | communities | creators
-  const [watchedTags] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('swl_watched_tags') || '[]'); } catch { return []; }
-  });
+  const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
@@ -156,48 +155,24 @@ export default function DiscoverPage() {
     });
   };
 
-  const handleCardClick = (room) => {
-    try {
-      const existing = JSON.parse(localStorage.getItem('swl_watched_tags') || '[]');
-      const roomTags = room.tags || [];
-      const merged = [...new Set([...existing, ...roomTags])].slice(0, 20);
-      localStorage.setItem('swl_watched_tags', JSON.stringify(merged));
-    } catch {}
-    window.location.href = createPageUrl('LiveRoom') + '?roomId=' + room.id;
-  };
-
-  const heroTrending = [...liveRooms]
+  const trending = [...liveRooms]
     .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
     .slice(0, 3);
 
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
-  const forYouRooms = [...liveRooms]
-    .sort((a, b) => scoreRoom(b, watchedTags) - scoreRoom(a, watchedTags));
-
-  const trendingRooms = [...liveRooms]
-    .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
-    .slice(0, 20);
-
-  const trendingTotalViewers = trendingRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-
   return (
     <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
         {pullY > 10 && (
-          <>
-            <motion.div
-              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-              style={{ width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(212,175,55,0.25)', borderTopColor: '#D4AF37', flexShrink: 0 }}
-            />
-            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: refreshing ? '#D4AF37' : 'rgba(212,175,55,0.5)' }}>
-              {refreshing ? 'REFRESHING…' : pullY >= 65 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH'}
-            </span>
-          </>
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          </motion.div>
         )}
       </motion.div>
       {/* Dark header */}
@@ -241,9 +216,9 @@ export default function DiscoverPage() {
           </div>
 
           {/* Hero trending */}
-          {heroTrending.length > 0 && (
+          {trending.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {heroTrending.map((room, i) => (
+              {trending.map((room, i) => (
                 <TrendingCard key={room.id} room={room} rank={i + 1} />
               ))}
             </div>
@@ -268,18 +243,13 @@ export default function DiscoverPage() {
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
-        <div className="overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6">
+        <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
           <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
-              { id: 'foryou', label: 'For You', icon: Zap },
               { id: 'live', label: 'Live', icon: Radio },
-              { id: 'trending', label: 'Trending', icon: TrendingUp },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
-              { id: 'recommended', label: 'Picks', icon: Sparkles },
-              { id: 'collabs',  label: 'Collabs',  icon: Users },
-              { id: 'youtube',  label: 'YouTube',  icon: TrendingUp },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -299,8 +269,8 @@ export default function DiscoverPage() {
         </div>
 
         {/* Genre pills */}
-        {(tab === 'live' || tab === 'scheduled' || tab === 'foryou' || tab === 'trending') && (
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide overscroll-contain -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+        {(tab === 'live' || tab === 'scheduled') && (
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-6 px-6 pb-1" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {GENRES.map(g => (
               <button key={g} onClick={() => setGenre(g)}
                 className="shrink-0 text-[11px] px-3.5 py-1.5 rounded-full transition-all active:scale-95 whitespace-nowrap font-bold"
@@ -316,73 +286,12 @@ export default function DiscoverPage() {
 
         {/* Content */}
         <AnimatePresence mode="wait">
-          {tab === 'foryou' && (
-            <motion.div key="foryou" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              {watchedTags.length === 0 && (
-                <p className="text-center text-xs mb-4" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  Watch some streams to unlock personalized recommendations
-                </p>
-              )}
-              {watchedTags.length > 0 && (
-                <p className="text-[10px] font-black uppercase tracking-widest mb-4" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  Based on your interests: {watchedTags.slice(0, 3).join(', ')}
-                </p>
-              )}
-              {loadingLive ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
-                  ))}
-                </div>
-              ) : forYouRooms.length === 0 ? (
-                <EmptyState icon={Zap} title="No live rooms yet" desc="Check back soon for personalized picks" />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {forYouRooms.map((room, i) => (
-                    <motion.div key={room.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {tab === 'trending' && (
-            <motion.div key="trending" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg" aria-hidden="true">🔥</span>
-                <span className="font-black uppercase tracking-wider text-sm" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
-                <span className="text-[11px] font-bold ml-auto" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  {trendingTotalViewers.toLocaleString()} total viewers
-                </span>
-              </div>
-              {loadingLive ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
-                  ))}
-                </div>
-              ) : trendingRooms.length === 0 ? (
-                <EmptyState icon={TrendingUp} title="No trending rooms yet" desc="Check back soon" />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {trendingRooms.map((room, i) => (
-                    <motion.div key={room.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          )}
-
           {tab === 'live' && (
             <motion.div key="live" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#1A1218]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#16162A]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -406,7 +315,7 @@ export default function DiscoverPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                     >
-                      <FanbaseRoomCard room={room} onCardClick={handleCardClick} />
+                      <FanbaseRoomCard room={room} />
                     </motion.div>
                   ))}
                 </div>
@@ -451,24 +360,6 @@ export default function DiscoverPage() {
               </div>
             </motion.div>
           )}
-
-          {tab === 'recommended' && (
-            <motion.div key="recommended" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <ContentRecommendations />
-            </motion.div>
-          )}
-
-          {tab === 'collabs' && (
-            <motion.div key="collabs" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <CollaborationMatcher />
-            </motion.div>
-          )}
-
-          {tab === 'youtube' && (
-            <motion.div key="youtube" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <YouTubeDiscovery />
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
     </div>
@@ -476,12 +367,12 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#FF8C00'];
+  const rankColors = ['#FFB800', '#5A5A7A', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#1A1218] hover:border-[#C0392B]/30 transition-all cursor-pointer"
+        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
         style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
       >
         {room.thumbnail_url && (
@@ -515,9 +406,9 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#1A1218] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#16162A] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#1A1218] flex items-center justify-center shrink-0">
+        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#16162A] flex items-center justify-center shrink-0">
           <Calendar className="w-5 h-5 text-[#FFB800]" />
         </div>
         <div className="flex-1 min-w-0">
@@ -544,7 +435,7 @@ function CreatorCard({ creator }) {
         style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
-            style={{ background: 'rgba(192,57,43,0.90)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
           </div>
         )}
@@ -578,6 +469,21 @@ function EmptyState({ icon: Icon, title, desc }) {
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
+      <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

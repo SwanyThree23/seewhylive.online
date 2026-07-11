@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const BG2 = 'rgba(13,6,24,0.9)';
 const GOLD = '#D4AF37';
@@ -309,7 +325,7 @@ export default function VaultPro() {
         {/* Error banner */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold"
-            style={{ background: 'rgba(255,21,100,0.1)', border: '1px solid rgba(255,21,100,0.25)', color: '#C0392B', ...T }}>
+            style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
             {error}
             <button onClick={() => setError('')} className="ml-3 underline opacity-70">Dismiss</button>
           </div>
@@ -402,7 +418,7 @@ export default function VaultPro() {
                     </div>
                     <button onClick={() => handleRevealKey(key)}
                       className="h-8 px-3 rounded-xl text-[10px] font-black uppercase flex items-center gap-1 shrink-0"
-                      style={{ background: revealedKeys[key.id] ? 'rgba(255,21,100,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(255,21,100,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
+                      style={{ background: revealedKeys[key.id] ? 'rgba(192,57,43,0.1)' : 'rgba(212,175,55,0.1)', color: revealedKeys[key.id] ? '#C0392B' : GOLD, border: `1px solid ${revealedKeys[key.id] ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.25)'}`, ...T }}>
                       {revealedKeys[key.id] ? <><EyeOff className="w-3 h-3" /> Hide</> : <><Eye className="w-3 h-3" /> Reveal</>}
                     </button>
                   </div>
@@ -595,6 +611,21 @@ export default function VaultPro() {
           </button>
         </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

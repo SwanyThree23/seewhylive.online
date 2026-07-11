@@ -4,8 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { Heart, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
-function haptic(ms) { if (navigator.vibrate) navigator.vibrate(ms || 10); }
-
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
 const BORDER = 'rgba(212,175,55,0.18)';
@@ -64,11 +62,9 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
           <motion.button
             key={creator.id}
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => { haptic(); setSelectedCreator(creator.id); }}
-            className="rounded-lg transition-all text-center flex items-center justify-center"
+            onClick={() => setSelectedCreator(creator.id)}
+            className="p-3 rounded-lg transition-all text-center"
             style={{
-              minHeight: 44,
               background: selectedCreator === creator.id ? `${creator.color}20` : 'rgba(255,255,255,0.03)',
               border: selectedCreator === creator.id ? `1px solid ${creator.color}` : `1px solid ${BORDER}`,
               color: selectedCreator === creator.id ? creator.color : 'rgba(255,255,255,0.5)',
@@ -87,12 +83,10 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
             <motion.button
               key={amount}
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => { haptic(); setSelectedAmount(amount); }}
+              onClick={() => setSelectedAmount(amount)}
               disabled={!selectedCreator || loading}
-              className="rounded text-xs font-black transition-all disabled:opacity-40 flex items-center justify-center"
+              className="py-2 rounded text-xs font-black transition-all disabled:opacity-40"
               style={{
-                minHeight: 44,
                 background: selectedAmount === amount ? G : 'rgba(255,255,255,0.08)',
                 color: selectedAmount === amount ? '#000' : '#fff',
               }}
@@ -104,20 +98,18 @@ export default function PKBattleVotePanel({ battleId, creatorId, challengerId, c
       </div>
 
       {/* Action button */}
-      <motion.button
-        whileTap={{ scale: 0.96 }}
-        onClick={() => { haptic(15); selectedAmount && handleContribute(selectedCreator, selectedAmount); }}
+      <button
+        onClick={() => selectedAmount && handleContribute(selectedCreator, selectedAmount)}
         disabled={!selectedCreator || !selectedAmount || loading}
         style={{
-          width: '100%', minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 4, fontSize: 13, fontWeight: 900, borderRadius: 8, cursor: 'pointer',
-          fontFamily: 'Barlow Condensed, sans-serif',
+          width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: 4, fontSize: 12, fontWeight: 900, borderRadius: 6, cursor: 'pointer',
           background: G, color: '#000', border: 'none', opacity: (!selectedCreator || !selectedAmount || loading) ? 0.5 : 1,
         }}
       >
         <Gift className="w-3.5 h-3.5" />
         {loading ? 'Processing...' : 'Send Support'}
-      </motion.button>
+      </button>
 
       <p className="text-[10px] text-white/40 text-center">
         Every contribution helps them win the battle!

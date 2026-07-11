@@ -3,106 +3,27 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
-const PPV_TIERS = [
-  { id: 'preview', label: '👁 Preview', price: 0,    desc: '30-second preview — free',       color: '#6DBF7E' },
-  { id: 'rent',    label: '📺 Rent',    price: 0.99, desc: '24-hour access',                 color: '#D4AF37' },
-  { id: 'buy',     label: '💎 Buy',     price: 2.99, desc: 'Permanent access + download',    color: '#D4AF37' },
-  { id: 'vip',     label: '👑 VIP',     price: 9.99, desc: 'All clips by this creator ever', color: '#FF8C00' },
-];
-
-function PPVModal({ clip, onClose, user }) {
-  const [tier, setTier] = useState(null);
-  const [purchasing, setPurchasing] = useState(false);
-  const [done, setDone] = useState(false);
-
-  async function handlePurchase() {
-    if (!tier || tier.price === 0) { setDone(true); return; }
-    setPurchasing(true);
-    try {
-      await base44.entities.Transaction.create({
-        user_id: user?.id,
-        amount: tier.price,
-        transaction_type: 'clip_purchase',
-        description: `${tier.label} — ${clip.title}`,
-        item_id: clip.id,
-        status: 'completed',
-      });
-      setDone(true);
-    } catch {
-      setPurchasing(false);
-    }
-  }
-
-  if (done) return (
-    <div style={{ position:'fixed', inset:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)' }}
-      onClick={onClose}>
-      <div style={{ background:'rgba(13,6,24,0.99)', border:'1px solid rgba(212,175,55,0.3)', borderRadius:20, padding:'32px 28px', textAlign:'center', maxWidth:300 }}
-        onClick={e=>e.stopPropagation()}>
-        <div style={{ fontSize:48, marginBottom:12 }}>🎉</div>
-        <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:20, color:'#D4AF37', marginBottom:8 }}>
-          {tier?.price === 0 ? 'Preview Unlocked!' : 'Purchase Complete!'}
-        </p>
-        <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontSize:13, color:'rgba(255,255,255,0.5)', marginBottom:20 }}>
-          {tier?.desc}
-        </p>
-        <button onClick={onClose} style={{ background:'#D4AF37', color:'#000', border:'none', borderRadius:10, padding:'10px 28px', fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:14, cursor:'pointer' }}>
-          Watch Now ▶
-        </button>
-      </div>
-    </div>
-  );
-
-  return (
-    <div style={{ position:'fixed', inset:0, zIndex:100, display:'flex', alignItems:'flex-end', justifyContent:'center', background:'rgba(0,0,0,0.6)' }}
-      onClick={onClose}>
-      <div style={{ background:'rgba(8,11,24,0.99)', border:'1px solid rgba(212,175,55,0.15)', borderRadius:'20px 20px 0 0', padding:'24px 20px 32px', width:'100%', maxWidth:480 }}
-        onClick={e=>e.stopPropagation()}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:18, color:'#fff' }}>{clip.title}</p>
-          <button onClick={onClose} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.4)', cursor:'pointer', fontSize:18 }}>✕</button>
-        </div>
-        <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontSize:12, color:'rgba(255,255,255,0.35)', marginBottom:16, letterSpacing:'0.06em', textTransform:'uppercase' }}>
-          Choose access tier
-        </p>
-        <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:20 }}>
-          {PPV_TIERS.map(t => (
-            <button key={t.id} onClick={() => setTier(t)}
-              style={{
-                display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 14px',
-                background: tier?.id===t.id ? `${t.color}18` : 'rgba(255,255,255,0.03)',
-                border: `1.5px solid ${tier?.id===t.id ? t.color : 'rgba(255,255,255,0.08)'}`,
-                borderRadius:12, cursor:'pointer', transition:'all 0.15s',
-              }}>
-              <div style={{ textAlign:'left' }}>
-                <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:14, color:tier?.id===t.id ? t.color : '#fff', margin:0 }}>{t.label}</p>
-                <p style={{ fontFamily:'Barlow Condensed, sans-serif', fontSize:11, color:'rgba(255,255,255,0.4)', margin:'2px 0 0' }}>{t.desc}</p>
-              </div>
-              <span style={{ fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:16, color: tier?.id===t.id ? t.color : 'rgba(255,255,255,0.5)' }}>
-                {t.price === 0 ? 'FREE' : `$${t.price}`}
-              </span>
-            </button>
-          ))}
-        </div>
-        <button onClick={handlePurchase} disabled={!tier || purchasing}
-          style={{
-            width:'100%', padding:'14px', borderRadius:12, border:'none',
-            background: tier ? '#D4AF37' : 'rgba(255,255,255,0.06)',
-            color: tier ? '#000' : 'rgba(255,255,255,0.25)',
-            fontFamily:'Barlow Condensed, sans-serif', fontWeight:900, fontSize:15,
-            cursor: tier && !purchasing ? 'pointer' : 'not-allowed',
-            letterSpacing:'0.06em',
-          }}>
-          {purchasing ? 'Processing…' : tier ? (tier.price === 0 ? 'Watch Preview ▶' : `Pay $${tier.price}`) : 'Select a tier'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ClipCard({ clip, onDelete, onShare, onBuy }) {
+function ClipCard({ clip, onDelete, onShare }) {
   const dur = clip.duration_seconds || (clip.end_timestamp_seconds - clip.start_timestamp_seconds) || 30;
   const status = clip.clip_url ? 'published' : 'processing';
   const S = STATUSES[status];
@@ -128,7 +49,6 @@ function ClipCard({ clip, onDelete, onShare, onBuy }) {
           {clip.share_count > 20 && <span style={{ fontSize:11, color:C.volt, fontFamily:'Barlow Condensed' }}>{clip.share_count} shares</span>}
         </div>
         <div style={{ display:'flex', gap:6 }}>
-          <button onClick={() => onBuy && onBuy(clip)} style={{ flex:1, padding:'5px', background:'rgba(128,0,32,0.12)', border:`1px solid rgba(128,0,32,0.3)`, borderRadius:5, color:'#ff9999', cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>▶ WATCH</button>
           <button onClick={() => onShare(clip)} style={{ flex:1, padding:'5px', background:'rgba(212,175,55,0.08)', border:`1px solid rgba(212,175,55,0.2)`, borderRadius:5, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>SHARE</button>
           <button onClick={() => onDelete(clip.id)} style={{ padding:'5px 8px', background:'rgba(128,0,32,0.08)', border:`1px solid rgba(128,0,32,0.2)`, borderRadius:5, color:C.burg, cursor:'pointer', fontSize:11 }}>🗑</button>
         </div>
@@ -141,9 +61,6 @@ export default function ClipsLibraryPage() {
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
-  const [buyModal, setBuyModal] = useState(null);
-  const [buyTier, setBuyTier] = useState(null);
-  const [buying, setBuying] = useState(false);
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
@@ -206,7 +123,7 @@ export default function ClipsLibraryPage() {
           </div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:12 }}>
-            {sorted.map(clip => <ClipCard key={clip.id} clip={clip} onDelete={id=>deleteMut.mutate(id)} onShare={share} onBuy={(clip) => setBuyModal(clip)} />)}
+            {sorted.map(clip => <ClipCard key={clip.id} clip={clip} onDelete={id=>deleteMut.mutate(id)} onShare={share} />)}
           </div>
         )}
         {/* Stream Highlights */}
@@ -229,7 +146,22 @@ export default function ClipsLibraryPage() {
         )}
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-      {buyModal && <PPVModal clip={buyModal} onClose={() => { setBuyModal(null); setBuyTier(null); }} user={user} />}
+      <SwanAIRecommendations roomId={null} currentLayout="clips" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

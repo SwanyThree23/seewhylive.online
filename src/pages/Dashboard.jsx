@@ -17,6 +17,27 @@ import {
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -145,7 +166,7 @@ function OverviewTab({ user }) {
           { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
-          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(255,21,100,0.08)' },
+          { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
           { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
@@ -366,7 +387,7 @@ function ContentTab({ user }) {
                   </button>
                   <button onClick={() => deleteMut.mutate(v.id)}
                     className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B' }}>
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
                 </div>
@@ -544,7 +565,7 @@ function CommunityTab({ user }) {
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
                   <button onClick={() => endPollMut.mutate(poll.id)}
                     className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>End</button>
                 </div>
                 <div className="space-y-1.5">
                   {opts.map((o, i) => {
@@ -726,7 +747,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
+              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#C0392B', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
@@ -764,11 +785,11 @@ function MonetizationTab({ user }) {
               <div className="h-6 rounded-full overflow-hidden flex" style={{ background: 'rgba(255,255,255,0.07)' }}>
                 <motion.div className="h-full" animate={{ width: '90%' }} transition={{ duration: 1.2 }}
                   style={{ background: 'linear-gradient(90deg, #6DBF7E, #D4854A)' }} />
-                <div className="h-full flex-1" style={{ background: 'rgba(255,21,100,0.3)' }} />
+                <div className="h-full flex-1" style={{ background: 'rgba(192,57,43,0.3)' }} />
               </div>
               <div className="flex items-center justify-between text-[11px] mt-1">
-                <span style={{ color: 'rgba(255,21,100,0.7)' }}>Platform 10%</span>
-                <span style={{ color: 'rgba(255,21,100,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)' }}>Platform 10%</span>
+                <span style={{ color: 'rgba(192,57,43,0.7)', fontFamily: 'Orbitron, monospace' }}>${platformShare.toFixed(2)}</span>
               </div>
             </div>
             <div className="pt-1 space-y-1">
@@ -1097,6 +1118,27 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="dashboard" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <RewardShopEditor creatorId={user?.id} />
+      <QuickActionPanel isOpen={false} onClose={() => {}} />
+      <OnboardingFlow isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

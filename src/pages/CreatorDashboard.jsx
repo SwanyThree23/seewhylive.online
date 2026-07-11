@@ -1,41 +1,41 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, animate as fmAnimate } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, Flame, Target } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const GREEN   = '#6DBF7E';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
-
-// Counts up from 0 to `value` on mount
-function AnimatedNumber({ value, prefix = '', suffix = '', decimals = 0 }) {
-  const mv = useMotionValue(0);
-  const rounded = useTransform(mv, v => prefix + v.toFixed(decimals) + suffix);
-  useEffect(() => {
-    const ctrl = fmAnimate(mv, value, { duration: 1.2, ease: [0.16, 1, 0.3, 1] });
-    return () => ctrl.stop();
-  }, [value]);
-  return <motion.span>{rounded}</motion.span>;
-}
-
-const QUICK_VARIANTS = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-const QUICK_ITEM = {
-  hidden: { opacity: 0, y: 20, scale: 0.92 },
-  show:   { opacity: 1, y: 0,  scale: 1, transition: { type: 'spring', damping: 20, stiffness: 300 } },
-};
 
 function fmtDuration(seconds) {
   if (!seconds) return '—';
@@ -76,30 +76,6 @@ export default function CreatorDashboardPage() {
     .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  // Streak: count consecutive days with at least one stream
-  const streakDays = useMemo(() => {
-    if (!recentRooms.length) return 0;
-    const days = new Set(recentRooms.map(r => new Date(r.created_date).toDateString()));
-    let streak = 0;
-    const d = new Date();
-    while (days.has(d.toDateString())) { streak++; d.setDate(d.getDate() - 1); }
-    return streak;
-  }, [recentRooms]);
-
-  // Today's earnings: tips from today
-  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const earningsToday = recentTips
-    .filter(t => t.creator_id === user?.id && new Date(t.created_date) >= todayStart)
-    .reduce((s, t) => s + (t.amount || 0), 0);
-
-  // Monthly goal: percentage toward $500/month
-  const MONTHLY_GOAL = 500;
-  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
-  const earningsThisMonth = recentTips
-    .filter(t => t.creator_id === user?.id && new Date(t.created_date) >= monthStart)
-    .reduce((s, t) => s + (t.amount || 0), 0);
-  const goalPct = Math.min(100, Math.round((earningsThisMonth / MONTHLY_GOAL) * 100));
-
   const quickActions = [
     {
       icon: Radio,
@@ -121,9 +97,9 @@ export default function CreatorDashboardPage() {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
-      border: 'rgba(212,175,55,0.4)',
-      iconColor: '#D4AF37',
+      gradient: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
+      border: 'rgba(0,212,255,0.4)',
+      iconColor: '#00d4ff',
     },
     {
       icon: Scissors,
@@ -153,9 +129,9 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
-      border: 'rgba(212,175,55,0.3)',
-      iconColor: '#D4AF37',
+      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
+      border: 'rgba(0,212,255,0.3)',
+      iconColor: '#00d4ff',
     },
   ];
 
@@ -178,33 +154,29 @@ export default function CreatorDashboardPage() {
                   <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
                     style={{ background: `${G}12`, border: `1px solid ${G}30`, color: G, ...T }}>
                     <Users className="w-3 h-3" />
-                    <AnimatedNumber value={activeSubs.length} /> Subscribers
+                    {activeSubs.length} Subscribers
                   </span>
                   <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
                     style={{ background: `${GREEN}12`, border: `1px solid ${GREEN}30`, color: GREEN, ...T }}>
                     <DollarSign className="w-3 h-3" />
-                    $<AnimatedNumber value={tipsThisWeek} decimals={0} /> Tips
+                    ${tipsThisWeek.toFixed(0)} Tips
                   </span>
                 </>
               )}
               <div className="flex gap-1">
                 {['7d', '30d', '365d'].map((range) => (
-                  <motion.button
+                  <button
                     key={range}
                     onClick={() => setTimeRange(range)}
-                    className="px-3 py-1.5 rounded text-xs font-black"
-                    whileTap={{ scale: 0.92 }}
-                    whileHover={{ scale: 1.06 }}
-                    transition={{ type: 'spring', stiffness: 420, damping: 22 }}
+                    className="px-3 py-1.5 rounded text-xs font-black transition-all"
                     style={{
                       background: timeRange === range ? `${G}20` : 'rgba(255,255,255,0.03)',
                       color: timeRange === range ? G : 'rgba(255,255,255,0.5)',
                       border: timeRange === range ? `1px solid ${G}40` : '1px solid rgba(212,175,55,0.12)',
-                      cursor: 'pointer',
                       ...T,
                     }}>
                     {range === '7d' ? '7D' : range === '30d' ? '30D' : '1Y'}
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -218,81 +190,30 @@ export default function CreatorDashboardPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <p className="text-[10px] uppercase tracking-widest font-black mb-3"
             style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Quick Actions</p>
-          <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-3"
-            variants={QUICK_VARIANTS} initial="hidden" animate="show">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickActions.map(({ icon: Icon, label, href, gradient, border, iconColor }) => (
-              <motion.div key={href} variants={QUICK_ITEM}
-                whileHover={{ scale: 1.03, brightness: 1.1 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: 'spring', stiffness: 380, damping: 22 }}>
-                <Link to={href}>
-                  <div className="flex items-center gap-3 px-4 rounded-2xl cursor-pointer"
-                    style={{
-                      height: 80,
-                      background: gradient,
-                      border: `1px solid ${border}`,
-                      borderLeft: `4px solid ${border}`,
-                    }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}30` }}>
-                      <Icon className="w-5 h-5" style={{ color: iconColor }} />
-                    </div>
-                    <span className="font-black text-sm text-white flex-1" style={T}>{label}</span>
-                    <ArrowRight className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+              <Link key={href} to={href}>
+                <div className="flex items-center gap-3 px-4 rounded-2xl transition-all hover:brightness-110 cursor-pointer"
+                  style={{
+                    height: 80,
+                    background: gradient,
+                    border: `1px solid ${border}`,
+                    borderLeft: `4px solid ${border}`,
+                  }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: `${iconColor}18`, border: `1px solid ${iconColor}30` }}>
+                    <Icon className="w-5 h-5" style={{ color: iconColor }} />
                   </div>
-                </Link>
-              </motion.div>
+                  <span className="font-black text-sm text-white flex-1" style={T}>{label}</span>
+                  <ArrowRight className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                </div>
+              </Link>
             ))}
-          </motion.div>
+          </div>
         </motion.div>
 
         {user?.id && (
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div className="grid grid-cols-3 gap-3">
-              {/* Streak */}
-              <div className="rounded-2xl p-4 flex flex-col gap-1"
-                style={{ background: streakDays >= 3 ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.03)', border: streakDays >= 3 ? '1px solid rgba(212,175,55,0.25)' : '1px solid rgba(255,255,255,0.07)' }}>
-                <Flame className="w-4 h-4 mb-1" style={{ color: streakDays >= 3 ? '#FF4500' : 'rgba(255,255,255,0.2)' }} />
-                <span className="text-2xl font-black" style={{ color: streakDays >= 3 ? G : 'rgba(255,255,255,0.5)', ...T }}>
-                  {streakDays}d
-                </span>
-                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Streak</span>
-                {streakDays >= 3 && <span className="text-[9px]" style={{ color: '#FF4500' }}>🔥 On a roll!</span>}
-              </div>
-
-              {/* Today's earnings */}
-              <div className="rounded-2xl p-4 flex flex-col gap-1"
-                style={{ background: earningsToday > 0 ? 'rgba(109,191,126,0.07)' : 'rgba(255,255,255,0.03)', border: earningsToday > 0 ? '1px solid rgba(109,191,126,0.25)' : '1px solid rgba(255,255,255,0.07)' }}>
-                <DollarSign className="w-4 h-4 mb-1" style={{ color: earningsToday > 0 ? GREEN : 'rgba(255,255,255,0.2)' }} />
-                <span className="text-2xl font-black" style={{ color: earningsToday > 0 ? GREEN : 'rgba(255,255,255,0.5)', ...T }}>
-                  $<AnimatedNumber value={earningsToday} decimals={0} />
-                </span>
-                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Today</span>
-              </div>
-
-              {/* Monthly goal */}
-              <div className="rounded-2xl p-4 flex flex-col gap-1"
-                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                <Target className="w-4 h-4 mb-1" style={{ color: goalPct >= 100 ? G : 'rgba(255,255,255,0.3)' }} />
-                <span className="text-2xl font-black" style={{ color: goalPct >= 100 ? G : 'rgba(255,255,255,0.5)', ...T }}>
-                  {goalPct}%
-                </span>
-                <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Monthly Goal</span>
-                <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', marginTop: 2, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: goalPct + '%', background: goalPct >= 100 ? G : 'rgba(212,175,55,0.5)', borderRadius: 2, transition: 'width 1s ease' }} />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {user?.id && (
           <>
-            {/* Milestone alerts — celebrates hitting follower/revenue/stream goals */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-              <MilestoneAlerts creatorId={user.id} />
-            </motion.div>
-
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <AnalyticsOverview creatorId={user.id} timeRange={timeRange} />
             </motion.div>
@@ -336,14 +257,11 @@ export default function CreatorDashboardPage() {
                           </Link>
                         </div>
                       ) : (
-                        <motion.div className="space-y-1"
-                          variants={{ show: { transition: { staggerChildren: 0.06 } } }}
-                          initial="hidden" animate="show">
+                        <div className="space-y-1">
                           {recentRooms.map(room => {
                             const isLive = room.status === 'live';
                             return (
-                              <motion.div key={room.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                                variants={{ hidden: { opacity: 0, x: -12 }, show: { opacity: 1, x: 0, transition: { type: 'spring', damping: 22, stiffness: 280 } } }}
+                              <div key={room.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                                 style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div className="w-2 h-2 rounded-full shrink-0"
                                   style={{ background: isLive ? PINK : 'rgba(255,255,255,0.2)' }} />
@@ -369,10 +287,10 @@ export default function CreatorDashboardPage() {
                                     {fmtDuration(room.duration)}
                                   </span>
                                 )}
-                              </motion.div>
+                              </div>
                             );
                           })}
-                        </motion.div>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -409,6 +327,27 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="creator" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <RewardShopEditor creatorId={user?.id} />
+      <QuickActionPanel isOpen={false} onClose={() => {}} />
+      <OnboardingFlow isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

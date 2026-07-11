@@ -10,11 +10,11 @@
     --ab: #0B0B18;          /* abyss - deepest bg */
     --bu: #07070F;          /* bunker - card bg */
     --go: #d4af37;          /* gold - primary accent */
-    --bl: #FF1564;          /* blood - live/alert red */
-    --cy: #00F5FF;          /* cyan - data/info */
-    --em: #00FF88;          /* emerald - success/live */
-    --pu: #8B5CF6;          /* purple - AI/AURA */
-    --or: #FF8C00;          /* orange - warning/fire */
+    --bl: #C0392B;          /* blood - live/alert red */
+    --cy: #4A8A7A;          /* cyan - data/info */
+    --em: #6DBF7E;          /* emerald - success/live */
+    --pu: #7B5DA6;          /* purple - AI/AURA */
+    --or: #D4854A;          /* orange - warning/fire */
     --bg-card: rgba(11,11,24,0.95);
     --bg-panel: rgba(7,7,15,0.98);
     --border-gold: rgba(212,175,55,0.2);
@@ -107,26 +107,26 @@
   .font-mono-sw { font-family: var(--font-mono); }
   .font-heading { font-family: var(--font-heading); }
 
-  .text-gold { color: #d4af37; }
-  .text-blood { color: #FF1564; }
-  .text-cyan-sw { color: #00F5FF; }
-  .text-emerald-sw { color: #00FF88; }
-  .text-purple-sw { color: #8B5CF6; }
+  .text-gold { color: #D4AF37; }
+  .text-blood { color: #C0392B; }
+  .text-cyan-sw { color: #4A8A7A; }
+  .text-emerald-sw { color: #6DBF7E; }
+  .text-purple-sw { color: #7B5DA6; }
 
   .bg-abyss { background-color: #0B0B18; }
   .bg-bunker { background-color: #07070F; }
-  .bg-gold { background-color: #d4af37; }
-  .bg-blood { background-color: #FF1564; }
+  .bg-gold { background-color: #D4AF37; }
+  .bg-blood { background-color: #C0392B; }
 
   .border-gold { border-color: rgba(212,175,55,0.2); }
-  .border-blood { border-color: rgba(255,21,100,0.3); }
+  .border-blood { border-color: rgba(192,57,43,0.3); }
 
   .glow-gold { box-shadow: 0 0 20px rgba(212,175,55,0.25); }
-  .glow-blood { box-shadow: 0 0 20px rgba(255,21,100,0.3); }
-  .glow-cyan { box-shadow: 0 0 20px rgba(0,245,255,0.2); }
+  .glow-blood { box-shadow: 0 0 20px rgba(192,57,43,0.3); }
+  .glow-cyan { box-shadow: 0 0 20px rgba(74,138,122,0.2); }
 
   .gradient-brand {
-    background: linear-gradient(135deg, #FF1564 0%, #FFB800 35%, #00F5FF 65%, #8B5CF6 100%);
+    background: linear-gradient(135deg, #C0392B 0%, #D4AF37 35%, #4A8A7A 65%, #7B5DA6 100%);
   }
   .gradient-gold {
     background: linear-gradient(90deg, #d4af37, #f5e6a3, #d4af37);
@@ -137,27 +137,6 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* ── Mobile accessibility ─────────────────────────────────────────────────── */
-  /* Prevent iOS auto-zoom on input focus — requires ≥16 px on touch devices    */
-  @media (pointer: coarse) {
-    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-    textarea {
-      font-size: 16px !important;
-      min-height: 44px;
-    }
-    select { font-size: 16px !important; }
-    label  { font-size: 14px; }
-  }
-
-  /* Contain overscroll in nested scrollable panes — prevents scroll leaking    */
-  /* to the main window on iOS bounce and Android overscroll.                   */
-  .overflow-y-auto, .overflow-y-scroll, .overflow-auto, .overflow-scroll {
-    overscroll-behavior: contain;
-  }
-
-  /* Reusable minimum tap-target utility (Apple HIG / Material: 44 × 44 px)    */
-  .tap-44 { min-height: 44px; display: flex; align-items: center; }
 
   /* Safe-area inset helpers (notch / home bar support) */
   .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
@@ -191,26 +170,6 @@
   select option {
     background: #080B18;
     color: rgba(255,255,255,0.85);
-  }
-
-  /* Mobile readability: 14px minimum prevents iOS auto-zoom & aids legibility */
-  input, textarea {
-    font-size: max(14px, 1em);
-  }
-  label {
-    font-size: max(14px, 1em);
-  }
-
-  /* 44px minimum tap targets for settings / account buttons */
-  .tap-target {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-  }
-
-  /* Contain scroll so nested horizontal strips don't bleed into page scroll */
-  .overscroll-contain {
-    overscroll-behavior: contain;
   }
 
   /* Earth Tone palette — PK Battle & tournament pages */

@@ -27,8 +27,8 @@ const STATUS_CONFIG = {
 
 function StatusPill({ status, validationState }) {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.offline;
-  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(34,197,94,0.2)', color:'#4ade80', border:'1px solid rgba(34,197,94,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
-  if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(239,68,68,0.2)', color:'#f87171', border:'1px solid rgba(239,68,68,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
+  if (validationState === 'ok')    return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><CheckCircle className="w-2.5 h-2.5" /> Ready</span>;
+  if (validationState === 'err')   return <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(192,57,43,0.2)', color:'#C0392B', border:'1px solid rgba(192,57,43,0.3)', display:'inline-flex', alignItems:'center', gap:4 }}><XCircle className="w-2.5 h-2.5" /> Error</span>;
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${cfg.dot}`} />
@@ -133,7 +133,7 @@ function DestinationRow({ dest, userId, onRemove }) {
         <div className="flex gap-1.5 pt-0.5">
           <button
             onClick={validate} disabled={validating}
-            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(212,175,55,0.2)', color:'#D4AF37', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(0,212,255,0.2)', color:'#00d4ff', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             {validating ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : <Wifi className="w-2.5 h-2.5" />}
             {validating ? 'Testing…' : 'Validate'}

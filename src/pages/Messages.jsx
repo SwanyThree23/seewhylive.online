@@ -2,12 +2,27 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
 const PINK    = "#C0392B";
-const CYAN    = "#D4AF37";
+const CYAN    = "#00d4ff";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
@@ -37,10 +52,6 @@ export default function Messages() {
   var [hoveredMsg, setHoveredMsg] = useState(null);
   var [reactionPickerMsg, setReactionPickerMsg] = useState(null);
   var [msgReactions, setMsgReactions] = useState(new Map());
-  var [isTyping, setIsTyping] = useState(false);
-  var [showTipModal, setShowTipModal] = useState(false);
-  var [tipAmount, setTipAmount] = useState(5);
-  var [tipToast, setTipToast] = useState(false);
   var msgRef = useRef(null);
   var qc = useQueryClient();
 
@@ -52,7 +63,7 @@ export default function Messages() {
     queryKey: ["all-dms", user?.id],
     queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
     enabled: !!user?.id,
-    refetchInterval: 2000,
+    refetchInterval: 5000,
   });
 
   var { data: onlineRecords = [] } = useQuery({
@@ -121,23 +132,6 @@ export default function Messages() {
     },
   });
 
-  var tipMutation = useMutation({
-    mutationFn: (amount) => base44.entities.DirectMessage.create({
-      sender_id: user?.id, sender_name: user?.full_name || "Me",
-      recipient_id: selectedThread,
-      recipient_name: currentThread?.partnerName || "User",
-      content: `💸 Sent you a $${amount} tip!`,
-      type: "gift_notification",
-      is_whisper: false,
-    }),
-    onSuccess: () => {
-      qc.invalidateQueries(["all-dms", user?.id]);
-      setShowTipModal(false);
-      setTipToast(true);
-      setTimeout(() => setTipToast(false), 2500);
-    },
-  });
-
   function handleReaction(msgId, emoji) {
     setMsgReactions(prev => {
       var next = new Map(prev);
@@ -146,38 +140,6 @@ export default function Messages() {
     });
     setReactionPickerMsg(null);
   }
-
-  // Typing indicator: write to localStorage when local user types
-  function handleInputChange(e) {
-    setInput(e.target.value);
-    if (user?.id && selectedThread) {
-      try {
-        localStorage.setItem(
-          "swl_typing_" + user.id,
-          JSON.stringify({ to: selectedThread, ts: Date.now() })
-        );
-      } catch (_) {}
-    }
-  }
-
-  // Typing indicator: poll localStorage for partner typing signal
-  useEffect(() => {
-    if (!selectedThread) { setIsTyping(false); return; }
-    var interval = setInterval(() => {
-      try {
-        var raw = localStorage.getItem("swl_typing_" + selectedThread);
-        if (raw) {
-          var parsed = JSON.parse(raw);
-          if (parsed.to === user?.id && Date.now() - parsed.ts < 3000) {
-            setIsTyping(true);
-            return;
-          }
-        }
-      } catch (_) {}
-      setIsTyping(false);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [selectedThread, user?.id]);
 
   useEffect(() => {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
@@ -261,10 +223,7 @@ export default function Messages() {
               var last = t.messages[t.messages.length - 1];
               var isSelected = selectedThread === t.partnerId;
               return (
-                <motion.div key={t.partnerId}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04, duration: 0.28, ease: 'easeOut' }}>
+                <div key={t.partnerId}>
                   <div
                     onClick={() => setSelectedThread(t.partnerId)}
                     className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all"
@@ -324,17 +283,16 @@ export default function Messages() {
 
                     {/* Unread badge */}
                     {t.unread > 0 && (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                        className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
+                      <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
                         style={{ background: PINK, ...T }}>
                         {t.unread}
-                      </motion.div>
+                      </div>
                     )}
                   </div>
                   {idx < threads.length - 1 && (
                     <div style={{ height: 1, background: "rgba(255,255,255,0.04)", marginLeft: 64 }} />
                   )}
-                </motion.div>
+                </div>
               );
             })
           )}
@@ -365,7 +323,7 @@ export default function Messages() {
             {/* Messages scroll area */}
             <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-3"
               style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {threadMessages.map((m) => {
+              {threadMessages.map(m => {
                 var isMe = m.sender_id === user?.id;
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
@@ -373,10 +331,7 @@ export default function Messages() {
                 var isHovered = hoveredMsg === m.id;
                 var showPicker = reactionPickerMsg === m.id;
                 return (
-                  <motion.div key={m.id}
-                    initial={{ opacity: 0, x: isMe ? 20 : -20, scale: 0.92 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+                  <div key={m.id}
                     style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
                     onMouseEnter={() => setHoveredMsg(m.id)}
                     onMouseLeave={() => { setHoveredMsg(null); if (reactionPickerMsg === m.id) setReactionPickerMsg(null); }}>
@@ -459,43 +414,9 @@ export default function Messages() {
                         </span>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
-
-              {/* Typing indicator bubble */}
-              <AnimatePresence>
-                {isTyping && (
-                  <motion.div
-                    key="typing-indicator"
-                    initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.9 }}
-                    transition={{ type: "spring", damping: 22, stiffness: 280 }}
-                    style={{ display: "flex", alignItems: "flex-start" }}>
-                    <div className="px-4 py-2 rounded-2xl"
-                      style={{
-                        background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        opacity: 0.5,
-                        display: "flex", gap: 4, alignItems: "center",
-                      }}>
-                      {[0, 1, 2].map(i => (
-                        <motion.span
-                          key={i}
-                          animate={{ y: [0, -4, 0] }}
-                          transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.18, ease: "easeInOut" }}
-                          style={{
-                            display: "inline-block",
-                            width: 6, height: 6, borderRadius: "50%",
-                            background: "#fff",
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </div>
 
             {/* ── Input bar ──────────────────────────────────────── */}
@@ -513,23 +434,9 @@ export default function Messages() {
                 }}
                 placeholder="Type a message…"
                 value={input}
-                onChange={handleInputChange}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
               />
-              {selectedThread && (
-                <button
-                  onClick={() => { setTipAmount(5); setShowTipModal(true); }}
-                  className="flex items-center justify-center shrink-0 font-black text-[11px] px-3 h-10 rounded-2xl transition-all hover:brightness-125"
-                  style={{
-                    background: "rgba(212,175,55,0.10)",
-                    border: `1px solid rgba(212,175,55,0.3)`,
-                    color: GOLD,
-                    whiteSpace: "nowrap",
-                    ...T,
-                  }}>
-                  💸 Tip
-                </button>
-              )}
               <button
                 onClick={() => input.trim() && sendMutation.mutate(input.trim())}
                 className="flex items-center justify-center w-10 h-10 rounded-2xl transition-all hover:brightness-110 shrink-0"
@@ -546,9 +453,8 @@ export default function Messages() {
       </div>
 
       {/* ── Compose modal ── */}
-      <AnimatePresence>
       {showCompose && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        <div
           onClick={(e) => { if (e.target === e.currentTarget) setShowCompose(false); }}
           style={{
             position: "fixed", inset: 0, zIndex: 50,
@@ -556,8 +462,7 @@ export default function Messages() {
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "0 16px",
           }}>
-          <motion.div initial={{ y: 48, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 48, opacity: 0 }} transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-            style={{
+          <div style={{
             background: "rgba(13,6,24,0.98)",
             border: "1px solid rgba(212,175,55,0.2)",
             borderRadius: 20, padding: 24, width: "100%", maxWidth: 400,
@@ -599,101 +504,24 @@ export default function Messages() {
                 {composeMutation.isPending ? "Sending…" : "Send Message"}
               </button>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-      </AnimatePresence>
-
-      {/* ── Tip modal ── */}
-      <AnimatePresence>
-        {showTipModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={(e) => { if (e.target === e.currentTarget) setShowTipModal(false); }}
-            style={{
-              position: "fixed", inset: 0, zIndex: 50,
-              background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "0 16px",
-            }}>
-            <motion.div
-              initial={{ y: 48, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 48, opacity: 0 }}
-              transition={{ type: "spring", damping: 26, stiffness: 280 }}
-              style={{
-                background: "rgba(13,6,24,0.98)",
-                border: "1px solid rgba(212,175,55,0.2)",
-                borderRadius: 20, padding: 24, width: "100%", maxWidth: 340,
-              }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <span className="font-black text-base text-white" style={T}>Send a Tip 💸</span>
-                <button
-                  onClick={() => setShowTipModal(false)}
-                  style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <X style={{ width: 14, height: 14 }} />
-                </button>
-              </div>
-              <p className="text-[12px] mb-4" style={{ color: "rgba(255,255,255,0.45)", ...T }}>
-                Choose an amount to send to {currentThread?.partnerName}
-              </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-                {[1, 5, 10, 25].map(amt => (
-                  <button
-                    key={amt}
-                    onClick={() => setTipAmount(amt)}
-                    className="font-black text-[13px] px-4 py-2 rounded-2xl transition-all"
-                    style={{
-                      background: tipAmount === amt ? `rgba(212,175,55,0.2)` : "rgba(255,255,255,0.06)",
-                      border: tipAmount === amt ? `1px solid ${GOLD}` : "1px solid rgba(255,255,255,0.1)",
-                      color: tipAmount === amt ? GOLD : "rgba(255,255,255,0.7)",
-                      cursor: "pointer",
-                      ...T,
-                    }}>
-                    ${amt}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => !tipMutation.isPending && tipMutation.mutate(tipAmount)}
-                disabled={tipMutation.isPending}
-                className="w-full font-black uppercase text-[11px] py-2.5 rounded-2xl transition-all"
-                style={{
-                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
-                  color: "#fff", border: "none", cursor: "pointer",
-                  opacity: tipMutation.isPending ? 0.6 : 1,
-                  ...T,
-                }}>
-                {tipMutation.isPending ? "Sending…" : `Send Tip 💸`}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Tip sent toast ── */}
-      <AnimatePresence>
-        {tipToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ type: "spring", damping: 22, stiffness: 300 }}
-            style={{
-              position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)",
-              zIndex: 100,
-              background: "rgba(13,6,24,0.97)",
-              border: `1px solid ${GOLD}55`,
-              borderRadius: 14,
-              padding: "10px 20px",
-              color: GOLD,
-              fontFamily: "Barlow Condensed, sans-serif",
-              fontWeight: 700,
-              fontSize: 13,
-              whiteSpace: "nowrap",
-              boxShadow: `0 0 20px ${GOLD}33`,
-            }}>
-            💸 Tip sent!
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

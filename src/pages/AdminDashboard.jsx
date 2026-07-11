@@ -14,6 +14,22 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -38,7 +54,7 @@ function StatCard({ label, value, icon: Icon, color, badge, sub }) {
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
+      {badge && <span className="text-[11px] font-black px-1.5 py-0.5 rounded uppercase mt-1 inline-block" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{badge}</span>}
     </div>
   );
 }
@@ -118,8 +134,8 @@ export default function AdminDashboard() {
   const filteredRooms = roomFilter === 'all' ? allRooms : allRooms.filter(r => r.status === roomFilter);
 
   const roomStatusStyle = (status) => ({
-    live:      { bg: 'rgba(255,21,100,0.12)', border: 'rgba(255,21,100,0.35)', color: '#C0392B' },
-    scheduled: { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
+    live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
+    scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
 
@@ -158,11 +174,11 @@ export default function AdminDashboard() {
         {/* KPI grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
-          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(255,21,100,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
+          <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(192,57,43,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
           <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />
           <StatCard label="Messages" value={messages.length} icon={MessageSquare} color="rgba(212,175,55,0.6)" />
-          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(255,21,100,0.7)' : 'rgba(255,255,255,0.15)'} />
+          <StatCard label="Open Reports" value={pendingReports.length} icon={AlertTriangle} color={pendingReports.length > 0 ? 'rgba(192,57,43,0.7)' : 'rgba(255,255,255,0.15)'} />
         </div>
 
         {/* OVERVIEW */}
@@ -303,7 +319,7 @@ export default function AdminDashboard() {
                         {room.status === 'live' && (
                           <button onClick={() => endRoomMutation.mutate(room.id)}
                             className="px-2.5 py-1 rounded-lg font-black uppercase text-[11px]"
-                            style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
+                            style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', cursor: 'pointer', ...T }}>
                             End
                           </button>
                         )}
@@ -369,8 +385,8 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,68,68,0.15)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🚫</span>
-                <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
-                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#C0392B', ...T }}>IP Bans</span>
+                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
               </div>
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
@@ -379,7 +395,7 @@ export default function AdminDashboard() {
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <button onClick={() => { if(newBanIP.trim()) { setBannedIPs(p => [...p, { ip: newBanIP.trim(), reason: banReason, date: new Date().toISOString() }]); setNewBanIP(''); setBanReason(''); toast.success('IP banned'); }}}
                   className="h-9 px-3 rounded-xl text-xs font-black"
-                  style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
+                  style={{ background: 'rgba(255,68,68,0.15)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
                   Ban IP
                 </button>
               </div>
@@ -536,6 +552,21 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="admin" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -4,6 +4,22 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -83,7 +99,7 @@ function CopyField({ label, value, mono }) {
           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
           style={{ background: copied ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#6DBF7E60' : '#d4af3740') }}
         >
-          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-yellow-400" />}
+          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-yellow-400" />}
         </button>
       </div>
     </div>
@@ -152,7 +168,7 @@ function StreamTab({ user }) {
     { event: 'subscriber.new', color: '#C9A84C' },
     { event: 'raid.incoming', color: '#D4AF37' },
     { event: 'goal.reached', color: '#6DBF7E' },
-    { event: 'clip.created', color: '#FF8C00' },
+    { event: 'clip.created', color: '#D4854A' },
   ];
 
   var permList = [
@@ -195,11 +211,11 @@ function StreamTab({ user }) {
             <CopyField label="Stream Key" value={streamKey} mono={true} />
             <button
               onClick={function() { setStreamKey(genKey('sw', userId)); toast.success('Key regenerated'); }}
-              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(255,21,100,0.12)', color:'#C0392B', border:'1px solid rgba(255,21,100,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6, width:'100%', height:32, padding:'0 12px', borderRadius:8, background:'rgba(192,57,43,0.12)', color:'#C0392B', border:'1px solid rgba(192,57,43,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <RefreshCw className="w-3 h-3" /> Regenerate Key
             </button>
-            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(255,21,100,0.04)', border: '1px solid rgba(255,21,100,0.08)' }}>
+            <div className="rounded-lg p-2.5 space-y-1" style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.08)' }}>
               <p className="text-[10px] text-white/40 font-bold uppercase">OBS Quick Config</p>
               <p className="text-[10px] text-white/25">Service: Custom RTMP</p>
               <p className="text-[10px] text-white/25">Bitrate: 4000–8000 kbps · Keyframe: 2s · H.264</p>
@@ -292,7 +308,7 @@ function StreamTab({ user }) {
         </PanelCard>
 
         {/* Stream Permissions */}
-        <PanelCard title="Stream Permissions" icon={Shield} color="#FF8C00">
+        <PanelCard title="Stream Permissions" icon={Shield} color="#D4854A">
           <div className="space-y-0.5">
             {permList.map(function(p) {
               return (
@@ -396,7 +412,7 @@ function LiveRoomTab({ user }) {
         <div className="flex items-center gap-2">
           <button
             onClick={function() { setRoomActive(!roomActive); }}
-            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(255,21,100,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#C0392B' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(255,21,100,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ display:'flex', alignItems:'center', gap:6, height:32, padding:'0 12px', borderRadius:8, background: roomActive ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.15)', color: roomActive ? '#C0392B' : '#d4af37', border: '1px solid ' + (roomActive ? 'rgba(192,57,43,0.3)' : 'rgba(212,175,55,0.3)'), fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
           >
             {roomActive ? <><Square className="w-3 h-3" /> End Room</> : <><Play className="w-3 h-3" /> Start Room</>}
           </button>
@@ -509,9 +525,9 @@ function LiveRoomTab({ user }) {
               <button
                 onClick={function() { setMicOn(!micOn); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(255,21,100,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(255,21,100,0.2)') }}
+                style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(192,57,43,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(192,57,43,0.2)') }}
               >
-                {micOn ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4 text-red-400" />}
+                {micOn ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
                 <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#C0392B' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
               </button>
               <button
@@ -519,7 +535,7 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: videoOn ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.08)') }}
               >
-                {videoOn ? <Video className="w-4 h-4 text-cyan-400" /> : <VideoOff className="w-4 h-4 text-white/40" />}
+                {videoOn ? <Video className="w-4 h-4 text-[#4A8A7A]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
                 <span className="text-xs" style={{ color: videoOn ? '#C9A84C' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
               </button>
               <button
@@ -534,7 +550,7 @@ function LiveRoomTab({ user }) {
           </PanelCard>
 
           {/* Quick Stats */}
-          <PanelCard title="Room Stats" icon={BarChart2} color="#FF8C00">
+          <PanelCard title="Room Stats" icon={BarChart2} color="#D4854A">
             <div className="grid grid-cols-2 gap-2">
               {[
                 { label: 'On Stage', val: String(hostParticipants.length), c: '#d4af37' },
@@ -636,7 +652,7 @@ function StudioTab({ user }) {
                   </button>
                   <button
                     onClick={function() { removeRoom(room.id); }}
-                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(255,21,100,0.08)', color:'rgba(255,21,100,0.38)', border:'1px solid rgba(255,21,100,0.15)', cursor:'pointer' }}
+                    style={{ display:'flex', alignItems:'center', justifyContent:'center', height:28, padding:'0 8px', borderRadius:8, background:'rgba(192,57,43,0.08)', color:'rgba(192,57,43,0.38)', border:'1px solid rgba(192,57,43,0.15)', cursor:'pointer' }}
                   >
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
@@ -683,7 +699,7 @@ function StudioTab({ user }) {
             { label: 'Auto-Clip Highlights', desc: 'AI detects peak moments', active: true },
           ].map(function(item) {
             return (
-              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(255,21,100,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(255,21,100,0.15)' : 'rgba(255,255,255,0.06)') }}>
+              <div key={item.label} className="rounded-lg p-3" style={{ background: item.active ? 'rgba(192,57,43,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (item.active ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)') }}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-bold text-white/80">{item.label}</p>
@@ -734,7 +750,7 @@ export default function StreamInfra() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[#6DBF7E] animate-pulse" />
               <span className="text-xs font-bold" style={{ color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>ALL SYSTEMS OPERATIONAL</span>
             </div>
           </div>
@@ -780,6 +796,21 @@ export default function StreamInfra() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="infra" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

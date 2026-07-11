@@ -3,6 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -73,7 +89,9 @@ export default function GreenroomEnhanced() {
   }
 
   async function generatePin() {
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    const pin = (1000 + (arr[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {
@@ -125,7 +143,7 @@ export default function GreenroomEnhanced() {
             )}
             {isLive && (
               <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 rounded-full"
-                style={{ background: 'rgba(255,21,100,0.9)' }}>
+                style={{ background: 'rgba(192,57,43,0.9)' }}>
                 <motion.div className="w-1.5 h-1.5 rounded-full bg-white"
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
                 <span className="text-[11px] font-black text-white">LIVE</span>
@@ -139,7 +157,7 @@ export default function GreenroomEnhanced() {
               <span className="text-sm">🎤</span>
               <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 <motion.div className="h-full rounded-full"
-                  style={{ background: audioLevel > 70 ? '#FF4444' : audioLevel > 40 ? GOLD : GREEN }}
+                  style={{ background: audioLevel > 70 ? '#C0392B' : audioLevel > 40 ? GOLD : GREEN }}
                   animate={{ width: audioLevel + '%' }}
                   transition={{ duration: 0.1 }} />
               </div>
@@ -232,6 +250,21 @@ export default function GreenroomEnhanced() {
         </div>
 
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="greenroom" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

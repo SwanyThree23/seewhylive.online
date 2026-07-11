@@ -7,7 +7,7 @@ import { createPageUrl } from '../../utils';
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#00F5FF';
+const TEAL    = '#4A8A7A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Partner channel definitions ───────────────────────────────────────── */
@@ -202,7 +202,7 @@ function FeaturedVideoCard({ video }) {
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
             padding: '5px 0', borderRadius: 8, textDecoration: 'none',
             background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)',
-            color: '#ff4444', fontSize: 10, fontWeight: 700, ...T,
+            color: '#C0392B', fontSize: 10, fontWeight: 700, ...T,
           }}
         >
           <Play style={{ width: 10, height: 10 }} />

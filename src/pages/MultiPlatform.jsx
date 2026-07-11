@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
@@ -85,11 +101,11 @@ function ProgressBar({ value, max, color }) {
 export default function MultiPlatform() {
   const [tab, setTab] = useState('platforms');
   const [connections, setConnections] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
+    try { return JSON.parse(sessionStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
   });
   const [connecting, setConnecting] = useState(null);
   const [webhooks, setWebhooks] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('webhooks') || '[]'); } catch { return []; }
+    try { return JSON.parse(sessionStorage.getItem('webhooks') || '[]'); } catch { return []; }
   });
   const [webhookUrl, setWebhookUrl] = useState('');
   const [outboundUrl, setOutboundUrl] = useState('');
@@ -116,7 +132,7 @@ export default function MultiPlatform() {
 
   function saveConnections(updated) {
     setConnections(updated);
-    localStorage.setItem('platform_connections', JSON.stringify(updated));
+    sessionStorage.setItem('platform_connections', JSON.stringify(updated));
   }
 
   async function handleConnect(id) {
@@ -130,7 +146,7 @@ export default function MultiPlatform() {
 
   function connectedCount() { return Object.values(connections).filter(Boolean).length; }
 
-  function saveWebhooks(list) { setWebhooks(list); localStorage.setItem('webhooks', JSON.stringify(list)); }
+  function saveWebhooks(list) { setWebhooks(list); sessionStorage.setItem('webhooks', JSON.stringify(list)); }
 
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;
@@ -311,7 +327,7 @@ export default function MultiPlatform() {
                               {wh.events.map(ev => <span key={ev} style={{ ...T, fontSize:10, padding:'1px 7px', borderRadius:999, background:`${CYAN}15`, border:`1px solid ${CYAN}30`, color:CYAN }}>{ev}</span>)}
                             </div>
                           </div>
-                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(255,21,100,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
+                          <button onClick={() => { saveWebhooks(webhooks.filter(w=>w.id!==wh.id)); showToast('Webhook deleted'); }} style={{ background:'none', border:'none', color:'rgba(192,57,43,0.6)', cursor:'pointer', fontSize:13, fontWeight:700, ...T }}>✕</button>
                         </div>
                       ))}
                     </div>
@@ -523,6 +539,21 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

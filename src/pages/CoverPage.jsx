@@ -31,7 +31,7 @@ export default function CoverPage() {
       <div
         className="absolute inset-0 opacity-30"
         style={{
-          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(255,21,100,0.05) 100%)',
+          backgroundImage: 'linear-gradient(135deg, rgba(212,175,55,0.1) 0%, rgba(192,57,43,0.05) 100%)',
         }}
       />
 
@@ -91,7 +91,7 @@ export default function CoverPage() {
       {/* Hero Section */}
       <section className="relative px-4 md:px-6 py-12 md:py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <div className="inline-block px-3 py-1.5 rounded-full mb-6" style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)' }}>
+          <div className="inline-block px-3 py-1.5 rounded-full mb-6" style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}>
             <span className="text-[10px] font-bold text-[#C0392B] flex items-center gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
               Live Streaming Platform

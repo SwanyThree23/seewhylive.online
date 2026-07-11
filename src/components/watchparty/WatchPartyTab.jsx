@@ -251,7 +251,7 @@ function ScreenShareMode({ user, party }) {
         ) : (
           <ActionButton
             onClick={stopSharing}
-            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.35)', color: '#C0392B' }}
+            style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
           >
             Stop Sharing
           </ActionButton>
@@ -642,7 +642,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
           <>
             <ActionButton
               onClick={stopCamera}
-              style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.35)', color: '#C0392B' }}
+              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
             >
               Stop Camera
             </ActionButton>

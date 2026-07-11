@@ -67,6 +67,82 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from 'recharts';
+
+const BG      = '#080B18';
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const PINK    = '#C0392B';
+const GREEN   = '#6DBF7E';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+/* ─── tiny helpers ─────────────────────────────────────────────────────── */
+const card = {
+  background: 'rgba(13,6,24,0.9)',
+  border: `1px solid rgba(212,175,55,0.1)`,
+  borderRadius: 16,
+  padding: '20px 20px',
+};
+
+const inputStyle = {
+  ...T,
+  background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(212,175,55,0.2)',
+  borderRadius: 8,
+  color: '#fff',
+  fontSize: 14,
+  padding: '9px 12px',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const labelStyle = {
+  ...T,
+  fontSize: 12,
+  color: 'rgba(255,255,255,0.5)',
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  marginBottom: 6,
+  display: 'block',
+};
+
+/* ─── custom recharts tooltip ──────────────────────────────────────────── */
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      ...T,
+      background: '#0d0618',
+      border: `1px solid ${GOLD}44`,
+      borderRadius: 8,
+      padding: '8px 14px',
+      fontSize: 13,
+      color: '#fff',
+    }}>
+      <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 2 }}>{label}</div>
+      <div style={{ color: GREEN, fontWeight: 700 }}>${(payload[0].value || 0).toFixed(2)}</div>
+    </div>
+  );
+}
+
 export default function PayoutsPage() {
   const qc = useQueryClient();
   const [stripeId, setStripeId]     = useState('');
@@ -581,6 +657,21 @@ export default function PayoutsPage() {
         )}
 
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

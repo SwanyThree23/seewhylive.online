@@ -10,6 +10,16 @@ import ChapterEditor from '../components/vod/ChapterEditor';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const G = '#D4AF37';
 const BG = '#0A0710';
 
@@ -159,6 +169,15 @@ export default function VODLibraryPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

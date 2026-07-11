@@ -17,9 +17,9 @@ function PollCountdown({ endsAt }) {
     const iv = setInterval(tick, 1000);
     return () => clearInterval(iv);
   }, [endsAt]);
-  if (rem === 0) return <span style={{ color: '#FF4444' }}>Poll Ended</span>;
+  if (rem === 0) return <span style={{ color: '#C0392B' }}>Poll Ended</span>;
   const m = Math.floor(rem / 60), s = rem % 60;
-  return <span style={{ color: rem < 30 ? '#FF4444' : GOLD }}>{m}:{String(s).padStart(2,'0')}</span>;
+  return <span style={{ color: rem < 30 ? '#C0392B' : GOLD }}>{m}:{String(s).padStart(2,'0')}</span>;
 }
 
 function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
@@ -243,7 +243,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
                       <div className="flex gap-1.5">
                         <button onClick={() => endPollMut.mutate(activePoll.id)}
                           className="flex-1 py-1.5 rounded-lg text-[11px] font-black uppercase"
-                          style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
+                          style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.2)', ...T }}>
                           End Poll
                         </button>
                         <button onClick={() => pinResultsMut.mutate(activePoll)}

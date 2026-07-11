@@ -7,7 +7,7 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv, ShieldX, Trash2, ShoppingBag
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -18,16 +18,15 @@ import { usePresenceHeartbeat } from '@/components/shared/PresenceDot';
 import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
-import { useAuth } from '@/lib/AuthContext';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [
-  { name: 'Home',    icon: Home,         href: createPageUrl('Home') },
-  { name: 'Discover',icon: SearchIcon,   href: createPageUrl('Discover') },
-  { name: 'Studio',  icon: Radio,        href: createPageUrl('BroadcastStudio'), isCenter: true },
-  { name: 'Battles', icon: Swords,       href: createPageUrl('PKBattleArena') },
-  { name: 'Profile', icon: User,         href: createPageUrl('Profile') },
+  { name: 'Home',  icon: Home,         href: createPageUrl('Home') },
+  { name: 'Watch', icon: Eye,          href: createPageUrl('Discover') },
+  { name: 'Go Live', icon: Radio,      href: createPageUrl('GoLive'), isCenter: true },
+  { name: 'Chat',  icon: MessageSquare, href: createPageUrl('Messages') },
+  { name: 'Me',    icon: User,         href: createPageUrl('Profile') },
 ];
 
 // ── Drawer nav groups ──────────────────────────────────────────────────────
@@ -45,12 +44,11 @@ var DRAWER_WATCH = [
 
 var DRAWER_CREATE = [
   { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
-  { name: 'LIVE Studio v41',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv41') },
   { name: 'LIVE Studio v37',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
+  { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
-  { name: 'Merch Store',      icon: ShoppingBag,     href: createPageUrl('MerchStore') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
@@ -61,12 +59,6 @@ var DRAWER_CREATE = [
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
-  { name: 'AURA AI',          icon: Sparkles,        href: createPageUrl('AuraAI') },
-  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
-  { name: 'Transcription',    icon: Mic2,            href: createPageUrl('TranscriptionStudio') },
-  { name: 'Rooms Manager',    icon: Tv,              href: createPageUrl('RoomsManager') },
-  { name: 'PK Battle Arena',  icon: Swords,          href: createPageUrl('PKBattleArena') },
-  { name: 'Stream Share Hub', icon: Globe,           href: createPageUrl('StreamShareHub') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
 ];
 
@@ -90,31 +82,12 @@ var DRAWER_ADMIN = [
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
-  var [showDeleteModal, setShowDeleteModal] = useState(false);
-  var [deleteConfirmText, setDeleteConfirmText] = useState('');
-  var [isDeleting, setIsDeleting] = useState(false);
-  var { logout } = useAuth();
-
-  async function handleDeleteAccount() {
-    if (deleteConfirmText !== 'DELETE') return;
-    setIsDeleting(true);
-    try {
-      await base44.auth.deleteMe();
-      logout(false);
-      window.location.href = '/';
-    } catch {
-      setIsDeleting(false);
-    }
-  }
   var location = useLocation();
   var navigate = useNavigate();
   var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
   var scrollPositions = React.useRef({});
-  // Tab stack preservation — remember last URL visited per tab root
-  var tabHistoryRef = React.useRef(new Map());
-  var activeTabHref = React.useRef(BOTTOM_NAV[0].href);
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -185,13 +158,12 @@ export default function Layout({ children, currentPageName }) {
           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: labelColor || 'rgba(255,255,255,0.2)' }}>
           {label}
         </p>
-        <motion.div className="space-y-0.5" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.04 } } }} initial="hidden" animate="visible">
+        <div className="space-y-0.5">
           {items.map(function(item) {
             var Icon = item.icon;
             var active = isActive(item.href);
             return (
-              <motion.div key={item.name} variants={{ hidden: { opacity: 0, x: -16 }, visible: { opacity: 1, x: 0, transition: { duration: 0.22 } } }} whileTap={{ scale: 0.97 }}>
-              <Link to={item.href} onClick={function() { setShowMobileMenu(false); }}>
+              <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
                   style={{
                     background: active ? 'rgba(212,175,55,0.1)' : 'transparent',
@@ -206,10 +178,9 @@ export default function Layout({ children, currentPageName }) {
                   {active && <ChevronRight className="w-3.5 h-3.5 ml-auto" style={{ color: '#d4af37' }} />}
                 </div>
               </Link>
-              </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -231,7 +202,7 @@ export default function Layout({ children, currentPageName }) {
       <header className="sticky z-50 w-full"
         style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
-        <div className="flex h-14 items-center gap-2 px-3 md:px-6 max-w-7xl mx-auto">
+        <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
           {isMainPage ? (
             <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity" style={{ userSelect: 'none' }}>
@@ -265,17 +236,6 @@ export default function Layout({ children, currentPageName }) {
               <span className="text-sm font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.04em' }}>Back</span>
             </button>
           )}
-
-          {/* Center: page title (hidden on main pages, shown on sub-pages) */}
-          {!isMainPage && currentPageName && (
-            <div className="flex-1 min-w-0 text-center">
-              <span className="text-sm font-black uppercase truncate"
-                style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.75)', letterSpacing: '0.06em' }}>
-                {currentPageName.replace(/([A-Z])/g, ' $1').trim()}
-              </span>
-            </div>
-          )}
-          {isMainPage && <div className="flex-1" />}
 
           {/* Right actions */}
           <div className="flex items-center gap-1.5 md:gap-2">
@@ -340,7 +300,7 @@ export default function Layout({ children, currentPageName }) {
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
               className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto w-full sm:w-[80vw] sm:max-w-[320px]"
-              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)', overscrollBehavior: 'contain' }}>
+              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
 
               {/* Drawer header */}
               <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -370,20 +330,9 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 3: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
 
-              {/* Delete Account — danger zone / App Store required */}
-              <div className="px-3 pb-3 pt-2" style={{ borderTop: '1px solid rgba(239,68,68,0.1)' }}>
-                <button
-                  onClick={function() { setShowMobileMenu(false); setTimeout(function() { setShowDeleteModal(true); }, 260); }}
-                  className="tap-target w-full flex items-center gap-3 px-3 rounded-xl"
-                  style={{ background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.18)', color: '#EF4444', userSelect: 'none', WebkitUserSelect: 'none', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 700, letterSpacing: '0.04em' }}>
-                  <ShieldX className="w-4 h-4" style={{ flexShrink: 0 }} />
-                  Delete Account
-                </button>
-              </div>
-
               {/* Group 4: Admin (isAdmin only) */}
               {isAdmin && (
-                <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(255,140,0,0.12)' }}>
+                <div className="px-3 pt-3 pb-2" style={{ borderTop: '1px solid rgba(212,133,74,0.12)' }}>
                   <p className="text-[11px] uppercase font-bold tracking-widest mb-2 px-1 text-orange-400/40"
                     style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Admin</p>
                   <div className="space-y-0.5">
@@ -392,7 +341,7 @@ export default function Layout({ children, currentPageName }) {
                       return (
                         <Link key={item.name} to={item.href} onClick={function() { setShowMobileMenu(false); }}>
                           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
-                            style={{ background: 'rgba(255,140,0,0.04)', borderLeft: '2px solid rgba(255,140,0,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
+                            style={{ background: 'rgba(212,133,74,0.04)', borderLeft: '2px solid rgba(212,133,74,0.15)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                             <Icon className="w-4 h-4 shrink-0 text-orange-400/70" />
                             <span className="text-sm font-bold text-orange-400/60" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>{item.name}</span>
                           </div>
@@ -450,22 +399,14 @@ export default function Layout({ children, currentPageName }) {
               var active = isActive(item.href);
 
               function handleTabPress(e) {
-                e.preventDefault();
-                if (navigator.vibrate) navigator.vibrate(10);
                 if (active) {
-                  // Tap active tab → scroll to root, clear this tab's saved sub-page
+                  // Double-tap active tab → scroll to top
+                  e.preventDefault();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  tabHistoryRef.current.delete(item.href);
                   navigate(item.href, { replace: true });
                 } else {
-                  // Switch to a different tab
+                  // Save current scroll before leaving
                   scrollPositions.current[location.pathname] = window.scrollY;
-                  // Save current page under the previously-active tab
-                  tabHistoryRef.current.set(activeTabHref.current, location.pathname + location.search);
-                  activeTabHref.current = item.href;
-                  // Navigate to last-visited page in the new tab, or the tab root
-                  var lastUrl = tabHistoryRef.current.get(item.href) || item.href;
-                  navigate(lastUrl);
                 }
               }
 
@@ -491,71 +432,17 @@ export default function Layout({ children, currentPageName }) {
               }
 
               return (
-                <motion.div key={item.name} className="flex-1 relative" whileTap={{ scale: 0.85 }}>
-                  <Link to={item.href} onClick={handleTabPress}
-                    className="flex flex-col items-center gap-1 px-3 pb-1 w-full"
-                    style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', paddingTop: 6, userSelect: 'none', WebkitUserSelect: 'none' }}>
-                    <motion.div animate={{ scale: active ? 1.15 : 1, y: active ? -1 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}>
-                      <Icon className="w-5 h-5" />
-                    </motion.div>
-                    <span className="text-[10px] uppercase font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
-                  </Link>
-                  <AnimatePresence>
-                    {active && (
-                      <motion.div
-                        layoutId="bottom-nav-indicator"
-                        className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-8 rounded-full"
-                        style={{ background: '#d4af37' }}
-                        initial={{ opacity: 0, scaleX: 0 }}
-                        animate={{ opacity: 1, scaleX: 1 }}
-                        exit={{ opacity: 0, scaleX: 0 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                  </AnimatePresence>
-                </motion.div>
+                <Link key={item.name} to={item.href}
+                  onClick={handleTabPress}
+                  className="flex flex-col items-center gap-1 px-3 pb-1 transition-all active:scale-90"
+                  style={{ color: active ? '#d4af37' : 'rgba(255,255,255,0.3)', userSelect: 'none', WebkitUserSelect: 'none', borderTop: active ? '2px solid #d4af37' : '2px solid transparent', paddingTop: 6, transition: 'all .15s' }}>
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[10px] uppercase font-bold"
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{item.name}</span>
+                </Link>
               );
             })}
           </nav>
-        </div>
-      )}
-
-      {/* Delete Account confirmation modal (accessible from drawer) */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center px-5"
-          style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(8px)' }}
-          onClick={function(e) { if (e.target === e.currentTarget) { setShowDeleteModal(false); setDeleteConfirmText(''); } }}>
-          <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
-            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                <ShieldX className="w-5 h-5" style={{ color: '#EF4444' }} />
-              </div>
-              <p className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Permanently Delete Account?</p>
-              <p className="text-xs mt-2 text-left" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1.5 }}>
-                This will immediately and permanently remove your profile, streams, tips, earnings, and chat history. It cannot be undone.
-              </p>
-            </div>
-            <div className="p-5 space-y-3">
-              <input
-                value={deleteConfirmText}
-                onChange={function(e) { setDeleteConfirmText(e.target.value.toUpperCase()); }}
-                placeholder="Type DELETE to confirm"
-                className="w-full px-3 py-3 rounded-xl text-center outline-none font-black"
-                style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid ' + (deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'), color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em', fontSize: 14 }} />
-              <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                className="tap-target w-full rounded-xl font-black uppercase text-sm justify-center"
-                style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
-              </button>
-              <button onClick={function() { setShowDeleteModal(false); setDeleteConfirmText(''); }}
-                className="tap-target w-full rounded-xl font-black uppercase text-xs justify-center"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                Cancel
-              </button>
-            </div>
-          </div>
         </div>
       )}
 

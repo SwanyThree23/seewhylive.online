@@ -11,7 +11,7 @@ const BADGE_ICONS = {
   raid_master: { icon: Flame, color: '#FF6B6B', emoji: '🔥' },
   poll_champion: { icon: Star, color: '#C9A84C', emoji: '⭐' },
   chat_legend: { icon: Sparkles, color: '#D4AF37', emoji: '✨' },
-  watch_streak: { icon: Flame, color: '#FF8C00', emoji: '🔥' },
+  watch_streak: { icon: Flame, color: '#D4854A', emoji: '🔥' },
   gifter: { icon: Gift, color: '#FFB700', emoji: '🎁' },
   first_subscriber: { icon: Trophy, color: G, emoji: '👑' },
 };

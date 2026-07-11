@@ -266,8 +266,8 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
             initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
             className="flex items-start gap-2 px-3 py-2 rounded-xl"
             style={{
-              background: alert.type === 'error' ? 'rgba(255,21,100,0.08)' : 'rgba(255,184,0,0.08)',
-              border: `1px solid ${alert.type === 'error' ? 'rgba(255,21,100,0.25)' : 'rgba(255,184,0,0.25)'}`,
+              background: alert.type === 'error' ? 'rgba(192,57,43,0.08)' : 'rgba(255,184,0,0.08)',
+              border: `1px solid ${alert.type === 'error' ? 'rgba(192,57,43,0.25)' : 'rgba(255,184,0,0.25)'}`,
             }}>
             <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" style={{ color: alert.type === 'error' ? '#C0392B' : '#FFB800' }} />
             <p className="text-[10px] text-white/70">{alert.msg}</p>
