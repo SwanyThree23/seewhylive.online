@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CheckCircle, ChevronDown, ChevronUp, Settings,
   Eye, EyeOff, Users, ArrowRight, X, Clock, Layers
@@ -305,6 +305,7 @@ export default function GreenroomPage() {
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
 
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
   const [displayName, setDisplayName] = useState('');
   const [roleRequested, setRoleRequested] = useState('audience');
