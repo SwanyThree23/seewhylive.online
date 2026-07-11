@@ -55,7 +55,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
       toast.success('Stripe account connected! Redirecting to onboarding...');
       toast.info("In production, you would be redirected to Stripe's onboarding flow.");
     },
-    onError: () => setConnecting(false),
+    onError: () => { setConnecting(false); toast.error('Failed to connect Stripe. Please try again.'); },
   });
 
   const disconnectMutation = useMutation({

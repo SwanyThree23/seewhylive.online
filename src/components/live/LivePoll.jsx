@@ -107,20 +107,20 @@ export default function LivePoll({ roomId, isHost }) {
 
   const endPollMutation = useMutation({
     mutationFn: () => base44.entities.Poll.update(activePoll.id, { status: 'ended' }),
-    onSuccess: async () => {
+    onSuccess: () => {
       qc.invalidateQueries(['livepoll', roomId]);
-      // Post summary to activity feed
+      // Post summary to activity feed (fire-and-forget)
       const winner = activePoll.options?.[
         Object.entries(voteTally).sort((a, b) => b[1] - a[1])[0]?.[0]
       ];
       if (winner) {
-        await base44.entities.Activity.create({
+        base44.entities.Activity.create({
           user_id: roomId,
           type: 'room_joined',
           title: `Poll ended: "${activePoll.question}"`,
           description: `Winner: "${winner}" with ${Object.values(voteTally)[0] || 0} votes`,
           is_public: true,
-        });
+        }).catch(() => {});
       }
       toast.success('Poll ended');
     },
