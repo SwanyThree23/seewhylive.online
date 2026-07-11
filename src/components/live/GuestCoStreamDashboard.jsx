@@ -516,9 +516,11 @@ export default function GuestCoStreamDashboard({
 
   const removeAllGuests = async () => {
     const toRemove = guests.filter(p => p.role === 'guest');
-    await Promise.all(toRemove.map(p => base44.entities.Participant.update(p.id, { status: 'removed' })));
-    toast.info(`${toRemove.length} guests removed`);
-    qc.invalidateQueries(['participants', roomId]);
+    try {
+      await Promise.all(toRemove.map(p => base44.entities.Participant.update(p.id, { status: 'removed' })));
+      toast.info(`${toRemove.length} guests removed`);
+      qc.invalidateQueries(['participants', roomId]);
+    } catch { toast.error('Failed to remove some guests. Please try again.'); }
   };
 
   const toggleLock = () => {
