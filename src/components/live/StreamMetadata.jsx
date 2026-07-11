@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Tag, Globe, AlertTriangle, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const CATEGORIES = ['gaming','music','education','talk','fitness','cooking','art','tech','irl','other'];
 const LANGUAGES = ['English','Spanish','French','German','Portuguese','Japanese','Korean','Chinese','Arabic','Hindi','Russian','Italian','Dutch','Polish','Turkish','Vietnamese','Thai','Indonesian','Swedish','Norwegian'];
@@ -149,10 +150,9 @@ export default function StreamMetadata({ room, isHost }) {
       {/* Language */}
       <div className="space-y-1.5">
         <label className="text-xs text-white/50">Stream Language</label>
-        <select value={language} onChange={e => setLanguage(e.target.value)}
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40">
-          {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#0d0618]">{l}</option>)}
-        </select>
+        <NativeSelect value={language} onChange={val => setLanguage(val)}
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40"
+          options={LANGUAGES.map(l => ({value: l, label: l}))} />
       </div>
     </div>
   );

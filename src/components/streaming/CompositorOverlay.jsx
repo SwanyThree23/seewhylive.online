@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCanvasCompositor } from '@/hooks/useCanvasCompositor';
+import { hapticMedium } from '@/utils/haptics';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -312,7 +313,7 @@ export default function CompositorOverlay({
           {/* Action buttons */}
           {status === 'idle' && (
             <button
-              onClick={useRecord ? startRecord : goLive}
+              onClick={() => { hapticMedium(); useRecord ? startRecord() : goLive(); }}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-2 transition-all"
               style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD, ...T }}
             >

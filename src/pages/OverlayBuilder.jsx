@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -92,11 +93,10 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
               className="absolute top-0.5 w-3 h-3 rounded-full" style={{ background: cfg[key] ? '#000' : 'rgba(255,255,255,0.4)' }} />
           </button>
         : type === 'select'
-        ? <select value={cfg[key] || ''} onChange={e => onChange({ config: { ...cfg, [key]: e.target.value } })}
+        ? <NativeSelect value={cfg[key] || ''} onChange={val => onChange({ config: { ...cfg, [key]: val } })}
             className="w-full px-2 py-1 rounded text-[11px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
-            {opts.map(o => <option key={o} value={o}>{o}</option>)}
-          </select>
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}
+            options={opts.map(o => ({value: o, label: o}))} />
         : type === 'number'
         ? <input type="number" value={cfg[key] || 0} onChange={e => onChange({ config: { ...cfg, [key]: Number(e.target.value) } })}
             className="w-full px-2 py-1 rounded text-[11px] outline-none"
@@ -225,20 +225,16 @@ export default function OverlayBuilderPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {/* Preset selector */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
-              style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              <option value="">Load Preset…</option>
-              {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
+            <NativeSelect value="" onChange={val => { if (val) applyPreset(val); }}
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+              options={[{value:'',label:'Load Preset…'},...Object.keys(PRESETS).map(p => ({value: p, label: p}))]} />
           </div>
           {/* Load layout */}
           {layouts.length > 0 && (
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
-                style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                <option value="">New Layout</option>
-                {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
-              </select>
+              <NativeSelect value={selectedLayout || ''} onChange={val => setSelectedLayout(val || null)}
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
+                options={[{value:'',label:'New Layout'},...layouts.map(l => ({value: l.id, label: l.name + (l.is_active ? ' ●' : '')}))]} />
             </div>
           )}
           <input value={layoutName} onChange={e => setLayoutName(e.target.value)}

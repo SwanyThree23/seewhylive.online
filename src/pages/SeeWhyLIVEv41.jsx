@@ -7,6 +7,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import CoStreamHub from '../components/live/CoStreamHub';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -303,13 +304,11 @@ function SVSPanel() {
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>Set Up Battle</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center' }}>
-          <select value={s1} onChange={e => setS1(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
-            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <NativeSelect value={s1} onChange={val => setS1(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}
+            options={STATES.map(s => ({value: s, label: s}))} />
           <span style={{ color: C.gold, fontWeight: 900, fontSize: 18 }}>VS</span>
-          <select value={s2} onChange={e => setS2(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
-            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <NativeSelect value={s2} onChange={val => setS2(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}
+            options={STATES.map(s => ({value: s, label: s}))} />
         </div>
       </Card>
 
@@ -631,9 +630,8 @@ function MusicPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Genre</p>
-            <select value={genre} onChange={e => setGenre(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
-              {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
-            </select>
+            <NativeSelect value={genre} onChange={val => setGenre(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}
+              options={GENRES.map(g => ({value: g, label: g}))} />
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>BPM</p>
@@ -641,9 +639,8 @@ function MusicPanel() {
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Key</p>
-            <select value={keyV} onChange={e => setKeyV(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
-              {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
-            </select>
+            <NativeSelect value={keyV} onChange={val => setKeyV(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}
+              options={KEYS.map(k => ({value: k, label: k}))} />
           </div>
         </div>
         <Btn onClick={gen} disabled={loading} color={C.ruby}>{loading ? '⏳ Composing…' : '🎵 Generate Track'}</Btn>

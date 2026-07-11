@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { X, Swords } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -126,16 +127,12 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
           {/* Duration */}
           <div>
             <label className="text-xs font-bold text-white/60 block mb-1">Duration</label>
-            <select
+            <NativeSelect
               value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+              onChange={(val) => setDuration(val)}
               style={selectStyle}
-            >
-              <option value="60">1 minute</option>
-              <option value="180">3 minutes</option>
-              <option value="300">5 minutes</option>
-              <option value="600">10 minutes</option>
-            </select>
+              options={[{value:'60',label:'1 minute'},{value:'180',label:'3 minutes'},{value:'300',label:'5 minutes'},{value:'600',label:'10 minutes'}]}
+            />
           </div>
 
           {/* Action buttons */}

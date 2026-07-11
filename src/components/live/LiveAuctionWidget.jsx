@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Gavel, Clock, Crown, ChevronUp, X, Plus, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -289,10 +290,9 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
       </div>
       <input placeholder="Title" value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
         style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />
-      <select value={form.auction_type} onChange={e => setForm(f => ({ ...f, auction_type: e.target.value }))}
-        style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
-        {types.map(t => <option key={t} value={t}>{t.replace('_', ' ')}</option>)}
-      </select>
+      <NativeSelect value={form.auction_type} onChange={val => setForm(f => ({ ...f, auction_type: val }))}
+        style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+        options={types.map(t => ({value: t, label: t.replace('_', ' ')}))} />
       <div className="flex gap-2">
         <input type="number" placeholder="Starting bid $" value={form.starting_bid} onChange={e => setForm(f => ({ ...f, starting_bid: e.target.value }))}
           style={{ width: '100%', padding: '0 8px', height: 32, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: 'white', fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }} />

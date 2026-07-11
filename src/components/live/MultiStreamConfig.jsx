@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Radio, Plus, Trash2, Copy, Play, Square, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 export default function MultiStreamConfig({ roomId, isHost }) {
   const [destinations, setDestinations] = useState([]);
@@ -183,15 +184,12 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                 onSubmit={handleAddDestination}
                 className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2"
               >
-                <select
+                <NativeSelect
                   value={formData.platform}
-                  onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, platform: val })}
                   className="w-full bg-white/10 border border-white/20 rounded text-xs text-white px-2 py-1.5"
-                >
-                  {platforms.map(p => (
-                    <option key={p.id} value={p.id}>{p.label}</option>
-                  ))}
-                </select>
+                  options={platforms.map(p => ({value: p.id, label: p.label}))}
+                />
                 {formData.platform && (
                   <p className="text-[11px] text-white/40 px-1">
                     {platforms.find(p => p.id === formData.platform)?.guide}

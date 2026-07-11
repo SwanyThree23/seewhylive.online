@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gift, Sparkles, Heart, PartyPopper, Laugh, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { hapticMedium } from '@/utils/haptics';
 
 export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
   const [selectedGift, setSelectedGift] = useState(null);
@@ -180,7 +181,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                   ${selectedGift.price}
                 </p>
                 <Button
-                  onClick={() => sendGiftMutation.mutate(selectedGift)}
+                  onClick={() => { hapticMedium(); sendGiftMutation.mutate(selectedGift); }}
                   disabled={sendGiftMutation.isPending}
                   className="mt-2"
                 >

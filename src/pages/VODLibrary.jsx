@@ -20,23 +20,20 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import NativeSelect from '@/components/shared/NativeSelect';
 const G = '#D4AF37';
 const BG = '#0A0710';
 
 function VODPicker({ vods, selected, onSelect, placeholder = 'Select a video…' }) {
   return (
-    <div className="relative mb-4">
-      <select
+    <div className="mb-4">
+      <NativeSelect
         value={selected?.id || ''}
-        onChange={e => onSelect(vods.find(v => v.id === e.target.value) || null)}
-        className="w-full appearance-none px-3 py-2.5 pr-8 rounded-xl text-sm text-white outline-none"
-        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-        <option value="">{placeholder}</option>
-        {vods.map(v => (
-          <option key={v.id} value={v.id}>{v.title || 'Untitled'}</option>
-        ))}
-      </select>
-      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: G }} />
+        onChange={val => onSelect(vods.find(v => v.id === val) || null)}
+        className="w-full px-3 py-2.5 rounded-xl text-sm text-white outline-none"
+        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
+        options={[{value:'',label:placeholder},...vods.map(v => ({value: v.id, label: v.title || 'Untitled'}))]}
+      />
     </div>
   );
 }

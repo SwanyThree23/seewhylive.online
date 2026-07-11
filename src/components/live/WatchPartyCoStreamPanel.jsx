@@ -7,6 +7,7 @@ import {
   Camera, Trash2, Plus, Tv2, Gamepad2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const G       = '#D4AF37';
@@ -569,20 +570,16 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
 
         {coHostControlEnabled && streamingParticipants.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <select
+            <NativeSelect
               value={coHostControllerId}
-              onChange={e => setCoHostControllerId(e.target.value)}
+              onChange={val => setCoHostControllerId(val)}
               style={{
                 background: 'rgba(255,255,255,0.06)', border: `1px solid ${C.border}`,
                 borderRadius: 7, padding: '5px 8px', color: C.text, fontSize: 12, ...T,
                 flex: 1, outline: 'none',
               }}
-            >
-              <option value="">Select co-host…</option>
-              {streamingParticipants.map(p => (
-                <option key={p.id} value={p.id}>{p.name || p.user_name || p.id}</option>
-              ))}
-            </select>
+              options={[{value:'',label:'Select co-host…'},...streamingParticipants.map(p => ({value: p.id, label: p.name || p.user_name || p.id}))]}
+            />
 
             {coHostController && (
               <div style={{
