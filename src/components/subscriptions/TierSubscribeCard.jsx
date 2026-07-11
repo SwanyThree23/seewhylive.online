@@ -56,6 +56,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       qc.invalidateQueries(['userSubs']);
       qc.invalidateQueries(['creatorSubscriptions']);
     },
+    onError: () => { toast.error('Failed to subscribe. Please try again.'); },
   });
 
   const cancelMutation = useMutation({
@@ -64,6 +65,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       toast.info('Subscription cancelled');
       qc.invalidateQueries(['userSubs']);
     },
+    onError: () => { toast.error('Failed to cancel subscription. Please try again.'); },
   });
 
   const activeFeatures = FEATURE_LABELS.filter(f => tier[f.key]);

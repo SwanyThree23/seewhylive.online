@@ -69,6 +69,7 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
       onClose();
       toast.success(requireApproval ? 'Added — waiting for host approval' : 'Added to queue!');
     },
+    onError: () => { toast.error('Failed to add video. Please try again.'); },
   });
 
   return (
@@ -123,11 +124,13 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
       voter_ids: [...(item.voter_ids || []), currentUser.id],
     }),
     onSuccess: () => qc.invalidateQueries(['vq', item.party_id]),
+    onError: () => { toast.error('Failed to vote. Please try again.'); },
   });
 
   const actionMut = useMutation({
     mutationFn: (data) => base44.entities.VideoQueue.update(item.id, data),
     onSuccess: () => qc.invalidateQueries(['vq', item.party_id]),
+    onError: () => { toast.error('Failed to update queue. Please try again.'); },
   });
 
   const thumb = item.thumbnail_url || getYtThumb(item.video_url);

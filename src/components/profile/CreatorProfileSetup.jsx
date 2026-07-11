@@ -43,6 +43,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       toast.success('Creator profile created! Welcome to SeeWhy LIVE 🎉');
       onClose();
     },
+    onError: () => { toast.error('Failed to create profile. Please try again.'); },
   });
 
   if (!isOpen) return null;

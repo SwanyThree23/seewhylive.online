@@ -76,6 +76,7 @@ export default function QuickTip({ recipientId, recipientName, onTipSent }) {
       setSelectedAmount(null);
       onTipSent?.();
     },
+    onError: () => { toast.error('Failed to send tip. Please try again.'); },
   });
 
   return (

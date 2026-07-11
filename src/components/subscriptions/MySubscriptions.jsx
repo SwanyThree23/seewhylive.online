@@ -27,11 +27,13 @@ export default function MySubscriptions({ userId }) {
       toast.info('Subscription cancelled');
       qc.invalidateQueries(['allUserSubs', userId]);
     },
+    onError: () => { toast.error('Failed to cancel subscription. Please try again.'); },
   });
 
   const toggleRenewMutation = useMutation({
     mutationFn: ({ id, auto_renew }) => base44.entities.Subscription.update(id, { auto_renew }),
     onSuccess: () => qc.invalidateQueries(['allUserSubs', userId]),
+    onError: () => { toast.error('Failed to update auto-renewal. Please try again.'); },
   });
 
   if (isLoading) return (

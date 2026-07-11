@@ -69,6 +69,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     onSuccess: () => {
       toast.success('Connected to room');
     },
+    onError: () => { toast.error('Failed to join room. Please try again.'); },
   });
 
   // Leave signaling mutation
@@ -78,6 +79,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       roomId,
       participantId,
     }),
+    onError: () => {},
   });
 
   // Initialize local media once and announce presence to peers
@@ -168,6 +170,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       qc.invalidateQueries(['zego-active']);
       toast.success('Stream ended');
     },
+    onError: () => { toast.error('Failed to end stream. Please try again.'); },
   });
 
   const handleEndStream = () => {

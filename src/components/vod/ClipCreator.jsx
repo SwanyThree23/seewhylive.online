@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Scissors, Play, Copy, Share2, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const BG = '#0A0710';
@@ -38,6 +39,7 @@ export default function ClipCreator({ streamSessionId, roomId, creatorId, onClip
       setTitle('');
       return clip;
     },
+    onError: () => { toast.error('Failed to create clip. Please try again.'); },
   });
 
   return (

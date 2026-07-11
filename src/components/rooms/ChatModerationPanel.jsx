@@ -40,6 +40,7 @@ export default function ChatModerationPanel({ roomId }) {
       queryClient.invalidateQueries({ queryKey: ['chat-moderation'] });
       toast.success('Moderation action applied');
     },
+    onError: () => { toast.error('Failed to apply moderation action. Please try again.'); },
   });
 
   const addBannedWord = () => {

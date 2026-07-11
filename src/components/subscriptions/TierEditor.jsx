@@ -86,6 +86,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
       qc.invalidateQueries(['creatorTiers', creatorId]);
       onClose();
     },
+    onError: () => { toast.error('Failed to save tier. Please try again.'); },
   });
 
   const addBenefit = () => {

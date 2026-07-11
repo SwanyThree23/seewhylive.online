@@ -109,6 +109,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotPreferences', user?.id] });
     },
+    onError: () => {},
   });
 
   // Save conversation
@@ -132,6 +133,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotHistory', user?.id] });
     },
+    onError: () => {},
   });
 
   useEffect(() => {

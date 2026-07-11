@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Crown, Edit2, Trash2, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
@@ -37,6 +38,7 @@ export default function SubscriptionManager({ creatorId }) {
       queryClient.invalidateQueries({ queryKey: ['subscriptionTiers', creatorId] });
       setShowForm(false);
     },
+    onError: () => { toast.error('Failed to create subscription tier. Please try again.'); },
   });
 
   return (

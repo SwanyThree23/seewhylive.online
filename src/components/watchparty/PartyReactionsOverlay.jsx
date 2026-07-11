@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -76,6 +77,7 @@ function SuperChatModal({ emoji, currentUser, partyId, onClose, onSent }) {
       screen_x: Math.random(),
     }),
     onSuccess: (r) => { onSent(r); onClose(); },
+    onError: () => { toast.error('Failed to send super reaction. Please try again.'); },
   });
 
   return (
@@ -168,6 +170,7 @@ export default function PartyReactionsOverlay({ partyId, currentUser, currentTim
       setTotalCount(c => c + 1);
       setRecentReactions(prev => [r, ...prev].slice(0, 5));
     },
+    onError: () => {},
   });
 
   const handleClick = (r) => {

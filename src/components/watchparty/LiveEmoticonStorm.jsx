@@ -46,6 +46,7 @@ export default function LiveEmoticonStorm({ partyId, currentUser }) {
       emoji,
       reaction_at: new Date().toISOString(),
     }),
+    onError: () => {},
   });
 
   const fireReaction = useCallback((emoji) => {
