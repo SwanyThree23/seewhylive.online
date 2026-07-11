@@ -1523,6 +1523,20 @@ export default function App() {
             roomId={APP_ID}
           />
         )}
+        {activeTab === 'livesync' && (
+          <LiveSyncDashboard />
+        )}
+        {activeTab === 'health' && (
+          <PlatformHealthMonitor />
+        )}
+        {(activeTab === 'panel' || activeTab === 'watchparty' || activeTab === 'vsbattle') && (
+          <div style={{ padding: 40, textAlign: 'center' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>COMING SOON</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>
+              {activeTab === 'panel' ? 'Panel Studio' : activeTab === 'watchparty' ? 'Watch Party' : 'VS Battle'} is in active development.
+            </div>
+          </div>
+        )}
       </div>
       </Suspense>
       </ErrorBoundary>
@@ -1540,10 +1554,7 @@ export default function App() {
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}
-      {activeTab === "panel" && React.createElement(PanelStudio, {streamId:"6991033b"})}
-      {activeTab === "watchparty" && React.createElement(WatchParty, {streamId:"6991033b"})}
-      {activeTab === "vsbattle" && React.createElement(VSBattleStudio, {streamId:"6991033b"})}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>

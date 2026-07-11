@@ -2,53 +2,69 @@ const { createClient } = require('@supabase/supabase-js');
 const ws = require('ws');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { realtime: { transport: ws } });
 
-async function awardPoints(userId, points, eventType, refType, refId) {
-  const { error: eventErr } = await supabase.from('point_events').insert({
+async function awardPoints(userId, points, source, sourceId) {
+  const { error: eventErr } = await supabase.from('loyalty_point_events').insert({
     user_id: userId,
     points,
-    event_type: eventType,
-    ref_type: refType || null,
-    ref_id: refId || null,
+    source: source,
+    source_id: sourceId || null,
   });
   if (eventErr) throw eventErr;
 
   const { data: existing } = await supabase
-    .from('loyalty_points')
+    .from('user_loyalty')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle();
 
-  const newLifetime = (existing ? existing.lifetime_points : 0) + points;
-  const newCurrent = (existing ? existing.current_points : 0) + points;
-  const newLevel = Math.floor(newLifetime / 1000) + 1; // 1000 pts per level, adjust as needed
+  const newTotal = (existing ? existing.total_points : 0) + points;
+  const newLevel = Math.floor(newTotal / 1000) + 1;
 
-  const { error: upsertErr } = await supabase.from('loyalty_points').upsert({
+  const { error: upsertErr } = await supabase.from('user_loyalty').upsert({
     user_id: userId,
-    current_points: newCurrent,
-    lifetime_points: newLifetime,
+    total_points: newTotal,
     level: newLevel,
     updated_at: new Date().toISOString(),
   });
   if (upsertErr) throw upsertErr;
 
-  return { current_points: newCurrent, lifetime_points: newLifetime, level: newLevel };
+  return { total_points: newTotal, level: newLevel };
 }
 
 async function getUserPoints(userId) {
-  const { data, error } = await supabase.from('loyalty_points').select('*').eq('user_id', userId).maybeSingle();
+  const { data, error } = await supabase.from('user_loyalty').select('*').eq('user_id', userId).maybeSingle();
   if (error) throw error;
-  return data || { user_id: userId, current_points: 0, lifetime_points: 0, level: 1 };
+  return data || { user_id: userId, total_points: 0, level: 1 };
 }
 
 async function getLeaderboard(period) {
-  const view = period === 'weekly' ? 'leaderboard_weekly' : 'leaderboard_alltime';
-  const { data, error } = await supabase.from(view).select('*').limit(100);
+  if (period === 'weekly') {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabase
+      .from('loyalty_point_events')
+      .select('user_id, points')
+      .gte('created_at', since);
+    if (error) throw error;
+    const totals = {};
+    data.forEach((row) => {
+      totals[row.user_id] = (totals[row.user_id] || 0) + row.points;
+    });
+    return Object.entries(totals)
+      .map(([user_id, points]) => ({ user_id, points }))
+      .sort((a, b) => b.points - a.points)
+      .slice(0, 100);
+  }
+  const { data, error } = await supabase
+    .from('user_loyalty')
+    .select('user_id, total_points, level')
+    .order('total_points', { ascending: false })
+    .limit(100);
   if (error) throw error;
   return data;
 }
 
 async function getTiers() {
-  const { data, error } = await supabase.from('reward_tiers').select('*').order('sort_order', { ascending: true });
+  const { data, error } = await supabase.from('reward_tiers').select('*').order('level', { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -57,8 +73,8 @@ async function getActiveChallenges() {
   const { data, error } = await supabase
     .from('challenges')
     .select('*')
-    .eq('is_active', true)
-    .order('end_date', { ascending: true });
+    .eq('status', 'active')
+    .order('ends_at', { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -73,10 +89,10 @@ async function completeChallenge(userId, challengeId) {
 
   const { error: insErr } = await supabase
     .from('challenge_completions')
-    .insert({ user_id: userId, challenge_id: challengeId });
-  if (insErr) throw insErr; // will fail on duplicate PK — that's intentional (one completion per user)
+    .insert({ challenge_id: challengeId, user_id: userId });
+  if (insErr) throw insErr;
 
-  return awardPoints(userId, challenge.points_reward, 'challenge_complete', 'challenges', challengeId);
+  return awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
 }
 
 module.exports = {

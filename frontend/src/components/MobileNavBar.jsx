@@ -55,8 +55,7 @@ export default function MobileNavBar(props) {
 
   var [showMore, setShowMore] = useState(false);
 
-  // Hide entirely when in room (LiveRoomPage has its own bottom bar)
-  if (activeTab === 'room') return null;
+  // Always show, including in room
 
   function goTo(id) {
     if (id === '__more__') { setShowMore(function(v) { return !v; }); return; }

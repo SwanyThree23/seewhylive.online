@@ -2,6 +2,8 @@
 // INTEGRATION: mount this in your main router, e.g.:
 //   app.use('/api/battles', require('./routes/battles'));
 // Also wire your existing auth middleware in place of `requireAuth` below.
+// CORRECTED: uses defenderId (not opponentId) and durationMinutes (not durationSeconds),
+// matching the real pre-existing pk_battles schema.
 
 const express = require('express');
 const router = express.Router();
@@ -15,12 +17,14 @@ function requireAuth(req, res, next) {
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { opponentId, mode, durationSeconds } = req.body;
+    const { defenderId, challengerName, defenderName, roomId, durationMinutes } = req.body;
     const battle = await battleService.createChallenge({
       challengerId: req.user.id,
-      opponentId,
-      mode,
-      durationSeconds,
+      defenderId,
+      challengerName,
+      defenderName,
+      roomId,
+      durationMinutes,
     });
     res.status(201).json(battle);
   } catch (err) {
@@ -30,8 +34,8 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.post('/:id/accept', requireAuth, async (req, res) => {
   try {
-    const { challengerRoomId, opponentRoomId } = req.body;
-    const battle = await battleService.acceptChallenge(req.params.id, challengerRoomId, opponentRoomId);
+    const { roomId } = req.body;
+    const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);
   } catch (err) {
@@ -53,7 +57,7 @@ router.post('/:id/start', requireAuth, async (req, res) => {
 
 router.post('/:id/vote', requireAuth, async (req, res) => {
   try {
-    const { side, giftValueCents } = req.body;
+    const { side, giftValueCents } = req.body; // side: 'challenger' | 'defender'
     const battle = await battleService.castVote({
       battleId: req.params.id,
       voterId: req.user.id,
