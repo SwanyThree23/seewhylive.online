@@ -26,6 +26,7 @@ import SubscriptionCard from '../components/monetization/SubscriptionCard';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import TierEditor from '../components/subscriptions/TierEditor';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -327,5 +328,6 @@ export default function SettingsPage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+      <VoiceAISettings />
   );
 }

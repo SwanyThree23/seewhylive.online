@@ -34,6 +34,7 @@ import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import BattleArenaManager from '../components/live/BattleArenaManager';
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -788,5 +789,6 @@ export default function PKBattlePage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+      <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
   );
 }

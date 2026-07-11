@@ -182,6 +182,8 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import TipGoalBar from '../components/monetization/TipGoalBar';
+import TopTippers from '../components/monetization/TopTippers';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -2204,5 +2206,7 @@ function PipCameraTile({ localStream, videoEnabled }) {
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
     </div>
+      <TipGoalBar roomId={null} goal={100} current={0} />
+      <TopTippers roomId={null} />
   );
 }

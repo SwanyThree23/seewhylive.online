@@ -27,6 +27,7 @@ import OnboardingFlow from '../components/onboarding/OnboardingFlow';
 import GridLines from '../components/home/GridLines';
 import NebulaBg from '../components/home/NebulaBg';
 import StarField from '../components/home/StarField';
+import OnlinePresence from '../components/shared/OnlinePresence';
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -655,5 +656,6 @@ export default function Home() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+      <OnlinePresence userId={null} />
   );
 }

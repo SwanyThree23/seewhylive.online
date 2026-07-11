@@ -23,7 +23,7 @@ export default function BrandChyron(props) {
       right: 0,
       height: isLive ? 3 : 2,
       background: isLive
-        ? 'linear-gradient(90deg, #FF1564, #C9A84C, #00F5FF, #00FF88, #8B5CF6, #FF1564)'
+        ? 'linear-gradient(90deg, #C0392B, #C9A84C, #4A8A7A, #6DBF7E, #7B5DA6, #C0392B)'
         : 'linear-gradient(90deg, rgba(128,0,32,.6), rgba(201,168,76,.4), rgba(201,168,76,.3), rgba(128,0,32,.6))',
       backgroundSize: '300% 100%',
       animation: 'rainbowShift 6s linear infinite',

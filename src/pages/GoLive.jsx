@@ -149,6 +149,7 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import TipGoalBar from '../components/monetization/TipGoalBar';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -981,5 +982,6 @@ export default function GoLive() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
     </div>
+      <TipGoalBar roomId={null} goal={100} current={0} />
   );
 }

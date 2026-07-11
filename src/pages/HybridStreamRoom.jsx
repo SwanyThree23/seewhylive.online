@@ -147,6 +147,7 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -471,5 +472,6 @@ export default function HybridStreamRoom() {
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
     </div>
+      <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
   );
 }

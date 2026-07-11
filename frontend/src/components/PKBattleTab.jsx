@@ -352,7 +352,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               style={{
                 width: '100%',
                 padding: '14px',
-                background: 'linear-gradient(135deg,#FF1564,#FF4D7D)',
+                background: 'linear-gradient(135deg,#C0392B,#FF4D7D)',
                 border: 'none',
                 borderRadius: 10,
                 color: '#fff',
@@ -395,7 +395,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                 overflow: 'hidden',
               }}>
                 {r.status === 'LIVE' && (
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#FF1564,transparent)' }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#C0392B,transparent)' }} />
                 )}
                 <div style={{ position: 'relative' }}>
                   <AvatarPortrait username={r.name} size={52} />
@@ -637,7 +637,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
         {/* VS divider */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, flexShrink: 0, minWidth: 36 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#800020', letterSpacing: 2, textShadow: '0 0 12px #FF1564' }}>VS</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#800020', letterSpacing: 2, textShadow: '0 0 12px #C0392B' }}>VS</div>
           <div style={{ height: 2, width: 2, borderRadius: '50%', background: '#3D3020' }} />
         </div>
 

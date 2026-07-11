@@ -38,6 +38,7 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import TierEditor from '../components/subscriptions/TierEditor';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import OnlinePresence from '../components/shared/OnlinePresence';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -1172,5 +1173,6 @@ export default function DashboardPage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+      <OnlinePresence userId={null} />
   );
 }

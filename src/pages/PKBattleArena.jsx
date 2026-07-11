@@ -7,6 +7,7 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import BattleArenaManager from '../components/live/BattleArenaManager';
 
 const BG    = '#080B18';
 const BG2   = 'rgba(13,6,24,0.95)';
@@ -348,5 +349,6 @@ export default function PKBattleArena() {
       <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={0} />
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={false} />
+      <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
   );
 }

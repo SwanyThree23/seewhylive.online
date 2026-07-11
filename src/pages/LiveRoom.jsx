@@ -157,6 +157,9 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
+import TipGoalBar from '../components/monetization/TipGoalBar';
+import TopTippers from '../components/monetization/TopTippers';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -1044,5 +1047,8 @@ export default function LiveRoom() {
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
     </div>
+      <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
+      <TipGoalBar roomId={null} goal={100} current={0} />
+      <TopTippers roomId={null} />
   );
 }

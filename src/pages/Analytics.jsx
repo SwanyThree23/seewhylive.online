@@ -23,6 +23,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
+import TopTippers from '../components/monetization/TopTippers';
   TrendingUp, Users, DollarSign, Radio, Eye, Activity,
   MessageSquare, Star, Crown, Zap
 } from 'lucide-react';
@@ -388,5 +389,6 @@ export default function AnalyticsPage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
     </div>
+      <TopTippers roomId={null} />
   );
 }

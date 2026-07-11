@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 import { speakReply } from '../utils/tts';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -256,5 +257,6 @@ export default function SwanyBotPage() {
         <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
       </div>
     </div>
+      <VoiceAISettings />
   );
 }

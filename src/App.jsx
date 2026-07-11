@@ -23,8 +23,9 @@ const NO_LAYOUT_PAGES = new Set([
   'BroadcastStudio', 'LiveRoom', 'WatchParty', 'HybridStreamRoom',
   'AudioRoom', 'ControlRoom', 'Greenroom', 'GreenroomEnhanced',
   'GoLive', 'Room', 'Welcome', 'CoverPage', 'BackPage',
-  'SeeWhyLIVEv17', 'SeeWhyLIVEv36', 'SeeWhyLIVEv37',
-  'Onboarding', 'GuestJoin', 'PKBattlePage', 'Login',
+  'SeeWhyLIVEv17', 'SeeWhyLIVEv36', 'SeeWhyLIVEv37', 'SeeWhyLIVEv41',
+  'Onboarding', 'GuestJoin', 'PKBattlePage', 'PKBattleArena', 'Login',
+  'EmbedPage', 'AuraAI', 'SwanyBotPage', 'TranscriptionStudio',
 ]);
 
 const AuthenticatedApp = () => {

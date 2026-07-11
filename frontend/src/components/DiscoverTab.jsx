@@ -23,11 +23,11 @@ var MOCK_CREATORS = [
 ];
 
 var GENRE_COLORS = {
-  Tournament: '#FF1564',
+  Tournament: '#C0392B',
   Domino: '#C9A84C',
   Music: '#C9A84C',
-  Podcast: '#8B5CF6',
-  Lifestyle: '#00F5FF',
+  Podcast: '#7B5DA6',
+  Lifestyle: '#4A8A7A',
   Tech: '#C9A84C',
   Talk: '#FF8C00',
 };
@@ -41,7 +41,7 @@ var TRENDING_CHANNELS = [
 ];
 
 var QUICK_ACTIONS = [
-  { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#FF1564' },
+  { id: 'golive',  label: 'Go Live',      icon: '📡', color: '#C0392B' },
   { id: 'watch',   label: 'Watch Party',  icon: '📺', color: '#C9A84C' },
   { id: 'battles', label: 'PK Battles',   icon: '⚡', color: '#C9A84C' },
   { id: 'vod',     label: 'VOD Library',  icon: '🎬', color: '#C9A84C' },
@@ -250,13 +250,13 @@ export default function DiscoverTab(props) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 4,
-            background: 'rgba(255,21,100,.15)',
-            border: '1px solid rgba(255,21,100,.4)',
+            background: 'rgba(192,57,43,.15)',
+            border: '1px solid rgba(192,57,43,.4)',
             borderRadius: 4,
             padding: '1px 6px',
             fontFamily: "'DM Mono',monospace",
             fontSize: 9,
-            color: '#FF1564',
+            color: '#C0392B',
             letterSpacing: 1,
           }
         },
@@ -265,7 +265,7 @@ export default function DiscoverTab(props) {
             width: 6,
             height: 6,
             borderRadius: '50%',
-            background: '#FF1564',
+            background: '#C0392B',
             display: 'inline-block',
             animation: 'pulse 1.2s ease-in-out infinite',
           }
@@ -358,7 +358,7 @@ export default function DiscoverTab(props) {
         React.createElement(
           'span',
           { style: { display: 'inline-flex', alignItems: 'center', gap: 4 } },
-          React.createElement(SignalBars, { isActive: stream.isLive, count: 5, color: stream.isLive ? '#FF1564' : '#8A7A62' }),
+          React.createElement(SignalBars, { isActive: stream.isLive, count: 5, color: stream.isLive ? '#C0392B' : '#8A7A62' }),
           React.createElement(
             'span',
             {
@@ -518,14 +518,14 @@ export default function DiscoverTab(props) {
             {
               onClick: function() { toggleFollow(creator.username); },
               style: {
-                background: following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.15)' : 'rgba(255,21,100,.15)',
-                border: '1px solid ' + (following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.4)' : 'rgba(255,21,100,.4)'),
+                background: following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.15)' : 'rgba(192,57,43,.15)',
+                border: '1px solid ' + (following.indexOf(creator.username) >= 0 ? 'rgba(201,168,76,.4)' : 'rgba(192,57,43,.4)'),
                 borderRadius: 4,
                 padding: '3px 10px',
                 fontFamily: "'Barlow Condensed',sans-serif",
                 fontWeight: 700,
                 fontSize: 11,
-                color: following.indexOf(creator.username) >= 0 ? '#C9A84C' : '#FF1564',
+                color: following.indexOf(creator.username) >= 0 ? '#C9A84C' : '#C0392B',
                 cursor: 'pointer',
               }
             },
@@ -544,14 +544,14 @@ export default function DiscoverTab(props) {
         onClick: function() { setView(val); },
         style: {
           flex: 1,
-          background: active ? 'rgba(255,21,100,.15)' : 'transparent',
-          border: '1px solid ' + (active ? 'rgba(255,21,100,.4)' : 'rgba(255,255,255,.07)'),
+          background: active ? 'rgba(192,57,43,.15)' : 'transparent',
+          border: '1px solid ' + (active ? 'rgba(192,57,43,.4)' : 'rgba(255,255,255,.07)'),
           borderRadius: 6,
           padding: '7px 0',
           fontFamily: "'Barlow Condensed',sans-serif",
           fontWeight: 700,
           fontSize: 13,
-          color: active ? '#FF1564' : '#8A7A62',
+          color: active ? '#C0392B' : '#8A7A62',
           cursor: 'pointer',
           letterSpacing: 1,
         }
@@ -802,7 +802,7 @@ export default function DiscoverTab(props) {
                         position: 'absolute',
                         top: -2,
                         right: -2,
-                        background: '#FF1564',
+                        background: '#C0392B',
                         borderRadius: 3,
                         padding: '0px 3px',
                         fontFamily: "'DM Mono',monospace",

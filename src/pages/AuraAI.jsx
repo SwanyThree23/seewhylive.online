@@ -6,6 +6,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import GlobalSearch from '../components/shared/GlobalSearch';
 import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -59,7 +60,7 @@ const AURA_MODES = {
   },
   HYPE: {
     label: '🔥 Hype',
-    color: '#FF4500',
+    color: '#D4854A',
     hint: 'High-energy crowd hype & engagement',
     system: `You are AURA in HYPE MODE — an ultra-high-energy live event hype master for SeeWhy LIVE. Your responses are short, punchy, all-caps where needed, loaded with emojis and audience callouts. You drive donations, reactions, and viral moments. Think stadium announcer meets rap battle host. Every response should make the audience FEEL the energy. Keep answers under 3 sentences. Use exclamation marks. Make it LOUD.`,
   },
@@ -351,5 +352,6 @@ export default function AuraAI() {
       <GlobalSearch />
       <StreamGoals isHost={false} currentTips={0} currentSubs={0} currentViewers={0} />
       <ContentRecommendations />
+      <VoiceAISettings />
   );
 }
