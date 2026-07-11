@@ -31,6 +31,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
         content,
         message_type: 'cohost',
       }),
+    onError: () => {},
   });
 
   const formatUptime = (s) => {

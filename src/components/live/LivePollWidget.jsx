@@ -38,6 +38,7 @@ function CreatePollModal({ roomId, communityId, userId, onClose, onCreated }) {
       total_votes: 0,
     }),
     onSuccess: () => { qc.invalidateQueries(['livepoll', roomId]); toast.success('Poll created!'); onCreated?.(); onClose(); },
+    onError: () => { toast.error('Failed to create poll. Please try again.'); },
   });
 
   const addOpt = () => setForm(f => ({ ...f, options: [...f.options, ''] }));
@@ -112,11 +113,13 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
       });
     },
     onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onError: () => { toast.error('Could not record vote. Please try again.'); },
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => qc.invalidateQueries(['livepoll', roomId]),
+    onError: () => { toast.error('Failed to end poll. Please try again.'); },
   });
 
   const pinResultsMut = useMutation({
@@ -136,6 +139,7 @@ export default function LivePollWidget({ roomId, currentUser, isHost }) {
       });
       toast.success('Results pinned to chat');
     },
+    onError: () => { toast.error('Failed to pin results. Please try again.'); },
   });
 
   const activePoll = polls[0];

@@ -24,6 +24,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
       toast.success('Clip saved! View on your channel →');
       setOpen(false);
     },
+    onError: () => { toast.error('Failed to save clip. Please try again.'); },
   });
 
   const handleTrackMouseDown = useCallback((handle) => (e) => {

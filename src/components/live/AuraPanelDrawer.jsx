@@ -38,6 +38,7 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
       return base44.entities.AuraAICoHost.create({ room_id: roomId, host_id: hostId, ...data });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey:['aura', roomId] }),
+    onError: () => { toast.error('Failed to update Aura settings. Please try again.'); },
   });
 
   const upd = (data) => mut.mutate(data);

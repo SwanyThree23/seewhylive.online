@@ -27,11 +27,13 @@ function DestRow({ dest, userId }) {
   var updateMut = useMutation({
     mutationFn: function(data) { return base44.entities.RTMPDestination.update(dest.id, data); },
     onSuccess: function() { qc.invalidateQueries(['guest-dests', userId]); },
+    onError: function() { toast.error('Failed to update destination. Please try again.'); },
   });
 
   var deleteMut = useMutation({
     mutationFn: function() { return base44.entities.RTMPDestination.delete(dest.id); },
     onSuccess: function() { qc.invalidateQueries(['guest-dests', userId]); toast.success('Removed'); },
+    onError: function() { toast.error('Failed to remove destination. Please try again.'); },
   });
 
   var validate = async function() {
@@ -128,6 +130,7 @@ export default function GuestDestinationsPanel({ participantUserId, guestName })
       setLabel('');
       toast.success('Destination added for ' + guestName);
     },
+    onError: function() { toast.error('Failed to add destination. Please try again.'); },
   });
 
   var addDest = function() {

@@ -136,6 +136,7 @@ function AuctionCard({ auction, currentUser, isHost, onEnd }) {
       });
     },
     onSuccess: () => { qc.invalidateQueries(['auctions', auction.room_id]); toast.success('You won the auction!'); },
+    onError: () => { toast.error('Buyout failed. Please try again.'); },
   });
 
   return (
@@ -275,6 +276,7 @@ function CreateAuctionForm({ roomId, creatorId, onClose }) {
       });
     },
     onSuccess: () => { qc.invalidateQueries(['auctions', roomId]); onClose(); toast.success('Auction launched!'); },
+    onError: () => { toast.error('Failed to launch auction. Please try again.'); },
   });
 
   const types = ['item','one_on_one','shoutout','custom_art','coaching','experience'];

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, Smile, Globe, ChevronDown, Minimize2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','🙏','💪','✨','🎶'];
 
@@ -69,6 +70,7 @@ export default function GlobalChatWidget() {
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.Message.create(data),
+    onError: () => { toast.error('Failed to send message. Please try again.'); },
   });
 
   const sendMessage = useCallback(async () => {

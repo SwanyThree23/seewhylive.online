@@ -235,6 +235,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
   const closePollMutation = useMutation({
     mutationFn: (pollId) => base44.entities.Poll.update(pollId, { status: 'closed' }),
     onSuccess: () => qc.invalidateQueries(['polls', roomId]),
+    onError: () => { toast.error('Failed to close poll. Please try again.'); },
   });
 
   const voteMutation = useMutation({
@@ -255,6 +256,7 @@ export default function InteractivePollingSystem({ roomId, isHost, currentUser }
       qc.invalidateQueries(['poll-votes', roomId]);
       toast.success('Vote recorded!');
     },
+    onError: () => { toast.error('Could not record vote. Please try again.'); },
   });
 
   const togglePin = (pollId) => {

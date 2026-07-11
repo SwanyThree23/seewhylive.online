@@ -93,16 +93,19 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
       role: isCoHost ? 'guest' : 'co-host',
     }),
     onSuccess: () => { toast.success(`${participant.user_name} role updated`); qc.invalidateQueries(['participants', roomId]); },
+    onError: () => { toast.error('Failed to update role. Please try again.'); },
   });
 
   const muteToggle = useMutation({
     mutationFn: () => base44.entities.Participant.update(participant.id, { is_muted: !muted }),
     onSuccess: () => setMuted(m => !m),
+    onError: () => { toast.error('Failed to mute/unmute. Please try again.'); },
   });
 
   const kick = useMutation({
     mutationFn: () => base44.entities.Participant.update(participant.id, { status: 'removed' }),
     onSuccess: () => { toast.info(`${participant.user_name} removed`); qc.invalidateQueries(['participants', roomId]); },
+    onError: () => { toast.error('Failed to remove participant. Please try again.'); },
   });
 
   const sendTip = () => {

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart2, Trophy, Clock, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -142,6 +143,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
       });
       setMyVote(optionIndex);
     },
+    onError: () => { toast.error('Could not record vote. Please try again.'); },
   });
 
   const positionClass = {

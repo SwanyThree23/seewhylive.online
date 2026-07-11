@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, Volume2, Trash2, Play } from 'lucide-react';
+import { toast } from 'sonner';
 import SelectSheet from '@/components/shared/SelectSheet';
 
 const G = '#D4AF37';
@@ -45,6 +46,7 @@ export default function AlertConfig({ creatorId }) {
       setShowForm(false);
       setFormData({ name: '', trigger_type: 'donation_amount', trigger_value: 5, sound_preset: 'cash_register', volume: 80, color: G });
     },
+    onError: () => { toast.error('Failed to save alert. Please try again.'); },
   });
 
   return (

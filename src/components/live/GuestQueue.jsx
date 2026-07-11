@@ -93,6 +93,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
     },
+    onError: () => { toast.error('Failed to admit guest. Please try again.'); },
   });
 
   const rejectMutation = useMutation({
@@ -103,6 +104,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
     },
+    onError: () => { toast.error('Failed to remove guest. Please try again.'); },
   });
 
   const removeMutation = useMutation({
@@ -113,6 +115,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
     },
+    onError: () => { toast.error('Failed to remove guest. Please try again.'); },
   });
 
   const admitAllMutation = useMutation({
@@ -130,6 +133,7 @@ export default function GuestQueue({ roomId, isHost }) {
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
     },
+    onError: () => { toast.error('Failed to admit all guests. Please try again.'); },
   });
 
   const isEmpty = waitingGuests.length === 0 && admittedGuests.length === 0;

@@ -58,16 +58,19 @@ function GuestRow({ guest, isHost, roomId, onSpotlight, spotlitId, raisedHands =
       toast.success(`${guest.user_name} ${isCoHost ? 'demoted to Guest' : 'promoted to Co-host'}`);
       qc.invalidateQueries(['participants', roomId]);
     },
+    onError: () => { toast.error('Failed to update role. Please try again.'); },
   });
 
   const muteRemote = useMutation({
     mutationFn: () => base44.entities.Participant.update(guest.id, { is_muted: !muted }),
     onSuccess: () => setMuted(m => !m),
+    onError: () => { toast.error('Failed to mute/unmute. Please try again.'); },
   });
 
   const kick = useMutation({
     mutationFn: () => base44.entities.Participant.update(guest.id, { status: 'removed' }),
     onSuccess: () => { toast.info(`${guest.user_name} removed`); qc.invalidateQueries(['participants', roomId]); },
+    onError: () => { toast.error('Failed to remove participant. Please try again.'); },
   });
 
   return (

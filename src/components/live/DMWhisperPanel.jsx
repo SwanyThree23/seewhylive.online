@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
@@ -59,6 +60,7 @@ export function WhisperPanel({ roomId, currentUser, recipientId, recipientName, 
       content, is_whisper: true,
     }),
     onSuccess: () => { qc.invalidateQueries(["whispers", roomId, recipientId]); setInput(""); },
+    onError: () => { toast.error('Failed to send message. Please try again.'); },
   });
 
   useEffect(() => {

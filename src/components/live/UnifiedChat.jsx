@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
 
@@ -79,11 +80,13 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.Message.create(data),
+    onError: () => { toast.error('Failed to send message. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Message.delete(id),
     onSuccess: () => qc.invalidateQueries(['chat-messages', roomId]),
+    onError: () => { toast.error('Failed to delete message. Please try again.'); },
   });
 
   const sendMessage = useCallback(() => {

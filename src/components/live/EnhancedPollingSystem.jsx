@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
 
@@ -75,6 +76,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
     },
+    onError: () => { toast.error('Failed to create poll. Please try again.'); },
   });
 
   const voteMutation = useMutation({
@@ -105,6 +107,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pollVotes', activePoll?.id] });
     },
+    onError: () => { toast.error('Could not record vote. Please try again.'); },
   });
 
   const closePollMutation = useMutation({
@@ -113,6 +116,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setActivePoll(null);
     },
+    onError: () => { toast.error('Failed to close poll. Please try again.'); },
   });
 
   const closePoll = () => {
