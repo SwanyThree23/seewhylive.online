@@ -10,11 +10,11 @@
     --ab: #0B0B18;          /* abyss - deepest bg */
     --bu: #07070F;          /* bunker - card bg */
     --go: #d4af37;          /* gold - primary accent */
-    --bl: #FF1564;          /* blood - live/alert red */
-    --cy: #00F5FF;          /* cyan - data/info */
-    --em: #00FF88;          /* emerald - success/live */
-    --pu: #8B5CF6;          /* purple - AI/AURA */
-    --or: #FF8C00;          /* orange - warning/fire */
+    --bl: #C0392B;          /* blood - live/alert red */
+    --cy: #4A8A7A;          /* cyan - data/info */
+    --em: #6DBF7E;          /* emerald - success/live */
+    --pu: #7B5DA6;          /* purple - AI/AURA */
+    --or: #D4854A;          /* orange - warning/fire */
     --bg-card: rgba(11,11,24,0.95);
     --bg-panel: rgba(7,7,15,0.98);
     --border-gold: rgba(212,175,55,0.2);
@@ -122,11 +122,11 @@
   .border-blood { border-color: rgba(192,57,43,0.3); }
 
   .glow-gold { box-shadow: 0 0 20px rgba(212,175,55,0.25); }
-  .glow-blood { box-shadow: 0 0 20px rgba(255,21,100,0.3); }
-  .glow-cyan { box-shadow: 0 0 20px rgba(0,245,255,0.2); }
+  .glow-blood { box-shadow: 0 0 20px rgba(192,57,43,0.3); }
+  .glow-cyan { box-shadow: 0 0 20px rgba(74,138,122,0.2); }
 
   .gradient-brand {
-    background: linear-gradient(135deg, #FF1564 0%, #FFB800 35%, #00F5FF 65%, #8B5CF6 100%);
+    background: linear-gradient(135deg, #C0392B 0%, #D4AF37 35%, #4A8A7A 65%, #7B5DA6 100%);
   }
   .gradient-gold {
     background: linear-gradient(90deg, #d4af37, #f5e6a3, #d4af37);

@@ -37,7 +37,7 @@ const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#00F5FF';
+const TEAL    = '#4A8A7A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const FLYWHEEL_STAGES = [

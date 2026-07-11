@@ -7,7 +7,7 @@ import { createPageUrl } from '../../utils';
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#00F5FF';
+const TEAL    = '#4A8A7A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Partner channel definitions ───────────────────────────────────────── */
