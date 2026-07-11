@@ -17,7 +17,6 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 

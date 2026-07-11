@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 export default function GreenroomQueue({ roomId, isHost }) {
   const [guestSearch, setGuestSearch] = useState('');
   const qc = useQueryClient();
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   // Fetch all stage participants for this room
   const { data: participants = [], isLoading } = useQuery({

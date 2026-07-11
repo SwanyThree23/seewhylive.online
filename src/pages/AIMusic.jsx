@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -687,7 +688,8 @@ function Toast({ message, visible }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
-  // Form state
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+// Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
   const [titleInput, setTitleInput] = useState('');

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Settings, Flag, Megaphone, TrendingUp, Users } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';

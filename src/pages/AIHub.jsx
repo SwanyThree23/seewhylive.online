@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
 
@@ -29,6 +30,7 @@ const PINK   = '#C0392B';
 const CYAN   = '#00d4ff';
 const PURPLE = '#a78bfa';
 const GREEN  = '#6DBF7E';
+const AMBER  = '#f59e0b';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -135,6 +137,7 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);

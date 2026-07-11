@@ -1,0 +1,76 @@
+{
+  "name": "GemTransaction",
+  "type": "object",
+  "properties": {
+    "sender_id": {
+      "type": "string"
+    },
+    "recipient_id": {
+      "type": "string"
+    },
+    "stream_id": {
+      "type": "string"
+    },
+    "gem_type": {
+      "type": "string",
+      "enum": [
+        "ruby",
+        "gold",
+        "diamond",
+        "purple",
+        "bone"
+      ],
+      "default": "gold"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "usd_value": {
+      "type": "number"
+    },
+    "creator_cut": {
+      "type": "number"
+    },
+    "platform_fee": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "sender_id",
+    "recipient_id",
+    "usd_value"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.sender_id": "{{user.id}}"
+        },
+        {
+          "data.recipient_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

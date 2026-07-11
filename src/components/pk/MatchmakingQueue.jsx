@@ -43,6 +43,8 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
   var [matchingFor, setMatchingFor] = useState(0);
   var [matchedWith, setMatchedWith] = useState(null);
   var intervalRef = React.useRef(null);
+  var [myQueueId, setMyQueueId] = useState(null);
+  var qc = useQueryClient();
 
   function joinQueue() {
     setInQueue(true);
@@ -100,8 +102,6 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
     },
     onError: function(err) { toast.error('Challenge failed: ' + err.message); },
   });
-
-  function joinQueue() { joinMutation.mutate(); }
 
   function leaveQueue() { leaveMutation.mutate(); }
 

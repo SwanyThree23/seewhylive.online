@@ -4,15 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
-import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
-import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import GuestConnector from '../components/live/GuestConnector';
-import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import AIStreamSummary from '../components/live/AIStreamSummary';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
@@ -26,20 +21,15 @@ import StreamGoals from '../components/live/StreamGoals';
 import { isSafeUrl } from '@/lib/security';
 
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';

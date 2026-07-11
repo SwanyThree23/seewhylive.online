@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { format } from 'date-fns';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
@@ -24,7 +25,9 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 const GOLD = '#D4AF37';
+const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
@@ -37,8 +40,29 @@ const TYPE_CONFIG = {
   badge_earned:        { icon: Award,        color: '#6DBF7E' },
 };
 
+const FILTERS = [
+  { id: 'all', label: 'All Activity', types: null },
+  { id: 'streams', label: 'Streams', types: ['room_created', 'room_joined', 'room_ended'] },
+  { id: 'social', label: 'Social', types: ['community_joined', 'follow', 'subscription'] },
+  { id: 'tips', label: 'Tips', types: ['tip_sent', 'tip_received'] },
+  { id: 'achievements', label: 'Achievements', types: ['badge_earned', 'challenge_completed'] },
+];
+
+function groupByDate(items) {
+  const groups = {};
+  items.forEach(item => {
+    const date = new Date(item.created_date).toLocaleDateString();
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(item);
+  });
+  return groups;
+}
+
 export default function ActivityPage() {
-  const { data: activities = [] } = useQuery({
+  const qc = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [filter, setFilter] = useState('all');
+  const { data: activities = [], isLoading } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
