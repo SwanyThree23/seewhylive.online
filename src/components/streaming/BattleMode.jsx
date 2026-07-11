@@ -96,7 +96,8 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         : { challenger_score: (battle.challenger_score || 0) + 1 };
       return base44.entities.PKBattle.update(battleId, update);
     },
-    onSuccess: () => qc.invalidateQueries(['pk_battles', roomId]),
+    onError: () => toast.error('Failed to submit vote.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['pk_battles', roomId] }),
   });
 
   const endBattleMutation = useMutation({
@@ -110,6 +111,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         winner_name: winner,
       });
     },
+    onError: () => toast.error('Failed to end battle.'),
     onSuccess: () => {
       toast.success('Battle ended!');
       qc.invalidateQueries(['pk_battles', roomId]);

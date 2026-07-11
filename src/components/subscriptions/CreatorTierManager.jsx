@@ -29,7 +29,8 @@ export default function CreatorTierManager({ creatorId }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['creatorTiers', creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['creatorTiers', creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
@@ -38,6 +39,7 @@ export default function CreatorTierManager({ creatorId }) {
       toast.success('Tier deleted');
       qc.invalidateQueries(['creatorTiers', creatorId]);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const monthlyRevenue = subscriptions.reduce((sum, s) => sum + (s.price || 0), 0);
@@ -138,7 +140,7 @@ export default function CreatorTierManager({ creatorId }) {
                         {tier.has_early_access && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(59,130,246,0.15)', color: '#93c5fd' }}>Early Access</span>}
                         {tier.has_exclusive_rooms && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.15)', color: '#c4b5fd' }}>Exclusive Rooms</span>}
                         {tier.has_custom_badge && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(245,158,11,0.15)', color: '#fcd34d' }}>Badge</span>}
-                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>Emotes</span>}
+                        {tier.has_custom_emotes && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>Emotes</span>}
                         {tier.is_ad_free && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(236,72,153,0.15)', color: '#f9a8d4' }}>Ad-Free</span>}
                         {tier.priority_support && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(249,115,22,0.15)', color: '#fdba74' }}>Priority Support</span>}
                         {tier.benefits?.slice(0, 2).map((b, i) => (

@@ -4,12 +4,28 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bell,
-  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw, Zap
+  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
   { id: 'education', label: '📚 Education' }, { id: 'talk', label: '🎙 Talk' },
@@ -17,26 +33,14 @@ const CATEGORIES = [
   { id: 'art', label: '🎨 Art' }, { id: 'tech', label: '💻 Tech' },
   { id: 'irl', label: '📍 IRL' }, { id: 'other', label: '🌟 Other' },
 ];
-const BEST_TIMES = {
-  gaming:    { day: 'Fri', hour: '8PM', note: 'Peak gaming hours', confidence: 92 },
-  music:     { day: 'Sat', hour: '9PM', note: 'Weekend prime time', confidence: 88 },
-  education: { day: 'Mon', hour: '7PM', note: 'Weekday after work', confidence: 85 },
-  talk:      { day: 'Sun', hour: '4PM', note: 'Sunday wind-down', confidence: 80 },
-  fitness:   { day: 'Tue', hour: '6AM', note: 'Morning workout crowd', confidence: 78 },
-  cooking:   { day: 'Sun', hour: '2PM', note: 'Sunday meal prep', confidence: 83 },
-  art:       { day: 'Sat', hour: '3PM', note: 'Afternoon creative time', confidence: 75 },
-  tech:      { day: 'Wed', hour: '7PM', note: 'Mid-week tech crowd', confidence: 87 },
-  irl:       { day: 'Fri', hour: '7PM', note: 'TGIF energy', confidence: 82 },
-  other:     { day: 'Sat', hour: '6PM', note: 'General peak time', confidence: 72 },
-};
 const DURATIONS = [
   { label: '30 min', value: 30 }, { label: '1 hr', value: 60 },
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
 ];
 const CAT_COLORS = {
   gaming: '#a78bfa', music: '#f472b6', education: '#60a5fa', talk: '#34d399',
-  fitness: '#fb923c', cooking: '#fbbf24', art: '#f87171', tech: '#D4AF37',
-  irl: '#22c55e', other: '#d4af37',
+  fitness: '#fb923c', cooking: '#fbbf24', art: '#C0392B', tech: '#00d4ff',
+  irl: '#6DBF7E', other: '#d4af37',
 };
 
 function getDaysInMonth(year, month) {
@@ -79,15 +83,30 @@ export default function StreamScheduler() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setForm(blankForm); toast.success('Stream scheduled!'); },
+    onSuccess: (created) => {
+      qc.invalidateQueries({ queryKey: ['scheduled-streams'] });
+      setShowForm(false);
+      setForm(blankForm);
+      toast.success('Stream scheduled!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'stream_scheduled',
+          title: `Scheduled: ${created?.title || 'Stream'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onError: () => toast.error('Action failed.'),
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); toast.success('Stream cancelled'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const year = calendarDate.getFullYear();
@@ -136,8 +155,7 @@ export default function StreamScheduler() {
 
   const shareStream = (s) => {
     const text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
-    navigator.clipboard.writeText(text);
-    toast.success('Announcement copied!');
+    navigator.clipboard.writeText(text).then(() => toast.success('Announcement copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   const getCountdown = (dateStr) => {
@@ -177,26 +195,6 @@ export default function StreamScheduler() {
             </button>
           </div>
         </div>
-
-        {/* Best-time overview strip */}
-        {!showForm && !editingStream && (
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
-            <div className="flex gap-3" style={{ width: 'max-content' }}>
-              {['gaming','music','talk','tech','education'].map(cat => {
-                const bt = BEST_TIMES[cat];
-                const catLabel = CATEGORIES.find(c => c.id === cat)?.label || cat;
-                return (
-                  <div key={cat} className="rounded-xl p-3 flex flex-col gap-1"
-                    style={{ background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(212,175,55,0.1)', minWidth: 120 }}>
-                    <span className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{catLabel}</span>
-                    <span className="text-base font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{bt.day} {bt.hour}</span>
-                    <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{bt.confidence}% conf.</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
 
         {/* Calendar */}
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
@@ -276,7 +274,7 @@ export default function StreamScheduler() {
                         <button onClick={() => openEdit(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
                           <Pencil className="w-3 h-3" />
                         </button>
-                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
+                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
                           <Share2 className="w-3 h-3" />
                         </button>
                       </div>
@@ -326,12 +324,12 @@ export default function StreamScheduler() {
                         </div>
                         <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-semibold text-[#D4AF37]">⏱ {getCountdown(s.scheduled_start)}</span>
+                          <span className="text-xs font-semibold text-[#00d4ff]">⏱ {getCountdown(s.scheduled_start)}</span>
                           <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
+                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
                           <Share2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
@@ -414,44 +412,6 @@ export default function StreamScheduler() {
                     ))}
                   </div>
                 </div>
-
-                {/* Best-time suggestion */}
-                {form.category && BEST_TIMES[form.category] && (
-                  <div className="rounded-xl p-3 flex items-center gap-3"
-                    style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: 'rgba(212,175,55,0.15)' }}>
-                      <Zap className="w-4 h-4" style={{ color: '#D4AF37' }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-black uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
-                        AI Suggestion: {BEST_TIMES[form.category].day} {BEST_TIMES[form.category].hour}
-                      </p>
-                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                        {BEST_TIMES[form.category].note} · {BEST_TIMES[form.category].confidence}% confidence
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const day = BEST_TIMES[form.category].day;
-                        const hour = BEST_TIMES[form.category].hour;
-                        // Build a date string for next occurrence of that day
-                        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-                        const targetDay = days.indexOf(day);
-                        const now = new Date();
-                        const daysUntil = (targetDay - now.getDay() + 7) % 7 || 7;
-                        const next = new Date(now);
-                        next.setDate(now.getDate() + daysUntil);
-                        const h = parseInt(hour) + (hour.includes('PM') && parseInt(hour) < 12 ? 12 : 0);
-                        next.setHours(h, 0, 0, 0);
-                        setForm(f => ({ ...f, scheduled_start: next.toISOString().slice(0, 16) }));
-                      }}
-                      className="text-[11px] font-black uppercase px-2 py-1 rounded-lg"
-                      style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
-                      Apply
-                    </button>
-                  </div>
-                )}
 
                 {/* Date/Time */}
                 <div className="space-y-1.5">
@@ -540,6 +500,21 @@ export default function StreamScheduler() {
           </>
         )}
       </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="schedule" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

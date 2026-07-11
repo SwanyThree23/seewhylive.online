@@ -59,12 +59,26 @@ export default function VideoLibrary({ creatorId }) {
 
   const updateVOD = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onSuccess: () => { qc.invalidateQueries(['vod-library', creatorId]); toast.success('Saved!'); },
+    onError: () => toast.error('Failed to save changes.'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vod-library', creatorId] }); toast.success('Saved!'); },
   });
 
   const createVOD = useMutation({
     mutationFn: (data) => base44.entities.VODVideo.create({ ...data, creator_id: creatorId, status: 'draft' }),
-    onSuccess: () => { qc.invalidateQueries(['vod-library', creatorId]); setShowAdd(false); setNewVOD({ title: '', video_url: '', description: '' }); toast.success('VOD added to library'); },
+    onError: () => toast.error('Failed to add VOD. Please try again.'),
+    onSuccess: (vod) => {
+      qc.invalidateQueries({ queryKey: ['vod-library', creatorId] });
+      setShowAdd(false);
+      setNewVOD({ title: '', video_url: '', description: '' });
+      toast.success('VOD added to library');
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'clip_created',
+          title: `Added VOD: ${vod?.title || 'New Video'}`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const importRecording = (rec) => {
@@ -142,7 +156,7 @@ export default function VideoLibrary({ creatorId }) {
       </Modal>
 
       {/* Chapters Modal */}
-      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#D4AF37">
+      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#00d4ff">
         {chapterTarget && (
           <ChapterEditor
             video={chapterTarget}

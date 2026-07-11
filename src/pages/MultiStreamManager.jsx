@@ -8,6 +8,21 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
 function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
@@ -69,17 +84,32 @@ export default function MultiStreamManager() {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onSuccess: (dest) => {
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+      setShowAddForm(false);
+      setNewLabel('');
+      toast.success('Destination added');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Added multi-stream destination: ${dest?.label || selectedPlatform}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
-    onSuccess: () => qc.invalidateQueries(['rtmp-destinations']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); toast.success('Destination removed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
+    onError: () => toast.error('Action failed.'),
   });
 
   const testConnection = async (dest) => {
@@ -108,20 +138,28 @@ export default function MultiStreamManager() {
       return;
     }
     toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
-    // Set all to connecting
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
-    // Simulate MediaMTX RTMP push delay then set live
-    await new Promise(r => setTimeout(r, 2000));
-    await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
-    toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
-    qc.invalidateQueries(['rtmp-destinations']);
+    try {
+      // Set all to connecting
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
+      // Simulate MediaMTX RTMP push delay then set live
+      await new Promise(r => setTimeout(r, 2000));
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
+      toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to start fanout. Please try again.', { id: 'fanout' });
+    }
   };
 
   const stopAllFanout = async () => {
     const live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
-    await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
-    toast.success('All streams stopped');
-    qc.invalidateQueries(['rtmp-destinations']);
+    try {
+      await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
+      toast.success('All streams stopped');
+      qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
+    } catch {
+      toast.error('Failed to stop streams.');
+    }
   };
 
   const addDestination = () => {
@@ -181,12 +219,12 @@ export default function MultiStreamManager() {
             <div className="flex items-center gap-6 flex-wrap">
               <div>
                 <p className="text-[10px] text-white/40 uppercase">Active Destinations</p>
-                <p className="text-2xl font-bold text-[#D4AF37]">{enabledCount}</p>
+                <p className="text-2xl font-bold text-[#00d4ff]">{enabledCount}</p>
               </div>
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
                   <p className="text-[10px] text-white/40">Total Outbound Bandwidth</p>
-                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#ef4444' : '#22c55e' }}>
+                  <p className="text-[10px] font-mono" style={{ color: totalBitrate > recommendedMax ? '#C0392B' : '#6DBF7E' }}>
                     {(totalBitrate / 1000).toFixed(1)} Mbps
                   </p>
                 </div>
@@ -195,7 +233,7 @@ export default function MultiStreamManager() {
                     className="h-full rounded-full transition-all"
                     style={{
                       width: `${Math.min(100, (totalBitrate / recommendedMax) * 100)}%`,
-                      background: totalBitrate > recommendedMax ? '#ef4444' : 'linear-gradient(90deg, #22c55e, #d4af37)',
+                      background: totalBitrate > recommendedMax ? '#C0392B' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
                     }}
                   />
                 </div>
@@ -360,7 +398,7 @@ export default function MultiStreamManager() {
                             <button
                               onClick={() => testConnection(dest)}
                               disabled={isTesting}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 disabled:opacity-50"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff] hover:border-[#00d4ff]/30 disabled:opacity-50"
                             >
                               {isTesting
                                 ? <RefreshCw className="w-3 h-3 animate-spin" />
@@ -404,6 +442,21 @@ export default function MultiStreamManager() {
           </motion.div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="multistream" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, X, RotateCcw, Zap, Plus, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 const COLORS = ['#d4af37', '#C0392B', '#C9A84C', '#D4AF37', '#6DBF7E'];
 
@@ -71,7 +72,8 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
         expires_at: expiresAt,
       });
     },
-    onSuccess: () => {
+    onError: () => toast.error('Failed to create poll. Please try again.'),
+    onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
     },
@@ -102,6 +104,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       setUserVotes(prev => ({ ...prev, [pollId]: optionIndex }));
     },
+    onError: () => toast.error('Failed to submit vote. Please try again.'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pollVotes', activePoll?.id] });
     },
@@ -109,6 +112,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
   const closePollMutation = useMutation({
     mutationFn: (pollId) => base44.entities.Poll.update(pollId, { status: 'closed' }),
+    onError: () => toast.error('Failed to close poll.'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setActivePoll(null);
@@ -211,7 +215,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <button
             onClick={closePoll}
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
-            style={{ background: 'rgba(255,21,100,0.15)' }}
+            style={{ background: 'rgba(192,57,43,0.15)' }}
           >
             <X className="w-4 h-4 text-red-400" />
           </button>
@@ -268,7 +272,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       {/* Re-vote notice */}
       {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-        <div className="flex items-center gap-2 text-xs text-cyan-400" style={{ color: '#C9A84C' }}>
+        <div className="flex items-center gap-2 text-xs text-[#4A8A7A]" style={{ color: '#C9A84C' }}>
           <RotateCcw className="w-3 h-3" />
           You can change your vote anytime
         </div>

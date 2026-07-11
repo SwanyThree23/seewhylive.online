@@ -1,7 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
-import { speakReply } from '../utils/tts';
+import { useQuery } from '@tanstack/react-query';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const BG2 = '#0D0A14';
 const BG3 = '#13101C';
@@ -12,10 +28,10 @@ const SLATEL = '#3D3555';
 const TEXT = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#8A7A94';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#D4AF37';
+const CYAN = '#00d4ff';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -66,6 +82,7 @@ function ThinkDots() {
 }
 
 export default function JoyceAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
@@ -105,9 +122,7 @@ export default function JoyceAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      const joycReply = res || "Let's keep it moving — what do you need?";
-      setMessages(m => [...m, { role: 'assistant', text: joycReply }]);
-      speakReply(joycReply);
+      setMessages(m => [...m, { role: 'assistant', text: res || "Let's keep it moving — what do you need?" }]);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
@@ -145,7 +160,7 @@ export default function JoyceAI() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,
-            background: `rgba(34,197,94,0.12)`, border: `1px solid rgba(34,197,94,0.3)`
+            background: `rgba(109,191,126,0.12)`, border: `1px solid rgba(109,191,126,0.3)`
           }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse-dot 1.5s ease infinite' }} />
             <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>AI ACTIVE</span>
@@ -287,6 +302,21 @@ export default function JoyceAI() {
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

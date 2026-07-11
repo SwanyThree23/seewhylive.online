@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, AlertCircle, Shield, Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 const OFFENSIVE_WORDS = [
   'spam', 'scam', 'hack', 'inappropriate', 'offensive',
@@ -29,7 +30,7 @@ const EMOTES = {
 };
 
 const BADGE_TYPES = {
-  admin: { color: '#FF8C00', label: 'Admin', icon: '👑' },
+  admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
   moderator: { color: '#6B5CF6', label: 'Mod', icon: '🛡️' },
   subscriber: { color: '#d4af37', label: 'Sub', icon: '⭐' },
   verified: { color: '#C9A84C', label: 'VIP', icon: '✓' }
@@ -115,7 +116,7 @@ const ModerationAlert = ({ message, onDismiss }) => (
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -10 }}
     className="mx-3 mb-2 p-2 rounded-lg flex items-center gap-2 text-[10px]"
-    style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)' }}
+    style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)' }}
   >
     <AlertCircle className="w-3 h-3 text-red-400 flex-shrink-0" />
     <span className="text-red-300 flex-1">{message}</span>
@@ -188,6 +189,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },
+    onError: () => toast.error('Message failed to send.'),
     onSuccess: (data) => {
       if (data) {
         setInput('');
@@ -215,7 +217,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
+          <Sparkles className="w-4 h-4 text-[#7B5DA6]" />
           <h3 className="text-xs font-bold uppercase tracking-wide text-white/70" style={{ fontFamily: 'Barlow Condensed' }}>
             Live Chat
           </h3>

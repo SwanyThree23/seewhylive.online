@@ -18,7 +18,7 @@ const RevenueCard = ({ icon: IconComponent, label, amount, growth, color }) => (
       </div>
     </div>
     <p style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 4px', ...T }}>${amount.toLocaleString()}</p>
-    <p style={{ fontSize: 11, color: '#4ade80', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
+    <p style={{ fontSize: 11, color: '#6DBF7E', fontWeight: 600, margin: 0, ...T }}>↑ {growth}% this month</p>
   </motion.div>
 );
 
@@ -72,7 +72,7 @@ const StreamerMonetizationCenter = () => {
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 4px', ...T }}>Total This Month</p>
             <p style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, ...T }}>${totalRevenue.toLocaleString()}</p>
           </div>
-          <TrendingUp className="w-8 h-8" style={{ color: '#4ade80' }} />
+          <TrendingUp className="w-8 h-8" style={{ color: '#6DBF7E' }} />
         </div>
       </div>
 
@@ -145,7 +145,7 @@ const StreamerMonetizationCenter = () => {
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #8b5cf6, #ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #7B5DA6, #C0392B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', ...T }}>#{idx + 1}</span>
                 </div>
                 <div>

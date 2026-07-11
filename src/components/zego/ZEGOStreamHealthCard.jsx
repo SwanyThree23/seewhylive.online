@@ -21,7 +21,7 @@ const STATUS_CFG = {
   live:       { color: '#6DBF7E', bg: 'rgba(109,191,126,0.1)',  border: 'rgba(109,191,126,0.25)',  label: 'LIVE' },
   connecting: { color: GOLD,      bg: `rgba(212,175,55,0.1)`, border: `rgba(212,175,55,0.25)`, label: 'CONNECTING' },
   ended:      { color: '#888',    bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', label: 'ENDED' },
-  error:      { color: '#FF4444', bg: 'rgba(255,68,68,0.1)',  border: 'rgba(255,68,68,0.25)',  label: 'ERROR' },
+  error:      { color: '#C0392B', bg: 'rgba(255,68,68,0.1)',  border: 'rgba(255,68,68,0.25)',  label: 'ERROR' },
 };
 
 const KIT_LABELS = {
@@ -109,7 +109,7 @@ export default function ZEGOStreamHealthCard({ roomId }) {
               <p className="text-[7px] uppercase font-black" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>ZEGO Room ID</p>
               <p className="text-[11px]" style={{ color: '#C9A84C', fontFamily: 'Share Tech Mono, monospace' }}>{zegoStream.zego_room_id}</p>
             </div>
-            <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id); toast.success('Copied!'); }}>
+            <button onClick={() => { navigator.clipboard.writeText(zegoStream.zego_room_id).then(() => toast.success('Copied!')).catch(() => toast.error('Copy failed.')); }}>
               <Copy className="w-3 h-3 text-white/30 hover:text-white/60 transition-colors" />
             </button>
           </div>

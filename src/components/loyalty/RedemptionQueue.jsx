@@ -21,6 +21,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
       toast.success('Reward updated!');
       qc.invalidateQueries(['redemptions', creatorId, roomId]);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   if (redemptions.length === 0) return null;
@@ -32,7 +33,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
         <span className="text-[10px] font-bold uppercase text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
           Pending Redemptions
         </span>
-        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(239,68,68,0.2)', color: '#f87171' }}>
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>
           {redemptions.length}
         </span>
       </div>
@@ -56,12 +57,12 @@ export default function RedemptionQueue({ creatorId, roomId }) {
             <div className="flex gap-1 shrink-0">
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'fulfilled' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
-                style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)' }}>
                 <Check className="w-3.5 h-3.5 text-green-400" />
               </button>
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'rejected' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
-                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.2)' }}>
                 <X className="w-3.5 h-3.5 text-red-400" />
               </button>
             </div>

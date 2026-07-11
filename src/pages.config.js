@@ -101,15 +101,16 @@ const CreatorPublicProfile     = lazy(() => import('./pages/CreatorPublicProfile
 const MultiPlatformIntegration = lazy(() => import('./pages/MultiPlatformIntegration'));
 const NewsletterHub            = lazy(() => import('./pages/NewsletterHub'));
 const SocialExpo               = lazy(() => import('./pages/SocialExpo'));
+const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
+const SeeWhyLIVEv36            = lazy(() => import('./pages/SeeWhyLIVEv36'));
+const SeeWhyLIVEv17            = lazy(() => import('./pages/SeeWhyLIVEv17'));
+const BackPage                 = lazy(() => import('./pages/BackPage'));
+const CoverPage                = lazy(() => import('./pages/CoverPage'));
+const Login                    = lazy(() => import('./pages/Login'));
 const AuraAI                   = lazy(() => import('./pages/AuraAI'));
 const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
-const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
-const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
-const SeeWhyLIVEv37            = lazy(() => import('./pages/SeeWhyLIVEv37'));
-const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
-const MerchStore               = lazy(() => import('./pages/MerchStore'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -204,15 +205,16 @@ export const PAGES = {
     "MultiPlatformIntegration": MultiPlatformIntegration,
     "NewsletterHub": NewsletterHub,
     "SocialExpo": SocialExpo,
+    "SeeWhyLIVEv37": SeeWhyLIVEv37,
+    "SeeWhyLIVEv36": SeeWhyLIVEv36,
+    "SeeWhyLIVEv17": SeeWhyLIVEv17,
+    "BackPage": BackPage,
+    "CoverPage": CoverPage,
+    "Login": Login,
     "AuraAI": AuraAI,
     "SwanyBotPage": SwanyBotPage,
     "TranscriptionStudio": TranscriptionStudio,
     "RoomsManager": RoomsManager,
-    "PKBattleArena": PKBattleArena,
-    "StreamShareHub": StreamShareHub,
-    "SeeWhyLIVEv37": SeeWhyLIVEv37,
-    "SeeWhyLIVEv41": SeeWhyLIVEv41,
-    "MerchStore": MerchStore,
 }
 
 export const pagesConfig = {

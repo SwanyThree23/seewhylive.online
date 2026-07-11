@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG     = '#080B18';
 const BG2    = '#0D0620';
 const GOLD   = '#D4AF37';
@@ -100,7 +110,7 @@ function OctTile({ p, size = 80 }) {
         </div>
         {p.muted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[11px]"
-            style={{ background:'#EF4444', border:`2px solid ${BG}` }}>🔇</div>
+            style={{ background:'#C0392B', border:`2px solid ${BG}` }}>🔇</div>
         )}
         {(isHost||isCohost) && (
           <div className="absolute -top-1 left-0 right-0 flex justify-center text-[10px]">👑</div>
@@ -533,7 +543,7 @@ export default function TestMode() {
           <div className="flex gap-2 ml-auto flex-wrap">
             {[
               { label:'+ Participant', fn: addParticipant, color:GREEN },
-              { label:'- Participant', fn: removeParticipant, color:'#EF4444' },
+              { label:'- Participant', fn: removeParticipant, color:'#C0392B' },
               { label:'💸 Gift Burst', fn: sendGift, color:GOLD },
               { label:'💬 Chat Burst', fn: () => Array.from({length:5}).forEach((_,i) =>
                 setTimeout(() => addChat(ALL_NAMES[Math.floor(Math.random()*ALL_NAMES.length)], CHAT_POOL[Math.floor(Math.random()*CHAT_POOL.length)]), i*200)
@@ -642,6 +652,16 @@ export default function TestMode() {
           </div>
         </div>
       </div>
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

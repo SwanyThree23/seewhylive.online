@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
-import GridLines from '../components/home/GridLines';
-import NebulaBg from '../components/home/NebulaBg';
-import StarField from '../components/home/StarField';
-import NotificationBell from '../components/shared/NotificationBell';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Radio, Users, Heart, Zap } from 'lucide-react';
+import { Radio, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import GridLines from '../components/home/GridLines';
+import NebulaBg from '../components/home/NebulaBg';
+import StarField from '../components/home/StarField';
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -34,7 +47,7 @@ function usePullToRefresh(onRefresh) {
     if (pullY >= THRESHOLD && !refreshing) {
       setRefreshing(true);
       setPullY(THRESHOLD);
-      await onRefresh();
+      try { await onRefresh(); } catch {}
       setRefreshing(false);
     }
     setPullY(0);
@@ -95,7 +108,7 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
+    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#00d4ff',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
     Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
@@ -119,12 +132,12 @@ function FanbaseRoomCard({ room }) {
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
-              style={{ background: 'rgba(255,21,100,0.18)', color: '#C0392B', border: '1px solid rgba(255,21,100,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,140,0,0.15)', color: '#FF8C00', border: '1px solid rgba(255,140,0,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔥 TRENDING
               </span>
             )}
@@ -204,14 +217,14 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#1565C0', page: 'StateVsState' },
+  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#5B7FA6', page: 'StateVsState' },
   { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
   { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
   { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI' },
-  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#D4AF37', page: 'PodcastStudio' },
+  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
   { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
   { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
-  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#22c55e', page: 'MultiPlatform' },
+  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform' },
 ];
 
 function SpotlightStrip() {
@@ -223,7 +236,7 @@ function SpotlightStrip() {
         fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase',
         color: 'rgba(255,255,255,0.25)',
       }}>Platform Features</div>
-      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {SPOTLIGHT_ITEMS.map(function(item) {
           return (
             <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -307,7 +320,7 @@ function DominoExpoSection() {
       </div>
 
       {/* Feature pillars (horizontal scroll) */}
-      <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 14px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {DOMINO_FEATURES.map(function(f) {
           return (
             <div key={f.title} style={{ flexShrink: 0, width: 140, background: 'rgba(36,22,8,0.8)', border: '1px solid rgba(201,168,76,0.11)', borderRadius: 12, padding: '12px 12px 10px' }}>
@@ -328,7 +341,7 @@ function DominoExpoSection() {
           Latest from Domino Entertainment
         </span>
       </div>
-      <div style={{ overflowX: 'auto', padding: '0 16px 16px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 16px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {DOMINO_VIDEOS.map(function(v) {
           return (
             <a key={v.id} href={'https://youtu.be/' + v.id} target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0, textDecoration: 'none' }}>
@@ -369,7 +382,7 @@ function DominoExpoSection() {
           Sponsorship &amp; Monetization
         </span>
       </div>
-      <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
+      <div style={{ overflowX: 'auto', padding: '0 16px 20px', display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {DOMINO_SPONSORSHIPS.map(function(s) {
           var accent = s.accent || '#C9A84C';
           return (
@@ -413,116 +426,9 @@ function applyFilter(rooms, filter) {
   return rooms;
 }
 
-// ── Following Live strip ───────────────────────────────────────────────────
-function FollowingLiveStrip({ userId, liveRooms }) {
-  var { data: follows = [] } = useQuery({
-    queryKey: ['my-follows', userId],
-    queryFn: function() { return base44.entities.Follow.filter({ follower_id: userId }); },
-    enabled: !!userId,
-  });
-
-  var followingIds = new Set(follows.map(function(f) { return f.following_id; }));
-  var followingLive = liveRooms.filter(function(r) { return followingIds.has(r.host_id); });
-
-  if (followingLive.length === 0 || !userId) return null;
-
-  return (
-    <div style={{ paddingTop: 10, paddingBottom: 4 }}>
-      <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B', display: 'inline-block' }} />
-        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>
-          Following · Live Now
-        </span>
-      </div>
-      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 12, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        {followingLive.map(function(room) {
-          var initial = (room.host_name || '?').charAt(0).toUpperCase();
-          return (
-            <Link key={room.id} to={'/LiveRoom?id=' + room.id} style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <motion.div whileTap={{ scale: 0.92 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, width: 60 }}>
-                <div style={{ position: 'relative', width: 52, height: 52 }}>
-                  {/* Gold OCT border pulse */}
-                  <div style={{
-                    position: 'absolute', inset: -2, clipPath: OCT,
-                    background: 'linear-gradient(135deg, #800020, #D4AF37)',
-                    animation: 'pulse 1.5s ease infinite',
-                  }} />
-                  <div style={{
-                    position: 'absolute', inset: 2, clipPath: OCT,
-                    background: 'linear-gradient(145deg, #800020cc, #0d0618)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {room.host_avatar_url
-                      ? <img src={room.host_avatar_url} alt={room.host_name} style={{ width: '100%', height: '100%', objectFit: 'cover', clipPath: OCT }} />
-                      : <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 18, color: '#D4AF37' }}>{initial}</span>
-                    }
-                  </div>
-                  {/* LIVE dot */}
-                  <div style={{ position: 'absolute', bottom: 2, right: 2, width: 10, height: 10, borderRadius: '50%', background: '#C0392B', border: '2px solid #080B18' }} />
-                </div>
-                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 10, color: 'rgba(255,255,255,0.6)', textAlign: 'center', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {room.host_name?.split(' ')[0] || 'Live'}
-                </span>
-              </motion.div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Creator CTA banner ────────────────────────────────────────────────────
-function CreatorCTABanner({ user, liveRooms }) {
-  var isCreator = user?.is_creator || user?.creator_tier;
-  var myLiveRoom = liveRooms.find(function(r) { return r.host_id === user?.id; });
-  if (!user || !isCreator) return null;
-
-  if (myLiveRoom) {
-    return (
-      <Link to={'/LiveRoom?id=' + myLiveRoom.id} style={{ textDecoration: 'none', display: 'block', margin: '0 16px', marginTop: 10, marginBottom: 4 }}>
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
-          style={{ background: 'linear-gradient(90deg, rgba(128,0,32,0.3), rgba(212,175,55,0.1))', border: '1px solid rgba(128,0,32,0.4)' }}>
-          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#C0392B', flexShrink: 0 }} />
-          <div className="flex-1">
-            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#fff', margin: 0 }}>You're Live!</p>
-            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: 0 }}>{myLiveRoom.title} · {myLiveRoom.viewer_count || 0} watching</p>
-          </div>
-          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', padding: '4px 10px', borderRadius: 8 }}>
-            Return →
-          </span>
-        </div>
-      </Link>
-    );
-  }
-
-  return (
-    <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none', display: 'block', margin: '10px 16px 4px' }}>
-      <motion.div
-        whileTap={{ scale: 0.97 }}
-        className="flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-          <Zap className="w-4 h-4 text-white" />
-        </div>
-        <div className="flex-1">
-          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#fff', margin: 0 }}>You're not streaming</p>
-          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Go live now — your audience is waiting</p>
-        </div>
-        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, color: '#000', background: 'linear-gradient(90deg, #800020, #D4AF37)', padding: '5px 12px', borderRadius: 8 }}>
-          Go Live
-        </span>
-      </motion.div>
-    </Link>
-  );
-}
-
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
   var [activeFilter, setActiveFilter] = useState('All');
-  var [activityOpen, setActivityOpen] = useState(false);
-  var [quickActionsOpen, setQuickActionsOpen] = useState(false);
   var qc = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
     await qc.invalidateQueries();
@@ -549,70 +455,51 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen relative"
+      className="min-h-screen"
       style={{ background: '#080B18' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <StarField />
-      <NebulaBg />
-      <GridLines />
-      <ZEGOMobileAppBanner />
-      <NotificationBell />
-      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
-      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       {/* Pull-to-refresh indicator */}
       <motion.div
-        style={{ height: pullY, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+        style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
         {pullY > 10 && (
-          <>
-            <motion.div
-              animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
-              transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
-              style={{ width: 26, height: 26, borderRadius: '50%', border: '2.5px solid rgba(212,175,55,0.25)', borderTopColor: '#D4AF37', flexShrink: 0 }}
-            />
-            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: refreshing ? '#D4AF37' : 'rgba(212,175,55,0.5)' }}>
-              {refreshing ? 'REFRESHING…' : pullY >= 65 ? 'RELEASE TO REFRESH' : 'PULL TO REFRESH'}
-            </span>
-          </>
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }}
+          />
         )}
       </motion.div>
 
-      {/* ── ALL ROOMS HEADER ── */}
+      {/* ── HERO STRIP ── */}
       <div className="flex items-center justify-between px-4"
-        style={{ height: 52, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
-        <h1 className="text-2xl font-black text-white"
-          style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.02em' }}>
-          All Rooms
-        </h1>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <Users className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.35)' }} />
-            <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {liveCount}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {liveCount > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
-                <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  LIVE
-                </span>
+        style={{ height: 48, background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.10)' }}>
+        <div className="flex items-center gap-2">
+          {liveCount > 0 ? (
+            <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(139,26,47,0.33)', border: '1px solid #8B1A2F' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#E74C3C' }} />
+              <span className="text-[10px] font-bold" style={{ color: '#E74C3C', fontFamily: 'Space Mono, monospace' }}>
+                {liveCount} LIVE
               </span>
-            )}
-          </div>
-          <Link to={createPageUrl('GoLive')}>
-            <motion.div whileTap={{ scale: 0.93 }}
-              className="px-3 py-1 rounded-full text-xs font-black uppercase cursor-pointer"
-              style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
-              Go Live →
-            </motion.div>
-          </Link>
+            </span>
+          ) : (
+            <span className="text-sm font-black"
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>
+              No streams yet
+            </span>
+          )}
         </div>
+        <Link to={createPageUrl('GoLive')}>
+          <motion.div whileTap={{ scale: 0.93 }}
+            className="px-4 py-1.5 rounded-full text-xs font-black uppercase cursor-pointer"
+            style={{ background: 'linear-gradient(90deg, #6B4423, #D4AF37)', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+            Go Live →
+          </motion.div>
+        </Link>
       </div>
 
       {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
@@ -651,12 +538,6 @@ export default function Home() {
 
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
-
-      {/* ── CREATOR CTA (for logged-in creators) ── */}
-      <CreatorCTABanner user={user} liveRooms={liveRooms} />
-
-      {/* ── FOLLOWING LIVE STRIP ── */}
-      <FollowingLiveStrip userId={user?.id} liveRooms={liveRooms} />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
@@ -753,6 +634,26 @@ export default function Home() {
         </AnimatePresence>
       </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <GridLines />
+      <NebulaBg />
+      <StarField count={80} />
+      <QuickActionPanel isOpen={false} onClose={() => {}} />
+      <OnboardingFlow isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

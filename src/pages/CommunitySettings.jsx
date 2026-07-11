@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings } from 'lucide-react';
+import { createPageUrl } from '../utils';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -12,6 +13,23 @@ function Toggle({ checked, onChange }) {
 }
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -38,6 +56,14 @@ export default function CommunitySettingsPage() {
   const [description, setDescription] = useState('');
   const [rules, setRules] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const [requireApproval, setRequireApproval] = useState(false);
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState([]);
+  const [bannerUrl, setBannerUrl] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [copiedInvite, setCopiedInvite] = useState(false);
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const user = currentUser;
 
   const { data: community } = useQuery({
     queryKey: ['community', communityId],
@@ -51,8 +77,44 @@ export default function CommunitySettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Community.update(communityId, data),
-    onSuccess: () => { toast.success('Community updated!'); queryClient.invalidateQueries(['community']); },
+    onSuccess: () => {
+      toast.success('Community settings saved!');
+      queryClient.invalidateQueries({ queryKey: ['community-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['search-communities'] });
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Updated community settings: ${community?.name || 'Community'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Failed to save community settings.'),
   });
+
+  const handleSave = () => {
+    if (!name.trim()) { toast.error('Community name is required'); return; }
+    updateMutation.mutate({ name, description, rules, is_public: isPublic, require_approval: requireApproval, category, tags, banner_url: bannerUrl, avatar_url: avatarUrl });
+  };
+
+  const toggleTag = (tag) => {
+    setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  };
+
+  const copyInviteLink = () => {
+    const link = `${window.location.origin}${createPageUrl('Community')}?id=${communityId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+      toast.success('Invite link copied!');
+    }).catch(() => toast.error('Copy failed.'));
+  };
+
+  if (!communityId) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
+      <p className="text-white/40" style={T}>No community selected</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -90,6 +152,22 @@ export default function CommunitySettingsPage() {
           {updateMutation.isPending ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

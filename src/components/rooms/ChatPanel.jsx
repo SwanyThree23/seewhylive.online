@@ -77,6 +77,7 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
 
   const deleteMessageMutation = useMutation({
     mutationFn: (messageId) => base44.entities.Message.delete(messageId),
+    onError: () => toast.error('Failed to delete message.'),
     onSuccess: () => {
       toast.success('Message deleted');
     },
@@ -84,6 +85,7 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
 
   const moderateUserMutation = useMutation({
     mutationFn: async ({ action, userId }) => {
+      if (!currentUser?.id) throw new Error('Not authenticated');
       return await base44.entities.ChatModeration.create({
         room_id: roomId,
         moderator_id: currentUser.id,
@@ -94,6 +96,7 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
         expires_at: action === 'mute' ? new Date(Date.now() + 10 * 60000).toISOString() : null,
       });
     },
+    onError: () => toast.error('Moderation action failed.'),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['muted-users'] });
       toast.success(`User ${variables.action}ed`);
@@ -241,7 +244,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
 
         <div className={`rounded-2xl px-4 py-2 relative ${
           isOwn 
-            ? 'bg-purple-500 text-white' 
+            ? 'bg-[#7B5DA6] text-white' 
             : 'bg-muted'
         }`}>
           <p className="text-sm break-words">{message.content}</p>

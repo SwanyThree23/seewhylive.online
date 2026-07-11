@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
   Radio, Heart, Bell, Clock, DollarSign, Scissors,
@@ -9,6 +10,22 @@ import {
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -100,7 +117,8 @@ export default function ViewerDashboard() {
 
   const markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
-    onSuccess: () => qc.invalidateQueries(['notifications']),
+    onError: () => toast.error('Failed to mark notifications as read.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -161,7 +179,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -186,7 +204,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.4)', color: '#C0392B', ...T }}>
+                            style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>
@@ -200,19 +218,19 @@ export default function ViewerDashboard() {
             {/* Upcoming */}
             <div className="space-y-3">
               <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
-                <Clock className="w-4 h-4" style={{ color: '#D4AF37' }} /> Upcoming Streams
+                <Clock className="w-4 h-4" style={{ color: '#00d4ff' }} /> Upcoming Streams
               </h2>
               {scheduledRooms.slice(0, 4).map(room => (
                 <div key={room.id} className="flex items-center gap-3 p-3 rounded-xl transition-all"
                   style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)' }}>
-                    <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)' }}>
+                    <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
-                    <p className="text-xs" style={{ color: '#D4AF37' }}>{getCountdown(room.scheduled_start)}</p>
+                    <p className="text-xs" style={{ color: '#00d4ff' }}>{getCountdown(room.scheduled_start)}</p>
                   </div>
-                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
                 </div>
               ))}
             </div>
@@ -359,7 +377,7 @@ export default function ViewerDashboard() {
                   <div className="flex items-start gap-3 p-3 rounded-xl border transition-all"
                     style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(13,6,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
-                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(255,21,100,0.12)' : 'rgba(255,255,255,0.06)' }}>
+                      style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.06)' }}>
                       {n.type === 'tip' ? '💰' : n.type === 'room_invite' ? '🔴' : n.type === 'subscription' ? '⭐' : '🔔'}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -375,6 +393,21 @@ export default function ViewerDashboard() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="viewer" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

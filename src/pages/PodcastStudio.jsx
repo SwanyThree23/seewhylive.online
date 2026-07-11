@@ -2,7 +2,36 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import AudioMixer from '../components/live/AudioMixer';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import GuestConnector from '../components/live/GuestConnector';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import VODCard from '../components/vod/VODCard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import { isSafeUrl } from '@/lib/security';
 
+
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -31,7 +60,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#FF6B35' };
+const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
@@ -254,7 +283,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     failed: '⚠ Could Not Fetch — Enter Title Manually',
   }[fetchState];
 
-  const fetchColor = { ok: '#22c55e', partial: GOLD, failed: '#ef4444' }[fetchState] || NLM;
+  const fetchColor = { ok: '#6DBF7E', partial: GOLD, failed: '#C0392B' }[fetchState] || NLM;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -446,7 +475,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         </p>
                       )}
                       <a
-                        href={src.url}
+                        href={isSafeUrl(src.url) ? src.url : undefined}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ ...T, fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}
@@ -474,7 +503,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                       <>
                         <button
                           onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
                         >
                           Confirm
                         </button>
@@ -490,8 +519,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                         onClick={() => setDeleteIdx(i)}
                         style={{
                           ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                          color: '#ef4444', fontSize: 11, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
+                          color: '#C0392B', fontSize: 11, fontWeight: 800,
                         }}
                       >
                         Remove
@@ -508,8 +537,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
               ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
-              background: 'transparent', border: '1px solid rgba(239,68,68,0.2)',
-              color: 'rgba(239,68,68,0.5)', fontSize: 12, fontWeight: 700,
+              background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
+              color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
           >
             Clear All Sources
@@ -592,8 +621,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
                   style={{
                     ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
-                    background: alreadyAdded ? 'rgba(34,197,94,0.1)' : NLM,
-                    color: alreadyAdded ? '#22c55e' : '#fff',
+                    background: alreadyAdded ? 'rgba(109,191,126,0.1)' : NLM,
+                    color: alreadyAdded ? '#6DBF7E' : '#fff',
                     fontSize: 11, fontWeight: 900, letterSpacing: '0.04em',
                     transition: 'all 0.15s',
                   }}
@@ -611,6 +640,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -625,8 +655,8 @@ export default function PodcastStudio() {
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState('');
   const [script, setScript] = useState(null);
-  const [library, setLibrary] = useState(() => JSON.parse(localStorage.getItem('podcast_library') || '[]'));
-  const [nlmSources, setNlmSources] = useState(() => JSON.parse(localStorage.getItem('podcast_nlm_sources') || '[]'));
+  const [library, setLibrary] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_library') || '[]'); } catch { return []; } });
+  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_nlm_sources') || '[]'); } catch { return []; } });
   const [editingIdx, setEditingIdx] = useState(null);
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
@@ -639,7 +669,7 @@ export default function PodcastStudio() {
 
   function saveNlmSources(updated) {
     setNlmSources(updated);
-    localStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
+    sessionStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
   }
 
   function addSource() {
@@ -703,7 +733,7 @@ export default function PodcastStudio() {
       setScript(ep);
       const newLib = [ep, ...library].slice(0, 20);
       setLibrary(newLib);
-      localStorage.setItem('podcast_library', JSON.stringify(newLib));
+      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
       setTab('script');
     } catch (e) {
       const fallback = {
@@ -721,7 +751,7 @@ export default function PodcastStudio() {
       setScript(fallback);
       const newLib = [fallback, ...library].slice(0, 20);
       setLibrary(newLib);
-      localStorage.setItem('podcast_library', JSON.stringify(newLib));
+      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
       setTab('script');
     }
     setGenerating(false);
@@ -750,7 +780,7 @@ export default function PodcastStudio() {
   function deleteEpisode(idx) {
     const newLib = library.filter((_, i) => i !== idx);
     setLibrary(newLib);
-    localStorage.setItem('podcast_library', JSON.stringify(newLib));
+    sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
     setDeleteConfirmIdx(null);
     showToast('Episode deleted');
   }
@@ -1395,7 +1425,7 @@ export default function PodcastStudio() {
                           onClick={() => deleteEpisode(i)}
                           style={{
                             ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 900,
+                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
                           }}
                         >
                           Confirm
@@ -1416,8 +1446,8 @@ export default function PodcastStudio() {
                         onClick={() => setDeleteConfirmIdx(i)}
                         style={{
                           ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                          color: '#ef4444', fontSize: 13, fontWeight: 800,
+                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
+                          color: '#C0392B', fontSize: 13, fontWeight: 800,
                         }}
                       >
                         Delete
@@ -1432,6 +1462,21 @@ export default function PodcastStudio() {
       </div>
 
       <Toast message={toast} />
+      <SwanAIRecommendations roomId={null} currentLayout="podcast" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

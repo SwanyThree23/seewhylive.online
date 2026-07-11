@@ -36,6 +36,7 @@ export default function ChatModerationPanel({ roomId }) {
         expires_at: duration ? new Date(Date.now() + duration * 60000).toISOString() : null,
       });
     },
+    onError: () => toast.error('Moderation action failed. Please try again.'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chat-moderation'] });
       toast.success('Moderation action applied');

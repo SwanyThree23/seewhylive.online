@@ -31,9 +31,10 @@ export default function ReferralProgram({ communityId }) {
   const completedReferrals = referrals?.filter(r => r.status === 'completed' || r.status === 'rewarded') || [];
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   };
 
   return (

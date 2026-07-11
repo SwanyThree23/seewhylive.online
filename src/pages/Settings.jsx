@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, ShieldX, Palette, Youtube, Volume2 } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { useAuth } from '@/lib/AuthContext';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import CreatorBridge from '../components/social/CreatorBridge';
-import VoiceAISettings from '../components/settings/VoiceAISettings';
-import MySubscriptions from '../components/subscriptions/MySubscriptions';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -48,8 +62,8 @@ function ToggleRow({ label, description, checked, onChange }) {
 function SaveButton({ onClick, disabled, label = 'Save Changes' }) {
   return (
     <button onClick={onClick} disabled={disabled}
-      className="px-5 rounded-xl font-black uppercase text-[12px] disabled:opacity-50"
-      style={{ minHeight: 44, background: disabled ? 'rgba(212,175,55,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(128,0,32,0.3)', ...T }}>
+      className="px-5 py-2 rounded-xl font-black uppercase text-[11px] disabled:opacity-50"
+      style={{ background: disabled ? 'rgba(212,175,55,0.1)' : CRIMSON, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', boxShadow: disabled ? 'none' : '0 0 12px rgba(128,0,32,0.3)', ...T }}>
       {label}
     </button>
   );
@@ -65,7 +79,6 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
-  const { logout } = useAuth();
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -93,13 +106,6 @@ export default function SettingsPage() {
     if (user) setFullName(user.full_name || '');
   }, [user]);
 
-  // Auto-open delete dialog when redirected from the Account Drawer
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('action') === 'delete') {
-      setShowDeleteDialog(true);
-    }
-  }, []);
-
   useEffect(() => {
     if (preferences) {
       setEmailNotifications(preferences.email_notifications ?? true);
@@ -115,6 +121,7 @@ export default function SettingsPage() {
       toast.success('Profile saved!');
       queryClient.invalidateQueries(['currentUser']);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const savePreferencesMutation = useMutation({
@@ -126,6 +133,7 @@ export default function SettingsPage() {
       toast.success('Preferences saved!');
       queryClient.invalidateQueries(['userPreferences']);
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   async function handleDeleteAccount() {
@@ -133,10 +141,10 @@ export default function SettingsPage() {
     setIsDeleting(true);
     try {
       await base44.auth.deleteMe();
-      logout(false);
       window.location.href = '/';
     } catch {
       toast.error('Could not delete account. Contact support.');
+    } finally {
       setIsDeleting(false);
     }
   }
@@ -223,37 +231,6 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* My Subscriptions */}
-        {user && (
-          <Section icon={Bell} title="My Subscriptions" description="Creators you're subscribed to">
-            <MySubscriptions userId={user.id} />
-          </Section>
-        )}
-
-        {/* Social Links */}
-        {user && (
-          <Section icon={Youtube} title="Social Links" description="Connect your YouTube and other channels">
-            <CreatorBridge user={user} />
-          </Section>
-        )}
-
-        {/* Voice AI */}
-        <Section icon={Volume2} title="Voice AI" description="Configure AI persona voice & auto-speak">
-          <VoiceAISettings />
-        </Section>
-
-        {/* Appearance */}
-        <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
-          <BackgroundCustomizer />
-        </Section>
-
-        {/* Payment Methods */}
-        {user && (
-          <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
-            <PaymentMethodSelector creatorId={user.id} roomId={null} onPaymentComplete={() => {}} />
-          </Section>
-        )}
-
         {/* Data Export */}
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">
           <Link to={createPageUrl('DataExport')}>
@@ -265,31 +242,25 @@ export default function SettingsPage() {
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(239,68,68,0.2)' }}>
-          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(239,68,68,0.04)' }}>
-            <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <AlertTriangle className="w-4 h-4" style={{ color: '#C0392B' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
           </div>
           <div className="p-4 space-y-3">
             <button
               onClick={() => base44.auth.logout()}
-              className="w-full px-4 rounded-xl font-black uppercase text-[12px] text-left flex items-center"
-              style={{ minHeight: 44, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
+              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
+              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', userSelect: 'none', ...T }}>
               Log Out
             </button>
-            {/* Delete Account — required by App Store/Google Play guidelines */}
-            <div style={{ borderTop: '1px solid rgba(239,68,68,0.1)', paddingTop: 12 }}>
-              <p className="text-[10px] mb-2" style={{ color: 'rgba(239,68,68,0.5)', ...T }}>
-                DANGER ZONE · This action permanently removes your account and all associated data including streams, tips, and chat history. It cannot be undone.
-              </p>
-              <button
-                onClick={() => setShowDeleteDialog(true)}
-                className="w-full px-4 rounded-xl font-black uppercase text-[12px] text-left flex items-center gap-2"
-                style={{ minHeight: 44, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.35)', color: '#EF4444', userSelect: 'none', ...T }}>
-                <ShieldX className="w-4 h-4" />
-                Delete My Account Permanently
-              </button>
-            </div>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left flex items-center gap-2"
+              style={{ background: 'rgba(192,57,43,0.04)', border: '1px solid rgba(192,57,43,0.12)', color: 'rgba(192,57,43,0.6)', userSelect: 'none', ...T }}>
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete Account
+            </button>
           </div>
         </div>
       </div>
@@ -299,29 +270,20 @@ export default function SettingsPage() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(239,68,68,0.3)' }}>
-            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(239,68,68,0.1)' }}>
+            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
+            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                <ShieldX className="w-5 h-5" style={{ color: '#EF4444' }} />
+                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
+                <Trash2 className="w-5 h-5" style={{ color: '#C0392B' }} />
               </div>
-              <p className="font-black text-lg text-white" style={T}>Permanently Delete Account?</p>
-              <p className="text-xs mt-2 text-left" style={{ color: 'rgba(255,255,255,0.45)', ...T, lineHeight: 1.5 }}>
-                Deleting your account will immediately and permanently remove:
-              </p>
-              <ul className="text-left mt-1 space-y-0.5" style={{ color: 'rgba(239,68,68,0.7)', fontSize: 11, ...T }}>
-                <li>• Your profile and all personal data</li>
-                <li>• All streams, recordings, and content</li>
-                <li>• Chat history and community memberships</li>
-                <li>• Tip history and loyalty points</li>
-              </ul>
-              <p className="text-xs mt-2" style={{ color: 'rgba(239,68,68,0.6)', ...T, fontWeight: 900 }}>
-                THIS ACTION CANNOT BE UNDONE.
+              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+                This permanently deletes your account, streams, and all data. This cannot be undone.
               </p>
             </div>
             <div className="p-5 space-y-3">
               <div>
-                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
                   Type DELETE to confirm
                 </label>
                 <input
@@ -329,22 +291,41 @@ export default function SettingsPage() {
                   onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
                   placeholder="DELETE"
                   className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
-                  style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+                  style={{ background: 'rgba(192,57,43,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.2)'}`, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
               </div>
               <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                className="w-full rounded-xl font-black uppercase text-sm transition-all flex items-center justify-center"
-                style={{ minHeight: 44, background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                style={{ background: deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(192,57,43,0.4)', userSelect: 'none', ...T }}>
                 {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
               </button>
               <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}
-                className="w-full rounded-xl font-black uppercase text-xs flex items-center justify-center"
-                style={{ minHeight: 44, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="settings" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

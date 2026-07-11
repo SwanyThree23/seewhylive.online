@@ -10,11 +10,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#00E5FF",
+  cyan: "#4A8A7A",
   volt: "#D4AF37",
   purple: "#BF5FFF",
   gray: "#888",
@@ -24,7 +41,7 @@ var G = {
 var BADGE_COLORS = {
   super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
   top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#00E5FF", bg: "rgba(0,229,255,0.12)", icon: "⚡" },
+  raid_master: { color: "#4A8A7A", bg: "rgba(74,138,122,0.12)", icon: "⚡" },
   poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
   chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
   watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
@@ -34,7 +51,7 @@ var BADGE_COLORS = {
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#00E5FF",
+  rare: "#4A8A7A",
   epic: "#BF5FFF",
   legendary: "#FFD700",
 };
@@ -170,6 +187,7 @@ export default function CreatorPublicProfile() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  var user = currentUser;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -388,7 +406,7 @@ export default function CreatorPublicProfile() {
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           <StatCard icon={Users} label="FOLLOWERS" value={followerCount} color={G.cyan} />
           <StatCard icon={Video} label="STREAMS" value={totalStreams} color={G.gold} />
-          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#30D158" />
+          <StatCard icon={DollarSign} label="EARNED" value={"$" + totalEarned.toFixed(0)} color="#6DBF7E" />
         </div>
       </div>
 
@@ -512,7 +530,7 @@ export default function CreatorPublicProfile() {
                     {t.payment_method?.toUpperCase()}
                   </div>
                 </div>
-                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#30D158" }}>
+                <div style={{ fontFamily: "Barlow Condensed, sans-serif", fontSize: 16, fontWeight: 700, color: "#6DBF7E" }}>
                   ${t.creator_payout?.toFixed(2) || "—"}
                 </div>
               </div>
@@ -520,6 +538,22 @@ export default function CreatorPublicProfile() {
           </div>
         </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -28,8 +28,12 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
   });
 
   const createPollMutation = useMutation({
-    mutationFn: (pollData) => base44.entities.Poll.create(pollData),
-    onSuccess: () => {
+    mutationFn: (pollData) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      return base44.entities.Poll.create(pollData);
+    },
+    onError: () => toast.error('Failed to create poll. Please try again.'),
+    onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       toast.success('Poll created!');
       handleClose();
@@ -75,8 +79,8 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
 
     createPollMutation.mutate({
       community_id: communityId,
-      created_by: user.id,
-      creator_name: user.full_name,
+      created_by: user?.id,
+      creator_name: user?.full_name,
       question: question.trim(),
       options: validOptions.map((text, index) => ({
         id: `opt_${Date.now()}_${index}`,
@@ -168,7 +172,7 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
             <Button variant="outline" onClick={handleClose} className="flex-1">
               Cancel
             </Button>
-            <Button onClick={handleSubmit} className="flex-1">
+            <Button onClick={handleSubmit} disabled={createPollMutation.isPending} className="flex-1">
               Create Poll
             </Button>
           </div>

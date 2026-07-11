@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -76,6 +77,7 @@ function SuperChatModal({ emoji, currentUser, partyId, onClose, onSent }) {
       screen_x: Math.random(),
     }),
     onSuccess: (r) => { onSent(r); onClose(); },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (
@@ -168,6 +170,7 @@ export default function PartyReactionsOverlay({ partyId, currentUser, currentTim
       setTotalCount(c => c + 1);
       setRecentReactions(prev => [r, ...prev].slice(0, 5));
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleClick = (r) => {

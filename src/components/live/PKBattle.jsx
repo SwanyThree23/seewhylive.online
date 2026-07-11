@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Swords, Trophy, X, Zap, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -17,6 +17,10 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
   const [theirScore, setTheirScore] = useState(0);
   const timerRef = useRef(null);
   const qc = useQueryClient();
+
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const startBattle = () => {
     if (!opponentName) { toast.error('Enter opponent name'); return; }

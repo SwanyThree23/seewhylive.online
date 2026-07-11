@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG      = '#080B18';
 const BG2     = '#0D1022';
 const BG3     = '#13182C';
@@ -189,7 +205,7 @@ export default function TributeWall() {
               <Link to="/StateVsState" style={{ textDecoration: 'none', flex: 1 }}>
                 <Btn label="REGISTER TEAM" variant="tribute" size="sm" style={{ width: '100%' }} />
               </Link>
-              <Btn label="SHARE" variant="ghost" size="sm" onClick={() => { try { navigator.share({ title: 'SeeWhy LIVE Tribute Gaming Event', url: window.location.href }); } catch(_) { navigator.clipboard.writeText(window.location.href); } }} />
+              <Btn label="SHARE" variant="ghost" size="sm" onClick={() => { try { navigator.share({ title: 'SeeWhy LIVE Tribute Gaming Event', url: window.location.href }); } catch(_) { navigator.clipboard.writeText(window.location.href).catch(() => {}); } }} />
               <Btn label="DONATE" variant="ghost" size="sm" onClick={() => window.open('https://seewhy.live/donate', '_blank', 'noopener,noreferrer')} />
             </div>
           </GCard>
@@ -316,6 +332,19 @@ export default function TributeWall() {
         </div>
 
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={null} roomId={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </>
   );
 }

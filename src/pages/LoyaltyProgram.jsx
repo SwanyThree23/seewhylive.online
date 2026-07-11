@@ -13,6 +13,25 @@ function Toggle({ checked, onChange }) {
 }
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -27,7 +46,7 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#D4AF37', '#a78bfa'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#00d4ff', '#a78bfa'];
 
 export default function LoyaltyProgram() {
   const qc = useQueryClient();
@@ -63,15 +82,29 @@ export default function LoyaltyProgram() {
 
   const createRewardMutation = useMutation({
     mutationFn: (data) => base44.entities.LoyaltyReward.create(data),
-    onSuccess: () => { qc.invalidateQueries(['loyalty-rewards']); setShowRewardForm(false); toast.success('Reward created!'); },
+    onSuccess: (reward) => {
+      qc.invalidateQueries({ queryKey: ['loyalty-rewards'] });
+      setShowRewardForm(false);
+      toast.success('Reward created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created loyalty reward: ${reward?.name || 'Reward'}`,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
   const toggleRewardMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
+    onError: () => toast.error('Action failed.'),
   });
   const deleteRewardMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards']),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
@@ -86,6 +119,7 @@ export default function LoyaltyProgram() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = 'loyalty-data.csv'; a.click();
+    URL.revokeObjectURL(url);
   };
 
   const TABS = isOwnProgram
@@ -142,7 +176,7 @@ export default function LoyaltyProgram() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
-                { label: 'Active Viewers', value: leaderboard.length, color: '#D4AF37', icon: Users },
+                { label: 'Active Viewers', value: leaderboard.length, color: '#00d4ff', icon: Users },
                 { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#00ff88', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
@@ -340,6 +374,25 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
+      <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <RewardShopEditor creatorId={user?.id} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

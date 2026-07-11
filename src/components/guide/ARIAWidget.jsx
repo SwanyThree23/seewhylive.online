@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -109,6 +110,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotPreferences', user?.id] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   // Save conversation
@@ -132,6 +134,7 @@ export default function SwanyBotWidget() {
       }
       queryClient.invalidateQueries({ queryKey: ['swanyBotHistory', user?.id] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   useEffect(() => {
@@ -411,7 +414,7 @@ export default function SwanyBotWidget() {
                   style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)', border: `1px solid ${G}30` }}>
                   <Sparkles className="w-4 h-4" style={{ color: G }} />
                   {audioEnabled && (
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-black animate-pulse" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#6DBF7E] border-2 border-black animate-pulse" />
                   )}
                 </div>
                 <div>
@@ -574,9 +577,9 @@ export default function SwanyBotWidget() {
                       onClick={toggleVoice}
                       className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
                       style={{
-                        background: listening ? 'rgba(239,68,68,0.2)' : 'rgba(212,175,55,0.08)',
-                        border: `1px solid ${listening ? 'rgba(239,68,68,0.4)' : G + '20'}`,
-                        boxShadow: listening ? '0 0 12px rgba(239,68,68,0.4)' : 'none'
+                        background: listening ? 'rgba(192,57,43,0.2)' : 'rgba(212,175,55,0.08)',
+                        border: `1px solid ${listening ? 'rgba(192,57,43,0.4)' : G + '20'}`,
+                        boxShadow: listening ? '0 0 12px rgba(192,57,43,0.4)' : 'none'
                       }}
                       title={listening ? 'Stop listening' : 'Speak your question'}
                     >
@@ -612,7 +615,7 @@ export default function SwanyBotWidget() {
                     <motion.p
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                       className="text-[11px] text-center mt-1.5"
-                      style={{ color: 'rgba(239,68,68,0.7)' }}
+                      style={{ color: 'rgba(192,57,43,0.7)' }}
                     >
                       🔴 Voice active — speak now, or tap mic to stop
                     </motion.p>

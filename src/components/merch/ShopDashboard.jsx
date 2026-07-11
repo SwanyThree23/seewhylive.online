@@ -1,16 +1,17 @@
 import { useState } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
   burgundy: "#800020", gold: "#D4AF37", volt: "#D4AF37",
-  white: "#FFF", gray: "#888", dim: "#444", green: "#30D158", red: "#FF3B30",
+  white: "#FFF", gray: "#888", dim: "#444", green: "#6DBF7E", red: "#FF3B30",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
-var STATUS_COLORS = { pending: C.gold, confirmed: "#00E5FF", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
+var STATUS_COLORS = { pending: C.gold, confirmed: "#4A8A7A", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
 
 export default function ShopDashboard({ creatorId }) {
   var [view, setView] = useState("items"); // items | orders
@@ -36,17 +37,32 @@ export default function ShopDashboard({ creatorId }) {
       price_usd: parseFloat(newItem.price_usd) || 0,
       is_active: true, times_sold: 0,
     }),
-    onSuccess: () => { qc.invalidateQueries(["shop-items", creatorId]); setShowAdd(false); setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] }); },
+    onSuccess: (item) => {
+      qc.invalidateQueries({ queryKey: ["shop-items", creatorId] });
+      setShowAdd(false);
+      setNewItem({ name: "", price_usd: "", description: "", sizes_available: [] });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Added merch item: ${item?.name || 'New Item'}`,
+          amount: item?.price_usd,
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   var toggleMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
-    onSuccess: () => qc.invalidateQueries(["shop-items", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["shop-items", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
-    onSuccess: () => qc.invalidateQueries(["merch-orders", creatorId]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["merch-orders", creatorId] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   var totalSold = items.reduce((s, i) => s + (i.times_sold || 0), 0);
@@ -57,7 +73,7 @@ export default function ShopDashboard({ creatorId }) {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, padding: "12px 0 8px" }}>
         {[
-          { label: "ITEMS", value: items.length, color: "#00E5FF" },
+          { label: "ITEMS", value: items.length, color: "#4A8A7A" },
           { label: "SOLD", value: totalSold, color: C.volt },
           { label: "REVENUE", value: "$" + totalRevenue.toFixed(0), color: C.gold },
         ].map(s => (

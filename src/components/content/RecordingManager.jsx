@@ -73,6 +73,7 @@ export default function RecordingManager({ userId }) {
       setFormData({ title: '', description: '', tags: [], category: '', is_public: true });
       toast.success('Recording uploaded successfully!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const batchUploadMutation = useMutation({
@@ -131,6 +132,7 @@ export default function RecordingManager({ userId }) {
         toast.warning(`Uploaded ${successful} recordings, ${failed} failed`);
       }
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateMutation = useMutation({
@@ -140,6 +142,7 @@ export default function RecordingManager({ userId }) {
       setEditDialogOpen(false);
       toast.success('Recording updated!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const deleteMutation = useMutation({
@@ -148,6 +151,7 @@ export default function RecordingManager({ userId }) {
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       toast.success('Recording deleted');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const handleUpload = () => {
@@ -246,12 +250,12 @@ export default function RecordingManager({ userId }) {
                 </div>
 
                 {recording.ai_summary && (
-                  <div className="bg-purple-50 p-2 rounded text-xs">
+                  <div className="bg-[#7B5DA6] p-2 rounded text-xs">
                     <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="w-3 h-3 text-purple-500" />
-                      <span className="font-semibold text-purple-700">AI Summary</span>
+                      <Sparkles className="w-3 h-3 text-[#7B5DA6]" />
+                      <span className="font-semibold text-[#7B5DA6]">AI Summary</span>
                     </div>
-                    <p className="text-purple-600 line-clamp-2">{recording.ai_summary}</p>
+                    <p className="text-[#7B5DA6] line-clamp-2">{recording.ai_summary}</p>
                   </div>
                 )}
 

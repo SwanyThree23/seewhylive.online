@@ -1,6 +1,23 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -200,7 +217,7 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 {[
                   { status: 'active', color: '#6DBF7E', bg: 'rgba(109,191,126,0.06)' },
-                  { status: 'cancelled', color: '#C0392B', bg: 'rgba(255,21,100,0.06)' },
+                  { status: 'cancelled', color: '#C0392B', bg: 'rgba(192,57,43,0.06)' },
                   { status: 'expired', color: 'rgba(255,255,255,0.35)', bg: 'rgba(255,255,255,0.03)' },
                 ].map(({ status, color, bg }) => {
                   const count = subscriptions.filter(s => s.status === status).length;
@@ -265,9 +282,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Orbitron, monospace' }}>{room.viewer_count || 0}</span>
                         <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T,
-                          background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.1)',
-                          border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(212,175,55,0.3)'}`,
-                          color: room.status === 'live' ? '#C0392B' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#D4AF37',
+                          background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(0,212,255,0.1)',
+                          border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(0,212,255,0.3)'}`,
+                          color: room.status === 'live' ? '#C0392B' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#00d4ff',
                         }}>{room.status}</span>
                       </div>
                     </div>
@@ -354,6 +371,22 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -14,7 +14,7 @@ const COIN_PACKS = [
 
 const TIP_AMOUNTS = [
   { coins: 5,   emoji: '⚡', label: 'Spark',    color: '#C9A84C' },
-  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#FF8C00' },
+  { coins: 20,  emoji: '🔥', label: 'Fire',     color: '#D4854A' },
   { coins: 50,  emoji: '💎', label: 'Diamond',  color: '#D4AF37' },
   { coins: 100, emoji: '👑', label: 'Royal',    color: '#d4af37' },
   { coins: 200, emoji: '🚀', label: 'Legend',   color: '#C0392B' },
@@ -84,46 +84,51 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       return;
     }
     setSending(tipDef.coins);
+    try {
+      // Deduct from viewer
+      const usdAmount = tipDef.coins / 10;
+      if (pointsData?.id) {
+        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
+      }
 
-    // Deduct from viewer
-    const usdAmount = tipDef.coins / 10;
-    if (pointsData?.id) {
-      await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
+      // Log transaction
+      await base44.entities.Transaction.create({
+        sender_id: currentUser.id,
+        sender_name: currentUser.full_name || 'Viewer',
+        recipient_id: creatorId,
+        room_id: roomId,
+        creator_payout: Math.floor(usdAmount  * 90) / 100,
+        platform_cut: usdAmount - Math.floor(usdAmount  * 90) / 100,
+        payment_method: 'virtual_coins',
+        transaction_type: 'direct_support',
+        status: 'completed',
+        processed_at: new Date().toISOString(),
+      });
+
+      // Show local float
+      setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);
+      qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
+      toast.success(`${tipDef.emoji} Sent ${tipDef.coins} coins!`);
+    } catch {
+      toast.error('Failed to send tip. Please try again.');
+    } finally {
+      setSending(null);
     }
-
-    // Log transaction
-    await base44.entities.Transaction.create({
-      sender_id: currentUser.id,
-      sender_name: currentUser.full_name || 'Viewer',
-      recipient_id: creatorId,
-      room_id: roomId,
-      amount: usdAmount,
-      platform_cut: usdAmount * 0.1,
-      creator_payout: usdAmount * 0.9,
-      payment_method: 'virtual_coins',
-      transaction_type: 'direct_support',
-      status: 'completed',
-      processed_at: new Date().toISOString(),
-    });
-
-    // Show local float
-    setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);
-    qc.invalidateQueries(['viewer-coins', currentUser.id]);
-    toast.success(`${tipDef.emoji} Sent ${tipDef.coins} coins!`);
-    setSending(null);
   };
 
   const buyCoins = async (pack) => {
     // Simulate purchase — in production this would go through Stripe
     toast.info(`💳 In production, this opens Stripe checkout for $${pack.price}`);
-    // For demo: grant coins directly
-    if (pointsData?.id) {
-      await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
-    } else if (currentUser?.id) {
-      await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
-    }
-    qc.invalidateQueries(['viewer-coins', currentUser.id]);
-    toast.success(`+${pack.coins} coins added to your wallet!`);
+    try {
+      // For demo: grant coins directly
+      if (pointsData?.id) {
+        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
+      } else if (currentUser?.id) {
+        await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
+      }
+      qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
+      toast.success(`+${pack.coins} coins added to your wallet!`);
+    } catch { toast.error('Failed to add coins. Please try again.'); }
   };
 
   if (isHost) {

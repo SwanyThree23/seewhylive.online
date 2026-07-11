@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 export default function GreenroomQueue({ roomId, isHost }) {
   const [guestSearch, setGuestSearch] = useState('');
   const qc = useQueryClient();
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   // Fetch all stage participants for this room
   const { data: participants = [], isLoading } = useQuery({
@@ -52,11 +53,22 @@ export default function GreenroomQueue({ roomId, isHost }) {
       status: 'admitted',
       role: participant.role === 'viewer' ? 'guest' : participant.role,
     }),
-    onSuccess: (_, p) => toast.success(`✅ ${p.user_name} admitted to stage`),
+    onError: () => toast.error('Failed to admit guest.'),
+    onSuccess: (_, p) => {
+      toast.success(`✅ ${p.user_name} admitted to stage`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${p.user_name} to greenroom stage`,
+        }).catch(() => {});
+      }
+    },
   });
 
   const rejectMutation = useMutation({
     mutationFn: (participant) => base44.entities.Participant.update(participant.id, { status: 'rejected' }),
+    onError: () => toast.error('Failed to remove guest.'),
     onSuccess: (_, p) => toast.error(`${p.user_name} removed from queue`),
   });
 
@@ -69,8 +81,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
   const copyJoinLink = () => {
     const link = `${window.location.origin}/GuestJoin?room=${roomId}`;
-    navigator.clipboard.writeText(link);
-    toast.success('Guest join link copied!');
+    navigator.clipboard.writeText(link).then(() => toast.success('Guest join link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
   if (!roomId) return null;
@@ -179,7 +190,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
 function GuestRow({ participant, status }) {
   return (
     <div className="flex items-center gap-2 px-2 py-1.5 bg-green-900/20 border border-green-500/20 rounded-lg">
-      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#6DBF7E] to-[#6DBF7E] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>

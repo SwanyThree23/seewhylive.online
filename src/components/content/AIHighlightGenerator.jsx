@@ -17,6 +17,7 @@ export default function AIHighlightGenerator({ recording }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['highlights'] });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const generateHighlights = async () => {
@@ -82,18 +83,22 @@ Generate highlight segments with:
   };
 
   const saveHighlight = async (highlight) => {
-    await createHighlightMutation.mutateAsync({
-      recording_id: recording.id,
-      title: highlight.title,
-      description: highlight.description,
-      start_time: highlight.start_time,
-      end_time: highlight.start_time + highlight.duration,
-      highlight_type: highlight.highlight_type,
-      ai_generated: true,
-      ai_confidence: highlight.confidence,
-      thumbnail_url: recording.thumbnail_url,
-    });
-    toast.success('Highlight saved!');
+    try {
+      await createHighlightMutation.mutateAsync({
+        recording_id: recording.id,
+        title: highlight.title,
+        description: highlight.description,
+        start_time: highlight.start_time,
+        end_time: highlight.start_time + highlight.duration,
+        highlight_type: highlight.highlight_type,
+        ai_generated: true,
+        ai_confidence: highlight.confidence,
+        thumbnail_url: recording.thumbnail_url,
+      });
+      toast.success('Highlight saved!');
+    } catch {
+      toast.error('Failed to save highlight.');
+    }
   };
 
   const formatTime = (seconds) => {
@@ -106,7 +111,7 @@ Generate highlight segments with:
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-500" />
+          <Sparkles className="w-5 h-5 text-[#7B5DA6]" />
           AI Highlight Generator
         </CardTitle>
       </CardHeader>

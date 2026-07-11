@@ -15,16 +15,18 @@ export function usePresence(roomId) {
 
     // Mark user as active participant
     const join = async () => {
-      const existing = await base44.entities.Participant.filter({ room_id: roomId, user_id: user.id });
-      if (existing.length === 0) {
-        await base44.entities.Participant.create({
-          room_id: roomId,
-          user_id: user.id,
-          user_name: user.full_name || user.email,
-          status: 'listening',
-          joined_at: new Date().toISOString(),
-        });
-      }
+      try {
+        const existing = await base44.entities.Participant.filter({ room_id: roomId, user_id: user.id });
+        if (existing.length === 0) {
+          await base44.entities.Participant.create({
+            room_id: roomId,
+            user_id: user.id,
+            user_name: user.full_name || user.email,
+            status: 'listening',
+            joined_at: new Date().toISOString(),
+          });
+        }
+      } catch {}
     };
 
     join();
@@ -33,13 +35,13 @@ export function usePresence(roomId) {
     const unsub = base44.entities.Participant.subscribe((event) => {
       if (event.data?.room_id === roomId) {
         base44.entities.Participant.filter({ room_id: roomId, status: 'listening' })
-          .then(list => setOnlineCount(list.length));
+          .then(list => setOnlineCount(list.length)).catch(() => {});
       }
     });
 
     // Initial count
     base44.entities.Participant.filter({ room_id: roomId })
-      .then(list => setOnlineCount(list.length));
+      .then(list => setOnlineCount(list.length)).catch(() => {});
 
     return () => unsub();
   }, [user?.id, roomId]);

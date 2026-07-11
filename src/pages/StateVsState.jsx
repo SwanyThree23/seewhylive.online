@@ -1,16 +1,33 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG   = '#080B18';
 const BG2  = '#0D1022';
 const BG3  = '#13182C';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const BLUE  = '#1565C0';
+const BLUE  = '#5B7FA6';
 const RED2  = '#C62828';
-const TEAL  = '#6DBF7E';
-const CYAN  = '#D4AF37';
+const TEAL  = '#4A8A7A';
+const CYAN  = '#00d4ff';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATES_DATA = [
@@ -737,184 +754,10 @@ function JudgesView() {
   );
 }
 
-const REACTION_EMOJIS = ['🔥','👑','💎','⚡','🎯','💪','🏆','🎊'];
-
-function SpectatorView() {
-  const [waVotes, setWaVotes] = useState(54);
-  const [flVotes, setFlVotes] = useState(46);
-  const [voted, setVoted] = useState(null);
-  const [reactions, setReactions] = useState([]);
-  const [spectators] = useState(247);
-  const reactionId = useRef(0);
-
-  function vote(team) {
-    if (voted) return;
-    setVoted(team);
-    if (team === 'wa') { setWaVotes(v => v + 1); }
-    else { setFlVotes(v => v + 1); }
-  }
-
-  function sendReaction(emoji) {
-    const id = ++reactionId.current;
-    const x = 20 + Math.random() * 60;
-    setReactions(prev => [...prev, { id, emoji, x }]);
-    setTimeout(() => setReactions(prev => prev.filter(r => r.id !== id)), 2200);
-  }
-
-  const total = waVotes + flVotes;
-  const waPct = Math.round((waVotes / total) * 100);
-  const flPct = 100 - waPct;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-      {/* Floating reactions layer */}
-      <div style={{ position: 'fixed', bottom: 80, left: 0, right: 0, height: 220, pointerEvents: 'none', zIndex: 50, overflow: 'hidden' }}>
-        <AnimatePresence>
-          {reactions.map(r => (
-            <motion.div key={r.id}
-              initial={{ opacity: 1, y: 0, scale: 0.8 }}
-              animate={{ opacity: 0, y: -180, scale: 1.4 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 2.0, ease: 'easeOut' }}
-              style={{ position: 'absolute', bottom: 0, left: `${r.x}%`, fontSize: 28 }}>
-              {r.emoji}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Live spectator count */}
-      <GCard glow>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div>
-            <Tag label="WATCHING LIVE" color={RED2} />
-          </div>
-          <div style={{ display: 'flex', items: 'center', gap: 6 }}>
-            <span style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 28, color: GOLD, lineHeight: 1 }}>{spectators}</span>
-            <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.45)', alignSelf: 'flex-end', marginBottom: 3 }}>spectators</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-          {[
-            { href: '/WatchParty', label: '📺 Watch Party', variant: 'gold' },
-            { href: '/LiveRoom', label: '🎙 Live Room', variant: 'ghost' },
-          ].map(b => (
-            <Link key={b.label} to={b.href} style={{ textDecoration: 'none' }}>
-              <Btn label={b.label} variant={b.variant} size="sm" />
-            </Link>
-          ))}
-        </div>
-      </GCard>
-
-      {/* Prediction poll */}
-      <GCard>
-        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 12 }}>
-          🎯 WHO WINS THE SEMIFINAL?
-        </div>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-          {[
-            { id: 'wa', label: 'Washington', abbr: 'WA', color: BLUE, pct: waPct },
-            { id: 'fl', label: 'Florida', abbr: 'FL', color: RED2, pct: flPct },
-          ].map(opt => {
-            const isVoted = voted === opt.id;
-            return (
-              <button key={opt.id}
-                onClick={() => vote(opt.id)}
-                disabled={!!voted}
-                style={{
-                  flex: 1, padding: '14px 10px',
-                  background: isVoted ? `${opt.color}22` : BG3,
-                  border: `2px solid ${isVoted ? opt.color : voted ? 'rgba(255,255,255,0.08)' : `${opt.color}55`}`,
-                  borderRadius: 12,
-                  cursor: voted ? 'default' : 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                }}>
-                <StateCircle stateId={opt.id} size={44} />
-                <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 16, color: '#fff', lineHeight: 1 }}>{opt.label}</div>
-                <div style={{
-                  fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 28,
-                  color: isVoted ? opt.color : voted ? 'rgba(255,255,255,0.5)' : '#fff', lineHeight: 1,
-                }}>{voted ? `${opt.pct}%` : '?'}</div>
-                {isVoted && <Tag label="YOUR PICK ✓" color={opt.color} />}
-              </button>
-            );
-          })}
-        </div>
-        {voted && (
-          <div>
-            <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', background: BG3, marginBottom: 6 }}>
-              <motion.div initial={{ width: 0 }} animate={{ width: `${waPct}%` }} transition={{ duration: 0.8, ease: 'easeOut' }}
-                style={{ height: '100%', background: `linear-gradient(90deg, ${BLUE}, ${RED2})` }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', ...T, fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>
-              <span>WA {waPct}%</span>
-              <span>{total} votes</span>
-              <span>FL {flPct}%</span>
-            </div>
-          </div>
-        )}
-        {!voted && (
-          <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>Tap a team to cast your prediction</p>
-        )}
-      </GCard>
-
-      {/* Reaction bar */}
-      <GCard>
-        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 12 }}>
-          REACT TO THE MATCH
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-          {REACTION_EMOJIS.map(emoji => (
-            <motion.button key={emoji} whileTap={{ scale: 1.4 }}
-              onClick={() => sendReaction(emoji)}
-              style={{
-                width: 52, height: 52, fontSize: 24,
-                background: BG3, border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 14, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-              {emoji}
-            </motion.button>
-          ))}
-        </div>
-        <p style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: 10 }}>Reactions visible to all spectators</p>
-      </GCard>
-
-      {/* State pride stats */}
-      <GCard>
-        <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, letterSpacing: '0.08em', marginBottom: 12 }}>
-          🏅 SPECTATOR BREAKDOWN
-        </div>
-        {[
-          { id: 'wa', supporters: 134, pct: 54 },
-          { id: 'fl', supporters: 89, pct: 36 },
-          { id: 'other', supporters: 24, pct: 10 },
-        ].map((row, i) => {
-          const s = STATES_DATA.find(x => x.id === row.id);
-          return (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              {s ? <StateCircle stateId={row.id} size={28} /> : <div style={{ width: 28, height: 28, borderRadius: '50%', background: BG3, border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>?</div>}
-              <div style={{ flex: 1 }}>
-                <div style={{ height: 6, borderRadius: 99, background: BG3, overflow: 'hidden' }}>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${row.pct}%` }} transition={{ delay: i * 0.15, duration: 0.7, ease: 'easeOut' }}
-                    style={{ height: '100%', background: s ? s.color : 'rgba(255,255,255,0.2)', borderRadius: 99 }} />
-                </div>
-              </div>
-              <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.55)', minWidth: 60, textAlign: 'right' }}>{row.supporters} viewers</span>
-            </div>
-          );
-        })}
-      </GCard>
-
-    </div>
-  );
-}
-
-const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'SPECTATORS', 'JUDGES'];
+const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
 
@@ -922,7 +765,7 @@ export default function StateVsState() {
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <a href="/Leaderboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 12 }} aria-label="Back to Leaderboard">← Leaderboard</a>
       <div style={{
-        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #1565C0 200%)`,
+        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #5B7FA6 200%)`,
         borderRadius: 16,
         padding: '20px 16px',
         marginBottom: 18,
@@ -998,8 +841,22 @@ export default function StateVsState() {
       {tab === 'ROSTERS' && <RostersView />}
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
-      {tab === 'SPECTATORS' && <SpectatorView />}
       {tab === 'JUDGES' && <JudgesView />}
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

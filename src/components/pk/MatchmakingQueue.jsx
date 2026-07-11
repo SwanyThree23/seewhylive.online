@@ -43,6 +43,8 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
   var [matchingFor, setMatchingFor] = useState(0);
   var [matchedWith, setMatchedWith] = useState(null);
   var intervalRef = React.useRef(null);
+  var [myQueueId, setMyQueueId] = useState(null);
+  var qc = useQueryClient();
 
   function joinQueue() {
     setInQueue(true);
@@ -67,12 +69,41 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
     }, 1000);
   }
 
-  function leaveQueue() {
-    clearInterval(intervalRef.current);
-    setInQueue(false);
-    setMatchingFor(0);
-    toast('Left the matchmaking queue');
-  }
+  var leaveMutation = useMutation({
+    mutationFn: function() {
+      if (!myQueueId) return Promise.resolve();
+      return base44.entities.PKBattle.update(myQueueId, { status: 'cancelled' });
+    },
+    onSettled: function() {
+      clearInterval(intervalRef.current);
+      setInQueue(false);
+      setMatchingFor(0);
+      setMyQueueId(null);
+      qc.invalidateQueries({ queryKey: ['pk-queue'] });
+      toast('Left the matchmaking queue');
+    },
+    onError: function() { toast.error('Failed to leave queue.'); },
+  });
+
+  var challengeMutation = useMutation({
+    mutationFn: function(opponent) {
+      return base44.entities.PKBattle.update(opponent.id, {
+        challenger_id: user?.id,
+        challenger_name: user?.full_name || user?.email || 'Challenger',
+        status: 'active',
+        started_at: new Date().toISOString(),
+        duration_seconds: 180,
+      });
+    },
+    onSuccess: function(data, opponent) {
+      toast.success('Challenged ' + opponent.creator_name + '!');
+      if (onMatchFound) { onMatchFound(data); }
+      qc.invalidateQueries({ queryKey: ['pk-queue'] });
+    },
+    onError: function(err) { toast.error('Challenge failed: ' + err.message); },
+  });
+
+  function leaveQueue() { leaveMutation.mutate(); }
 
   React.useEffect(function() {
     return function() { clearInterval(intervalRef.current); };

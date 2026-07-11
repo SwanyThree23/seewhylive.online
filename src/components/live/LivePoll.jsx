@@ -14,7 +14,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white">{poll.question}</p>
         {onEnd && (
-          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#f87171', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Poll
           </button>
         )}
@@ -103,6 +103,7 @@ export default function LivePoll({ roomId, isHost }) {
       setOptions(['', '']);
       toast.success('Poll launched!');
     },
+    onError: () => toast.error('Failed to launch poll.'),
   });
 
   const endPollMutation = useMutation({
@@ -114,16 +115,17 @@ export default function LivePoll({ roomId, isHost }) {
         Object.entries(voteTally).sort((a, b) => b[1] - a[1])[0]?.[0]
       ];
       if (winner) {
-        await base44.entities.Activity.create({
+        base44.entities.Activity.create({
           user_id: roomId,
           type: 'room_joined',
           title: `Poll ended: "${activePoll.question}"`,
           description: `Winner: "${winner}" with ${Object.values(voteTally)[0] || 0} votes`,
           is_public: true,
-        });
+        }).catch(() => {});
       }
       toast.success('Poll ended');
     },
+    onError: () => toast.error('Failed to end poll.'),
   });
 
   const voteMutation = useMutation({

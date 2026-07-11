@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, Radio, Check } from 'lucide-react';
 import { isSafeUrl } from '@/lib/security';
 
@@ -34,15 +35,15 @@ const CATEGORY_TYPES = {
 const PRIORITY_COLORS = {
   low: 'rgba(100,116,139,0.1)',
   normal: 'rgba(212,175,55,0.1)',
-  high: 'rgba(255,140,0,0.15)',
-  urgent: 'rgba(239,68,68,0.15)',
+  high: 'rgba(212,133,74,0.15)',
+  urgent: 'rgba(192,57,43,0.15)',
 };
 
 const PRIORITY_BORDERS = {
   low: 'rgba(100,116,139,0.2)',
   normal: `${G}20`,
-  high: 'rgba(255,140,0,0.3)',
-  urgent: 'rgba(239,68,68,0.4)',
+  high: 'rgba(212,133,74,0.3)',
+  urgent: 'rgba(192,57,43,0.4)',
 };
 
 export default function NotificationHub() {
@@ -77,6 +78,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.update(id, { is_read: true });
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => toast.error('Failed to mark notification as read.'),
   });
 
   // Delete notification
@@ -85,6 +87,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.delete(id);
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => toast.error('Failed to delete notification.'),
   });
 
   // Mark all read
@@ -94,6 +97,7 @@ export default function NotificationHub() {
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
+    onError: () => toast.error('Failed to mark all as read.'),
   });
 
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
@@ -126,13 +130,13 @@ export default function NotificationHub() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#FF8C00' : 'rgba(255,255,255,0.5)' }} />
+        <Bell className="w-4 h-4" style={{ color: unreadCount > 0 ? '#D4854A' : 'rgba(255,255,255,0.5)' }} />
         {unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
-            style={{ background: '#FF8C00', color: '#000' }}
+            style={{ background: '#D4854A', color: '#000' }}
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </motion.div>
@@ -152,7 +156,7 @@ export default function NotificationHub() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ background: PANEL, borderBottom: `1px solid ${BORDER}` }}>
               <h3 className="text-sm font-bold uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Notifications {unreadCount > 0 && <span style={{ color: '#FF8C00' }}>({unreadCount})</span>}
+                Notifications {unreadCount > 0 && <span style={{ color: '#D4854A' }}>({unreadCount})</span>}
               </h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (

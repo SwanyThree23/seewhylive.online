@@ -6,6 +6,10 @@ import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, W
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -72,6 +76,7 @@ export default function GuestJoin() {
       return base44.entities.Participant.update(participantId, { status: ready ? 'ready' : 'waiting' });
     },
     onSuccess: (_, ready) => { setReadyState(ready); toast.success(ready ? '✅ Marked as ready!' : 'Status set to waiting'); },
+    onError: () => toast.error('Failed to update status.'),
   });
 
   const card = { background: 'rgba(26,13,46,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
@@ -120,7 +125,7 @@ export default function GuestJoin() {
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
               <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                style={{ ...T, background: room.status === 'live' ? 'rgba(255,21,100,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(255,21,100,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#ffc800' }}>
+                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#ffc800' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
             </div>
@@ -220,7 +225,7 @@ export default function GuestJoin() {
 
           {status === 'rejected' && (
             <motion.div key="rejected" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div style={{ ...card, borderColor: 'rgba(255,21,100,0.3)', textAlign: 'center' }}>
+              <div style={{ ...card, borderColor: 'rgba(192,57,43,0.3)', textAlign: 'center' }}>
                 <AlertCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#C0392B' }} />
                 <h2 className="text-lg font-black mb-1" style={{ ...T, color: '#C0392B' }}>Removed from Queue</h2>
                 <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>The director has removed you from the stage queue.</p>
@@ -239,6 +244,10 @@ export default function GuestJoin() {
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI
         </p>
       </div>
+      {roomId && <ZEGOGuestJoin roomId={roomId} userId={null} userName={''} onJoined={() => {}} />}
+      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <GuestDestinationsPanel participantUserId={null} guestName={''} />
+      <SwanyBotWidget />
     </div>
   );
 }

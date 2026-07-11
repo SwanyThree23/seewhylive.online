@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const LAYOUTS = [
@@ -23,7 +24,7 @@ export function SwanDirectorHUD({ roomId, hostId, onOpenPanel }) {
     refetchInterval: 10000,
   });
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#C0392B' : score < 70 ? '#FFB800' : '#6DBF7E';
   return (
     <div style={{ display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'rgba(0,0,0,0.4)', borderTop:'1px solid rgba(255,255,255,0.06)', overflow:'hidden' }}>
       {/* Layout badge */}
@@ -65,6 +66,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
       return base44.entities.SwanAIDirector.create({ room_id: roomId, host_id: hostId, ...data });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey:['swan', roomId] }),
+    onError: () => toast.error('Failed to update director settings.'),
   });
   const upd = (data) => mut.mutate(data);
 
@@ -76,7 +78,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   };
 
   const score = swan?.engagement_score || 0;
-  const scoreColor = score < 40 ? '#ff4444' : score < 70 ? '#FFB800' : '#6DBF7E';
+  const scoreColor = score < 40 ? '#C0392B' : score < 70 ? '#FFB800' : '#6DBF7E';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
   const engHistory = useMemo(() => Array.from({length:10},(_,i) => Math.floor(Math.random()*60+30)), []);
 
@@ -99,7 +101,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
             <motion.div animate={{ width:`${score}%` }} style={{ height:'100%', background:`linear-gradient(90deg, ${C.burg}, ${scoreColor})`, borderRadius:3 }} />
           </div>
           <div style={{ display:'flex', justifyContent:'space-between', marginTop:4 }}>
-            <span style={{ fontSize:9, color:'#ff4444' }}>0 COLD</span>
+            <span style={{ fontSize:9, color:'#C0392B' }}>0 COLD</span>
             <span style={{ fontSize:9, color:'#FFB800' }}>40</span>
             <span style={{ fontSize:9, color:'#6DBF7E' }}>70 HOT 100</span>
           </div>

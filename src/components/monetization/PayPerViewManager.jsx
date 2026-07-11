@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -46,6 +47,7 @@ export default function PayPerViewManager({ roomId }) {
       setShowForm(false);
       setFormData({ title: '', description: '', price: 9.99, event_date: '', duration_minutes: 60, max_participants: null });
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   return (
@@ -167,7 +169,7 @@ export default function PayPerViewManager({ roomId }) {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 className="p-2 rounded text-xs"
-                style={{ background: 'rgba(255,0,0,0.1)', color: '#FF4444' }}
+                style={{ background: 'rgba(255,0,0,0.1)', color: '#C0392B' }}
               >
                 <Trash2 className="w-4 h-4" />
               </motion.button>

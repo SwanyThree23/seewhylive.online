@@ -7,6 +7,26 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -38,7 +58,7 @@ function BattleCard({ battle, index }) {
             <div>
               {isActive && (
                 <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase inline-block mb-0.5"
-                  style={{ ...T, background: 'rgba(255,21,100,0.12)', border: '1px solid rgba(255,21,100,0.3)', color: '#C0392B' }}>
+                  style={{ ...T, background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B' }}>
                   ⚡ LIVE
                 </span>
               )}
@@ -75,18 +95,18 @@ function BattleCard({ battle, index }) {
           </div>
           <div className="flex-1 text-center">
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-red-300 mx-auto mb-1"
-              style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid rgba(239,68,68,0.4)' }}>
+              style={{ background: 'rgba(192,57,43,0.15)', border: '2px solid rgba(192,57,43,0.4)' }}>
               {rightName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{rightName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#f87171' }}>{rightVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#C0392B' }}>{rightVotes.toLocaleString()}</p>
           </div>
         </div>
 
         {/* Score bar */}
         <div className="h-2 rounded-full flex overflow-hidden mb-3" style={{ background: 'rgba(255,255,255,0.08)' }}>
           <div className="transition-all duration-500" style={{ width: `${leftPct}%`, background: '#3b82f6' }} />
-          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#ef4444' }} />
+          <div className="transition-all duration-500" style={{ width: `${100 - leftPct}%`, background: '#C0392B' }} />
         </div>
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>
@@ -101,6 +121,8 @@ function BattleCard({ battle, index }) {
 }
 
 export default function LiveBattles() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = null;
   const [filter, setFilter] = useState('active');
 
   const { data: battles = [], isLoading } = useQuery({
@@ -197,6 +219,26 @@ export default function LiveBattles() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="battles" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

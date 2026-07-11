@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Heart, MessageCircle, Pin } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#D4AF37';
 const PANEL = '#0F0B1A';
@@ -38,7 +39,8 @@ export default function DiscussionFeed({ communityId }) {
         content,
       });
     },
-    onSuccess: () => {
+    onError: () => toast.error('Failed to post. Please try again.'),
+    onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions', communityId] });
       setNewPost('');
     },
@@ -55,7 +57,7 @@ export default function DiscussionFeed({ communityId }) {
           style={{ background: PANEL, border: `1px solid ${BORDER}` }}
         >
           <div className="flex gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]" />
             <textarea
               placeholder="Share your thoughts with the community..."
               value={newPost}
@@ -100,7 +102,7 @@ export default function DiscussionFeed({ communityId }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-[#4A8A7A]" />
                 <div>
                   <p className="text-sm font-bold text-white">{post.user_name}</p>
                   <p className="text-[10px] text-white/40">{new Date(post.created_date).toLocaleDateString()}</p>

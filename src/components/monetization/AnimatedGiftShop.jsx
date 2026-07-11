@@ -29,6 +29,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const sendGiftMutation = useMutation({
     mutationFn: async (gift) => {
+      if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
         type: 'virtual_good',
@@ -45,6 +46,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
         times_sent: gift.times_sent + 1,
       });
     },
+    onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success(`Sent ${gift.name}! 🎁`);
@@ -64,7 +66,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
     rare: 'bg-blue-100 text-blue-800',
-    epic: 'bg-purple-100 text-purple-800',
+    epic: 'bg-[#7B5DA6] text-[#7B5DA6]',
     legendary: 'bg-yellow-100 text-yellow-800',
   };
 
@@ -148,7 +150,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-purple-50 to-pink-50">
+        <Card className="bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -160,7 +162,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Gift className="w-8 h-8 text-purple-500" />
+                    <Gift className="w-8 h-8 text-[#7B5DA6]" />
                   )}
                 </div>
                 <div>

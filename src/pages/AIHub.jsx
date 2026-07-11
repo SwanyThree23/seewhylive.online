@@ -2,17 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
 const BG2    = 'rgba(13,6,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK   = '#C0392B';
-const CYAN   = '#D4AF37';
+const CYAN   = '#00d4ff';
 const PURPLE = '#a78bfa';
-const GREEN  = '#22c55e';
+const GREEN  = '#6DBF7E';
+const AMBER  = '#f59e0b';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -119,6 +137,7 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -143,7 +162,7 @@ export default function AIHub() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = localStorage.getItem('seewhy_dj_track');
+        const raw = sessionStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);
@@ -221,7 +240,7 @@ export default function AIHub() {
 
   // Guardian status badge color
   function guardianStatusColor(status) {
-    if (status === 'alert')   return '#ef4444';
+    if (status === 'alert')   return '#C0392B';
     if (status === 'warning') return '#f59e0b';
     return GREEN;
   }
@@ -339,7 +358,7 @@ export default function AIHub() {
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(212,175,55,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -474,7 +493,7 @@ export default function AIHub() {
                   onClick={scanGuardian}
                   style={{
                     ...T, width: '100%', padding: '10px 0', borderRadius: 10, marginBottom: 10,
-                    background: guardianLoading ? 'rgba(255,21,100,0.06)' : 'rgba(255,21,100,0.12)',
+                    background: guardianLoading ? 'rgba(192,57,43,0.06)' : 'rgba(192,57,43,0.12)',
                     border: `1px solid ${PINK}40`,
                     color: PINK, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
                     textTransform: 'uppercase', cursor: guardianLoading ? 'not-allowed' : 'pointer',
@@ -542,7 +561,7 @@ export default function AIHub() {
                 whileTap={{ scale: 0.97 }}
                 style={{
                   ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
-                  background: 'rgba(255,21,100,0.12)', border: `1px solid ${PINK}40`,
+                  background: 'rgba(192,57,43,0.12)', border: `1px solid ${PINK}40`,
                   color: PINK, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em',
                   textTransform: 'uppercase', cursor: 'pointer',
                 }}
@@ -808,7 +827,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#1565C0">
+        <Card accentColor="#5B7FA6">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -822,7 +841,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #1565C0, #C62828)',
+              background: 'linear-gradient(90deg, #5B7FA6, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -867,12 +886,12 @@ export default function AIHub() {
           <Link to={createPageUrl('AIModeration')} style={{ textDecoration: 'none', display: 'block' }}>
             <div style={{
               margin: '0 16px 16px',
-              background: 'rgba(255,21,100,0.08)',
-              border: '1px solid rgba(255,21,100,0.2)', borderRadius: 10,
+              background: 'rgba(192,57,43,0.08)',
+              border: '1px solid rgba(192,57,43,0.2)', borderRadius: 10,
               padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,21,100,0.15)', border: '1px solid rgba(255,21,100,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</div>
                 <div>
                   <div style={{ ...T, fontSize: 12, color: '#C0392B', fontWeight: 900 }}>OPEN REVIEW QUEUE</div>
                   <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>AI MODERATION · ADMIN</div>
@@ -919,108 +938,6 @@ export default function AIHub() {
           </Link>
         </Card>
 
-        {/* ── Section 14: AURA AI ── */}
-        <Card style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>✨ AURA AI</p>
-            <span style={{ ...T, fontSize: 11, color: '#a78bfa', fontWeight: 700, letterSpacing: '0.05em' }}>BROADCAST STRATEGY</span>
-          </div>
-          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
-            Editorial luxury AI co-host. Production scripts, revenue drives, multi-platform strategy, and premium show format guidance.
-          </p>
-          <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none', display: 'block' }}>
-            <div style={{
-              margin: '0 16px 16px',
-              background: 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(109,40,217,0.08))',
-              border: '1px solid rgba(167,139,250,0.3)', borderRadius: 10,
-              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #a78bfa, #6d28d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✨</div>
-                <div>
-                  <div style={{ ...T, fontSize: 12, color: '#a78bfa', fontWeight: 900 }}>ASK AURA</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>LUXURY STRATEGY · CLAUDE POWERED</div>
-                </div>
-              </div>
-              <span style={{ ...T, fontSize: 13, color: '#a78bfa', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
-            </div>
-          </Link>
-        </Card>
-
-        {/* ── Section 15: SwanyBot ── */}
-        <Card style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎲 SwanyBot</p>
-            <span style={{ ...T, fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: '0.05em' }}>DOMINO CULTURE AI</span>
-          </div>
-          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
-            The cultural voice of SeeWhy LIVE. Match analysis, domino strategy, State vs State commentary, PK Battle hype, and legend tributes.
-          </p>
-          <Link to={createPageUrl('SwanyBotPage')} style={{ textDecoration: 'none', display: 'block' }}>
-            <div style={{
-              margin: '0 16px 16px',
-              background: 'linear-gradient(135deg, rgba(212,175,55,0.12), rgba(138,111,46,0.08))',
-              border: '1px solid rgba(212,175,55,0.3)', borderRadius: 10,
-              padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🎲</div>
-                <div>
-                  <div style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900 }}>ASK SWANYBOT</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>DOMINO ANALYST · CLAUDE POWERED</div>
-                </div>
-              </div>
-              <span style={{ ...T, fontSize: 13, color: GOLD, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
-            </div>
-          </Link>
-        </Card>
-
-        {/* ── Section 16: External AI Tools ── */}
-        <Card accentColor={CYAN}>
-          <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🔗 External AI Tools</p>
-          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
-            Third-party AI platforms curated for SeeWhy LIVE creators.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              {
-                href: 'https://higgsfield.ai',
-                icon: '🎬',
-                name: 'Higgsfield AI',
-                desc: 'AI video generation — create cinematic clips for stream highlights and promos.',
-                color: '#ff6b35',
-              },
-              {
-                href: 'https://supercomputer.ai',
-                icon: '🖥️',
-                name: 'SuperComputer AI',
-                desc: 'AI productivity platform — automate workflows and content pipelines.',
-                color: CYAN,
-              },
-            ].map(tool => (
-              <a
-                key={tool.href}
-                href={tool.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.1)`,
-                  borderRadius: 12, padding: '12px 14px', textDecoration: 'none',
-                  transition: 'border-color 0.15s',
-                }}
-              >
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: tool.color + '22', border: `1px solid ${tool.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{tool.icon}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ ...T, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '0.03em' }}>{tool.name}</div>
-                  <div style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2, lineHeight: 1.4 }}>{tool.desc}</div>
-                </div>
-                <span style={{ ...T, fontSize: 13, fontWeight: 700, color: tool.color, letterSpacing: '0.06em', flexShrink: 0 }}>Open ↗</span>
-              </a>
-            ))}
-          </div>
-        </Card>
-
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
@@ -1033,6 +950,21 @@ export default function AIHub() {
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
+      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

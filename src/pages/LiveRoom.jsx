@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Mic, MicOff, Video, VideoOff, MessageCircle, Heart, Hand, Crown,
+  Mic, MicOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
-  Users, LayoutGrid, Send, X, UserPlus, LogIn, Trophy,
+  Users, LayoutGrid, Send, X,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -11,64 +11,159 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
-import InviteSheet from '../components/live/InviteSheet';
-import { buildVdoViewUrl } from '../components/live/VdoNinjaGuestLink';
 import DirectPayments from '../components/live/DirectPayments';
-import PKBattleModal from '../components/live/PKBattleModal';
-import InviteGuestsModal from '../components/live/InviteGuestsModal';
-import { getStoredAge, getAccessLevel } from '../lib/ageVerification';
-import RoomEntryGate from '../components/RoomEntryGate';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
 import GiftShop from '../components/live/GiftShop';
-import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
-import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
-import TippingOverlay from '../components/live/TippingOverlay';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import SuperChatBar from '../components/live/SuperChatBar';
-import SubscriptionGate from '../components/live/SubscriptionGate';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import ReportModal from '../components/moderation/ReportModal';
-import PayPerViewGate from '../components/live/PayPerViewGate';
-import PaywallGate from '../components/live/PaywallGate';
-import PointsNotification from '../components/live/PointsNotification';
-import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GiftAnimation from '../components/live/GiftAnimation';
 import { DollarSign, Gift } from 'lucide-react';
-import SuperChatRail from '../components/live/SuperChatRail';
-import ClipMarker from '../components/live/ClipMarker';
-import StreamGoals from '../components/live/StreamGoals';
-import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+
+import ClipCreator from '../components/live/ClipCreator';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import LiveTranscription from '../components/live/LiveTranscription';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import GoldenWall from '../components/live/GoldenWall';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import GiftTray from '../components/live/GiftTray';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import ShareToSocial from '../components/social/ShareToSocial';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
 import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
-
-// ── Guardian AI chat filter ──────────────────────────────────────────────────
-const GUARDIAN_PATTERNS = [
-  /\b(hate|kill|rape|n[i1]gg[ae]r|f[a@]gg[o0]t|ch[i1]nk|sp[i1]c|k[y1]ke)\b/i,
-  /\b(fuck\s+you|piece\s+of\s+shit|stupid\s+bitch|go\s+die)\b/i,
-  /((.)\2{5,})/,                          // spam: same char 6+ times
-  /https?:\/\/[^\s]{0,40}\.ru\b/i,        // suspicious domains
-  /(buy|cheap|discount|click here|earn \$)/i,
-];
-function filterMessageWithGuardianAI(text) {
-  for (const pat of GUARDIAN_PATTERNS) {
-    if (pat.test(text)) return { blocked: true, reason: 'Message flagged by Guardian AI' };
-  }
-  return { blocked: false };
-}
-
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import MerchWidget from '../components/merch/MerchWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GlobalChatWidget from '../components/live/GlobalChatWidget';
+import GuestConnector from '../components/live/GuestConnector';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import PointsNotification from '../components/live/PointsNotification';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChatOverlay from '../components/live/ChatOverlay';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import PrivatePanel from '../components/live/PrivatePanel';
+import StreamChatbot from '../components/live/StreamChatbot';
+import StreamEventBus from '../components/live/StreamEventBus';
+import TippingOverlay from '../components/live/TippingOverlay';
+import UnifiedChat from '../components/live/UnifiedChat';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AudioMixer from '../components/live/AudioMixer';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import WebhookHooks from '../components/live/WebhookHooks';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import TierBadge from '../components/subscriptions/TierBadge';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import GuestGrid from '../components/live/GuestGrid';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
+import AudioPanel from '../components/live/AudioPanel';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const BG      = '#080B18';
-const BG2     = '#0A0D1E';
-const BG3     = '#0E1120';
+const BG2     = '#0d0618';
+const BG3     = '#110822';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
 
@@ -98,15 +193,9 @@ const DEMO_CHAT = [
 ];
 
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
-function StageTile({ p, size = 96, stream, isLocal = false, vdoUrl = null, onClick }) {
+function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
   const videoRef = useRef(null);
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !stream) return;
-    v.muted = isLocal;        // set DOM property directly — React muted prop unreliable on mobile
-    v.srcObject = stream;
-    v.play().catch(() => {}); // explicit play() — autoPlay alone not reliable on mobile
-  }, [stream, isLocal]);
+  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
 
   const isHost   = p.role === 'host';
   const isCohost = p.role === 'co-host';
@@ -138,12 +227,6 @@ function StageTile({ p, size = 96, stream, isLocal = false, vdoUrl = null, onCli
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
               className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
-          ) : vdoUrl ? (
-            <iframe
-              src={vdoUrl}
-              allow="camera; microphone; autoplay; fullscreen; display-capture"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', background: 'transparent', pointerEvents: 'none' }}
-            />
           ) : (
             <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 shrink-0"
               style={{ background: avatarColor(p.name) + '55', borderColor: avatarColor(p.name), color: '#fff' }}>
@@ -167,7 +250,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, vdoUrl = null, onCli
         {/* Muted badge */}
         {p.muted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center"
-            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
+            style={{ background: '#C0392B', border: `2px solid ${BG}` }}>
             <MicOff className="w-2 h-2 text-white" />
           </div>
         )}
@@ -256,16 +339,12 @@ function ChatPanel({ messages, onClose, onSend }) {
               {m.user.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+              <div className="flex items-center gap-1.5 mb-0.5">
                 <span className="text-[10px] font-bold"
                   style={{ color: m.host ? GOLD : 'rgba(255,255,255,0.55)' }}>{m.user}</span>
                 {m.host && (
                   <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
                     style={{ background: `${GOLD}22`, color: GOLD }}>HOST</span>
-                )}
-                {m.fm && (
-                  <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
-                    style={{ background: 'rgba(128,0,32,0.35)', color: '#FF9944', border: '1px solid rgba(255,153,68,0.3)' }}>FM</span>
                 )}
               </div>
               <p className="text-[12px] text-white/80 leading-snug">{m.text}</p>
@@ -275,7 +354,7 @@ function ChatPanel({ messages, onClose, onSend }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input / sign-in prompt */}
+      {/* Input */}
       <div className="shrink-0 flex gap-2 px-3 py-2.5"
         style={{ borderTop: '1px solid rgba(255,255,255,0.05)', background: BG2 }}>
         <input
@@ -298,20 +377,12 @@ function ChatPanel({ messages, onClose, onSend }) {
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 export default function LiveRoom() {
-  const urlParams    = new URLSearchParams(window.location.search);
-  const roomId       = urlParams.get('id');
-  const joinAs       = urlParams.get('join_as');   // 'co-host' | 'guest' | null
-  const inviteKey    = urlParams.get('ik');
-
-  // Store invite role so it survives a login redirect
-  if (joinAs && typeof sessionStorage !== 'undefined') {
-    sessionStorage.setItem('swl_pending_role', joinAs);
-    sessionStorage.setItem('swl_pending_room', roomId || '');
-  }
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId    = urlParams.get('id');
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: { facingMode: 'user' } });
-  const { remoteStreams, peerUserIds, announceJoin } = useWebRTCPeers(roomId, localStream);
+  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -328,8 +399,7 @@ export default function LiveRoom() {
   });
 
   const isExclusiveStream = party?.is_exclusive === true;
-  const isHost   = user?.id && party?.host_id && user.id === party.host_id;
-  const isCoHost = !isHost && members.some(m => m.user_id === user?.id && m.role === 'co-host');
+  const isHost = user?.id && party?.host_id && user.id === party.host_id;
 
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['user-subscriptions', user?.id, party?.host_id],
@@ -340,76 +410,19 @@ export default function LiveRoom() {
   const isSubscribed = activeSubs.length > 0;
   const showExclusiveGate = isExclusiveStream && !isHost && !isSubscribed && !!party;
 
-  const isPrivateRoom = party?.is_private === true;
-  const [approvalStatus, setApprovalStatus] = React.useState('none'); // 'none' | 'pending' | 'approved'
-  const showPrivateGate = isPrivateRoom && !isHost && !isCoHost && approvalStatus !== 'approved' && !!party;
-
-  async function requestJoin() {
-    setApprovalStatus('pending');
-    try {
-      await base44.entities.WatchPartyMember.create({
-        party_id: roomId,
-        user_id: user?.id,
-        user_name: user?.full_name || 'Viewer',
-        role: 'audience',
-        join_request: 'pending',
-        is_active: false,
-      });
-    } catch { /* ignore — record may exist */ }
-  }
-
-  const [paywallVisible, setPaywallVisible] = React.useState(false);
-  const [previewSecondsLeft, setPreviewSecondsLeft] = React.useState(120);
-  React.useEffect(() => {
-    if (!isExclusiveStream || isHost || isSubscribed || !party || showExclusiveGate) return;
-    const t = setInterval(() => {
-      setPreviewSecondsLeft(s => {
-        if (s <= 1) { clearInterval(t); setPaywallVisible(true); return 0; }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [isExclusiveStream, isHost, isSubscribed, party, showExclusiveGate]);
-
-  // Deduplicate — keep one record per user_id (latest by created_date)
-  const dedupedMembers = React.useMemo(() => {
-    if (!roomId || !members.length) return [];
-    const seen = new Map();
-    members.forEach(m => {
-      const key = m.user_id || m.id;
-      const existing = seen.get(key);
-      if (!existing || (m.created_date || '') > (existing.created_date || '')) {
-        seen.set(key, m);
-      }
-    });
-    return Array.from(seen.values());
-  }, [members, roomId]);
-
-  const stageMembers = dedupedMembers.filter(m =>
-    m.role && ['host', 'co-host', 'speaker', 'guest'].includes(m.role)
-  );
-  const audienceMembers = dedupedMembers.filter(m =>
-    !m.role || m.role === 'audience'
-  );
-
   // Build stage from real members or demo data
-  const stage = roomId && stageMembers.length > 0
-    ? stageMembers.slice(0, 20).map((m, i) => ({
+  const stage = roomId && members.length > 0
+    ? members.slice(0, 20).map((m, i) => ({
         id:       m.id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
         muted:    m.is_audio_enabled === false,
-        userId:   m.user_id,
-        vdoSeat:  i + 1,
       }))
-    // Demo mode: give first tile the current user's ID so local camera appears
-    : user
-      ? [{ ...DEMO_STAGE[0], userId: user.id, name: user.full_name || 'You' }, ...DEMO_STAGE.slice(1)]
-      : DEMO_STAGE;
+    : DEMO_STAGE;
 
-  const audience = roomId && members.length > 0
-    ? audienceMembers.map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+  const audience = roomId && members.length > 6
+    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
     : DEMO_AUDIENCE;
 
   const roomTitle  = party?.title || (roomId ? 'Live Room' : 'Demo Room');
@@ -427,130 +440,13 @@ export default function LiveRoom() {
   const [likeCount, setLikeCount]   = useState(3);
   const [handRaised, setHandRaised] = useState(false);
   const [shareOpen, setShareOpen]   = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const [payOpen, setPayOpen]       = useState(false);
   const [giftOpen, setGiftOpen]     = useState(false);
-  const [animGiftOpen, setAnimGiftOpen] = useState(false);
-  const [zegoJoined, setZegoJoined]   = useState(false);
-  const [reportOpen, setReportOpen]   = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
   const lastGiftTsRef               = useRef(0);
-  const [joinNotif, setJoinNotif]   = useState(null);
-  const prevMemberCountRef           = useRef(0);
-  const [gateComplete, setGateComplete] = useState(false);
-  const [showNameModal, setShowNameModal]   = useState(false);
-  const [editName, setEditName]             = useState('');
-  const [giftLeaderboard, setGiftLeaderboard] = useState([]); // [{userId, name, total, lastGift, combo}]
-  const [giftCombo, setGiftCombo] = useState(null); // {emoji, count, color} - shown as overlay for 2s
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  // V45: stream duration timer (HH:MM:SS)
-  const [streamDuration, setStreamDuration] = useState(0); // seconds
-  useEffect(() => {
-    if (!isLive) return;
-    const t = setInterval(() => setStreamDuration(s => s + 1), 1000);
-    return () => clearInterval(t);
-  }, [isLive]);
-  function fmtDuration(s) {
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sc = s % 60;
-    return [h, m, sc].map(v => String(v).padStart(2, '0')).join(':');
-  }
-
-  // V45: live viewer ticker (simulated ±)
-  const [viewerCount, setViewerCount] = useState(liveCount);
-  useEffect(() => {
-    const t = setInterval(() => {
-      setViewerCount(c => Math.max(1, c + (Math.random() > 0.45 ? 1 : -1)));
-    }, 5000);
-    return () => clearInterval(t);
-  }, []);
-
-  // PKBattle + InviteGuests modals
-  const [pkBattleOpen, setPkBattleOpen] = useState(false);
-  const [inviteGuestsOpen, setInviteGuestsOpen] = useState(false);
-
-  // Feature: SuperChatRail
-  const [superchats, setSuperchats] = useState([]);
-
-  // Feature: Room Link modal
-  const [roomLinkOpen, setRoomLinkOpen] = useState(false);
-  const [roomLinkCopied, setRoomLinkCopied] = useState(false);
-
-  // Feature: Stream Goals
-  const [goalsOpen, setGoalsOpen] = useState(false);
-
-  // Feature: Breakout Rooms
-  const [breakoutOpen, setBreakoutOpen] = useState(false);
-
-  // Feature: ClipMarker stream start timestamp
-  const streamStartRef = useRef(Date.now());
-
-  // V45: sponsor overlay
-  const [sponsorActive, setSponsorActive] = useState(false);
-  const [sponsorData, setSponsorData] = useState({ name: '', logoUrl: '', cta: '' });
-  const [sponsorModalOpen, setSponsorModalOpen] = useState(false);
-
-  // Announce presence to peers for WebRTC discovery
-  useEffect(() => {
-    if (!roomId || !user?.id) return;
-    announceJoin(user.id);
-  }, [roomId, user?.id]);
-
-  // Apply pending invite role when user logs in and arrives at the room
-  useEffect(() => {
-    if (!user?.id || !roomId) return;
-    const pendingRole = joinAs || sessionStorage.getItem('swl_pending_role');
-    const pendingRoom = sessionStorage.getItem('swl_pending_room');
-    if (!pendingRole) return;
-    if (pendingRoom && pendingRoom !== roomId) return; // different room
-    // Clear immediately so we don't re-apply on re-renders
-    sessionStorage.removeItem('swl_pending_role');
-    sessionStorage.removeItem('swl_pending_room');
-    // Enforce age requirements for invited roles
-    const ageLevel = getAccessLevel(getStoredAge());
-    let effectiveRole = pendingRole;
-    if (pendingRole === 'co-host' && ageLevel !== 'host') effectiveRole = 'audience';
-    else if (pendingRole === 'guest' && (ageLevel === 'blocked' || ageLevel === null)) effectiveRole = 'audience';
-    // Find existing membership and update role
-    (async () => {
-      try {
-        const existing = await base44.entities.WatchPartyMember.filter({ party_id: roomId, user_id: user.id });
-        if (existing && existing.length > 0) {
-          const m = existing[0];
-          if (m.role === 'audience' || !m.role) {
-            await base44.entities.WatchPartyMember.update(m.id, { role: effectiveRole });
-          }
-        } else {
-          await base44.entities.WatchPartyMember.create({ party_id: roomId, user_id: user.id, user_name: user.full_name || user.email, role: effectiveRole, is_active: true });
-        }
-      } catch {}
-    })();
-  }, [user?.id, roomId]);
-
-  // Auto-create/update member record when signed-in user enters room
-  useEffect(() => {
-    if (!user?.id || !roomId || !party?.id) return;
-    const myName = user.full_name || user.email?.split('@')[0] || 'Guest';
-    const myMember = members.find(m => m.user_id === user.id);
-    if (!myMember) {
-      base44.entities.WatchPartyMember.create({
-        party_id: roomId,
-        user_id: user.id,
-        user_name: myName,
-        role: 'audience',
-        is_active: true,
-      }).catch(() => {});
-    } else if (user.full_name && myMember.user_name !== user.full_name) {
-      base44.entities.WatchPartyMember.update(myMember.id, {
-        user_name: user.full_name,
-      }).catch(() => {});
-    }
-  }, [user?.id, user?.full_name, roomId, party?.id, members.length]);
-
-  // Sync stage when real data or current user changes
-  useEffect(() => { if (stage.length) setStageData(stage); }, [members, user?.id]);
+  // Sync stage when real data arrives
+  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
 
   // Simulate rotating speaker in demo mode
   useEffect(() => {
@@ -564,24 +460,12 @@ export default function LiveRoom() {
   }, [roomId]);
 
   const activeSpeaker = stageData.find(s => s.speaking);
-
-  // Ensure the local user always has a tile (handles demo mode + initial load before members arrive)
-  const selfInStage = user?.id && stageData.some(p => p.userId === user.id);
-  const displayStage = (user?.id && !selfInStage)
-    ? [{ id: 'local-self', userId: user.id, name: user.full_name || user.email?.split('@')[0] || 'You',
-         role: isHost ? 'host' : isCoHost ? 'co-host' : 'speaker', speaking: false, muted: !audioEnabled },
-       ...stageData.slice(0, 19)]
-    : stageData;
-
-  const stageCols = displayStage.length <= 4 ? 2 : displayStage.length <= 9 ? 3 : 4;
-  const tileSize  = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
+  const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
+  const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
   function resolveStream(memberId, userId) {
-    if (memberId === 'local-self' || (user?.id && userId === user.id)) {
-      return { stream: localStream, isLocal: true };
-    }
-    const peerId = Array.from((peerUserIds || new Map()).entries())
-      .find(([, uid]) => uid === userId)?.[0];
+    if (userId === user?.id) return { stream: localStream, isLocal: true };
+    const peerId = Array.from((peerUserIds || new Map()).entries()).find(([, uid]) => uid === userId)?.[0];
     return { stream: peerId ? remoteStreams?.get(peerId) : null, isLocal: false };
   }
 
@@ -622,110 +506,13 @@ export default function LiveRoom() {
     return () => clearInterval(iv);
   }, [roomId, user?.id]);
 
-  useEffect(() => {
-    if (!roomId || !members.length) return;
-    const prev = prevMemberCountRef.current;
-    if (members.length > prev && prev > 0) {
-      const newest = members[members.length - 1];
-      setJoinNotif({ name: newest.user_name || 'Someone' });
-      const t = setTimeout(() => setJoinNotif(null), 3500);
-      return () => clearTimeout(t);
-    }
-    prevMemberCountRef.current = members.length;
-  }, [members.length]);
-
-  function recordGift(senderId, senderName, gift) {
-    setGiftLeaderboard(prev => {
-      const idx = prev.findIndex(r => r.userId === senderId);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = {
-          ...updated[idx],
-          total: updated[idx].total + (gift.price || 0),
-          lastGift: gift.emoji,
-          combo: updated[idx].lastGift === gift.emoji ? (updated[idx].combo || 1) + 1 : 1,
-        };
-        return updated.sort((a, b) => b.total - a.total);
-      }
-      return [...prev, { userId: senderId, name: senderName, total: gift.price || 0, lastGift: gift.emoji, combo: 1 }]
-        .sort((a, b) => b.total - a.total);
-    });
-    // Show combo overlay if gift was sent by me
-    if (senderId === user?.id) {
-      setGiftCombo({ emoji: gift.emoji, color: gift.color || '#D4AF37' });
-      setTimeout(() => setGiftCombo(null), 2000);
-    }
-  }
-
   function openChat()  { setChatOpen(true); setUnread(0); }
-  function sendChat(rawText) {
-    const { blocked } = filterMessageWithGuardianAI(rawText);
-    if (blocked) return; // silently drop — Guardian AI filtered it
-    const isFM = user?.is_founding_member === true;
-    const displayName = (user?.full_name || 'You') + (isFM ? ' [FM]' : '');
-    // Super chat: message starting with $amount
-    const scMatch = rawText.match(/^\$(\d+(?:\.\d{1,2})?)\s*(.*)/);
-    if (scMatch) {
-      const entry = {
-        id: Date.now(),
-        user: displayName,
-        amount: parseFloat(scMatch[1]),
-        message: scMatch[2] || '',
-      };
-      setSuperchats(s => [...s.slice(-9), entry]);
-    }
-    setChatMsgs(p => [...p, { id: Date.now(), user: displayName, text: rawText, host: isHost || isCoHost, fm: isFM }]);
-  }
+  function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
-
-  // Determine entry role for the gate — wait for party data when a roomId is present
-  // so a host always gets the 21+ gate, not the audience (18+) gate
-  const partyReady = !roomId || party !== undefined;
-  const entryRole  = isHost ? 'host' : isCoHost ? 'co-host' : 'audience';
-
-  // Hold until party data resolves, then show the gate
-  if (user && !gateComplete) {
-    if (!partyReady) {
-      return (
-        <div className="fixed inset-0 flex items-center justify-center" style={{ background: '#080B18' }}>
-          <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
-            style={{ borderColor: '#D4AF37' }} />
-        </div>
-      );
-    }
-    return (
-      <RoomEntryGate
-        role={entryRole}
-        user={user}
-        onPass={() => setGateComplete(true)}
-        onRoleDowngrade={() => setGateComplete(true)}
-        onExit={() => window.history.back()}
-      />
-    );
-  }
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden"
       style={{ background: BG, fontFamily: 'Barlow Condensed, sans-serif' }}>
-
-      {/* ── Gift combo VFX overlay ────────────────────────────────────────── */}
-      <AnimatePresence>
-        {giftCombo && (
-          <motion.div
-            key="combo"
-            initial={{ scale: 0.5, opacity: 0, y: 20 }}
-            animate={{ scale: 1.2, opacity: 1, y: 0 }}
-            exit={{ scale: 1.5, opacity: 0, y: -30 }}
-            transition={{ duration: 0.4 }}
-            className="fixed top-1/3 left-1/2 -translate-x-1/2 z-[200] pointer-events-none text-center"
-          >
-            <div className="text-6xl">{giftCombo.emoji}</div>
-            <div className="font-black text-xl mt-1" style={{ color: giftCombo.color, fontFamily: 'Barlow Condensed, sans-serif', textShadow: `0 0 20px ${giftCombo.color}` }}>
-              GIFT SENT! ✨
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 px-3 py-2.5 shrink-0"
@@ -735,92 +522,22 @@ export default function LiveRoom() {
           onClick={() => history.back()}>
           <ChevronLeft className="w-4 h-4 text-white" />
         </button>
-
-        {/* Stream timer */}
-        {isLive && (
-          <div className="shrink-0 px-2 py-0.5 rounded-md font-black text-[11px] tabular-nums"
-            style={{ background: `${CRIMSON}22`, color: PINK, border: `1px solid ${PINK}33`, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.04em' }}>
-            {fmtDuration(streamDuration)}
-          </div>
-        )}
-
-        <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
-
-        {/* Viewer count ticker */}
-        <div className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-md"
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <Users className="w-2.5 h-2.5 text-white/40" />
-          <span className="text-[11px] font-bold text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{viewerCount}</span>
+        <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <MessageCircle className="w-3 h-3 text-white/40" />
         </div>
-
-        {/* Audience engagement pulse — visible to host & co-host */}
-        {(isHost || isCoHost) && roomId && (
-          <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={viewerCount} />
-        )}
-
-        {/* Sponsor badge (when active) */}
-        {sponsorActive && sponsorData.name && (
-          <div className="shrink-0 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase tracking-wide"
-            style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-            ★ {sponsorData.name}
-          </div>
-        )}
-
-        {/* Host: sponsor button */}
-        {isHost && (
-          <button onClick={() => setSponsorModalOpen(true)}
-            className="w-7 h-7 flex items-center justify-center rounded-full"
-            style={{ background: `rgba(212,175,55,0.1)`, border: `1px solid rgba(212,175,55,0.25)` }}
-            title="Manage sponsor overlay">
-            <span className="text-[10px]">★</span>
-          </button>
-        )}
-
+        <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
+        <button className="w-7 h-7 flex items-center justify-center">
+          <MoreHorizontal className="w-4 h-4 text-white/40" />
+        </button>
         <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
           <Share2 className="w-4 h-4 text-white/40" />
         </button>
-        {(isHost || isCoHost) && (
-          <button onClick={() => setInviteOpen(true)}
-            className="w-7 h-7 flex items-center justify-center rounded-full transition-all"
-            style={{ background: `rgba(212,175,55,0.15)`, border: `1px solid rgba(212,175,55,0.3)` }}
-            title="Invite people">
-            <UserPlus className="w-3.5 h-3.5" style={{ color: GOLD }} />
-          </button>
-        )}
         <button className="w-7 h-7 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(255,255,255,0.07)' }}>
           <Minus className="w-3.5 h-3.5 text-white/40" />
         </button>
       </div>
-
-      {/* Sponsor overlay banner */}
-      <AnimatePresence>
-        {sponsorActive && sponsorData.name && (
-          <motion.div
-            initial={{ y: -32, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -32, opacity: 0 }}
-            className="w-full flex items-center gap-3 px-4 py-1.5 shrink-0"
-            style={{ background: `linear-gradient(90deg, ${GOLD}18, ${CRIMSON}18)`, borderBottom: `1px solid ${GOLD}22` }}>
-            {sponsorData.logoUrl && (
-              <img src={sponsorData.logoUrl} alt={sponsorData.name} className="h-5 w-auto object-contain rounded" />
-            )}
-            <span className="text-[11px] font-black uppercase tracking-wide" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Sponsored by {sponsorData.name}
-            </span>
-            {sponsorData.cta && (
-              <span className="ml-auto text-[11px] font-semibold" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {sponsorData.cta}
-              </span>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── SuperChatRail ────────────────────────────────────────────────────── */}
-      {superchats.length > 0 && (
-        <div className="shrink-0">
-          <SuperChatRail superchats={superchats} />
-        </div>
-      )}
 
       {/* ── Scrollable content ──────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
@@ -874,14 +591,6 @@ export default function LiveRoom() {
             <Radio className="w-2.5 h-2.5" style={{ color: GOLD }} />
             <span className="text-[11px] font-semibold" style={{ color: GOLD }}>SeeWhy LIVE</span>
           </div>
-          {isExclusiveStream && !isHost && !isSubscribed && !paywallVisible && previewSecondsLeft < 120 && (
-            <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)' }}>
-              <span className="text-[10px] font-black" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Free preview: {previewSecondsLeft}s
-              </span>
-            </div>
-          )}
         </div>
 
         {/* ── Stage header ─────────────────────────────────────────────────── */}
@@ -889,7 +598,7 @@ export default function LiveRoom() {
           <div className="flex items-baseline gap-2">
             <span className="text-[17px] font-black text-white">Stage</span>
             <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              {displayStage.length}/20
+              {stageData.length}/20
             </span>
           </div>
           <button
@@ -906,101 +615,36 @@ export default function LiveRoom() {
             /* Spotlight mode */
             <div className="space-y-4">
               <div className="flex justify-center py-3">
-                {(() => {
-                  const { stream, isLocal } = resolveStream(spotlit.id, spotlit.userId);
-                  const vdoUrl = roomId && spotlit.vdoSeat && !stream ? buildVdoViewUrl(roomId, spotlit.vdoSeat) : null;
-                  return <StageTile p={spotlit} size={170} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl} onClick={() => setSpotlit(null)} />;
-                })()}
+                <StageTile p={spotlit} size={170} onClick={() => setSpotlit(null)} />
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-                {displayStage.filter(s => s.id !== spotlit.id).map(p => {
-                  const { stream, isLocal } = resolveStream(p.id, p.userId);
-                  const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
-                  return (
-                    <div key={p.id} className="shrink-0">
-                      <StageTile p={p} size={72} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl} onClick={() => setSpotlit(p)} />
-                    </div>
-                  );
-                })}
+                {stageData.filter(s => s.id !== spotlit.id).map(p => (
+                  <div key={p.id} className="shrink-0">
+                    <StageTile p={p} size={72} onClick={() => setSpotlit(p)} />
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
-            <motion.div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}
-              variants={{ show: { transition: { staggerChildren: 0.08 } } }}
-              initial="hidden"
-              animate="show">
+            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
               <AnimatePresence>
-                {displayStage.map(p => {
+                {stageData.map(p => {
                   const { stream, isLocal } = resolveStream(p.id, p.userId);
-                  const vdoUrl = roomId && p.vdoSeat && !stream ? buildVdoViewUrl(roomId, p.vdoSeat) : null;
                   return (
                     <motion.div key={p.id} layout
-                      variants={{
-                        hidden: { opacity: 0, scale: 0.75, y: 18 },
-                        show:   { opacity: 1, scale: 1,    y: 0,
-                                  transition: { type: 'spring', damping: 22, stiffness: 280 } }
-                      }}
-                      exit={{ opacity: 0, scale: 0.7 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
                       className="flex justify-center">
-                      <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal} vdoUrl={vdoUrl}
+                      <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal}
                         onClick={() => setSpotlit(p)} />
                     </motion.div>
                   );
                 })}
               </AnimatePresence>
-            </motion.div>
+            </div>
           )}
         </div>
-
-        {/* ── Golden Wall: live tips & gifts ───────────────────────────────── */}
-        {roomId && (
-          <div className="px-3 mb-4">
-            <GoldenWall roomId={roomId} isExpanded />
-          </div>
-        )}
-
-        {/* ── Viewer loyalty card for this creator ─────────────────────────── */}
-        {user?.id && party?.host_id && user.id !== party.host_id && (
-          <div className="px-3 mb-4">
-            <ViewerLoyaltyCard userId={user.id} creatorId={party.host_id} compact />
-          </div>
-        )}
-
-        {user?.id && party?.id && (
-          <div className="px-3 mb-4">
-            <PointsEarnWidget userId={user.id} creatorId={party.host_id || ''} roomId={party.id} isHost={isHost} />
-          </div>
-        )}
-
-        {/* Virtual currency tips */}
-        {user?.id && party?.host_id && (
-          <div className="px-3 mb-4">
-            <VirtualCurrencyTips roomId={party.id} creatorId={party.host_id} currentUser={user} isHost={isHost} />
-          </div>
-        )}
-
-        {/* Super chat bar */}
-        {user?.id && party?.host_id && (
-          <div className="px-3 mb-4">
-            <SuperChatBar roomId={party.id} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
-          </div>
-        )}
-
-        {/* Realtime leaderboard */}
-        {party?.id && party?.host_id && (
-          <div className="px-3 mb-4">
-            <RealtimeLeaderboard roomId={party.id} creatorId={party.host_id} />
-          </div>
-        )}
-
-        {/* Leaderboard panel */}
-        {party?.id && (
-          <div className="px-3 mb-4">
-            <LeaderboardPanel roomId={party.id} />
-          </div>
-        )}
 
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
@@ -1014,23 +658,13 @@ export default function LiveRoom() {
               <span className="text-[10px]">{audience.length}</span>
             </div>
           </div>
-          <motion.div
-            className="grid grid-cols-5 gap-x-2 gap-y-3"
-            variants={{ show: { transition: { staggerChildren: 0.04 } } }}
-            initial="hidden"
-            animate="show">
+          <div className="grid grid-cols-5 gap-x-2 gap-y-3">
             {audience.map(p => (
-              <motion.div
-                key={p.id}
-                className="flex justify-center"
-                variants={{
-                  hidden: { opacity: 0, y: 10 },
-                  show:   { opacity: 1, y: 0, transition: { type: 'spring', damping: 22, stiffness: 260 } }
-                }}>
+              <div key={p.id} className="flex justify-center">
                 <AudienceTile p={p} />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* ── App shortcut carousel ─────────────────────────────────────────── */}
@@ -1040,46 +674,23 @@ export default function LiveRoom() {
               { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'Pay',          icon: '💸', bg: 'rgba(255,21,100,0.08)', action: () => setPayOpen(true) },
-              { label: 'Battle',    icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: () => (isHost || isCoHost) && setPkBattleOpen(true) },
-              { label: 'Invite',    icon: '🤝', bg: 'rgba(109,191,126,0.07)', action: () => setInviteGuestsOpen(true) },
-              { label: 'Room Link', icon: '🔗', bg: 'rgba(109,191,126,0.07)', action: () => setRoomLinkOpen(true) },
-              { label: 'Goals',     icon: '🎯', bg: 'rgba(34,197,94,0.08)',   action: () => setGoalsOpen(true) },
-              { label: 'Breakout',  icon: '🔀', bg: 'rgba(167,139,250,0.08)', action: () => (isHost || isCoHost) && setBreakoutOpen(true) },
+              { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)', action: () => setPayOpen(true) },
+              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
+              { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
-              <motion.div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
                 onClick={s.action}
-                whileTap={{ scale: 0.82 }}
-                whileHover={{ scale: 1.12 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                 style={{ userSelect: 'none' }}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
                   style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
                   {s.icon}
                 </div>
                 <span className="text-[11px] text-white/30">{s.label}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </div>
-
-      {/* ── Anonymous viewer banner ───────────────────────────────────────────── */}
-      {!user && (
-        <div className="fixed bottom-[76px] inset-x-0 z-30 px-4">
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-            style={{ background: 'rgba(13,6,24,0.96)', border: '1px solid rgba(212,175,55,0.18)', backdropFilter: 'blur(12px)' }}>
-            <span className="text-[11px] text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}>
-              👁 Watching as guest — sign in to chat, tip, and join the stage
-            </span>
-            <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
-              className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wide"
-              style={{ background: `linear-gradient(135deg, #800020, #A0003A)`, color: GOLD, textDecoration: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Sign In
-            </a>
-          </div>
-        </div>
-      )}
 
       {/* ── Fixed bottom toolbar ──────────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 shrink-0"
@@ -1095,14 +706,10 @@ export default function LiveRoom() {
 
           {/* Chat */}
           <button onClick={openChat} className="relative flex flex-col items-center gap-0.5">
-            <motion.div
-              className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.82 }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+            <div className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}>
               <MessageCircle className="w-4 h-4 text-white" />
-            </motion.div>
+            </div>
             {unread > 0 && (
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px] font-bold"
                 style={{ background: PINK, color: '#fff' }}>{unread}</div>
@@ -1112,57 +719,30 @@ export default function LiveRoom() {
 
           {/* Heart */}
           <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
-            <motion.div
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.82 }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}>
               <Heart className="w-4 h-4 transition-all"
                 style={{ color: liked ? PINK : 'rgba(255,255,255,0.6)', fill: liked ? PINK : 'none' }} />
-            </motion.div>
+            </div>
             <span className="text-[11px]" style={{ color: liked ? PINK : 'rgba(255,255,255,0.35)' }}>{likeCount}</span>
           </button>
 
           {/* Hand raise */}
-          <button onClick={() => {
-            setHandRaised(h => !h);
-          }} className="flex flex-col items-center gap-0.5">
-            <motion.div
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.82 }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+          <button onClick={() => setHandRaised(h => !h)} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
               <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
-            </motion.div>
+            </div>
             <span className="text-[11px] text-white/35"> </span>
-          </button>
-
-          {/* Gift Leaderboard */}
-          <button onClick={() => setShowLeaderboard(l => !l)} className="flex flex-col items-center gap-0.5">
-            <motion.div
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: showLeaderboard ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: showLeaderboard ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}
-              whileTap={{ scale: 0.82 }}
-              whileHover={{ scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-              <Trophy className="w-4 h-4 transition-all" style={{ color: showLeaderboard ? GOLD : 'rgba(255,255,255,0.6)' }} />
-            </motion.div>
-            <span className="text-[11px] text-white/35">Top</span>
           </button>
 
           {/* Gift */}
           {party && party?.host_id !== user?.id && (
             <button onClick={() => setGiftOpen(true)} className="flex flex-col items-center gap-0.5">
-              <motion.div
-                className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}
-                whileTap={{ scale: 0.82 }}
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}>
                 <Gift className="w-4 h-4" style={{ color: GOLD }} />
-              </motion.div>
+              </div>
               <span className="text-[11px]" style={{ color: GOLD }}>Gift</span>
             </button>
           )}
@@ -1175,95 +755,18 @@ export default function LiveRoom() {
             </div>
           )}
 
-          {/* ClipMarker (host / co-host) */}
-          {(isHost || isCoHost) && (
-            <div className="flex flex-col items-center gap-0.5">
-              <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} />
-              <span className="text-[11px] text-white/35">Clip</span>
+          {/* Mic */}
+          <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
+            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+              style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
+              {!audioEnabled
+                ? <MicOff className="w-4 h-4 text-red-400" />
+                : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
             </div>
-          )}
-
-          {/* Edit Name (host / co-host) */}
-          {(isHost || isCoHost) && (
-            <button onClick={() => { setEditName(user?.full_name || ''); setShowNameModal(true); }}
-              className="flex flex-col items-center gap-0.5">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
-                <span className="text-sm">✏️</span>
-              </div>
-              <span className="text-[11px]" style={{ color: 'rgba(212,175,55,0.7)' }}>Name</span>
-            </button>
-          )}
-
-          {/* Mic / Sign-in gate */}
-          {user ? (
-            <>
-              {/* Camera toggle */}
-              <button onClick={() => {
-                toggleVideo();
-              }} className="flex flex-col items-center gap-0.5">
-                <motion.div
-                  className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                  style={{ background: !videoEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !videoEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}
-                  whileTap={{ scale: 0.82 }}
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-                  {!videoEnabled
-                    ? <VideoOff className="w-4 h-4 text-red-400" />
-                    : <Video className="w-4 h-4" style={{ color: GOLD }} />}
-                </motion.div>
-                <span className="text-[11px] text-white/35">Cam</span>
-              </button>
-              {/* Mic toggle */}
-              <button onClick={() => {
-                toggleAudio();
-              }} className="flex flex-col items-center gap-0.5">
-                <motion.div
-                  className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                  style={{ background: !audioEnabled ? 'rgba(239,68,68,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(239,68,68,0.4)' : `1px solid ${GOLD}55` }}
-                  whileTap={{ scale: 0.82 }}
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
-                  {!audioEnabled
-                    ? <MicOff className="w-4 h-4 text-red-400" />
-                    : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-                </motion.div>
-                <span className="text-[11px] text-white/35"> </span>
-              </button>
-            </>
-          ) : (
-            <a href={`/login?from_url=${encodeURIComponent(window.location.href)}`}
-              className="flex flex-col items-center gap-0.5" style={{ textDecoration: 'none' }}>
-              <div className="w-11 h-11 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <LogIn className="w-4 h-4 text-white/30" />
-              </div>
-              <span className="text-[9px] text-white/25" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Sign in</span>
-            </a>
-          )}
+            <span className="text-[11px] text-white/35"> </span>
+          </button>
         </div>
       </div>
-
-      {/* Join notification */}
-      <AnimatePresence>
-        {joinNotif && (
-          <motion.div
-            initial={{ y: 48, opacity: 0, scale: 0.9 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 48, opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 24 }}
-            className="fixed bottom-24 inset-x-0 flex justify-center z-50 px-6 pointer-events-none">
-            <div style={{ background: 'rgba(14,17,32,0.92)', border: '1px solid rgba(212,175,55,0.28)', borderRadius: 40, padding: '8px 18px', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', background: avatarColor(joinNotif.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff', flexShrink: 0 }}>
-                {joinNotif.name.charAt(0).toUpperCase()}
-              </div>
-              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>
-                <strong style={{ color: '#D4AF37' }}>{joinNotif.name}</strong> joined the room ✨
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* ── Chat panel overlay ─────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -1324,192 +827,11 @@ export default function LiveRoom() {
         onGiftSent={(gift, sender) => {
           lastGiftTsRef.current = Date.now();
           setGiftEvent({ id: Date.now(), gift, senderName: sender?.full_name || sender?.email || 'You' });
-          recordGift(sender?.id || user?.id, sender?.full_name || sender?.email || 'You', gift);
           setGiftOpen(false);
         }}
       />
 
       <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
-
-      {animGiftOpen && (
-        <AnimatedGiftShop
-          recipientId={party?.host_id}
-          roomId={roomId || party?.id}
-          onClose={() => setAnimGiftOpen(false)}
-        />
-      )}
-
-      {/* Tipping overlay (viewer) */}
-      {user?.id && party?.host_id && !isHost && (
-        <TippingOverlay roomId={roomId || party?.id} creatorId={party.host_id} isVisible />
-      )}
-
-      {/* Subscription gate */}
-      {party?.host_id && (
-        <SubscriptionGate creatorId={party.host_id} roomId={roomId || party?.id} />
-      )}
-
-      {/* PPV gate */}
-      {!isHost && (roomId || party?.id) && (
-        <PayPerViewGate roomId={roomId || party?.id} ppvPrice={4.99} onPurchase={() => {}} />
-      )}
-
-      {/* Paywall gate */}
-      <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={isHost} />
-
-      {/* Points notification */}
-      {user?.id && <PointsNotification userId={user.id} />}
-
-      {/* Loyalty badge */}
-      {user?.id && party?.host_id && (
-        <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
-      )}
-
-      {/* Moderation appeal panel */}
-      <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId || party?.id} onClose={() => {}} />
-
-      {/* Report modal */}
-      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId || party?.id} communityId={null} messageId={null} />
-
-      {/* Mobile stream controls */}
-      <MobileStreamControls
-        micMuted={false}
-        onMicToggle={() => {}}
-        onReact={() => {}}
-        onQuickTip={() => setGiftOpen(true)}
-        roomId={roomId || party?.id}
-      />
-
-      {!zegoJoined && user?.id && (roomId || party?.id) && (
-        <ZEGOGuestJoin
-          roomId={roomId || party?.id}
-          userId={user.id}
-          userName={user.full_name || user.email || 'Guest'}
-          onJoined={() => setZegoJoined(true)}
-        />
-      )}
-
-      {/* Invite sheet */}
-      <InviteSheet
-        isOpen={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-        roomId={roomId}
-        roomTitle={roomTitle}
-        isHost={isHost}
-        isCoHost={isCoHost}
-      />
-
-
-
-      {/* ── Gift Leaderboard panel ────────────────────────────────────────── */}
-      <AnimatePresence>
-        {showLeaderboard && (
-          <motion.div
-            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-hidden"
-            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.15)', maxHeight: '60vh' }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(212,175,55,0.1)' }}>
-              <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🏆 Gift Leaders</h3>
-              <button onClick={() => setShowLeaderboard(false)} className="text-white/40 hover:text-white/70">✕</button>
-            </div>
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(60vh - 64px)' }}>
-              {giftLeaderboard.length === 0 ? (
-                <div className="text-center py-12 text-white/30 text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                  No gifts yet — be the first! 🎁
-                </div>
-              ) : giftLeaderboard.slice(0, 10).map((entry, i) => (
-                <div key={entry.userId} className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-                  <span className="w-6 text-center font-black text-sm" style={{ color: i === 0 ? '#D4AF37' : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}
-                  </span>
-                  <span className="text-2xl">{entry.lastGift}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-black text-white text-sm truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{entry.name}</div>
-                    {entry.combo > 1 && <div className="text-[10px] font-bold" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>×{entry.combo} combo!</div>}
-                  </div>
-                  <span className="font-black text-sm" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                    ${entry.total.toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Display name modal ─────────────────────────────────────────────── */}
-      {showNameModal && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center px-5"
-          style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}>
-          <div className="w-full max-w-xs rounded-2xl overflow-hidden"
-            style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.25)' }}>
-            <div className="px-5 pt-5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-base text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                Your screen name
-              </p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                This is how others see you on stage
-              </p>
-            </div>
-            <div className="p-5 space-y-3">
-              <input
-                value={editName}
-                onChange={e => setEditName(e.target.value)}
-                maxLength={32}
-                placeholder="Enter your name…"
-                className="w-full px-3 py-3 rounded-xl text-white outline-none"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15 }}
-              />
-              <button
-                onClick={async () => {
-                  if (!editName.trim()) return;
-                  const myMember = members.find(m => m.user_id === user?.id);
-                  if (myMember) {
-                    await base44.entities.WatchPartyMember.update(myMember.id, { user_name: editName.trim() }).catch(() => {});
-                  }
-                  try { await base44.auth.updateMe({ full_name: editName.trim() }); } catch {}
-                  setShowNameModal(false);
-                }}
-                disabled={!editName.trim()}
-                className="w-full py-3 rounded-xl font-black uppercase text-sm"
-                style={{ background: editName.trim() ? '#800020' : 'rgba(128,0,32,0.2)', color: editName.trim() ? '#D4AF37' : 'rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                Set Name
-              </button>
-              <button onClick={() => setShowNameModal(false)}
-                className="w-full py-2 rounded-xl font-black uppercase text-xs"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                Skip
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showPrivateGate && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,11,24,0.97)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 360, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 20, padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 56 }}>🔒</span>
-            <h2 style={{ margin: 0, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 28, fontWeight: 900 }}>Private Room</h2>
-            <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 1.5 }}>
-              {approvalStatus === 'pending'
-                ? 'Your request was sent. Waiting for the host to let you in...'
-                : `This room is invite-only. Request access from ${hostName}.`}
-            </p>
-            {approvalStatus === 'none' ? (
-              <button
-                onClick={requestJoin}
-                style={{ width: '100%', padding: '12px 0', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080B18', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', borderRadius: 12, border: 'none', cursor: 'pointer', textTransform: 'uppercase' }}
-              >Request to Join</button>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(212,175,55,0.7)', fontSize: 13 }}>
-                <span>⏳</span> Pending approval...
-              </div>
-            )}
-            <button onClick={() => history.back()} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 14, padding: '10px 0', width: '100%', cursor: 'pointer' }}>Go Back</button>
-          </div>
-        </div>
-      )}
 
       {showExclusiveGate && (
         <div style={{
@@ -1582,210 +904,145 @@ export default function LiveRoom() {
           </div>
         </div>
       )}
-
-      {/* ── PK Battle Modal (host/co-host only) ────────────────────────────── */}
-      <AnimatePresence>
-        {pkBattleOpen && (
-          <PKBattleModal
-            isOpen={pkBattleOpen}
-            onClose={() => setPkBattleOpen(false)}
-            roomId={roomId}
-            isHost={isHost}
-            currentUser={user}
-            hostName={hostName}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ── Room Link modal ────────────────────────────────────────────────── */}
-      {(() => {
-        const roomUrl = `${window.location.origin}/LiveRoom?id=${roomId || 'demo'}`;
-        return (
-          <AnimatePresence>
-            {roomLinkOpen && (
-              <>
-                <motion.div className="fixed inset-0 z-[74]" style={{ background: 'rgba(0,0,0,0.65)' }}
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  onClick={() => setRoomLinkOpen(false)} />
-                <motion.div
-                  initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                  className="fixed inset-x-0 bottom-0 z-[75] rounded-t-3xl overflow-hidden"
-                  style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.18)', maxHeight: '60vh' }}>
-                  <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-1" />
-                  <div className="px-5 pt-2 pb-2 flex items-center justify-between">
-                    <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🔗 Room Link</h3>
-                    <button onClick={() => setRoomLinkOpen(false)} className="text-white/40 text-xl">✕</button>
-                  </div>
-                  <div className="px-5 pb-8 space-y-3">
-                    <p className="text-[11px] text-white/35" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      Share this link to invite viewers into your room
-                    </p>
-                    <div className="px-3 py-2.5 rounded-xl break-all"
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', fontFamily: 'monospace', fontSize: 11, color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
-                      {roomUrl}
-                    </div>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard?.writeText(roomUrl);
-                        setRoomLinkCopied(true);
-                        setTimeout(() => setRoomLinkCopied(false), 2000);
-                      }}
-                      className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
-                      style={{ background: roomLinkCopied ? 'rgba(109,191,126,0.2)' : `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, color: roomLinkCopied ? '#6DBF7E' : GOLD, border: roomLinkCopied ? '1px solid rgba(109,191,126,0.4)' : 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      {roomLinkCopied ? '✓ Copied!' : '📋 Copy Link'}
-                    </button>
-                    <button
-                      onClick={() => { if (navigator.share) navigator.share({ title: roomTitle, url: roomUrl }).catch(() => {}); else navigator.clipboard?.writeText(roomUrl); }}
-                      className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
-                      style={{ background: 'transparent', color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                      📤 Share via…
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        );
-      })()}
-
-      {/* ── Invite Guests Modal ─────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {inviteGuestsOpen && (
-          <InviteGuestsModal
-            isOpen={inviteGuestsOpen}
-            onClose={() => setInviteGuestsOpen(false)}
-            roomId={roomId}
-            roomTitle={roomTitle}
-            currentUser={user}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* ── Stream Goals slide-up panel ─────────────────────────────────────── */}
-      <AnimatePresence>
-        {goalsOpen && (
-          <>
-            <motion.div className="fixed inset-0 z-[80]" style={{ background: 'rgba(0,0,0,0.7)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setGoalsOpen(false)} />
-            <motion.div
-              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed inset-x-0 bottom-0 z-[85] rounded-t-3xl overflow-hidden"
-              style={{ background: '#0E1120', border: '1px solid rgba(34,197,94,0.2)', maxHeight: '70vh' }}>
-              <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-2" />
-              <div className="px-5 pb-2 flex items-center justify-between">
-                <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>🎯 Stream Goals</h3>
-                <button onClick={() => setGoalsOpen(false)} className="text-white/40 text-xl">✕</button>
-              </div>
-              <div style={{ overflowY: 'auto', maxHeight: 'calc(70vh - 70px)' }}>
-                <StreamGoals
-                  isHost={isHost || isCoHost}
-                  currentTips={superchats.reduce((s, sc) => s + (sc.amount || 0), 0)}
-                  currentViewers={viewerCount}
-                  currentSubs={0}
-                />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ── Breakout Rooms Modal ──────────────────────────────────────────── */}
-      <BreakoutRoomsModal
-        isOpen={breakoutOpen}
-        onClose={() => setBreakoutOpen(false)}
-        roomId={roomId}
-        roomTitle={roomTitle}
-        currentUser={user}
-        participants={displayStage || []}
-      />
-
-      {/* ── Sponsor Overlay Modal (host only) ──────────────────────────────── */}
-      <AnimatePresence>
-        {sponsorModalOpen && isHost && (
-          <>
-            <motion.div className="fixed inset-0 z-[80]" style={{ background: 'rgba(0,0,0,0.75)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setSponsorModalOpen(false)} />
-            <motion.div
-              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed inset-x-0 bottom-0 z-[85] rounded-t-3xl overflow-hidden"
-              style={{ background: '#0E1120', border: '1px solid rgba(212,175,55,0.2)', maxHeight: '75vh' }}>
-              <div className="w-8 h-1 rounded-full bg-white/10 mx-auto mt-3 mb-4" />
-              <div className="px-5 pb-2 flex items-center justify-between">
-                <h3 className="font-black text-lg text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>★ Sponsor Overlay</h3>
-                <button onClick={() => setSponsorModalOpen(false)} className="text-white/40 text-xl">✕</button>
-              </div>
-              <div className="px-5 pb-8 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(75vh - 80px)' }}>
-                <div>
-                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Sponsor Name</label>
-                  <input
-                    value={sponsorData.name}
-                    onChange={e => setSponsorData(d => ({ ...d, name: e.target.value }))}
-                    placeholder="e.g. Domino Social Expo"
-                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Logo URL (optional)</label>
-                  <input
-                    value={sponsorData.logoUrl}
-                    onChange={e => setSponsorData(d => ({ ...d, logoUrl: e.target.value }))}
-                    placeholder="https://…"
-                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] uppercase tracking-wide font-bold text-white/40 mb-1 block" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Call to Action Text (optional)</label>
-                  <input
-                    value={sponsorData.cta}
-                    onChange={e => setSponsorData(d => ({ ...d, cta: e.target.value }))}
-                    placeholder="e.g. Visit booth 4B!"
-                    className="w-full px-3 py-2.5 rounded-xl text-white text-sm outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  />
-                </div>
-                <button
-                  onClick={() => { setSponsorActive(a => !a); setSponsorModalOpen(false); }}
-                  className="w-full py-3 rounded-2xl font-black text-sm uppercase tracking-wide"
-                  style={{
-                    background: sponsorActive ? 'rgba(239,68,68,0.18)' : `linear-gradient(135deg, ${GOLD}, #B8960C)`,
-                    color: sponsorActive ? '#EF4444' : '#080B18',
-                    border: sponsorActive ? '1px solid rgba(239,68,68,0.35)' : 'none',
-                    fontFamily: 'Barlow Condensed, sans-serif',
-                  }}>
-                  {sponsorActive ? 'Deactivate Overlay' : 'Activate Overlay'}
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {paywallVisible && !showExclusiveGate && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(8,11,24,0.94)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ width: '100%', maxWidth: 360, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 20, padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontSize: 56 }}>⏱️</span>
-            <h2 style={{ margin: 0, color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 30, fontWeight: 900, letterSpacing: '0.04em' }}>Free Preview Ended</h2>
-            <p style={{ margin: 0, color: 'rgba(255,255,255,0.55)', fontSize: 14, lineHeight: 1.5 }}>
-              Subscribe to {hostName} to keep watching this exclusive stream.
-            </p>
-            <a href={`/CreatorSubscriptions?creator=${party?.host_id}`}
-              style={{ display: 'block', width: '100%', padding: '12px 0', background: 'linear-gradient(135deg, #D4AF37, #B8960C)', color: '#080B18', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', borderRadius: 12, textDecoration: 'none', textTransform: 'uppercase' }}>
-              Subscribe Now — 90/10 Split
-            </a>
-            <button onClick={() => setPaywallVisible(false)}
-              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 13, padding: '8px 0', width: '100%', cursor: 'pointer' }}>
-              Watch for free (limited view)
-            </button>
-          </div>
-        </div>
-      )}
+      <SwanAIRecommendations roomId={roomId} currentLayout="live" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {party?.host_id && <ShopDashboard creatorId={party.host_id} />}
+      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
+      {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
+      {user && <ZEGOConfigPanel user={user} />}
+      {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={party?.host_id || user?.id} />}
+      {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
+      {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
+      {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
+      {roomId && <GoldenWall roomId={roomId} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && roomId && <StreamerGoalsWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
+      {isHost && roomId && <PayPerViewManager roomId={roomId} />}
+      {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
+      {roomId && <GiftShopTray roomId={roomId} currentUser={user} />}
+      {roomId && <GiftLeaderboard roomId={roomId} />}
+      {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
+      {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
+      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
+      <MerchWidget />
+      <NotificationBell />
+      {roomId && <PKBattleInterface roomId={roomId} />}
+      {roomId && <CoStreamPanel roomId={roomId} />}
+      {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
+      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={roomId} />}
+      {roomId && <RewardShop creatorId={party?.host_id || user?.id} roomId={roomId} currentUser={user} />}
+      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
+      {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
+      {isHost && <StreamingPresets onApply={() => {}} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Live Stream'} viewerCount={0} />}
+      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+      {isHost && user?.id && <RecordingManager userId={user.id} />}
+      {isHost && <OBSBridge />}
+      <ZEGOMobileAppBanner />
+      {isHost && roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
+      {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
+      {isHost && <StreamMetadataEditor initialTitle={party?.title || 'Live Stream'} initialCategory={'entertainment'} />}
+      {isHost && <StreamerMonetizationCenter />}
+      {!isHost && roomId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={roomId} onClose={() => {}} />}
+      {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
+      {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
+      <ShareToSocial content={{text: ''}} />
+      {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
+      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
+      {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
+      <StreamHealthDashboard isLive={roomId != null} />
+      {!isHost && roomId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
+      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      <NotificationHub />
+      {isHost && <SoundboardWidget isVisible={true} />}
+      {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
+      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
+      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && <ChatModeration collapsed={true} />}
+      <BrandChyron />
+      {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
+      <HostAlertCenter />
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={party?.host_id || user?.id} isHost={isHost} />}
+      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
+      {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {isHost && <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />}
+      {isHost && <AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
+      {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
+      {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
+      {isHost && <StripeConnectButton creatorId={party?.host_id || user?.id} />}
+      {!isHost && user?.id && <StripeSubscribeButton creatorId={party?.host_id || user?.id} creatorName={''} currentUserId={user.id} />}
+      {<SubscriptionTiers communityId={null} userId={user?.id} />}
+      {party && <WatchPartyAnalytics party={party} members={[]} pollCount={0} reactionCount={0} />}
+      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
+      {roomId && <PaymentMethodSelector creatorId={party?.host_id || user?.id} roomId={roomId} onPaymentComplete={() => {}} />}
+      {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
+      {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
+      {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
+      {roomId && <GuestGrid participants={[]} isHost={isHost} onInvite={() => {}} hostId={user?.id} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
+      <YouTubeDiscovery />
+      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <GlobalSearch onClose={() => {}} />
+      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
+      <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
+      {roomId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={roomId} />}
+      {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
+      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
+      {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
+      {roomId && <VdoNinjaGuestLink roomId={roomId} />}
+      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
+      {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
+      <PanelMusicPlayer />
+      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
+      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => {}} />}
+      <PrivatePanel isHost={isHost} currentUser={user} />
+      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={0} hostName={user?.full_name || ''} room={party} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <TippingOverlay roomId={roomId} creatorId={party?.host_id || user?.id} isVisible={true} />}
+      {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
+      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
+      {isHost && <AudioMixer micMuted={false} onMicToggle={() => {}} />}
+      {isHost && <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      {isHost && <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
+      {roomId && <BattleScoreboard roomId={roomId} />}
+      {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}
+      <GlobalChatWidget />
+      {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
+      {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
+      {roomId && <LeaderboardPanel roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />}
+      {user?.id && <PointsNotification userId={user.id} />}
+      {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
+      {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
+      {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
+      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
+      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <ViewerCount count={0} peakViewers={0} />
+      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={0} currentUser={user} />}
+      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
+      {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
+      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
+      <BackgroundCustomizer />
     </div>
   );
 }

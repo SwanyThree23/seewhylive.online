@@ -98,7 +98,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
         <StatCard icon={Eye} label="Total Viewers" value={stats.totalViewers} unit="" color={G} />
         <StatCard icon={Users} label="Avg Viewers" value={stats.avgViewers} unit="" color="#C9A84C" />
         <StatCard icon={DollarSign} label="Revenue" value={stats.totalRevenue} unit="$" color="#6DBF7E" />
-        <StatCard icon={TrendingUp} label="Engagement" value={stats.avgEngagement} unit="%" color="#FF8C00" />
+        <StatCard icon={TrendingUp} label="Engagement" value={stats.avgEngagement} unit="%" color="#D4854A" />
       </div>
 
       {/* Viewer Trend */}

@@ -46,16 +46,19 @@ export default function RewardShopEditor({ creatorId }) {
       setShowForm(false);
       qc.invalidateQueries(['loyalty-rewards', creatorId]);
     },
+    onError: () => toast.error('Failed to create reward.'),
   });
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active: !is_active }),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onError: () => toast.error('Failed to update reward.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
-    onSuccess: () => qc.invalidateQueries(['loyalty-rewards', creatorId]),
+    onError: () => toast.error('Failed to delete reward.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards', creatorId] }),
   });
 
   return (
@@ -108,7 +111,7 @@ export default function RewardShopEditor({ creatorId }) {
             </button>
             <button onClick={() => deleteMutation.mutate(reward.id)}
               style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.2)', padding:2 }}
-              onMouseEnter={e => e.currentTarget.style.color='#f87171'}
+              onMouseEnter={e => e.currentTarget.style.color='#C0392B'}
               onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.2)'}>
               <Trash2 style={{ width:14, height:14 }} />
             </button>

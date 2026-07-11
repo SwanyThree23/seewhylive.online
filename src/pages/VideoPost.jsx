@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Upload, Video, Clock, Lock, Globe, Tag, Play, Share2, X, CheckCircle } from 'lucide-react';
@@ -8,6 +8,22 @@ import { createPageUrl } from '../utils';
 import ShareModal from '../components/live/ShareModal';
 import ShareButtons from '../components/shared/ShareButtons';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const GOLD = '#D4AF37';
 
 const MAX_DURATION_SECONDS = 600; // 10 minutes
@@ -15,6 +31,9 @@ const MAX_DURATION_SECONDS = 600; // 10 minutes
 export default function VideoPost() {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
+  const videoUrlRef = useRef(null);
+
+  useEffect(() => () => { if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current); }, []);
 
   const [step, setStep] = useState('upload'); // upload | details | published
   const [selectedFile, setSelectedFile] = useState(null);
@@ -54,7 +73,9 @@ export default function VideoPost() {
       return;
     }
 
+    if (videoUrlRef.current) URL.revokeObjectURL(videoUrlRef.current);
     const url = URL.createObjectURL(file);
+    videoUrlRef.current = url;
     setSelectedFile(file);
     setVideoUrl(url);
     setForm(prev => ({ ...prev, title: file.name.replace(/\.[^/.]+$/, '') }));
@@ -315,6 +336,21 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

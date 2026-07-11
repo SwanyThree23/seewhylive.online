@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, TrendingUp, Users } from 'lucide-react';
@@ -7,6 +7,48 @@ import { createPageUrl } from '../utils';
 import CommunityCard from '../components/communities/CommunityCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = useRef(0);
+  var THRESHOLD = 65;
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) { e.preventDefault(); setPullY(Math.min(dy * 0.45, THRESHOLD + 20)); }
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true); setPullY(THRESHOLD);
+      try { await onRefresh(); } catch {}
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -228,6 +270,22 @@ export default function CommunitiesPage() {
           </>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="communities" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={null} isAdmin={false} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

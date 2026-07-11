@@ -5,7 +5,30 @@ import { toast } from 'sonner';
 import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
-const BG = 'rgba(7,7,15,0.95)';
+const BG = 'rgba(8,11,24,0.95)';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+function CopyBtn({ value, label }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success(`${label} copied!`);
+    }).catch(() => toast.error('Copy failed.'));
+  };
+  return (
+    <button
+      onClick={copy}
+      className="flex items-center justify-center gap-1 h-7 px-2 rounded transition-all"
+      style={{ background: copied ? `${G}20` : 'rgba(255,255,255,0.06)', border: `1px solid ${copied ? `${G}40` : 'rgba(255,255,255,0.1)'}` }}
+    >
+      {copied
+        ? <Check className="w-3 h-3" style={{ color: G }} />
+        : <Copy className="w-3 h-3 text-white/40" />}
+    </button>
+  );
+}
 
 export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
   const [showPanel, setShowPanel] = useState(false);
@@ -42,7 +65,7 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       name: 'Co-Host',
       url: `https://vdo.ninja/?view=Swan23&room=COHOST-${roomId?.slice(0, 8) || 'DEMO'}&broadcast`,
       color: 'bg-[rgba(255,136,0,0.08)]',
-      textColor: '#FF8C00',
+      textColor: '#D4854A',
       icon: '👥',
       description: 'Full co-host access',
     },
@@ -160,11 +183,6 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
                   <Copy className="inline w-3 h-3 mr-1" />
                   Copy All
                 </button>
-              </div>
-
-              {/* Info Footer */}
-              <div className="text-[11px] text-white/20 pt-1 border-t border-white/10">
-                Share these links with remote guests. VDO.ninja handles video/audio with low latency directly in browser.
               </div>
             </div>
           </motion.div>

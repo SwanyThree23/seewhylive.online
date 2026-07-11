@@ -9,13 +9,29 @@ import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
-  { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#22c55e' },
+  { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#6DBF7E' },
   { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#a78bfa' },
 ];
 
@@ -46,16 +62,16 @@ export default function MonetizationWidgets() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {/* Beta notice */}
         <div className="flex items-start gap-3 p-4 rounded-xl"
-          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
-          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#D4AF37' }} />
+          style={{ background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)' }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#00d4ff' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#D4AF37' }}>Beta Testing</p>
+            <p className="text-sm font-black" style={{ ...T, color: '#00d4ff' }}>Beta Testing</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
-                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#D4AF37' }}>Start a live room</Link> to enable auction bidding.</span>
+                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#00d4ff' }}>Start a live room</Link> to enable auction bidding.</span>
               )}
             </p>
           </div>
@@ -101,9 +117,9 @@ export default function MonetizationWidgets() {
 
         {/* Sound Alerts */}
         {activeTab === 'alerts' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(34,197,94,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#22c55e' }}>Sound Alert Configuration</p>
+              <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
             </div>
             <div className="p-5">
@@ -125,6 +141,21 @@ export default function MonetizationWidgets() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

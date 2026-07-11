@@ -62,7 +62,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
   };
 
   const copyStreamUrl = (url, key) => {
-    navigator.clipboard.writeText(`${url}/${key}`);
+    navigator.clipboard.writeText(`${url}/${key}`).catch(() => {});
   };
 
   const platforms = [
@@ -110,7 +110,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-[#d4af37]" />
             <span className="text-sm font-semibold text-white">Stream Destinations</span>
-            <span className="text-xs px-2 py-1 rounded-full bg-purple-900/30 text-purple-300">
+            <span className="text-xs px-2 py-1 rounded-full bg-[#7B5DA6]/30 text-[#7B5DA6]">
               {destinations.length}
             </span>
           </div>
@@ -214,7 +214,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   required
                 />
                 <div className="flex gap-1">
-                  <button type="submit" style={{ flex:1, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#86efac', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
+                  <button type="submit" style={{ flex:1, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
                   <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'rgba(255,255,255,0.5)', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Cancel</button>
                 </div>
               </motion.form>
@@ -232,7 +232,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       {/* Control buttons */}
       {destinations.length > 0 && (
         <div className="flex gap-2">
-          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#86efac', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
             <Play className="w-4 h-4" />{isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
           </button>
           {isDistributing && (

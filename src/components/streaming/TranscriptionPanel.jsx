@@ -66,9 +66,10 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
   };
 
   const handleCopy = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   };
 
   return (
@@ -87,7 +88,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
             <button
               onClick={handleTranscribe}
               disabled={loading || !recordingUrl}
-              style={{ width:'100%', background:'#0891b2', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+              style={{ width:'100%', background:'#5B7FA6', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
             >
               {loading ? (
                 <>
@@ -135,7 +136,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
               <button
                 onClick={handleTranslate}
                 disabled={loading}
-                style={{ width:'100%', background:'#7c3aed', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+                style={{ width:'100%', background:'#7B5DA6', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
               >
                 {loading ? (
                   <>

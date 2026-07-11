@@ -5,6 +5,21 @@ import { Calendar, Plus, Radio, Bell, Users, Mail, Trophy, Filter, X } from 'luc
 import { format, addDays, isSameDay, isToday, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -14,9 +29,9 @@ const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, san
 
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
-  scheduled:  { bg: 'rgba(212,175,55,0.1)',    border: 'rgba(212,175,55,0.3)',    color: '#D4AF37' },
+  scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
   published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
-  cancelled:  { bg: 'rgba(255,21,100,0.1)',   border: 'rgba(255,21,100,0.3)',   color: '#C0392B' },
+  cancelled:  { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
 };
 
 function getTypeIcon(type) {
@@ -54,11 +69,13 @@ export default function ContentCalendarPage() {
       setFormData({ content_type: 'room', title: '', description: '', scheduled_for: new Date().toISOString(), recurrence: 'none' });
       toast.success('Content scheduled!');
     },
+    onError: () => toast.error('Action failed.'),
   });
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.ScheduledContent.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['scheduled-content'] }),
+    onError: () => toast.error('Action failed.'),
   });
 
   const filteredContent = scheduledContent.filter(item => {
@@ -165,7 +182,7 @@ export default function ContentCalendarPage() {
                       </button>
                       <button onClick={() => updateStatusMutation.mutate({ id: item.id, status: 'cancelled' })}
                         className="flex-1 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', color: '#C0392B', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', cursor: 'pointer' }}>
                         Cancel
                       </button>
                     </div>
@@ -229,6 +246,21 @@ export default function ContentCalendarPage() {
           </div>
         </div>
       )}
+      <SwanAIRecommendations roomId={null} currentLayout="calendar" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

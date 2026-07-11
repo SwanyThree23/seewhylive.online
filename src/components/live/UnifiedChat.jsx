@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
@@ -11,7 +12,7 @@ const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍'
 const MSG_STYLES = {
   regular: '',
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
-  subscription: 'border-l-2 border-purple-400 bg-purple-900/20',
+  subscription: 'border-l-2 border-[#7B5DA6] bg-[#7B5DA6]/20',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
   qa: 'border-l-2 border-blue-500 bg-blue-900/15',
   poll: 'border-l-2 border-green-500 bg-green-900/15',
@@ -21,7 +22,7 @@ const MSG_STYLES = {
 function MessageBadge({ type }) {
   const badges = {
     tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
-    subscription: <span className="text-[11px] bg-purple-700 text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
+    subscription: <span className="text-[11px] bg-[#7B5DA6] text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
     qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
     poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
@@ -79,11 +80,13 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
   const sendMutation = useMutation({
     mutationFn: (data) => base44.entities.Message.create(data),
+    onError: () => toast.error('Failed to send message.'),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Message.delete(id),
-    onSuccess: () => qc.invalidateQueries(['chat-messages', roomId]),
+    onError: () => toast.error('Failed to delete message.'),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['chat-messages', roomId] }),
   });
 
   const sendMessage = useCallback(() => {
@@ -142,12 +145,12 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7c3aed' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7B5DA6' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
                 <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
-                  style={{ border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.05)' }}>
+                  style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
               </motion.div>

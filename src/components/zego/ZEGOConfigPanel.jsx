@@ -46,7 +46,18 @@ export default function ZEGOConfigPanel({ user }) {
         ? base44.entities.ZEGOStream.update(zegoStream.id, data)
         : base44.entities.ZEGOStream.create(data);
     },
-    onSuccess: () => { qc.invalidateQueries(['zego-config']); toast.success('ZEGOCLOUD config saved!'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['zego-config'] });
+      toast.success('ZEGOCLOUD config saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Configured ZEGOCLOUD streaming settings',
+        }).catch(() => {});
+      }
+    },
+    onError: () => toast.error('Action failed.'),
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;
@@ -68,7 +79,7 @@ export default function ZEGOConfigPanel({ user }) {
         <span className="text-[11px] font-black uppercase px-2 py-1 rounded-full"
           style={{
             background: isConfigured ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)',
-            color: isConfigured ? '#6DBF7E' : '#FF4444',
+            color: isConfigured ? '#6DBF7E' : '#C0392B',
             border: `1px solid ${isConfigured ? 'rgba(109,191,126,0.3)' : 'rgba(255,68,68,0.3)'}`,
           }}>
           {isConfigured ? '● CONFIGURED' : '● NOT CONFIGURED'}
@@ -150,7 +161,7 @@ export default function ZEGOConfigPanel({ user }) {
         </button>
 
         <button
-          onClick={() => { navigator.clipboard.writeText(obsUrl); toast.success('OBS ingest URL copied!'); }}
+          onClick={() => { navigator.clipboard.writeText(obsUrl).then(() => toast.success('OBS ingest URL copied!')).catch(() => toast.error('Copy failed.')); }}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-[10px]"
           style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', ...T }}>
           <Copy className="w-3.5 h-3.5" /> Copy OBS Ingest URL

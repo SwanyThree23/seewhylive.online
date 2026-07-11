@@ -12,7 +12,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#FF4444';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#C0392B';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (
@@ -74,12 +74,14 @@ export default function DevicePreview({ user, onDeviceState }) {
   useEffect(() => {
     const enumerate = async () => {
       if (!navigator.mediaDevices?.enumerateDevices) return;
-      const list = await navigator.mediaDevices.enumerateDevices();
-      setDevices({
-        video: list.filter(d => d.kind === 'videoinput'),
-        audio: list.filter(d => d.kind === 'audioinput'),
-        output: list.filter(d => d.kind === 'audiooutput'),
-      });
+      try {
+        const list = await navigator.mediaDevices.enumerateDevices();
+        setDevices({
+          video: list.filter(d => d.kind === 'videoinput'),
+          audio: list.filter(d => d.kind === 'audioinput'),
+          output: list.filter(d => d.kind === 'audiooutput'),
+        });
+      } catch {}
     };
     enumerate();
   }, []);

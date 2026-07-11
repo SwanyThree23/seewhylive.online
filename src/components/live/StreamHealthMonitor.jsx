@@ -32,8 +32,8 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
     return () => clearInterval(intervalRef.current);
   }, [isLive]);
 
-  const healthColor = health >= 80 ? '#22c55e' : health >= 50 ? '#f59e0b' : '#ef4444';
-  const latencyColor = latency < 200 ? '#22c55e' : latency < 400 ? '#f59e0b' : '#ef4444';
+  const healthColor = health >= 80 ? '#6DBF7E' : health >= 50 ? '#f59e0b' : '#C0392B';
+  const latencyColor = latency < 200 ? '#6DBF7E' : latency < 400 ? '#f59e0b' : '#C0392B';
   const networkBars = Math.ceil((health / 100) * 5);
 
   const ringCircumference = 2 * Math.PI * 20;
@@ -93,7 +93,7 @@ export default React.memo(function StreamHealthMonitor({ isLive }) {
             <Stat label="FPS" value={`${fps} fps`} color="#D4AF37" />
             <Stat label="Latency" value={`${latency} ms`} color={latencyColor} />
             <Stat label="Bitrate" value={`${(bitrate / 1000).toFixed(1)} Mbps`} color="#d4af37" />
-            <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#ef4444' : '#22c55e'} />
+            <Stat label="Dropped" value={`${droppedFrames} fr`} color={droppedFrames > 10 ? '#C0392B' : '#6DBF7E'} />
           </div>
           {health < 50 && (
             <div className="bg-yellow-900/40 border border-yellow-600/40 rounded px-2 py-1 text-[10px] text-yellow-400">

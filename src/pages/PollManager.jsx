@@ -1,9 +1,26 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -29,8 +46,12 @@ export default function PollManager() {
   });
 
   const createTemplateMutation = useMutation({
-    mutationFn: (data) => base44.entities.PollTemplate.create({ ...data, creator_id: user.id }),
-    onSuccess: () => {
+    mutationFn: (data) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      return base44.entities.PollTemplate.create({ ...data, creator_id: user.id });
+    },
+    onError: () => toast.error('Failed to create template.'),
+    onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] });
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
@@ -39,6 +60,7 @@ export default function PollManager() {
 
   const deleteTemplateMutation = useMutation({
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
+    onError: () => toast.error('Failed to delete template.'),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
   });
 
@@ -86,7 +108,7 @@ export default function PollManager() {
                   <input placeholder={`Option ${idx + 1}`} value={opt} onChange={e => handleOptionChange(idx, e.target.value)} style={{ ...inp, flex: 1 }} />
                   {formData.options.length > 2 && (
                     <button onClick={() => handleRemoveOption(idx)}
-                      className="px-3 rounded-lg" style={{ background: 'rgba(255,21,100,0.08)', border: '1px solid rgba(255,21,100,0.2)', cursor: 'pointer' }}>
+                      className="px-3 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', cursor: 'pointer' }}>
                       <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                     </button>
                   )}
@@ -126,9 +148,9 @@ export default function PollManager() {
                 style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
                 Cancel
               </button>
-              <button onClick={handleSubmit}
+              <button onClick={handleSubmit} disabled={createTemplateMutation.isPending}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
+                style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: createTemplateMutation.isPending ? 'not-allowed' : 'pointer', opacity: createTemplateMutation.isPending ? 0.6 : 1 }}>
                 <Save className="w-4 h-4" /> Save Template
               </button>
             </div>
@@ -149,7 +171,7 @@ export default function PollManager() {
                   </span>
                 </div>
                 <button onClick={() => deleteTemplateMutation.mutate(template.id)}
-                  className="p-1.5 rounded-lg" style={{ background: 'rgba(255,21,100,0.06)', border: '1px solid rgba(255,21,100,0.15)', cursor: 'pointer' }}>
+                  className="p-1.5 rounded-lg" style={{ background: 'rgba(192,57,43,0.06)', border: '1px solid rgba(192,57,43,0.15)', cursor: 'pointer' }}>
                   <Trash2 className="w-4 h-4" style={{ color: '#C0392B' }} />
                 </button>
               </div>
@@ -176,6 +198,21 @@ export default function PollManager() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

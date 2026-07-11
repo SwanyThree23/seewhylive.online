@@ -4,6 +4,22 @@ import { useQuery } from '@tanstack/react-query';
 import { UserPlus, Mail, Copy, Check, Users, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -43,10 +59,11 @@ export default function InviteUsersPage() {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
-    toast.success('Beta invite link copied!');
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+      toast.success('Beta invite link copied!');
+    }).catch(() => toast.error('Copy failed.'));
   };
 
   return (
@@ -73,7 +90,7 @@ export default function InviteUsersPage() {
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
             { label: 'Slots Available', value: '∞', color: '#00ff88' },
-            { label: 'Beta Access', value: 'Free', color: '#D4AF37' },
+            { label: 'Beta Access', value: 'Free', color: '#00d4ff' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -137,7 +154,7 @@ export default function InviteUsersPage() {
             <input
               readOnly
               value={referralLink}
-              style={{ ...inp, flex: 1, fontSize: 11, color: '#D4AF37', fontFamily: 'monospace' }}
+              style={{ ...inp, flex: 1, fontSize: 11, color: '#00d4ff', fontFamily: 'monospace' }}
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"
@@ -192,6 +209,21 @@ export default function InviteUsersPage() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

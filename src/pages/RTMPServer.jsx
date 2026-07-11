@@ -7,6 +7,22 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
   { name: 'Streamlabs', logo: '🎮', url: 'https://streamlabs.com', port: 1935, protocol: 'RTMP' },
@@ -18,7 +34,7 @@ const PLATFORMS = [
 
 function CopyField({ label, value, mono = true, secret = false }) {
   const [shown, setShown] = useState(!secret);
-  const copy = () => { navigator.clipboard.writeText(value); toast.success(`${label} copied!`); };
+  const copy = () => { navigator.clipboard.writeText(value).then(() => toast.success(`${label} copied!`)).catch(() => toast.error('Copy failed.')); };
   return (
     <div className="space-y-1">
       <label className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">{label}</label>
@@ -45,7 +61,10 @@ export default function RTMPServer() {
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    return stored || `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+    if (stored) return stored;
+    const arr = new Uint8Array(18);
+    crypto.getRandomValues(arr);
+    return `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
 
@@ -56,7 +75,9 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const newKey = `sk_live_${Math.random().toString(36).slice(2, 14)}${Math.random().toString(36).slice(2, 14)}`;
+      const arr = new Uint8Array(18);
+      crypto.getRandomValues(arr);
+      const newKey = `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);
@@ -126,7 +147,7 @@ export default function RTMPServer() {
                 <div className="flex items-center gap-2 mb-1">
                   <Radio className="w-4 h-4 text-[#d4af37]" />
                   <h2 className="font-bold text-sm">RTMP Ingest</h2>
-                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#86efac', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
+                  <span style={{ background: 'rgba(21,128,61,0.5)', color: '#6DBF7E', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>RECOMMENDED</span>
                 </div>
                 <CopyField label="Server URL" value={RTMP_SERVER} />
                 <div className="space-y-1">
@@ -143,7 +164,7 @@ export default function RTMPServer() {
                   </div>
                   <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-3 py-2">
                     <code className="flex-1 text-sm font-mono text-white/80 truncate">{'•'.repeat(24)}</code>
-                    <button onClick={() => { navigator.clipboard.writeText(streamKey); toast.success('Stream key copied!'); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
+                    <button onClick={() => { navigator.clipboard.writeText(streamKey).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }} className="text-[#d4af37]/60 hover:text-[#d4af37]">
                       <Copy className="w-4 h-4" />
                     </button>
                   </div>
@@ -164,7 +185,7 @@ export default function RTMPServer() {
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Tv2 className="w-4 h-4 text-purple-400" />
+                    <Tv2 className="w-4 h-4 text-[#7B5DA6]" />
                     <h2 className="font-bold text-sm">HLS Playback</h2>
                   </div>
                   <CopyField label="HLS URL" value={PLAYBACK_URL} />
@@ -283,6 +304,21 @@ export default function RTMPServer() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="rtmp" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }
