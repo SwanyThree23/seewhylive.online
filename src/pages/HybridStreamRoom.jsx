@@ -67,6 +67,7 @@ export default function HybridStreamRoom() {
     onSuccess: () => {
       window.location.href = '/Home';
     },
+    onError: () => { toast.error('Failed to leave room. Please try again.'); },
   });
 
   if (isLoading) {

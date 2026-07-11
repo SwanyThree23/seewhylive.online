@@ -6,6 +6,7 @@ import {
   Radio, Heart, Bell, Clock, DollarSign, Scissors,
   Play, TrendingUp, Star, Users, CheckCheck
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 
@@ -101,6 +102,7 @@ export default function ViewerDashboard() {
   const markAllRead = useMutation({
     mutationFn: () => Promise.all(notifications.filter(n => !n.is_read).map(n => base44.entities.Notification.update(n.id, { is_read: true }))),
     onSuccess: () => qc.invalidateQueries(['notifications']),
+    onError: () => { toast.error('Failed to mark notifications as read. Please try again.'); },
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

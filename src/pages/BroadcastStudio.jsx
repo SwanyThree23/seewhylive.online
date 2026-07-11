@@ -597,11 +597,13 @@ export default function BroadcastStudio() {
       setStudioMode(mode);
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
+    onError: () => { toast.error('Failed to create broadcast. Please try again.'); },
   });
 
   const endMut = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
     onSuccess: () => { toast.success('Broadcast ended'); window.location.href = window.location.pathname; },
+    onError: () => { toast.error('Failed to end broadcast. Please try again.'); },
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────

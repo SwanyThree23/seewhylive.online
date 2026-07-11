@@ -52,6 +52,7 @@ export default function CommunitySettingsPage() {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Community.update(communityId, data),
     onSuccess: () => { toast.success('Community updated!'); queryClient.invalidateQueries(['community']); },
+    onError: () => { toast.error('Failed to update community. Please try again.'); },
   });
 
   return (

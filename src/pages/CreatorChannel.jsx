@@ -13,6 +13,7 @@ import StripeSubscribeButton from '../components/monetization/StripeSubscribeBut
 import VideoLibrary from '../components/vod/VideoLibrary';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
 
 const BG = '#0d0618';
 const GOLD = '#D4AF37';
@@ -112,6 +113,7 @@ export default function CreatorChannel() {
       message: `${profile?.display_name} is now streaming. Join now!`,
     }),
     onSuccess: () => alert('Reminder set!'),
+    onError: () => { toast.error('Failed to set reminder. Please try again.'); },
   });
 
   if (isLoading) return (

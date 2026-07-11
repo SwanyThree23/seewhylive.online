@@ -61,6 +61,7 @@ export default function NewsletterPage() {
       queryClient.invalidateQueries(['newsletters']);
       setTitle(''); setContent(''); setPreviewText('');
     },
+    onError: () => { toast.error('Failed to create newsletter. Please try again.'); },
   });
 
   const generateWithAI = async () => {

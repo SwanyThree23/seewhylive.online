@@ -441,6 +441,7 @@ export default function OnboardingPage() {
       return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['onboarding', user?.id] }),
+    onError: () => {},
   });
 
   const handleDone = async (data) => {

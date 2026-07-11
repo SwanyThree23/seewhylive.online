@@ -342,6 +342,7 @@ export default function PKBattlePage() {
       battleDurationRef.current = duration;
       window.location.href = `${window.location.pathname}?id=${b.id}`;
     },
+    onError: () => { toast.error('Failed to create battle. Please try again.'); },
   });
 
   var addVote = function(side, pts, combo) {
