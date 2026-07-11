@@ -116,14 +116,18 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
       status: 'active',
       created_at: Date.now(),
     };
-    // Broadcast via Message entity so all subscribers see it
-    await base44.entities.Message.create({
-      room_id: roomId || partyId,
-      user_id: currentUser.id,
-      user_name: currentUser.full_name || currentUser.email,
-      content: JSON.stringify(poll),
-      message_type: 'announcement', // repurpose announcement type for polls
-    });
+    try {
+      await base44.entities.Message.create({
+        room_id: roomId || partyId,
+        user_id: currentUser.id,
+        user_name: currentUser.full_name || currentUser.email,
+        content: JSON.stringify(poll),
+        message_type: 'announcement',
+      });
+    } catch {
+      toast.error('Failed to launch poll. Please try again.');
+      return;
+    }
     onPollCreated(poll);
     setQuestion('');
     setOptions(['', '']);
