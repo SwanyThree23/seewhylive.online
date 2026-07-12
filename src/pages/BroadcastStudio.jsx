@@ -310,7 +310,19 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
 }
 
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
-function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking }) {
+function NetBars({ bars, rtt }) {
+  if (bars == null) return null;
+  const color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
+  return (
+    <div className="flex items-end gap-0.5" title={rtt != null ? `${Math.round(rtt)}ms RTT` : undefined}>
+      {[1, 2, 3, 4].map(b => (
+        <div key={b} style={{ width: 3, height: b * 3 + 2, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />
+      ))}
+    </div>
+  );
+}
+
+function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, netBars, netRtt }) {
   const camRef = useRef(null);
   const screenRef = useRef(null);
   const [isPip, setIsPip] = useState(false);
@@ -358,6 +370,18 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking })
           style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
           <Maximize2 className="w-3.5 h-3.5" style={{ color: isPip ? GOLD : 'rgba(255,255,255,0.6)' }} />
         </button>
+      )}
+      {/* Network quality mini-HUD */}
+      {netBars != null && (
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded"
+          style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
+          <NetBars bars={netBars} rtt={netRtt} />
+          {netRtt != null && (
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {Math.round(netRtt)}ms
+            </span>
+          )}
+        </div>
       )}
       {/* PIP camera when screen sharing */}
       {screenStream && localStream && videoEnabled && (
@@ -583,6 +607,51 @@ export default function BroadcastStudio() {
     }
     lastNetBarsRef.current = netBars;
   }, [netBars]);
+
+  // Adaptive video quality — drop to 360p/15fps on poor connection, restore on recovery
+  const prefRes = (() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } })();
+  const adaptiveRef = useRef('normal'); // 'normal' | 'degraded'
+  useEffect(() => {
+    if (netBars == null || !localStream) return;
+    const track = localStream.getVideoTracks()[0];
+    if (!track) return;
+    if (netBars <= 1 && adaptiveRef.current !== 'degraded') {
+      adaptiveRef.current = 'degraded';
+      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 15 } }).catch(() => {});
+    } else if (netBars >= 3 && adaptiveRef.current === 'degraded') {
+      adaptiveRef.current = 'normal';
+      const preset = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } }[prefRes] || { width: 1280, height: 720 };
+      track.applyConstraints({ ...preset, frameRate: { ideal: 30 } }).catch(() => {});
+    }
+  }, [netBars, localStream, prefRes]);
+
+  // Per-peer connection quality — Map<userId, {bars, rtt}>
+  const [peerQuality, setPeerQuality] = useState(() => new Map());
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const qual = new Map();
+      for (const [peerId, { pc }] of peersRef.current.entries()) {
+        if (pc.connectionState !== 'connected') continue;
+        const uid = peerUserIds?.get(peerId);
+        if (!uid) continue;
+        try {
+          const stats = await pc.getStats();
+          let totalRtt = 0, cnt = 0;
+          stats.forEach(r => {
+            if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.currentRoundTripTime != null) {
+              totalRtt += r.currentRoundTripTime * 1000;
+              cnt++;
+            }
+          });
+          const rtt = cnt > 0 ? Math.round(totalRtt / cnt) : null;
+          const bars = rtt == null ? 3 : rtt < 80 ? 4 : rtt < 200 ? 3 : rtt < 400 ? 2 : 1;
+          qual.set(uid, { bars, rtt });
+        } catch {}
+      }
+      setPeerQuality(qual);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [peerUserIds]); // peersRef is a stable ref — no dep needed
 
   // Audio output (speaker) preference — applied to all video/audio elements via setSinkId
   const { speakers } = useCameraDevices();
@@ -1155,6 +1224,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   remoteStreams={remoteStreams}
                   peerUserIds={peerUserIds}
                   localStream={localStream}
+                  peerQuality={peerQuality}
                 />
                 {members.length > 6 && (() => {
                   const stageMembers = members.filter(m => m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker');
@@ -1214,7 +1284,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 />
               )
             ) : (
-              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} isSpeaking={isSpeaking} />
+              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} isSpeaking={isSpeaking} netBars={netBars} netRtt={netRtt} />
             )}
 
             {/* Hybrid PIP: local camera overlay when video is playing */}

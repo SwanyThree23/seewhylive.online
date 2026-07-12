@@ -70,7 +70,19 @@ function useAudioLevel(stream) {
   return isSpeaking;
 }
 
-function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
+function SignalBars({ bars }) {
+  if (bars == null) return null;
+  var color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+      {[1, 2, 3, 4].map(function(b) {
+        return <div key={b} style={{ width: 2, height: b * 2 + 1, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />;
+      })}
+    </div>
+  );
+}
+
+function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands, quality }) {
   var [menuOpen, setMenuOpen] = useState(false);
   var audioSpeaking = useAudioLevel(stream);
   var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
@@ -189,7 +201,11 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           <div className="absolute top-1 right-1 z-10 text-[14px] leading-none">✋</div>
         )}
 
-        <div className="absolute bottom-1 right-1 z-10" style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+        <div className="absolute bottom-1 right-1 z-10">
+          {quality ? <SignalBars bars={quality.bars} /> : (
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+          )}
+        </div>
 
         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" style={{ top: isRaised ? 18 : 4 }}>
           <button
@@ -355,7 +371,7 @@ function resolveStream(member, currentUser, localStream, remoteStreams, peerUser
   return { stream: peerId ? remoteStreams?.get(peerId) || null : null, isLocal: false };
 }
 
-export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands }) {
+export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands, peerQuality }) {
   var [spotlitId, setSpotlitId] = useState(null);
   var [slots, setSlots] = useState(maxSlots);
 
@@ -434,6 +450,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                     onSpotlight={setSpotlitId} canManage={isHost}
                     stream={stream} isLocal={isLocal}
                     raisedHands={raisedHands}
+                    quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                   />
                 </div>
               );
@@ -452,6 +469,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                   onSpotlight={setSpotlitId} canManage={isHost}
                   stream={stream} isLocal={isLocal}
                   raisedHands={raisedHands}
+                  quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                 />
               );
             })}
