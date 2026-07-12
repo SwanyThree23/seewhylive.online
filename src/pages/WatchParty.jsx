@@ -26,6 +26,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -542,8 +543,10 @@ export default function WatchPartyPage() {
 
   const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
+  const { localStream, audioEnabled, videoEnabled, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(partyId, localStream);
+  const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
 
   // Per-peer connection quality — Map<userId, {bars, rtt}>
   const [peerQuality, setPeerQuality] = useState(() => new Map());
@@ -972,7 +975,7 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={null} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingIds} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -1406,7 +1409,7 @@ export default function WatchPartyPage() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
       {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
       {isHost && partyId && <WebhookHooks roomId={partyId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
