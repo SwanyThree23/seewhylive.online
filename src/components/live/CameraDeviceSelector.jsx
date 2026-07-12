@@ -53,11 +53,13 @@ function NativeSelect({ value, onChange, options, placeholder }) {
  *   onScreenShare       () => void       — optional, show screen-share shortcut
  *   isSharingScreen     boolean
  *   compact             boolean         — one-line row layout (default false)
+ *   hideVideo           boolean         — omit camera picker (audio-only mode)
  */
 export default function CameraDeviceSelector({
   currentVideoId, currentAudioId, resolution = '720p',
   onVideoChange, onAudioChange, onResolutionChange,
   onScreenShare, isSharingScreen = false, compact = false,
+  hideVideo = false,
 }) {
   const { cameras, mics, refresh } = useCameraDevices();
 
@@ -65,13 +67,15 @@ export default function CameraDeviceSelector({
     return (
       <div className="flex items-center gap-2 flex-wrap">
         {/* Camera picker */}
-        <div style={{ ...ROW, minWidth: 0, flex: 1 }}>
-          <Camera className="w-3.5 h-3.5 shrink-0" style={{ color: GOLD }} />
-          <NativeSelect
-            value={currentVideoId} onChange={onVideoChange}
-            options={cameras} placeholder="Select camera"
-          />
-        </div>
+        {!hideVideo && (
+          <div style={{ ...ROW, minWidth: 0, flex: 1 }}>
+            <Camera className="w-3.5 h-3.5 shrink-0" style={{ color: GOLD }} />
+            <NativeSelect
+              value={currentVideoId} onChange={onVideoChange}
+              options={cameras} placeholder="Select camera"
+            />
+          </div>
+        )}
         {/* Mic picker */}
         <div style={{ ...ROW, minWidth: 0, flex: 1 }}>
           <Mic className="w-3.5 h-3.5 shrink-0" style={{ color: GOLD }} />
@@ -100,20 +104,22 @@ export default function CameraDeviceSelector({
   return (
     <div className="space-y-3">
       {/* Camera */}
-      <div>
-        <label style={LBL}>Camera</label>
-        <div style={ROW}>
-          <Camera className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
-          <NativeSelect
-            value={currentVideoId} onChange={onVideoChange}
-            options={cameras} placeholder="No cameras found"
-          />
-          <button onClick={refresh} title="Refresh devices"
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: 2, userSelect: 'none' }}>
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+      {!hideVideo && (
+        <div>
+          <label style={LBL}>Camera</label>
+          <div style={ROW}>
+            <Camera className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
+            <NativeSelect
+              value={currentVideoId} onChange={onVideoChange}
+              options={cameras} placeholder="No cameras found"
+            />
+            <button onClick={refresh} title="Refresh devices"
+              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: 2, userSelect: 'none' }}>
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Mic */}
       <div>

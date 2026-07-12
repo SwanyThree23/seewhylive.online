@@ -4,6 +4,7 @@ import { ShieldCheck, FileText, User, Mic, Camera, X, ChevronLeft } from 'lucide
 import { base44 } from '@/api/base44Client';
 import { getStoredDob, setStoredDob, calcAge } from '@/lib/ageVerification';
 import { createPageUrl } from '../utils';
+import CameraDeviceSelector from './live/CameraDeviceSelector';
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -333,14 +334,18 @@ function DisplayNameStep({ user, onPass }) {
 function PermissionsStep({ onPass }) {
   const [permError, setPermError] = useState('');
   const [loading, setLoading]     = useState(null); // null | 'cam' | 'mic'
+  const [granted, setGranted]     = useState(null); // null | 'cam+mic' | 'mic'
+  const [selectedCam, setSelectedCam] = useState('');
+  const [selectedMic, setSelectedMic] = useState('');
 
   async function handleCamMic() {
     setLoading('cam');
     setPermError('');
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      stream.getTracks().forEach(t => t.stop());
       try { localStorage.setItem('swl_perms_granted_v1', 'cam+mic'); } catch {}
-      onPass();
+      setGranted('cam+mic');
     } catch {
       setPermError('Camera & microphone access was denied. You can try Audio Only instead.');
     } finally {
@@ -352,19 +357,73 @@ function PermissionsStep({ onPass }) {
     setLoading('mic');
     setPermError('');
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(t => t.stop());
       try { localStorage.setItem('swl_perms_granted_v1', 'mic'); } catch {}
-      onPass();
+      setGranted('mic');
     } catch {
       setPermError("Microphone access was denied. You can still join but won't be heard.");
-      // Don't block — let them continue anyway after seeing the note
+      setGranted('mic');
     } finally {
       setLoading(null);
     }
   }
 
+  function handleConfirm() {
+    try {
+      if (selectedCam) localStorage.setItem('swl_pref_cam', selectedCam);
+      if (selectedMic) localStorage.setItem('swl_pref_mic', selectedMic);
+    } catch {}
+    onPass();
+  }
+
   function handleSkip() {
     onPass();
+  }
+
+  // After permission granted — show device selector
+  if (granted) {
+    return (
+      <>
+        <StepIcon icon={Camera} />
+        <h2 style={{ ...T, color: '#fff', fontSize: 22, fontWeight: 900, textAlign: 'center', margin: '0 0 6px' }}>
+          Choose Your Devices
+        </h2>
+        <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+          {granted === 'cam+mic' ? 'Select the camera and microphone to use.' : 'Select your microphone.'}
+        </p>
+
+        <CameraDeviceSelector
+          currentVideoId={selectedCam}
+          currentAudioId={selectedMic}
+          onVideoChange={setSelectedCam}
+          onAudioChange={setSelectedMic}
+          hideVideo={granted === 'mic'}
+        />
+
+        <button
+          onClick={handleConfirm}
+          style={{
+            ...T,
+            marginTop: 18,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            width: '100%', height: 46, borderRadius: 10,
+            background: 'linear-gradient(135deg, #800020, #A0003A)',
+            border: '1px solid rgba(212,175,55,0.35)', color: GOLD,
+            fontSize: 14, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            cursor: 'pointer',
+          }}>
+          <Camera style={{ width: 16, height: 16 }} />
+          Enter Room
+        </button>
+
+        <button
+          onClick={handleSkip}
+          style={{ ...T, width: '100%', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline', marginTop: 8 }}>
+          Use defaults
+        </button>
+      </>
+    );
   }
 
   return (
@@ -412,7 +471,7 @@ function PermissionsStep({ onPass }) {
       </div>
 
       {permError && (
-        <p style={{ ...T, color: '#FBBF24', fontSize: 12, textAlign: 'center', marginBottom: 8, lineHeight: 1.5 }}>
+        <p style={{ ...T, color: '#D4854A', fontSize: 12, textAlign: 'center', marginBottom: 8, lineHeight: 1.5 }}>
           {permError}
         </p>
       )}
