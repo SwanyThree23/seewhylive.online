@@ -15,6 +15,7 @@ import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
@@ -410,7 +411,7 @@ export default function LiveRoom() {
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
+  const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -1332,6 +1333,8 @@ export default function LiveRoom() {
       <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       <TopTippers roomId={null} />
+
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 
       <KeyboardShortcutsHelp shortcuts={[
         { key: 'M',     label: 'Toggle microphone' },

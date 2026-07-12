@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useCameraDevices } from '../hooks/useCameraDevices';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -267,7 +268,7 @@ export default function AudioRoom() {
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
+  const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
   const { data: party } = useQuery({
@@ -919,6 +920,8 @@ export default function AudioRoom() {
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 
       <KeyboardShortcutsHelp shortcuts={[
         { key: 'M',     label: 'Toggle microphone' },

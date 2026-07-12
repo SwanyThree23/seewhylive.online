@@ -36,6 +36,7 @@ import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import ClipMarker from '../components/live/ClipMarker';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import GuestQueue from '../components/live/GuestQueue';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SuperChatRail from '../components/live/SuperChatRail';
@@ -619,7 +620,7 @@ export default function BroadcastStudio() {
     const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
-  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
+  const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   // Warn broadcaster once when connection drops to 1 bar or below
   const lastNetBarsRef = useRef(null);
@@ -2485,6 +2486,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 
       <KeyboardShortcutsHelp shortcuts={[
         { key: 'M',     label: 'Toggle microphone' },
