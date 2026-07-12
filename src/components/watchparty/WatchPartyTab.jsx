@@ -10,9 +10,9 @@ var TABS = [
 ];
 
 var QUALITY_OPTIONS = [
-  { id: '720p',  label: '720p',  constraints: { width: 1280,  height: 720  } },
-  { id: '1080p', label: '1080p', constraints: { width: 1920,  height: 1080 } },
-  { id: '4k',    label: '4K',    constraints: { width: 3840,  height: 2160 } },
+  { id: '720p',  label: '720p',  constraints: { width: { ideal: 1280  }, height: { ideal: 720  }, frameRate: { ideal: 30 } } },
+  { id: '1080p', label: '1080p', constraints: { width: { ideal: 1920  }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
+  { id: '4k',    label: '4K',    constraints: { width: { ideal: 3840  }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
 ];
 
 function isYouTubeUrl(url) {
@@ -167,7 +167,7 @@ function ScreenShareMode({ user, party }) {
     setError(null);
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: 3840, height: 2160, frameRate: 30 },
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { max: 30 } },
         audio: true,
       });
       stream.getVideoTracks()[0].onended = function() { setScreenStream(null); setStreamSettings(null); };
@@ -538,6 +538,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   var [localStream, setLocalStream] = useState(null);
   var [error, setError] = useState(null);
   var [streamSettings, setStreamSettings] = useState(null);
+  var [mirrored, setMirrored] = useState(true);
   var videoRef = useRef(null);
 
   useEffect(function() {
@@ -584,7 +585,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
     var track = localStream.getVideoTracks && localStream.getVideoTracks()[0];
     if (!track) return;
     try {
-      await track.applyConstraints({ width: 3840, height: 2160, frameRate: 30 });
+      await track.applyConstraints({ width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } });
       refreshSettings(localStream);
     } catch (e) {}
   };
@@ -609,7 +610,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
             autoPlay
             muted
             playsInline
-            style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)' }}
+            style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000', objectFit: 'cover', transform: mirrored ? 'scaleX(-1)' : 'none', transition: 'transform 0.2s' }}
           />
         ) : (
           <VideoPlaceholder
@@ -656,6 +657,12 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
               style={{ background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E' }}
             >
               Apply 4K
+            </ActionButton>
+            <ActionButton
+              onClick={function() { setMirrored(function(v) { return !v; }); }}
+              style={{ background: mirrored ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: mirrored ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)', color: mirrored ? '#D4AF37' : 'rgba(255,255,255,0.5)' }}
+            >
+              Mirror {mirrored ? 'On' : 'Off'}
             </ActionButton>
           </>
         )}
