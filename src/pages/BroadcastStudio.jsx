@@ -632,20 +632,30 @@ export default function BroadcastStudio() {
     lastNetBarsRef.current = netBars;
   }, [netBars]);
 
-  // Adaptive video quality — drop to 360p/15fps on poor connection, restore on recovery
+  // Adaptive video quality — 3-tier system based on connection bars
+  // Tier: 'high' (bars≥3) | 'medium' (bars=2) | 'low' (bars≤1)
   const prefRes = (() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } })();
-  const adaptiveRef = useRef('normal'); // 'normal' | 'degraded'
+  const adaptiveTierRef = useRef('high');
   useEffect(() => {
     if (netBars == null || !localStream) return;
     const track = localStream.getVideoTracks()[0];
     if (!track) return;
-    if (netBars <= 1 && adaptiveRef.current !== 'degraded') {
-      adaptiveRef.current = 'degraded';
-      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 15 } }).catch(() => {});
-    } else if (netBars >= 3 && adaptiveRef.current === 'degraded') {
-      adaptiveRef.current = 'normal';
-      const preset = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } }[prefRes] || { width: 1280, height: 720 };
-      track.applyConstraints({ ...preset, frameRate: { ideal: 30 } }).catch(() => {});
+    const PRESETS = {
+      '360p':  { width: 640,  height: 360  },
+      '480p':  { width: 854,  height: 480  },
+      '720p':  { width: 1280, height: 720  },
+      '1080p': { width: 1920, height: 1080 },
+    };
+    const basePreset = PRESETS[prefRes] || PRESETS['720p'];
+    if (netBars <= 1 && adaptiveTierRef.current !== 'low') {
+      adaptiveTierRef.current = 'low';
+      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 12 } }).catch(() => {});
+    } else if (netBars === 2 && adaptiveTierRef.current !== 'medium') {
+      adaptiveTierRef.current = 'medium';
+      track.applyConstraints({ width: { ideal: 854 }, height: { ideal: 480 }, frameRate: { ideal: 20 } }).catch(() => {});
+    } else if (netBars >= 3 && adaptiveTierRef.current !== 'high') {
+      adaptiveTierRef.current = 'high';
+      track.applyConstraints({ ...Object.fromEntries(Object.entries(basePreset).map(([k, v]) => [k, { ideal: v }])), frameRate: { ideal: 30 } }).catch(() => {});
     }
   }, [netBars, localStream, prefRes]);
 
