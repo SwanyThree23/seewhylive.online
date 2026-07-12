@@ -156,6 +156,18 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import AIModeration from '../components/live/AIModeration';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import ShareModal from '../components/live/ShareModal';
+import CoStreamHub from '../components/live/CoStreamHub';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import AuraPanel from '../components/live/AuraPanel';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LoveTap from '../components/live/LoveTap';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -920,6 +932,20 @@ export default function AudioRoom() {
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+
+      {/* ── New feature stubs ──────────────────────────────────────────────── */}
+      {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
+      {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={party?.title || ''} currentUser={user} />}
+      {roomId && <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}/AudioRoom?id=${roomId}`} title={party?.title || 'Audio Room'} />}
+      {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} />}
+      {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
+      {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}
+      {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
+      <LiveGoalWidget memberCount={memberCount} tipTotal={0} subCount={0} />
+      <SuperChatRail superchats={[]} />
+      {roomId && user?.id && party?.host_id && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 

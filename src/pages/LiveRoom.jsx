@@ -166,6 +166,22 @@ import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import TipGoalBar from '../components/monetization/TipGoalBar';
 import TopTippers from '../components/monetization/TopTippers';
 import * as panelService from '../services/panelService';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import AIModeration from '../components/live/AIModeration';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import CoStreamHub from '../components/live/CoStreamHub';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import AuraPanel from '../components/live/AuraPanel';
+import ClipMarker from '../components/live/ClipMarker';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import SuperChatRail from '../components/live/SuperChatRail';
+import GuestQueue from '../components/live/GuestQueue';
+import AggregatedChat from '../components/live/AggregatedChat';
+import PKBattle from '../components/live/PKBattle';
+import PKBattleModal from '../components/live/PKBattleModal';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -1333,6 +1349,24 @@ export default function LiveRoom() {
       <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       <TopTippers roomId={null} />
+
+      {/* ── New feature stubs ──────────────────────────────────────────────── */}
+      {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
+      {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
+      {isHost && roomId && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
+      {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={roomTitle} currentUser={user} />}
+      {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} />}
+      {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
+      {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={roomTitle} viewerCount={liveCount} isLive={isLive} userTier={'free'} />}
+      {isHost && roomId && user?.id && <ClipMarker roomId={roomId} user={user} streamStartTs={0} getClipBlobUrl={() => Promise.resolve(null)} />}
+      {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} roomTitle={roomTitle} onClose={() => {}} />}
+      {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
+      <LiveGoalWidget memberCount={members.length} tipTotal={0} subCount={0} />
+      <SuperChatRail superchats={[]} />
+      {roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
+      {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={hostName} viewerCount={liveCount} />}
+      {roomId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />}
 
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 
