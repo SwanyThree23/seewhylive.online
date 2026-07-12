@@ -1,5 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -12,7 +25,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const BG     = '#080B18';
-const BG2    = '#0D0620';
+const BG2    = '#0D1022';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
 const PINK   = '#C0392B';
@@ -253,7 +266,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
   const [msg, setMsg] = useState('');
   const stats = [
     { label:'Viewers', value: data.viewerCount.toLocaleString(), color:GOLD },
-    { label:'On Stage', value: data.participants.length, color:'#00C8C8' },
+    { label:'On Stage', value: data.participants.length, color:'#6DBF7E' },
     { label:'Revenue', value:'$0.00', color:GREEN },
     { label:'Duration', value:'00:12:34', color:PINK },
   ];
@@ -547,7 +560,7 @@ export default function TestMode() {
               { label:'💸 Gift Burst', fn: sendGift, color:GOLD },
               { label:'💬 Chat Burst', fn: () => Array.from({length:5}).forEach((_,i) =>
                 setTimeout(() => addChat(ALL_NAMES[Math.floor(Math.random()*ALL_NAMES.length)], CHAT_POOL[Math.floor(Math.random()*CHAT_POOL.length)]), i*200)
-              ), color:'#A855F7' },
+              ), color:'#D4854A' },
             ].map(({ label, fn, color }) => (
               <button key={label} onClick={fn}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold"
@@ -651,6 +664,35 @@ export default function TestMode() {
             ))}
           </div>
         </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🔴 Go Live',          href: 'GoLive'          },
+            { label: '🎧 Audio Room',       href: 'AudioRoom'       },
+            { label: '⚔️ PK Battle',        href: 'PKBattle'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LocalVideoTile stream={null} label="Test Camera" isHost={true} isMuted={false} />
+          <OctagonalVideoWindow stream={null} label="Test Participant" isHost={false} isMuted={true} />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <DevicePreview />
+          <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
+          <ZEGOStreamHealthCard roomId={activeRoomId} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
+        </div>
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />

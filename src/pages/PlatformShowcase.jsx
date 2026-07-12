@@ -5,6 +5,16 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Zap, Users, Trophy, Radio, MessageSquare, Sparkles, Gamepad2, Eye, Target } from 'lucide-react';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import VODLibrary from '../components/vod/VODLibrary';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -23,8 +33,8 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 
 const FEATURES = [
   {
@@ -95,7 +105,7 @@ const FEATURES = [
     title: 'Tribute Wall',
     description: 'Honor fallen domino legends with tribute posts, memorial events, and nomination system.',
     icon: '🕊️',
-    color: '#7B5EA7',
+    color: '#800020',
     highlights: ['Legend cards', 'Tribute messages', 'Memorial fund'],
     link: '/TributeWall',
   },
@@ -113,7 +123,7 @@ const FEATURES = [
     title: 'INS Forge',
     description: 'AI creative brief generator for SVS graphics, tribute cards, overlays, and promo assets.',
     icon: '⚡',
-    color: '#F59E0B',
+    color: '#D4AF37',
     highlights: ['SVS brackets', 'Stream overlays', 'Tribute cards'],
     link: '/INSForge',
   },
@@ -122,7 +132,7 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#00d4ff',
+    color: '#D4AF37',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },

@@ -1,8 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Shield, Zap, RefreshCw, AlertTriangle, Check, Ban, Eye } from 'lucide-react';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import AIModeration from '../components/live/AIModeration';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -21,8 +34,8 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const BG    = '#080B18';
-const BG2   = '#0D0A14';
-const BG3   = '#13101C';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
 const SLATE = '#2A2438';
@@ -37,15 +50,6 @@ const PILL  = 999;
 
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
-
-const SAMPLE_LOG = [
-  { time: '9:04 PM', user: 'anon_2931',  msg: 'spam spam spam spam',           risk: 0.82, action: 'MUTED'   },
-  { time: '9:03 PM', user: 'viewer_445', msg: 'Great stream! WA is dominating 🔥', risk: 0.04, action: 'ALLOWED' },
-  { time: '9:02 PM', user: 'troll_99',   msg: '[content removed]',              risk: 0.97, action: 'BANNED'  },
-  { time: '9:01 PM', user: 'DomFan22',   msg: 'Big Bone Earl tribute was 🙏',   risk: 0.03, action: 'ALLOWED' },
-  { time: '9:00 PM', user: 'hype_lord',  msg: 'LETS GOOOOO!!!! 🏆',             risk: 0.12, action: 'ALLOWED' },
-  { time: '8:58 PM', user: 'lurker_007', msg: 'first time here — love it',      risk: 0.02, action: 'ALLOWED' },
-];
 
 const ACTION_CONFIG = {
   ALLOWED: { color: GREEN,  label: 'ALLOWED' },
@@ -95,6 +99,20 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 export default function GuardianAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
   const [banT,   setBanT]   = useState(95);
@@ -113,17 +131,15 @@ export default function GuardianAI() {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [moderations]);
 
-  const displayLog = moderations.length > 0
-    ? moderations.map(m => ({
-        time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        user: m.content_id?.slice(0, 12) || 'unknown',
-        msg:  m.ai_explanation || m.violation_type || '—',
-        risk: m.ai_confidence ?? 0,
-        action: m.action_taken === 'none' ? 'ALLOWED'
-              : m.action_taken === 'flagged' ? 'FLAGGED'
-              : m.action_taken?.toUpperCase() || 'FLAGGED',
-      }))
-    : SAMPLE_LOG;
+  const displayLog = moderations.map(m => ({
+    time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+    user: m.content_id?.slice(0, 12) || 'unknown',
+    msg:  m.ai_explanation || m.violation_type || '—',
+    risk: m.ai_confidence ?? 0,
+    action: m.action_taken === 'none' ? 'ALLOWED'
+          : m.action_taken === 'flagged' ? 'FLAGGED'
+          : m.action_taken?.toUpperCase() || 'FLAGGED',
+  }));
 
   const violationCount = displayLog.filter(e => e.action !== 'ALLOWED').length;
   const allowedCount   = displayLog.filter(e => e.action === 'ALLOWED').length;
@@ -317,6 +333,10 @@ export default function GuardianAI() {
             {isLoading ? (
               <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
                 Loading moderation log…
+              </div>
+            ) : displayLog.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', ...MONO, fontSize: 11, color: TEXTM }}>
+                No moderation events yet — click SCAN NOW to analyze recent messages
               </div>
             ) : displayLog.map((e, i) => {
               const cfg = ACTION_CONFIG[e.action] || ACTION_CONFIG.FLAGGED;

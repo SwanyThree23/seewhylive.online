@@ -36,12 +36,12 @@ const COLORS = [GOLD, CRIMSON, '#D4AF37', '#C9A84C', '#6DBF7E'];
 const CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
   tick: { fill: 'rgba(255,255,255,0.35)', fontSize: 10 },
-  tooltip: { contentStyle: { background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
+  tooltip: { contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
 };
 
 function StatCard({ label, value, icon: Icon, color, sub }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 14, padding: '14px 16px' }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 14, padding: '14px 16px' }}>
       <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{label}</p>
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5" style={{ color }} />
@@ -54,7 +54,7 @@ function StatCard({ label, value, icon: Icon, color, sub }) {
 
 function DarkCard({ title, desc, children }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
       {(title || desc) && (
         <div className="mb-4">
           {title && <p className="font-black text-sm text-white" style={T}>{title}</p>}
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
         {isAdmin && (
-          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#a78bfa', ...T }}>
+          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', ...T }}>
             Admin View
           </span>
         )}
@@ -159,8 +159,8 @@ export default function AnalyticsPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="Total Views" value={totalViews} icon={Eye} color="#4fc3f7" />
-          <StatCard label="Avg Viewers" value={avgViewers} icon={Users} color="#a78bfa" />
+          <StatCard label="Total Views" value={totalViews} icon={Eye} color="#D4AF37" />
+          <StatCard label="Avg Viewers" value={avgViewers} icon={Users} color="#D4AF37" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="#6DBF7E" />
           <StatCard label="Rooms" value={rooms.length} icon={Radio} color={GOLD} />
           <StatCard label="Live Now" value={liveRooms} icon={Zap} color="#C0392B" sub="currently live" />
@@ -370,6 +370,38 @@ export default function AnalyticsPage() {
             </DarkCard>
           </div>
         )}
+
+        {/* Revenue + Stream dashboards */}
+        <div className="mt-4 space-y-4">
+          <RevenueDashboard />
+          <StreamAnalyticsDashboard />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LeaderboardPanel roomId={rooms[0]?.id || null} />
+          <ShareToSocial />
+          <AudienceInsights />
+          <StreamerMonetizationCenter userId={user?.id} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
+          {[
+            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics' },
+            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'   },
+            { label: '💰 Monetization',      href: 'Monetization'      },
+            { label: '📤 Export Data',       href: 'DataExport'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={8} />
+          <CollaborationMatcher />
+          <ContentRecommendations />
+          <EarningsBreakdown userId={user?.id} />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

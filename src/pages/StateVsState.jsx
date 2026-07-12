@@ -2,6 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleMode from '../components/streaming/BattleMode';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -37,7 +49,7 @@ const STATES_DATA = [
     players: ['K. Daniels', 'T. Brooks', 'M. Evans', 'J. Carter', 'L. Hayes'],
   },
   {
-    id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20',
+    id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E',
     record: { w: 3, l: 2 }, pts: 1650,
     players: ['D. Reyes', 'A. Nguyen', 'C. Moore', 'R. Torres', 'P. Green'],
   },
@@ -47,17 +59,17 @@ const STATES_DATA = [
     players: ['B. Williams', 'S. Johnson', 'H. Davis', 'N. Wilson', 'F. Martinez'],
   },
   {
-    id: 'fl', name: 'Florida', abbr: 'FL', color: '#E65100',
+    id: 'fl', name: 'Florida', abbr: 'FL', color: '#C0392B',
     record: { w: 3, l: 1 }, pts: 1740,
     players: ['O. Smith', 'V. Brown', 'Q. Jones', 'I. Garcia', 'E. Miller'],
   },
   {
-    id: 'ny', name: 'New York', abbr: 'NY', color: '#4A148C',
+    id: 'ny', name: 'New York', abbr: 'NY', color: '#D4AF37',
     record: { w: 2, l: 3 }, pts: 1380,
     players: ['Z. Anderson', 'W. Thomas', 'U. Jackson', 'Y. White', 'X. Harris'],
   },
   {
-    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#BF360C',
+    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#CC7755',
     record: { w: 1, l: 4 }, pts: 1120,
     players: ['G. Lewis', 'J. Robinson', 'P. Walker', 'K. Hall', 'T. Allen'],
   },
@@ -760,6 +772,13 @@ export default function StateVsState() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: svsBattles = [] } = useQuery({
+    queryKey: ['svsActiveBattles'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 5),
+    refetchInterval: 15000,
+  });
+  const activeBattle = svsBattles[0] || null;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -775,7 +794,7 @@ export default function StateVsState() {
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(135deg, rgba(21,101,192,0.12) 0%, rgba(198,40,40,0.12) 100%)',
+          background: 'linear-gradient(135deg, rgba(128,0,32,0.12) 0%, rgba(198,40,40,0.12) 100%)',
           pointerEvents: 'none',
         }} />
         <div style={{ position: 'relative' }}>

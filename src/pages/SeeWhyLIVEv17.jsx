@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { GiftTray, GiftAnimationOverlay, GiftLeaderboard, TipAlertOverlay } from "@/components/live/GiftSystem";
@@ -1823,9 +1827,12 @@ export default function SeeWhyLIVEv17() {
         {tab === "dashboard" && <DashboardTab currentUser={currentUser} />}
         {tab === "community" && <CommunityTab />}
         {tab === "discover" && (
-          <div style={{padding:"16px"}}>
+          <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:16}}>
             <div style={{fontFamily:G.fOrb,fontSize:18,color:G.gold,letterSpacing:3}}>DISCOVER</div>
-            <div style={{textAlign:"center",marginTop:40,color:G.gray}}>Trending rooms, communities, and creators coming in v17.1</div>
+            <OnlineUsersGrid compact maxVisible={12} />
+            <ContentRecommendations />
+            <CollaborationMatcher />
+            <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
           </div>
         )}
       </div>

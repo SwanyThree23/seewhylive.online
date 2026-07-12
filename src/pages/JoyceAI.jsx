@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -19,8 +22,8 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
-const BG2 = '#0D0A14';
-const BG3 = '#13101C';
+const BG2 = '#0D0A08';
+const BG3 = '#13100A';
 const GOLD = '#D4AF37';
 const GOLDD = '#8A6F2E';
 const SLATE = '#2A2438';
@@ -31,7 +34,7 @@ const TEXTM = '#8A7A94';
 const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#00d4ff';
+const CYAN = '#D4AF37';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -122,7 +125,9 @@ export default function JoyceAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || "Let's keep it moving — what do you need?" }]);
+      const reply = res || "Let's keep it moving — what do you need?";
+      setMessages(m => [...m, { role: 'assistant', text: reply }]);
+      speakText(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
@@ -156,7 +161,22 @@ export default function JoyceAI() {
             <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>YOUR LIVE CO-HOST · POWERED BY CLAUDE</div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(192,57,43,0.3)`, background: 'rgba(192,57,43,0.1)', color: '#C0392B', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🛡️ Guardian
+            </button>
+          </Link>
+          <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.25)`, background: 'rgba(212,175,55,0.07)', color: GOLD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚔️ SVS
+            </button>
+          </Link>
+          <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.2)`, background: 'rgba(212,175,55,0.06)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🔊 Voice
+            </button>
+          </Link>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,

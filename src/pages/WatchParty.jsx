@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import VideoSourcePicker, { getYouTubeId, detectVideoType } from '../components/video/VideoSourcePicker';
 import VideoPlayerControls from '../components/video/VideoPlayerControls';
 import AggregatedChat from '../components/live/AggregatedChat';
+import SuperChatBar from '../components/live/SuperChatBar';
+import StreamGoals from '../components/live/StreamGoals';
 import ViewerRail from '../components/watchparty/ViewerRail';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -183,7 +185,7 @@ function Input({ value, onChange, placeholder, className = '', style = {}, maxLe
   return (
     <input value={value} onChange={onChange} placeholder={placeholder} maxLength={maxLength}
       className={className}
-      style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
+      style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
   );
 }
 function Badge({ children, className = '', style = {} }) {
@@ -195,7 +197,7 @@ function Badge({ children, className = '', style = {} }) {
   );
 }
 function Card({ children, className = '', style = {} }) {
-  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
+  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
 }
 function CardContent({ children, className = '', style = {} }) {
   return <div className={className} style={style}>{children}</div>;
@@ -337,7 +339,29 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   );
 }
 
-function MobileParticipantStrip({ members, hostId, speakingIds }) {
+function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52 }) {
+  const vRef = useRef(null);
+  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s' }} />
+      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {stream ? (
+          <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ fontSize: size * 0.28, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
+          </span>
+        )}
+      </div>
+      {isMemberHost && (
+        <span style={{ position: 'absolute', top: size * 0.04, left: '50%', transform: 'translateX(-50%)', fontSize: size * 0.14, zIndex: 3 }}>👑</span>
+      )}
+    </div>
+  );
+}
+
+function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, peerUserIds }) {
   var displayMembers = members.slice(0, 8);
   var overflow = members.length - 8;
   return (
@@ -346,37 +370,18 @@ function MobileParticipantStrip({ members, hostId, speakingIds }) {
       {displayMembers.map(function(m) {
         var isHostMember = m.user_id === hostId;
         var isSpeaking = speakingIds && speakingIds.has(m.user_id);
+        var peerId = peerUserIds && Array.from(peerUserIds.entries()).find(([, uid]) => uid === m.user_id)?.[0];
+        var stream = (peerId && remoteStreams) ? remoteStreams.get(peerId) : null;
         return (
           <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
-            <motion.div
-              style={{ width: 44, height: 44, borderRadius: 2 }}
-              animate={{
-                boxShadow: isSpeaking
-                  ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
-                  : isHostMember
-                  ? '0 0 0 2px rgba(212,175,55,0.5)'
-                  : '0 0 0 0px transparent',
-              }}
-              transition={isSpeaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
-            >
-              <div className="w-full h-full relative" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.12)' }}>
-                <div className="absolute inset-[2px] flex items-center justify-center font-bold text-white text-xs"
-                  style={{ clipPath: OCT, background: '#1a0f2e' }}>
-                  {m.user_name ? m.user_name.charAt(0).toUpperCase() : '?'}
-                  {isHostMember && (
-                    <span className="absolute top-0 right-0 text-[6px]">👑</span>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-            <span className="text-white/50 truncate max-w-[44px]" style={{ fontSize: 7 }}>{m.user_name}</span>
+            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} />
+            <span className="text-white/50 truncate max-w-[52px]" style={{ fontSize: 7 }}>{m.user_name}</span>
           </div>
         );
       })}
       {overflow > 0 && (
         <div className="shrink-0 flex flex-col items-center gap-0.5">
-          <div className="flex items-center justify-center text-[10px] font-bold rounded"
-            style={{ width: 44, height: 44, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', clipPath: OCT }}>
+          <div style={{ width: 52, height: 52, clipPath: OCT, background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif' }}>
             +{overflow}
           </div>
           <span style={{ fontSize: 7, color: 'transparent' }}>.</span>
@@ -463,6 +468,34 @@ function InviteCard({ partyUrl }) {
   );
 }
 
+function AISummaryButton({ members, elapsed, partyId }) {
+  const [loading, setLoading] = useState(false);
+  async function handleSummary() {
+    setLoading(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Summarize this watch party in 2 sentences: ${members.length} viewers, active for ${Math.round(elapsed / 60)} minutes, party ID: ${partyId}. Be concise and engaging.`,
+        add_context_from_internet: false,
+      });
+      toast.success(result || 'No summary available.');
+    } catch (err) {
+      toast.error('AI Summary failed — try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <button
+      onClick={handleSummary}
+      disabled={loading}
+      className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
+      style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif', opacity: loading ? 0.6 : 1 }}
+    >
+      {loading ? '…' : '✨ AI Summary'}
+    </button>
+  );
+}
+
 export default function WatchPartyPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const partyId = urlParams.get('id');
@@ -539,7 +572,7 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
 
   const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(partyId, localStream);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -557,6 +590,12 @@ export default function WatchPartyPage() {
   useEffect(() => () => {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
+
+  useEffect(() => {
+    if (!partyId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [partyId, user?.id]);
 
   const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
   const wpOverlayConfig = {
@@ -664,6 +703,13 @@ export default function WatchPartyPage() {
       });
     },
     onSuccess: (p) => {
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: `Started watch party: ${p?.title || 'Watch Party'}`,
+        }).catch(() => {});
+      }
       window.location.href = `${window.location.pathname}?id=${p.id}`;
     },
     onError: (e) => {
@@ -728,7 +774,7 @@ export default function WatchPartyPage() {
           </h1>
           <p className="text-white/50 mt-1 text-sm">Watch together in sync with real-time chat</p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <Input
             placeholder="Party title (e.g. Movie Night)"
             value={partyTitle}
@@ -741,7 +787,7 @@ export default function WatchPartyPage() {
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
-                { id: 'direct', label: 'Direct URL', icon: Video, color: '#00d4ff', placeholder: 'https://example.com/video.mp4' },
+                { id: 'direct', label: 'Direct URL', icon: Video, color: '#D4AF37', placeholder: 'https://example.com/video.mp4' },
               ].map(opt => (
                 <button key={opt.id}
                   onClick={() => { setVideoUrl(''); }}
@@ -759,7 +805,7 @@ export default function WatchPartyPage() {
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
             {videoUrl && (
-              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#00d4ff' }}>
+              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#D4AF37' }}>
                 {detectType(videoUrl) === 'youtube'
                   ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
                   : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
@@ -896,11 +942,11 @@ export default function WatchPartyPage() {
       </div>
 
       {showSyncWarn && !isHost && (
-        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(255,176,0,0.15)', borderBottom: '1px solid rgba(255,176,0,0.3)' }}>
-          <span className="text-xs font-bold" style={{ color: '#FFB000' }}>⚠️ Sync lost — tap to resync</span>
+        <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(212,175,55,0.15)', borderBottom: '1px solid rgba(212,175,55,0.3)' }}>
+          <span className="text-xs font-bold" style={{ color: '#D4AF37' }}>⚠️ Sync lost — tap to resync</span>
           <button onClick={function() { if (syncData) onTimeSync(syncData); else if (party) onTimeSync(party); setShowSyncWarn(false); }}
             className="ml-auto px-3 py-1 rounded-lg text-[10px] font-bold"
-            style={{ background: 'rgba(255,176,0,0.25)', color: '#FFB000', border: '1px solid rgba(255,176,0,0.4)' }}>
+            style={{ background: 'rgba(212,175,55,0.25)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.4)' }}>
             Resync
           </button>
         </div>
@@ -936,13 +982,13 @@ export default function WatchPartyPage() {
         {!isHost && (
           <div className="absolute top-2 right-2 text-white text-[11px] px-1.5 py-0.5 rounded flex items-center gap-1"
             style={{ background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(107,124,74,0.3)' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
             Live Sync
           </div>
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={null} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={null} remoteStreams={remoteStreams} peerUserIds={peerUserIds} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -956,9 +1002,13 @@ export default function WatchPartyPage() {
           currentUser={user}
           currentTime={syncData?.current_time || party?.current_time || 0}
         />
+        <ReactionOverlay partyId={partyId} currentUser={user} />
       </div>
 
       <LiveEmoticonStorm partyId={partyId} currentUser={user} />
+
+      {/* Floating chat overlay on video */}
+      {partyId && <ChatOverlay roomId={partyId} />}
 
       {/* ── AI Floating Button ── */}
       <motion.button
@@ -991,7 +1041,7 @@ export default function WatchPartyPage() {
               background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.2)',
               borderRadius: '16px 16px 0 0',
               padding: '16px 20px 32px',
-              maxHeight: '80vh', overflowY: 'auto',
+              maxHeight: '80vh', overflowY: 'auto', overscrollBehavior: 'contain',
               backdropFilter: 'blur(20px)',
             }}
           >
@@ -1104,7 +1154,7 @@ export default function WatchPartyPage() {
             {/* AI Music Section */}
             <div style={{
               borderRadius: 12, padding: '14px 16px',
-              background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)',
+              background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)',
             }}>
               <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff', display: 'block', marginBottom: 10 }}>
                 🎵 AI Music
@@ -1112,9 +1162,9 @@ export default function WatchPartyPage() {
               {wpDjTrack ? (
                 <div style={{
                   padding: '8px 12px', borderRadius: 8, marginBottom: 10,
-                  background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)',
+                  background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
                 }}>
-                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#00d4ff', fontWeight: 700, margin: 0 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#D4AF37', fontWeight: 700, margin: 0 }}>
                     Now Playing: {wpDjTrack.emoji && `${wpDjTrack.emoji} `}{wpDjTrack.title}
                   </p>
                 </div>
@@ -1126,8 +1176,8 @@ export default function WatchPartyPage() {
               <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={() => setAiPanelOpen(false)}>
                 <div style={{
                   fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 8,
-                  textAlign: 'center', background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.25)',
-                  color: '#00d4ff', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  textAlign: 'center', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
+                  color: '#D4AF37', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
                   cursor: 'pointer',
                 }}>
                   Open Music Studio →
@@ -1155,7 +1205,7 @@ export default function WatchPartyPage() {
           />
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#0d0618' }}>
+        <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#080B18' }}>
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
             {[
               { id: 'chat',        label: '💬 Chat' },
@@ -1164,6 +1214,7 @@ export default function WatchPartyPage() {
               { id: 'battle',      label: '⚔️ Battle' },
               { id: 'leaderboard', label: '🏆 Ranks' },
               { id: 'polls',       label: '📊 Polls' },
+              { id: 'collab',      label: '🎬 Collab' },
               ...(isHost ? [{ id: 'analytics', label: '📈 Stats' }] : []),
               { id: 'viewers',     label: '👥 Viewers' },
               { id: 'screen',      label: '🖥️ Screen' },
@@ -1182,25 +1233,23 @@ export default function WatchPartyPage() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ overscrollBehavior: "contain" }}>
             {activePanel === 'chat' && (
               <>
                 <div className="flex items-center justify-between px-1 pt-1">
                   <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Live Chat</span>
-                  <button
-                    onClick={() => {
-                      toast.success(`AI Summary: ${members.length} viewers watching. Room has been active for ${Math.round(elapsed / 60)}min. Top reaction: 🔥`);
-                    }}
-                    className="text-[11px] px-2 py-0.5 rounded-full font-bold transition-all"
-                    style={{ border: '1px solid rgba(212,175,55,0.4)', color: '#d4af37', background: 'rgba(212,175,55,0.06)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                  >
-                    ✨ AI Summary
-                  </button>
+                  <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+                {party?.host_id && (
+                  <SuperChatBar roomId={partyId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+                )}
+                {party?.host_id && partyId && (
+                  <MerchStrip roomId={partyId} currentUser={user} hostId={party.host_id} />
+                )}
                 {members.length < 10 && (
                   <InviteCard partyUrl={window.location.href} />
                 )}
@@ -1232,10 +1281,24 @@ export default function WatchPartyPage() {
               />
             )}
             {activePanel === 'analytics' && (
-              <PartyAnalyticsDashboard
-                partyId={partyId}
-                isHost={isHost}
-              />
+              <div className="space-y-3">
+                {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
+                {partyId && isHost && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
+                {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
+                {partyId && isHost && user?.id && party?.host_id && (
+                  <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={partyId} isHost={isHost} />
+                )}
+                <WatchPartyAnalytics
+                  party={party}
+                  members={members}
+                  pollCount={pollCount}
+                  reactionCount={reactionCount}
+                />
+                <PartyAnalyticsDashboard
+                  partyId={partyId}
+                  isHost={isHost}
+                />
+              </div>
             )}
             {activePanel === 'viewers' && (
               <PanelGrid
@@ -1250,11 +1313,26 @@ export default function WatchPartyPage() {
                 peerUserIds={peerUserIds}
               />
             )}
+            {activePanel === 'collab' && (
+              <div className="space-y-3 p-2">
+                <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={url => setVideoUrl(url)} />
+              </div>
+            )}
             {activePanel === 'battle' && (
               <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
             )}
             {activePanel === 'leaderboard' && (
               <SocialLeaderboard members={members} />
+            )}
+            {activePanel === 'discover' && (
+              <div className="space-y-3 p-2">
+                <YouTubeDiscovery />
+              </div>
+            )}
+            {activePanel === 'player' && partyId && (
+              <div className="space-y-3 p-2">
+                <WatchPartyPlayer roomId={partyId} isHost={isHost} />
+              </div>
             )}
             {activePanel === 'screen' && (
               <WatchPartyTab

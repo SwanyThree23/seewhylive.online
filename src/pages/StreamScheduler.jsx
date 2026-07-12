@@ -8,6 +8,16 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import ShareToSocial from '../components/social/ShareToSocial';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import StreamGoals from '../components/live/StreamGoals';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
 
 
@@ -75,6 +85,13 @@ export default function StreamScheduler() {
   const [form, setForm] = useState(blankForm);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: streams = [] } = useQuery({
     queryKey: ['scheduled-streams', user?.id],
     queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: user?.id }, 'scheduled_start', 50),
@@ -170,7 +187,7 @@ export default function StreamScheduler() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-4 md:p-6">
+    <div className="min-h-screen bg-[#080B18] text-white p-4 md:p-6">
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* Header */}
@@ -274,7 +291,7 @@ export default function StreamScheduler() {
                         <button onClick={() => openEdit(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
                           <Pencil className="w-3 h-3" />
                         </button>
-                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
+                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
                           <Share2 className="w-3 h-3" />
                         </button>
                       </div>
@@ -312,7 +329,7 @@ export default function StreamScheduler() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-white truncate">{s.title}</p>
                           {s.is_recurring && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#a78bfa', border: '1px solid rgba(212,175,55,0.3)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
                               <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
                             </span>
                           )}
@@ -324,12 +341,12 @@ export default function StreamScheduler() {
                         </div>
                         <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-semibold text-[#00d4ff]">⏱ {getCountdown(s.scheduled_start)}</span>
+                          <span className="text-xs font-semibold text-[#D4AF37]">⏱ {getCountdown(s.scheduled_start)}</span>
                           <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#00d4ff]/10 flex items-center justify-center text-white/40 hover:text-[#00d4ff]">
+                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
                           <Share2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
@@ -358,7 +375,7 @@ export default function StreamScheduler() {
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed right-0 top-0 h-full w-full max-w-md bg-[#0d0618] border-l border-[rgba(212,175,55,0.2)] z-50 overflow-y-auto"
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-[#080B18] border-l border-[rgba(212,175,55,0.2)] z-50 overflow-y-auto"
             >
               <div className="p-6 space-y-5">
                 <div className="flex items-center justify-between">

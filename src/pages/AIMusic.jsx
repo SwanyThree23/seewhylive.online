@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -165,7 +167,7 @@ const VOCAL_TYPES = [
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
   { id: 'male-singer', label: 'Male Singer', color: ROSE },
   { id: 'choir',       label: 'Choir',       color: GREEN },
-  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
+  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#D4AF37' },
 ];
 
 const MASTER_PRESETS = [
@@ -462,7 +464,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   exit={{ opacity: 0, scale: 0.9, y: -4 }}
                   style={{
                     position: 'absolute', right: 0, top: 36, zIndex: 30,
-                    background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
+                    background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
                     borderRadius: 12, overflow: 'hidden', minWidth: 150,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                   }}
@@ -546,9 +548,9 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden', borderTop: '1px solid rgba(167,139,250,0.15)' }}
+            style={{ overflow: 'hidden', borderTop: '1px solid rgba(212,175,55,0.15)' }}
           >
-            <div style={{ padding: '14px 16px', background: 'rgba(167,139,250,0.04)' }}>
+            <div style={{ padding: '14px 16px', background: 'rgba(212,175,55,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics
@@ -671,7 +673,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',
@@ -811,7 +813,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         duration: data.duration || '2:30',
         emoji: data.emoji || '🎵',
         liked: false,
-        likeCount: Math.floor(Math.random() * 20),
+        likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
       }, ...prev]);
@@ -826,7 +828,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         tags: tags.slice(0, 6),
         duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
         emoji: '🎵', liked: false, likeCount: 0,
-        streamReady: isInstrumental || Math.random() > 0.4,
+        streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);

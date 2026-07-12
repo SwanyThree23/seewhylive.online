@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import SignalBars from '../components/live/SignalBars';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -33,7 +43,7 @@ var G = {
   crimsonBright: "#C41E3A",
   cyan: "#4A8A7A",
   volt: "#D4AF37",
-  purple: "#BF5FFF",
+  purple: "#D4854A",
   gray: "#888",
   grayDim: "#444",
 };
@@ -241,6 +251,12 @@ export default function CreatorPublicProfile() {
     } else {
       base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
       setFollowToast('Following!');
+      base44.entities.Activity.create({
+        user_id: currentUser.id,
+        type: 'follow',
+        title: `Followed creator: ${profile?.display_name || profile?.full_name || 'Creator'}`,
+        recipient_id: creatorId,
+      }).catch(() => {});
     }
     setTimeout(() => setFollowToast(''), 2500);
   }

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -113,6 +114,13 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -266,8 +274,8 @@ export default function MultiPlatformIntegration() {
             ))}
           </div>
           {platforms.fanbase && (
-            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,90,0,0.06)', border: '1px solid rgba(255,90,0,0.2)' }}>
-              <p style={{ ...T, fontSize: 11, color: '#FF8040', margin: 0 }}>
+            <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 10, background: 'rgba(212,133,74,0.06)', border: '1px solid rgba(212,133,74,0.2)' }}>
+              <p style={{ ...T, fontSize: 11, color: '#D4854A', margin: 0 }}>
                 <strong>Fanbase.com connected.</strong> Fan counts, tips, and Super Chats will sync automatically. Go live on both platforms simultaneously using the RTMP destinations below.
               </p>
             </div>
@@ -358,7 +366,7 @@ export default function MultiPlatformIntegration() {
               {webhookTestLoading ? 'Sending…' : 'Test Webhook'}
             </button>
             {webhookTestResult && (
-              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#FF6680', fontWeight: 700 }}>
+              <span style={{ ...T, fontSize: 11, color: webhookTestResult.ok ? '#6DBF7E' : '#C0392B', fontWeight: 700 }}>
                 {webhookTestResult.ok ? '✓' : '✗'} {webhookTestResult.msg}
               </span>
             )}

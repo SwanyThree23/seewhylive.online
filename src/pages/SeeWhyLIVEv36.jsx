@@ -5,22 +5,23 @@
 // Joyce AI Co-Host | INS Forge | SwanyBot Automation | Full Nav
 
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import NativeSelect from '@/components/shared/NativeSelect';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
   bg:      "#07050A",
-  bg2:     "#0D0A14",
-  bg3:     "#13101C",
+  bg2:     "#0D0A08",
+  bg3:     "#13100A",
   bg4:     "#1A1626",
   gold:    "#C9A84C",
   goldL:   "#E8C96A",
   goldD:   "#8A6F2E",
   ruby:    "#8B1A2F",
   rubyL:   "#B22340",
-  slate:   "#2A2438",
-  slateL:  "#3D3555",
+  slate:   "#2A2010",
+  slateL:  "#3D3520",
   slate2:  "#1E1A2E",
   text:    "#F0EAF8",
   textD:   "#B8AECF",
@@ -110,7 +111,7 @@ function Btn({ label, icon, onClick, variant="gold", size="md", disabled, style 
     state:   `linear-gradient(135deg,${C.state1},${C.state2})`,
     cyan:    `linear-gradient(135deg,${C.cyan}CC,${C.blue})`,
     green:   `linear-gradient(135deg,${C.teal},${C.green})`,
-    purple:  `linear-gradient(135deg,${C.purple},#7D3C98)`,
+    purple:  `linear-gradient(135deg,${C.purple},#800020)`,
     orange:  `linear-gradient(135deg,${C.orange},#E55100)`,
   };
   const colors = {
@@ -243,16 +244,8 @@ function OctaCell({ slot, user, isHost, isLive, isMuted, onClick }) {
 }
 
 // ─── STAGE PANEL ─────────────────────────────────────────────────────────────
-const DEMO_STREAMS = [
-  {id:"host",name:"SwanyThree23",avatar:"👑",live:true,muted:false},
-  {id:"s2",name:"CaliBonesOG",avatar:"🎯",live:true,muted:false},
-  {id:"s3",name:"VibeNBones",avatar:"🎵",live:false,muted:true},
-  {id:"s4",name:"KingDomino",avatar:"🏆",live:true,muted:false},
-  null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null
-];
-
 function StagePanel() {
-  const [streams] = useState(DEMO_STREAMS);
+  const [streams] = useState([]);
   const [chat, setChat] = useState([
     {user:"CaliBonesOG",msg:"Let's DOMINO! 🎯",time:"8:42PM",badge:"gold"},
     {user:"JoyceAI",msg:"Stream is live — 90% to creator always 🔥",time:"8:42PM",badge:"ai"},
@@ -368,7 +361,7 @@ const STATES_DATA = [
   {id:"CA",name:"California",color:"#1B5E20",record:{w:2,l:1},pts:178,players:["West Coast Bone","SunsetSlayer","Bay Bone","LA King","Valley Boss"]},
   {id:"TX",name:"Texas",color:"#B71C1C",record:{w:2,l:1},pts:165,players:["Lone Star Domino","Houston Hustle","Dallas King","Rio Bone","Alamo Ace"]},
   {id:"FL",name:"Florida",color:"#E65100",record:{w:1,l:2},pts:140,players:["Sunshine Bone","Miami Domino","Tallahassee T","Tampa King","Gator Slide"]},
-  {id:"NY",name:"New York",color:"#4A148C",record:{w:1,l:2},pts:132,players:["Empire Bone","Bronx King","Brooklyn Shuffle","Harlem Hustle","Queens Bone"]},
+  {id:"NY",name:"New York",color:"#1B3D7B",record:{w:1,l:2},pts:132,players:["Empire Bone","Bronx King","Brooklyn Shuffle","Harlem Hustle","Queens Bone"]},
   {id:"GA",name:"Georgia",color:"#BF360C",record:{w:0,l:3},pts:88,players:["ATL Domino","Peach State Bone","Savannah Slide","Augusta Ace","Macon Masher"]},
 ];
 
@@ -1436,7 +1429,7 @@ function WatchPartyPanel() {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:4,maxWidth:260,margin:"0 auto"}}>
           {Array.from({length:10},(_,i)=>{
-            const u = DEMO_STREAMS[i];
+            const u = null;
             return (
               <div key={i} style={{aspectRatio:"1",background:u?C.slateL:C.bg2,borderRadius:R.sm,
                 display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,
@@ -1446,7 +1439,7 @@ function WatchPartyPanel() {
         </div>
         {active && (
           <div style={{marginTop:10,display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
-            <Tag label={`${DEMO_STREAMS.filter(Boolean).length} watching`} color={C.green}/>
+            <Tag label="WATCHING" color={C.green}/>
             <Tag label="HOST SYNC" color={C.gold}/>
           </div>
         )}
@@ -2022,6 +2015,14 @@ const PANEL_MAP = {
 const BOTTOM_NAV = ["stage","svs","tribute","podcast","watchparty"];
 
 export default function SeeWhyLIVEv36() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
@@ -2143,6 +2144,20 @@ export default function SeeWhyLIVEv36() {
           </button>
         </div>
 
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <AudienceInsights creatorId={user?.id} />
+        <SubscriptionManager creatorId={user?.id} />
+        <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
+        <VirtualGoodsStore userId={user?.id} />
+        <EarningsBreakdown creatorId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <StreamGoals isHost={false} />
       </div>
     </>
   );

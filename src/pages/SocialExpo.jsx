@@ -10,6 +10,18 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from '../utils';
 import { FEATURED_VIDEOS } from '../components/home/FeaturedContent';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CreatorBridge from '../components/social/CreatorBridge';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -118,7 +130,7 @@ export default function SocialExpo() {
     var subject = encodeURIComponent(`SeeWhy LIVE Sponsorship Inquiry — ${tierLabel} ($${price}/event)`);
     var body = encodeURIComponent(`Hi,\n\nI'm interested in the ${tierLabel} sponsorship tier ($${price}/event) on SeeWhy LIVE.\n\nPlease send me more details.\n\nThank you.`);
     var mailto = `mailto:partnerships@seewhylive.online?subject=${subject}&body=${body}`;
-    window.open(mailto, '_blank');
+    window.open(mailto, '_blank', 'noopener,noreferrer');
     setSponsorToast('Opening email…');
     setTimeout(() => setSponsorToast(''), 2500);
   }
@@ -321,7 +333,7 @@ export default function SocialExpo() {
                               <img src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} alt={video.title}
                                 onError={e => { e.target.style.display = 'none'; }}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 55%)' }} />
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 55%)' }} />
                               <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 11, fontWeight: 700,
                                 padding: '2px 8px', borderRadius: 99, background: `${video.tagColor}30`,
                                 color: video.tagColor, border: `1px solid ${video.tagColor}50`, ...T }}>{video.tag}</span>
@@ -665,7 +677,7 @@ export default function SocialExpo() {
                 {[
                   { label: 'Event Tickets',      range: '$0.99–$4.99/ticket',     color: PINK,       pct: '10% of ticket price' },
                   { label: 'Sponsorship Deals',  range: '$100–$500/event',        color: G,          pct: '10% of deal value' },
-                  { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#f97316',  pct: '10% of gift value' },
+                  { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#D4854A',  pct: '10% of gift value' },
                   { label: 'Subscriptions',       range: '$1–$50/month',          color: TEAL,       pct: '10% of sub price' },
                   { label: 'Live Tips',           range: 'Any amount',            color: '#7B5DA6',  pct: '10% of tip amount' },
                 ].map((stream, i) => (
@@ -706,6 +718,23 @@ export default function SocialExpo() {
           )}
 
         </AnimatePresence>
+
+        {/* Collaboration opportunities */}
+        <div style={{ padding: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <FeaturedContentSection />
+          <CollaborationMatcher />
+          <CreatorBridge user={null} />
+          <ShareToSocial />
+          <ContentRecommendations />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamGoals isHost={false} />
+          <ChallengeLeaderboard challengeId={null} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

@@ -1,4 +1,18 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
+import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -23,11 +37,11 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-green-500/20 text-green-300 border border-green-500/40",
-    pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
+    live:     "bg-[#6DBF7E]/15 text-[#6DBF7E] border border-[#6DBF7E]/35",
+    pending:  "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/35",
     critical: "bg-red-500/20 text-red-300 border border-red-500/40",
-    info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
-    gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
+    info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
+    gold:     "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/35",
   };
   return (
     <span className={`text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold ${styles[type] || styles.info}`}>
@@ -83,7 +97,7 @@ const Row = ({ label, value, badge, pending }) => (
 
 const CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-green-400" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
+    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
   </div>
 );
@@ -140,7 +154,7 @@ function RTMPTab() {
             <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
         ))}
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ YouTube Data API v3 key required for auto-stream-title injection — <Badge type="pending">pending</Badge>
         </div>
       </Section>
@@ -528,12 +542,12 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-green-400">{statusCounts.live}</div>
+        <div className="bg-[#6DBF7E]/10 border border-[#6DBF7E]/40/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-yellow-400">{statusCounts.pending}</div>
+        <div className="bg-[#D4AF37]/8 border border-[#D4AF37]/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#D4AF37]">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
         <div className="bg-red-500/10 border border-red-500/30 rounded p-3 text-center">
@@ -630,7 +644,7 @@ function StatusTab() {
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>
               </div>
               <div className="text-right">
-                {isChecking && <span className="text-yellow-300 text-xs animate-pulse">checking...</span>}
+                {isChecking && <span className="text-[#D4AF37]/80 text-xs animate-pulse">checking...</span>}
                 {r && !isChecking && (
                   <div>
                     <Badge type={r.ok ? "live" : "critical"}>{r.ok ? "reachable" : "error"}</Badge>
@@ -694,6 +708,14 @@ const TAB_CONTENT = {
 export default function StreamInfraRef() {
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div style={{ fontFamily: "'DM Mono', 'Courier New', monospace" }}
@@ -755,6 +777,34 @@ export default function StreamInfraRef() {
         <div className="text-white/20 text-[10px] font-mono">
           CREATOR_SHARE 0.90 · PLATFORM_FEE 0.10 · PREVIEW_SECS 120 · MAX_PANEL_GUESTS 20
         </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '12px 16px 4px', justifyContent: 'center' }}>
+          {[
+            { label: '← Admin',           href: 'AdminDashboard'  },
+            { label: '🔴 Go Live',         href: 'GoLive'          },
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🧹 Stage Cleanup',   href: 'StageCleanup'    },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ZEGOConfigPanel roomId={activeRoomId} />
+        <DestinationsManager userId={user?.id} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={activeRoomId} isHost={false} />
+        <StreamMetadata room={null} isHost={false} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <AutomatedHighlightReels streamSession={null} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />
