@@ -599,7 +599,18 @@ export default function BroadcastStudio() {
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
+    onPeerStateChange: useCallback((peerId, state) => {
+      if (state === 'disconnected') {
+        toast(`⚠️ A participant dropped — reconnecting…`, { duration: 5000, id: `peer-${peerId}-disc` });
+      } else if (state === 'connected') {
+        toast.dismiss(`peer-${peerId}-disc`);
+        toast.success(`✅ Participant reconnected`, { duration: 2500 });
+      } else if (state === 'failed') {
+        toast.error(`❌ Peer connection failed — removing from room`, { duration: 4000, id: `peer-${peerId}-fail` });
+      }
+    }, []),
+  });
 
   // Connection quality — monitor first connected peer
   const [activePc, setActivePc] = useState(null);

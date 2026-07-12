@@ -26,7 +26,12 @@ const VALID_SIGNAL_TYPES = new Set(['peer_join', 'offer', 'answer', 'ice', 'peer
  *  - ICE gathering timeout (30 s) to prevent hung connections
  *  - Auto-reconnects dropped peers (ICE failure / disconnect)
  */
-export function useWebRTCPeers(roomId, localStream) {
+/**
+ * @param {string} roomId
+ * @param {MediaStream|null} localStream
+ * @param {{ onPeerStateChange?: (peerId: string, state: string) => void }} [opts]
+ */
+export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) {
   const peersRef = useRef(new Map()); // peerId → { pc, stream, iceTimer, reconnectTimer }
   const localStreamRef = useRef(localStream);
   const [remoteStreams, setRemoteStreams] = useState(new Map());
@@ -34,6 +39,8 @@ export function useWebRTCPeers(roomId, localStream) {
   const [peerUserIds, setPeerUserIds] = useState(new Map());
   // Crypto-secure self ID — not guessable, not forgeable by remote peers
   const selfIdRef = useRef(secureId('peer'));
+  const onPeerStateChangeRef = useRef(onPeerStateChange);
+  useEffect(() => { onPeerStateChangeRef.current = onPeerStateChange; }, [onPeerStateChange]);
 
   useEffect(() => {
     localStreamRef.current = localStream;
@@ -153,6 +160,7 @@ export function useWebRTCPeers(roomId, localStream) {
     pc.onconnectionstatechange = () => {
       const state = pc.connectionState;
       setPeerStates(prev => new Map(prev).set(peerId, state));
+      try { onPeerStateChangeRef.current?.(peerId, state); } catch {}
       const entry = peersRef.current.get(peerId);
       if (state === 'connected') {
         clearTimeout(iceTimer);
