@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
@@ -84,6 +86,7 @@ function VoteBar({ leftPct }) {
 }
 
 export default function PKBattleArena() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [battleActive, setBattleActive]         = useState(false);
   const [battleSecs, setBattleSecs]             = useState(0);
@@ -346,12 +349,12 @@ export default function PKBattleArena() {
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <GiftSystem roomId={null} userId={null} isHost={true} />
+      <GiftSystem roomId={null} userId={user?.id || null} isHost={true} />
       <GiftLeaderboard roomId={null} />
-      <ViewerCount count={0} peakViewers={0} />
-      <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={0} />
+      <ViewerCount count={totalVotes} peakViewers={totalVotes} />
+      <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={totalVotes} />
       <HostAlertCenter />
-      <StreamHealthMonitor isStreaming={false} />
+      <StreamHealthMonitor isStreaming={battleActive} />
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
       <PKBattleInterface roomId={null} />
       <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
