@@ -20,9 +20,9 @@ const STATUS = {
  * CompositorOverlay — Go Live / Record control panel.
  *
  * Props:
- *   layout: 'panel' | 'battle' | 'watchparty'
- *   slots: Array<{ stream: MediaStream|null, label: string }>
- *   overlayConfig: { title, subtitle, showLive, battleData, chatLines }
+ *   layout: 'panel' | 'spotlight' | 'battle' | 'watchparty'
+ *   slots: Array<{ stream: MediaStream|null, label: string, speaking?: boolean }>
+ *   overlayConfig: { title, subtitle, showLive, battleData, chatLines, spotlightIndex? }
  *   userId: string  (current user ID — used to load/save WHIP destinations)
  *   onScreenCapture: () => Promise<MediaStream>  (for watchparty)
  *   isHost: boolean

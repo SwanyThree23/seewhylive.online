@@ -1033,7 +1033,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     const slots = [];
     if (localStream) {
       const roleLabel = isHost ? 'Host' : isCoHost ? 'Co-Host' : isSpeaker ? 'Panel' : 'You';
-      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})` });
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})`, speaking: isSpeaking });
     }
     if (remoteStreams) {
       remoteStreams.forEach((stream, peerId) => {
@@ -1043,12 +1043,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       });
     }
     return slots;
-  }, [localStream, remoteStreams, peerUserIds, members, user]);
+  }, [localStream, remoteStreams, peerUserIds, members, user, isSpeaking]);
+
+  // Use spotlight when there are remote peers, otherwise panel layout
+  const compositorLayout = remoteStreams?.size > 0 ? 'spotlight' : 'panel';
 
   const compositorOverlay = {
     title: party?.title || 'SeeWhy LIVE',
     subtitle: `${members.length} panelists`,
     showLive: true,
+    layout: compositorLayout,
+    spotlightIndex: 0, // local stream always featured
   };
 
   // ── Create screen ────────────────────────────────────────────────────────
@@ -1161,7 +1166,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             )}
             {canStream && (
               <CompositorOverlay
-                layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
+                layout={studioMode === 'watch' ? 'watchparty' : compositorLayout}
                 slots={compositorSlots}
                 overlayConfig={compositorOverlay}
                 userId={user?.id}
