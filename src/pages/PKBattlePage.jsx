@@ -557,8 +557,14 @@ export default function PKBattlePage() {
 
   const handleBattleScreenCapture = async () => {
     const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    if (!leftCaptureStream) setLeftCaptureStream(stream);
-    else setRightCaptureStream(stream);
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!leftCaptureStream) {
+      if (videoTrack) videoTrack.onended = () => setLeftCaptureStream(null);
+      setLeftCaptureStream(stream);
+    } else {
+      if (videoTrack) videoTrack.onended = () => setRightCaptureStream(null);
+      setRightCaptureStream(stream);
+    }
     return stream;
   };
 
