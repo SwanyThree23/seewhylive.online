@@ -5,14 +5,22 @@ import { Volume2, X, Settings } from 'lucide-react';
 
 const G = '#d4af37';
 
-export default function LiveTranscription({ isLive = false, roomId }) {
+/**
+ * LiveTranscription
+ *
+ * Props:
+ *   isLive   boolean          - whether live transcription should be active
+ *   roomId   string
+ *   stream   MediaStream|null - pass localStream to reuse existing mic capture;
+ *                               falls back to getUserMedia when omitted
+ */
+export default function LiveTranscription({ isLive = false, roomId, stream: propStream = null }) {
   const [captions, setCaptions] = useState([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showTranscription, setShowTranscription] = useState(true);
-  const [opacity, setOpacity] = useState(1);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-  const streamRef = useRef(null);
+  const ownedStreamRef = useRef(null); // only non-null when we opened the stream ourselves
   const intervalRef = useRef(null);
 
   // Start transcription stream
@@ -23,14 +31,21 @@ export default function LiveTranscription({ isLive = false, roomId }) {
 
     (async () => {
       try {
-        const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true },
-        });
-        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
-        streamRef.current = stream;
+        let stream = propStream;
+        if (!stream) {
+          // Fallback: acquire our own stream (no propStream provided)
+          const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true },
+          });
+          if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+          ownedStreamRef.current = stream; // remember to stop it on cleanup
+        }
 
-        const mediaRecorder = new MediaRecorder(stream);
+        // Build an audio-only MediaStream for the recorder (don't stop the video track)
+        const audioOnlyStream = new MediaStream(stream.getAudioTracks());
+
+        const mediaRecorder = new MediaRecorder(audioOnlyStream);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
@@ -62,7 +77,7 @@ export default function LiveTranscription({ isLive = false, roomId }) {
         intervalRef.current = setInterval(() => {
           if (mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
-            setTimeout(() => mediaRecorder.start(), 100);
+            setTimeout(() => { if (!cancelled) mediaRecorder.start(); }, 100);
           }
         }, 5000);
       } catch {
@@ -77,11 +92,12 @@ export default function LiveTranscription({ isLive = false, roomId }) {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
-      streamRef.current?.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
+      // Only stop the stream if we opened it ourselves
+      ownedStreamRef.current?.getTracks().forEach(t => t.stop());
+      ownedStreamRef.current = null;
       setIsTranscribing(false);
     };
-  }, [isLive, showTranscription]);
+  }, [isLive, showTranscription, propStream]);
 
   const addCaption = (text) => {
     const id = Date.now();

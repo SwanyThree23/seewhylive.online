@@ -2310,7 +2310,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={party?.host_id || user?.id} />}
-      {partyId && <LiveTranscription isLive={true} roomId={partyId} />}
+      {partyId && <LiveTranscription isLive={true} roomId={partyId} stream={localStream} />}
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}

@@ -1073,7 +1073,7 @@ export default function LiveRoom() {
       {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={party?.host_id || user?.id} />}
-      {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
+      {roomId && <LiveTranscription isLive={true} roomId={roomId} stream={localStream} />}
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
