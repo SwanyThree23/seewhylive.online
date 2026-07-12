@@ -770,21 +770,42 @@ export default function BroadcastStudio() {
     }
   }
 
-  // Keyboard shortcuts: M = mic, V = camera, S = screen share, C = manual clip marker
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+
+  // Keyboard shortcuts: M = mic, V = camera, S = screen share, C = clip, Space = push-to-talk
   useEffect(() => {
     if (!canStream) return;
-    const onKey = (e) => {
+    const onDown = (e) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
       if (e.key === 'v' || e.key === 'V') { e.preventDefault(); toggleVideo(); }
       if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleScreenShare(); }
       if ((e.key === 'c' || e.key === 'C') && isHost) { e.preventDefault(); triggerHighlightClip(1); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        if (!audioEnabled) {
+          pttWasEnabledRef.current = false;
+          setPttActive(true);
+          toggleAudio();
+        } else {
+          pttWasEnabledRef.current = true;
+        }
+      }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (pttActive && !pttWasEnabledRef.current) toggleAudio();
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost]);
+  }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost, pttActive]);
 
   // AI highlight detector — auto-clips when hype + sentiment spike
   const { triggerHighlightClip } = useHighlightDetector({
@@ -2466,11 +2487,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <BackgroundCustomizer />
 
       <KeyboardShortcutsHelp shortcuts={[
-        { key: 'M',   label: 'Toggle microphone' },
-        { key: 'V',   label: 'Toggle camera' },
-        { key: 'S',   label: 'Start / stop screen share' },
-        { key: 'C',   label: 'Save highlight clip (host)' },
-        { key: '?',   label: 'Show keyboard shortcuts' },
+        { key: 'M',     label: 'Toggle microphone' },
+        { key: 'V',     label: 'Toggle camera' },
+        { key: 'S',     label: 'Start / stop screen share' },
+        { key: 'C',     label: 'Save highlight clip (host)' },
+        { key: 'Space', label: 'Push-to-talk (hold when muted)' },
+        { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
     </div>
   );

@@ -293,6 +293,8 @@ export default function AudioRoom() {
   const [settingsOpen,  setSettingsOpen]  = useState(false);
   const [handRaised,    setHandRaised]    = useState(false);
   const [loveCount,     setLoveCount]     = useState(0);
+  const [pttActive,     setPttActive]     = useState(false); // push-to-talk live state
+  const pttWasEnabledRef = useRef(false); // was mic already on before PTT press?
 
   const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
   const [noiseSupp,   setNoiseSupp]   = useState(true);
@@ -329,17 +331,39 @@ export default function AudioRoom() {
     }
   }
 
-  // Keyboard shortcut: M = mic toggle
+  // Keyboard shortcuts: M = mic toggle, Space = push-to-talk (hold)
   useEffect(() => {
-    const onKey = (e) => {
+    const onDown = (e) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        // Push-to-talk: if currently muted, enable mic temporarily
+        if (!audioEnabled) {
+          pttWasEnabledRef.current = false;
+          setPttActive(true);
+          toggleAudio(); // unmute
+        } else {
+          pttWasEnabledRef.current = true;
+        }
+      }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        // Release PTT: re-mute only if we were the ones who enabled it
+        if (pttActive && !pttWasEnabledRef.current) {
+          toggleAudio(); // re-mute
+        }
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioEnabled]);
+  }, [audioEnabled, pttActive]);
 
   // Apply audio output device to all media elements when speaker pref changes
   useEffect(() => {
@@ -611,18 +635,26 @@ export default function AudioRoom() {
             <Hand className="w-4 h-4" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
           </button>
 
-          <button
-            onClick={handleToggleAudio}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-            style={{
-              background: audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
-              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
-            }}
-          >
-            {audioEnabled
-              ? <Mic className="w-4 h-4" style={{ color: GOLD }} />
-              : <MicOff className="w-4 h-4 text-[#C0392B]" />}
-          </button>
+          <div className="relative flex flex-col items-center gap-0.5">
+            <button
+              onClick={handleToggleAudio}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+              style={{
+                background: pttActive ? 'rgba(109,191,126,0.25)' : audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
+                border: pttActive ? '1px solid rgba(109,191,126,0.6)' : audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
+              }}
+            >
+              {audioEnabled
+                ? <Mic className="w-4 h-4" style={{ color: pttActive ? '#6DBF7E' : GOLD }} />
+                : <MicOff className="w-4 h-4 text-[#C0392B]" />}
+            </button>
+            {pttActive && (
+              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase whitespace-nowrap px-1.5 py-0.5 rounded"
+                style={{ background: 'rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', border: '1px solid rgba(109,191,126,0.4)' }}>
+                PTT
+              </span>
+            )}
+          </div>
 
           <button
             onClick={() => setSettingsOpen(v => !v)}
@@ -889,8 +921,9 @@ export default function AudioRoom() {
       <BackgroundCustomizer />
 
       <KeyboardShortcutsHelp shortcuts={[
-        { key: 'M', label: 'Toggle microphone' },
-        { key: '?', label: 'Show keyboard shortcuts' },
+        { key: 'M',     label: 'Toggle microphone' },
+        { key: 'Space', label: 'Push-to-talk (hold when muted)' },
+        { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
     </div>
   );

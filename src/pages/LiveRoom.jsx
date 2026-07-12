@@ -506,6 +506,8 @@ export default function LiveRoom() {
   }, [roomId]);
 
   const myMember = members.find(m => m.user_id === user?.id);
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
 
   function handleToggleAudio() {
     toggleAudio();
@@ -514,17 +516,35 @@ export default function LiveRoom() {
     }
   }
 
-  // Keyboard shortcut: M = mic toggle (skip when typing)
+  // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
   useEffect(() => {
-    const onKey = (e) => {
+    const onDown = (e) => {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        if (!audioEnabled) {
+          pttWasEnabledRef.current = false;
+          setPttActive(true);
+          toggleAudio();
+        } else {
+          pttWasEnabledRef.current = true;
+        }
+      }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (pttActive && !pttWasEnabledRef.current) toggleAudio();
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioEnabled]);
+  }, [audioEnabled, pttActive]);
 
   // Route audio output to selected speaker device
   useEffect(() => {
@@ -941,16 +961,21 @@ export default function LiveRoom() {
             </div>
           )}
 
-          {/* Mic */}
-          <button onClick={handleToggleAudio} className="flex flex-col items-center gap-0.5">
-            <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
-              {!audioEnabled
-                ? <MicOff className="w-4 h-4 text-[#C0392B]" />
-                : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
-            </div>
-            <span className="text-[11px] text-white/35"> </span>
-          </button>
+          {/* Mic + PTT */}
+          <div className="relative flex flex-col items-center gap-0.5">
+            <button onClick={handleToggleAudio} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{
+                  background: pttActive ? 'rgba(109,191,126,0.25)' : !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`,
+                  border: pttActive ? '1px solid rgba(109,191,126,0.6)' : !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55`,
+                }}>
+                {!audioEnabled
+                  ? <MicOff className="w-4 h-4 text-[#C0392B]" />
+                  : <Mic className="w-4 h-4" style={{ color: pttActive ? '#6DBF7E' : GOLD }} />}
+              </div>
+              <span className="text-[11px] text-white/35">{pttActive ? 'PTT' : ' '}</span>
+            </button>
+          </div>
 
           {/* Audio settings */}
           <button onClick={() => setAudioSettingsOpen(v => !v)} className="flex flex-col items-center gap-0.5" title="Audio settings">
@@ -1309,8 +1334,9 @@ export default function LiveRoom() {
       <TopTippers roomId={null} />
 
       <KeyboardShortcutsHelp shortcuts={[
-        { key: 'M', label: 'Toggle microphone' },
-        { key: '?', label: 'Show keyboard shortcuts' },
+        { key: 'M',     label: 'Toggle microphone' },
+        { key: 'Space', label: 'Push-to-talk (hold when muted)' },
+        { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
     </div>
   );
