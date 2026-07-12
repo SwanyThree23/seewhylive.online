@@ -1248,6 +1248,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           memberCount={members.length}
           tipTotal={tipTotal}
           peakViewers={members.length}
+          netQuality={netQuality}
+          netRtt={netRtt}
         />
       </div>
 
