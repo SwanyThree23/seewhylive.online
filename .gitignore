@@ -39,3 +39,14 @@ dist-ssr
 server/database.sqlite
 frontend/src/App.jsx.bak
 data/
+
+# SQLite write-ahead-log files — change constantly, shouldn't be tracked
+data/*.db-shm
+data/*.db-wal
+
+# Backup files from in-place edits
+*.backup.*
+
+# Transfer artifacts from chunked file transfers
+*.tar.gz
+*.tar.gz.b64
