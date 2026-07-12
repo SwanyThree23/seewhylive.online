@@ -14,6 +14,7 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
@@ -1306,6 +1307,11 @@ export default function LiveRoom() {
       <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       <TopTippers roomId={null} />
+
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'M', label: 'Toggle microphone' },
+        { key: '?', label: 'Show keyboard shortcuts' },
+      ]} />
     </div>
   );
 }

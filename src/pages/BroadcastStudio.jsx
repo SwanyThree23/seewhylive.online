@@ -35,6 +35,7 @@ import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
 import ClipMarker from '../components/live/ClipMarker';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import GuestQueue from '../components/live/GuestQueue';
 import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import SuperChatRail from '../components/live/SuperChatRail';
@@ -2452,6 +2453,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'M',   label: 'Toggle microphone' },
+        { key: 'V',   label: 'Toggle camera' },
+        { key: 'S',   label: 'Start / stop screen share' },
+        { key: 'C',   label: 'Save highlight clip (host)' },
+        { key: '?',   label: 'Show keyboard shortcuts' },
+      ]} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus, Settings, Volume2
 } from 'lucide-react';
 import { useCameraDevices } from '../hooks/useCameraDevices';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -886,6 +887,11 @@ export default function AudioRoom() {
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
+
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'M', label: 'Toggle microphone' },
+        { key: '?', label: 'Show keyboard shortcuts' },
+      ]} />
     </div>
   );
 }
