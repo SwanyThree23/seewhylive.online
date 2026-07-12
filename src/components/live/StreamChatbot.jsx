@@ -98,7 +98,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
           <Bot className={`w-4 h-4 ${enabled ? 'text-[#d4af37]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Chatbot</span>
           {enabled && (
-            <span className="text-[11px] bg-green-600/30 text-green-400 border border-green-600/30 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+            <span className="text-[11px] bg-[#4A9B5E]/30 text-[#6DBF7E] border border-[#6DBF7E]/35/30 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
           )}
         </div>
         <ChevronDown className={`w-3 h-3 text-white/30 transition-transform ${expanded ? 'rotate-180' : ''}`} />

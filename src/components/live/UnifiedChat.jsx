@@ -15,8 +15,8 @@ const MSG_STYLES = {
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
   subscription: 'border-l-2 border-[#7B5DA6] bg-[#7B5DA6]/20',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
-  qa: 'border-l-2 border-blue-500 bg-blue-900/15',
-  poll: 'border-l-2 border-green-500 bg-green-900/15',
+  qa: 'border-l-2 border-[#D4AF37]/40 bg-[#0F1428]/15',
+  poll: 'border-l-2 border-[#6DBF7E]/40 bg-[#0F1428]/15',
   cohost: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
 };
 
@@ -25,8 +25,8 @@ function MessageBadge({ type }) {
     tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
     subscription: <span className="text-[11px] bg-[#7B5DA6] text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
-    qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
-    poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
+    qa: <span className="text-[11px] bg-[#800020] text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
+    poll: <span className="text-[11px] bg-[#4A9B5E] text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
     cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };
   return badges[type] || null;
@@ -115,7 +115,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(13,6,24,0.97)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
 
       {/* Host controls toggle */}
       {isHost && (
@@ -243,7 +243,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         {showEmojiPicker && (
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }}
             className="mx-3 mb-1 rounded-2xl p-3 grid grid-cols-5 gap-2 z-20"
-            style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)' }}>
+            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)' }}>
             {EMOJIS.map(e => (
               <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); }}
                 className="text-xl text-center py-1 rounded-lg active:scale-90 transition-transform hover:bg-white/5">

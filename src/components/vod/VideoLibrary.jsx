@@ -28,7 +28,7 @@ function Modal({ open, onClose, title, titleColor, children }) {
       onClick={onClose}
     >
       <div
-        style={{ background: '#0d0618', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ background: '#080B18', border: `1px solid ${titleColor || 'rgba(212,175,55,0.2)'}`, borderRadius: 12, padding: 24, maxWidth: 512, width: '100%', maxHeight: '90vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}
       >
         <h2 style={{ color: titleColor || '#d4af37', fontWeight: 700, fontSize: 16, marginBottom: 16 }}>{title}</h2>
@@ -156,7 +156,7 @@ export default function VideoLibrary({ creatorId }) {
       </Modal>
 
       {/* Chapters Modal */}
-      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#00d4ff">
+      <Modal open={!!chapterTarget} onClose={() => setChapterTarget(null)} title="Chapter Markers" titleColor="#D4AF37">
         {chapterTarget && (
           <ChapterEditor
             video={chapterTarget}

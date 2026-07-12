@@ -133,7 +133,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     : 0;
 
   return (
-    <div className="border border-[#d4af37]/20 rounded-xl bg-[#1a0d2e]/80 overflow-hidden">
+    <div className="border border-[#d4af37]/20 rounded-xl bg-[#0F1428]/80 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#d4af37]/10">
         <div className="flex items-center gap-2">

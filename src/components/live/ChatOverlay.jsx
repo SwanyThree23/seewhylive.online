@@ -47,7 +47,6 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
       });
       setInputValue('');
     } catch (error) {
-      console.error('Failed to send message:', error);
     }
   };
 
@@ -78,7 +77,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="fixed bottom-20 right-4 w-80 h-96 rounded-2xl flex flex-col overflow-hidden z-40"
-      style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">

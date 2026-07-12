@@ -80,7 +80,7 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
   const score = swan?.engagement_score || 0;
   const scoreColor = score < 40 ? '#C0392B' : score < 70 ? '#FFB800' : '#6DBF7E';
   const decisions = (swan?.decisions_log || []).slice().reverse().slice(0,10);
-  const engHistory = useMemo(() => Array.from({length:10},(_,i) => Math.floor(Math.random()*60+30)), []);
+  const engHistory = useMemo(() => decisions.slice(0, 10).map(d => d.score || score).reverse(), [decisions, score]);
 
   return (
     <motion.div initial={{x:'-100%'}} animate={{x:0}} exit={{x:'-100%'}} transition={{type:'spring',damping:28,stiffness:300}}
@@ -151,11 +151,11 @@ export default function SwanDirectorPanel({ roomId, hostId, onClose }) {
         </div>
         {/* Suggestion card */}
         {swan?.next_suggested_action && (
-          <div style={{ padding:12, borderRadius:8, border:`1px solid rgba(200,255,0,0.2)`, background:'rgba(200,255,0,0.04)', marginBottom:14 }}>
+          <div style={{ padding:12, borderRadius:8, border:`1px solid rgba(212,175,55,0.2)`, background:'rgba(212,175,55,0.04)', marginBottom:14 }}>
             <div style={{ fontFamily:'Barlow Condensed', fontSize:10, color:C.volt, letterSpacing:1, marginBottom:4 }}>💡 NEXT SUGGESTION</div>
             <div style={{ fontSize:12, color:C.white, marginBottom:8, lineHeight:1.5 }}>{swan.next_suggested_action}</div>
             <div style={{ display:'flex', gap:6 }}>
-              <button onClick={()=>{ const l=swan.next_suggested_action.toLowerCase(); LAYOUTS.forEach(ly=>{ if(l.includes(ly.key)) switchLayout(ly.key); }); }} style={{ flex:1, padding:'5px', background:'rgba(200,255,0,0.08)', border:'1px solid rgba(200,255,0,0.2)', borderRadius:5, color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10 }}>APPLY</button>
+              <button onClick={()=>{ const l=swan.next_suggested_action.toLowerCase(); LAYOUTS.forEach(ly=>{ if(l.includes(ly.key)) switchLayout(ly.key); }); }} style={{ flex:1, padding:'5px', background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:5, color:C.volt, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10 }}>APPLY</button>
               <button onClick={()=>upd({next_suggested_action:''})} style={{ padding:'5px 8px', background:'transparent', border:'1px solid #333', borderRadius:5, color:C.gray, cursor:'pointer', fontSize:10 }}>DISMISS</button>
             </div>
           </div>

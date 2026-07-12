@@ -24,14 +24,14 @@ function GoldenWallItem({ item, onExpire }) {
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       className={`relative rounded-xl overflow-hidden border ${
         isSuperChat
-          ? 'border-[#FFB800] shadow-[0_0_20px_rgba(255,184,0,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
+          ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
           : isGift
           ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(192,57,43,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
           : 'border-[#FFB800]/30 bg-[#10101E]'
       } px-3 py-2.5`}
     >
       {/* Shimmer line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFB800] to-transparent opacity-60" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-60" />
 
       <div className="flex items-center gap-2">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${
@@ -42,7 +42,7 @@ function GoldenWallItem({ item, onExpire }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-white truncate">{item.user_name}</span>
-            {isSuperChat && <Crown className="w-3 h-3 text-[#FFB800] shrink-0" />}
+            {isSuperChat && <Crown className="w-3 h-3 text-[#D4AF37] shrink-0" />}
           </div>
           <div className="flex items-center gap-1">
             <span className={`text-sm font-black font-mono ${isSuperChat ? 'text-[#FFB800]' : 'text-[#C0392B]'}`}>
@@ -55,7 +55,7 @@ function GoldenWallItem({ item, onExpire }) {
         </div>
         {isSuperChat && (
           <div className="shrink-0">
-            <Star className="w-4 h-4 text-[#FFB800] animate-spin" style={{ animationDuration: '3s' }} />
+            <Star className="w-4 h-4 text-[#D4AF37] animate-spin" style={{ animationDuration: '3s' }} />
           </div>
         )}
       </div>
@@ -118,14 +118,14 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
   if (!isExpanded) return null;
 
   return (
-    <div className="rounded-xl border border-[#FFB800]/20 bg-[#0B0B18] overflow-hidden">
+    <div className="rounded-xl border border-[#D4AF37]/20 bg-[#0B0B18] overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#FFB800]/10 bg-[#07070F]">
-        <div className="w-4 h-4 rounded-full bg-[#FFB800] flex items-center justify-center">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-[#D4AF37]/10 bg-[#0D1022]">
+        <div className="w-4 h-4 rounded-full bg-[#D4AF37] flex items-center justify-center">
           <Zap className="w-2.5 h-2.5 text-black" />
         </div>
-        <span className="text-[10px] font-bold text-[#FFB800] uppercase tracking-wider">Golden Wall</span>
-        <span className="text-[11px] text-[#FFB800]/40 ml-auto font-mono">{wallItems.length} recent</span>
+        <span className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider">Golden Wall</span>
+        <span className="text-[11px] text-[#D4AF37]/40 ml-auto font-mono">{wallItems.length} recent</span>
       </div>
 
       {/* Items */}

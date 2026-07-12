@@ -55,7 +55,7 @@ export default function AnnouncementFeed({ communityId }) {
               flexShrink: 0,
             }}>
               {announcement.is_pinned ? (
-                <Pin className="w-5 h-5" style={{ color: '#a78bfa' }} />
+                <Pin className="w-5 h-5" style={{ color: '#D4AF37' }} />
               ) : (
                 <Megaphone className="w-5 h-5" style={{ color: announcement.priority === 'urgent' ? '#C0392B' : '#a78bfa' }} />
               )}

@@ -60,6 +60,14 @@ export default function PayPerViewCard({ event }) {
         current_participants: (event.current_participants || 0) + 1,
         revenue: (event.revenue || 0) + event.price,
       });
+
+      // Log activity
+      await base44.entities.Activity.create({
+        user_id: user.id,
+        type: 'ppv_purchase',
+        title: `Purchased access: ${event.title || 'PPV Event'}`,
+        amount: event.price,
+      }).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ppv-access'] });

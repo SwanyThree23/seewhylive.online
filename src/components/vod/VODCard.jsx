@@ -14,14 +14,14 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
   const statusStyle = {
     published: { color: '#6DBF7E', borderColor: '#166534', background: 'rgba(20,83,45,0.2)' },
     draft: { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' },
-    unlisted: { color: '#facc15', borderColor: '#713f12', background: 'rgba(113,63,18,0.2)' },
+    unlisted: { color: '#D4AF37', borderColor: '#800020', background: 'rgba(113,63,18,0.2)' },
   }[vod.status] || { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' };
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}>
       <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 12, overflow: 'hidden', color: '#fff' }}>
         {/* Thumbnail */}
-        <div className="relative h-36 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a20, #0d0618)' }}>
+        <div className="relative h-36 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
           {vod.thumbnail_url
             ? <img src={vod.thumbnail_url} alt={vod.title} className="w-full h-full object-cover" />
             : <Play className="w-10 h-10 text-white/10" />

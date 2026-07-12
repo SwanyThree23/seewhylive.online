@@ -92,6 +92,13 @@ export default function MilestoneAlerts({ creatorId }) {
       setShown(updatedShown);
       localStorage.setItem('shownMilestones', JSON.stringify(updatedShown));
       setQueue(prev => [...prev, ...newMilestones]);
+      newMilestones.forEach(m => {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Reached ${m.value} ${m.label}!`,
+        }).catch(() => {});
+      });
     }
   }, [subscriptions, rooms, transactions]);
 

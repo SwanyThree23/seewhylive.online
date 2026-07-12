@@ -72,7 +72,7 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
               ${tier.price}/mo
             </span>
             {success === tier.id ? (
-              <button disabled style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#16a34a', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <button disabled style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#4A9B5E', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <CheckCircle style={{ width: 16, height: 16 }} /> Active
               </button>
             ) : (

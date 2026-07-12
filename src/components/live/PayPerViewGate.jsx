@@ -15,7 +15,6 @@ export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) 
       setPurchased(true);
       onPurchase?.();
     } catch (error) {
-      console.error('PPV error:', error);
     }
     setProcessing(false);
   };
@@ -28,7 +27,7 @@ export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) 
       animate={{ opacity: 1, scale: 1 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
     >
-      <div className="p-6 rounded-2xl text-center max-w-sm" style={{ background: 'rgba(7,7,15,0.98)', border: `1px solid ${G}30` }}>
+      <div className="p-6 rounded-2xl text-center max-w-sm" style={{ background: 'rgba(8,11,24,0.98)', border: `1px solid ${G}30` }}>
         <Lock className="w-12 h-12 mx-auto mb-4" style={{ color: G }} />
         
         <h2 className="text-xl font-black mb-2" style={{ color: G }}>
@@ -49,7 +48,7 @@ export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) 
           disabled={processing}
           className="w-full py-3 rounded-lg font-bold text-lg transition-all active:scale-95"
           style={{
-            background: `linear-gradient(135deg, ${G}, #FFB700)`,
+            background: `linear-gradient(135deg, ${G}, #D4AF37)`,
             color: '#000',
           }}
         >

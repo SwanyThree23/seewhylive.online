@@ -86,9 +86,7 @@ export default function ContentRecommendations() {
                 src={rec.thumbnail}
                 alt={rec.title}
                 className="w-full h-full object-cover group-hover:brightness-75 transition-all"
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/56x56/1a1a1a/666';
-                }}
+                onError={(e) => { e.target.style.display = 'none'; }}
               />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Play className="w-3 h-3 text-white fill-white" />
@@ -115,13 +113,13 @@ export default function ContentRecommendations() {
               whileHover={{ scale: 1.1 }}
               className="flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center transition-all"
               style={{
-                background: liked.has(rec.id) ? 'rgba(236,72,153,0.2)' : 'rgba(255,255,255,0.05)',
-                border: liked.has(rec.id) ? '1px solid rgba(236,72,153,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                background: liked.has(rec.id) ? 'rgba(192,57,43,0.2)' : 'rgba(255,255,255,0.05)',
+                border: liked.has(rec.id) ? '1px solid rgba(192,57,43,0.4)' : '1px solid rgba(255,255,255,0.1)',
               }}
             >
               <ThumbsUp
                 className="w-3 h-3"
-                style={{ color: liked.has(rec.id) ? '#EC4899' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#EC4899' : 'none' }}
+                style={{ color: liked.has(rec.id) ? '#C0392B' : 'rgba(255,255,255,0.4)', fill: liked.has(rec.id) ? '#C0392B' : 'none' }}
               />
             </motion.button>
           </motion.a>

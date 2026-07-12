@@ -52,6 +52,13 @@ export default function DestinationsManager({ userId }) {
       setShowForm(false);
       toast.success('Destination added!');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Added streaming destination: ${label || selectedPlatform || 'Destination'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });

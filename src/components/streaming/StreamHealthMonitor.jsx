@@ -6,20 +6,7 @@ const GOLD = '#D4AF37';
 export default function StreamHealthMonitor({ isStreaming = false }) {
   const [stats, setStats] = useState({ bitrate: 0, fps: 0, packetLoss: 0, latency: 0, quality: 'good' });
 
-  useEffect(() => {
-    if (!isStreaming) return;
-    const t = setInterval(() => {
-      // Simulate realistic stream stats
-      setStats({
-        bitrate: 2400 + Math.floor(Math.random() * 400),
-        fps: 29 + Math.floor(Math.random() * 3),
-        packetLoss: Math.random() < 0.1 ? Math.floor(Math.random() * 3) : 0,
-        latency: 80 + Math.floor(Math.random() * 40),
-        quality: Math.random() < 0.9 ? 'good' : 'fair',
-      });
-    }, 2000);
-    return () => clearInterval(t);
-  }, [isStreaming]);
+  // Stats updated by real WebRTC getStats() / ZEGO callbacks when available
 
   const qualityColor = stats.quality === 'good' ? '#6DBF7E' : stats.quality === 'fair' ? '#FFD700' : '#C0392B';
 

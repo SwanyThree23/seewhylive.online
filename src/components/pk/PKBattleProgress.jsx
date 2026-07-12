@@ -1,21 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Flame, Trophy, Users, TrendingUp } from 'lucide-react';
 
-const G = '#D4AF37';
-const PANEL = '#0F0B1A';
-const BORDER = 'rgba(212,175,55,0.18)';
+const TIP_AMOUNTS_CENTS = [99, 199, 499];
 
-export default function PKBattleProgress({ battleId }) {
+const G = '#D4AF37';
+const PANEL = '#0D1022';
+const BORDER = 'rgba(212,175,55,0.18)';
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
+export default function PKBattleProgress({ battleId, currentUserId }) {
+  const qc = useQueryClient();
   const [battle, setBattle] = useState(null);
   const [winner, setWinner] = useState(null);
+  const [tipTarget, setTipTarget] = useState(null); // 'creator' | 'challenger'
+
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   // Fetch initial battle data
   const { data: initialBattle } = useQuery({
     queryKey: ['pkBattle', battleId],
     queryFn: () => base44.entities.PKBattle.get(battleId),
+  });
+
+  const tipMutation = useMutation({
+    mutationFn: ({ side, amountCents }) => {
+      const pts = Math.floor(amountCents / 10);
+      const field = side === 'creator'
+        ? { creator_score: (battle?.creator_score || 0) + pts, creator_tips: +((battle?.creator_tips || 0) + amountCents / 100).toFixed(2) }
+        : { challenger_score: (battle?.challenger_score || 0) + pts, challenger_tips: +((battle?.challenger_tips || 0) + amountCents / 100).toFixed(2) };
+      return base44.entities.PKBattle.update(battleId, field);
+    },
+    onSuccess: (_, { side, amountCents }) => {
+      toast.success(`Tipped $${(amountCents / 100).toFixed(2)} to ${side}!`);
+      qc.invalidateQueries(['pkBattle', battleId]);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'tip_sent',
+          title: `Tipped $${(amountCents / 100).toFixed(2)} in PK Battle`,
+          amount: amountCents,
+        }).catch(() => {});
+      }
+      setTipTarget(null);
+    },
+    onError: (err) => toast.error('Tip failed: ' + err.message),
   });
 
   // Real-time subscription to battle updates
@@ -79,11 +111,12 @@ export default function PKBattleProgress({ battleId }) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
-              <img
-                src={battle.creator_avatar || 'https://via.placeholder.com/40'}
-                alt={battle.creator_name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              <div className="relative w-8 h-8 shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.4)' }} />
+                <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT }}>
+                  <img src={battle.creator_avatar || undefined} onError={e => { e.target.style.display = 'none'; }} alt={battle.creator_name} className="w-full h-full object-cover" />
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black truncate" style={{ color: '#fff' }}>
                   {battle.creator_name}
@@ -127,11 +160,12 @@ export default function PKBattleProgress({ battleId }) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1">
-              <img
-                src={battle.challenger_avatar || 'https://via.placeholder.com/40'}
-                alt={battle.challenger_name}
-                className="w-8 h-8 rounded-full object-cover"
-              />
+              <div className="relative w-8 h-8 shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(212,175,55,0.3)' }} />
+                <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT }}>
+                  <img src={battle.challenger_avatar || undefined} onError={e => { e.target.style.display = 'none'; }} alt={battle.challenger_name} className="w-full h-full object-cover" />
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-black truncate" style={{ color: '#fff' }}>
                   {battle.challenger_name}

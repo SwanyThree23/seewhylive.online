@@ -32,7 +32,7 @@ export default function CreatorBridge({ user }) {
           <Youtube className="w-4 h-4 text-red-500" />
           <h3 className="text-sm font-bold text-white">Connect YouTube Channel</h3>
         </div>
-        {linked && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+        {linked && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
       </div>
 
       {!linked ? (
@@ -46,7 +46,7 @@ export default function CreatorBridge({ user }) {
               setError('');
             }}
             style={{
-              width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+              width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
               fontSize: 13, outline: 'none', boxSizing: 'border-box',
               fontFamily: 'Barlow Condensed, sans-serif',
@@ -75,8 +75,8 @@ export default function CreatorBridge({ user }) {
         <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(109,191,126,0.1)' }}>
           <CheckCircle2 className="w-4 h-4 text-green-400" />
           <div>
-            <p className="text-xs font-semibold text-green-400">Connected</p>
-            <p className="text-[11px] text-green-300/70">Your YouTube content syncs to SeeWhy LIVE</p>
+            <p className="text-xs font-semibold text-[#6DBF7E]">Connected</p>
+            <p className="text-[11px] text-[#6DBF7E]/80/70">Your YouTube content syncs to SeeWhy LIVE</p>
           </div>
         </div>
       )}

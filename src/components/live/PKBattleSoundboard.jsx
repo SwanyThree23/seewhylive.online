@@ -4,7 +4,7 @@ import { Zap, Volume2 } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function PKBattleSoundboard({ battleId, isBattleActive = false }) {

@@ -11,7 +11,7 @@ import confetti from 'canvas-confetti';
 
 const GOLD = '#D4AF37';
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
@@ -72,8 +72,13 @@ function BidRow({ bid, isWinning, index }) {
 function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
   const [bidAmount, setBidAmount] = useState(Math.ceil((auction.current_bid || auction.starting_bid) + (auction.bid_increment || 1)));
   const [showBids, setShowBids] = useState(false);
-  const isWinning = auction.current_winner_id === currentUser?.id;
+  const [optimisticBid, setOptimisticBid] = useState(null); // { amount, winnerId }
+  const [bidPending, setBidPending] = useState(false);
+  const isWinning = (optimisticBid?.winnerId ?? auction.current_winner_id) === currentUser?.id;
   const isEnded = auction.status === 'ended';
+  const displayBid = optimisticBid?.amount ?? (auction.current_bid || auction.starting_bid);
+  const displayBidCount = optimisticBid ? (auction.bid_count || 0) + 1 : (auction.bid_count || 0);
+  const displayWinnerName = optimisticBid ? (currentUser?.full_name || currentUser?.email) : auction.current_winner_name;
 
   const { data: bids = [] } = useQuery({
     queryKey: ['auction-bids', auction.id],
@@ -81,7 +86,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
     refetchInterval: 3000,
   });
 
-  const minBid = Math.ceil((auction.current_bid || auction.starting_bid) + (auction.bid_increment || 1));
+  const minBid = Math.ceil(displayBid + (auction.bid_increment || 1));
 
   const cardBorder =
     auction.status === 'ending_soon' ? '1px solid rgba(192,57,43,0.5)' :
@@ -123,13 +128,13 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, background: 'rgba(212,175,55,0.05)', borderRadius: 12, border: '1px solid rgba(212,175,55,0.1)' }}>
           <div>
             <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{isEnded ? 'Winning Bid' : 'Current Bid'}</p>
-            <p style={{ fontSize: 24, fontWeight: 700, color: GOLD, margin: '2px 0' }}>${(auction.current_bid || auction.starting_bid).toLocaleString()}</p>
-            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{auction.bid_count || 0} bids</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: GOLD, margin: '2px 0' }}>${displayBid.toLocaleString()}</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{displayBidCount} bids</p>
           </div>
-          {auction.current_winner_name && (
+          {(displayWinnerName || auction.current_winner_name) && (
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{isEnded ? '🏆 Winner' : '👑 Leading'}</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '2px 0' }}>{auction.current_winner_name}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '2px 0' }}>{displayWinnerName}</p>
               {isWinning && (
                 <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   That's you!
@@ -154,14 +159,21 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
                 />
               </div>
               <button
+                disabled={bidPending}
                 onClick={() => {
                   if (bidAmount < minBid) return toast.error(`Minimum bid: $${minBid}`);
-                  onBid(auction, bidAmount);
-                  setBidAmount(Math.ceil(bidAmount + (auction.bid_increment || 1)));
+                  // Optimistic update
+                  setOptimisticBid({ amount: bidAmount, winnerId: currentUser?.id });
+                  setBidPending(true);
+                  const nextBid = Math.ceil(bidAmount + (auction.bid_increment || 1));
+                  Promise.resolve(onBid(auction, bidAmount)).finally(() => {
+                    setBidPending(false);
+                  });
+                  setBidAmount(nextBid);
                 }}
-                style={{ background: GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '0 16px', height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ background: bidPending ? 'rgba(212,175,55,0.5)' : GOLD, color: '#000', fontWeight: 700, border: 'none', borderRadius: 8, padding: '0 16px', height: 36, cursor: bidPending ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', opacity: bidPending ? 0.7 : 1 }}
               >
-                <Gavel className="w-4 h-4" /> Bid
+                <Gavel className="w-4 h-4" /> {bidPending ? '…' : 'Bid'}
               </button>
             </div>
             {/* Quick bid buttons */}
@@ -177,7 +189,7 @@ function AuctionCard({ auction, currentUser, onBid, isCreator, onEnd }) {
             {auction.buyout_price && (
               <button
                 onClick={() => { onBid(auction, auction.buyout_price, true); }}
-                style={{ width: '100%', border: '1px solid rgba(167,139,250,0.3)', background: 'transparent', color: '#a78bfa', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
+                style={{ width: '100%', border: '1px solid rgba(212,175,55,0.3)', background: 'transparent', color: '#D4AF37', borderRadius: 8, padding: '6px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif' }}
               >
                 <Zap className="w-3.5 h-3.5" /> Buy Now for ${auction.buyout_price}
               </button>
@@ -239,7 +251,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         qc.invalidateQueries(['live-auctions', creatorId, roomId]);
         if (event.type === 'update' && event.data?.status === 'ended') {
           toast.success(`Auction "${event.data.title}" ended — winner: ${event.data.winner_name || 'N/A'}`);
-          confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#d4af37', '#fff', '#a78bfa'] });
+          confetti({ particleCount: 80, spread: 60, origin: { y: 0.4 }, colors: ['#d4af37', '#fff', '#D4AF37'] });
         }
       }
     });
@@ -274,10 +286,19 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
         ...(isBuyout ? { winner_id: currentUser.id, winner_name: currentUser.full_name || currentUser.email, final_amount: amount } : {}),
       });
     },
-    onSuccess: (_, { auction, amount }) => {
+    onSuccess: (_, { auction, amount, isBuyout }) => {
       qc.invalidateQueries(['live-auctions']);
       qc.invalidateQueries(['auction-bids']);
       toast.success(`Bid of $${amount} placed!`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: isBuyout ? 'ppv_purchase' : 'tip_sent',
+          title: isBuyout ? `Won auction: ${auction?.title || 'Auction'}` : `Bid $${amount} on: ${auction?.title || 'Auction'}`,
+          amount,
+          recipient_id: auction?.creator_id,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to place bid'),
   });

@@ -43,7 +43,7 @@ export default function BrandChyron() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden"
+      className="fixed left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden bottom-[calc(60px+env(safe-area-inset-bottom,0px))] md:bottom-0"
       style={{
         background: 'linear-gradient(90deg, #03030A 0%, #07070F 50%, #03030A 100%)',
         borderTop: '1px solid rgba(192,57,43,0.25)',

@@ -64,7 +64,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#f59e0b' : '#6DBF7E';
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
@@ -109,7 +109,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
                   ? 'bg-red-900/50 border border-red-600/50 text-red-400'
-                  : 'bg-green-900/30 border border-green-600/40 text-green-400'
+                  : 'bg-[#0F1428]/30 border border-[#6DBF7E]/35/40 text-[#6DBF7E]'
               }`}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
@@ -120,7 +120,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 speakerMuted
                   ? 'bg-gray-800 border border-gray-600 text-gray-400'
-                  : 'bg-blue-900/30 border border-blue-600/40 text-blue-400'
+                  : 'bg-[#0F1428]/50 border border-[#D4AF37]/25 text-[#D4AF37]'
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}

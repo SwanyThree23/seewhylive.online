@@ -15,18 +15,39 @@ var ET = {
   lightEarth: '#4A3728',
 };
 
-/* Mock data generators */
-function genMonthlyData() {
-  var months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
-  return months.map(function(m, i) {
-    return {
-      month: m,
-      wins: Math.floor(3 + i * 2.1 + Math.random() * 4),
-      losses: Math.floor(2 + i * 0.8 + Math.random() * 3),
-      earnings: Math.floor(200 + i * 180 + Math.random() * 150),
-      viewers: Math.floor(800 + i * 320 + Math.random() * 400),
-    };
+function buildMonthlyData(battles, userId) {
+  var monthMap = {};
+  battles.forEach(function(b) {
+    var date = new Date(b.created_date || b.started_at);
+    if (isNaN(date)) return;
+    var key = date.toLocaleString('en-US', { month: 'short' }) + " '" + String(date.getFullYear()).slice(2);
+    if (!monthMap[key]) monthMap[key] = { month: key, wins: 0, losses: 0, earnings: 0, viewers: 0 };
+    var isCreator = b.creator_id === userId;
+    var isChal = b.challenger_id === userId;
+    if (!isCreator && !isChal) return;
+    if (b.status === 'ended') {
+      if (b.winner_id === userId) monthMap[key].wins++;
+      else monthMap[key].losses++;
+    }
+    monthMap[key].earnings += isCreator ? (b.creator_tips || 0) : (b.challenger_tips || 0);
   });
+  return Object.values(monthMap).slice(-8);
+}
+
+function buildTopOpponents(battles, userId) {
+  var oppMap = {};
+  battles.forEach(function(b) {
+    if (b.status !== 'ended') return;
+    var isCreator = b.creator_id === userId;
+    var isChal = b.challenger_id === userId;
+    if (!isCreator && !isChal) return;
+    var oppName = isCreator ? (b.challenger_name || 'Unknown') : (b.creator_name || 'Unknown');
+    if (!oppMap[oppName]) oppMap[oppName] = { name: oppName, battles: 0, wins: 0, losses: 0 };
+    oppMap[oppName].battles++;
+    if (b.winner_id === userId) oppMap[oppName].wins++;
+    else oppMap[oppName].losses++;
+  });
+  return Object.values(oppMap).sort(function(a, b) { return b.battles - a.battles; }).slice(0, 5);
 }
 
 function genGiftBreakdown() {
@@ -36,16 +57,6 @@ function genGiftBreakdown() {
     { name: 'Fire', value: 19, color: ET.clay },
     { name: 'Diamond', value: 11, color: ET.moss },
     { name: 'Other', value: 5, color: ET.sand },
-  ];
-}
-
-function genTopOpponents() {
-  return [
-    { name: 'StormCaster', battles: 8, wins: 6, losses: 2, avgScore: 1240 },
-    { name: 'TalkMaster99', battles: 5, wins: 2, losses: 3, avgScore: 1850 },
-    { name: 'NeonBeat', battles: 6, wins: 5, losses: 1, avgScore: 890 },
-    { name: 'PixelQueen', battles: 3, wins: 3, losses: 0, avgScore: 720 },
-    { name: 'BeatDropKing', battles: 4, wins: 1, losses: 3, avgScore: 1100 },
   ];
 }
 
@@ -87,9 +98,9 @@ var CustomTooltip = function(props) {
 
 export default function PKAnalyticsDashboard({ battles, user }) {
   var [timeRange, setTimeRange] = useState('3m');
-  var monthly = genMonthlyData();
+  var monthly = buildMonthlyData(battles, userId);
   var gifts = genGiftBreakdown();
-  var opponents = genTopOpponents();
+  var opponents = buildTopOpponents(battles, userId);
 
   var userId = user && user.id;
   var ended = battles.filter(function(b) { return b.status === 'ended'; });

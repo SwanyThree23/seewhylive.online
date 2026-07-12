@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, Users, Trophy, Zap, Timer, TrendingUp } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 
 const BattleCard = ({ player, score, tips, isWinner }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     className={`flex-1 rounded-xl p-4 text-center border-2 transition-all ${
-      isWinner ? 'border-amber-400 bg-amber-400/10' : 'border-white/20 bg-white/5'
+      isWinner ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/20 bg-white/5'
     }`}
   >
     <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-[#7B5DA6] to-[#C0392B] flex items-center justify-center">
@@ -23,7 +25,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       </div>
       <div className="bg-white/10 rounded px-2 py-1">
         <p className="text-[11px] text-white/50">SCORE</p>
-        <p className="text-2xl font-black text-amber-400">{score || 0}</p>
+        <p className="text-2xl font-black text-[#D4AF37]">{score || 0}</p>
       </div>
     </div>
 
@@ -31,60 +33,54 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="flex items-center justify-center gap-1 bg-amber-400/20 rounded py-2"
+        className="flex items-center justify-center gap-1 bg-[#D4AF37]/15 rounded py-2"
       >
-        <Trophy className="w-4 h-4 text-amber-400" />
-        <span className="text-xs font-bold text-amber-400">WINNING</span>
+        <Trophy className="w-4 h-4 text-[#D4AF37]" />
+        <span className="text-xs font-bold text-[#D4AF37]">WINNING</span>
       </motion.div>
     )}
   </motion.div>
 );
 
 export default function PKBattleInterface({ roomId }) {
-  const [battleActive, setBattleActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180);
-  const [creator, setCreator] = useState({
-    name: 'CreatorName',
-    followers: 1250,
-    initials: 'CN',
-    score: 0,
-    tips: 0
+
+  const { data: battles = [] } = useQuery({
+    queryKey: ['pk-interface-battle', roomId],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: roomId, status: 'active' }),
+    enabled: !!roomId,
+    refetchInterval: 3000,
   });
-  const [challenger, setChallenger] = useState({
-    name: 'ChallengeName',
-    followers: 890,
-    initials: 'CH',
-    score: 0,
-    tips: 0
-  });
+
+  const battle = battles[0] || null;
+  const battleActive = !!battle;
+
+  const creator = {
+    name: battle?.creator_name || 'Creator',
+    followers: 0,
+    initials: (battle?.creator_name || 'C').slice(0, 2).toUpperCase(),
+    score: (battle?.creator_tips || 0) + (battle?.creator_subs || 0) * 10,
+    tips: battle?.creator_tips || 0,
+  };
+
+  const challenger = {
+    name: battle?.challenger_name || 'Challenger',
+    followers: 0,
+    initials: (battle?.challenger_name || 'CH').slice(0, 2).toUpperCase(),
+    score: (battle?.challenger_tips || 0) + (battle?.challenger_subs || 0) * 10,
+    tips: battle?.challenger_tips || 0,
+  };
 
   useEffect(() => {
-    if (!battleActive) return;
+    if (!battle?.started_at) return;
+    const battleDuration = battle.duration_seconds || 180;
+    const elapsed = Math.round((Date.now() - new Date(battle.started_at).getTime()) / 1000);
+    setTimeLeft(Math.max(0, battleDuration - elapsed));
     const interval = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          setBattleActive(false);
-          return 0;
-        }
-        return t - 1;
-      });
-
-      // Simulate score updates
-      setCreator(prev => ({
-        ...prev,
-        tips: prev.tips + Math.floor(Math.random() * 50),
-        score: prev.score + Math.floor(Math.random() * 100)
-      }));
-
-      setChallenger(prev => ({
-        ...prev,
-        tips: prev.tips + Math.floor(Math.random() * 40),
-        score: prev.score + Math.floor(Math.random() * 80)
-      }));
-    }, 2000);
-
+      setTimeLeft(t => Math.max(0, t - 1));
+    }, 1000);
     return () => clearInterval(interval);
-  }, [battleActive]);
+  }, [battle?.id, battle?.started_at]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -99,29 +95,14 @@ export default function PKBattleInterface({ roomId }) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-xl p-6 text-center"
+        className="bg-[#080B18] border border-[#D4AF37]/25 rounded-xl p-6 text-center"
       >
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Swords className="w-6 h-6 text-amber-500" />
+          <Swords className="w-6 h-6 text-[#D4AF37]" />
           <h2 className="text-2xl font-black text-white">PK BATTLE</h2>
         </div>
         <p className="text-white/60 mb-6">Challenge another creator to a live battle</p>
-        <button
-          onClick={() => {
-            setBattleActive(true);
-            setTimeLeft(180);
-            setCreator(p => ({ ...p, tips: 0, score: 0 }));
-            setChallenger(p => ({ ...p, tips: 0, score: 0 }));
-          }}
-          style={{
-            width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', borderRadius: 8,
-            background: '#f59e0b', color: '#000', border: 'none',
-          }}
-        >
-          <Swords className="w-4 h-4" />
-          Start Battle
-        </button>
+        <p className="text-[11px] text-white/40 mt-2">No active battle in this room</p>
       </motion.div>
     );
   }
@@ -130,13 +111,13 @@ export default function PKBattleInterface({ roomId }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/50 rounded-xl p-4 space-y-4"
+      className="bg-[#080B18] border border-[#D4AF37]/40 rounded-xl p-4 space-y-4"
     >
       {/* Timer & Status */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/50 rounded-lg px-4 py-2 mb-4">
-          <Timer className="w-5 h-5 text-amber-500 animate-pulse" />
-          <span className="text-2xl font-black text-amber-400">{formatTime(timeLeft)}</span>
+        <div className="inline-flex items-center gap-2 bg-[#D4AF37]/20 border border-[#D4AF37]/40 rounded-lg px-4 py-2 mb-4">
+          <Timer className="w-5 h-5 text-[#D4AF37] animate-pulse" />
+          <span className="text-2xl font-black text-[#D4AF37]">{formatTime(timeLeft)}</span>
         </div>
         <p className="text-[11px] text-white/60 uppercase tracking-wider">3-Minute PK Battle</p>
       </div>
@@ -153,7 +134,7 @@ export default function PKBattleInterface({ roomId }) {
         <div className="flex flex-col items-center justify-center gap-2">
           <div className="text-center">
             <p className="text-[10px] text-white/40 uppercase font-bold">VS</p>
-            <Zap className="w-5 h-5 text-amber-500 mx-auto" />
+            <Zap className="w-5 h-5 text-[#D4AF37] mx-auto" />
           </div>
           <div className="text-center">
             <p className="text-[11px] text-white/60">Creator Advantage</p>
@@ -190,14 +171,13 @@ export default function PKBattleInterface({ roomId }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-center"
+          className="bg-[#6DBF7E]/20 border border-[#6DBF7E]/40/50 rounded-lg p-4 text-center"
         >
-          <Trophy className="w-6 h-6 mx-auto mb-2 text-green-400" />
+          <Trophy className="w-6 h-6 mx-auto mb-2 text-[#6DBF7E]" />
           <p className="text-sm font-bold text-white mb-2">
             {winner === 'creator' ? creator.name : challenger.name} Wins!
           </p>
           <button
-            onClick={() => setBattleActive(false)}
             style={{
               width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 600, fontSize: 14, cursor: 'pointer', borderRadius: 8,

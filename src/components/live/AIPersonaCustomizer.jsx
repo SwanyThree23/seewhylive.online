@@ -33,7 +33,6 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
         setExpanded(false);
       }
     } catch (error) {
-      console.error('Customization error:', error);
     }
     setSaving(false);
   };
@@ -41,7 +40,7 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
   return (
     <motion.div
       className="p-3 rounded-lg"
-      style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
     >
       <button
         onClick={() => setExpanded(!expanded)}

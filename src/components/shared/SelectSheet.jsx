@@ -25,7 +25,7 @@ export default function SelectSheet({ label, value, options, onChange, style, cl
         onClick={function() { setOpen(true); }}
         style={{
           width: '100%',
-          background: 'rgba(17,8,34,0.85)',
+          background: 'rgba(8,11,24,0.85)',
           border: '1px solid rgba(212,175,55,0.18)',
           borderRadius: 8,
           padding: '9px 32px 9px 12px',

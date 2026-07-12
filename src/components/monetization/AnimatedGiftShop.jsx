@@ -46,6 +46,24 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: gift.times_sent + 1,
       });
+
+      // Log activity for both parties
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name} gift`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name} gift`,
+          amount: gift.price,
+          sender_id: user.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {

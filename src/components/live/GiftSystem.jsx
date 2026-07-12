@@ -144,13 +144,13 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: (gift.price * 0.1), platform_cut: (gift.price * 0.01), creator_payout: (gift.price * 0.09),
+        amount: Math.floor(gift.price * 0.1), creator_payout: Math.floor(gift.price * 0.09), platform_cut: Math.floor(gift.price * 0.1) - Math.floor(gift.price * 0.09),
         transaction_type: "direct_support", status: "completed",
       }),
       base44.entities.TipAlert.create({
         creator_id: hostId, room_id: roomId,
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
-        amount_usd: gift.price * 0.1, message: "Sent " + (gift.name || gift.id),
+        amount_usd: Math.floor(gift.price * 0.1), message: "Sent " + (gift.name || gift.id),
         animation_type: gift.rarity === "legendary" ? "fireworks" : gift.rarity === "epic" ? "confetti" : "slide_in",
         is_displayed: false,
       }),
@@ -159,6 +159,24 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       onSend && onSend({ ...gift, sender_name: currentUser?.full_name || "You" });
       qc.invalidateQueries(["gift-lb", roomId]);
       setOpen(false);
+      if (currentUser?.id) {
+        Promise.allSettled([
+          base44.entities.Activity.create({
+            user_id: currentUser.id,
+            type: 'gift_sent',
+            title: `Sent ${gift.name || 'gift'}`,
+            amount: gift.price,
+            recipient_id: hostId,
+          }),
+          hostId && base44.entities.Activity.create({
+            user_id: hostId,
+            type: 'gift_received',
+            title: `Received ${gift.name || 'gift'} from ${currentUser.full_name || 'viewer'}`,
+            amount: gift.price,
+            sender_id: currentUser.id,
+          }),
+        ]);
+      }
     },
     onError: () => toast.error('Action failed.'),
   });

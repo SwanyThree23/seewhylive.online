@@ -6,8 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Lock, Users, DollarSign, Calendar, Trash2 } from 'lucide-react';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function PayPerViewManager({ roomId }) {
@@ -36,16 +36,25 @@ export default function PayPerViewManager({ roomId }) {
   const createPPVMutation = useMutation({
     mutationFn: async (data) => {
       const user = await base44.auth.me();
-      return base44.entities.PayPerViewEvent.create({
+      const event = await base44.entities.PayPerViewEvent.create({
         ...data,
         room_id: roomId,
         status: 'upcoming',
       });
+      return { event, userId: user?.id };
     },
-    onSuccess: () => {
+    onSuccess: ({ event, userId }) => {
       queryClient.invalidateQueries({ queryKey: ['ppvEvents', roomId] });
       setShowForm(false);
       setFormData({ title: '', description: '', price: 9.99, event_date: '', duration_minutes: 60, max_participants: null });
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'stream_scheduled',
+          title: `Created PPV event: ${event?.title || 'PPV Event'}`,
+          amount: event?.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });

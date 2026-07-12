@@ -25,7 +25,6 @@ export default function SwanAIRecommendations({ roomId, currentLayout, viewerCou
           setDismissed(false);
         }
       } catch (error) {
-        console.error('Recommendation error:', error);
       }
     };
 

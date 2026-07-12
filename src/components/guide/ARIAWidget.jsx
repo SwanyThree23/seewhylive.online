@@ -7,8 +7,8 @@ import { X, Send, Mic, MicOff, MessageSquare, ChevronDown, Sparkles, Volume2, Cl
 import ReactMarkdown from 'react-markdown';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 const CREAM = '#F5F0E8';
 
@@ -368,7 +368,7 @@ export default function SwanyBotWidget() {
             onClick={openAndGreet}
             className="fixed bottom-36 left-4 z-40 w-14 h-14 rounded-2xl flex items-center justify-center md:bottom-20 md:left-6"
             style={{
-              background: 'linear-gradient(135deg, #1a0d2e 0%, #2d1b6b 50%, #1a0d2e 100%)',
+              background: 'linear-gradient(135deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
               border: `1px solid ${G}40`,
               boxShadow: pulse
                 ? `0 0 0 0 ${G}60, 0 4px 24px rgba(212,175,55,0.5)`
@@ -411,7 +411,7 @@ export default function SwanyBotWidget() {
             >
               <div className="flex items-center gap-2.5">
                 <div className="relative w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)', border: `1px solid ${G}30` }}>
+                  style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}30` }}>
                   <Sparkles className="w-4 h-4" style={{ color: G }} />
                   {audioEnabled && (
                     <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#6DBF7E] border-2 border-black animate-pulse" />
@@ -460,7 +460,7 @@ export default function SwanyBotWidget() {
                      <div className="space-y-3">
                        <div className="text-center pt-4 pb-2">
                          <div className="w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                           style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)' }}>
+                           style={{ background: 'linear-gradient(135deg, #800020, #6B4423)' }}>
                            <Sparkles className="w-6 h-6" style={{ color: G }} />
                          </div>
                          <p className="font-black text-sm uppercase tracking-wider" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -525,7 +525,7 @@ export default function SwanyBotWidget() {
                       >
                         {!isUser && (
                           <div className="w-6 h-6 rounded-lg shrink-0 mt-0.5 flex items-center justify-center"
-                            style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)', border: `1px solid ${G}20` }}>
+                            style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}20` }}>
                             <Sparkles className="w-3 h-3" style={{ color: G }} />
                           </div>
                         )}
@@ -557,7 +557,7 @@ export default function SwanyBotWidget() {
                   {loading && (
                     <div className="flex justify-start gap-2">
                       <div className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center"
-                        style={{ background: 'linear-gradient(135deg, #2d1b6b, #6B4423)', border: `1px solid ${G}20` }}>
+                        style={{ background: 'linear-gradient(135deg, #800020, #6B4423)', border: `1px solid ${G}20` }}>
                         <Sparkles className="w-3 h-3" style={{ color: G }} />
                       </div>
                       <div className="rounded-2xl" style={{ background: PANEL, border: '1px solid rgba(255,255,255,0.07)' }}>
