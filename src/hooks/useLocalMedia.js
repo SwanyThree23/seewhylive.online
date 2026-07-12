@@ -37,13 +37,13 @@ export function useLocalMedia({
 
     const videoConstraint = video === false ? false : {
       ...(RESOLUTION_PRESETS[res] || RESOLUTION_PRESETS['720p']),
-      ...(vId ? { deviceId: { exact: vId } } : {}),
+      ...(vId ? { deviceId: { ideal: vId } } : {}),
     };
     const audioConstraint = audio === false ? false : {
       echoCancellation: true,
       noiseSuppression: true,
       sampleRate: 48000,
-      ...(aId ? { deviceId: { exact: aId } } : {}),
+      ...(aId ? { deviceId: { ideal: aId } } : {}),
     };
 
     // Stop existing tracks before acquiring new ones
