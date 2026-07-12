@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
+import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 
 var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
@@ -84,6 +84,8 @@ function SignalBars({ bars }) {
 
 function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands, quality }) {
   var [menuOpen, setMenuOpen] = useState(false);
+  var [volume, setVolume] = useState(1);
+  var [showVolume, setShowVolume] = useState(false);
   var audioSpeaking = useAudioLevel(stream);
   var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
@@ -96,6 +98,13 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
+
+  // Apply volume to remote stream video element
+  useEffect(() => {
+    if (videoRef.current && !isLocal) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume, isLocal]);
 
   var borderColor = speaking
     ? 'rgba(212,175,55,0.7)'
@@ -215,6 +224,16 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           >
             <Maximize2 className="w-2 h-2 text-white" />
           </button>
+          {!isLocal && stream && (
+            <button
+              onClick={() => setShowVolume(v => !v)}
+              className="w-4 h-4 rounded flex items-center justify-center"
+              style={{ background: showVolume ? 'rgba(212,175,55,0.4)' : 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+              title="Adjust volume"
+            >
+              <Volume2 className="w-2 h-2" style={{ color: showVolume ? '#D4AF37' : 'rgba(255,255,255,0.7)' }} />
+            </button>
+          )}
           {canManage && member.user_id !== hostId && (
             <div style={{ position: 'relative' }}>
               <button
@@ -240,6 +259,23 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
             </div>
           )}
         </div>
+
+        {/* Per-stream volume slider — shown when volume button is active */}
+        {showVolume && !isLocal && (
+          <div className="absolute left-0 right-0 bottom-7 px-2 z-20"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', borderRadius: 4, padding: '4px 6px' }}>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={volume}
+              onChange={e => setVolume(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#D4AF37', cursor: 'pointer' }}
+              title={`Volume: ${Math.round(volume * 100)}%`}
+            />
+          </div>
+        )}
       </div>
     </motion.div>
   );
