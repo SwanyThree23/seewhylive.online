@@ -540,7 +540,9 @@ export default function WatchPartyPage() {
 
   const isHost = party?.host_id === user?.id;
 
-  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
   const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);

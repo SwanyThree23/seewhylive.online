@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
@@ -13,23 +13,39 @@ const BG_MUSIC = [
   { id: 'acoustic', label: '🎸 Acoustic' },
 ];
 
-export default function AudioMixer({ micMuted, onMicToggle }) {
+export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   const [collapsed, setCollapsed] = useState(false);
   const [gain, setGain] = useState([100]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [bgMusic, setBgMusic] = useState('none');
-  const [vuLevels, setVuLevels] = useState([0.1, 0.2, 0.1, 0.3, 0.2, 0.1, 0.2, 0.3]);
-  const vuRef = useRef(null);
+  const [vuLevels, setVuLevels] = useState(Array(8).fill(0.02));
 
   useEffect(() => {
-    if (micMuted) return;
-    vuRef.current = setInterval(() => {
-      setVuLevels(Array.from({ length: 8 }, () => Math.random() * 0.9 + 0.05));
-    }, 100);
-    return () => clearInterval(vuRef.current);
-  }, [micMuted]);
+    if (!stream || micMuted) { setVuLevels(Array(8).fill(0.02)); return; }
+    let ctx, raf;
+    try {
+      ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(buf);
+        const bands = 8;
+        const size = Math.floor(buf.length / bands);
+        setVuLevels(Array.from({ length: bands }, (_, i) => {
+          const slice = buf.slice(i * size, i * size + size);
+          return slice.reduce((a, b) => a + b, 0) / (size * 255);
+        }));
+        raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {}
+    return () => { cancelAnimationFrame(raf); ctx?.close().catch(() => {}); };
+  }, [stream, micMuted]);
 
   return (
     <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>

@@ -183,8 +183,10 @@ export default function RoomPage() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Real local camera/mic stream
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
+  // Real local camera/mic stream — seed device IDs from stored preferences
+  const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
 
   // WebRTC peer mesh — connects to all other participants via STUN/TURN
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
