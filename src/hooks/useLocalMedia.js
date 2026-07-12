@@ -161,12 +161,12 @@ export function useLocalMedia({
     if (next) await replaceVideoDevice(next.deviceId);
   }, [activeVideoId, replaceVideoDevice]);
 
-  // Start screen share (replaces video track)
+  // Start screen share (replaces video track; captures system audio when browser supports it)
   const startScreenShare = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: { cursor: 'always', displaySurface: 'monitor' },
-        audio: false,
+        audio: true, // system audio — browser grants only when supported and user allows
       });
       setScreenStream(stream);
       setIsSharingScreen(true);
@@ -175,13 +175,21 @@ export function useLocalMedia({
       // When the user stops sharing via browser UI
       screenTrack.onended = () => stopScreenShare();
 
-      // Replace camera track with screen track
+      // Replace camera video track with screen track
       const old = streamRef.current?.getVideoTracks()[0];
       if (old) {
         streamRef.current.removeTrack(old);
         old.stop();
       }
       streamRef.current?.addTrack(screenTrack);
+
+      // Mix in screen share audio track if available (e.g. Chrome tab audio)
+      const [screenAudioTrack] = stream.getAudioTracks();
+      if (screenAudioTrack) {
+        // Keep the mic track too; add the screen audio alongside it
+        streamRef.current?.addTrack(screenAudioTrack);
+      }
+
       setLocalStream(new MediaStream(streamRef.current?.getTracks() || [screenTrack]));
     } catch {}
   }, []);

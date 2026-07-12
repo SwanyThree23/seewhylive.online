@@ -543,7 +543,33 @@ export default function WatchPartyPage() {
   const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(partyId, localStream);
+
+  // Per-peer connection quality — Map<userId, {bars, rtt}>
+  const [peerQuality, setPeerQuality] = useState(() => new Map());
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const qual = new Map();
+      for (const [peerId, { pc }] of peersRef.current.entries()) {
+        if (pc.connectionState !== 'connected') continue;
+        const uid = peerUserIds?.get(peerId);
+        if (!uid) continue;
+        try {
+          const stats = await pc.getStats();
+          let totalRtt = 0, cnt = 0;
+          stats.forEach(r => {
+            if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.currentRoundTripTime != null) {
+              totalRtt += r.currentRoundTripTime * 1000; cnt++;
+            }
+          });
+          const rtt = cnt > 0 ? Math.round(totalRtt / cnt) : null;
+          qual.set(uid, { bars: rtt == null ? 3 : rtt < 80 ? 4 : rtt < 200 ? 3 : rtt < 400 ? 2 : 1, rtt });
+        } catch {}
+      }
+      setPeerQuality(qual);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [peerUserIds]); // peersRef is a stable ref
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -1156,6 +1182,7 @@ export default function WatchPartyPage() {
             localStream={localStream}
             remoteStreams={remoteStreams}
             peerUserIds={peerUserIds}
+            peerQuality={peerQuality}
           />
         </div>
 
@@ -1252,6 +1279,7 @@ export default function WatchPartyPage() {
                 localStream={localStream}
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
+                peerQuality={peerQuality}
               />
             )}
             {activePanel === 'battle' && (
