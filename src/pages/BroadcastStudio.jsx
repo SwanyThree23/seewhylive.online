@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
-  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid,
+  ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, FlipHorizontal2,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -326,6 +326,7 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
   const camRef = useRef(null);
   const screenRef = useRef(null);
   const [isPip, setIsPip] = useState(false);
+  const [mirrored, setMirrored] = useState(true);
   const pipSupported = typeof document !== 'undefined' && !!document.pictureInPictureEnabled;
 
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
@@ -351,7 +352,8 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
       {screenStream ? (
         <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
       ) : localStream && videoEnabled ? (
-        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+        <video ref={camRef} autoPlay muted playsInline className="w-full h-full object-cover"
+          style={{ transform: mirrored ? 'scaleX(-1)' : 'none', transition: 'transform 0.2s' }} />
       ) : (
         <div className="flex flex-col items-center gap-2" style={{ color: 'rgba(255,255,255,0.2)' }}>
           <VideoOff className="w-12 h-12" />
@@ -363,14 +365,23 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
         <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
-      {/* Browser Picture-in-Picture button */}
-      {pipSupported && (localStream || screenStream) && (
-        <button onClick={togglePip} title={isPip ? 'Exit Picture-in-Picture' : 'Pop out (Picture-in-Picture)'}
-          className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg transition-opacity"
-          style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
-          <Maximize2 className="w-3.5 h-3.5" style={{ color: isPip ? GOLD : 'rgba(255,255,255,0.6)' }} />
-        </button>
-      )}
+      {/* Mirror toggle + PiP buttons */}
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        {!screenStream && localStream && videoEnabled && (
+          <button onClick={() => setMirrored(v => !v)} title={mirrored ? 'Disable mirror' : 'Enable mirror'}
+            className="w-7 h-7 flex items-center justify-center rounded-lg"
+            style={{ background: mirrored ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${mirrored ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
+            <FlipHorizontal2 className="w-3.5 h-3.5" style={{ color: mirrored ? GOLD : 'rgba(255,255,255,0.6)' }} />
+          </button>
+        )}
+        {pipSupported && (localStream || screenStream) && (
+          <button onClick={togglePip} title={isPip ? 'Exit Picture-in-Picture' : 'Pop out (Picture-in-Picture)'}
+            className="w-7 h-7 flex items-center justify-center rounded-lg transition-opacity"
+            style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
+            <Maximize2 className="w-3.5 h-3.5" style={{ color: isPip ? GOLD : 'rgba(255,255,255,0.6)' }} />
+          </button>
+        )}
+      </div>
       {/* Network quality mini-HUD */}
       {netBars != null && (
         <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded"
