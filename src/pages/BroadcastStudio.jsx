@@ -29,6 +29,7 @@ import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
@@ -527,7 +528,7 @@ export default function BroadcastStudio() {
   // Local media — use stored device preferences from RoomEntryGate if available
   const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, activeVideoId, activeAudioId } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording;
@@ -1582,6 +1583,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {/* 🎚 AUDIO MIXER TAB */}
             {activeTab === 'audio' && canStream && (
               <div className="p-3 space-y-3">
+                {/* In-room camera + mic device switcher */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Devices</p>
+                  <CameraDeviceSelector
+                    compact
+                    currentVideoId={activeVideoId}
+                    currentAudioId={activeAudioId}
+                    onVideoChange={(id) => { replaceVideoDevice(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} }}
+                    onAudioChange={(id) => { replaceAudioDevice(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }}
+                    onScreenShare={toggleScreenShare}
+                    isSharingScreen={screenEnabled}
+                  />
+                </div>
                 <EnhancedAudioMixer
                   micMuted={!audioEnabled}
                   onMicToggle={handleToggleAudio}

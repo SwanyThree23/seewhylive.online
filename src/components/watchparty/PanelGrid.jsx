@@ -11,11 +11,14 @@ function getColor(name) {
   return COLORS[idx];
 }
 
+var AUDIO_HOLD_MS = 400; // keep speaking indicator on after last peak to avoid flicker
+
 function useAudioLevel(stream) {
   var [isSpeaking, setIsSpeaking] = useState(false);
   var ctxRef = useRef(null);
-  var analyserRef = useRef(null);
   var rafRef = useRef(null);
+  var holdTimerRef = useRef(null);
+  var speakingRef = useRef(false);
 
   useEffect(() => {
     if (!stream) { setIsSpeaking(false); return; }
@@ -27,7 +30,6 @@ function useAudioLevel(stream) {
       ctxRef.current = ctx;
       var analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
-      analyserRef.current = analyser;
       var source = ctx.createMediaStreamSource(stream);
       source.connect(analyser);
       var data = new Uint8Array(analyser.frequencyBinCount);
@@ -40,7 +42,16 @@ function useAudioLevel(stream) {
           sum += v * v;
         }
         var rms = Math.sqrt(sum / data.length);
-        setIsSpeaking(rms > 0.01);
+        if (rms > 0.01) {
+          clearTimeout(holdTimerRef.current);
+          if (!speakingRef.current) { speakingRef.current = true; setIsSpeaking(true); }
+        } else if (speakingRef.current) {
+          clearTimeout(holdTimerRef.current);
+          holdTimerRef.current = setTimeout(function() {
+            speakingRef.current = false;
+            setIsSpeaking(false);
+          }, AUDIO_HOLD_MS);
+        }
         rafRef.current = requestAnimationFrame(check);
       };
       check();
@@ -50,6 +61,8 @@ function useAudioLevel(stream) {
 
     return function() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdTimerRef.current);
+      speakingRef.current = false;
       if (ctxRef.current) { try { ctxRef.current.close(); } catch (e) {} }
     };
   }, [stream]);
