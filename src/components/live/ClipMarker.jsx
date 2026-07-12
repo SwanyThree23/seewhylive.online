@@ -18,7 +18,11 @@ function fmt(secs) {
   return `${m}:${String(s).padStart(2,'0')}`;
 }
 
-export default function ClipMarker({ roomId, user, streamStartTs }) {
+/**
+ * ClipMarker — marks a timestamped clip in the stream and optionally downloads
+ * a local video excerpt via getClipBlobUrl (from useVODRecording.extractClipBlobUrl).
+ */
+export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl }) {
   const [open,     setOpen]     = useState(false);
   const [title,    setTitle]    = useState('');
   const [duration, setDuration] = useState(60);
@@ -60,6 +64,28 @@ export default function ClipMarker({ roomId, user, streamStartTs }) {
       });
       setRecent(prev => [clip, ...prev]);
       toast.success(`✂️ Clip "${title.trim()}" saved!`);
+
+      // Offer instant local download from the rolling recording buffer
+      if (typeof getClipBlobUrl === 'function') {
+        const blobUrl = getClipBlobUrl(duration);
+        if (blobUrl) {
+          toast(`🎬 Local clip ready`, {
+            duration: 12000,
+            action: {
+              label: 'Download',
+              onClick: () => {
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = `${title.trim().replace(/\s+/g, '-')}-${duration}s.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              },
+            },
+          });
+        }
+      }
+
       setTitle('');
       setOpen(false);
     } catch {

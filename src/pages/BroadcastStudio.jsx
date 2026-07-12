@@ -1178,7 +1178,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               />
             )}
             {canStream && (
-              <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} />
+              <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />
             )}
             {isHost && (
               <button onClick={() => endMut.mutate()}
