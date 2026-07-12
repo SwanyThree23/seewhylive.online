@@ -85,6 +85,8 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -185,7 +187,7 @@ const FORMATS = [
     title: 'Watch Party',
     subtitle: 'Sync a video. React together in real time.',
     features: ['🔗 Sync', '💬 Chat', '🖥️ Screen Share', '4K'],
-    color: '#5B6EF5',
+    color: '#5B7FA6',
     dest: 'WatchParty',
   },
   {
@@ -195,7 +197,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#26A69A',
+    color: '#4A8A7A',
     dest: 'AudioRoom',
   },
 ];
@@ -269,23 +271,34 @@ function FormatCard({ fmt, onSelect }) {
 
 function CameraPreview({ onStreamReady }) {
   const videoRef = useRef(null);
-  const [stream,  setStream]  = useState(null);
-  const [camOn,   setCamOn]   = useState(false);
-  const [micOn,   setMicOn]   = useState(true);
-  const [error,   setError]   = useState(null);
+  const [stream,     setStream]     = useState(null);
+  const [camOn,      setCamOn]      = useState(false);
+  const [micOn,      setMicOn]      = useState(true);
+  const [error,      setError]      = useState(null);
+  const [videoId,    setVideoId]    = useState(null);
+  const [audioId,    setAudioId]    = useState(null);
+  const [resolution, setResolution] = useState('720p');
+  const { cameras } = useCameraDevices();
 
-  const start = useCallback(async () => {
+  const start = useCallback(async (opts = {}) => {
     setError(null);
+    stream?.getTracks().forEach(t => t.stop());
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const resPresets = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
+      const res = resPresets[opts.resolution || resolution] || resPresets['720p'];
+      const s = await navigator.mediaDevices.getUserMedia({
+        video: { ...res, ...(opts.videoId || videoId ? { deviceId: { exact: opts.videoId || videoId } } : {}) },
+        audio: { echoCancellation: true, noiseSuppression: true, ...(opts.audioId || audioId ? { deviceId: { exact: opts.audioId || audioId } } : {}) },
+      });
       setStream(s);
       setCamOn(true);
+      s.getAudioTracks().forEach(t => { t.enabled = micOn; });
       if (videoRef.current) videoRef.current.srcObject = s;
       onStreamReady?.(s);
     } catch {
-      setError('Camera/mic access denied');
+      setError('Camera/mic access denied — check browser permissions');
     }
-  }, [onStreamReady]);
+  }, [onStreamReady, videoId, audioId, resolution, micOn, stream]);
 
   useEffect(() => { start(); return () => stream?.getTracks().forEach(t => t.stop()); }, []);
 
@@ -294,46 +307,61 @@ function CameraPreview({ onStreamReady }) {
     setMicOn(v => !v);
   }
 
+  function handleVideoChange(id) { setVideoId(id); start({ videoId: id }); }
+  function handleAudioChange(id) { setAudioId(id); start({ audioId: id }); }
+  function handleResolutionChange(r) { setResolution(r); start({ resolution: r }); }
+  function handleSwitchCamera() {
+    if (cameras.length < 2) return;
+    const idx = cameras.findIndex(c => c.deviceId === videoId);
+    const next = cameras[(idx + 1) % cameras.length];
+    handleVideoChange(next.deviceId);
+  }
+
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
-      {camOn
-        ? <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
-        : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(8,11,24,0.9)' }}>
-            <CameraOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.2)' }} />
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>Camera off</span>
-          </div>}
+    <div className="space-y-3">
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+        {camOn
+          ? <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+          : <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(8,11,24,0.9)' }}>
+              <CameraOff style={{ width: 32, height: 32, color: 'rgba(255,255,255,0.2)' }} />
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>Camera off</span>
+            </div>}
 
-      {error && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: FONT, textAlign: 'center', padding: '0 16px' }}>{error}</span>
+        {error && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: FONT, textAlign: 'center', padding: '0 16px' }}>{error}</span>
+          </div>
+        )}
+
+        <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(192,57,43,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
+            {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
+            {camOn ? `PREVIEW · ${resolution}` : 'NO SIGNAL'}
+          </div>
         </div>
-      )}
 
-      <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          padding: '3px 8px', borderRadius: 999,
-          background: camOn ? 'rgba(192,57,43,0.85)' : 'rgba(0,0,0,0.5)',
-          fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT,
-          letterSpacing: '0.08em',
-        }}>
-          {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
-          {camOn ? 'PREVIEW' : 'NO SIGNAL'}
+        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
+          <button onClick={toggleMic} style={{ width: 32, height: 32, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            {micOn ? <Mic style={{ width: 14, height: 14, color: GOLD }} /> : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
+          </button>
+          {cameras.length > 1 && (
+            <button onClick={handleSwitchCamera} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+              <Camera style={{ width: 14, height: 14, color: GOLD }} />
+            </button>
+          )}
         </div>
       </div>
 
-      <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
-        <button onClick={toggleMic} style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)',
-          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        }}>
-          {micOn
-            ? <Mic style={{ width: 14, height: 14, color: GOLD }} />
-            : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
-        </button>
-      </div>
+      {/* Device selector strip */}
+      <CameraDeviceSelector
+        compact
+        currentVideoId={videoId}
+        currentAudioId={audioId}
+        resolution={resolution}
+        onVideoChange={handleVideoChange}
+        onAudioChange={handleAudioChange}
+        onResolutionChange={handleResolutionChange}
+      />
     </div>
   );
 }
