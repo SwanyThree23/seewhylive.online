@@ -513,6 +513,7 @@ export default function AudioRoom() {
           }))}
           localStream={localStream}
           remoteStreams={remoteStreams}
+          peerUserIds={peerUserIds}
           onLeave={leaveRoom}
         />
       </div>

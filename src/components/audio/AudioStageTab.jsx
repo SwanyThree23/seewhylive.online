@@ -291,6 +291,7 @@ export default function AudioStageTab({
   members,
   localStream,
   remoteStreams,
+  peerUserIds,
   onLeave,
 }) {
   const hostId   = party?.host_id;
@@ -343,9 +344,9 @@ export default function AudioStageTab({
 
   function getStream(userId) {
     if (isSelf(userId)) return localStream || null;
-    if (!remoteStreams) return null;
-    for (const [, stream] of remoteStreams) {
-      if (stream._userId === userId) return stream;
+    if (!remoteStreams || !peerUserIds) return null;
+    for (const [peerId, stream] of remoteStreams) {
+      if (peerUserIds.get(peerId) === userId) return stream;
     }
     return null;
   }
