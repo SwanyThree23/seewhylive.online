@@ -527,7 +527,7 @@ export default function BroadcastStudio() {
   // Local media — use stored device preferences from RoomEntryGate if available
   const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
@@ -887,6 +887,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
+    ...(canStream ? [{ id: 'audio',  label: '🎚 Audio',  desc: 'Mixer' }] : []),
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
@@ -1563,6 +1564,19 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               </div>
             )}
 
+            {/* 🎚 AUDIO MIXER TAB */}
+            {activeTab === 'audio' && canStream && (
+              <div className="p-3 space-y-3">
+                <EnhancedAudioMixer
+                  micMuted={!audioEnabled}
+                  onMicToggle={handleToggleAudio}
+                  onAudioSettingsChange={() => {}}
+                  stream={localStream}
+                />
+                <SoundboardWidget isVisible={true} disabled={false} />
+              </div>
+            )}
+
             {/* 🤖 AI HUB TAB */}
             {activeTab === 'ai' && (
               <div className="flex flex-col h-full">
@@ -2050,15 +2064,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {showCameraPicker && (
         <CameraSourcePicker
           currentStream={localStream}
-          onSelect={(stream) => {
-            if (stream && localStream) {
-              const newTrack = stream.getVideoTracks()[0];
-              if (newTrack) {
-                peersRef.current.forEach(({ pc }) => {
-                  const sender = pc.getSenders().find(s => s.track?.kind === 'video');
-                  if (sender) sender.replaceTrack(newTrack).catch(() => {});
-                });
-              }
+          onSelect={(stream, meta) => {
+            // Release picker's own acquired stream tracks
+            stream?.getVideoTracks().forEach(t => t.stop());
+            if (meta?.deviceId) {
+              // replaceVideoDevice updates localStream state; useWebRTCPeers auto-replaces
+              // sender tracks when localStream changes
+              replaceVideoDevice(meta.deviceId);
+              try { localStorage.setItem('swl_pref_cam', meta.deviceId); } catch {}
             }
             setShowCameraPicker(false);
           }}
@@ -2196,8 +2209,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <TippingOverlay roomId={partyId} creatorId={party?.host_id || user?.id} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />}
       {isHost && partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
-      {isHost && <AudioMixer micMuted={false} onMicToggle={() => {}} />}
-      {isHost && <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} stream={localStream} />}
       {isHost && <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
