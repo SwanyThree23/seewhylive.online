@@ -143,6 +143,7 @@ import GuestStreamingPermissions from '../components/live/GuestStreamingPermissi
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import StreamHealthMonitor from '../components/live/StreamHealthMonitor';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -190,7 +191,7 @@ export default function RoomPage() {
   // Real local camera/mic stream — seed device IDs from stored preferences
   const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
 
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
@@ -777,6 +778,12 @@ export default function RoomPage() {
                 <ChatModerationPanel roomId={roomId} />
               </div>
             )}
+            {/* Stream Health Monitor for host */}
+            {isHost && room?.status === 'live' && (
+              <div className="mt-3">
+                <StreamHealthMonitor isLive={true} />
+              </div>
+            )}
             {/* Live Auctions - visible to all */}
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LiveAuctionWidget roomId={roomId} currentUser={user} isHost={isHost} />
@@ -873,7 +880,7 @@ export default function RoomPage() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
