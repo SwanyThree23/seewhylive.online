@@ -53,7 +53,7 @@ export default function OnboardingFlow({ isOpen, onClose }) {
       try {
         await saveMutation.mutateAsync({ categories: next, onboarding_step: 1 });
         setStep(2);
-      } catch {}
+      } catch { toast.error('Failed to save categories. Please try again.'); }
     }
   };
 

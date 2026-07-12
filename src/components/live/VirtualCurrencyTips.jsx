@@ -85,13 +85,9 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
     }
     setSending(tipDef.coins);
     try {
-      // Deduct from viewer
       const usdAmount = tipDef.coins / 10;
-      if (pointsData?.id) {
-        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
-      }
 
-      // Log transaction
+      // Create transaction first — if this fails, coins are never deducted
       await base44.entities.Transaction.create({
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || 'Viewer',
@@ -105,6 +101,11 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
         status: 'completed',
         processed_at: new Date().toISOString(),
       });
+
+      // Deduct coins only after transaction is confirmed
+      if (pointsData?.id) {
+        await base44.entities.ViewerPoints.update(pointsData.id, { points: coins - tipDef.coins });
+      }
 
       // Show local float
       setFloatingTips(prev => [...prev, { id: Date.now(), coins: tipDef.coins, emoji: tipDef.emoji, color: tipDef.color, senderName: 'You' }]);

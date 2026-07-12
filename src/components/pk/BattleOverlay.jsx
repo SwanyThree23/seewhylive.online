@@ -278,13 +278,13 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
     if (!battle) return;
     const winnerId = creatorScore >= challengerScore ? battle.creator_id : battle.challenger_id;
     const winnerName = creatorScore >= challengerScore ? battle.creator_name : (battle.challenger_name || 'Challenger');
+    setEnded(true);
+    setShowWinner(true);
     base44.entities.PKBattle.update(battle.id, {
       status: 'ended', winner_id: winnerId, winner_name: winnerName, ended_at: new Date().toISOString(),
     }).then(() => {
       qc.invalidateQueries(['pk-battles']);
-      setEnded(true);
-      setShowWinner(true);
-    }).catch(() => {});
+    }).catch(() => { toast.error('Failed to save battle result. Please try again.'); });
   }, [battle, creatorScore, challengerScore]);
 
   const sendGift = (side, gift) => {

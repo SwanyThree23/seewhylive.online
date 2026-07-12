@@ -78,7 +78,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.update(id, { is_read: true });
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
-    onError: () => { toast.error('Failed to mark notification as read.'); },
+    onError: () => { toast.error('Failed to mark notification as read. Please try again.'); },
   });
 
   // Delete notification
@@ -87,7 +87,7 @@ export default function NotificationHub() {
       await base44.entities.Notification.delete(id);
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
-    onError: () => { toast.error('Failed to delete notification.'); },
+    onError: () => { toast.error('Failed to delete notification. Please try again.'); },
   });
 
   // Mark all read
@@ -97,7 +97,7 @@ export default function NotificationHub() {
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
       queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
     },
-    onError: () => { toast.error('Failed to mark all notifications as read.'); },
+    onError: () => { toast.error('Failed to mark all notifications as read. Please try again.'); },
   });
 
   const unreadCount = notifications?.filter(n => !n.is_read).length || 0;
