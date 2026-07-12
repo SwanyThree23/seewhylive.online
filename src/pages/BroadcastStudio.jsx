@@ -597,7 +597,7 @@ export default function BroadcastStudio() {
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
-  var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
+  var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel,isClipping=speakGate.isClipping;
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
@@ -2221,16 +2221,31 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <div className="shrink-0 flex items-center justify-center gap-3 py-2 px-4"
         style={{ background: 'rgba(0,0,0,0.75)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
 
-        <motion.button whileTap={{ scale: 0.92 }} onClick={handleToggleAudio}
-          className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
-          style={{
-            background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
-            border: audioEnabled && isSpeaking ? '1px solid rgba(109,191,126,0.85)' : audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
-            color: audioEnabled ? '#6DBF7E' : '#C0392B',
-            boxShadow: audioEnabled && isSpeaking ? '0 0 0 3px rgba(109,191,126,0.25)' : 'none',
-          }}>
-          {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
-        </motion.button>
+        <div className="relative">
+          <motion.button whileTap={{ scale: 0.92 }} onClick={handleToggleAudio}
+            className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
+            title={pttActive ? 'PTT active' : audioEnabled ? 'Mute mic (M)' : 'Unmute mic (M)'}
+            style={{
+              background: isClipping ? 'rgba(192,57,43,0.25)' : pttActive ? 'rgba(109,191,126,0.25)' : audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
+              border: isClipping ? '1px solid rgba(192,57,43,0.9)' : audioEnabled && isSpeaking ? '1px solid rgba(109,191,126,0.85)' : audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
+              color: isClipping ? '#C0392B' : pttActive ? '#6DBF7E' : audioEnabled ? '#6DBF7E' : '#C0392B',
+              boxShadow: isClipping ? '0 0 0 3px rgba(192,57,43,0.3)' : audioEnabled && isSpeaking ? '0 0 0 3px rgba(109,191,126,0.25)' : 'none',
+            }}>
+            {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+          </motion.button>
+          {isClipping && (
+            <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase whitespace-nowrap px-1 py-0.5 rounded"
+              style={{ background: 'rgba(192,57,43,0.8)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              CLIP
+            </span>
+          )}
+          {pttActive && !isClipping && (
+            <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase whitespace-nowrap px-1 py-0.5 rounded"
+              style={{ background: 'rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              PTT
+            </span>
+          )}
+        </div>
 
         <motion.button whileTap={{ scale: 0.92 }} onClick={toggleVideo}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"

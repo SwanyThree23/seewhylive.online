@@ -3,12 +3,15 @@ import { useState, useEffect, useRef } from 'react';
 // Hold the "speaking" state for this many ms after the last peak
 // to prevent rapid flickering at borderline volume levels
 const HOLD_MS = 400;
+const CLIP_THRESHOLD = 0.92; // RMS above this → clipping
 
 export function useAutoSpeakGate({ stream, enabled = false, threshold = 0.015 } = {}) {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isClipping, setIsClipping] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
   const rafRef = useRef(null);
   const holdTimerRef = useRef(null);
+  const clipTimerRef = useRef(null);
   const speakingRef = useRef(false);
 
   useEffect(() => {
@@ -37,6 +40,13 @@ export function useAutoSpeakGate({ stream, enabled = false, threshold = 0.015 } 
       const rms = Math.sqrt(sum / data.length);
       setMicLevel(rms);
 
+      // Clipping detection — brief 1.5s indicator
+      if (rms >= CLIP_THRESHOLD) {
+        clearTimeout(clipTimerRef.current);
+        setIsClipping(true);
+        clipTimerRef.current = setTimeout(() => setIsClipping(false), 1500);
+      }
+
       if (rms > threshold) {
         // Clear any pending hold-off timer; stay speaking
         clearTimeout(holdTimerRef.current);
@@ -60,10 +70,11 @@ export function useAutoSpeakGate({ stream, enabled = false, threshold = 0.015 } 
     return () => {
       cancelAnimationFrame(rafRef.current);
       clearTimeout(holdTimerRef.current);
+      clearTimeout(clipTimerRef.current);
       speakingRef.current = false;
       ctx.close().catch(() => {});
     };
   }, [stream, enabled, threshold]);
 
-  return { isSpeaking, micLevel };
+  return { isSpeaking, isClipping, micLevel };
 }
