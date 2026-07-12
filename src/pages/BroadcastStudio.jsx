@@ -567,7 +567,7 @@ export default function BroadcastStudio() {
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always', frameRate: { ideal: 30 }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: true });
       const screenTrack = stream.getVideoTracks()[0];
       screenTrack.onended = () => {
         setScreenStream(null);

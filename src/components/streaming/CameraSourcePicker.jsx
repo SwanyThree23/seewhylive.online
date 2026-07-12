@@ -50,7 +50,6 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
           else if (videoDevices[0]) setSelectedId(videoDevices[0].deviceId);
         }
       } catch (e) {
-        console.error('Camera enum error', e);
       }
     }
     loadDevices();
@@ -69,7 +68,6 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
       setPreview(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch(e) {
-      console.error('Preview error', e);
     }
   }
 
@@ -93,7 +91,6 @@ export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose
       setOpen(false);
       if (onClose) onClose();
     } catch(e) {
-      console.error('Source select error', e);
     }
   }
 

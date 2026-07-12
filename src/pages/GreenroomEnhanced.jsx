@@ -32,7 +32,7 @@ export default function GreenroomEnhanced() {
   const [audioLevel, setAudioLevel] = useState(0);
   const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
   const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
-  const [camResolution, setCamResolution] = useState('720p');
+  const [camResolution, setCamResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
   const { cameras } = useCameraDevices();
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
@@ -120,7 +120,7 @@ export default function GreenroomEnhanced() {
 
   function handleVideoChange(id) { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} acquireCamera({ camId: id }); }
   function handleAudioChange(id) { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }
-  function handleResolutionChange(r) { setCamResolution(r); if (cameraStream) acquireCamera({ resolution: r }); }
+  function handleResolutionChange(r) { setCamResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraStream) acquireCamera({ resolution: r }); }
 
   async function generatePin() {
     const arr = new Uint32Array(1);

@@ -535,7 +535,9 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
+  const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamPK, audioDeviceId: prefMicPK });
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
 
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);

@@ -70,7 +70,7 @@ export default function DevicePreview({ user, onDeviceState }) {
   const [permDenied, setPermDenied] = useState(false);
   const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
   const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
-  const [resolution, setResolution] = useState('720p');
+  const [resolution, setResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
 
   // Real connection quality via navigator.connection / RTCPeerConnection stats
   const { bars: networkQuality, label: netLabel, rtt } = useConnectionQuality(null, 4000);
@@ -129,7 +129,7 @@ export default function DevicePreview({ user, onDeviceState }) {
 
   const handleVideoChange = (id) => { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} if (cameraOn) startCamera({ camId: id }); };
   const handleAudioChange = (id) => { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} if (cameraOn) startCamera({ micId: id }); };
-  const handleResolutionChange = (r) => { setResolution(r); if (cameraOn) startCamera({ resolution: r }); };
+  const handleResolutionChange = (r) => { setResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraOn) startCamera({ resolution: r }); };
 
   const flipCamera = () => {
     if (cameras.length < 2) { startCamera(); return; }
