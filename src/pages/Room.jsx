@@ -199,6 +199,7 @@ export default function RoomPage() {
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
@@ -823,7 +824,7 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
-      <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={participants.length} />
       <MilestoneAlerts userId={user?.id} roomId={roomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {room?.host_id && <ShopDashboard creatorId={room.host_id} />}
@@ -845,7 +846,7 @@ export default function RoomPage() {
       {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={room?.host_id || user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
-      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Live Stream'} viewerCount={0} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Live Stream'} viewerCount={participants.length} />}
       <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
@@ -922,7 +923,7 @@ export default function RoomPage() {
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
       {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
-      {isHost && <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={() => setIsSharing(true)} onStopShare={() => setIsSharing(false)} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
       {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}

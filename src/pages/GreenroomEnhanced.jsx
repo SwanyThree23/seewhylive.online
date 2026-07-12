@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
@@ -27,6 +29,7 @@ const CRIMSON = '#800020';
 const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -305,11 +308,11 @@ export default function GreenroomEnhanced() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
