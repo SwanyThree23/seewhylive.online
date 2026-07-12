@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
-  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus
+  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus, Settings, Volume2
 } from 'lucide-react';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -254,7 +255,8 @@ export default function AudioRoom() {
   const roomId    = urlParams.get('id');
 
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false, audioDeviceId: prefMic });
+  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints } = useLocalMedia({ audio: true, video: false, audioDeviceId: prefMic });
+  const { speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
 
   const [activePc, setActivePc] = useState(null);
@@ -286,9 +288,15 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
-  const [chatOpen,   setChatOpen]   = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
-  const [loveCount,  setLoveCount]  = useState(0);
+  const [chatOpen,      setChatOpen]      = useState(false);
+  const [settingsOpen,  setSettingsOpen]  = useState(false);
+  const [handRaised,    setHandRaised]    = useState(false);
+  const [loveCount,     setLoveCount]     = useState(0);
+
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  const [noiseSupp,   setNoiseSupp]   = useState(true);
+  const [echoCan,     setEchoCan]     = useState(true);
+  const [autoGain,    setAutoGain]    = useState(true);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -331,6 +339,26 @@ export default function AudioRoom() {
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioEnabled]);
+
+  // Apply audio output device to all media elements when speaker pref changes
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function') {
+        el.setSinkId(prefSpeaker).catch(() => {});
+      }
+    });
+    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
+  }, [prefSpeaker]);
+
+  // Apply live audio processing constraints (NS / EC / AGC)
+  useEffect(() => {
+    applyAudioConstraints({
+      noiseSuppression: noiseSupp,
+      echoCancellation: echoCan,
+      autoGainControl:  autoGain,
+    });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
   async function sendLove() {
     if (!user?.id || !roomId) {
@@ -594,6 +622,18 @@ export default function AudioRoom() {
               ? <Mic className="w-4 h-4" style={{ color: GOLD }} />
               : <MicOff className="w-4 h-4 text-[#C0392B]" />}
           </button>
+
+          <button
+            onClick={() => setSettingsOpen(v => !v)}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+            style={{
+              background: settingsOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
+              border: settingsOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
+            }}
+            title="Audio settings"
+          >
+            <Settings className="w-4 h-4" style={{ color: settingsOpen ? GOLD : 'rgba(255,255,255,0.6)' }} />
+          </button>
         </div>
       </div>
 
@@ -619,6 +659,80 @@ export default function AudioRoom() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.4)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSettingsOpen(false)}
+            />
+            <motion.div
+              className="fixed inset-x-0 z-50 rounded-t-2xl overflow-hidden"
+              style={{ bottom: 64, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            >
+              <div className="shrink-0 flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</span>
+                <button onClick={() => setSettingsOpen(false)} className="text-white/40 text-sm">✕</button>
+              </div>
+
+              <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {/* Speaker output */}
+                {speakers.length > 1 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                      <span className="text-xs font-bold uppercase text-white/60">Output Device</span>
+                    </div>
+                    <select
+                      value={prefSpeaker}
+                      onChange={e => setPrefSpeaker(e.target.value)}
+                      className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
+                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      {speakers.map(d => (
+                        <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
+                          {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Audio processing toggles */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase text-white/60">Mic Processing</span>
+                  {[
+                    { label: 'Noise Suppression', value: noiseSupp, set: setNoiseSupp },
+                    { label: 'Echo Cancellation', value: echoCan,   set: setEchoCan   },
+                    { label: 'Auto Gain',          value: autoGain,  set: setAutoGain  },
+                  ].map(({ label, value, set }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-sm text-white/80">{label}</span>
+                      <button
+                        onClick={() => set(v => !v)}
+                        className="relative w-10 h-5 rounded-full transition-all"
+                        style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
+                        aria-label={label}
+                      >
+                        <span
+                          className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                          style={{ left: 2, transform: value ? 'translateX(20px)' : 'translateX(0)' }}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           </>

@@ -122,5 +122,5 @@ export function useVODRecording({ streamId, creatorId, title, stream } = {}) {
     };
   }, []);
 
-  return { recording, duration, blobUrl, startRecording, stopRecording, downloadRecording };
+  return { recording, duration, blobUrl, startRecording, stopRecording, downloadRecording, extractClipBlobUrl };
 }
