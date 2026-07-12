@@ -199,7 +199,8 @@ export default function MultiStreamManager() {
               <Button
                 onClick={goLiveFanout}
                 disabled={enabledCount === 0}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold gap-2"
+                className="text-white font-bold gap-2"
+                style={{ background: '#6DBF7E' }}
               >
                 <PlayCircle className="w-4 h-4" /> Go Live ({enabledCount})
               </Button>

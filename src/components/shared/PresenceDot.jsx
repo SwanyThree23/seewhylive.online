@@ -88,7 +88,8 @@ export default function PresenceDot({ userId, size = 'sm' }) {
 
   return (
     <span
-      className={`${sizeClass} rounded-full border-2 border-white shrink-0 ${active ? 'bg-green-500' : 'bg-slate-300'}`}
+      className={`${sizeClass} rounded-full border-2 border-white shrink-0 ${active ? '' : 'bg-slate-300'}`}
+      style={active ? { background: '#6DBF7E' } : undefined}
       title={active ? 'Online' : lastSeen ? `Last seen ${lastSeen.toLocaleTimeString()}` : 'Offline'}
     />
   );

@@ -65,9 +65,13 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
-    rare: 'bg-blue-100 text-blue-800',
+    rare: 'bg-blue-100',
     epic: 'bg-[#7B5DA6] text-[#7B5DA6]',
     legendary: 'bg-yellow-100 text-yellow-800',
+  };
+
+  const rarityStyles = {
+    rare: { color: '#5B7FA6' },
   };
 
   return (
@@ -125,7 +129,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                 </div>
                 <h3 className="font-semibold text-sm mb-1">{gift.name}</h3>
                 <div className="flex items-center justify-between gap-2">
-                  <Badge className={rarityColors[gift.rarity]} variant="secondary">
+                  <Badge className={rarityColors[gift.rarity]} style={rarityStyles[gift.rarity]} variant="secondary">
                     {gift.rarity}
                   </Badge>
                   <p className="font-bold text-primary">${gift.price}</p>

@@ -553,10 +553,15 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
 
   var startCamera = async function() {
     setError(null);
+    var prefCam = null, prefMic = null;
+    try { prefCam = localStorage.getItem('swl_pref_cam'); prefMic = localStorage.getItem('swl_pref_mic'); } catch {}
     try {
       var stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 3840, height: 2160, frameRate: 30 },
-        audio: true,
+        video: {
+          width: 3840, height: 2160, frameRate: 30,
+          ...(prefCam ? { deviceId: { ideal: prefCam } } : {}),
+        },
+        audio: prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true },
       });
       stream.getVideoTracks()[0].onended = function() { setLocalStream(null); setStreamSettings(null); };
       setLocalStream(stream);
