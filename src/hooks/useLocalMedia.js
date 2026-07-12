@@ -194,6 +194,15 @@ export function useLocalMedia({
     await acquire({ videoDeviceId: activeVideoId });
   }, [screenStream, acquire, activeVideoId]);
 
+  // Apply audio constraints to the live track without re-acquiring the mic.
+  // Useful for toggling noiseSuppression / echoCancellation / autoGainControl.
+  const applyAudioConstraints = useCallback(async (constraints) => {
+    const track = streamRef.current?.getAudioTracks()[0];
+    if (track) {
+      try { await track.applyConstraints(constraints); } catch {}
+    }
+  }, []);
+
   return {
     localStream,
     audioEnabled,
@@ -206,6 +215,7 @@ export function useLocalMedia({
     toggleVideo,
     replaceVideoDevice,
     replaceAudioDevice,
+    applyAudioConstraints,
     switchCamera,
     startScreenShare,
     stopScreenShare,

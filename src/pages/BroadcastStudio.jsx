@@ -30,6 +30,7 @@ import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
@@ -312,8 +313,26 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
 function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking }) {
   const camRef = useRef(null);
   const screenRef = useRef(null);
+  const [isPip, setIsPip] = useState(false);
+  const pipSupported = typeof document !== 'undefined' && !!document.pictureInPictureEnabled;
+
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
   useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+
+  const togglePip = useCallback(async () => {
+    const el = screenStream ? screenRef.current : camRef.current;
+    if (!el) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await el.requestPictureInPicture();
+        setIsPip(true);
+        el.addEventListener('leavepictureinpicture', () => setIsPip(false), { once: true });
+      }
+    } catch {}
+  }, [screenStream]);
+
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center"
       style={isSpeaking ? { boxShadow: `inset 0 0 0 3px rgba(109,191,126,0.7)` } : undefined}>
@@ -332,6 +351,14 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking })
         <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
+      {/* Browser Picture-in-Picture button */}
+      {pipSupported && (localStream || screenStream) && (
+        <button onClick={togglePip} title={isPip ? 'Exit Picture-in-Picture' : 'Pop out (Picture-in-Picture)'}
+          className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg transition-opacity"
+          style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
+          <Maximize2 className="w-3.5 h-3.5" style={{ color: isPip ? GOLD : 'rgba(255,255,255,0.6)' }} />
+        </button>
+      )}
       {/* PIP camera when screen sharing */}
       {screenStream && localStream && videoEnabled && (
         <div className="absolute bottom-2 right-2 w-28 h-20 rounded-lg overflow-hidden"
@@ -528,7 +555,7 @@ export default function BroadcastStudio() {
   // Local media — use stored device preferences from RoomEntryGate if available
   const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, activeVideoId, activeAudioId } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording;
@@ -556,6 +583,26 @@ export default function BroadcastStudio() {
     }
     lastNetBarsRef.current = netBars;
   }, [netBars]);
+
+  // Audio output (speaker) preference — applied to all video/audio elements via setSinkId
+  const { speakers } = useCameraDevices();
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function' && el.sinkId !== prefSpeaker) {
+        el.setSinkId(prefSpeaker).catch(() => {});
+      }
+    });
+  }, [prefSpeaker, remoteStreams]);
+
+  // Audio processing toggles — applied to the live audio track without re-acquiring
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
+  const [autoGain, setAutoGain] = useState(true);
+  useEffect(() => {
+    applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
   // Screen share
   const [screenStream, setScreenStream] = useState(null);
@@ -1595,6 +1642,49 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     onScreenShare={toggleScreenShare}
                     isSharingScreen={screenEnabled}
                   />
+                  {/* Audio output (speaker) selector — Chrome/Edge only */}
+                  {speakers.length > 1 && (
+                    <div className="mt-2 flex items-center gap-2"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '8px 12px' }}>
+                      <span className="text-xs shrink-0" style={{ color: GOLD }}>🔊</span>
+                      <select
+                        value={prefSpeaker}
+                        onChange={e => {
+                          const id = e.target.value;
+                          setPrefSpeaker(id);
+                          try { if (id) localStorage.setItem('swl_pref_speaker', id); } catch {}
+                        }}
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: prefSpeaker ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', outline: 'none', cursor: 'pointer' }}>
+                        <option value="" style={{ background: '#080B18' }}>Default speakers</option>
+                        {speakers.map(s => (
+                          <option key={s.deviceId} value={s.deviceId} style={{ background: '#080B18', color: '#fff' }}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                {/* Audio processing toggles */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Processing</p>
+                  {[
+                    { label: 'Noise Suppression', state: noiseSupp, set: setNoiseSupp },
+                    { label: 'Echo Cancellation', state: echoCan, set: setEchoCan },
+                    { label: 'Auto Gain Control', state: autoGain, set: setAutoGain },
+                  ].map(({ label, state, set }) => (
+                    <button key={label} onClick={() => set(v => !v)}
+                      className="w-full flex items-center justify-between py-1.5 px-0"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
+                      <div className="w-8 h-4 rounded-full relative transition-colors shrink-0"
+                        style={{ background: state ? 'rgba(109,191,126,0.6)' : 'rgba(255,255,255,0.12)', border: `1px solid ${state ? 'rgba(109,191,126,0.8)' : 'rgba(255,255,255,0.15)'}` }}>
+                        <div className="absolute top-0.5 w-3 h-3 rounded-full transition-all"
+                          style={{ background: state ? '#6DBF7E' : 'rgba(255,255,255,0.35)', left: state ? 'calc(100% - 14px)' : '2px' }} />
+                      </div>
+                    </button>
+                  ))}
+                  <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Disable if using professional hardware/software processing
+                  </p>
                 </div>
                 <EnhancedAudioMixer
                   micMuted={!audioEnabled}
