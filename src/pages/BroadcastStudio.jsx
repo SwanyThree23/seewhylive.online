@@ -529,8 +529,8 @@ export default function BroadcastStudio() {
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
-  var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
-  var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
+  var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
+  var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
 
@@ -2044,6 +2044,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             color:vodRecording?'#C0392B':'rgba(255,255,255,0.4)',fontSize:14}}>
           {vodRecording?'⏹':'⏺'}</button>)}
         {vodRecording&&(<span style={{fontSize:11,fontWeight:900,color:'#C0392B',fontFamily:'Barlow Condensed,sans-serif'}}>{formatDuration(vodDuration)}</span>)}
+        {!vodRecording&&vodBlobUrl&&(<button onClick={()=>downloadRecording(party?.title?`${party.title.slice(0,40)}.webm`:'recording.webm')}
+          title="Download recording"
+          style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
+            background:'rgba(109,191,126,0.15)',border:'1px solid rgba(109,191,126,0.4)',color:'#6DBF7E',fontSize:13}}>
+          ⬇</button>)}
         {!isHost ? (
           <motion.button whileTap={{ scale: 0.92 }}
             onClick={() => { window.location.href = '/'; }}
