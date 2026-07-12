@@ -14,6 +14,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
 import AggregatedChat from '../components/live/AggregatedChat';
@@ -522,8 +523,10 @@ export default function BroadcastStudio() {
     return unsub;
   }, [partyId]);
 
-  // Local media
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  // Local media — use stored device preferences from RoomEntryGate if available
+  const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
@@ -532,6 +535,15 @@ export default function BroadcastStudio() {
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+
+  // Connection quality — monitor first connected peer
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   // Screen share
   const [screenStream, setScreenStream] = useState(null);
@@ -894,6 +906,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {/* Connection quality */}
+            <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
+              style={{ background: 'rgba(0,0,0,0.35)' }}
+              title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{
+                  width: 4, borderRadius: 2,
+                  height: 4 + i * 3,
+                  background: i < netBars
+                    ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                    : 'rgba(255,255,255,0.15)',
+                }} />
+              ))}
+            </div>
             <button onClick={copyLink}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">

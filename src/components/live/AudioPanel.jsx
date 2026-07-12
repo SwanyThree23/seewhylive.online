@@ -56,8 +56,9 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                     className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                       micMuted
                         ? 'bg-red-900/50 border-red-600 text-[#C0392B]'
-                        : 'bg-green-900/30 border-green-600/50 text-[#6DBF7E]'
+                        : 'border-green-600/50 text-[#6DBF7E]'
                     }`}
+                    style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                   >
                     {micMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                   </button>

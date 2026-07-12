@@ -82,8 +82,9 @@ export default function OctagonalVideoWindow({
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isMuted
                 ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
-                : 'bg-green-900/50 border border-green-600 text-[#6DBF7E]'
+                : 'border border-green-600 text-[#6DBF7E]'
             }`}
+            style={isMuted ? undefined : { background: 'rgba(109,191,126,0.15)' }}
           >
             {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
           </motion.button>

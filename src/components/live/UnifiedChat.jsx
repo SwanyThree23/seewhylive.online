@@ -9,13 +9,17 @@ import {
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
 
+const MSG_BG = {
+  poll: { background: 'rgba(109,191,126,0.15)' },
+};
+
 const MSG_STYLES = {
   regular: '',
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
   subscription: 'border-l-2 border-[#7B5DA6] bg-[#7B5DA6]/20',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
   qa: 'border-l-2 border-blue-500 bg-blue-900/15',
-  poll: 'border-l-2 border-green-500 bg-green-900/15',
+  poll: 'border-l-2 border-green-500',
   cohost: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
 };
 
@@ -25,7 +29,7 @@ function MessageBadge({ type }) {
     subscription: <span className="text-[11px] bg-[#7B5DA6] text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
     qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
-    poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
+    poll: <span className="text-[11px] px-1 py-0.5 rounded font-black" style={{ background: 'rgba(109,191,126,0.15)', color: '#6DBF7E' }}>📊 POLL</span>,
     cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };
   return badges[type] || null;
@@ -188,7 +192,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <motion.div key={msg.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.12 }}
-              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}>
+              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}
+              style={MSG_BG[msg.message_type] || undefined}>
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
                 <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"

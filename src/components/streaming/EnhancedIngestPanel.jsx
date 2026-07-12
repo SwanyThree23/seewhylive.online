@@ -121,7 +121,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                   </div>
                 </div>
 
-                <div className="bg-green-900/20 border border-green-600/30 rounded p-2 flex gap-2">
+                <div className="border border-green-600/30 rounded p-2 flex gap-2" style={{ background: 'rgba(109,191,126,0.15)' }}>
                   <CheckCircle2 className="w-4 h-4 text-[#6DBF7E] shrink-0 mt-0.5" />
                   <div className="text-[10px] text-green-300">
                     <p className="font-semibold">Ready for OBS / Streamlabs</p>

@@ -66,7 +66,7 @@ export default function PaywallGate({ isHost, streamTitle, onUnlock, isUnlocked 
   // Viewer side
   if (isUnlocked) {
     return (
-      <div className="flex items-center gap-2 bg-green-900/30 border border-green-700/30 rounded-lg px-3 py-2">
+      <div className="flex items-center gap-2 border border-green-700/30 rounded-lg px-3 py-2" style={{ background: 'rgba(109,191,126,0.15)' }}>
         <Unlock className="w-4 h-4 text-[#6DBF7E]" />
         <span className="text-xs text-[#6DBF7E] font-semibold">Full access unlocked</span>
       </div>

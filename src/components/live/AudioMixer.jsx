@@ -69,8 +69,9 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
                   ? 'bg-red-900/50 border border-red-600/50 text-[#C0392B]'
-                  : 'bg-green-900/30 border border-green-600/40 text-[#6DBF7E]'
+                  : 'border border-green-600/40 text-[#6DBF7E]'
               }`}
+              style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
               {micMuted ? 'Unmute' : 'Live'} (M)

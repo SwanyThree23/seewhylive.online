@@ -1511,7 +1511,11 @@ function LiveCameraFeed({ camOn, micOn, onToggleCam, onToggleMic }) {
   }, []);
 
   useEffect(function() {
-    navigator.mediaDevices && navigator.mediaDevices.getUserMedia({ video: camOn, audio: micOn })
+    var prefCam = null, prefMic = null;
+    try { prefCam = localStorage.getItem('swl_pref_cam'); prefMic = localStorage.getItem('swl_pref_mic'); } catch {}
+    var videoConstraint = camOn ? (prefCam ? { deviceId: { ideal: prefCam } } : true) : false;
+    var audioConstraint = micOn ? (prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true }) : false;
+    navigator.mediaDevices && navigator.mediaDevices.getUserMedia({ video: videoConstraint, audio: audioConstraint })
       .then(function(stream) {
         streamRef.current = stream;
         if (videoRef.current) { videoRef.current.srcObject = stream; }
