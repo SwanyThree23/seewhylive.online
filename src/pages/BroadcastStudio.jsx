@@ -186,6 +186,23 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import TipGoalBar from '../components/monetization/TipGoalBar';
 import TopTippers from '../components/monetization/TopTippers';
+import TipWidget from '../components/live/TipWidget';
+import InviteSheet from '../components/live/InviteSheet';
+import AuraPanel from '../components/live/AuraPanel';
+import GuestControls from '../components/live/GuestControls';
+import StreamHealthMonitor from '../components/live/StreamHealthMonitor';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import CoStreamHub from '../components/live/CoStreamHub';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import PKBattle from '../components/live/PKBattle';
+import PKBattleModal from '../components/live/PKBattleModal';
+import LoveTap from '../components/live/LoveTap';
+import ShareModal from '../components/live/ShareModal';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -2529,6 +2546,23 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         { key: 'Space', label: 'Push-to-talk (hold when muted)' },
         { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
+      {!isHost && partyId && user && <TipWidget roomId={partyId} hostId={party?.host_id} currentUser={user} />}
+      <InviteSheet isOpen={false} onClose={() => {}} roomId={partyId} roomTitle={party?.title || ''} isHost={isHost} isCoHost={false} />
+      {partyId && <AuraPanel roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} isLive={partyId != null} userTier="free" />}
+      {isHost && <GuestControls participants={members} onMuteGuest={() => {}} onRemoveGuest={() => {}} />}
+      {isHost && partyId && <StreamHealthMonitor isLive={true} />}
+      {isHost && partyId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={partyId} roomTitle={party?.title || ''} currentUser={user} />}
+      {isHost && partyId && <CoStreamHub roomId={partyId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
+      {isHost && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && party && user && <GreenRoomPreflight isOpen={false} onClose={() => {}} onGoLive={() => {}} party={party} user={user} />}
+      {isHost && user?.id && <OverlayThemeBuilder creatorId={party?.host_id || user?.id} />}
+      {isHost && partyId && user?.id && <ClipCreatorSheet roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={party?.title || ''} onClose={() => {}} />}
+      {isHost && partyId && <AuraPanelDrawer roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => {}} />}
+      {partyId && <PKBattle roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={members.length} />}
+      {partyId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={partyId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
+      {!isHost && partyId && user && <LoveTap roomId={partyId} user={user} creatorId={party?.host_id || user?.id} creatorName={''} />}
+      <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}${createPageUrl('BroadcastStudio')}?id=${partyId}`} title={party?.title || ''} />
+      <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
     </div>
   );
 }

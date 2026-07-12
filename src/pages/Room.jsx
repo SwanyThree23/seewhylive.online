@@ -169,6 +169,26 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import InviteSheet from '../components/live/InviteSheet';
 import AuraPanel from '../components/live/AuraPanel';
 import GuestControls from '../components/live/GuestControls';
+import AggregatedChat from '../components/live/AggregatedChat';
+import LoveHearts from '../components/live/LoveHearts';
+import ClipMarker from '../components/live/ClipMarker';
+import GuestQueue from '../components/live/GuestQueue';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import AIModeration from '../components/live/AIModeration';
+import LoveTap from '../components/live/LoveTap';
+import PKBattle from '../components/live/PKBattle';
+import PKBattleModal from '../components/live/PKBattleModal';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import ShareModal from '../components/live/ShareModal';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
+import CoStreamHub from '../components/live/CoStreamHub';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -925,8 +945,28 @@ export default function RoomPage() {
       <BackgroundCustomizer />
       <InviteSheet isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={room?.title || ''} isHost={isHost} isCoHost={false} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} isLive={false} userTier="free" />
-      {isHost && <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />}
-      {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={false} />}
+      {isHost && <GuestControls participants={participants} onMuteGuest={() => {}} onRemoveGuest={() => {}} />}
+      {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={room?.status === 'live'} />}
+      {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
+      {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
+      {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={null} />}
+      {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
+      <StreamMetricsBar startTime={null} memberCount={participants.length} tipTotal={0} />
+      <SuperChatRail superchats={[]} />
+      <LiveGoalWidget memberCount={participants.length} tipTotal={0} subCount={0} />
+      {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
+      {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={room?.host_id || user?.id} creatorName={''} />}
+      {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={participants.length} />}
+      {roomId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={roomId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
+      {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />}
+      <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title || ''} />
+      <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
+      {isHost && roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
+      {isHost && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && room && user && <GreenRoomPreflight isOpen={false} onClose={() => {}} onGoLive={() => {}} party={room} user={user} />}
+      {isHost && user?.id && <OverlayThemeBuilder creatorId={room?.host_id || user?.id} />}
+      {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} roomTitle={room?.title || ''} onClose={() => {}} />}
+      {isHost && roomId && <AuraPanelDrawer roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => {}} />}
     </div>
   );
 }
