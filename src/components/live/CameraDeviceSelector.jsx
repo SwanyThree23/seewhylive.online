@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, Mic, Monitor, RefreshCw, ChevronDown } from 'lucide-react';
+import { Camera, Mic, Monitor, RefreshCw, Volume2 } from 'lucide-react';
 import { useCameraDevices, RESOLUTION_PRESETS } from '../../hooks/useCameraDevices';
 
 const GOLD    = '#D4AF37';
@@ -54,14 +54,17 @@ function NativeSelect({ value, onChange, options, placeholder }) {
  *   isSharingScreen     boolean
  *   compact             boolean         — one-line row layout (default false)
  *   hideVideo           boolean         — omit camera picker (audio-only mode)
+ *   currentSpeakerId    string|null     — active speaker output deviceId
+ *   onSpeakerChange     (deviceId) => void — optional; shows speaker picker when provided
  */
 export default function CameraDeviceSelector({
   currentVideoId, currentAudioId, resolution = '720p',
   onVideoChange, onAudioChange, onResolutionChange,
   onScreenShare, isSharingScreen = false, compact = false,
   hideVideo = false,
+  currentSpeakerId, onSpeakerChange,
 }) {
-  const { cameras, mics, refresh } = useCameraDevices();
+  const { cameras, mics, speakers, refresh } = useCameraDevices();
 
   if (compact) {
     return (
@@ -132,6 +135,20 @@ export default function CameraDeviceSelector({
           />
         </div>
       </div>
+
+      {/* Speaker output — only shown when onSpeakerChange provided and multiple outputs exist */}
+      {onSpeakerChange && speakers.length > 1 && (
+        <div>
+          <label style={LBL}>Speaker / Headphones</label>
+          <div style={ROW}>
+            <Volume2 className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
+            <NativeSelect
+              value={currentSpeakerId} onChange={onSpeakerChange}
+              options={speakers} placeholder="Default output"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Resolution presets */}
       {onResolutionChange && (
