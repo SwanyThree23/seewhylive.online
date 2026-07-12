@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Flag, AlertCircle, CheckCircle, Clock, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
@@ -148,14 +149,8 @@ export default function ReportsManager({ communityId, userId }) {
                   <div style={{ display:'flex', flexDirection:'column', gap:12, borderTop:'1px solid rgba(255,255,255,0.08)', paddingTop:12 }}>
                     <div>
                       <label style={LABEL_STYLE}>Action Taken</label>
-                      <select style={SELECT_STYLE} value={actionTaken} onChange={e => setActionTaken(e.target.value)}>
-                        <option value="">Select action</option>
-                        <option value="warning_issued">Warning Issued</option>
-                        <option value="user_muted">User Muted</option>
-                        <option value="user_banned">User Banned</option>
-                        <option value="content_removed">Content Removed</option>
-                        <option value="no_action">No Action Required</option>
-                      </select>
+                      <NativeSelect style={SELECT_STYLE} value={actionTaken} onChange={val => setActionTaken(val)}
+                        options={[{value:'',label:'Select action'},{value:'warning_issued',label:'Warning Issued'},{value:'user_muted',label:'User Muted'},{value:'user_banned',label:'User Banned'},{value:'content_removed',label:'Content Removed'},{value:'no_action',label:'No Action Required'}]} />
                     </div>
 
                     <div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 var BG     = 'rgba(14,12,9,.97)';
 var GOLD   = '#C9A84C';
@@ -54,11 +54,34 @@ export default function MobileNavBar(props) {
   var onResetTab   = props.onResetTab;
 
   var [showMore, setShowMore] = useState(false);
+  var showMoreRef = useRef(false);
+  useEffect(function() { showMoreRef.current = showMore; }, [showMore]);
+
+  // Push to history when More drawer opens — Android back button dismisses it
+  useEffect(function() {
+    function onPop() {
+      if (showMoreRef.current) setShowMore(false);
+    }
+    window.addEventListener('popstate', onPop);
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, []);
+
+  function openMore() {
+    setShowMore(true);
+    window.history.pushState({ swOverlay: 'more' }, '');
+  }
+  function closeMore() {
+    if (showMoreRef.current) window.history.back();
+    else setShowMore(false);
+  }
 
   // Always show, including in room
 
   function goTo(id) {
-    if (id === '__more__') { setShowMore(function(v) { return !v; }); return; }
+    if (id === '__more__') {
+      if (showMore) closeMore(); else openMore();
+      return;
+    }
     if (id === activeTab) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       if (onResetTab) onResetTab(id);
@@ -79,14 +102,15 @@ export default function MobileNavBar(props) {
         <div style={{
           position: 'fixed', bottom: 60, left: 0, right: 0, zIndex: 490,
           background: 'rgba(14,12,9,.98)', borderTop: '1px solid rgba(201,168,76,.15)',
-          padding: '16px 16px 8px',
+          padding: '16px 16px calc(8px + env(safe-area-inset-bottom, 16px))',
           animation: 'drawerIn .22s ease',
           maxHeight: '60vh', overflowY: 'auto',
+          overscrollBehavior: 'contain',
         }}>
           {/* Drawer handle */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, letterSpacing: .5 }}>Studio Tools</span>
-            <button onClick={function() { setShowMore(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+            <button onClick={closeMore} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', lineHeight: 1, userSelect: 'none', WebkitUserSelect: 'none' }}>✕</button>
           </div>
           {/* Tool grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
@@ -99,6 +123,7 @@ export default function MobileNavBar(props) {
                   background: isActive ? 'rgba(128,0,32,.25)' : CARD,
                   border: '1px solid ' + (isActive ? 'rgba(128,0,32,.5)' : 'rgba(255,255,255,.05)'),
                   transition: 'background .15s',
+                  userSelect: 'none', WebkitUserSelect: 'none',
                 }}>
                   <span style={{ fontSize: 20 }}>{t.icon}</span>
                   <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: isActive ? GOLD : MUTED, letterSpacing: .5, textAlign: 'center' }}>
@@ -120,7 +145,7 @@ export default function MobileNavBar(props) {
         background: BG,
         borderTop: '1px solid rgba(201,168,76,.15)',
         display: 'flex', height: 58,
-        paddingBottom: 'env(safe-area-inset-bottom,0px)',
+        paddingBottom: 'env(safe-area-inset-bottom,16px)',
         boxSizing: 'content-box',
       }}>
         {PRIMARY.map(function(item, idx) {
@@ -132,7 +157,7 @@ export default function MobileNavBar(props) {
           if (isCenter) {
             return (
               <div key={item.id} onClick={function() { goTo(item.id); }}
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer', position: 'relative' }}>
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer', position: 'relative', userSelect: 'none', WebkitUserSelect: 'none' }}>
                 <div style={{ position: 'relative' }}>
                   {isLive && (
                     <div style={{ position: 'absolute', inset: -5, borderRadius: '50%', border: '2px solid rgba(255,30,30,.6)', animation: 'navPulse 1.5s ease infinite', pointerEvents: 'none' }} />
@@ -159,7 +184,7 @@ export default function MobileNavBar(props) {
 
           return (
             <div key={item.id + idx} onClick={function() { goTo(item.id); }}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, cursor: 'pointer', padding: '8px 0', position: 'relative' }}>
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, cursor: 'pointer', padding: '8px 0', position: 'relative', userSelect: 'none', WebkitUserSelect: 'none' }}>
               {/* Active indicator line */}
               {(isActive || (isMoreBtn && isMoreActive)) && (
                 <div style={{ position: 'absolute', top: 0, left: '30%', right: '30%', height: 2, background: GOLD, borderRadius: 999 }} />

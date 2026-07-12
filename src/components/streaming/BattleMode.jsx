@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, Zap, Trophy, DollarSign, Users, Crown, Timer, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 /**
  * BattleMode — two creators co-stream side-by-side with a real-time tip vote bar.
@@ -284,18 +285,12 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
           return (
             <div key={label} className="space-y-1">
               <p className="text-[11px] text-white/40">{label}</p>
-              <select
+              <NativeSelect
                 value={val}
-                onChange={e => setVal(e.target.value)}
+                onChange={v => setVal(v)}
                 className="w-full bg-[#1a0d2e] border border-white/10 rounded px-2 py-1 text-[10px] text-white"
-              >
-                <option value="">Select…</option>
-                {guests.map(g => (
-                  <option key={g.id} value={g.id} disabled={(idx === 0 ? creator2 : creator1) === g.id}>
-                    {g.user_name}
-                  </option>
-                ))}
-              </select>
+                options={[{value:'',label:'Select…'},...guests.map(g => ({value: g.id, label: g.user_name}))]}
+              />
             </div>
           );
         })}

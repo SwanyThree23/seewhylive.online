@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -969,17 +970,15 @@ function MusicStudioPanel() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Genre</div>
-                <select value={genre} onChange={e=>setGenre(e.target.value)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
-                  {GENRES.map(g=><option key={g}>{g}</option>)}
-                </select>
+                <NativeSelect value={genre} onChange={val=>setGenre(val)}
+                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}
+                  options={GENRES.map(g=>({value:g,label:g}))} />
               </div>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Key</div>
-                <select value={keyVal} onChange={e=>setKeyVal(e.target.value)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
-                  {KEYS_LIST.map(k=><option key={k}>{k}</option>)}
-                </select>
+                <NativeSelect value={keyVal} onChange={val=>setKeyVal(val)}
+                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}
+                  options={KEYS_LIST.map(k=>({value:k,label:k}))} />
               </div>
             </div>
             <div style={{marginBottom:14}}>

@@ -543,7 +543,7 @@ input, select, textarea {
   flex: 1;
   padding: 1rem;
   padding-bottom: 48px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .tab-panel {
@@ -841,7 +841,7 @@ input, select, textarea {
   padding: 8px 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 4px; overscroll-behavior-y: contain;
 }
 
 .chat-msg {
@@ -1614,7 +1614,7 @@ input, select, textarea {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2px; overscroll-behavior-y: contain;
 }
 
 .bot-log-empty {
@@ -1748,7 +1748,7 @@ input, select, textarea {
   flex-direction: column;
   gap: 4px;
   max-height: 300px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .gift-table-row {
@@ -2384,7 +2384,7 @@ input, select, textarea {
   border-top: 1px solid rgba(201,168,76,.2);
   flex-shrink: 0;
   max-height: 140px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .hand-queue-header {

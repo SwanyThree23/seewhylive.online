@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Eye, EyeOff, Copy, Save, Download, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -125,27 +126,21 @@ export default function ZEGOConfigPanel({ user }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Latency Mode</label>
-          <select
+          <NativeSelect
             value={form.latency_mode}
-            onChange={e => setForm(f => ({ ...f, latency_mode: e.target.value }))}
+            onChange={val => setForm(f => ({ ...f, latency_mode: val }))}
             className="w-full px-2 py-2 rounded-lg text-[10px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <option value="ultra_low">Ultra-Low (&lt;500ms)</option>
-            <option value="low">Low (&lt;1s)</option>
-            <option value="standard">Standard</option>
-          </select>
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            options={[{value:'ultra_low',label:'Ultra-Low (<500ms)'},{value:'low',label:'Low (<1s)'},{value:'standard',label:'Standard'}]} />
         </div>
         <div>
           <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>UIKit Type</label>
-          <select
+          <NativeSelect
             value={form.kit_type}
-            onChange={e => setForm(f => ({ ...f, kit_type: e.target.value }))}
+            onChange={val => setForm(f => ({ ...f, kit_type: val }))}
             className="w-full px-2 py-2 rounded-lg text-[10px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
-            <option value="live_streaming">Live Streaming</option>
-            <option value="video_call">Video Call</option>
-            <option value="voice_call">Voice Call</option>
-          </select>
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+            options={[{value:'live_streaming',label:'Live Streaming'},{value:'video_call',label:'Video Call'},{value:'voice_call',label:'Voice Call'}]} />
         </div>
       </div>
 

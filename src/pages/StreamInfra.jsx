@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -670,15 +671,13 @@ function StudioTab({ user }) {
               className="flex-1 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
             />
-            <select
+            <NativeSelect
               value={newRoomType}
-              onChange={function(e) { setNewRoomType(e.target.value); }}
+              onChange={function(val) { setNewRoomType(val); }}
               className="rounded-lg px-2 py-2 text-xs focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
-            >
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-            </select>
+              options={[{value:'video',label:'Video'},{value:'audio',label:'Audio'}]}
+            />
             <button
               onClick={addRoom}
               style={{ display:'flex', alignItems:'center', gap:4, height:36, padding:'0 12px', borderRadius:8, background:'rgba(212,175,55,0.15)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}

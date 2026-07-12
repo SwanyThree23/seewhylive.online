@@ -406,6 +406,7 @@ export default function App() {
   var peakViewerRef = useRef(0);
   var sessionEarningsRef = useRef(0);
   var popstateNavRef = useRef(false);
+  var streamRecapRef = useRef(null);
   var prevEarningsRef = useRef(0);
   var prevGuestIdsRef = useRef(null);
 
@@ -420,10 +421,19 @@ export default function App() {
     return function() { clearTimeout(t); };
   }, []);
 
-  // History API — wire Android back button to tab navigation
+  // Keep streamRecapRef in sync for the popstate handler
+  useEffect(function() { streamRecapRef.current = streamRecap; }, [streamRecap]);
+
+  // History API — wire Android back button to tab navigation + overlay dismissal
   useEffect(function() {
     window.history.replaceState({ swTab: 'room' }, '');
     function onPop(e) {
+      // If the stream recap modal is open, dismiss it instead of navigating
+      if (streamRecapRef.current) {
+        setStreamRecap(null);
+        if (e.state && e.state.swTab) { popstateNavRef.current = true; }
+        return;
+      }
       if (e.state && e.state.swTab) {
         popstateNavRef.current = true;
         setActiveTab(e.state.swTab);
@@ -656,6 +666,7 @@ export default function App() {
         giftCount:      0
       };
       setStreamRecap(recap);
+      window.history.pushState({ swOverlay: 'recap' }, '');
       peakViewerRef.current = 0;
       sessionEarningsRef.current = 0;
       setSessionEarningsCents(0);
@@ -1122,7 +1133,7 @@ export default function App() {
 
       {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
       {activeTab !== 'room' && (
-      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none', overscrollBehavior: 'contain' }}>
         {TABS.filter(function(t) {
           if (t.id === 'room' || t.id === 'discover' || t.id === 'profile' || t.id === 'settings') return false;
           if (t.roles && t.roles.indexOf(role) === -1) return false;
@@ -1130,7 +1141,7 @@ export default function App() {
         }).map(function(tab) { return (
           <button
             key={tab.id}
-            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '8px 12px', minHeight: 36, color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none', WebkitUserSelect: 'none' }}
             onClick={function() { setActiveTab(tab.id); if (tab.id === 'aura') setAuraUnread(0); }}
           >
             {tab.label}
@@ -1158,14 +1169,14 @@ export default function App() {
               </div>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: barColor, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', flexShrink: 0 }}>${(Math.floor(sessionEarningsCents) / 100).toFixed(0)}/${(Math.floor(streamGoal.goalCents) / 100).toFixed(0)}</span>
-              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#6B5A44', cursor: 'pointer', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1 }}>✕</button>
+              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#6B5A44', cursor: 'pointer', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
           );
         })()
       )}
 
       {/* Tab Content */}
-      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
+      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible', overscrollBehavior: 'contain' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2 }}>LOADING...</div>}>
       <div key={activeTab + '-' + tabResetKey} style={{ display: 'flex', flexDirection: 'column', flex: 1, animation: activeTab !== 'room' ? 'tabSlideIn .18s ease-out' : 'none' }}>
@@ -1571,8 +1582,8 @@ export default function App() {
               </div>
             </div>
             <button
-              onClick={function() { setStreamRecap(null); }}
-              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%' }}
+              onClick={function() { window.history.back(); }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', minHeight: 44, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%', userSelect: 'none', WebkitUserSelect: 'none' }}
             >
               CLOSE RECAP
             </button>

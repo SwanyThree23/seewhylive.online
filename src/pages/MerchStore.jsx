@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Package, Plus, X, Check, Tag, BarChart2, Truck } from 'lucide-react';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
@@ -497,14 +498,11 @@ export default function MerchStorePage() {
                       <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase"
                         style={{ background: CRIMSON, color: GOLD, ...T }}>Live Order</span>
                     )}
-                    <select value={order.status}
-                      onChange={e => updateOrderMutation.mutate({ id: order.id, status: e.target.value })}
+                    <NativeSelect value={order.status}
+                      onChange={val => updateOrderMutation.mutate({ id: order.id, status: val })}
                       className="ml-auto text-[11px] rounded-lg px-2 py-1 outline-none"
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
-                      {['pending','confirmed','shipped','delivered','cancelled'].map(s => (
-                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                      ))}
-                    </select>
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}
+                      options={['pending','confirmed','shipped','delivered','cancelled'].map(s => ({value: s, label: s.charAt(0).toUpperCase() + s.slice(1)}))} />
                   </div>
                 </div>
               );

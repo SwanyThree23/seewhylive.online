@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Shield, ShieldOff, Mic, MicOff, Video, VideoOff, Radio,
   Wifi, WifiOff, Pin, Users, Zap, Crown, Lock, Unlock,
@@ -418,20 +419,16 @@ function ScenesTab({ guests, roomId }) {
                   #{idx + 1}
                 </span>
                 {unassigned.length > 0 ? (
-                  <select
-                    onChange={e => { if (e.target.value) { assignSlot(idx, e.target.value); e.target.value = ''; } }}
-                    defaultValue=""
+                  <NativeSelect
+                    value=""
+                    onChange={val => { if (val) assignSlot(idx, val); }}
                     style={{
                       background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
                       borderRadius: 4, color: '#fff', fontSize: 8, cursor: 'pointer', outline: 'none',
                       padding: '2px 4px', maxWidth: '90%', ...T,
                     }}
-                  >
-                    <option value="">+ Assign</option>
-                    {unassigned.map(g => (
-                      <option key={g.id} value={g.id}>{g.user_name || 'Guest'}</option>
-                    ))}
-                  </select>
+                    options={[{value:'',label:'+ Assign'},...unassigned.map(g => ({value: g.id, label: g.user_name || 'Guest'}))]}
+                  />
                 ) : (
                   <span style={{ ...T, color: 'rgba(255,255,255,0.15)', fontSize: 8 }}>+ Assign</span>
                 )}

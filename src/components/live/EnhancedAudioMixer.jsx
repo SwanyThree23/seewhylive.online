@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music, Radio, Zap, Headphones } from 'lucide-react';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const BG_MUSIC = [
   { id: 'none', label: 'No Music' },
@@ -175,13 +176,12 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
           {/* BG Music */}
           <div className="space-y-1">
             <p className="text-[10px] text-white/40 flex items-center gap-1"><Music className="w-3 h-3" /> Background Music</p>
-            <select
+            <NativeSelect
               value={bgMusic}
-              onChange={(e) => setBgMusic(e.target.value)}
+              onChange={(val) => setBgMusic(val)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
-            >
-              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#0d0618]">{m.label}</option>)}
-            </select>
+              options={BG_MUSIC.map(m => ({value: m.id, label: m.label}))}
+            />
           </div>
         </motion.div>
       )}

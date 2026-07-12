@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit2, Check, X } from 'lucide-react';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const inputStyle = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 
@@ -80,15 +81,12 @@ export default function StreamMetadataEditor({ initialTitle = 'Live Stream', ini
         <div>
           <label className="text-[11px] text-white/60 uppercase block mb-1.5">Category</label>
           {isEditing ? (
-            <select
+            <NativeSelect
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(val) => setCategory(val)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-2 text-[11px] text-white/80"
-            >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
-              ))}
-            </select>
+              options={CATEGORIES.map(cat => ({value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1)}))}
+            />
           ) : (
             <div className="text-white/70 text-[11px] capitalize">{category}</div>
           )}

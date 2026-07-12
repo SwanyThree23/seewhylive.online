@@ -140,10 +140,14 @@ export default function SettingsPage() {
     if (deleteConfirmText !== 'DELETE') return;
     setIsDeleting(true);
     try {
-      await base44.auth.deleteMe();
+      if (typeof base44.auth.deleteUser === 'function') {
+        await base44.auth.deleteUser();
+      } else {
+        await base44.auth.deleteMe();
+      }
       window.location.href = '/';
     } catch {
-      toast.error('Could not delete account. Contact support.');
+      toast.error('Could not delete account automatically. Please contact Base44 support to complete your request.');
     } finally {
       setIsDeleting(false);
     }

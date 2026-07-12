@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, ShieldCheck, X } from 'lucide-react';
 import { calcAge, setStoredDob } from '@/lib/ageVerification';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -141,18 +142,12 @@ export default function AgeGate({ minAge = 18, feature = 'access this feature', 
 
             {/* DOB pickers */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-              <select value={month} onChange={e => setMonth(e.target.value)} style={selSty}>
-                <option value="">Month</option>
-                {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
-              </select>
-              <select value={day} onChange={e => setDay(e.target.value)} style={{ ...selSty, flex: '0 0 70px' }}>
-                <option value="">Day</option>
-                {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              <select value={year} onChange={e => setYear(e.target.value)} style={selSty}>
-                <option value="">Year</option>
-                {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
+              <NativeSelect value={month} onChange={val => setMonth(val)} style={selSty}
+                options={[{value: '', label: 'Month'}, ...MONTHS.map((m, i) => ({value: i + 1, label: m}))]} />
+              <NativeSelect value={day} onChange={val => setDay(val)} style={{ ...selSty, flex: '0 0 70px' }}
+                options={[{value: '', label: 'Day'}, ...DAYS.map(d => ({value: d, label: d}))]} />
+              <NativeSelect value={year} onChange={val => setYear(val)} style={selSty}
+                options={[{value: '', label: 'Year'}, ...YEARS.map(y => ({value: y, label: y}))]} />
             </div>
 
             <button onClick={handleConfirm} disabled={!ready}

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
 } from 'lucide-react';
@@ -133,10 +134,9 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-white/50">Slow Mode</span>
                     {slowMode && (
-                      <select value={slowInterval} onChange={(e) => setSlowInterval(Number(e.target.value))}
-                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5">
-                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#0d0618]">{s}s</option>)}
-                      </select>
+                      <NativeSelect value={slowInterval} onChange={val => setSlowInterval(Number(val))}
+                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5"
+                        options={[3,5,10,30].map(s => ({value: s, label: `${s}s`}))} />
                     )}
                   </div>
                   <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>

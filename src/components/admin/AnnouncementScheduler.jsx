@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Megaphone, Calendar, Send, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import NativeSelect from '@/components/shared/NativeSelect';
 
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
@@ -137,23 +138,14 @@ export default function AnnouncementScheduler({ communityId, userId }) {
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
                 <div>
                   <label style={LABEL_STYLE}>Priority</label>
-                  <select style={SELECT_STYLE} value={priority} onChange={e => setPriority(e.target.value)}>
-                    <option value="low">Low</option>
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
+                  <NativeSelect style={SELECT_STYLE} value={priority} onChange={val => setPriority(val)}
+                    options={[{value:'low',label:'Low'},{value:'normal',label:'Normal'},{value:'high',label:'High'},{value:'urgent',label:'Urgent'}]} />
                 </div>
 
                 <div>
                   <label style={LABEL_STYLE}>Target Audience</label>
-                  <select style={SELECT_STYLE} value={targetAudience} onChange={e => setTargetAudience(e.target.value)}>
-                    <option value="all">All Members</option>
-                    <option value="admins">Admins</option>
-                    <option value="moderators">Moderators</option>
-                    <option value="subscribers">Subscribers</option>
-                    <option value="new_members">New Members</option>
-                  </select>
+                  <NativeSelect style={SELECT_STYLE} value={targetAudience} onChange={val => setTargetAudience(val)}
+                    options={[{value:'all',label:'All Members'},{value:'admins',label:'Admins'},{value:'moderators',label:'Moderators'},{value:'subscribers',label:'Subscribers'},{value:'new_members',label:'New Members'}]} />
                 </div>
               </div>
 
