@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 var ANIM = '@keyframes sheetIn{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}';
 
@@ -11,10 +11,42 @@ export default function BottomSheet(props) {
 
   useEffect(function() {
     if (!open) return;
-    function onKey(e) { if (e.key === 'Escape') onClose(); }
+    function onKey(e) { if (e.key === 'Escape') handleClose(); }
     document.addEventListener('keydown', onKey);
     return function() { document.removeEventListener('keydown', onKey); };
   }, [open, onClose]);
+
+  // Push to history when sheet opens — Android back button dismisses it
+  var pushedRef = useRef(false);
+
+  useEffect(function() {
+    if (open && !pushedRef.current) {
+      window.history.pushState({ swOverlay: 'sheet' }, '');
+      pushedRef.current = true;
+    }
+    if (!open && pushedRef.current) {
+      pushedRef.current = false;
+    }
+  }, [open]);
+
+  useEffect(function() {
+    function onPop() {
+      if (pushedRef.current) {
+        pushedRef.current = false;
+        onClose();
+      }
+    }
+    window.addEventListener('popstate', onPop);
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, [onClose]);
+
+  function handleClose() {
+    if (pushedRef.current) {
+      window.history.back();
+    } else {
+      onClose();
+    }
+  }
 
   if (!open) return null;
 
@@ -23,7 +55,7 @@ export default function BottomSheet(props) {
       <style>{ANIM}</style>
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 1000,
           background: 'rgba(14,12,9,.72)',
@@ -38,7 +70,7 @@ export default function BottomSheet(props) {
         maxHeight: maxH,
         display: 'flex', flexDirection: 'column',
         animation: 'sheetIn .22s ease',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 16px)',
       }}>
         {/* Handle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px' }}>
@@ -49,12 +81,12 @@ export default function BottomSheet(props) {
             </span>
           )}
           <button
-            onClick={onClose}
-            style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#8A7A62', fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+            onClick={handleClose}
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#8A7A62', fontSize: 18, cursor: 'pointer', minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', lineHeight: 1, userSelect: 'none', WebkitUserSelect: 'none' }}
           >✕</button>
         </div>
         {/* Body */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '0 16px 16px' }}>
+        <div style={{ overflowY: 'auto', flex: 1, padding: '0 16px 16px', overscrollBehavior: 'contain' }}>
           {children}
         </div>
       </div>
