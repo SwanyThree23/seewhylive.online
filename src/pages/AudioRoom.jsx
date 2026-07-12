@@ -309,8 +309,16 @@ export default function AudioRoom() {
   const isHost  = user?.id && party?.host_id && user.id === party.host_id;
   const ytId    = getYouTubeId(party?.video_url || '');
   const hostMember = members.find(m => m.user_id === party?.host_id);
+  const myMember   = members.find(m => m.user_id === user?.id);
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
+
+  function handleToggleAudio() {
+    toggleAudio();
+    if (myMember?.id) {
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+    }
+  }
 
   async function sendLove() {
     if (!user?.id || !roomId) {
@@ -562,7 +570,7 @@ export default function AudioRoom() {
           </button>
 
           <button
-            onClick={toggleAudio}
+            onClick={handleToggleAudio}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
               background: audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',

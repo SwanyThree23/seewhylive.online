@@ -613,6 +613,13 @@ export default function BroadcastStudio() {
 
   const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
 
+  function handleToggleAudio() {
+    toggleAudio();
+    if (myMember?.id) {
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+    }
+  }
+
   // AI highlight detector — auto-clips when hype + sentiment spike
   useHighlightDetector({
     partyId,
@@ -1944,7 +1951,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <div className="shrink-0 flex items-center justify-center gap-3 py-2 px-4"
         style={{ background: 'rgba(0,0,0,0.75)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
 
-        <motion.button whileTap={{ scale: 0.92 }} onClick={toggleAudio}
+        <motion.button whileTap={{ scale: 0.92 }} onClick={handleToggleAudio}
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
             background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',

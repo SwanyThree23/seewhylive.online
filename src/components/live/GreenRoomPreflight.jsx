@@ -32,7 +32,8 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
     // Mic test
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+      const s = await navigator.mediaDevices.getUserMedia({ audio: prefMic ? { deviceId: { ideal: prefMic } } : true, video: false });
       s.getTracks().forEach(t => t.stop());
       setChecks(c => ({ ...c, mic: 'ready' }));
     } catch {
@@ -41,7 +42,8 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
     // Camera test
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+      const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: prefCam ? { deviceId: { ideal: prefCam } } : true });
       s.getTracks().forEach(t => t.stop());
       setChecks(c => ({ ...c, camera: 'ready' }));
     } catch {

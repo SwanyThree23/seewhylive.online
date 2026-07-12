@@ -496,6 +496,15 @@ export default function LiveRoom() {
     return () => clearInterval(t);
   }, [roomId]);
 
+  const myMember = members.find(m => m.user_id === user?.id);
+
+  function handleToggleAudio() {
+    toggleAudio();
+    if (myMember?.id) {
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+    }
+  }
+
   const activeSpeaker = stageData.find(s => s.speaking);
   const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
   const tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
@@ -896,7 +905,7 @@ export default function LiveRoom() {
           )}
 
           {/* Mic */}
-          <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
+          <button onClick={handleToggleAudio} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
               style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
               {!audioEnabled
