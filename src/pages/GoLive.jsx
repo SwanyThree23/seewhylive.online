@@ -152,6 +152,19 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import TipGoalBar from '../components/monetization/TipGoalBar';
+import GuestControls from '../components/live/GuestControls';
+import AggregatedChat from '../components/live/AggregatedChat';
+import AIModeration from '../components/live/AIModeration';
+import CoStreamHub from '../components/live/CoStreamHub';
+import PKBattle from '../components/live/PKBattle';
+import SuperChatRail from '../components/live/SuperChatRail';
+import LiveGoalWidget from '../components/live/LiveGoalWidget';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import GreenRoomModal from '../components/live/GreenRoomModal';
+import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
+import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -269,7 +282,7 @@ function FormatCard({ fmt, onSelect }) {
   );
 }
 
-function CameraPreview({ onStreamReady }) {
+function CameraPreview({ onStreamReady, onMicChange }) {
   const videoRef = useRef(null);
   const [stream,     setStream]     = useState(null);
   const [camOn,      setCamOn]      = useState(false);
@@ -303,8 +316,10 @@ function CameraPreview({ onStreamReady }) {
   useEffect(() => { start(); return () => stream?.getTracks().forEach(t => t.stop()); }, []);
 
   function toggleMic() {
-    stream?.getAudioTracks().forEach(t => { t.enabled = !micOn; });
-    setMicOn(v => !v);
+    const next = !micOn;
+    stream?.getAudioTracks().forEach(t => { t.enabled = next; });
+    setMicOn(next);
+    onMicChange?.(next);
   }
 
   function handleVideoChange(id) { setVideoId(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} start({ videoId: id }); }
@@ -480,7 +495,17 @@ export default function GoLive() {
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
   const [localStream,  setLocalStream]  = useState(null);
+  const [micOn,       setMicOn]       = useState(true);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
+
+  // Elapsed counter — only runs while live (partyId set)
+  useEffect(() => {
+    if (!partyId) return;
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [partyId]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -656,7 +681,7 @@ export default function GoLive() {
             exit={{ opacity: 0, x: 30 }}
             style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 120px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
-            <CameraPreview onStreamReady={handleStreamReady} />
+            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} />
 
             <div>
               <div style={{ ...SL, justifyContent: 'space-between' }}>
@@ -874,7 +899,7 @@ export default function GoLive() {
           </motion.button>
         </div>
       )}
-      <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={viewerCount} />
       <MilestoneAlerts userId={user?.id} roomId={partyId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -903,7 +928,7 @@ export default function GoLive() {
       {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
-      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={0} />}
+      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
       <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
@@ -927,9 +952,9 @@ export default function GoLive() {
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}
-      {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={0} />}
+      {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
-      {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={0} elapsedSeconds={0} />}
+      {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
       {!true && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
@@ -937,18 +962,18 @@ export default function GoLive() {
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {partyId && <GoldenWall roomId={partyId} />}
-      {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={0} currentUser={user} />}
-      {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={0} isHost={true} />}
+      {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
+      {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} />}
       <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
       <HostAlertCenter />
-      {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={0} />}
+      {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={localStream} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />}
-      {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={false} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => {}} />}
+      {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
@@ -961,7 +986,7 @@ export default function GoLive() {
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
       {partyId && <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />}
-      {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={false} onClose={() => {}} />
@@ -981,13 +1006,13 @@ export default function GoLive() {
       {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={true} />}
       {null && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
-      {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || ''} room={null} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={null} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={() => {}} onMessageReceived={() => {}} />}
       {partyId && <TippingOverlay roomId={partyId} creatorId={user?.id} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
-      {<AudioMixer micMuted={false} onMicToggle={() => {}} />}
-      {<EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
+      {<AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />}
+      {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       {<ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
@@ -996,7 +1021,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1009,9 +1034,22 @@ export default function GoLive() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <ViewerCount count={0} peakViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
+      <ViewerCount count={viewerCount} peakViewers={0} />
       <TipGoalBar roomId={null} goal={100} current={0} />
+      {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
+      {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} />}
+      {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
+      {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} />}
+      {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => {}} />}
+      {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
+      {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
+      {partyId && <AuraPanelDrawer roomId={partyId} isOpen={false} onClose={() => {}} />}
+      {partyId && <GreenRoomModal isOpen={false} onClose={() => {}} roomId={partyId} />}
+      {partyId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={partyId} />}
+      {partyId && <WebRTCConfigModal isOpen={false} onClose={() => {}} />}
+      {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={false} onClose={() => {}} />}
+      {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
     </div>
   );
 }
