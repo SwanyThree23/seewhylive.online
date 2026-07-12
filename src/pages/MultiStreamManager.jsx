@@ -428,7 +428,7 @@ export default function MultiStreamManager() {
         {/* MediaMTX info banner */}
         {anyLive && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-green-950/40 border-green-500/30">
+            <Card style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.25)' }}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
