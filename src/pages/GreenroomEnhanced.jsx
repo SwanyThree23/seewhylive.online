@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -28,6 +30,10 @@ export default function GreenroomEnhanced() {
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [selectedCam, setSelectedCam] = useState('');
+  const [selectedMic, setSelectedMic] = useState('');
+  const [camResolution, setCamResolution] = useState('720p');
+  const { cameras } = useCameraDevices();
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
     { id: 'mic',   label: 'Microphone working', done: false, auto: true },
@@ -94,6 +100,27 @@ export default function GreenroomEnhanced() {
     setCameraStream(stream);
   }
 
+  const RES_MAP = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
+
+  async function acquireCamera(opts = {}) {
+    const camId = opts.camId ?? selectedCam;
+    const micId = opts.micId ?? selectedMic;
+    const res = RES_MAP[opts.resolution ?? camResolution] || RES_MAP['720p'];
+    try {
+      cameraStream?.getTracks().forEach(t => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { ...res, ...(camId ? { deviceId: { exact: camId } } : {}) },
+        audio: false,
+      });
+      setCameraStream(stream);
+      setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
+    } catch {}
+  }
+
+  function handleVideoChange(id) { setSelectedCam(id); acquireCamera({ camId: id }); }
+  function handleAudioChange(id) { setSelectedMic(id); }
+  function handleResolutionChange(r) { setCamResolution(r); if (cameraStream) acquireCamera({ resolution: r }); }
+
   async function generatePin() {
     const arr = new Uint32Array(1);
     crypto.getRandomValues(arr);
@@ -157,16 +184,29 @@ export default function GreenroomEnhanced() {
               </div>
             )}
           </div>
-          <div className="p-3 flex items-center justify-between gap-3">
-            <CameraSourcePicker onSourceSelected={handleCameraSource} currentDeviceId={null} />
-            {/* Mic level bar */}
-            <div className="flex-1 flex items-center gap-2">
-              <span className="text-sm">🎤</span>
-              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                <motion.div className="h-full rounded-full"
-                  style={{ background: audioLevel > 70 ? '#C0392B' : audioLevel > 40 ? GOLD : GREEN }}
-                  animate={{ width: audioLevel + '%' }}
-                  transition={{ duration: 0.1 }} />
+          <div className="p-3 space-y-2">
+            {/* Device selector — camera, mic, resolution */}
+            <CameraDeviceSelector
+              compact
+              currentVideoId={selectedCam}
+              currentAudioId={selectedMic}
+              resolution={camResolution}
+              onVideoChange={handleVideoChange}
+              onAudioChange={handleAudioChange}
+              onResolutionChange={handleResolutionChange}
+            />
+            {/* Legacy CameraSourcePicker for OBS/virtual camera detection */}
+            <div className="flex items-center justify-between gap-3">
+              <CameraSourcePicker onSourceSelected={handleCameraSource} currentDeviceId={selectedCam || null} />
+              {/* Mic level bar */}
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-sm">🎤</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                  <motion.div className="h-full rounded-full"
+                    style={{ background: audioLevel > 70 ? '#C0392B' : audioLevel > 40 ? GOLD : GREEN }}
+                    animate={{ width: audioLevel + '%' }}
+                    transition={{ duration: 0.1 }} />
+                </div>
               </div>
             </div>
           </div>
