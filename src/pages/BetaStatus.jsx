@@ -7,6 +7,16 @@ import {
   CheckCircle, AlertCircle, Clock, Radio, Users, DollarSign,
   MessageSquare, Shield, Star, Zap, Globe, BarChart2, UserPlus
 } from 'lucide-react';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import PointsNotification from '../components/live/PointsNotification';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -53,12 +63,27 @@ const FEATURE_STATUS = [
 ];
 
 const STATUS_STYLE = {
-  live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#00ff88', dot: '#00ff88' },
+  live:    { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)',  color: '#6DBF7E', dot: '#6DBF7E' },
   beta:    { bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD,      dot: GOLD },
   planned: { bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.35)', dot: 'rgba(255,255,255,0.2)' },
 };
 
 export default function BetaStatusPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+
   const { data: rooms = [] } = useQuery({
     queryKey: ['all-rooms-beta'],
     queryFn: () => base44.entities.Room.list('-created_date', 100),
@@ -74,7 +99,7 @@ export default function BetaStatusPage() {
       <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center justify-between gap-3 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 gap-3">
-          <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#00ff88' }} />
+          <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: '#6DBF7E' }} />
           <div>
             <h1 className="text-xl font-black text-white leading-none" style={T}>Platform Status</h1>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>SeeWhy LIVE — all systems operational</p>
@@ -92,13 +117,13 @@ export default function BetaStatusPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Features Live', value: liveCount, color: '#00ff88' },
+            { label: 'Features Live', value: liveCount, color: '#6DBF7E' },
             { label: 'In Beta Preview', value: betaCount, color: GOLD },
-            { label: 'Live Rooms Now', value: liveRooms, color: '#00d4ff' },
+            { label: 'Live Rooms Now', value: liveRooms, color: '#D4AF37' },
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-3xl font-black" style={{ fontFamily: 'Orbitron, monospace', color }}>{value}</p>
               <p className="text-[10px] font-black uppercase mt-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{label}</p>
             </div>
@@ -106,10 +131,10 @@ export default function BetaStatusPage() {
         </div>
 
         {/* Feature checklist */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" style={{ color: '#00ff88' }} />
+              <CheckCircle className="w-4 h-4" style={{ color: '#6DBF7E' }} />
               <p className="font-black text-sm text-white" style={T}>Feature Checklist</p>
             </div>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
@@ -144,7 +169,7 @@ export default function BetaStatusPage() {
         </div>
 
         {/* Getting started guide */}
-        <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <p className="font-black text-sm text-white mb-4" style={T}>Getting Started Guide</p>
           <div className="space-y-3">
             {[
@@ -191,6 +216,19 @@ export default function BetaStatusPage() {
               </button>
             </Link>
           ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>
+          <LeaderboardPanel roomId={activeRoomId} />
+          <StreamGoals isHost={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} />
+          <HostAlertCenter />
+          <PointsNotification userId={user?.id} />
+          <MilestoneAlerts creatorId={user?.id} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
         </div>
       </div>
     </div>

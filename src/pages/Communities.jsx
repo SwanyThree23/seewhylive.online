@@ -7,6 +7,40 @@ import { createPageUrl } from '../utils';
 import CommunityCard from '../components/communities/CommunityCard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import PollCard from '../components/community/PollCard';
+import RaidPanelButton from '../components/live/RaidPanel';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import SpotlightSection from '../components/community/SpotlightSection';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+
+function usePullToRefresh(onRefresh) {
+  var [pullY, setPullY] = useState(0);
+  var [refreshing, setRefreshing] = useState(false);
+  var startY = useRef(0);
+  var THRESHOLD = 65;
+  function onTouchStart(e) {
+    if (window.scrollY > 0) return;
+    startY.current = e.touches[0].clientY;
+  }
+  function onTouchMove(e) {
+    if (window.scrollY > 0) return;
+    var dy = e.touches[0].clientY - startY.current;
+    if (dy > 0) { e.preventDefault(); setPullY(Math.min(dy * 0.45, THRESHOLD + 20)); }
+  }
+  async function onTouchEnd() {
+    if (pullY >= THRESHOLD && !refreshing) {
+      setRefreshing(true); setPullY(THRESHOLD);
+      await onRefresh();
+      setRefreshing(false);
+    }
+    setPullY(0);
+  }
+  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
+}
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -62,6 +96,9 @@ export default function CommunitiesPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab]               = useState('discover');
   const queryClient = useQueryClient();
+  var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(
+    async function() { await queryClient.invalidateQueries(); }
+  );
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -98,10 +135,18 @@ export default function CommunitiesPage() {
         await base44.entities.Community.update(communityId, { member_count: (community.member_count || 0) + 1 });
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, communityId) => {
       queryClient.invalidateQueries({ queryKey: ['myMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');
+      if (user?.id) {
+        const community = allCommunities.find(c => c.id === communityId);
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'community_joined',
+          title: `Joined community: ${community?.name || 'Community'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -113,7 +158,18 @@ export default function CommunitiesPage() {
   const mine     = filtered.filter(c => myMemberships.some(m => m.community_id === c.id));
 
   return (
-    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}>
+    <div className="min-h-screen pb-10" style={{ background: '#080B18' }}
+      onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+
+      {/* Pull-to-refresh indicator */}
+      <motion.div style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {pullY > 10 && (
+          <motion.div
+            animate={refreshing ? { rotate: 360 } : { rotate: pullY * 4 }}
+            transition={refreshing ? { repeat: Infinity, duration: 0.6, ease: 'linear' } : {}}
+            style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid rgba(212,175,55,0.3)', borderTopColor: '#D4AF37' }} />
+        )}
+      </motion.div>
 
       {/* ── Sticky header ─────────────────────────────────────── */}
       <div className="sticky top-0 z-20"
@@ -269,6 +325,45 @@ export default function CommunitiesPage() {
             )}
           </>
         )}
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={mine[0]?.id || null} isAdmin={false} />
+          <DiscussionFeed communityId="discover" />
+        </div>
+
+        {/* Community management quick links */}
+        {mine.length > 0 && (
+          <div className="mt-6 mb-4 flex flex-wrap gap-3">
+            <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(128,0,32,0.1)', border: '1px solid rgba(128,0,32,0.3)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                ⚙️ Community Admin
+              </button>
+            </Link>
+            <Link to={createPageUrl('CommunityGrowth')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                📈 Growth Tools
+              </button>
+            </Link>
+            <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black text-[10px] uppercase"
+                style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+                ⚡ Settings
+              </button>
+            </Link>
+          </div>
+        )}
+
+        <div style={{ padding: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <OnlineUsersGrid compact maxVisible={12} />
+          <PollCard poll={null} />
+          <RaidPanelButton room={null} currentUser={user} isHost={false} />
+          <AnnouncementPanel communityId={mine[0]?.id || null} userId={user?.id} />
+          <SpotlightSection communityId={mine[0]?.id || null} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="communities" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

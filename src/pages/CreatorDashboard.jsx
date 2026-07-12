@@ -2,12 +2,22 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, FileText, Sliders } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import VODLibrary from '../components/vod/VODLibrary';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -59,6 +69,16 @@ export default function CreatorDashboardPage() {
     enabled: !!user?.id,
   });
 
+  const activeCreatorRoom = recentRooms.find(r => r.status === 'live') || recentRooms[0] || null;
+  const activeCreatorRoomId = activeCreatorRoom?.id || null;
+
+  const { data: creatorCommunity } = useQuery({
+    queryKey: ['creatorCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const creatorCommunityId = creatorCommunity?.id || null;
+
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['creatorActiveSubs', user?.id],
     queryFn: () => base44.entities.Subscription.filter({ creator_id: user?.id, status: 'active' }),
@@ -83,7 +103,7 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('GoLive'),
       gradient: `linear-gradient(135deg, ${CRIMSON}40, ${CRIMSON}10)`,
       border: `${CRIMSON}50`,
-      iconColor: '#ff6b8a',
+      iconColor: '#C0392B',
     },
     {
       icon: Calendar,
@@ -91,15 +111,15 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('StreamScheduler'),
       gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
       border: 'rgba(212,175,55,0.45)',
-      iconColor: '#a78bfa',
+      iconColor: '#D4AF37',
     },
     {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.05))',
-      border: 'rgba(0,212,255,0.4)',
-      iconColor: '#00d4ff',
+      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
+      border: 'rgba(212,175,55,0.4)',
+      iconColor: '#D4AF37',
     },
     {
       icon: Scissors,
@@ -121,17 +141,49 @@ export default function CreatorDashboardPage() {
       icon: Zap,
       label: 'INS Forge',
       href: createPageUrl('INSForge'),
-      gradient: `linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05))`,
-      border: 'rgba(245,158,11,0.35)',
-      iconColor: '#F59E0B',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: '#D4AF37',
     },
     {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.04))`,
-      border: 'rgba(0,212,255,0.3)',
-      iconColor: '#00d4ff',
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.3)',
+      iconColor: G,
+    },
+    {
+      icon: Sliders,
+      label: 'Pre-Flight',
+      href: createPageUrl('GreenRoomPreFlight'),
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
+      border: 'rgba(109,191,126,0.3)',
+      iconColor: '#6DBF7E',
+    },
+    {
+      icon: FileText,
+      label: 'Captions',
+      href: createPageUrl('TranscriptionStudio'),
+      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
+      border: 'rgba(109,191,126,0.3)',
+      iconColor: '#6DBF7E',
+    },
+    {
+      icon: Bot,
+      label: 'Aura AI',
+      href: createPageUrl('AuraAI'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
+      border: 'rgba(212,175,55,0.35)',
+      iconColor: G,
+    },
+    {
+      icon: BarChart3,
+      label: 'Control',
+      href: createPageUrl('ControlRoom'),
+      gradient: `linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.04))`,
+      border: 'rgba(212,175,55,0.32)',
+      iconColor: G,
     },
   ];
 
@@ -226,7 +278,7 @@ export default function CreatorDashboardPage() {
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                   <div className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                     <div className="px-4 py-3 flex items-center justify-between"
                       style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                       <div className="flex items-center gap-2">
@@ -237,7 +289,7 @@ export default function CreatorDashboardPage() {
                       </div>
                       <Link to={createPageUrl('GoLive')}>
                         <span className="text-[10px] font-black uppercase px-2 py-1 rounded-lg transition-all"
-                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#ff9999', ...T }}>
+                          style={{ background: `${CRIMSON}18`, border: `1px solid ${CRIMSON}35`, color: '#D4854A', ...T }}>
                           + Go Live
                         </span>
                       </Link>
@@ -304,7 +356,29 @@ export default function CreatorDashboardPage() {
           </>
         )}
 
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <CollaborationMatcher />
+        </motion.div>
+
+        {user?.id && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <VODLibrary creatorId={user.id} />
+          </motion.div>
+        )}
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+            <SwanDirectorPanel roomId={activeCreatorRoomId} hostId={user?.id} onClose={() => {}} />
+            <StreamEventBus roomId={activeCreatorRoomId} isHost={true} sessionId={activeCreatorRoomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />
+            <StreamHighlightCapture roomId={activeCreatorRoomId} sessionId={activeCreatorRoomId} creatorId={user?.id} elapsedSeconds={0} isHost={true} />
+            <ContentRecommendations />
+            <OnlineUsersGrid compact maxVisible={8} />
+            <ShareToSocial content={{ title: 'My Stream', url: window.location.href }} />
+            <AnnouncementPanel communityId={creatorCommunityId} userId={user?.id} />
+          </div>
+
           <Link to={createPageUrl('ContentCalendar')}>
             <div className="w-full flex items-center justify-between px-6 py-5 rounded-2xl cursor-pointer transition-all hover:brightness-110"
               style={{
