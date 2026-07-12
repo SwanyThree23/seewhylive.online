@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -396,6 +397,7 @@ export default function LiveRoom() {
     audioDeviceId: prefMic,
   });
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+  const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: true });
 
   // Derive the first active RTCPeerConnection for connection quality monitoring
   const [activePc, setActivePc] = useState(null);
@@ -435,8 +437,9 @@ export default function LiveRoom() {
 
   // Build stage from real members or demo data
   const stage = roomId && members.length > 0
-    ? members.slice(0, 20).map((m, i) => ({
+    ? members.slice(0, 20).map((m) => ({
         id:       m.id,
+        userId:   m.user_id,
         name:     m.user_name || 'Guest',
         role:     m.user_id === party?.host_id ? 'host' : m.role || 'speaker',
         speaking: false,
@@ -473,6 +476,14 @@ export default function LiveRoom() {
 
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+
+  // Patch local user's speaking field with live VAD data
+  useEffect(() => {
+    if (!user?.id) return;
+    setStageData(prev => prev.map(s =>
+      s.userId === user.id ? { ...s, speaking: localSpeaking } : s
+    ));
+  }, [localSpeaking, user?.id]);
 
   // Simulate rotating speaker in demo mode
   useEffect(() => {

@@ -30,8 +30,8 @@ export default function GreenroomEnhanced() {
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
-  const [selectedCam, setSelectedCam] = useState('');
-  const [selectedMic, setSelectedMic] = useState('');
+  const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
+  const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
   const [camResolution, setCamResolution] = useState('720p');
   const { cameras } = useCameraDevices();
   const [checklist, setChecklist] = useState([
@@ -58,7 +58,8 @@ export default function GreenroomEnhanced() {
     let stream;
     async function testMic() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+        stream = await navigator.mediaDevices.getUserMedia({ audio: prefMic ? { deviceId: { ideal: prefMic } } : true, video: false });
         const ctx = new AudioContext();
         audioCtxRef.current = ctx;
         const source = ctx.createMediaStreamSource(stream);
@@ -109,7 +110,7 @@ export default function GreenroomEnhanced() {
     try {
       cameraStream?.getTracks().forEach(t => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { ...res, ...(camId ? { deviceId: { exact: camId } } : {}) },
+        video: { ...res, ...(camId ? { deviceId: { ideal: camId } } : {}) },
         audio: false,
       });
       setCameraStream(stream);
@@ -117,8 +118,8 @@ export default function GreenroomEnhanced() {
     } catch {}
   }
 
-  function handleVideoChange(id) { setSelectedCam(id); acquireCamera({ camId: id }); }
-  function handleAudioChange(id) { setSelectedMic(id); }
+  function handleVideoChange(id) { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} acquireCamera({ camId: id }); }
+  function handleAudioChange(id) { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }
   function handleResolutionChange(r) { setCamResolution(r); if (cameraStream) acquireCamera({ resolution: r }); }
 
   async function generatePin() {

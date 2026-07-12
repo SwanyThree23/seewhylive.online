@@ -275,8 +275,8 @@ function CameraPreview({ onStreamReady }) {
   const [camOn,      setCamOn]      = useState(false);
   const [micOn,      setMicOn]      = useState(true);
   const [error,      setError]      = useState(null);
-  const [videoId,    setVideoId]    = useState(null);
-  const [audioId,    setAudioId]    = useState(null);
+  const [videoId,    setVideoId]    = useState(() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } });
+  const [audioId,    setAudioId]    = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const [resolution, setResolution] = useState('720p');
   const { cameras } = useCameraDevices();
 
@@ -307,8 +307,8 @@ function CameraPreview({ onStreamReady }) {
     setMicOn(v => !v);
   }
 
-  function handleVideoChange(id) { setVideoId(id); start({ videoId: id }); }
-  function handleAudioChange(id) { setAudioId(id); start({ audioId: id }); }
+  function handleVideoChange(id) { setVideoId(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} start({ videoId: id }); }
+  function handleAudioChange(id) { setAudioId(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} start({ audioId: id }); }
   function handleResolutionChange(r) { setResolution(r); start({ resolution: r }); }
   function handleSwitchCamera() {
     if (cameras.length < 2) return;
