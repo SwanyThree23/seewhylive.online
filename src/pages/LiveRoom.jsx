@@ -160,6 +160,8 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import TipGoalBar from '../components/monetization/TipGoalBar';
 import TopTippers from '../components/monetization/TopTippers';
+import * as panelService from '../services/panelService';
+
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -434,19 +436,22 @@ export default function LiveRoom() {
   const isLive     = !roomId || members.length > 0 || (remoteStreams?.size ?? 0) > 0;
 
   // Local UI state
-  const [stageData, setStageData]   = useState(stage);
-  const [spotlit, setSpotlit]       = useState(null);
-  const [chatOpen, setChatOpen]     = useState(false);
-  const [chatMsgs, setChatMsgs]     = useState(DEMO_CHAT);
-  const [unread, setUnread]         = useState(0);
-  const [liked, setLiked]           = useState(false);
-  const [likeCount, setLikeCount]   = useState(3);
-  const [handRaised, setHandRaised] = useState(false);
-  const [shareOpen, setShareOpen]   = useState(false);
-  const [payOpen, setPayOpen]       = useState(false);
-  const [giftOpen, setGiftOpen]     = useState(false);
-  const [giftEvent, setGiftEvent]   = useState(null);
-  const lastGiftTsRef               = useRef(0);
+  const [stageData, setStageData]       = useState(stage);
+  const [spotlit, setSpotlit]           = useState(null);
+  const [chatOpen, setChatOpen]         = useState(false);
+  const [chatMsgs, setChatMsgs]         = useState(DEMO_CHAT);
+  const [unread, setUnread]             = useState(0);
+  const [liked, setLiked]               = useState(false);
+  const [likeCount, setLikeCount]       = useState(3);
+  const [handRaised, setHandRaised]     = useState(false);
+  const [shareOpen, setShareOpen]       = useState(false);
+  const [payOpen, setPayOpen]           = useState(false);
+  const [giftOpen, setGiftOpen]         = useState(false);
+  const [giftEvent, setGiftEvent]       = useState(null);
+  const lastGiftTsRef                   = useRef(0);
+  // Panel Seat Approval
+  const [approvalMode, setApprovalMode]   = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
   // Sync stage when real data arrives
   useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
@@ -508,6 +513,33 @@ export default function LiveRoom() {
     }, 4000);
     return () => clearInterval(iv);
   }, [roomId, user?.id]);
+
+  // Panel service: join and listen for seat requests when host
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    panelService.joinPanel(roomId, user.id);
+    const offReq = panelService.onJoinRequest(req => {
+      setPendingRequests(prev => [...prev.filter(r => r.id !== req.id), req]);
+    });
+    const offRes = panelService.onRequestResolved(({ id }) => {
+      setPendingRequests(prev => prev.filter(r => r.id !== id));
+    });
+    return () => {
+      offReq();
+      offRes();
+      panelService.leavePanel(roomId, user.id);
+    };
+  }, [roomId, user?.id]);
+
+  function approveRequest(req) {
+    panelService.resolveJoinRequest(roomId, req.id, true, user?.id);
+    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+  }
+
+  function denyRequest(req) {
+    panelService.resolveJoinRequest(roomId, req.id, false, user?.id);
+    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+  }
 
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
@@ -648,6 +680,68 @@ export default function LiveRoom() {
             </div>
           )}
         </div>
+
+        {/* ── Panel Seat Approval (host only) ──────────────────────────────── */}
+        {isHost && (
+          <div className="px-4 mb-4">
+            <div className="p-3 rounded-2xl" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.18)' }}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[13px] font-black text-white uppercase tracking-wide"
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Panel Seat Approval</span>
+                <button
+                  onClick={() => setApprovalMode(m => !m)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-black uppercase transition-all"
+                  style={{
+                    background: approvalMode ? `linear-gradient(90deg, ${CRIMSON}, ${GOLD})` : 'rgba(255,255,255,0.07)',
+                    border: approvalMode ? 'none' : '1px solid rgba(255,255,255,0.12)',
+                    color: approvalMode ? '#000' : 'rgba(255,255,255,0.5)',
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    userSelect: 'none',
+                  }}>
+                  {approvalMode ? 'ON' : 'OFF'}
+                </button>
+              </div>
+              <p className="text-[11px] mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {approvalMode ? 'Viewers must be approved before joining the panel.' : 'Any viewer can join the panel freely.'}
+              </p>
+              {approvalMode && pendingRequests.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  <p className="text-[10px] uppercase font-bold" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                    Pending Requests ({pendingRequests.length})
+                  </p>
+                  {pendingRequests.map(req => (
+                    <div key={req.id} className="flex items-center gap-2 p-2 rounded-xl"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
+                        style={{ background: avatarColor(req.displayName || 'G') + '55', color: avatarColor(req.displayName || 'G') }}>
+                        {(req.displayName || 'G').charAt(0).toUpperCase()}
+                      </div>
+                      <span className="flex-1 text-xs font-semibold text-white truncate"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {req.displayName || 'Guest'}
+                      </span>
+                      <button onClick={() => approveRequest(req)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                        style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                        Approve
+                      </button>
+                      <button onClick={() => denyRequest(req)}
+                        className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                        style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                        Deny
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {approvalMode && pendingRequests.length === 0 && (
+                <p className="text-center text-[11px] py-2" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  No pending requests
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── Audience section ──────────────────────────────────────────────── */}
         <div className="px-4 mb-4">
