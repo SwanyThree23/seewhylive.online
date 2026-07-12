@@ -320,6 +320,18 @@ export default function AudioRoom() {
     }
   }
 
+  // Keyboard shortcut: M = mic toggle
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioEnabled]);
+
   async function sendLove() {
     if (!user?.id || !roomId) {
       setLoveCount(c => c + 1);

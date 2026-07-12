@@ -630,6 +630,21 @@ export default function BroadcastStudio() {
     }
   }
 
+  // Keyboard shortcuts: M = mic, V = camera, S = screen share (ignore when typing in inputs)
+  useEffect(() => {
+    if (!canStream) return;
+    const onKey = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+      if (e.key === 'v' || e.key === 'V') { e.preventDefault(); toggleVideo(); }
+      if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleScreenShare(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canStream, audioEnabled, videoEnabled, screenEnabled]);
+
   // AI highlight detector — auto-clips when hype + sentiment spike
   useHighlightDetector({
     partyId,
