@@ -120,7 +120,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 const { label, color } = checkLabel(checks[row.key]);
                 return (
                   <div key={row.key} className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: checks[row.key] === 'ready' ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.07)'}` }}>
+                    style={{ background: checks[row.key] === 'ready' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
                     <span className="text-sm font-bold text-white" style={T}>{row.icon} {row.label}</span>
                     <span className="text-sm font-black" style={{ color, ...T }}>{label}</span>
                   </div>
@@ -144,13 +144,13 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
               {/* VDO.ninja */}
               <div>
-                <p className="text-[11px] font-black uppercase mb-1.5" style={{ color: '#00b4d8', ...T }}>VDO.NINJA 4K GUEST LINK</p>
+                <p className="text-[11px] font-black uppercase mb-1.5" style={{ color: '#5B7FA6', ...T }}>VDO.NINJA 4K GUEST LINK</p>
                 <div className="flex gap-2">
                   <div className="flex-1 px-3 py-2.5 rounded-xl text-[11px] font-mono text-white/50 truncate"
-                    style={{ background: 'rgba(0,180,216,0.05)', border: '1px solid rgba(0,180,216,0.15)' }}>
+                    style={{ background: 'rgba(91,127,166,0.06)', border: '1px solid rgba(91,127,166,0.2)' }}>
                     {vdoLink}
                   </div>
-                  <button onClick={() => copyText(vdoLink, 'vdo')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(0,180,216,0.1)', border: '1px solid rgba(0,180,216,0.3)', color: '#00b4d8' }}>
+                  <button onClick={() => copyText(vdoLink, 'vdo')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(91,127,166,0.12)', border: '1px solid rgba(91,127,166,0.3)', color: '#5B7FA6' }}>
                     {copied === 'vdo' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
@@ -167,7 +167,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 onClick={() => { onClose(); onGoLive?.(); }}
                 disabled={!allReady}
                 className="w-full py-4 rounded-2xl font-black uppercase text-base transition-all disabled:opacity-40"
-                style={{ background: allReady ? 'linear-gradient(135deg, #c8f600, #a3cc00)' : 'rgba(255,255,255,0.08)', color: allReady ? '#000' : 'rgba(255,255,255,0.3)', letterSpacing: 2, ...T }}>
+                style={{ background: allReady ? 'linear-gradient(135deg, #800020, #A0003A)' : 'rgba(255,255,255,0.08)', color: allReady ? G : 'rgba(255,255,255,0.3)', letterSpacing: 2, border: allReady ? '1px solid rgba(212,175,55,0.35)' : '1px solid transparent', ...T }}>
                 🚀 ENTER STAGE — GO LIVE
               </button>
 
