@@ -109,7 +109,7 @@ export function useLocalMedia({
     const resPreset = RESOLUTION_PRESETS[resolution] || RESOLUTION_PRESETS['720p'];
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { ...resPreset, deviceId: { exact: deviceId } },
+        video: { ...resPreset, deviceId: { ideal: deviceId } },
         audio: false,
       });
       const [newTrack] = newStream.getVideoTracks();
@@ -134,7 +134,7 @@ export function useLocalMedia({
     setActiveAudioId(deviceId);
     try {
       const newStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, deviceId: { exact: deviceId } },
+        audio: { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: deviceId } },
         video: false,
       });
       const [newTrack] = newStream.getAudioTracks();
@@ -211,6 +211,31 @@ export function useLocalMedia({
     }
   }, []);
 
+  // Capture a still frame from the live video stream as a data URL.
+  // Returns null if no video track is active.
+  const captureFrame = useCallback((quality = 0.9) => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track || !track.enabled) return null;
+    const { width = 1280, height = 720 } = track.getSettings();
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      // ImageCapture API — Chrome/Edge only; fall back to a VideoFrame via MediaStreamTrackProcessor unavailable here
+      if (typeof ImageCapture !== 'undefined') {
+        const ic = new ImageCapture(track);
+        return ic.grabFrame().then(bitmap => {
+          ctx.drawImage(bitmap, 0, 0, width, height);
+          return canvas.toDataURL('image/jpeg', quality);
+        }).catch(() => null);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   return {
     localStream,
     audioEnabled,
@@ -227,6 +252,7 @@ export function useLocalMedia({
     switchCamera,
     startScreenShare,
     stopScreenShare,
+    captureFrame,
     reacquire: acquire,
   };
 }

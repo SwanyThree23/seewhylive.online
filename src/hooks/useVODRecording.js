@@ -49,7 +49,12 @@ export function useVODRecording({ streamId, creatorId, title, stream } = {}) {
     const mimeType = getBestMimeType();
     mimeTypeRef.current = mimeType;
     try {
-      const mr = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+      const recOpts = mimeType ? {
+        mimeType,
+        videoBitsPerSecond: 2_500_000, // 2.5 Mbps — reasonable for 720p/1080p recordings
+        audioBitsPerSecond:   128_000, // 128 kbps stereo audio
+      } : {};
+      const mr = new MediaRecorder(stream, recOpts);
       mr.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) {
           const now = Date.now();
