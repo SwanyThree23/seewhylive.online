@@ -287,8 +287,8 @@ function CameraPreview({ onStreamReady }) {
       const resPresets = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
       const res = resPresets[opts.resolution || resolution] || resPresets['720p'];
       const s = await navigator.mediaDevices.getUserMedia({
-        video: { ...res, ...(opts.videoId || videoId ? { deviceId: { exact: opts.videoId || videoId } } : {}) },
-        audio: { echoCancellation: true, noiseSuppression: true, ...(opts.audioId || audioId ? { deviceId: { exact: opts.audioId || audioId } } : {}) },
+        video: { ...res, ...(opts.videoId || videoId ? { deviceId: { ideal: opts.videoId || videoId } } : {}) },
+        audio: { echoCancellation: true, noiseSuppression: true, ...(opts.audioId || audioId ? { deviceId: { ideal: opts.audioId || audioId } } : {}) },
       });
       setStream(s);
       setCamOn(true);

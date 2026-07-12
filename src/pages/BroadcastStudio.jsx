@@ -546,6 +546,16 @@ export default function BroadcastStudio() {
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
   const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
+  // Warn broadcaster once when connection drops to 1 bar or below
+  const lastNetBarsRef = useRef(null);
+  useEffect(() => {
+    if (netBars === null || netBars === undefined) return;
+    if (netBars <= 1 && (lastNetBarsRef.current === null || lastNetBarsRef.current > 1)) {
+      toast.warning('Poor network connection — stream quality may be affected');
+    }
+    lastNetBarsRef.current = netBars;
+  }, [netBars]);
+
   // Screen share
   const [screenStream, setScreenStream] = useState(null);
   const [screenEnabled, setScreenEnabled] = useState(false);
