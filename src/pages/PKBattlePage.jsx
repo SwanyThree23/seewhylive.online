@@ -12,6 +12,8 @@ import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -539,6 +541,8 @@ export default function PKBattlePage() {
   const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamPK, audioDeviceId: prefMicPK });
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
+  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
+  useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
 
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
@@ -776,25 +780,25 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={battleId} currentLayout="battle" viewerCount={battleRemoteStreams.size} />
+      <MilestoneAlerts userId={user?.id} roomId={battleId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {battleId && <BattleMode roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={'auto'} onChange={() => {}} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
-      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={battle?.status === 'active'} />}
+      {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={battle?.title || ''} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battleRemoteStreams.size} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id} roomId={battleId} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={battleRemoteStreams.size} peakViewers={0} />
       <BackgroundCustomizer />
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
     </div>

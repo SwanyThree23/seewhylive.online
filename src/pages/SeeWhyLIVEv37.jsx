@@ -7,6 +7,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isSafeUrl } from '@/lib/security';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -1266,6 +1268,7 @@ const TABS = [
 
 export default function SeeWhyLIVEv37() {
   const [activeTab, setActiveTab] = useState('stage');
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const panelMap = {
     stage:     <StagePanel />,
@@ -1333,10 +1336,10 @@ export default function SeeWhyLIVEv37() {
         </div>
         {panelMap[activeTab]}
       </div>
-      <SwanAIRecommendations roomId={null} currentUser={null} isHost={true} />
+      <SwanAIRecommendations roomId={null} currentUser={user} isHost={true} />
       <SwanyBotWidget />
-      <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
-      <StreamGoals hostId={null} roomId={null} isHost={true} />
+      <SwanyBotEnhanced userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
+      <StreamGoals hostId={user?.id || null} roomId={null} isHost={true} />
       <ViewerCount roomId={null} />
       <NotificationHub userId={null} roomId={null} />
       <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
