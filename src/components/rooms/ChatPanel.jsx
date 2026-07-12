@@ -80,6 +80,7 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
     onSuccess: () => {
       toast.success('Message deleted');
     },
+    onError: () => { toast.error('Failed to delete message. Please try again.'); },
   });
 
   const moderateUserMutation = useMutation({
@@ -98,6 +99,7 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
       queryClient.invalidateQueries({ queryKey: ['muted-users'] });
       toast.success(`User ${variables.action}ed`);
     },
+    onError: () => { toast.error('Failed to moderate user. Please try again.'); },
   });
 
   const sendMessageMutation = useMutation({

@@ -1051,6 +1051,7 @@ export default function MultiGuestPanel({
       toast.success(`${p.user_name} is now ${p.role === 'co-host' ? 'Guest' : 'Co-host'}`);
       qc.invalidateQueries(['participants', roomId]);
     },
+    onError: () => { toast.error('Failed to update guest role. Please try again.'); },
   });
 
   const muteGuest = (p) => {
@@ -1068,6 +1069,7 @@ export default function MultiGuestPanel({
       toast.info(`${p.user_name} removed from stage`);
       qc.invalidateQueries(['participants', roomId]);
     },
+    onError: () => { toast.error('Failed to remove guest. Please try again.'); },
   });
 
   const muteAll = () => {

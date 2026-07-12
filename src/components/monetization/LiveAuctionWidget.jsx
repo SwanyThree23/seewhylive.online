@@ -249,6 +249,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.LiveAuction.create(data),
     onSuccess: () => { qc.invalidateQueries(['live-auctions']); setShowCreate(false); toast.success('Auction started!'); },
+    onError: () => { toast.error('Failed to create auction. Please try again.'); },
   });
 
   const bidMutation = useMutation({
@@ -291,6 +292,7 @@ export default function LiveAuctionWidget({ creatorId, roomId, isCreator, curren
       });
     },
     onSuccess: () => qc.invalidateQueries(['live-auctions']),
+    onError: () => { toast.error('Failed to end auction. Please try again.'); },
   });
 
   const handleCreate = () => {

@@ -171,11 +171,13 @@ export default function GuestRTMPPanel({ participantId, userId }) {
       setLabel('');
       toast.success('Destination added & ready for encryption');
     },
+    onError: () => { toast.error('Failed to add destination. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => { qc.invalidateQueries(['guest-rtmp', userId]); toast.success('Destination removed'); },
+    onError: () => { toast.error('Failed to remove destination. Please try again.'); },
   });
 
   const addDestination = () => {

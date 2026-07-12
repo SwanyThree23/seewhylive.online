@@ -53,6 +53,7 @@ export default function DestinationsManager({ userId }) {
       toast.success('Destination added!');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
     },
+    onError: () => { toast.error('Failed to add destination. Please try again.'); },
   });
 
   const deleteDest = useMutation({
