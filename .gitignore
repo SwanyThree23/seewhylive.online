@@ -36,3 +36,11 @@ dist-ssr
 # Deployment tooling
 .netlify
 .vercel
+# Build artifacts
+frontend/dist/
+
+# Development snapshot / backup files
+*.backup.*
+*.bak_*
+*.corrupted.*
+App_*_final_*.jsx

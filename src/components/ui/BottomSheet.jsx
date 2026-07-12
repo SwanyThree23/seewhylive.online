@@ -28,13 +28,15 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
 
   // Android hardware back button dismisses the sheet instead of navigating away
   var pushedToHistory = useRef(false);
+  var onCloseRef = useRef(onClose);
+  useEffect(function() { onCloseRef.current = onClose; }, [onClose]);
   useEffect(function() {
     if (!isOpen) return;
     pushedToHistory.current = true;
     window.history.pushState({ swBottomSheet: true }, '');
     function onPop() {
       pushedToHistory.current = false;
-      onClose();
+      onCloseRef.current();
     }
     window.addEventListener('popstate', onPop);
     return function() {
@@ -44,7 +46,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
         window.history.back();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>

@@ -524,9 +524,6 @@ app.get('/api/config/public', function(req, res) {
   });
 });
 
-
-app.use('/api/tts', ttsRouter);
-
 app.get('/api/health', function(req, res) {
   var mem = process.memoryUsage();
   var dbOk = true;
@@ -1027,8 +1024,12 @@ var apiRoutes = null;
 try {
   apiRoutes = require('./routes');
   app.use('/api', apiRoutes);
+  logger.info('[routes] New API routes mounted at /api');
+} catch (routesErr) {
+  logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
+}
 
-// ── INLINE FANOUT ROUTES (before static) ─────────────────────
+// ── INLINE FANOUT ROUTES ──────────────────────────────────────
 var activeFanouts = {};
 app.get('/api/fanout-status', function(req, res) {
   res.json({ ok: true, active_streams: Object.keys(activeFanouts), count: Object.keys(activeFanouts).length });
@@ -1095,10 +1096,6 @@ app.post('/api/stream-sync', async function(req, res) {
 });
 
 app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
-  logger.info('[routes] New API routes mounted at /api');
-} catch (routesErr) {
-  logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
-}
 
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 

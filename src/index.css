@@ -143,14 +143,6 @@
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Prevent child scroll from propagating to the page background */
-  .overflow-y-auto,
-  .overflow-y-scroll,
-  [class*="overflow-auto"],
-  [class*="overflow-scroll"] {
-    overscroll-behavior: contain;
-  }
-
   /* Safe-area inset helpers (notch / home bar support) */
   .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
   .pb-safe  { padding-bottom: env(safe-area-inset-bottom, 0px); }

@@ -6,7 +6,7 @@
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-BRANCH="claude/seewhy-live-v33-build-v0L5Z"
+BRANCH="main"
 PROD_SERVER="/opt/seewhy/server"
 PROD_FRONTEND="/opt/seewhy/frontend"
 PM2_APP="seewhy-server"
