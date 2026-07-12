@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import CoStreamHub from '../components/live/CoStreamHub';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
@@ -194,6 +195,7 @@ function downloadBlob(content, filename, type) {
 
 // ── STAGE PANEL ────────────────────────────────────────────────────────────
 function StagePanel() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [live, setLive] = useState(false);
   const [viewers, setViewers] = useState(0);
   const [health, setHealth] = useState(null);
@@ -286,7 +288,7 @@ function StagePanel() {
           roomId={roomName || 'studio'}
           isHost={true}
           isCoHost={false}
-          currentUser={null}
+          currentUser={user || null}
           compact={false}
         />
       </div>
@@ -2056,6 +2058,7 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv41() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -2139,10 +2142,10 @@ export default function SeeWhyLIVEv41() {
       <StreamHealthMonitor isStreaming={false} />
       <SwanAIRecommendations roomId={null} currentLayout='v41' viewerCount={0} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <MilestoneAlerts userId={null} roomId={null} />
+      <MilestoneAlerts userId={user?.id || null} roomId={null} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <BackgroundCustomizer />
     </div>
   );
