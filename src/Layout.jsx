@@ -156,6 +156,8 @@ export default function Layout({ children, currentPageName }) {
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
   var scrollPositions = useRef({});
+  // Tracks whether the drawer pushed a synthetic history entry for back-button dismissal
+  var drawerHistoryPushed = useRef(false);
   // Virtual tab history stacks — remember last path visited per tab
   var tabMemory = useRef({
     Home: BOTTOM_NAV[0].href,
@@ -205,6 +207,25 @@ export default function Layout({ children, currentPageName }) {
     window.addEventListener('keydown', handler);
     return function() { window.removeEventListener('keydown', handler); };
   }, []);
+
+  // Android hardware back button dismisses the drawer instead of navigating away
+  useEffect(function() {
+    if (!showMobileMenu) return;
+    drawerHistoryPushed.current = true;
+    window.history.pushState({ swDrawer: true }, '');
+    function onPop() {
+      drawerHistoryPushed.current = false;
+      setShowMobileMenu(false);
+    }
+    window.addEventListener('popstate', onPop);
+    return function() {
+      window.removeEventListener('popstate', onPop);
+      if (drawerHistoryPushed.current) {
+        drawerHistoryPushed.current = false;
+        window.history.back();
+      }
+    };
+  }, [showMobileMenu]);
 
   useEffect(function() {
     var path = location.pathname;
@@ -393,7 +414,7 @@ export default function Layout({ children, currentPageName }) {
               initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
               className="fixed top-0 left-0 bottom-0 z-[91] flex flex-col overflow-y-auto w-full sm:w-[80vw] sm:max-w-[320px]"
-              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
+              style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)', overscrollBehavior: 'contain' }}>
 
               {/* Drawer header */}
               <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -408,7 +429,7 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                 </div>
                 <button onClick={function() { setShowMobileMenu(false); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl"
                   style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
                   <X className="w-4 h-4" />
                 </button>
@@ -457,7 +478,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main — with slide-in route transitions */}
-      <main className={isFullscreen ? '' : 'pb-[96px] md:pb-10'}>
+      <main className={isFullscreen ? '' : 'pb-[96px] md:pb-10'} style={{ overscrollBehaviorY: 'contain' }}>
         <ErrorBoundary>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -484,8 +505,8 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
-          style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40"
+          style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
@@ -508,7 +529,7 @@ export default function Layout({ children, currentPageName }) {
 
               if (item.isCenter) {
                 return (
-                  <Link key={item.name} to={item.href} className="flex flex-col items-center" style={{ marginTop: -8 }} onClick={handleTabPress}>
+                  <Link key={item.name} to={item.href} className="flex flex-col items-center" style={{ marginTop: -8, userSelect: 'none', WebkitUserSelect: 'none' }} onClick={handleTabPress}>
                     <motion.div
                       whileTap={{ scale: 0.92 }}
                       className="flex items-center justify-center shadow-lg"
