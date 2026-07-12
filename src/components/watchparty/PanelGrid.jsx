@@ -59,8 +59,8 @@ function useAudioLevel(stream) {
 
 function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
   var [menuOpen, setMenuOpen] = useState(false);
-  var localSpeaking = useAudioLevel(isLocal ? stream : null);
-  var speaking = isLocal ? localSpeaking : (member.is_audio_enabled !== false);
+  var audioSpeaking = useAudioLevel(stream);
+  var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
   var videoRef = useRef(null);
@@ -275,8 +275,10 @@ function EmptyTile({ onClick, canInvite }) {
   );
 }
 
-function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
+function CompactTile({ member, hostId, stream, isLocal, isSpeaking: isSpeakingFallback }) {
   var videoRef = useRef(null);
+  var audioSpeaking = useAudioLevel(stream);
+  var isSpeaking = stream ? audioSpeaking : isSpeakingFallback;
   useEffect(() => {
     if (videoRef.current && stream) videoRef.current.srcObject = stream;
   }, [stream]);
