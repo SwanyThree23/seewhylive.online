@@ -558,7 +558,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
     try {
       var stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: 3840, height: 2160, frameRate: 30,
+          width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 },
           ...(prefCam ? { deviceId: { ideal: prefCam } } : {}),
         },
         audio: prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true },
