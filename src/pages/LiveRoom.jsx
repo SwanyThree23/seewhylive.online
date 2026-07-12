@@ -1355,7 +1355,7 @@ export default function LiveRoom() {
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
-      <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
+      <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       <TopTippers roomId={null} />
 

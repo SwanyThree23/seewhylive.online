@@ -353,7 +353,7 @@ export default function StreamAnalytics() {
           </ChartCard>
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={avgViewers} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -362,12 +362,12 @@ export default function StreamAnalytics() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={avgViewers} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={avgViewers} peakViewers={peakViewers} />
       <BackgroundCustomizer />
     </div>
   );

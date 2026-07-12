@@ -473,14 +473,14 @@ export default function HybridStreamRoom() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={0} />
+      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
-      <GuestCoStreamDashboard roomId={null} currentUser={null} isHost={true} />
+      <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
     </div>
   );
 }

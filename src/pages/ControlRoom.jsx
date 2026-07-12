@@ -695,7 +695,7 @@ export default function ControlRoomPage() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={0} />
+      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}

@@ -1452,7 +1452,7 @@ export default function WatchPartyPage() {
       {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
-      <WatchPartyCoStreamPanel roomId={null} currentUser={null} isHost={true} />
+      <WatchPartyCoStreamPanel roomId={partyId} currentUser={user || null} isHost={true} />
       <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={''} onPlayVideo={() => {}} />
     </div>
   );

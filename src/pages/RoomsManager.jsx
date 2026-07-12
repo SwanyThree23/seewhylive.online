@@ -405,7 +405,7 @@ export default function RoomsManager() {
       <GlobalSearch />
       <QuickActionPanel />
       <BroadcastAnalyticsDashboard />
-      <SwanAIRecommendations roomId={null} currentLayout='rooms' viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout='rooms' viewerCount={rooms.length} />
     </div>
   );
 }

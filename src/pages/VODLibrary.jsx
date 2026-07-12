@@ -176,7 +176,7 @@ export default function VODLibraryPage() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <BackgroundCustomizer />
     </div>
   );

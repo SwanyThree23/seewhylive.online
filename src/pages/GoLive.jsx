@@ -1035,7 +1035,7 @@ export default function GoLive() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={0} />
+      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} />}
