@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
@@ -159,7 +160,7 @@ const BG      = '#080B18';
 const BG2     = '#0d0618';
 const GREEN   = '#6DBF7E';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#4A8A7A','#EF6C00'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
@@ -252,8 +253,18 @@ export default function AudioRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId    = urlParams.get('id');
 
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false, audioDeviceId: prefMic });
+  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
   const { data: party } = useQuery({
@@ -408,6 +419,20 @@ export default function AudioRoom() {
         <div className="flex items-center gap-1" style={{ color: '#555' }}>
           <Users className="w-4 h-4" />
           <span className="text-sm font-bold">{memberCount}</span>
+        </div>
+        {/* Connection quality */}
+        <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
+          style={{ background: 'rgba(0,0,0,0.06)' }}
+          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+          {[0,1,2,3].map(i => (
+            <div key={i} className="w-1 rounded-sm"
+              style={{
+                height: 4 + i * 3,
+                background: i < netBars
+                  ? (netBars >= 3 ? '#4A9B5E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                  : 'rgba(0,0,0,0.15)',
+              }} />
+          ))}
         </div>
         <button onClick={sendLove} className="flex items-center gap-1">
           <Heart className="w-4 h-4 text-[#C0392B]" fill="#C0392B" />

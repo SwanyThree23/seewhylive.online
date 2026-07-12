@@ -9,6 +9,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import DirectPayments from '../components/live/DirectPayments';
@@ -170,7 +171,7 @@ const BG      = '#080B18';
 const BG2     = '#0d0618';
 const BG3     = '#110822';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#4A8A7A','#EF6C00'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
@@ -385,9 +386,26 @@ export default function LiveRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId    = urlParams.get('id');
 
+  // Read device preferences saved by RoomEntryGate PermissionsStep
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({
+    audio: true,
+    video: false,
+    audioDeviceId: prefMic,
+  });
+  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+
+  // Derive the first active RTCPeerConnection for connection quality monitoring
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   // Fetch real room members if roomId provided
   const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -562,6 +580,20 @@ export default function LiveRoom() {
           <MessageCircle className="w-3 h-3 text-white/40" />
         </div>
         <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
+        {/* Connection quality badge */}
+        <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-lg shrink-0"
+          style={{ background: 'rgba(0,0,0,0.35)' }}
+          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+          {[0,1,2,3].map(i => (
+            <div key={i} className="w-1 rounded-sm"
+              style={{
+                height: 4 + i * 3,
+                background: i < netBars
+                  ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                  : 'rgba(255,255,255,0.15)',
+              }} />
+          ))}
+        </div>
         <button className="w-7 h-7 flex items-center justify-center">
           <MoreHorizontal className="w-4 h-4 text-white/40" />
         </button>
