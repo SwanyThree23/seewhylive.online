@@ -327,7 +327,7 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="creator" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="creator" viewerCount={activeSubs.length} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -341,12 +341,12 @@ export default function CreatorDashboardPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={activeSubs.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={activeSubs.length} peakViewers={activeSubs.length} />
       <BackgroundCustomizer />
     </div>
   );

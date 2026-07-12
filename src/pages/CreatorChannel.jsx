@@ -308,7 +308,7 @@ export default function CreatorChannel() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={currentUser || null} />
       <BackgroundCustomizer />
     </div>
   );

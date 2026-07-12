@@ -187,6 +187,7 @@ export default function CreatorPublicProfile() {
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
+  var user = currentUser;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -549,7 +550,7 @@ export default function CreatorPublicProfile() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={creatorId || null} roomId={null} currentUser={currentUser || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

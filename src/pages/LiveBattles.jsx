@@ -131,6 +131,10 @@ export default function LiveBattles() {
     refetchInterval: 10000,
   });
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const activeBattle = battles.find(b => b.status === 'active') || null;
+  const roomId = activeBattle?.id || null;
+
   return (
     <div className="min-h-screen text-white pb-10"
       style={{ background: 'linear-gradient(135deg, #0d0618 0%, #15021f 50%, #0d0618 100%)' }}>
@@ -217,7 +221,7 @@ export default function LiveBattles() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="battles" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="battles" viewerCount={battles.length} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -230,12 +234,12 @@ export default function LiveBattles() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={battles.length} peakViewers={battles.length} />
       <BackgroundCustomizer />
     </div>
   );
