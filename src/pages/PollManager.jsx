@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Copy, Save } from 'lucide-react';
 
@@ -35,11 +36,13 @@ export default function PollManager() {
       setFormData({ name: '', question: '', options: ['', ''], timeout_seconds: 60, allow_re_vote: false, category: 'custom' });
       setShowForm(false);
     },
+    onError: () => { toast.error('Failed to create poll template. Please try again.'); },
   });
 
   const deleteTemplateMutation = useMutation({
     mutationFn: (id) => base44.entities.PollTemplate.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
+    onError: () => { toast.error('Failed to delete poll template. Please try again.'); },
   });
 
   const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));

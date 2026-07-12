@@ -80,14 +80,17 @@ export default function StreamScheduler() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.ScheduledStream.create(data),
     onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setForm(blankForm); toast.success('Stream scheduled!'); },
+    onError: () => { toast.error('Failed to schedule stream. Please try again.'); },
   });
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
     onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onError: () => { toast.error('Failed to update stream. Please try again.'); },
   });
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
     onSuccess: () => { qc.invalidateQueries(['scheduled-streams']); toast.success('Stream cancelled'); },
+    onError: () => { toast.error('Failed to cancel stream. Please try again.'); },
   });
 
   const year = calendarDate.getFullYear();

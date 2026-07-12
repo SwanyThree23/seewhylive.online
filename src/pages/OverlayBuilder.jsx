@@ -166,12 +166,14 @@ export default function OverlayBuilderPage() {
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
     },
+    onError: () => { toast.error('Failed to save overlay. Please try again.'); },
   });
   const toggleActiveMut = useMutation({
     mutationFn: async (id) => {
       await Promise.all(layouts.map(l => base44.entities.OverlayLayout.update(l.id, { is_active: l.id === id })));
     },
     onSuccess: () => qc.invalidateQueries(['overlay-layouts']),
+    onError: () => { toast.error('Failed to activate overlay. Please try again.'); },
   });
 
   const addElement = (type) => {

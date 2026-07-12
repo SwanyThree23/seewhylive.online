@@ -276,11 +276,13 @@ export default function MerchStorePage() {
   const toggleItemMutation = useMutation({
     mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
     onSuccess: () => queryClient.invalidateQueries(['merch-all-items', targetCreatorId]),
+    onError: () => { toast.error('Failed to update item. Please try again.'); },
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
     onSuccess: () => queryClient.invalidateQueries(['merch-orders', targetCreatorId]),
+    onError: () => { toast.error('Failed to update order status. Please try again.'); },
   });
 
   const totalRevenue = orders.filter(o => o.status !== 'cancelled' && o.status !== 'refunded')

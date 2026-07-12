@@ -162,6 +162,7 @@ export default function PayoutsPage() {
       toast.success('Stripe account disconnected');
       qc.invalidateQueries(['payout-record', user?.id]);
     },
+    onError: () => { toast.error('Failed to disconnect Stripe. Please try again.'); },
   });
 
   const payoutMutation = useMutation({
@@ -180,6 +181,7 @@ export default function PayoutsPage() {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
       qc.invalidateQueries(['payout-record', user?.id]);
     },
+    onError: () => { toast.error('Failed to process payout. Please try again.'); },
   });
 
   /* ─── loading ──────────────────────────────────────────────────────── */

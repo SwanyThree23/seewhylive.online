@@ -76,14 +76,17 @@ export default function NewsletterHubPage() {
   const saveMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, subscriber_count: 0, ...data }),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Saved! ✓'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('drafts'); },
+    onError: () => { showToast('Failed to save newsletter. Please try again.'); },
   });
   const sendMut = useMutation({
     mutationFn: (data) => base44.entities.Newsletter.create({ community_id: user.id, ...data }),
     onSuccess: () => { qc.invalidateQueries({ queryKey:['newsletters'] }); showToast('Sent! 🚀'); setForm({title:'',content:'',preview_text:'',scheduled_for:''}); setTab('sent'); },
+    onError: () => { showToast('Failed to send newsletter. Please try again.'); },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.Newsletter.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey:['newsletters'] }),
+    onError: () => { showToast('Failed to delete newsletter. Please try again.'); },
   });
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };

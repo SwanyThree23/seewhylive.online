@@ -63,6 +63,7 @@ export default function NotificationsPage() {
   const markReadMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.update(id, { is_read: true }),
     onSuccess: () => queryClient.invalidateQueries(['notifications']),
+    onError: () => {},
   });
 
   const markAllReadMutation = useMutation({
@@ -71,11 +72,13 @@ export default function NotificationsPage() {
       await Promise.all(unread.map(n => base44.entities.Notification.update(n.id, { is_read: true })));
     },
     onSuccess: () => { toast.success('All marked as read'); queryClient.invalidateQueries(['notifications']); },
+    onError: () => { toast.error('Failed to mark all as read. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Notification.delete(id),
     onSuccess: () => queryClient.invalidateQueries(['notifications']),
+    onError: () => { toast.error('Failed to delete notification. Please try again.'); },
   });
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

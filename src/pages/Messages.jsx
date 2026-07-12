@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
@@ -100,11 +101,13 @@ export default function Messages() {
       content, is_whisper: false,
     }),
     onSuccess: () => { qc.invalidateQueries(["all-dms", user?.id]); setInput(""); },
+    onError: () => { toast.error('Failed to send message. Please try again.'); },
   });
 
   var markReadMutation = useMutation({
     mutationFn: (msgId) => base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }),
     onSuccess: () => qc.invalidateQueries(["all-dms", user?.id]),
+    onError: () => {},
   });
 
   var composeMutation = useMutation({
@@ -119,6 +122,7 @@ export default function Messages() {
       setComposeName("");
       setComposeMsg("");
     },
+    onError: () => { toast.error('Failed to send message. Please try again.'); },
   });
 
   var tipMutation = useMutation({
@@ -136,6 +140,7 @@ export default function Messages() {
       setTipToast(true);
       setTimeout(() => setTipToast(false), 2500);
     },
+    onError: () => { toast.error('Failed to send tip. Please try again.'); },
   });
 
   function handleReaction(msgId, emoji) {

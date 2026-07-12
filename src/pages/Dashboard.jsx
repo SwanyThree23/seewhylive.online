@@ -288,14 +288,17 @@ function ContentTab({ user }) {
   const createMut = useMutation({
     mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: user?.id, views: 0 }),
     onSuccess: () => { qc.invalidateQueries(['db-vods']); setShowCreate(false); toast.success('VOD created!'); },
+    onError: () => { toast.error('Failed to create VOD. Please try again.'); },
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
     onSuccess: () => { qc.invalidateQueries(['db-vods']); setEditVod(null); toast.success('Updated!'); },
+    onError: () => { toast.error('Failed to update VOD. Please try again.'); },
   });
   const deleteMut = useMutation({
     mutationFn: (id) => base44.entities.VODVideo.delete(id),
     onSuccess: () => qc.invalidateQueries(['db-vods']),
+    onError: () => { toast.error('Failed to delete VOD. Please try again.'); },
   });
 
   let filtered = vods.filter(v => {
@@ -498,11 +501,13 @@ function CommunityTab({ user }) {
       total_votes: 0,
     }),
     onSuccess: () => { qc.invalidateQueries(['db-polls']); setShowPollForm(false); toast.success('Poll created!'); },
+    onError: () => { toast.error('Failed to create poll. Please try again.'); },
   });
 
   const endPollMut = useMutation({
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => qc.invalidateQueries(['db-polls']),
+    onError: () => { toast.error('Failed to end poll. Please try again.'); },
   });
 
   return (
@@ -662,6 +667,7 @@ function MonetizationTab({ user }) {
   const toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
     onSuccess: () => qc.invalidateQueries(['db-tiers']),
+    onError: () => { toast.error('Failed to update tier. Please try again.'); },
   });
 
   const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_amount || 0), 0);
@@ -846,20 +852,24 @@ function SettingsTab({ user }) {
       ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
       : base44.entities.CreatorProfile.create({ user_id: user?.id, ...profile, stream_schedule: schedule }),
     onSuccess: () => { qc.invalidateQueries(['db-cprofile']); toast.success('Profile saved!'); },
+    onError: () => { toast.error('Failed to save profile. Please try again.'); },
   });
   const savePrefs = useMutation({
     mutationFn: () => userPref?.id
       ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
       : base44.entities.UserPreference.create({ user_id: user?.id, notification_preferences: prefs }),
     onSuccess: () => toast.success('Preferences saved!'),
+    onError: () => { toast.error('Failed to save preferences. Please try again.'); },
   });
   const toggleDest = useMutation({
     mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
     onSuccess: () => qc.invalidateQueries(['db-rtmp']),
+    onError: () => { toast.error('Failed to update destination. Please try again.'); },
   });
   const deleteDest = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => qc.invalidateQueries(['db-rtmp']),
+    onError: () => { toast.error('Failed to delete destination. Please try again.'); },
   });
 
   const SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];

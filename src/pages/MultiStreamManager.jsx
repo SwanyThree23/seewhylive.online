@@ -70,16 +70,19 @@ export default function MultiStreamManager() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.RTMPDestination.create(data),
     onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); setShowAddForm(false); setNewLabel(''); toast.success('Destination added'); },
+    onError: () => { toast.error('Failed to add destination. Please try again.'); },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
     onSuccess: () => qc.invalidateQueries(['rtmp-destinations']),
+    onError: () => { toast.error('Failed to update destination. Please try again.'); },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
     onSuccess: () => { qc.invalidateQueries(['rtmp-destinations']); toast.success('Destination removed'); },
+    onError: () => { toast.error('Failed to remove destination. Please try again.'); },
   });
 
   const testConnection = async (dest) => {
