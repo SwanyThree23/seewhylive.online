@@ -36,7 +36,7 @@ export default function PullToRefresh({ onRefresh, children }) {
 
   return (
     <div
-      style={{ position: 'relative', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', transform: pulling && pullY > 0 ? 'translateY(' + Math.min(pullY * 0.35, 36) + 'px)' : undefined, transition: pulling ? 'none' : 'transform .25s ease' }}
+      style={{ position: 'relative', flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', transform: pulling && pullY > 0 ? 'translateY(' + Math.min(pullY * 0.35, 36) + 'px)' : undefined, transition: pulling ? 'none' : 'transform .25s ease' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
