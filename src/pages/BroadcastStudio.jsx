@@ -747,7 +747,7 @@ export default function BroadcastStudio() {
     }
   }
 
-  // Keyboard shortcuts: M = mic, V = camera, S = screen share (ignore when typing in inputs)
+  // Keyboard shortcuts: M = mic, V = camera, S = screen share, C = manual clip marker
   useEffect(() => {
     if (!canStream) return;
     const onKey = (e) => {
@@ -756,14 +756,15 @@ export default function BroadcastStudio() {
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
       if (e.key === 'v' || e.key === 'V') { e.preventDefault(); toggleVideo(); }
       if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleScreenShare(); }
+      if ((e.key === 'c' || e.key === 'C') && isHost) { e.preventDefault(); triggerHighlightClip(1); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canStream, audioEnabled, videoEnabled, screenEnabled]);
+  }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost]);
 
   // AI highlight detector — auto-clips when hype + sentiment spike
-  useHighlightDetector({
+  const { triggerHighlightClip } = useHighlightDetector({
     partyId,
     roomId: partyId,
     isHost,
@@ -2233,6 +2234,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             color:vodRecording?'#C0392B':'rgba(255,255,255,0.4)',fontSize:14}}>
           {vodRecording?'⏹':'⏺'}</button>)}
         {vodRecording&&(<span style={{fontSize:11,fontWeight:900,color:'#C0392B',fontFamily:'Barlow Condensed,sans-serif'}}>{formatDuration(vodDuration)}</span>)}
+        {isHost&&(<button onClick={()=>triggerHighlightClip(1)}
+          title="Save clip marker now (C)"
+          style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
+            background:'rgba(212,175,55,0.1)',border:'1px solid rgba(212,175,55,0.3)',color:GOLD,fontSize:14}}>
+          🎬</button>)}
         {!vodRecording&&vodBlobUrl&&(<button onClick={()=>downloadRecording(party?.title?`${party.title.slice(0,40)}.webm`:'recording.webm')}
           title="Download recording"
           style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',

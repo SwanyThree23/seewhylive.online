@@ -27,7 +27,7 @@ const VALID_SIGNAL_TYPES = new Set(['peer_join', 'offer', 'answer', 'ice', 'peer
  *  - Auto-reconnects dropped peers (ICE failure / disconnect)
  */
 export function useWebRTCPeers(roomId, localStream) {
-  const peersRef = useRef(new Map()); // peerId → { pc, stream, iceTimer }
+  const peersRef = useRef(new Map()); // peerId → { pc, stream, iceTimer, reconnectTimer }
   const localStreamRef = useRef(localStream);
   const [remoteStreams, setRemoteStreams] = useState(new Map());
   const [peerStates, setPeerStates] = useState(new Map());
@@ -149,14 +149,26 @@ export function useWebRTCPeers(roomId, localStream) {
       }
     }, ICE_TIMEOUT_MS);
 
-    // Connection state changes
+    // Connection state changes — 'disconnected' can self-heal; give it 8s before removing
     pc.onconnectionstatechange = () => {
       const state = pc.connectionState;
       setPeerStates(prev => new Map(prev).set(peerId, state));
+      const entry = peersRef.current.get(peerId);
       if (state === 'connected') {
         clearTimeout(iceTimer);
-      } else if (state === 'failed' || state === 'disconnected') {
-        removePeer(peerId);
+        if (entry) { clearTimeout(entry.reconnectTimer); entry.reconnectTimer = null; }
+      } else if (state === 'disconnected') {
+        if (entry && !entry.reconnectTimer) {
+          entry.reconnectTimer = setTimeout(() => {
+            if (pc.connectionState !== 'connected') removePeer(peerId);
+          }, 8000);
+        }
+      } else if (state === 'failed') {
+        // Attempt ICE restart; clean up after 5s if still not recovered
+        try { pc.restartIce(); } catch {}
+        setTimeout(() => {
+          if (pc.connectionState !== 'connected') removePeer(peerId);
+        }, 5000);
       }
     };
 
@@ -214,6 +226,7 @@ export function useWebRTCPeers(roomId, localStream) {
     const entry = peersRef.current.get(peerId);
     if (entry) {
       clearTimeout(entry.iceTimer);
+      clearTimeout(entry.reconnectTimer);
       entry.pc.close();
       peersRef.current.delete(peerId);
     }
@@ -232,7 +245,7 @@ export function useWebRTCPeers(roomId, localStream) {
 
   const leaveRoom = useCallback(() => {
     sendSignal(null, 'peer_left', {});
-    peersRef.current.forEach(({ pc, iceTimer }) => { clearTimeout(iceTimer); pc.close(); });
+    peersRef.current.forEach(({ pc, iceTimer, reconnectTimer }) => { clearTimeout(iceTimer); clearTimeout(reconnectTimer); pc.close(); });
     peersRef.current.clear();
     setRemoteStreams(new Map());
     setPeerStates(new Map());
@@ -240,7 +253,7 @@ export function useWebRTCPeers(roomId, localStream) {
 
   useEffect(() => {
     return () => {
-      peersRef.current.forEach(({ pc, iceTimer }) => { clearTimeout(iceTimer); pc.close(); });
+      peersRef.current.forEach(({ pc, iceTimer, reconnectTimer }) => { clearTimeout(iceTimer); clearTimeout(reconnectTimer); pc.close(); });
       peersRef.current.clear();
     };
   }, []);
