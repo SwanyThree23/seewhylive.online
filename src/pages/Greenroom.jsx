@@ -323,12 +323,24 @@ export default function GreenroomPage() {
   const [newRoomCategory, setNewRoomCategory] = useState('other');
   const [isSharing, setIsSharing] = useState(false);
 
+  const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
     queryKey: ['greenroom-target', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId && destType !== 'new_room',
   });
+  const { data: participants = [] } = useQuery({
+    queryKey: ['greenroomParticipants', roomId],
+    queryFn: () => base44.entities.RoomParticipant.filter({ room_id: roomId }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -732,7 +744,7 @@ export default function GreenroomPage() {
           </div>
         </div>
       </div>
-      <SwanAIRecommendations roomId={roomId} currentLayout="greenroom" viewerCount={0} />
+      <SwanAIRecommendations roomId={roomId} currentLayout="greenroom" viewerCount={participants.length} />
       <MilestoneAlerts userId={user?.id} roomId={roomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -759,7 +771,7 @@ export default function GreenroomPage() {
       {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={room?.host_id || user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
       {isHost && <StreamingPresets onApply={() => {}} />}
-      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Greenroom'} viewerCount={0} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Greenroom'} viewerCount={participants.length} />}
       <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
       {isHost && <OBSBridge />}
@@ -783,9 +795,9 @@ export default function GreenroomPage() {
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} />}
-      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
-      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
       {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
@@ -793,31 +805,31 @@ export default function GreenroomPage() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={0} currentUser={user} />}
-      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
+      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
+      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={true} />}
       <HostAlertCenter />
-      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {isHost && <LocalVideoTile stream={null} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} userName={user?.full_name || ''} isHost={isHost} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!deviceState.micOn} isVideoOff={!deviceState.cameraOn} onMicToggle={() => {}} onVideoToggle={() => {}} />}
-      {isHost && <AudioPanel micMuted={!deviceState.micOn} onMicToggle={() => {}} participants={[]} />}
+      {isHost && <AudioPanel micMuted={!deviceState.micOn} onMicToggle={() => {}} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
       {isHost && <StripeConnectButton creatorId={room?.host_id || user?.id} />}
       {!isHost && user?.id && <StripeSubscribeButton creatorId={room?.host_id || user?.id} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {room && <WatchPartyAnalytics party={room} members={[]} pollCount={0} reactionCount={0} />}
+      {room && <WatchPartyAnalytics party={room} members={participants} pollCount={0} reactionCount={0} />}
       {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
       {roomId && <PaymentMethodSelector creatorId={room?.host_id || user?.id} roomId={roomId} onPaymentComplete={() => {}} />}
       {isHost && <CreatorTierManager creatorId={room?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
-      {roomId && <GuestGrid participants={[]} isHost={isHost} onInvite={() => {}} hostId={user?.id} />}
+      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => {}} hostId={user?.id} />}
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!deviceState.micOn} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
@@ -838,7 +850,7 @@ export default function GreenroomPage() {
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
-      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={0} hostName={user?.full_name || ''} room={room} />}
+      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
       {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
@@ -866,9 +878,9 @@ export default function GreenroomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
-      <ViewerCount count={0} peakViewers={0} />
-      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={''} viewerCount={0} isLive={false} userTier="free" />
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={participants.length} />
+      <ViewerCount count={participants.length} peakViewers={participants.length} />
+      <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
       {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}
     </div>
   );

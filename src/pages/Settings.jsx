@@ -319,11 +319,11 @@ export default function SettingsPage() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

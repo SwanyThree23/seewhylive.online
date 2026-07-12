@@ -372,7 +372,7 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={totalViews} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -381,12 +381,12 @@ export default function AnalyticsPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={subscriptions.length} currentViewers={totalViews} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={totalViews} peakViewers={totalViews} />
       <BackgroundCustomizer />
       <TopTippers roomId={null} />
     </div>
