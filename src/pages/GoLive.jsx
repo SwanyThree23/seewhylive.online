@@ -479,6 +479,8 @@ export default function GoLive() {
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
+  const [localStream,  setLocalStream]  = useState(null);
+  const handleStreamReady = useCallback((s) => setLocalStream(s), []);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -654,7 +656,7 @@ export default function GoLive() {
             exit={{ opacity: 0, x: 30 }}
             style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 120px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
-            <CameraPreview />
+            <CameraPreview onStreamReady={handleStreamReady} />
 
             <div>
               <div style={{ ...SL, justifyContent: 'space-between' }}>
@@ -878,7 +880,7 @@ export default function GoLive() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={true} />}
       {user && <ZEGOConfigPanel user={user} />}
-      {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} />}
+      {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} stream={localStream} speaker={user?.full_name} />}
       {partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
       <BackgroundCustomizer />
       {partyId && <StreamerGoalsWidget creatorId={user?.id} roomId={partyId} isCreator={true} embedded={true} />}
@@ -944,7 +946,7 @@ export default function GoLive() {
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />}
       {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}

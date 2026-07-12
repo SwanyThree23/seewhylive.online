@@ -10,6 +10,7 @@ import {
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
@@ -465,6 +466,7 @@ export default function GreenroomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      <NetworkQualityBanner quality={['offline','poor','fair','good','excellent'][deviceState.networkQuality] || 'good'} />
       {/* ── FANBASE-STYLE HEADER ── */}
       <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 px-3 h-12">
