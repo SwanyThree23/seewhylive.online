@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,9 +11,8 @@ const OFFENSIVE_WORDS = [
 ];
 
 const SPAM_PATTERNS = [
-  /(.)\1{4,}/g, // repeated characters
-  /(?:https?:\/\/[^\s]+)/g, // urls
-  /(?:visit|click|buy|now|free)[^\s]*/gi, // spam keywords
+  /(.)\1{5,}/g,                          // 5+ repeated characters (aaaaaaa)
+  /(?:visit|click|buy|now|free\s+\$)[^\s]*/gi, // spam keywords with context
 ];
 
 const EMOTES = {
@@ -28,6 +27,13 @@ const EMOTES = {
   'FIRE': '🔥',
   'EZ': '💪'
 };
+
+// Stable per-user color derived from userId — same user always same hue
+function userColor(uid = '') {
+  let h = 0;
+  for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) & 0xffff;
+  return `hsl(${h % 360}, 70%, 60%)`;
+}
 
 const BADGE_TYPES = {
   admin: { color: '#D4854A', label: 'Admin', icon: '👑' },
@@ -135,6 +141,8 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   const [loading, setLoading] = useState(false);
   const [modAlerts, setModAlerts] = useState([]);
   const messagesEndRef = useRef(null);
+  const scrollBoxRef = useRef(null);
+  const [scrolledUp, setScrolledUp] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch existing messages
@@ -162,10 +170,12 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
     return unsubscribe;
   }, [roomId]);
 
-  // Auto-scroll to latest
+  // Auto-scroll to latest — but not if user has scrolled up to read history
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!scrolledUp) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, scrolledUp]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content) => {
@@ -185,7 +195,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        user_color: userColor(userId),
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },
@@ -238,7 +248,16 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-1 px-2 py-2 min-h-0">
+      <div
+        ref={scrollBoxRef}
+        className="flex-1 overflow-y-auto space-y-1 px-2 py-2 min-h-0 relative"
+        onScroll={() => {
+          const el = scrollBoxRef.current;
+          if (!el) return;
+          const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+          setScrolledUp(!atBottom);
+        }}
+      >
         <AnimatePresence>
           {messages.map((msg, i) => (
             <ChatMessage
@@ -250,6 +269,20 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+
+      {/* "Scroll to bottom" pill — shown when user has scrolled up */}
+      {scrolledUp && (
+        <button
+          onClick={() => {
+            setScrolledUp(false);
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          className="mx-auto mb-1 flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all"
+          style={{ background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)', color: '#d4af37' }}
+        >
+          ↓ Latest
+        </button>
+      )}
 
       {/* Input */}
       <div className="px-2 py-2 border-t border-white/10 space-y-1.5">
