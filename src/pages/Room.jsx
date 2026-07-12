@@ -31,6 +31,10 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
@@ -187,6 +191,46 @@ export default function RoomPage() {
   const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+
+  // Speaking detection + network quality
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+
+  // Push-to-talk (Space bar) — unmutes mic while held, remutes on release
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+  useEffect(() => {
+    const onDown = (e) => {
+      if (e.code !== 'Space' || e.repeat) return;
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (!pttActive && !audioEnabled) {
+        pttWasEnabledRef.current = false;
+        toggleAudio();
+        setPttActive(true);
+      }
+    };
+    const onUp = (e) => {
+      if (e.code !== 'Space' || !pttActive) return;
+      toggleAudio();
+      setPttActive(false);
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+  }, [pttActive, audioEnabled, toggleAudio]);
+
+  // M = toggle mic, V = toggle camera (when not in a text input)
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') toggleAudio();
+      if (e.key === 'v' || e.key === 'V') toggleVideo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [toggleAudio, toggleVideo]);
 
   // WebRTC peer mesh — connects to all other participants via STUN/TURN
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
@@ -427,6 +471,13 @@ export default function RoomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'Space', label: 'Push-to-talk (hold)' },
+        { key: 'M', label: 'Toggle microphone' },
+        { key: 'V', label: 'Toggle camera' },
+        { key: '?', label: 'Show shortcuts' },
+      ]} />
       {isHost && roomId && <StreamerGoalsWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
       {isHost && roomId && <PayPerViewManager roomId={roomId} />}
       {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
@@ -745,7 +796,7 @@ export default function RoomPage() {
       {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={room?.host_id || user?.id} />}
-      {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
+      {roomId && <LiveTranscription isLive={true} roomId={roomId} stream={localStream} speaker={user?.full_name} />}
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
@@ -794,7 +845,7 @@ export default function RoomPage() {
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />}
       {isHost && <AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}

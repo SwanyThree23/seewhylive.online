@@ -1318,7 +1318,7 @@ export default function WatchPartyPage() {
       {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={party?.host_id || user?.id} />}
-      {partyId && <LiveTranscription isLive={true} roomId={partyId} />}
+      {partyId && <LiveTranscription isLive={true} roomId={partyId} stream={localStream} speaker={user?.full_name} />}
       {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
