@@ -611,7 +611,7 @@ export default function BroadcastStudio() {
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
-  var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
+  var vodResult=useVODRecording({streamId:partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel,isClipping=speakGate.isClipping;
@@ -2443,7 +2443,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {isHost && partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
-      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {isHost && <BroadcastAnalyticsDashboard streamSession={partyId ? { room_id: partyId, title: party?.title } : null} isLive={partyId != null} />}
       {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
@@ -2453,14 +2453,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
-      {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={0} />}
+      {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
-      {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
       {!isHost && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
-      {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={0} />}
+      {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
@@ -2529,8 +2529,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
-      {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={0} currentUser={user} />}
-      {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
+      {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
+      {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}
       {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
