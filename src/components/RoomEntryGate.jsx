@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, FileText, User, Mic, Camera, X, ChevronLeft } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
@@ -337,6 +337,40 @@ function PermissionsStep({ onPass }) {
   const [granted, setGranted]     = useState(null); // null | 'cam+mic' | 'mic'
   const [selectedCam, setSelectedCam] = useState('');
   const [selectedMic, setSelectedMic] = useState('');
+  const previewVideoRef = useRef(null);
+  const previewStreamRef = useRef(null);
+
+  // Start/restart live preview when camera selection changes (cam+mic only)
+  useEffect(() => {
+    if (granted !== 'cam+mic') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        previewStreamRef.current?.getTracks().forEach(t => t.stop());
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: selectedCam ? { deviceId: { ideal: selectedCam } } : true,
+          audio: false,
+        });
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+        previewStreamRef.current = stream;
+        if (previewVideoRef.current) {
+          previewVideoRef.current.srcObject = stream;
+          previewVideoRef.current.play().catch(() => {});
+        }
+      } catch {}
+    })();
+    return () => {
+      cancelled = true;
+      previewStreamRef.current?.getTracks().forEach(t => t.stop());
+      previewStreamRef.current = null;
+    };
+  }, [granted, selectedCam]);
+
+  // Stop preview stream when component unmounts
+  useEffect(() => () => {
+    previewStreamRef.current?.getTracks().forEach(t => t.stop());
+    previewStreamRef.current = null;
+  }, []);
 
   async function handleCamMic() {
     setLoading('cam');
@@ -370,6 +404,8 @@ function PermissionsStep({ onPass }) {
   }
 
   function handleConfirm() {
+    previewStreamRef.current?.getTracks().forEach(t => t.stop());
+    previewStreamRef.current = null;
     try {
       if (selectedCam) localStorage.setItem('swl_pref_cam', selectedCam);
       if (selectedMic) localStorage.setItem('swl_pref_mic', selectedMic);
@@ -378,10 +414,12 @@ function PermissionsStep({ onPass }) {
   }
 
   function handleSkip() {
+    previewStreamRef.current?.getTracks().forEach(t => t.stop());
+    previewStreamRef.current = null;
     onPass();
   }
 
-  // After permission granted — show device selector
+  // After permission granted — show device selector with live preview
   if (granted) {
     return (
       <>
@@ -389,9 +427,40 @@ function PermissionsStep({ onPass }) {
         <h2 style={{ ...T, color: '#fff', fontSize: 22, fontWeight: 900, textAlign: 'center', margin: '0 0 6px' }}>
           Choose Your Devices
         </h2>
-        <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', margin: '0 0 20px', lineHeight: 1.5 }}>
+        <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', margin: '0 0 16px', lineHeight: 1.5 }}>
           {granted === 'cam+mic' ? 'Select the camera and microphone to use.' : 'Select your microphone.'}
         </p>
+
+        {/* Live camera preview */}
+        {granted === 'cam+mic' && (
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            aspectRatio: '16/9',
+            borderRadius: 12,
+            overflow: 'hidden',
+            background: '#0D0D0D',
+            border: '1px solid rgba(212,175,55,0.25)',
+            marginBottom: 14,
+          }}>
+            <video
+              ref={previewVideoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+            <div style={{
+              position: 'absolute', top: 6, left: 8,
+              fontSize: 10, fontWeight: 900, letterSpacing: '0.1em',
+              padding: '2px 7px', borderRadius: 5,
+              background: 'rgba(109,191,126,0.15)',
+              border: '1px solid rgba(109,191,126,0.3)',
+              color: '#6DBF7E',
+              fontFamily: 'Barlow Condensed, sans-serif',
+            }}>● PREVIEW</div>
+          </div>
+        )}
 
         <CameraDeviceSelector
           currentVideoId={selectedCam}

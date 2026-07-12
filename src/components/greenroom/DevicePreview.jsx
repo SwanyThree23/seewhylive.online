@@ -68,8 +68,8 @@ export default function DevicePreview({ user, onDeviceState }) {
   const [micLevel, setMicLevel] = useState(0);
   const [isSim, setIsSim] = useState(false);
   const [permDenied, setPermDenied] = useState(false);
-  const [selectedCam, setSelectedCam] = useState('');
-  const [selectedMic, setSelectedMic] = useState('');
+  const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
+  const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
   const [resolution, setResolution] = useState('720p');
 
   // Real connection quality via navigator.connection / RTCPeerConnection stats
@@ -97,8 +97,8 @@ export default function DevicePreview({ user, onDeviceState }) {
     try {
       streamRef.current?.getTracks().forEach(t => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { ...res, ...(camId ? { deviceId: { exact: camId } } : {}) },
-        audio: { echoCancellation: true, noiseSuppression: true, ...(micId ? { deviceId: { exact: micId } } : {}) },
+        video: { ...res, ...(camId ? { deviceId: { ideal: camId } } : {}) },
+        audio: { echoCancellation: true, noiseSuppression: true, ...(micId ? { deviceId: { ideal: micId } } : {}) },
       });
       streamRef.current = stream;
       if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
@@ -127,8 +127,8 @@ export default function DevicePreview({ user, onDeviceState }) {
     }
   };
 
-  const handleVideoChange = (id) => { setSelectedCam(id); if (cameraOn) startCamera({ camId: id }); };
-  const handleAudioChange = (id) => { setSelectedMic(id); if (cameraOn) startCamera({ micId: id }); };
+  const handleVideoChange = (id) => { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} if (cameraOn) startCamera({ camId: id }); };
+  const handleAudioChange = (id) => { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} if (cameraOn) startCamera({ micId: id }); };
   const handleResolutionChange = (r) => { setResolution(r); if (cameraOn) startCamera({ resolution: r }); };
 
   const flipCamera = () => {

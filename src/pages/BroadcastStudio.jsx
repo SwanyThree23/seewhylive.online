@@ -308,13 +308,14 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
 }
 
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
-function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
+function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking }) {
   const camRef = useRef(null);
   const screenRef = useRef(null);
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
   useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
   return (
-    <div className="relative w-full h-full bg-black flex items-center justify-center">
+    <div className="relative w-full h-full bg-black flex items-center justify-center"
+      style={isSpeaking ? { boxShadow: `inset 0 0 0 3px rgba(109,191,126,0.7)` } : undefined}>
       {screenStream ? (
         <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
       ) : localStream && videoEnabled ? (
@@ -530,7 +531,7 @@ export default function BroadcastStudio() {
 
   var vodResult=useVODRecording({streamId:streamData&&streamData.stream_id||partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording'});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration;
-  var speakGate=useAutoSpeakGate({stream:localStream,enabled:false});
+  var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel;
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
@@ -1132,7 +1133,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 />
               )
             ) : (
-              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
+              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} isSpeaking={isSpeaking} />
             )}
 
             {/* Hybrid PIP: local camera overlay when video is playing */}
@@ -1947,8 +1948,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
             background: audioEnabled ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.15)',
-            border: audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
+            border: audioEnabled && isSpeaking ? '1px solid rgba(109,191,126,0.85)' : audioEnabled ? '1px solid rgba(109,191,126,0.3)' : '1px solid rgba(255,68,68,0.4)',
             color: audioEnabled ? '#6DBF7E' : '#C0392B',
+            boxShadow: audioEnabled && isSpeaking ? '0 0 0 3px rgba(109,191,126,0.25)' : 'none',
           }}>
           {audioEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
         </motion.button>
