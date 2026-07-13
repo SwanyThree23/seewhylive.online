@@ -226,7 +226,7 @@ export default function RoomPage() {
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   // VOD recording — activated once host has a local stream and room is loaded
-  useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
 
   // Stream start time — set once on mount
   const streamStartRef = useRef(Date.now());
@@ -975,7 +975,7 @@ export default function RoomPage() {
       {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={room?.status === 'live'} />}
       {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
       {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
-      {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} />}
+      {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={participants.length} netQuality={netQuality} netRtt={netRtt} />
       <SuperChatRail superchats={[]} />
