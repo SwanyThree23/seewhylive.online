@@ -1396,7 +1396,7 @@ export default function WatchPartyPage() {
       {partyId && <RewardShop creatorId={party?.host_id || user?.id} roomId={partyId} currentUser={user} />}
       {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={() => {}} />}
+      {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Watch Party'} viewerCount={members.length} />}
       <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
       {isHost && user?.id && <RecordingManager userId={user.id} />}
@@ -1502,7 +1502,7 @@ export default function WatchPartyPage() {
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}
       {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
-      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
+      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if (party?.id) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
       <WatchPartyCoStreamPanel roomId={partyId} currentUser={user || null} isHost={true} />
       <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={''} onPlayVideo={() => {}} />

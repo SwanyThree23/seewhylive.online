@@ -624,7 +624,7 @@ export default function ControlRoomPage() {
       {roomId && <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />}
       {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
-      {<StreamingPresets onApply={() => {}} />}
+      {<StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={viewerCount} />}
       <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
@@ -730,7 +730,7 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}
-      {room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={true} />}
+      {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
       <BackgroundCustomizer />
     </div>
   );
