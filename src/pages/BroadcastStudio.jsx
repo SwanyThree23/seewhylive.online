@@ -102,7 +102,7 @@ import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
-import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
+import StreamWebSourceManager from '../components/streaming/StreamWebSourceManager';
 import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';

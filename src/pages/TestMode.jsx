@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
@@ -340,6 +340,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
 export default function TestMode() {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room_id');
+  const activeRoomId = roomId;
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,

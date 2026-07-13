@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, ChevronRight, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';

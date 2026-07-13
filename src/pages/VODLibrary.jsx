@@ -18,6 +18,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
+const G = GOLD;
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -42,6 +43,7 @@ export default function VODLibraryPage() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
 
   const { data: stats } = useQuery({
     queryKey: ['vodStats', user?.id],

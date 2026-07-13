@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Plus, Check, Trash2, X, Zap, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import NativeSelect from '../ui/NativeSelect';
+import NativeSelect from '../shared/NativeSelect';
 
 const inputStyle = {
   width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',

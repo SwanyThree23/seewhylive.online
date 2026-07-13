@@ -118,6 +118,12 @@ export default function VaultPro() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room_id');
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);

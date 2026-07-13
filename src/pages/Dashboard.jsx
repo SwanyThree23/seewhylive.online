@@ -774,6 +774,18 @@ function MonetizationTab({ user }) {
     queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
+  const { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity-mt', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashCommunityId = dashCommunity?.id || null;
+  const { data: dashActiveRoom } = useQuery({
+    queryKey: ['dashActiveRoom-mt', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashActiveRoomId = dashActiveRoom?.id || null;
   const qc = useQueryClient();
   const toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),

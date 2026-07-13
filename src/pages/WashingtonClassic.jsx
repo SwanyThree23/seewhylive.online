@@ -162,6 +162,12 @@ export default function WashingtonClassic() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('bracket');
 
   const sorted = [...TEAMS_2026].sort((a, b) => {
