@@ -545,7 +545,17 @@ export default function WatchPartyPage() {
   const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
-  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+  const announceJoinRef = useRef(announceJoin);
+  const leaveRoomRef = useRef(leaveRoom);
+  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
+  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(() => {
+    if (!user?.id || !partyId) return;
+    announceJoinRef.current?.(user.id);
+  }, [user?.id, partyId]);
+  useEffect(() => () => leaveRoomRef.current?.(), []);
+
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
 

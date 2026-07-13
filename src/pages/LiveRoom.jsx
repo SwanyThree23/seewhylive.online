@@ -417,7 +417,17 @@ export default function LiveRoom() {
     audioDeviceId: prefMic,
   });
   const { speakers } = useCameraDevices();
-  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
+  const announceJoinRef = useRef(announceJoin);
+  const leaveRoomRef = useRef(leaveRoom);
+  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
+  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(() => {
+    if (!user?.id || !roomId) return;
+    announceJoinRef.current?.(user.id);
+  }, [user?.id, roomId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => leaveRoomRef.current?.(), []);
+
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: true });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
 
