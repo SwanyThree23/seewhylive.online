@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Switch } from "@/components/ui/switch";
 import { Video, Mic, CalendarIcon, Plus, X, Upload, Radio } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import StreamGoals from '../components/live/StreamGoals';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';

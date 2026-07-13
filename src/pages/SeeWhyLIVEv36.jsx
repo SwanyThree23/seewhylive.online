@@ -20,6 +20,8 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -2037,6 +2039,7 @@ export default function SeeWhyLIVEv36() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);

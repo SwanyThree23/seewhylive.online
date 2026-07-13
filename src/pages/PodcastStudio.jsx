@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import AudioMixer from '../components/live/AudioMixer';
@@ -61,12 +61,6 @@ const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogu
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ message }) {
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
   return (
     <AnimatePresence>
       {message && (

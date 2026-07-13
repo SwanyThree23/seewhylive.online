@@ -519,6 +519,7 @@ export default function SceneTemplates() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],

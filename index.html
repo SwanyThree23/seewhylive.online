@@ -113,11 +113,13 @@
     <script>
       (function() {
         var root = document.getElementById('root');
-        var splash = document.getElementById('sw-splash');
+        var boot = document.getElementById('sw-boot');
         var obs = new MutationObserver(function() {
           if (root.children.length > 0) {
-            splash.classList.add('fade-out');
-            setTimeout(function() { splash.style.display = 'none'; }, 400);
+            if (boot) {
+              boot.classList.add('fade-out');
+              setTimeout(function() { boot.style.display = 'none'; }, 400);
+            }
             obs.disconnect();
           }
         });

@@ -82,21 +82,6 @@ export default function CommunityPage() {
     enabled: !!community?.id,
   });
 
-  const { data: membership } = useQuery({
-    queryKey: ['my-membership', community?.id, user?.id],
-    queryFn: () => base44.entities.CommunityMember.filter({ community_id: community.id, user_id: user.id }).then(r => r[0]),
-    enabled: !!community?.id && !!user?.id,
-  });
-
-  const { data: memberCount = 0 } = useQuery({
-    queryKey: ['community-member-count-page', community?.id],
-    queryFn: async () => {
-      const members = await base44.entities.CommunityMember.filter({ community_id: community.id });
-      return members?.length || 0;
-    },
-    enabled: !!community?.id,
-  });
-
   const { data: liveRooms = [] } = useQuery({
     queryKey: ['community-live-rooms', community?.id],
     queryFn: () => base44.entities.Room.filter({ community_id: community.id, status: 'live' }, '-viewer_count', 10),

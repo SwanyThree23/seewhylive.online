@@ -52,12 +52,6 @@ export default function OverlayEditorPage() {
     enabled: !!user?.id,
   });
 
-  const { data: liveRoom } = useQuery({
-    queryKey: ['my-live-room-overlay', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }, '-created_date', 1).then(r => r?.[0]),
-    enabled: !!user?.id,
-  });
-
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
       {/* Header */}

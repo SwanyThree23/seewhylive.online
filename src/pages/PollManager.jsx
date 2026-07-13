@@ -84,13 +84,6 @@ export default function PollManager() {
     onError: () => toast.error('Failed to delete template.'),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pollTemplates', user?.id] }),
   });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
-
   const handleAddOption = () => setFormData(prev => ({ ...prev, options: [...prev.options, ''] }));
   const handleRemoveOption = (idx) => setFormData(prev => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
   const handleOptionChange = (idx, value) => setFormData(prev => ({ ...prev, options: prev.options.map((opt, i) => i === idx ? value : opt) }));

@@ -47,31 +47,6 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 
-function usePullToRefresh(onRefresh) {
-  var [pullY, setPullY] = useState(0);
-  var [refreshing, setRefreshing] = useState(false);
-  var startY = useRef(0);
-  var THRESHOLD = 65;
-  function onTouchStart(e) {
-    if (window.scrollY > 0) return;
-    startY.current = e.touches[0].clientY;
-  }
-  function onTouchMove(e) {
-    if (window.scrollY > 0) return;
-    var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) { e.preventDefault(); setPullY(Math.min(dy * 0.45, THRESHOLD + 20)); }
-  }
-  async function onTouchEnd() {
-    if (pullY >= THRESHOLD && !refreshing) {
-      setRefreshing(true); setPullY(THRESHOLD);
-      try { await onRefresh(); } catch {}
-      setRefreshing(false);
-    }
-    setPullY(0);
-  }
-  return { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd };
-}
-
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT     = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';

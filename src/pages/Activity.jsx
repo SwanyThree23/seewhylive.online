@@ -93,6 +93,7 @@ export default function ActivityPage() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const activeRoomId = roomId;
 
   const { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities', user?.id],

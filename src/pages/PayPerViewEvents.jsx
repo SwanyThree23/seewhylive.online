@@ -227,15 +227,6 @@ function CreateEventForm({ onSuccess }) {
     </div>
   );
 }
-const FONT = 'Barlow Condensed, sans-serif';
-const MONO = 'Space Mono, monospace';
-
-const STATUS_COLORS = {
-  upcoming: { bg: `${GOLD}18`, border: `${GOLD}35`, text: GOLD },
-  live:     { bg: 'rgba(192,57,43,0.15)', border: 'rgba(192,57,43,0.4)', text: '#EF4444' },
-  ended:    { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', text: 'rgba(255,255,255,0.35)' },
-};
-
 const CREATOR_SHARE = 0.90;
 
 function EventCard({ event, user, myEventIds, onPurchase, purchasing }) {

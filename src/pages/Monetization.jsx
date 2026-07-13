@@ -543,12 +543,6 @@ export default function MonetizationPage() {
     enabled: !!user?.id,
   });
 
-  const { data: ppvEvents = [] } = useQuery({
-    queryKey: ['ppv-events-monetization', user?.id],
-    queryFn: () => base44.entities.PayPerViewEvent.filter({ creator_id: user.id }, '-event_date', 3),
-    enabled: !!user?.id,
-  });
-
   // Revenue calculations (90/10 split)
   const grossEarnings  = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const platformFee    = grossEarnings * 0.10;

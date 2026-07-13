@@ -183,6 +183,7 @@ export default function LeaderboardPage() {
   });
   const activeChallengeId = activeChallenge?.id || null;
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const activeRoomId = roomId;
 
   const { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],

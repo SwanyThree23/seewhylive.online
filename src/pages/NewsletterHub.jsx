@@ -89,6 +89,7 @@ export default function NewsletterHubPage() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const activeChallengeId = null;
   const { data: letters=[], isLoading } = useQuery({
     queryKey: ['newsletters', user?.id],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),

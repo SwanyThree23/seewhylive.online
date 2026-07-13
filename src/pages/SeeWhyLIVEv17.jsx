@@ -18,6 +18,8 @@ import ClipCreatorSheet from "@/components/live/ClipCreatorSheet";
 import { MerchShopV2, ViewerControlsV2, InRoomSubWidgetV2, TipAlertConfig, EngagementDashboardV2 } from "@/components/live/v162Components";
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 
 // ── DESIGN TOKENS ────────────────────────────────────────────────
 var G = {

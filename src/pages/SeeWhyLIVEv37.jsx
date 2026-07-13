@@ -1273,6 +1273,7 @@ export default function SeeWhyLIVEv37() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),

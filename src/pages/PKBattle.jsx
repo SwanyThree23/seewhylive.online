@@ -21,6 +21,12 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const SCARLET = '#C0392B';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
 function BattleListItem({ battle, isSelected, onClick }) {
   const creatorScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
   const challengerScore = (battle.challenger_tips || 0) + (battle.challenger_subs || 0) * 10;

@@ -15,6 +15,8 @@ import AIModeration from '../components/live/AIModeration';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -40,6 +42,7 @@ export default function StageCleanupPage() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
