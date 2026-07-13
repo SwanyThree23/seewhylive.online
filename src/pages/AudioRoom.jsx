@@ -280,6 +280,7 @@ export default function AudioRoom() {
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   const [activePc, setActivePc] = useState(null);
@@ -955,7 +956,7 @@ export default function AudioRoom() {
 
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
       {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
-      {isHost && roomId && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && roomId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
       {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={party?.title || ''} currentUser={user} />}
       {roomId && <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}/AudioRoom?id=${roomId}`} title={party?.title || 'Audio Room'} />}
