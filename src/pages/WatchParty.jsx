@@ -28,6 +28,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
@@ -1091,6 +1092,7 @@ export default function WatchPartyPage() {
             localStream={localStream}
             remoteStreams={remoteStreams}
             peerUserIds={peerUserIds}
+            peerQuality={peerQuality}
           />
         </div>
 
@@ -1200,6 +1202,7 @@ export default function WatchPartyPage() {
                 localStream={localStream}
                 remoteStreams={remoteStreams}
                 peerUserIds={peerUserIds}
+                peerQuality={peerQuality}
               />
             )}
             {activePanel === 'collab' && (

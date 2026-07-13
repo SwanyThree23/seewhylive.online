@@ -9,7 +9,11 @@ const T  = { fontFamily: 'Barlow Condensed, sans-serif' };
 function genToken(userId) {
   const stored = localStorage.getItem(`sw_session_token_${userId}`);
   if (stored) return stored;
-  const t = `sw_${Math.random().toString(36).substring(2, 10)}_${Math.random().toString(36).substring(2, 10)}?session=${Date.now()}`;
+  const a1 = new Uint8Array(6); crypto.getRandomValues(a1);
+  const a2 = new Uint8Array(6); crypto.getRandomValues(a2);
+  const p1 = Array.from(a1).map(b => b.toString(36)).join('').slice(0, 8);
+  const p2 = Array.from(a2).map(b => b.toString(36)).join('').slice(0, 8);
+  const t = `sw_${p1}_${p2}?session=${Date.now()}`;
   localStorage.setItem(`sw_session_token_${userId}`, t);
   return t;
 }
@@ -28,7 +32,8 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
     // Mic test
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+      const s = await navigator.mediaDevices.getUserMedia({ audio: prefMic ? { deviceId: { ideal: prefMic } } : true, video: false });
       s.getTracks().forEach(t => t.stop());
       setChecks(c => ({ ...c, mic: 'ready' }));
     } catch {
@@ -37,7 +42,8 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
     // Camera test
     try {
-      const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+      const s = await navigator.mediaDevices.getUserMedia({ audio: false, video: prefCam ? { deviceId: { ideal: prefCam } } : true });
       s.getTracks().forEach(t => t.stop());
       setChecks(c => ({ ...c, camera: 'ready' }));
     } catch {
@@ -69,9 +75,9 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
 
   const checkLabel = (state) => {
     if (state === 'idle' || state === 'testing') return { label: 'TESTING…', color: 'rgba(255,255,255,0.3)' };
-    if (state === 'ready') return { label: '✓ READY', color: '#22c55e' };
-    if (state === 'warn')  return { label: '⚠ SLOW', color: '#f59e0b' };
-    return { label: '✗ FAIL', color: '#ef4444' };
+    if (state === 'ready') return { label: '✓ READY', color: '#6DBF7E' };
+    if (state === 'warn')  return { label: '⚠ SLOW', color: '#C9A84C' };
+    return { label: '✗ FAIL', color: '#C0392B' };
   };
 
   const ROWS = [
@@ -116,7 +122,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 const { label, color } = checkLabel(checks[row.key]);
                 return (
                   <div key={row.key} className="flex items-center justify-between px-4 py-3 rounded-xl"
-                    style={{ background: checks[row.key] === 'ready' ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.07)'}` }}>
+                    style={{ background: checks[row.key] === 'ready' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checks[row.key] === 'ready' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.07)'}` }}>
                     <span className="text-sm font-bold text-white" style={T}>{row.icon} {row.label}</span>
                     <span className="text-sm font-black" style={{ color, ...T }}>{label}</span>
                   </div>
@@ -135,18 +141,18 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                     {copied === 'rtmp' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] mt-1 font-mono" style={{ color: '#22c55e' }}>Ingest: {ingestUrl}</p>
+                <p className="text-[10px] mt-1 font-mono" style={{ color: '#6DBF7E' }}>Ingest: {ingestUrl}</p>
               </div>
 
               {/* VDO.ninja */}
               <div>
-                <p className="text-[11px] font-black uppercase mb-1.5" style={{ color: '#00b4d8', ...T }}>VDO.NINJA 4K GUEST LINK</p>
+                <p className="text-[11px] font-black uppercase mb-1.5" style={{ color: '#5B7FA6', ...T }}>VDO.NINJA 4K GUEST LINK</p>
                 <div className="flex gap-2">
                   <div className="flex-1 px-3 py-2.5 rounded-xl text-[11px] font-mono text-white/50 truncate"
-                    style={{ background: 'rgba(0,180,216,0.05)', border: '1px solid rgba(0,180,216,0.15)' }}>
+                    style={{ background: 'rgba(91,127,166,0.06)', border: '1px solid rgba(91,127,166,0.2)' }}>
                     {vdoLink}
                   </div>
-                  <button onClick={() => copyText(vdoLink, 'vdo')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(0,180,216,0.1)', border: '1px solid rgba(0,180,216,0.3)', color: '#00b4d8' }}>
+                  <button onClick={() => copyText(vdoLink, 'vdo')} className="px-3 py-2 rounded-xl" style={{ background: 'rgba(91,127,166,0.12)', border: '1px solid rgba(91,127,166,0.3)', color: '#5B7FA6' }}>
                     {copied === 'vdo' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
@@ -163,7 +169,7 @@ export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, u
                 onClick={() => { onClose(); onGoLive?.(); }}
                 disabled={!allReady}
                 className="w-full py-4 rounded-2xl font-black uppercase text-base transition-all disabled:opacity-40"
-                style={{ background: allReady ? 'linear-gradient(135deg, #c8f600, #a3cc00)' : 'rgba(255,255,255,0.08)', color: allReady ? '#000' : 'rgba(255,255,255,0.3)', letterSpacing: 2, ...T }}>
+                style={{ background: allReady ? 'linear-gradient(135deg, #800020, #A0003A)' : 'rgba(255,255,255,0.08)', color: allReady ? G : 'rgba(255,255,255,0.3)', letterSpacing: 2, border: allReady ? '1px solid rgba(212,175,55,0.35)' : '1px solid transparent', ...T }}>
                 🚀 ENTER STAGE — GO LIVE
               </button>
 

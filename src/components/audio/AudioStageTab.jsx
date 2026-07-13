@@ -12,10 +12,14 @@ function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
 
+const AUDIO_HOLD_MS = 400;
+
 function useAudioLevel(stream) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const ctxRef     = useRef(null);
-  const rafRef     = useRef(null);
+  const ctxRef      = useRef(null);
+  const rafRef      = useRef(null);
+  const holdRef     = useRef(null);
+  const speakRef    = useRef(false);
 
   useEffect(() => {
     if (!stream) { setIsSpeaking(false); return; }
@@ -37,7 +41,14 @@ function useAudioLevel(stream) {
           const v = (data[i] - 128) / 128;
           sum += v * v;
         }
-        setIsSpeaking(Math.sqrt(sum / data.length) > 0.01);
+        const rms = Math.sqrt(sum / data.length);
+        if (rms > 0.01) {
+          clearTimeout(holdRef.current);
+          if (!speakRef.current) { speakRef.current = true; setIsSpeaking(true); }
+        } else if (speakRef.current) {
+          clearTimeout(holdRef.current);
+          holdRef.current = setTimeout(() => { speakRef.current = false; setIsSpeaking(false); }, AUDIO_HOLD_MS);
+        }
         rafRef.current = requestAnimationFrame(check);
       };
       check();
@@ -47,6 +58,8 @@ function useAudioLevel(stream) {
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdRef.current);
+      speakRef.current = false;
       if (ctxRef.current) { try { ctxRef.current.close(); } catch {} }
     };
   }, [stream]);
@@ -278,6 +291,7 @@ export default function AudioStageTab({
   members,
   localStream,
   remoteStreams,
+  peerUserIds,
   onLeave,
 }) {
   const hostId   = party?.host_id;
@@ -330,9 +344,9 @@ export default function AudioStageTab({
 
   function getStream(userId) {
     if (isSelf(userId)) return localStream || null;
-    if (!remoteStreams) return null;
-    for (const [, stream] of remoteStreams) {
-      if (stream._userId === userId) return stream;
+    if (!remoteStreams || !peerUserIds) return null;
+    for (const [peerId, stream] of remoteStreams) {
+      if (peerUserIds.get(peerId) === userId) return stream;
     }
     return null;
   }

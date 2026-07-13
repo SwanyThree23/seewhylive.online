@@ -6,6 +6,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import CoStreamHub from '../components/live/CoStreamHub';
 import NativeSelect from '@/components/shared/NativeSelect';
 
@@ -25,17 +26,17 @@ const C = {
   text:    '#F0E8D4',
   textD:   '#C4B596',
   textM:   '#8A7A62',
-  green:   '#2ECC71',
+  green:   '#6DBF7E',
   red:     '#E74C3C',
-  blue:    '#3498DB',
+  blue:    '#5B7FA6',
   purple:  '#8B44B0',
   amber:   '#D4854A',
-  orange:  '#FF6B35',
+  orange:  '#D4854A',
   teal:    '#6DBF7E',
   warn:    '#F39C12',
   tribute: '#7B5EA7',
   tribL:   '#A07BC4',
-  state1:  '#1565C0',
+  state1:  '#5B7FA6',
   state2:  '#C62828',
 };
 
@@ -179,6 +180,7 @@ function downloadBlob(content, filename, type) {
 
 // ── STAGE PANEL ────────────────────────────────────────────────────────────
 function StagePanel() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [live, setLive] = useState(false);
   const [viewers, setViewers] = useState(0);
   const [health, setHealth] = useState(null);
@@ -271,7 +273,7 @@ function StagePanel() {
           roomId={roomName || 'studio'}
           isHost={true}
           isCoHost={false}
-          currentUser={null}
+          currentUser={user || null}
           compact={false}
         />
       </div>
@@ -765,7 +767,8 @@ function WatchPartyPanel() {
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    setPartyId(`PARTY-${Math.random().toString(36).slice(2,8).toUpperCase()}`);
+    const arr = new Uint8Array(4); crypto.getRandomValues(arr);
+    setPartyId(`PARTY-${Array.from(arr).map(b=>b.toString(36)).join('').toUpperCase().slice(0,6)}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);
@@ -2036,6 +2039,7 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv41() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -2108,6 +2112,22 @@ export default function SeeWhyLIVEv41() {
         </div>
         {panelMap[activeTab]}
       </div>
+      <SwanyBotWidget />
+      <SwanyBotEnhanced />
+      <NotificationBell />
+      <SwanDirectorHUD roomId={null} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
+      <GiftSystem roomId={null} userId={null} isHost={true} />
+      <GiftLeaderboard roomId={null} />
+      <ViewerCount count={0} peakViewers={0} />
+      <HostAlertCenter />
+      <StreamHealthMonitor isStreaming={false} />
+      <SwanAIRecommendations roomId={null} currentLayout='v41' viewerCount={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <MilestoneAlerts userId={user?.id || null} roomId={null} />
+      <BroadcastAnalyticsDashboard />
+      <StreamerMonetizationCenter />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -70,7 +70,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
               <button onClick={() => fulfillMutation.mutate({ id: r.id, status: 'rejected' })}
                 className="w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-90"
                 style={{ background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.2)' }}>
-                <X className="w-3.5 h-3.5 text-red-400" />
+                <X className="w-3.5 h-3.5 text-[#C0392B]" />
               </button>
             </div>
           </motion.div>

@@ -22,7 +22,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
           {trend === 'up' ? (
             <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
           ) : trend === 'down' ? (
-            <TrendingDown className="w-3 h-3 text-red-400" />
+            <TrendingDown className="w-3 h-3 text-[#C0392B]" />
           ) : null}
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function StreamHealthDashboard({ isLive }) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+        <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
         <h3 className="text-sm font-bold text-white">Stream Health</h3>
       </div>
 

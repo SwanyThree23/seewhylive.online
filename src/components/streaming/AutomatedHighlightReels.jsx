@@ -51,7 +51,7 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
         </button>
         <button
           onClick={() => onDelete?.(highlight.id)}
-          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-red-500/10 hover:bg-red-500/20 rounded py-1.5 text-red-400 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1 text-[11px] bg-[#C0392B]/10 hover:bg-[#C0392B]/20 rounded py-1.5 text-[#C0392B] transition-colors"
         >
           <Trash2 className="w-3 h-3" />
           Delete

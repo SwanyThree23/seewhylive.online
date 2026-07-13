@@ -7,6 +7,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isSafeUrl } from '@/lib/security';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';

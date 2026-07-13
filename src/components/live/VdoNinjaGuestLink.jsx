@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink, Copy, CheckCircle2 } from 'lucide-react';
 
+export function buildSceneUrl(roomId) {
+  return `https://vdo.ninja/?scene&room=SW-${roomId?.slice(0, 8) || 'DEMO'}&label=OBSScene`;
+}
+
+export function buildDirectorUrl(roomId) {
+  return `https://vdo.ninja/?director=${roomId?.slice(0, 8) || 'DEMO'}`;
+}
+
 export default function VdoNinjaGuestLink({ roomId }) {
   const [copied, setCopied] = useState(false);
 

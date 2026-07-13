@@ -12,6 +12,8 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
         video: { cursor: 'always' },
         audio: false,
       });
+      const vt = stream.getVideoTracks()[0];
+      if (vt) vt.onended = handleStopShare;
       setShareType('screen');
       onStartShare(stream);
       setShowOptions(false);
@@ -22,12 +24,11 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
   const handleStartWindowShare = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { 
-          cursor: 'always',
-          displaySurface: 'window'
-        },
+        video: { cursor: 'always', displaySurface: 'window' },
         audio: false,
       });
+      const vt = stream.getVideoTracks()[0];
+      if (vt) vt.onended = handleStopShare;
       setShareType('window');
       onStartShare(stream);
       setShowOptions(false);

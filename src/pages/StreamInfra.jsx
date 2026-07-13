@@ -402,8 +402,8 @@ function LiveRoomTab({ user }) {
         <div className="flex items-center gap-3">
           {roomActive ? (
             <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-sm font-bold text-red-400" style={{ fontFamily: 'Orbitron, monospace' }}>ROOM LIVE</span>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#C0392B] animate-pulse" />
+              <span className="text-sm font-bold text-[#C0392B]" style={{ fontFamily: 'Orbitron, monospace' }}>ROOM LIVE</span>
             </div>
           ) : (
             <span className="text-sm text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Offline</span>
@@ -532,7 +532,7 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: micOn ? 'rgba(109,191,126,0.1)' : 'rgba(192,57,43,0.08)', border: '1px solid ' + (micOn ? 'rgba(109,191,126,0.25)' : 'rgba(192,57,43,0.2)') }}
               >
-                {micOn ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-red-400" />}
+                {micOn ? <Mic className="w-4 h-4 text-[#6DBF7E]" /> : <MicOff className="w-4 h-4 text-[#C0392B]" />}
                 <span className="text-xs" style={{ color: micOn ? '#6DBF7E' : '#C0392B' }}>{micOn ? 'Mic On' : 'Mic Muted'}</span>
               </button>
               <button

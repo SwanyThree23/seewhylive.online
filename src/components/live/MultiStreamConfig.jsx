@@ -93,6 +93,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
               ? 'bg-[#0F1428]/20 border-[#6DBF7E]/35/50 text-[#6DBF7E]/80'
               : 'bg-red-900/20 border-red-600/50 text-red-300'
           }`}
+          style={streamStatus.success ? { background: 'rgba(109,191,126,0.15)' } : undefined}
         >
           {streamStatus.success ? (
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -137,7 +138,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => handleRemove(dest.id)}
-                    className="w-5 h-5 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-red-400 shrink-0"
+                    className="w-5 h-5 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-[#C0392B] shrink-0"
                   >
                     <Trash2 className="w-3 h-3" />
                   </motion.button>

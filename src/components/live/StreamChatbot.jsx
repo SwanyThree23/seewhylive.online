@@ -163,7 +163,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                   <div key={i} className="flex items-center gap-2 mt-1 text-[10px]">
                     <code className="bg-white/10 rounded px-1.5 py-0.5 text-[#d4af37] font-mono">{c.trigger}</code>
                     <span className="text-white/40 flex-1 truncate">{c.reply}</span>
-                    <button onClick={() => setCustomCmds(p => p.filter((_, j) => j !== i))} className="text-red-400/60 hover:text-red-400">✕</button>
+                    <button onClick={() => setCustomCmds(p => p.filter((_, j) => j !== i))} className="text-[#C0392B]/60 hover:text-[#C0392B]">✕</button>
                   </div>
                 ))}
               </div>

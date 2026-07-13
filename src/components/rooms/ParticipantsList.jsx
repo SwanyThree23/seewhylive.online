@@ -210,7 +210,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
             <Hand className="w-3 h-3 text-[#D4AF37]" />
           )}
           {participant.is_streaming && (
-            <Badge className="text-xs bg-red-500">LIVE</Badge>
+            <Badge className="text-xs bg-[#C0392B]">LIVE</Badge>
           )}
         </div>
       </div>
@@ -249,7 +249,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
               <DropdownMenuItem onClick={() => onInviteToStage(participant)}>
                 Invite to Stage
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-500">
+              <DropdownMenuItem className="text-[#C0392B]">
                 Remove from Room
               </DropdownMenuItem>
             </>

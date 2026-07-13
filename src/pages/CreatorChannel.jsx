@@ -19,7 +19,6 @@ import { isSafeUrl } from '@/lib/security';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
@@ -211,7 +210,7 @@ export default function CreatorChannel() {
                 <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #080B18)` }}>
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#C0392B] animate-pulse" />
                       <span className="font-black text-sm uppercase" style={{ color: '#C0392B', ...T }}>LIVE NOW</span>
                     </div>
                     <h3 className="text-xl font-black text-white" style={T}>{liveRoom.title}</h3>

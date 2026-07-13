@@ -21,8 +21,21 @@ function streamToVideo(stream, cache) {
   return vid;
 }
 
+// Truncate text with ellipsis to fit within maxWidth px
+function truncateText(ctx, text, maxWidth) {
+  if (!text) return '';
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  let lo = 0, hi = text.length;
+  while (lo < hi - 1) {
+    const mid = Math.floor((lo + hi) / 2);
+    if (ctx.measureText(text.slice(0, mid) + '…').width <= maxWidth) lo = mid; else hi = mid;
+  }
+  return text.slice(0, lo) + '…';
+}
+
 // Draw a single video slot; if videoEl is null draw a black placeholder
-function drawSlot(ctx, videoEl, x, y, w, h, label) {
+// speaking: true draws a gold ring around the tile
+function drawSlot(ctx, videoEl, x, y, w, h, label, speaking = false) {
   ctx.fillStyle = '#111';
   ctx.fillRect(x, y, w, h);
   if (videoEl && videoEl.readyState >= 2) {
@@ -32,12 +45,19 @@ function drawSlot(ctx, videoEl, x, y, w, h, label) {
       // video not yet drawable — leave placeholder
     }
   }
+  // Speaking ring
+  if (speaking) {
+    ctx.strokeStyle = GOLD;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+  }
   // Label bar
+  ctx.font = FONT;
+  const labelText = truncateText(ctx, label || '', w - 16);
   ctx.fillStyle = 'rgba(0,0,0,0.65)';
   ctx.fillRect(x, y + h - 28, w, 28);
-  ctx.font = FONT;
-  ctx.fillStyle = '#fff';
-  ctx.fillText(label || '', x + 8, y + h - 9);
+  ctx.fillStyle = speaking ? GOLD : '#fff';
+  ctx.fillText(labelText, x + 8, y + h - 9);
 }
 
 // Overlay: top-left logo + bottom-center title bar + top-right LIVE badge
@@ -85,9 +105,10 @@ function roundRect(ctx, x, y, w, h, r) {
 /**
  * Core 30fps canvas compositor.
  *
- * slots: Array<{ stream: MediaStream|null, label: string }>
- * overlayConfig: { title, subtitle, showLive, layout, battleData }
- *   layout: 'panel' | 'battle' | 'watchparty'
+ * slots: Array<{ stream: MediaStream|null, label: string, speaking?: boolean }>
+ * overlayConfig: { title, subtitle, showLive, layout, battleData, spotlightIndex }
+ *   layout: 'panel' | 'battle' | 'watchparty' | 'spotlight'
+ *   spotlightIndex: index of the featured slot in 'spotlight' layout (default 0)
  *   battleData: { leftScore, rightScore, timeLeft, leftName, rightName }
  *
  * Returns: { canvasRef, compositeStream, isRunning, startCompositor, stopCompositor }
@@ -121,7 +142,9 @@ export function useCanvasCompositor({ slots = [], overlayConfig = {} }) {
     ctx.fillStyle = BG;
     ctx.fillRect(0, 0, W, H);
 
-    if (layout === 'panel') {
+    if (layout === 'spotlight') {
+      drawSpotlightLayout(ctx, slots, videoCache, overlayConfig.spotlightIndex ?? 0);
+    } else if (layout === 'panel') {
       drawPanelLayout(ctx, slots, videoCache);
     } else if (layout === 'battle') {
       drawBattleLayout(ctx, slots, videoCache, battleData);
@@ -182,7 +205,7 @@ function drawPanelLayout(ctx, slots, videoCache) {
   const cols = n <= 1 ? 1 : n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : 5;
   const rows = Math.ceil(n / cols);
   const tileW = Math.floor(W / cols);
-  const tileH = Math.floor((H - 60) / rows); // reserve 60px for bottom overlay
+  const tileH = Math.floor((H - 60) / rows);
 
   slots.forEach((slot, i) => {
     const col = i % cols;
@@ -190,8 +213,40 @@ function drawPanelLayout(ctx, slots, videoCache) {
     const x = col * tileW;
     const y = row * tileH;
     const vid = streamToVideo(slot.stream, videoCache);
-    drawSlot(ctx, vid, x, y, tileW - 2, tileH - 2, slot.label || `Guest ${i + 1}`);
+    drawSlot(ctx, vid, x, y, tileW - 2, tileH - 2, slot.label || `Guest ${i + 1}`, !!slot.speaking);
   });
+}
+
+// Spotlight: one large featured slot (72% width) + vertical strip of thumbnails (28%)
+function drawSpotlightLayout(ctx, slots, videoCache, spotlightIndex = 0) {
+  if (!slots.length) return;
+  const SIDEBAR_W = Math.floor(W * 0.28);
+  const MAIN_W = W - SIDEBAR_W - 2;
+  const MAIN_H = H - 60;
+  const featured = slots[spotlightIndex] || slots[0];
+  const rest = slots.filter((_, i) => i !== spotlightIndex);
+
+  // Main slot
+  const mainVid = streamToVideo(featured.stream, videoCache);
+  drawSlot(ctx, mainVid, 0, 0, MAIN_W, MAIN_H, featured.label || 'Host', !!featured.speaking);
+
+  // Sidebar thumbnails
+  const thumbCount = Math.max(1, rest.length);
+  const thumbH = Math.floor(MAIN_H / thumbCount);
+  rest.forEach((slot, i) => {
+    const vid = streamToVideo(slot.stream, videoCache);
+    drawSlot(ctx, vid, MAIN_W + 2, i * thumbH, SIDEBAR_W, thumbH - 2, slot.label || `Guest ${i + 1}`, !!slot.speaking);
+  });
+  // Placeholder thumbs if no guests yet
+  if (!rest.length) {
+    ctx.fillStyle = '#0d0d1a';
+    ctx.fillRect(MAIN_W + 2, 0, SIDEBAR_W, MAIN_H);
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Guests appear here', MAIN_W + 2 + SIDEBAR_W / 2, MAIN_H / 2);
+    ctx.textAlign = 'left';
+  }
 }
 
 function drawBattleLayout(ctx, slots, videoCache, battleData = {}) {

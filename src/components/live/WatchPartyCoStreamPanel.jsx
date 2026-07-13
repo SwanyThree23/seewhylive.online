@@ -372,8 +372,8 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
                     {item.title}
                     <span style={{
                       marginLeft: 6, fontSize: 10,
-                      color: item.type === 'youtube' ? '#ff4444' : G,
-                      border: `1px solid ${item.type === 'youtube' ? '#ff4444' : G}40`,
+                      color: item.type === 'youtube' ? '#C0392B' : G,
+                      border: `1px solid ${item.type === 'youtube' ? '#C0392B' : G}40`,
                       borderRadius: 3, padding: '1px 4px', textTransform: 'uppercase',
                     }}>
                       {item.type}
@@ -387,7 +387,7 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
                   </button>
                   <button
                     onClick={() => removeFromQueue(item.id)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ff4444', padding: 2 }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C0392B', padding: 2 }}
                   >
                     <Trash2 size={13} />
                   </button>
@@ -493,14 +493,14 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
             {streamingParticipants.map(p => {
               const offset = syncOffsets[p.id] ?? 0;
               const abs    = Math.abs(offset);
-              let badgeColor = '#22c55e';
+              let badgeColor = '#6DBF7E';
               let badgeText  = 'IN SYNC';
               let showSync   = false;
               if (abs >= 2 && abs <= 5) {
-                badgeColor = '#f59e0b';
+                badgeColor = '#C9A84C';
                 badgeText  = `${offset > 0 ? '+' : ''}${offset.toFixed(1)}s`;
               } else if (abs > 5) {
-                badgeColor = '#ef4444';
+                badgeColor = '#C0392B';
                 badgeText  = `${offset > 0 ? '+' : ''}${offset.toFixed(1)}s`;
                 showSync   = true;
               }
@@ -530,8 +530,8 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
                     <button
                       onClick={() => syncGuest(p.id)}
                       style={{
-                        background: 'none', border: `1px solid #ef444450`, borderRadius: 6,
-                        padding: '1px 7px', color: '#ef4444', fontSize: 10, cursor: 'pointer', ...T,
+                        background: 'none', border: `1px solid #C0392B50`, borderRadius: 6,
+                        padding: '1px 7px', color: '#C0392B', fontSize: 10, cursor: 'pointer', ...T,
                       }}
                     >
                       Sync

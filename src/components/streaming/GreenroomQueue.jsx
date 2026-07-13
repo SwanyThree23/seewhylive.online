@@ -175,7 +175,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
                       className="w-6 h-6 rounded flex items-center justify-center bg-red-900/50 hover:bg-red-700 border border-red-500/20 transition-all"
                       title="Reject"
                     >
-                      <XCircle className="w-3.5 h-3.5 text-red-400" />
+                      <XCircle className="w-3.5 h-3.5 text-[#C0392B]" />
                     </button>
                   </div>
                 )}

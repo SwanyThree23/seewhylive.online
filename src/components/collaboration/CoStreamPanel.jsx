@@ -79,20 +79,25 @@ export default function CoStreamPanel({ roomId }) {
 
   const startCameraStream = async () => {
     setError(null);
-    
+
     // Check if browser supports getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setError('Your browser does not support camera access');
       return;
     }
 
+    // Use device preferences saved by RoomEntryGate if available
+    const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+    const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           width: { ideal: 1280 },
-          height: { ideal: 720 }
+          height: { ideal: 720 },
+          ...(prefCam ? { deviceId: { ideal: prefCam } } : {}),
         },
-        audio: true
+        audio: prefMic ? { deviceId: { ideal: prefMic } } : true,
       });
 
       setMediaStream(stream);
@@ -266,7 +271,7 @@ export default function CoStreamPanel({ roomId }) {
                     <VideoOff className="w-12 h-12 text-gray-500" />
                   </div>
                 )}
-                <Badge className="absolute top-2 left-2 bg-red-500">
+                <Badge className="absolute top-2 left-2 bg-[#C0392B]">
                   LIVE
                 </Badge>
                 <Badge className="absolute top-2 right-2" variant="secondary">
@@ -333,7 +338,7 @@ export default function CoStreamPanel({ roomId }) {
                       </Badge>
                     </div>
                   </div>
-                  <Badge className="bg-red-500">LIVE</Badge>
+                  <Badge className="bg-[#C0392B]">LIVE</Badge>
                 </div>
               </CardContent>
             </Card>

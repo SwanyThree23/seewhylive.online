@@ -195,8 +195,8 @@ export default function StreamAnalyticsDashboard({ roomId, isHost, isLive }) {
         <div className="flex items-center gap-1.5">
           {isLive ? (
             <>
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[11px] font-black text-red-400" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
+              <span className="text-[11px] font-black text-[#C0392B]" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
             </>
           ) : (
             <span className="text-[11px] text-white/30">Offline</span>

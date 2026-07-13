@@ -54,6 +54,7 @@ export default function RoomPage() {
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
@@ -63,8 +64,58 @@ export default function RoomPage() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Real local camera/mic stream
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
+  // Real local camera/mic stream — seed device IDs from stored preferences
+  const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+
+  // Speaking detection + network quality
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+
+  // Elapsed-seconds counter (starts when component mounts)
+  const [elapsed, setElapsed] = useState(0);
+  const elapsedTimerRef = useRef(null);
+  useEffect(() => {
+    elapsedTimerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(elapsedTimerRef.current);
+  }, []);
+
+  // Push-to-talk (Space bar) — unmutes mic while held, remutes on release
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+  useEffect(() => {
+    const onDown = (e) => {
+      if (e.code !== 'Space' || e.repeat) return;
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (!pttActive && !audioEnabled) {
+        pttWasEnabledRef.current = false;
+        toggleAudio();
+        setPttActive(true);
+      }
+    };
+    const onUp = (e) => {
+      if (e.code !== 'Space' || !pttActive) return;
+      toggleAudio();
+      setPttActive(false);
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+  }, [pttActive, audioEnabled, toggleAudio]);
+
+  // M = toggle mic, V = toggle camera (when not in a text input)
+  useEffect(() => {
+    const onKey = (e) => {
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') toggleAudio();
+      if (e.key === 'v' || e.key === 'V') toggleVideo();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [toggleAudio, toggleVideo]);
 
   // WebRTC peer mesh — connects to all other participants via STUN/TURN
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);

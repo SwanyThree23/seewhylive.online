@@ -152,6 +152,21 @@ export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
+
+  // Android hardware back button: push state when drawer opens so back dismisses it
+  useEffect(function() {
+    if (showMobileMenu) {
+      window.history.pushState({ swDrawer: true }, '');
+    }
+  }, [showMobileMenu]);
+
+  useEffect(function() {
+    function onPop() {
+      if (showMobileMenu) setShowMobileMenu(false);
+    }
+    window.addEventListener('popstate', onPop);
+    return function() { window.removeEventListener('popstate', onPop); };
+  }, [showMobileMenu]);
   var navigate = useNavigate();
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
@@ -334,8 +349,8 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* Search */}
             <button onClick={function() { setShowSearch(true); }}
-              className="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              className="flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', userSelect: 'none', WebkitUserSelect: 'none' }}>
               <SearchIcon className="w-4.5 h-4.5 text-white/50" style={{ width: 18, height: 18 }} />
             </button>
 
@@ -346,8 +361,8 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Hamburger — animated bars morph to × */}
             <button
-              className="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', userSelect: 'none', WebkitUserSelect: 'none' }}
               onClick={function() { setShowMobileMenu(function(v) { return !v; }); }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
                 <div style={{ width: 16, height: 2, background: showMobileMenu ? '#d4af37' : 'rgba(255,255,255,0.5)', borderRadius: 1, transformOrigin: 'center', transform: showMobileMenu ? 'rotate(45deg) translate(4px, 4px)' : 'none', transition: 'all .2s' }} />
@@ -408,8 +423,8 @@ export default function Layout({ children, currentPageName }) {
                   </div>
                 </div>
                 <button onClick={function() { setShowMobileMenu(false); }}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                  className="flex items-center justify-center rounded-xl"
+                  style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -457,7 +472,7 @@ export default function Layout({ children, currentPageName }) {
       </AnimatePresence>
 
       {/* Main — with slide-in route transitions */}
-      <main className={isFullscreen ? '' : 'pb-[96px] md:pb-10'}>
+      <main className={isFullscreen ? '' : 'pb-main-mobile md:pb-10'}>
         <ErrorBoundary>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div

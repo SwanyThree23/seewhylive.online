@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, Video, VideoOff, MessageCircle, Heart, Hand, Crown,
   ChevronLeft, MoreHorizontal, Share2, Minus, Radio,
-  Users, LayoutGrid, Send, X,
+  Users, LayoutGrid, Send, X, Settings, Volume2,
 } from 'lucide-react';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
@@ -12,6 +13,8 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import DirectPayments from '../components/live/DirectPayments';
 import LoveHearts from '../components/live/LoveHearts';
 import LoveTap from '../components/live/LoveTap';
@@ -335,6 +338,9 @@ export default function LiveRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId    = urlParams.get('id');
 
+  // Read device preferences saved by RoomEntryGate PermissionsStep
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
@@ -388,6 +394,19 @@ export default function LiveRoom() {
   const hostName   = party ? (members.find(m => m.user_id === party.host_id)?.user_name || 'Host') : 'SwanyThree';
   const liveCount  = members.length;
   const isLive     = !roomId || members.length > 0 || (remoteStreams?.size ?? 0) > 0;
+
+  const [prefSpeaker, setPrefSpeaker]   = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  const [noiseSupp,   setNoiseSupp]     = useState(true);
+  const [echoCan,     setEchoCan]       = useState(true);
+  const [autoGain,    setAutoGain]      = useState(true);
+  const [audioSettingsOpen, setAudioSettingsOpen] = useState(false);
+
+  // Elapsed-seconds counter (starts on mount)
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   // Local UI state
   const [stageData, setStageData]   = useState(stage);
@@ -482,6 +501,33 @@ export default function LiveRoom() {
     return () => clearInterval(iv);
   }, [roomId, user?.id]);
 
+  // Panel service: join and listen for seat requests when host
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    panelService.joinPanel(roomId, user.id);
+    const offReq = panelService.onJoinRequest(req => {
+      setPendingRequests(prev => [...prev.filter(r => r.id !== req.id), req]);
+    });
+    const offRes = panelService.onRequestResolved(({ id }) => {
+      setPendingRequests(prev => prev.filter(r => r.id !== id));
+    });
+    return () => {
+      offReq();
+      offRes();
+      panelService.leavePanel(roomId, user.id);
+    };
+  }, [roomId, user?.id]);
+
+  function approveRequest(req) {
+    panelService.resolveJoinRequest(roomId, req.id, true, user?.id);
+    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+  }
+
+  function denyRequest(req) {
+    panelService.resolveJoinRequest(roomId, req.id, false, user?.id);
+    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+  }
+
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
@@ -503,6 +549,20 @@ export default function LiveRoom() {
           <MessageCircle className="w-3 h-3 text-white/40" />
         </div>
         <h1 className="flex-1 text-sm font-bold text-white truncate">{roomTitle}</h1>
+        {/* Connection quality badge */}
+        <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-lg shrink-0"
+          style={{ background: 'rgba(0,0,0,0.35)' }}
+          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+          {[0,1,2,3].map(i => (
+            <div key={i} className="w-1 rounded-sm"
+              style={{
+                height: 4 + i * 3,
+                background: i < netBars
+                  ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                  : 'rgba(255,255,255,0.15)',
+              }} />
+          ))}
+        </div>
         <button className="w-7 h-7 flex items-center justify-center">
           <MoreHorizontal className="w-4 h-4 text-white/40" />
         </button>
@@ -835,13 +895,27 @@ export default function LiveRoom() {
             </div>
           )}
 
-          {/* Mic */}
-          <button onClick={toggleAudio} className="flex flex-col items-center gap-0.5">
+          {/* Mic + PTT */}
+          <div className="relative flex flex-col items-center gap-0.5">
+            <button onClick={handleToggleAudio} className="flex flex-col items-center gap-0.5">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style={{
+                  background: pttActive ? 'rgba(109,191,126,0.25)' : !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`,
+                  border: pttActive ? '1px solid rgba(109,191,126,0.6)' : !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55`,
+                }}>
+                {!audioEnabled
+                  ? <MicOff className="w-4 h-4 text-[#C0392B]" />
+                  : <Mic className="w-4 h-4" style={{ color: pttActive ? '#6DBF7E' : GOLD }} />}
+              </div>
+              <span className="text-[11px] text-white/35">{pttActive ? 'PTT' : ' '}</span>
+            </button>
+          </div>
+
+          {/* Audio settings */}
+          <button onClick={() => setAudioSettingsOpen(v => !v)} className="flex flex-col items-center gap-0.5" title="Audio settings">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`, border: !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55` }}>
-              {!audioEnabled
-                ? <MicOff className="w-4 h-4 text-red-400" />
-                : <Mic className="w-4 h-4" style={{ color: GOLD }} />}
+              style={{ background: audioSettingsOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)', border: audioSettingsOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              <Settings className="w-4 h-4" style={{ color: audioSettingsOpen ? GOLD : 'rgba(255,255,255,0.55)' }} />
             </div>
             <span className="text-[11px] text-white/35"> </span>
           </button>
@@ -868,6 +942,72 @@ export default function LiveRoom() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setChatOpen(false)} />
             <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} />
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Audio settings panel */}
+      <AnimatePresence>
+        {audioSettingsOpen && (
+          <>
+            <motion.div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.5)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setAudioSettingsOpen(false)} />
+            <motion.div
+              className="fixed inset-x-0 z-50 rounded-t-2xl overflow-hidden"
+              style={{ bottom: 72, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            >
+              <div className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</span>
+                <button onClick={() => setAudioSettingsOpen(false)} className="text-white/40 text-sm">✕</button>
+              </div>
+              <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {speakers.length > 1 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                      <span className="text-xs font-bold uppercase text-white/60">Output Device</span>
+                    </div>
+                    <select
+                      value={prefSpeaker}
+                      onChange={e => setPrefSpeaker(e.target.value)}
+                      className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
+                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      {speakers.map(d => (
+                        <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
+                          {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase text-white/60">Mic Processing</span>
+                  {[
+                    { label: 'Noise Suppression', value: noiseSupp, set: setNoiseSupp },
+                    { label: 'Echo Cancellation', value: echoCan,   set: setEchoCan   },
+                    { label: 'Auto Gain',          value: autoGain,  set: setAutoGain  },
+                  ].map(({ label, value, set }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-sm text-white/80">{label}</span>
+                      <button
+                        onClick={() => set(v => !v)}
+                        className="relative w-10 h-5 rounded-full transition-all"
+                        style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
+                        aria-label={label}
+                      >
+                        <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                          style={{ left: 2, transform: value ? 'translateX(20px)' : 'translateX(0)' }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </>
         )}
       </AnimatePresence>

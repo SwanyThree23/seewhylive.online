@@ -269,7 +269,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
                 </div>
                 {isHost && (
                   <button onClick={e => { e.stopPropagation(); removePanel(panel.id); }}>
-                    <X className="w-3.5 h-3.5 text-white/30 hover:text-red-400" />
+                    <X className="w-3.5 h-3.5 text-white/30 hover:text-[#C0392B]" />
                   </button>
                 )}
               </div>

@@ -70,7 +70,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
                           onClick={() => handleMute(guest.id)}
                           className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
                             mutedGuests[guest.id]
-                              ? 'bg-red-900/60 text-red-400 border border-red-600'
+                              ? 'bg-red-900/60 text-[#C0392B] border border-red-600'
                               : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'
                           }`}
                           title={mutedGuests[guest.id] ? 'Unmute' : 'Mute'}
@@ -95,7 +95,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           onClick={() => handleRemove(guest.id)}
-                          className="w-6 h-6 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-600/30 transition-all"
+                          className="w-6 h-6 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-[#C0392B] border border-red-600/30 transition-all"
                           title="Remove guest"
                         >
                           <Trash2 className="w-3 h-3" />

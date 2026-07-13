@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music, Radio, Zap, Headphones } from 'lucide-react';
 
@@ -19,7 +19,7 @@ const AUDIO_PRESETS = [
   { id: 'voice', label: 'Voice Enhance', settings: { gain: 130, noiseFilter: true, echo: false } },
 ];
 
-export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSettingsChange }) {
+export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSettingsChange, stream }) {
   const [collapsed, setCollapsed] = useState(false);
   const [preset, setPreset] = useState('normal');
   const [gain, setGain] = useState([100]);
@@ -27,17 +27,37 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   const [echoCancellation, setEchoCancellation] = useState(true);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [bgMusic, setBgMusic] = useState('none');
-  const [vuLevels, setVuLevels] = useState([0.1, 0.2, 0.1, 0.3, 0.2, 0.1, 0.2, 0.3]);
+  const [vuLevels, setVuLevels] = useState([0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02]);
   const [mono, setMono] = useState(false);
-  const vuRef = useRef(null);
 
+  // Real AudioContext VU analysis from the mic stream
   useEffect(() => {
-    if (micMuted) return;
-    vuRef.current = setInterval(() => {
-      setVuLevels(Array.from({ length: 8 }, () => Math.random() * 0.9 + 0.05));
-    }, 100);
-    return () => clearInterval(vuRef.current);
-  }, [micMuted]);
+    if (!stream || micMuted) {
+      setVuLevels(Array(8).fill(0.02));
+      return;
+    }
+    let ctx, raf;
+    try {
+      ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(buf);
+        const bands = 8;
+        const size = Math.floor(buf.length / bands);
+        setVuLevels(Array.from({ length: bands }, (_, i) => {
+          const slice = buf.slice(i * size, i * size + size);
+          return slice.reduce((a, b) => a + b, 0) / (size * 255);
+        }));
+        raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {}
+    return () => { cancelAnimationFrame(raf); ctx?.close().catch(() => {}); };
+  }, [stream, micMuted]);
 
   const handlePresetChange = (presetId) => {
     setPreset(presetId);
@@ -110,6 +130,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   ? 'bg-red-900/50 border border-red-600/50 text-red-400'
                   : 'bg-[#0F1428]/30 border border-[#6DBF7E]/35/40 text-[#6DBF7E]'
               }`}
+              style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
               {micMuted ? 'Unmute' : 'Live'} (M)
