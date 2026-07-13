@@ -345,6 +345,7 @@ export default function ControlRoomPage() {
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const [viewerCount, setViewerCount] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -670,7 +671,7 @@ export default function ControlRoomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={true} />}
       {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
@@ -697,7 +698,7 @@ export default function ControlRoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={viewerCount} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}

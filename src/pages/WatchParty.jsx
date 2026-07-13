@@ -483,6 +483,7 @@ export default function WatchPartyPage() {
   const [theaterMode, setTheaterMode] = useState(false);
   const [showSyncWarn, setShowSyncWarn] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
 
@@ -1431,7 +1432,7 @@ export default function WatchPartyPage() {
       {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={party} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={isHost} sessionId={partyId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={isHost} sessionId={partyId} onViewerUpdate={() => {}} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {partyId && <TippingOverlay roomId={partyId} creatorId={party?.host_id || user?.id} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />}
       {isHost && partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
@@ -1458,7 +1459,7 @@ export default function WatchPartyPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={members.length} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={members.length} />
       <ViewerCount count={members.length} peakViewers={members.length} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}

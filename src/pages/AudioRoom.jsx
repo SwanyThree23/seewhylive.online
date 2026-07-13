@@ -907,7 +907,7 @@ export default function AudioRoom() {
       {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={party} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={party?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
@@ -934,7 +934,7 @@ export default function AudioRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={memberCount} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={memberCount} />
       <ViewerCount count={memberCount} peakViewers={memberCount} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
@@ -953,7 +953,7 @@ export default function AudioRoom() {
       {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
-      <LiveGoalWidget memberCount={memberCount} tipTotal={0} subCount={0} />
+      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={0} />
       <SuperChatRail superchats={[]} />
       {roomId && user?.id && party?.host_id && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 

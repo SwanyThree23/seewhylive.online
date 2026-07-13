@@ -930,7 +930,7 @@ export default function RoomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
@@ -957,7 +957,7 @@ export default function RoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={participants.length} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={participants.length} />
       <ViewerCount count={participants.length} peakViewers={participants.length} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
@@ -977,9 +977,9 @@ export default function RoomPage() {
       {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
       {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
-      <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={0} peakViewers={participants.length} netQuality={netQuality} netRtt={netRtt} />
+      <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={participants.length} netQuality={netQuality} netRtt={netRtt} />
       <SuperChatRail superchats={[]} />
-      <LiveGoalWidget memberCount={participants.length} tipTotal={0} subCount={0} />
+      <LiveGoalWidget memberCount={participants.length} tipTotal={tipTotal} subCount={0} />
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={room?.host_id || user?.id} creatorName={''} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={participants.length} />}

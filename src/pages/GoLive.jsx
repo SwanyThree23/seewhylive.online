@@ -499,6 +499,7 @@ export default function GoLive() {
   const [micOn,       setMicOn]       = useState(true);
   const [videoOn,     setVideoOn]     = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
@@ -1010,7 +1011,7 @@ export default function GoLive() {
       {null && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={null} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {partyId && <TippingOverlay roomId={partyId} creatorId={user?.id} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
@@ -1037,7 +1038,7 @@ export default function GoLive() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={viewerCount} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={viewerCount} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
