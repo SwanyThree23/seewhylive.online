@@ -547,6 +547,8 @@ export default function BroadcastStudio() {
   const [isExclusive, setIsExclusive] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
@@ -617,6 +619,7 @@ export default function BroadcastStudio() {
   const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   var vodResult=useVODRecording({streamId:partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
@@ -2457,7 +2460,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <StreamHealthDashboard isLive={partyId != null} />
       {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
-      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenEnabled) setScreenEnabled(true); else if (s === 'camera' && screenEnabled) setScreenEnabled(false); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
@@ -2527,7 +2530,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
+      {isHost && <BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
       {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
       {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
