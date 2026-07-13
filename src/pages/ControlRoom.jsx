@@ -613,7 +613,6 @@ export default function ControlRoomPage() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {<SubscriptionManager creatorId={user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={user?.id} />}
-      {!true && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
@@ -678,7 +677,7 @@ export default function ControlRoomPage() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
       {roomId && <GuestGrid participants={[]} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
       {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
-      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
+      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
