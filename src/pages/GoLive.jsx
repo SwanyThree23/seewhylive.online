@@ -522,6 +522,10 @@ export default function GoLive() {
   const [isSharing, setIsSharing] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
@@ -1027,7 +1031,7 @@ export default function GoLive() {
       {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={true} streamTitle={''} onUnlock={() => {}} isUnlocked={true} />
@@ -1086,9 +1090,9 @@ export default function GoLive() {
       {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
       {partyId && <AuraPanelDrawer roomId={partyId} isOpen={false} onClose={() => {}} />}
       {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
-      {partyId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={partyId} />}
-      {partyId && <WebRTCConfigModal isOpen={false} onClose={() => {}} />}
-      {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={false} onClose={() => {}} />}
+      {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} />}
+      {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}
+      {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={showClipCreator} onClose={() => setShowClipCreator(false)} />}
       {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
     </div>
   );

@@ -547,6 +547,12 @@ export default function BroadcastStudio() {
   const [isExclusive, setIsExclusive] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
@@ -1519,11 +1525,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           <div className="shrink-0 flex items-center gap-2 px-3 py-2 overflow-x-auto"
             style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
             {[
-              { icon: '🎁', label: 'Gifts',  action: () => setGiftOpen(true) },
-              { icon: '📊', label: 'Poll',   action: () => { window.location.href = '/PollManager'; } },
-              { icon: '🔔', label: 'Alert',  action: () => toast.info('Alert sent to audience!') },
-              { icon: '📱', label: 'QR',     action: () => toast.info(window.location.href) },
-              { icon: '🎵', label: 'Music',  action: () => { window.location.href = '/AIMusic'; } },
+              { icon: '🎁', label: 'Gifts',    action: () => setGiftOpen(true) },
+              { icon: '👥', label: 'Invite',   action: () => setShowInviteSheet(true) },
+              { icon: '⚔️', label: 'PK',       action: () => setShowPKBattleModal(true) },
+              { icon: '🚪', label: 'Breakout', action: () => setShowBreakoutRooms(true) },
+              { icon: '📢', label: 'Share',    action: () => setShowShareModal(true) },
+              { icon: '⚡', label: 'Activity', action: () => setShowActivitySidebar(v => !v) },
+              { icon: '📊', label: 'Poll',     action: () => { window.location.href = '/PollManager'; } },
+              { icon: '🔔', label: 'Alert',    action: () => toast.info('Alert sent to audience!') },
+              { icon: '🎵', label: 'Music',    action: () => { window.location.href = '/AIMusic'; } },
             ].map(item => (
               <button key={item.label}
                 onClick={item.action}
@@ -1598,7 +1608,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
                     {members.length} / 20 panelists
                   </span>
-                  <button onClick={copyLink} className="text-[11px] px-2 py-0.5 rounded"
+                  <button onClick={() => setShowInviteSheet(true)} className="text-[11px] px-2 py-0.5 rounded"
                     style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
                     + Invite
                   </button>
@@ -2493,7 +2503,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
@@ -2558,7 +2568,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
       {!isHost && partyId && user && <TipWidget roomId={partyId} hostId={party?.host_id} currentUser={user} />}
-      <InviteSheet isOpen={false} onClose={() => {}} roomId={partyId} roomTitle={party?.title || ''} isHost={isHost} isCoHost={false} />
+      <InviteSheet isOpen={showInviteSheet} onClose={() => setShowInviteSheet(false)} roomId={partyId} roomTitle={party?.title || ''} isHost={isHost} isCoHost={false} />
       {partyId && <AuraPanel roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} isLive={partyId != null} userTier="free" />}
       {isHost && <GuestControls
         participants={members}
@@ -2566,7 +2576,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         onRemoveGuest={(id) => { const m = members.find(mb => mb.id === id); if (m) kickMember(m); }}
       />}
       {isHost && partyId && <StreamHealthMonitor isLive={true} />}
-      {isHost && partyId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={partyId} roomTitle={party?.title || ''} currentUser={user} />}
+      {isHost && partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} roomTitle={party?.title || ''} currentUser={user} />}
       {isHost && partyId && <CoStreamHub roomId={partyId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
       {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && party && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} party={party} user={user} />}
@@ -2574,10 +2584,10 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && user?.id && <ClipCreatorSheet roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={party?.title || ''} onClose={() => {}} />}
       {isHost && partyId && <AuraPanelDrawer roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => {}} />}
       {partyId && <PKBattle roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={members.length} />}
-      {partyId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={partyId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
+      {partyId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={partyId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
       {!isHost && partyId && user && <LoveTap roomId={partyId} user={user} creatorId={party?.host_id || user?.id} creatorName={''} />}
-      <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}${createPageUrl('BroadcastStudio')}?id=${partyId}`} title={party?.title || ''} />
-      <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
+      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}${createPageUrl('BroadcastStudio')}?id=${partyId}`} title={party?.title || ''} />
+      <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />
     </div>
   );
 }

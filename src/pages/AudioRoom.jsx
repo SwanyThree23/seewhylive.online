@@ -313,6 +313,10 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [chatOpen,      setChatOpen]      = useState(false);
   const [settingsOpen,  setSettingsOpen]  = useState(false);
   const [handRaised,    setHandRaised]    = useState(false);
@@ -900,7 +904,7 @@ export default function AudioRoom() {
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={''} onUnlock={() => {}} isUnlocked={true} />
@@ -957,9 +961,9 @@ export default function AudioRoom() {
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
       {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {isHost && roomId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
-      {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
-      {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={party?.title || ''} currentUser={user} />}
-      {roomId && <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}/AudioRoom?id=${roomId}`} title={party?.title || 'Audio Room'} />}
+      {isHost && roomId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />}
+      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={party?.title || ''} currentUser={user} />}
+      {roomId && <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}/AudioRoom?id=${roomId}`} title={party?.title || 'Audio Room'} />}
       {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} />}
       {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}

@@ -501,6 +501,7 @@ export default function WatchPartyPage() {
   const prevMemberCountRef = useRef(null);
 
   // AI panel state
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
@@ -1450,7 +1451,7 @@ export default function WatchPartyPage() {
       {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />

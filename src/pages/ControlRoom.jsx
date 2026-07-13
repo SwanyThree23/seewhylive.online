@@ -346,6 +346,7 @@ export default function ControlRoomPage() {
 
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [uptime, setUptime] = useState(0);
   const prefCamCR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicCR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
@@ -678,7 +679,7 @@ export default function ControlRoomPage() {
       {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={true} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
