@@ -2,15 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- PWA -->
+    <!-- PWA / APK wrapper -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#D4AF37" />
+    <meta name="theme-color" content="#080B18" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SeeWhy LIVE" />
+    <!-- Android WebView / TWA compatibility -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="MobileOptimized" content="width" />
+    <meta name="msapplication-TileColor" content="#080B18" />
+    <meta name="msapplication-TileImage" content="/icons/icon-192x192.png" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="screen-orientation" content="portrait" />
+    <meta name="full-screen" content="yes" />
+    <meta name="browsermode" content="application" />
+    <meta name="application-name" content="SeeWhy LIVE" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <!-- SEO / Open Graph -->
     <title>SeeWhy LIVE — Live Streaming &amp; Creator Platform</title>
@@ -34,8 +45,84 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>" />
     <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
   </head>
+  <style>
+    #sw-splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #080B18;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      font-family: 'Barlow Condensed', 'DM Sans', sans-serif;
+      transition: opacity 0.35s ease;
+    }
+    #sw-splash.fade-out { opacity: 0; pointer-events: none; }
+    .sw-logo-ring {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 2px solid rgba(212,175,55,0.3);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      animation: sw-pulse 1.8s ease-in-out infinite;
+    }
+    .sw-logo-ring::before {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%;
+      border: 1px solid rgba(212,175,55,0.12);
+    }
+    .sw-logo-inner {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, #800020, #D4AF37);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .sw-title {
+      font-size: 22px; font-weight: 700; letter-spacing: 3px;
+      color: #D4AF37; text-transform: uppercase;
+    }
+    .sw-dot-row { display: flex; gap: 6px; align-items: center; }
+    .sw-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #D4AF37; opacity: 0.25;
+      animation: sw-dot 1.2s ease-in-out infinite;
+    }
+    .sw-dot:nth-child(2) { animation-delay: 0.2s; }
+    .sw-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes sw-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.18); }
+      50% { box-shadow: 0 0 0 12px rgba(212,175,55,0); }
+    }
+    @keyframes sw-dot {
+      0%, 80%, 100% { opacity: 0.18; transform: scale(0.85); }
+      40% { opacity: 1; transform: scale(1.15); }
+    }
+  </style>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <style>
+        #sw-boot{position:fixed;inset:0;background:#080B18;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:'Barlow Condensed',sans-serif}
+        #sw-boot .logo{font-size:28px;font-weight:900;letter-spacing:0.06em;color:#D4AF37;margin-bottom:28px}
+        #sw-boot .ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(212,175,55,0.2);border-top-color:#D4AF37;animation:sw-spin 0.8s linear infinite}
+        #sw-boot .sub{margin-top:16px;font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.12em;text-transform:uppercase}
+        @keyframes sw-spin{to{transform:rotate(360deg)}}
+      </style>
+      <div id="sw-boot">
+        <div class="logo">⬡ SeeWhy LIVE</div>
+        <div class="ring"></div>
+        <div class="sub">Loading platform…</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      (function() {
+        var root = document.getElementById('root');
+        var splash = document.getElementById('sw-splash');
+        var obs = new MutationObserver(function() {
+          if (root.children.length > 0) {
+            splash.classList.add('fade-out');
+            setTimeout(function() { splash.style.display = 'none'; }, 400);
+            obs.disconnect();
+          }
+        });
+        obs.observe(root, { childList: true });
+      })();
+    </script>
   </body>
 </html>
