@@ -308,6 +308,7 @@ export default function GreenroomPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
+  const [previewStream, setPreviewStream] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [roleRequested, setRoleRequested] = useState('audience');
   const [joinMessage, setJoinMessage] = useState('');
@@ -510,7 +511,7 @@ export default function GreenroomPage() {
 
         {/* ── LEFT: Device Preview ── */}
         <div className="w-full md:w-[60%] space-y-4">
-          <DevicePreview user={user} onDeviceState={setDeviceState} />
+          <DevicePreview user={user} onDeviceState={setDeviceState} onStreamReady={setPreviewStream} />
         </div>
 
         {/* ── RIGHT: Controls ── */}
@@ -815,7 +816,7 @@ export default function GreenroomPage() {
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={null} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && <LocalVideoTile stream={previewStream} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} userName={user?.full_name || ''} isHost={isHost} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!deviceState.micOn} isVideoOff={!deviceState.cameraOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onVideoToggle={() => setDeviceState(prev => ({ ...prev, cameraOn: !prev.cameraOn }))} />}
       {isHost && <AudioPanel micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
