@@ -51,6 +51,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
 }
 
 export default function LivePoll({ roomId, isHost }) {
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [question, setQuestion] = useState('');
@@ -181,7 +182,7 @@ export default function LivePoll({ roomId, isHost }) {
             <PollResults
               poll={activePoll}
               votes={voteTally}
-              currentUser={null}
+              currentUser={currentUser || null}
               onVote={userVotedOption === null ? handleVote : null}
               onEnd={isHost ? () => endPollMutation.mutate() : null}
             />
