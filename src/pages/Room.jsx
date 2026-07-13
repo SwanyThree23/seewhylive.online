@@ -167,6 +167,7 @@ import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import InviteSheet from '../components/live/InviteSheet';
 import AuraPanel from '../components/live/AuraPanel';
@@ -224,7 +225,11 @@ export default function RoomPage() {
   // Real local camera/mic stream — seed device IDs from stored preferences
   const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamRoom);
+  const [activeMicId, setActiveMicId] = useState(prefMicRoom);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
 
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
@@ -912,6 +917,7 @@ export default function RoomPage() {
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
+      {isHost && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
