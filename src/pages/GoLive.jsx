@@ -529,6 +529,7 @@ export default function GoLive() {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
@@ -969,7 +970,6 @@ export default function GoLive() {
       {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={partyId} isHost={true} />}
       {partyId && <RedemptionQueue creatorId={user?.id} roomId={partyId} />}
       {partyId && <RewardShop creatorId={user?.id} roomId={partyId} currentUser={user} />}
-      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={(p) => { try { localStorage.setItem('swl_pref_resolution', p.resolution); localStorage.setItem('swl_pref_bitrate', String(p.bitrate)); } catch {} }} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
@@ -981,7 +981,6 @@ export default function GoLive() {
       {partyId && <InteractivePollWidget roomId={partyId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={'Live Stream'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
-      {!true && partyId && <AnimatedGiftShop recipientId={user?.id} roomId={partyId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -990,8 +989,7 @@ export default function GoLive() {
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
-      {!true && partyId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
-      {<LowerThirdsBanner onBannerChange={() => {}} />}
+      {<LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
       {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
@@ -1001,9 +999,8 @@ export default function GoLive() {
       {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!true && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={user?.id} />}
-      {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
@@ -1021,9 +1018,7 @@ export default function GoLive() {
       {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
-      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {null && <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />}
       {partyId && user?.id && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
       {partyId && <PaymentMethodSelector creatorId={user?.id} roomId={partyId} onPaymentComplete={() => {}} />}
       {<CreatorTierManager creatorId={user?.id} />}
@@ -1049,7 +1044,6 @@ export default function GoLive() {
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
       {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={true} />}
-      {null && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={null} />}
       {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) setChatMessages(prev => [...prev, msg]); }} />}

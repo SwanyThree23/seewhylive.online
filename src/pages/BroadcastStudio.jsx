@@ -555,6 +555,11 @@ export default function BroadcastStudio() {
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
@@ -2429,7 +2434,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={party?.host_id || user?.id} />}
       {partyId && <LiveTranscription isLive={true} roomId={partyId} stream={localStream} />}
-      {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <StreamerGoalsWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} embedded={true} />}
@@ -2461,7 +2466,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <InteractivePollWidget roomId={partyId} isHost={isHost} />}
       {isHost && <StreamMetadataEditor initialTitle={party?.title || 'Live Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => {}} />}
+      {!isHost && showGiftShop && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -2470,8 +2475,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
-      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
-      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
+      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenEnabled) setScreenEnabled(true); else if (s === 'camera' && screenEnabled) setScreenEnabled(false); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
@@ -2481,7 +2486,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
+      {!isHost && showWhisperPanel && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}
@@ -2583,8 +2588,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && party && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} party={party} user={user} />}
       {isHost && user?.id && <OverlayThemeBuilder creatorId={party?.host_id || user?.id} />}
-      {isHost && partyId && user?.id && <ClipCreatorSheet roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={party?.title || ''} onClose={() => {}} />}
-      {isHost && partyId && <AuraPanelDrawer roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => {}} />}
+      {isHost && showClipCreator && partyId && user?.id && <ClipCreatorSheet roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={party?.title || ''} onClose={() => setShowClipCreator(false)} />}
+      {isHost && showAuraPanelDrawer && partyId && <AuraPanelDrawer roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}
       {partyId && <PKBattle roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={members.length} />}
       {partyId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={partyId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
       {!isHost && partyId && user && <LoveTap roomId={partyId} user={user} creatorId={party?.host_id || user?.id} creatorName={''} />}

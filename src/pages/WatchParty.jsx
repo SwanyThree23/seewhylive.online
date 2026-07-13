@@ -505,6 +505,9 @@ export default function WatchPartyPage() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
   const [wpAriaMessage, setWpAriaMessage] = useState('');
@@ -1285,7 +1288,7 @@ export default function WatchPartyPage() {
                   </button>
                 </div>
                 {isHost && (
-                  <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
+                  <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if (party?.id) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />
                 {members.length < 10 && (
@@ -1375,7 +1378,7 @@ export default function WatchPartyPage() {
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={party?.host_id || user?.id} />}
       {partyId && <LiveTranscription isLive={true} roomId={partyId} stream={localStream} speaker={user?.full_name} />}
-      {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => {}} />}
@@ -1408,7 +1411,7 @@ export default function WatchPartyPage() {
       {partyId && <InteractivePollWidget roomId={partyId} isHost={isHost} />}
       {isHost && <StreamMetadataEditor initialTitle={party?.title || 'Watch Party'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => {}} />}
+      {!isHost && showGiftShop && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -1417,8 +1420,8 @@ export default function WatchPartyPage() {
       {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
-      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
-      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
+      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
+      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenCaptureStream) handleScreenCapture(); else if (s === 'camera' && screenCaptureStream) { screenCaptureStream.getTracks().forEach(t => t.stop()); setScreenCaptureStream(null); } }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
@@ -1428,7 +1431,7 @@ export default function WatchPartyPage() {
       {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
+      {!isHost && showWhisperPanel && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}

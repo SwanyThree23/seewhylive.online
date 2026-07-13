@@ -364,6 +364,7 @@ export default function ControlRoomPage() {
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
   const screenStreamRef = useRef(null);
   const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
   const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
@@ -602,7 +603,7 @@ export default function ControlRoomPage() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={user?.id} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
-      {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
@@ -622,7 +623,6 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={roomId} isHost={true} />}
       {roomId && <RedemptionQueue creatorId={user?.id} roomId={roomId} />}
       {roomId && <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />}
-      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
       {<StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={viewerCount} />}
@@ -634,7 +634,6 @@ export default function ControlRoomPage() {
       {roomId && <InteractivePollWidget roomId={roomId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={room?.title || 'Control Room'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
-      {!true && roomId && <AnimatedGiftShop recipientId={user?.id} roomId={roomId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -643,8 +642,7 @@ export default function ControlRoomPage() {
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {!true && roomId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
-      {<LowerThirdsBanner onBannerChange={() => {}} />}
+      {<LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
       {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
@@ -654,7 +652,6 @@ export default function ControlRoomPage() {
       {roomId && <AIStreamSummary roomId={roomId} isHost={true} streamTitle={room?.title || ''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!true && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={viewerCount} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
@@ -667,7 +664,6 @@ export default function ControlRoomPage() {
       {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
-      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
       {room && <WatchPartyAnalytics party={room} members={[]} pollCount={0} reactionCount={0} />}
       {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
