@@ -89,6 +89,7 @@ import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import { useCameraDevices } from '../hooks/useCameraDevices';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -509,6 +510,7 @@ export default function GoLive() {
   const cameraRetryRef = useRef(null);
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const subCount = useSubscriptionCount(user?.id);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   // Elapsed counter — only runs while live (partyId set)
@@ -1046,7 +1048,7 @@ export default function GoLive() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}

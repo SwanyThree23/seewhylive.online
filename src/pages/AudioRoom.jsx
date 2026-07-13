@@ -14,6 +14,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
@@ -346,6 +347,7 @@ export default function AudioRoom() {
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   function handleToggleAudio() {
     toggleAudio();
@@ -934,7 +936,7 @@ export default function AudioRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={memberCount} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={memberCount} />
       <ViewerCount count={memberCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
@@ -953,7 +955,7 @@ export default function AudioRoom() {
       {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
-      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={0} />
+      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} />
       <SuperChatRail superchats={[]} />
       {roomId && user?.id && party?.host_id && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 

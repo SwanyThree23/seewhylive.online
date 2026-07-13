@@ -28,6 +28,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -544,6 +545,7 @@ export default function WatchPartyPage() {
   });
 
   const isHost = party?.host_id === user?.id;
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
@@ -1461,7 +1463,7 @@ export default function WatchPartyPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={members.length} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={members.length} />
       <ViewerCount count={members.length} peakViewers={peakViewers} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}

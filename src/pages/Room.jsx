@@ -34,6 +34,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -227,6 +228,7 @@ export default function RoomPage() {
 
   // VOD recording — activated once host has a local stream and room is loaded
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   // Stream start time — set once on mount
   const streamStartRef = useRef(Date.now());
@@ -957,7 +959,7 @@ export default function RoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={participants.length} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={participants.length} />
       <ViewerCount count={participants.length} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}

@@ -13,6 +13,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
@@ -430,6 +431,7 @@ export default function LiveRoom() {
 
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: true });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   // Derive the first active RTCPeerConnection for connection quality monitoring
   const [activePc, setActivePc] = useState(null);
@@ -1357,7 +1359,7 @@ export default function LiveRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={liveCount} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={liveCount} />
       <ViewerCount count={liveCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
@@ -1381,7 +1383,7 @@ export default function LiveRoom() {
       {isHost && roomId && user?.id && <ClipMarker roomId={roomId} user={user} streamStartTs={elapsed > 0 ? Date.now() - elapsed * 1000 : null} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={roomTitle} onClose={() => {}} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
-      <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={0} />
+      <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} />
       <SuperChatRail superchats={[]} />
       {roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={hostName} viewerCount={liveCount} />}

@@ -15,6 +15,7 @@ import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
 import AggregatedChat from '../components/live/AggregatedChat';
@@ -641,6 +642,7 @@ export default function BroadcastStudio() {
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
+  const subCount = useSubscriptionCount(user?.id);
 
   // Warn broadcaster once when connection drops to 1 bar or below
   const lastNetBarsRef = useRef(null);
@@ -2530,7 +2532,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={members.length} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={members.length} />
       <ViewerCount count={members.length} peakViewers={peakViewers} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}

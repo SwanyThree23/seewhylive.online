@@ -151,6 +151,7 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -179,6 +180,7 @@ export default function HybridStreamRoom() {
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   const { data: fetchedParticipants = [] } = useQuery({
     queryKey: ['participants', roomId],
@@ -482,7 +484,7 @@ export default function HybridStreamRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}

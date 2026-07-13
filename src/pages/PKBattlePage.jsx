@@ -15,6 +15,7 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 
 
@@ -563,6 +564,7 @@ export default function PKBattlePage() {
 
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
+  const subCount = useSubscriptionCount(user?.id);
 
   const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
@@ -816,7 +818,7 @@ export default function PKBattlePage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battleRemoteStreams.size} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={subCount} currentViewers={battleRemoteStreams.size} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={battleId} currentUser={user} />

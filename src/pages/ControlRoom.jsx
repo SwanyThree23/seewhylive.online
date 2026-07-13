@@ -134,6 +134,7 @@ import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
@@ -347,6 +348,7 @@ export default function ControlRoomPage() {
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const subCount = useSubscriptionCount(user?.id);
   const [viewerCount, setViewerCount] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
@@ -704,7 +706,7 @@ export default function ControlRoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
