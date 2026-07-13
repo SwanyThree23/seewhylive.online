@@ -526,6 +526,7 @@ export default function GoLive() {
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
@@ -969,7 +970,7 @@ export default function GoLive() {
       {partyId && <RewardShop creatorId={user?.id} roomId={partyId} currentUser={user} />}
       {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
-      {<StreamingPresets onApply={() => {}} />}
+      {<StreamingPresets onApply={(p) => { try { localStorage.setItem('swl_pref_resolution', p.resolution); localStorage.setItem('swl_pref_bitrate', String(p.bitrate)); } catch {} }} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
       <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
@@ -1007,7 +1008,7 @@ export default function GoLive() {
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} />}
-      <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+      <RoomBrandingEditor roomData={null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
@@ -1088,7 +1089,7 @@ export default function GoLive() {
       {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => {}} />}
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
-      {partyId && <AuraPanelDrawer roomId={partyId} isOpen={false} onClose={() => {}} />}
+      {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}
       {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
       {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} />}
       {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}

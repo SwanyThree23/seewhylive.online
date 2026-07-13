@@ -490,6 +490,8 @@ const TABS = [
 export default function MonetizationPage() {
   const [tab, setTab]               = useState('overview');
   const [flywheelStage, setStage]   = useState('attract');
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const queryClient                 = useQueryClient();
 
   const { data: user } = useQuery({
@@ -742,7 +744,10 @@ export default function MonetizationPage() {
                 <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <MilestonesPanel subCount={subCount} />
                   <div style={card()}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Tier Breakdown</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: 0, ...T }}>Tier Breakdown</p>
+                      <button onClick={() => { setEditingTier(null); setShowTierEditor(true); }} style={{ padding: '5px 12px', borderRadius: 8, background: `${G}18`, border: `1px solid ${G}40`, color: G, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...T }}>+ Create Tier</button>
+                    </div>
                     {[
                       { name: 'Bronze', key: 'bronze', price: 1,  color: '#ea580c' },
                       { name: 'Silver', key: 'premium', price: 5,  color: '#9ca3af' },
@@ -784,7 +789,7 @@ export default function MonetizationPage() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
       {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
       <RewardShopEditor creatorId={user?.id} />
       <SwanyBotWidget />
       <CollaborationMatcher />

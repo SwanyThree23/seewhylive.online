@@ -553,6 +553,7 @@ export default function BroadcastStudio() {
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showPKBattleModal, setShowPKBattleModal] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
@@ -2437,7 +2438,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <GiftLeaderboard roomId={partyId} />}
       {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
+      {!isHost && partyId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={partyId} />}
       {partyId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />

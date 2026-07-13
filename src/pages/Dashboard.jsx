@@ -1087,6 +1087,8 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showQuickAction, setShowQuickAction] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
@@ -1159,7 +1161,7 @@ export default function DashboardPage() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
       {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
       <RewardShopEditor creatorId={user?.id} />
       <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
       <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />

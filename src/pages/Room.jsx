@@ -211,6 +211,9 @@ export default function RoomPage() {
   const [showPKBattleModal, setShowPKBattleModal] = useState(false);
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const screenStreamRef = useRef(null);
   const handleStartShare = (stream) => { if (!stream) return; screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
@@ -1014,13 +1017,13 @@ export default function RoomPage() {
       {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
       {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />}
       <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title || ''} />
-      <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
+      <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />
       {isHost && roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
       {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && room && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} party={room} user={user} />}
       {isHost && user?.id && <OverlayThemeBuilder creatorId={room?.host_id || user?.id} />}
-      {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => {}} />}
-      {isHost && roomId && <AuraPanelDrawer roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => {}} />}
+      {isHost && roomId && user?.id && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => setShowClipCreator(false)} />}
+      {isHost && roomId && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}
     </div>
   );
 }

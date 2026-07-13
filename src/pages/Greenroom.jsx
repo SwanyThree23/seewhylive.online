@@ -331,6 +331,7 @@ export default function GreenroomPage() {
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [showTippingModal, setShowTippingModal] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -772,7 +773,7 @@ export default function GreenroomPage() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={room?.host_id || user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: room?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
@@ -823,7 +824,7 @@ export default function GreenroomPage() {
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
-      {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={true} />}
+      {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (roomId) base44.entities.Room.update(roomId, b).catch(() => {}); }} isHost={true} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}

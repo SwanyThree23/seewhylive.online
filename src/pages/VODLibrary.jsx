@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import VODCard from '../components/vod/VODCard';
@@ -46,6 +46,11 @@ export default function VODLibraryPage() {
   const [selectedForChapters, setSelectedForChapters] = useState(null);
   const [selectedForTrim, setSelectedForTrim] = useState(null);
   const [selectedForHighlights, setSelectedForHighlights] = useState(null);
+  const [selectedForEdit, setSelectedForEdit] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -132,8 +137,53 @@ export default function VODLibraryPage() {
           <div className="space-y-4">
             <VODLibraryComponent creatorId={user.id} />
             {myVODs.map(v => (
-              <VODCard key={v.id} vod={v} onEdit={() => {}} onTrim={() => setSelectedForTrim(v)} onChapters={() => setSelectedForChapters(v)} onPublish={() => {}} />
+              <VODCard
+                key={v.id}
+                vod={v}
+                onEdit={() => { setSelectedForEdit(v); setEditTitle(v.title || ''); setEditDesc(v.description || ''); }}
+                onTrim={() => setSelectedForTrim(v)}
+                onChapters={() => setSelectedForChapters(v)}
+                onPublish={() => {
+                  base44.entities.VODVideo.update(v.id, { status: 'published' })
+                    .then(() => queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }))
+                    .catch(() => {});
+                }}
+              />
             ))}
+            {selectedForEdit && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: 20, marginTop: 8 }}>
+                <p className="text-sm font-black mb-4" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Edit VOD</p>
+                <input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  placeholder="Title"
+                  className="w-full mb-3 px-3 py-2 rounded-lg text-sm text-white outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                />
+                <textarea
+                  value={editDesc}
+                  onChange={e => setEditDesc(e.target.value)}
+                  placeholder="Description"
+                  rows={3}
+                  className="w-full mb-4 px-3 py-2 rounded-lg text-sm text-white outline-none resize-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setSelectedForEdit(null)} style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+                  <button
+                    disabled={editSaving}
+                    onClick={() => {
+                      setEditSaving(true);
+                      base44.entities.VODVideo.update(selectedForEdit.id, { title: editTitle, description: editDesc })
+                        .then(() => { queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }); setSelectedForEdit(null); })
+                        .catch(() => {})
+                        .finally(() => setEditSaving(false));
+                    }}
+                    style={{ padding: '6px 16px', borderRadius: 8, background: G, color: '#000', fontSize: 12, fontWeight: 700, cursor: editSaving ? 'not-allowed' : 'pointer', opacity: editSaving ? 0.6 : 1, border: 'none' }}
+                  >{editSaving ? 'Saving…' : 'Save'}</button>
+                </div>
+              </motion.div>
+            )}
           </div>
         )}
 

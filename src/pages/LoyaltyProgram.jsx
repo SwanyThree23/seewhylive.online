@@ -54,6 +54,8 @@ export default function LoyaltyProgram() {
   const creatorId = urlParams.get('creator');
   const [activeTab, setActiveTab] = useState(null);
   const [showRewardForm, setShowRewardForm] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const [rewardForm, setRewardForm] = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 
@@ -380,7 +382,7 @@ export default function LoyaltyProgram() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
       {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
       <RewardShopEditor creatorId={user?.id} />
       <SwanyBotWidget />
       <CollaborationMatcher />

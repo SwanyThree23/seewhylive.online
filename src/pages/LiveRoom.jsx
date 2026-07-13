@@ -503,6 +503,8 @@ export default function LiveRoom() {
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
 
   // Elapsed-seconds counter (starts on mount)
   const [elapsed, setElapsed] = useState(0);
@@ -1280,7 +1282,7 @@ export default function LiveRoom() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
@@ -1378,7 +1380,7 @@ export default function LiveRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1410,7 +1412,7 @@ export default function LiveRoom() {
       {isHost && roomId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />}
       {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={roomTitle} currentUser={user} />}
       {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} />}
-      {roomId && party?.host_id && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => {}} />}
+      {roomId && party?.host_id && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => setShowAuraPanelDrawer(false)} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={roomTitle} viewerCount={liveCount} isLive={isLive} userTier={'free'} />}
       {isHost && roomId && user?.id && <ClipMarker roomId={roomId} user={user} streamStartTs={elapsed > 0 ? Date.now() - elapsed * 1000 : null} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={roomTitle} onClose={() => {}} />}

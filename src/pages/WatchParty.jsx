@@ -503,6 +503,7 @@ export default function WatchPartyPage() {
   // AI panel state
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
   const [wpAriaMessage, setWpAriaMessage] = useState('');
@@ -1384,7 +1385,7 @@ export default function WatchPartyPage() {
       {partyId && <GiftLeaderboard roomId={partyId} />}
       {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
+      {!isHost && partyId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={partyId} />}
       {partyId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />

@@ -317,6 +317,12 @@ export default function AudioRoom() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
   const [chatOpen,      setChatOpen]      = useState(false);
   const [settingsOpen,  setSettingsOpen]  = useState(false);
   const [handRaised,    setHandRaised]    = useState(false);
@@ -838,7 +844,7 @@ export default function AudioRoom() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
@@ -928,7 +934,7 @@ export default function AudioRoom() {
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
       {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />
-      {isHost && <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
       {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}

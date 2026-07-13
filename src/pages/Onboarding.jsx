@@ -80,7 +80,7 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
 }
 
 // ── STEP 1: Profile ──────────────────────────────────────────────
-function Step1({ onboarding, user, onDone }) {
+function Step1({ onboarding, user, onDone, setStep }) {
   const [form, setForm] = useState({ display_name: user?.full_name || '', bio: '', avatar: '🎙', category: 'Gaming' });
   const [saving, setSaving] = useState(false);
   const save = async () => {
@@ -118,13 +118,13 @@ function Step1({ onboarding, user, onDone }) {
             style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${form.category===c?C.gold:'#333'}`, background: form.category===c?'rgba(212,175,55,0.1)':'transparent', color: form.category===c?C.gold:C.gray, cursor: 'pointer', fontFamily: 'Barlow Condensed', fontSize: 11, letterSpacing: 1 }}>{c}</button>
         ))}
       </div>
-      <NavButtons step={1} setStep={() => {}} onSave={save} saving={saving} canNext={!!form.display_name} />
+      <NavButtons step={1} setStep={setStep} onSave={save} saving={saving} canNext={!!form.display_name} />
     </div>
   );
 }
 
 // ── STEP 2: Branding ─────────────────────────────────────────────
-function Step2({ onboarding, onDone }) {
+function Step2({ onboarding, onDone, setStep }) {
   const [theme, setTheme] = useState(0);
   const [font, setFont] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -167,13 +167,13 @@ function Step2({ onboarding, onDone }) {
           </div>
         </div>
       </div>
-      <NavButtons step={2} setStep={() => {}} onSave={save} saving={saving} />
+      <NavButtons step={2} setStep={setStep} onSave={save} saving={saving} />
     </div>
   );
 }
 
 // ── STEP 3: Streaming Setup ──────────────────────────────────────
-function Step3({ onboarding, onDone }) {
+function Step3({ onboarding, onDone, setStep }) {
   const RTMP = 'rtmp://ingest.seewhy.live/live';
   const [streamKey] = useState(() => {
     const arr = new Uint8Array(9);
@@ -212,13 +212,13 @@ function Step3({ onboarding, onDone }) {
             style={{ padding: '5px 12px', borderRadius: 20, border: `1px solid ${platforms[p]?C.gold:'#333'}`, background: platforms[p]?'rgba(212,175,55,0.1)':'transparent', color: platforms[p]?C.gold:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1 }}>{p}</button>
         ))}
       </div>
-      <NavButtons step={3} setStep={() => {}} onSave={save} saving={saving} onSkip={() => onDone({ step_3_stream_key: true, current_step: 4 })} />
+      <NavButtons step={3} setStep={setStep} onSave={save} saving={saving} onSkip={() => onDone({ step_3_stream_key: true, current_step: 4 })} />
     </div>
   );
 }
 
 // ── STEP 4: Subscription Tiers ───────────────────────────────────
-function Step4({ user, onDone }) {
+function Step4({ user, onDone, setStep }) {
   const [tiers, setTiers] = useState(DEFAULT_TIERS.map((t, i) => ({...t, id: i})));
   const [saving, setSaving] = useState(false);
   const updateTier = (id, field, val) => setTiers(ts => ts.map(t => t.id===id ? {...t, [field]: val} : t));
@@ -255,13 +255,13 @@ function Step4({ user, onDone }) {
         ))}
       </div>
       {tiers.length < 4 && <button onClick={addTier} style={{ width:'100%', padding:'8px', background:'transparent', border:`1px dashed ${C.burg}`, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:12, letterSpacing:1, marginBottom:8 }}>+ ADD CUSTOM TIER</button>}
-      <NavButtons step={4} setStep={() => {}} onSave={save} saving={saving} onSkip={() => onDone({ step_4_subscription: true, current_step: 5 })} />
+      <NavButtons step={4} setStep={setStep} onSave={save} saving={saving} onSkip={() => onDone({ step_4_subscription: true, current_step: 5 })} />
     </div>
   );
 }
 
 // ── STEP 5: Community ────────────────────────────────────────────
-function Step5({ user, onDone }) {
+function Step5({ user, onDone, setStep }) {
   const [form, setForm] = useState({ name: '', description: '', category: 'other', welcome_message: '' });
   const [saving, setSaving] = useState(false);
   const save = async () => {
@@ -293,13 +293,13 @@ function Step5({ user, onDone }) {
       </div>
       <label style={lbl}>Welcome Message</label>
       <textarea style={{...inp, height:56, resize:'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
-      <NavButtons step={5} setStep={() => {}} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
+      <NavButtons step={5} setStep={setStep} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
     </div>
   );
 }
 
 // ── STEP 6: Test Stream ──────────────────────────────────────────
-function Step6({ user, onDone }) {
+function Step6({ user, onDone, setStep }) {
   const [started, setStarted] = useState(false);
   const [countdown, setCountdown] = useState(30);
   const [roomId, setRoomId] = useState(null);
@@ -354,7 +354,7 @@ function Step6({ user, onDone }) {
           <div style={{ fontSize:12, color:C.gray, marginTop:4 }}>Your streaming setup is working perfectly.</div>
         </div>
       )}
-      <NavButtons step={6} setStep={() => {}} onSave={save} saving={saving} canNext={done} onSkip={() => onDone({ step_6_test_stream: true, current_step: 7 })} />
+      <NavButtons step={6} setStep={setStep} onSave={save} saving={saving} canNext={done} onSkip={() => onDone({ step_6_test_stream: true, current_step: 7 })} />
     </div>
   );
 }
@@ -484,12 +484,12 @@ export default function OnboardingPage() {
         <ProgressBar step={step} onboarding={onboarding} />
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.2 }}>
-            {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} />}
-            {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} />}
-            {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} />}
-            {step === 4 && <Step4 user={user} onDone={handleDone} />}
-            {step === 5 && <Step5 user={user} onDone={handleDone} />}
-            {step === 6 && <Step6 user={user} onDone={handleDone} />}
+            {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+            {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+            {step === 4 && <Step4 user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 5 && <Step5 user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 6 && <Step6 user={user} onDone={handleDone} setStep={setStep} />}
             {step === 7 && <Step7 onDone={handleDone} />}
           </motion.div>
         </AnimatePresence>

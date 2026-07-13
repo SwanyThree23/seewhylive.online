@@ -81,6 +81,8 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -315,7 +317,7 @@ export default function SettingsPage() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
       {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
       <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />

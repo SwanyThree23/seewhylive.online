@@ -183,6 +183,7 @@ export default function HybridStreamRoom() {
   const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
@@ -390,7 +391,7 @@ export default function HybridStreamRoom() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={room?.host_id || user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: room?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
