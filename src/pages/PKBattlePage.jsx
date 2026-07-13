@@ -16,6 +16,7 @@ import { useVODRecording } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import { useIsMobile } from '../hooks/use-mobile';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 
 
@@ -291,7 +292,7 @@ export default function PKBattlePage() {
   const [leftOnFire, setLeftOnFire] = useState(false);
   const [rightOnFire, setRightOnFire] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [pkRound, setPkRound] = useState(1);
   const [leftSupporters, setLeftSupporters] = useState(new Set());
   const [rightSupporters, setRightSupporters] = useState(new Set());
@@ -309,12 +310,6 @@ export default function PKBattlePage() {
   const countdownStartedRef = useRef(false);
   const battleDurationRef = useRef(BATTLE_DURATION);
 
-  useEffect(() => {
-    var check = function() { setIsMobile(window.innerWidth < 768); };
-    check();
-    window.addEventListener('resize', check);
-    return function() { window.removeEventListener('resize', check); };
-  }, []);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
