@@ -498,6 +498,7 @@ export default function LiveRoom() {
   const [echoCan,     setEchoCan]       = useState(true);
   const [autoGain,    setAutoGain]      = useState(true);
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
 
   // Elapsed-seconds counter (starts on mount)
   const [elapsed, setElapsed] = useState(0);
@@ -1401,7 +1402,7 @@ export default function LiveRoom() {
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
       {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}
       {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
-      {isHost && roomId && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && roomId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
       {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={roomTitle} currentUser={user} />}
       {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} />}

@@ -521,6 +521,7 @@ export default function GoLive() {
   useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
   const [isSharing, setIsSharing] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
@@ -1084,7 +1085,7 @@ export default function GoLive() {
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
       {partyId && <AuraPanelDrawer roomId={partyId} isOpen={false} onClose={() => {}} />}
-      {partyId && <GreenRoomModal isOpen={false} onClose={() => {}} roomId={partyId} />}
+      {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
       {partyId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={partyId} />}
       {partyId && <WebRTCConfigModal isOpen={false} onClose={() => {}} />}
       {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={false} onClose={() => {}} />}
