@@ -459,7 +459,7 @@ export default function HybridStreamRoom() {
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
-      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
+      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
       {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => setLastChatMsg(msg?.content || null)} />}
