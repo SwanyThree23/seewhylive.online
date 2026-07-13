@@ -519,6 +519,21 @@ export default function GoLive() {
   const [hypeLevel, setHypeLevel] = useState(0);
   useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
+  const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const handleStartShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      screenStreamRef.current = stream;
+      stream.getVideoTracks()[0].onended = () => { screenStreamRef.current = null; setIsSharing(false); };
+      setIsSharing(true);
+    } catch {}
+  };
+  const handleStopShare = () => {
+    screenStreamRef.current?.getTracks().forEach(t => t.stop());
+    screenStreamRef.current = null;
+    setIsSharing(false);
+  };
 
   // Elapsed counter — only runs while live (partyId set)
   useEffect(() => {
@@ -1034,7 +1049,7 @@ export default function GoLive() {
       {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => {}} />}
       {<AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />}
       {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
-      {<ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
       {partyId && user?.id && <EnhancedStreamChat roomId={partyId} userId={user.id} userName={user?.full_name || ''} userRole={true ? 'host' : 'viewer'} />}

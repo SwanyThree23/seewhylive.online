@@ -347,6 +347,7 @@ export default function GreenroomPage() {
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
   const [deviceRetryKey, setDeviceRetryKey] = useState(0);
+  const [busViewerCount, setBusViewerCount] = useState(0);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -857,7 +858,7 @@ export default function GreenroomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && hostReadyMut.mutate()} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={() => {}} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
@@ -884,8 +885,8 @@ export default function GreenroomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={subCount} currentViewers={participants.length} />
-      <ViewerCount count={participants.length} peakViewers={peakViewers} />
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={subCount} currentViewers={Math.max(busViewerCount, participants.length)} />
+      <ViewerCount count={Math.max(busViewerCount, participants.length)} peakViewers={peakViewers} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
       {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}
     </div>
