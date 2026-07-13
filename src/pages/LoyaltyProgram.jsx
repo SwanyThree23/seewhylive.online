@@ -385,7 +385,7 @@ export default function LoyaltyProgram() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />

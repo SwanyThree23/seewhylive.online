@@ -38,6 +38,7 @@ const TYPE_CONFIG = {
 };
 
 export default function ActivityPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activities = [] } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
@@ -146,11 +147,11 @@ export default function ActivityPage() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

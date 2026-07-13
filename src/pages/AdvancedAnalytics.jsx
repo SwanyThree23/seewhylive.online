@@ -36,6 +36,7 @@ const GRID = { stroke: 'rgba(255,255,255,0.06)' };
 const TABS = ['revenue', 'engagement', 'performance', 'insights'];
 
 export default function AdvancedAnalyticsPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: metrics = [] } = useQuery({
@@ -217,7 +218,7 @@ export default function AdvancedAnalyticsPage() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />

@@ -220,7 +220,7 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={battles?.length || 0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}

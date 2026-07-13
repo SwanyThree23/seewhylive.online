@@ -416,9 +416,7 @@ export default function SceneTemplates() {
   const [activeTemplate, setActiveTemplate] = useState('single');
   const [showCreate, setShowCreate]         = useState(false);
 
-  // Attempt to get current user from base44 session helper (may not exist)
-  let user = null;
-  try { user = base44.auth?.currentUser?.(); } catch (_) {}
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],
@@ -659,11 +657,11 @@ export default function SceneTemplates() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

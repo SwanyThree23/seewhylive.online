@@ -539,7 +539,7 @@ export default function MerchStorePage() {
       </AnimatePresence>
       <SwanyBotWidget />
       <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
       <StreamerMonetizationCenter />
       <SwanAIRecommendations roomId={null} currentLayout='merch' viewerCount={0} />
     </div>

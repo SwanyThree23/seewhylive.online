@@ -30,6 +30,7 @@ const VIOLATION_STYLE = {
 const TABS = ['pending', 'reviewed', 'insights'];
 
 export default function AIModerationPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
@@ -317,7 +318,7 @@ export default function AIModerationPage() {
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <BackgroundCustomizer />
     </div>
   );
