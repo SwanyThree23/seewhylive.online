@@ -643,7 +643,7 @@ router.post('/n8n/test', function(req, res) {
 
 // ── STREAM SYNC → Supabase ────────────────────────────────────
 var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
-var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4bGd5d3ZmY2x5amRmeXZmdnljIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTg3NjYzNSwiZXhwIjoyMDkxNDUyNjM1fQ.jQzERNzTL002CAgzoJkzl7oj_9YnTOISta_80AsK6tk';
+var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 router.post('/stream-sync', async function(req, res) {
   try {
