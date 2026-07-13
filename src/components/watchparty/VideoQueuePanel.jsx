@@ -214,7 +214,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
               <button onClick={() => actionMut.mutate({ status: 'skipped', ended_at: new Date().toISOString() })}
                 className="w-6 h-6 rounded flex items-center justify-center"
                 style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.3)' }}>
-                <Trash2 className="w-3 h-3 text-red-400" />
+                <Trash2 className="w-3 h-3 text-[#C0392B]" />
               </button>
             )}
           </div>

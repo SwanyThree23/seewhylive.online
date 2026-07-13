@@ -67,6 +67,7 @@ export default function StreamMetadata({ room, isHost }) {
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
             saved ? 'bg-[#4A9B5E] text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
           }`}
+          style={saved ? { background: '#6DBF7E' } : undefined}
         >
           <Check className="w-3.5 h-3.5" />
           {saved ? 'Saved!' : 'Save'}

@@ -4,13 +4,18 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
-  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus
+  ChevronLeft, MoreHorizontal, Share2, Users, Crown, Radio, Plus, Settings, Volume2
 } from 'lucide-react';
+import { useCameraDevices } from '../hooks/useCameraDevices';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useVODRecording } from '../hooks/useVODRecording';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
@@ -171,6 +176,7 @@ export default function AudioRoom() {
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
+
   const { data: party } = useQuery({
     queryKey: ['audio-room', roomId],
     queryFn:  () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
@@ -202,6 +208,13 @@ export default function AudioRoom() {
   const [createVideoUrl, setCreateVideoUrl] = useState('');
   const [creating,       setCreating]       = useState(false);
 
+  // Elapsed-seconds counter (starts on mount)
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
+
   useEffect(() => { setLoveCount(loves.length); }, [loves.length]);
 
   useEffect(() => {
@@ -223,8 +236,71 @@ export default function AudioRoom() {
   const isHost  = user?.id && party?.host_id && user.id === party.host_id;
   const ytId    = getYouTubeId(party?.video_url || '');
   const hostMember = members.find(m => m.user_id === party?.host_id);
+  const myMember   = members.find(m => m.user_id === user?.id);
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
+
+  function handleToggleAudio() {
+    toggleAudio();
+    if (myMember?.id) {
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+    }
+  }
+
+  // Keyboard shortcuts: M = mic toggle, Space = push-to-talk (hold)
+  useEffect(() => {
+    const onDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        // Push-to-talk: if currently muted, enable mic temporarily
+        if (!audioEnabled) {
+          pttWasEnabledRef.current = false;
+          setPttActive(true);
+          toggleAudio(); // unmute
+        } else {
+          pttWasEnabledRef.current = true;
+        }
+      }
+    };
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        // Release PTT: re-mute only if we were the ones who enabled it
+        if (pttActive && !pttWasEnabledRef.current) {
+          toggleAudio(); // re-mute
+        }
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioEnabled, pttActive]);
+
+  // Apply audio output device to all media elements when speaker pref changes
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function') {
+        el.setSinkId(prefSpeaker).catch(() => {});
+      }
+    });
+    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
+  }, [prefSpeaker]);
+
+  // Apply live audio processing constraints (NS / EC / AGC)
+  useEffect(() => {
+    applyAudioConstraints({
+      noiseSuppression: noiseSupp,
+      echoCancellation: echoCan,
+      autoGainControl:  autoGain,
+    });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
   async function sendLove() {
     if (!user?.id || !roomId) {
@@ -334,8 +410,22 @@ export default function AudioRoom() {
           <Users className="w-4 h-4" />
           <span className="text-sm font-bold">{memberCount}</span>
         </div>
+        {/* Connection quality */}
+        <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
+          style={{ background: 'rgba(0,0,0,0.06)' }}
+          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+          {[0,1,2,3].map(i => (
+            <div key={i} className="w-1 rounded-sm"
+              style={{
+                height: 4 + i * 3,
+                background: i < netBars
+                  ? (netBars >= 3 ? '#4A9B5E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                  : 'rgba(0,0,0,0.15)',
+              }} />
+          ))}
+        </div>
         <button onClick={sendLove} className="flex items-center gap-1">
-          <Heart className="w-4 h-4 text-red-500" fill="#C0392B" />
+          <Heart className="w-4 h-4 text-[#C0392B]" fill="#C0392B" />
           <span className="text-sm font-bold" style={{ color: '#555' }}>{loveCount}</span>
         </button>
         <button>
@@ -393,6 +483,7 @@ export default function AudioRoom() {
           }))}
           localStream={localStream}
           remoteStreams={remoteStreams}
+          peerUserIds={peerUserIds}
           onLeave={leaveRoom}
         />
 
@@ -472,17 +563,37 @@ export default function AudioRoom() {
             <Hand className="w-4 h-4" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
           </button>
 
+          <div className="relative flex flex-col items-center gap-0.5">
+            <button
+              onClick={handleToggleAudio}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
+              style={{
+                background: pttActive ? 'rgba(109,191,126,0.25)' : audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
+                border: pttActive ? '1px solid rgba(109,191,126,0.6)' : audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
+              }}
+            >
+              {audioEnabled
+                ? <Mic className="w-4 h-4" style={{ color: pttActive ? '#6DBF7E' : GOLD }} />
+                : <MicOff className="w-4 h-4 text-[#C0392B]" />}
+            </button>
+            {pttActive && (
+              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase whitespace-nowrap px-1.5 py-0.5 rounded"
+                style={{ background: 'rgba(109,191,126,0.25)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', border: '1px solid rgba(109,191,126,0.4)' }}>
+                PTT
+              </span>
+            )}
+          </div>
+
           <button
-            onClick={toggleAudio}
+            onClick={() => setSettingsOpen(v => !v)}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
-              border: audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
+              background: settingsOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
+              border: settingsOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
             }}
+            title="Audio settings"
           >
-            {audioEnabled
-              ? <Mic className="w-4 h-4" style={{ color: GOLD }} />
-              : <MicOff className="w-4 h-4 text-red-400" />}
+            <Settings className="w-4 h-4" style={{ color: settingsOpen ? GOLD : 'rgba(255,255,255,0.6)' }} />
           </button>
         </div>
       </div>
@@ -509,6 +620,80 @@ export default function AudioRoom() {
               </div>
               <div className="flex-1 overflow-hidden">
                 <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {settingsOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40"
+              style={{ background: 'rgba(0,0,0,0.4)' }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSettingsOpen(false)}
+            />
+            <motion.div
+              className="fixed inset-x-0 z-50 rounded-t-2xl overflow-hidden"
+              style={{ bottom: 64, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            >
+              <div className="shrink-0 flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</span>
+                <button onClick={() => setSettingsOpen(false)} className="text-white/40 text-sm">✕</button>
+              </div>
+
+              <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {/* Speaker output */}
+                {speakers.length > 1 && (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                      <span className="text-xs font-bold uppercase text-white/60">Output Device</span>
+                    </div>
+                    <select
+                      value={prefSpeaker}
+                      onChange={e => setPrefSpeaker(e.target.value)}
+                      className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
+                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
+                    >
+                      {speakers.map(d => (
+                        <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
+                          {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Audio processing toggles */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold uppercase text-white/60">Mic Processing</span>
+                  {[
+                    { label: 'Noise Suppression', value: noiseSupp, set: setNoiseSupp },
+                    { label: 'Echo Cancellation', value: echoCan,   set: setEchoCan   },
+                    { label: 'Auto Gain',          value: autoGain,  set: setAutoGain  },
+                  ].map(({ label, value, set }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="text-sm text-white/80">{label}</span>
+                      <button
+                        onClick={() => set(v => !v)}
+                        className="relative w-10 h-5 rounded-full transition-all"
+                        style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
+                        aria-label={label}
+                      >
+                        <span
+                          className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                          style={{ left: 2, transform: value ? 'translateX(20px)' : 'translateX(0)' }}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           </>

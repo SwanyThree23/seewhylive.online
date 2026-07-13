@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
+import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 
 var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B3A', '#7C4A3A', '#6B4A4A'];
@@ -11,11 +11,14 @@ function getColor(name) {
   return COLORS[idx];
 }
 
+var AUDIO_HOLD_MS = 400; // keep speaking indicator on after last peak to avoid flicker
+
 function useAudioLevel(stream) {
   var [isSpeaking, setIsSpeaking] = useState(false);
   var ctxRef = useRef(null);
-  var analyserRef = useRef(null);
   var rafRef = useRef(null);
+  var holdTimerRef = useRef(null);
+  var speakingRef = useRef(false);
 
   useEffect(() => {
     if (!stream) { setIsSpeaking(false); return; }
@@ -27,7 +30,6 @@ function useAudioLevel(stream) {
       ctxRef.current = ctx;
       var analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
-      analyserRef.current = analyser;
       var source = ctx.createMediaStreamSource(stream);
       source.connect(analyser);
       var data = new Uint8Array(analyser.frequencyBinCount);
@@ -40,7 +42,16 @@ function useAudioLevel(stream) {
           sum += v * v;
         }
         var rms = Math.sqrt(sum / data.length);
-        setIsSpeaking(rms > 0.01);
+        if (rms > 0.01) {
+          clearTimeout(holdTimerRef.current);
+          if (!speakingRef.current) { speakingRef.current = true; setIsSpeaking(true); }
+        } else if (speakingRef.current) {
+          clearTimeout(holdTimerRef.current);
+          holdTimerRef.current = setTimeout(function() {
+            speakingRef.current = false;
+            setIsSpeaking(false);
+          }, AUDIO_HOLD_MS);
+        }
         rafRef.current = requestAnimationFrame(check);
       };
       check();
@@ -50,6 +61,8 @@ function useAudioLevel(stream) {
 
     return function() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdTimerRef.current);
+      speakingRef.current = false;
       if (ctxRef.current) { try { ctxRef.current.close(); } catch (e) {} }
     };
   }, [stream]);
@@ -57,10 +70,24 @@ function useAudioLevel(stream) {
   return isSpeaking;
 }
 
-function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
+function SignalBars({ bars }) {
+  if (bars == null) return null;
+  var color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+      {[1, 2, 3, 4].map(function(b) {
+        return <div key={b} style={{ width: 2, height: b * 2 + 1, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />;
+      })}
+    </div>
+  );
+}
+
+function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands, quality }) {
   var [menuOpen, setMenuOpen] = useState(false);
-  var localSpeaking = useAudioLevel(isLocal ? stream : null);
-  var speaking = isLocal ? localSpeaking : (member.is_audio_enabled !== false);
+  var [volume, setVolume] = useState(1);
+  var [showVolume, setShowVolume] = useState(false);
+  var audioSpeaking = useAudioLevel(stream);
+  var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
   var videoRef = useRef(null);
@@ -69,6 +96,13 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
   useEffect(() => {
     if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
+
+  // Apply volume to remote stream video element
+  useEffect(() => {
+    if (videoRef.current && !isLocal) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume, isLocal]);
 
   var borderColor = speaking
     ? 'rgba(212,175,55,0.7)'
@@ -174,7 +208,11 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           <div className="absolute top-1 right-1 z-10 text-[14px] leading-none">✋</div>
         )}
 
-        <div className="absolute bottom-1 right-1 z-10" style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+        <div className="absolute bottom-1 right-1 z-10">
+          {quality ? <SignalBars bars={quality.bars} /> : (
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+          )}
+        </div>
 
         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" style={{ top: isRaised ? 18 : 4 }}>
           <button
@@ -184,6 +222,16 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           >
             <Maximize2 className="w-2 h-2 text-white" />
           </button>
+          {!isLocal && stream && (
+            <button
+              onClick={() => setShowVolume(v => !v)}
+              className="w-4 h-4 rounded flex items-center justify-center"
+              style={{ background: showVolume ? 'rgba(212,175,55,0.4)' : 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+              title="Adjust volume"
+            >
+              <Volume2 className="w-2 h-2" style={{ color: showVolume ? '#D4AF37' : 'rgba(255,255,255,0.7)' }} />
+            </button>
+          )}
           {canManage && member.user_id !== hostId && (
             <div style={{ position: 'relative' }}>
               <button
@@ -209,6 +257,23 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
             </div>
           )}
         </div>
+
+        {/* Per-stream volume slider — shown when volume button is active */}
+        {showVolume && !isLocal && (
+          <div className="absolute left-0 right-0 bottom-7 px-2 z-20"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', borderRadius: 4, padding: '4px 6px' }}>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={volume}
+              onChange={e => setVolume(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#D4AF37', cursor: 'pointer' }}
+              title={`Volume: ${Math.round(volume * 100)}%`}
+            />
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -273,8 +338,10 @@ function EmptyTile({ onClick, canInvite }) {
   );
 }
 
-function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
+function CompactTile({ member, hostId, stream, isLocal, isSpeaking: isSpeakingFallback }) {
   var videoRef = useRef(null);
+  var audioSpeaking = useAudioLevel(stream);
+  var isSpeaking = stream ? audioSpeaking : isSpeakingFallback;
   useEffect(() => {
     if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
@@ -338,7 +405,7 @@ function resolveStream(member, currentUser, localStream, remoteStreams, peerUser
   return { stream: peerId ? remoteStreams?.get(peerId) || null : null, isLocal: false };
 }
 
-export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands }) {
+export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands, peerQuality }) {
   var [spotlitId, setSpotlitId] = useState(null);
   var [slots, setSlots] = useState(maxSlots);
 
@@ -417,6 +484,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                     onSpotlight={setSpotlitId} canManage={isHost}
                     stream={stream} isLocal={isLocal}
                     raisedHands={raisedHands}
+                    quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                   />
                 </div>
               );
@@ -435,6 +503,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                   onSpotlight={setSpotlitId} canManage={isHost}
                   stream={stream} isLocal={isLocal}
                   raisedHands={raisedHands}
+                  quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                 />
               );
             })}

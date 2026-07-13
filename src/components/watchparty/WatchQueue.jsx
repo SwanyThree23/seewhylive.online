@@ -89,7 +89,7 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
                         {isHost && index !== currentIndex && (
                           <button
                             onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
-                            className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-red-400 transition-all shrink-0"
+                            className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-[#C0392B] transition-all shrink-0"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>

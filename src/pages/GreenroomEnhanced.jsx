@@ -45,6 +45,10 @@ export default function GreenroomEnhanced() {
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
+  const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
+  const [camResolution, setCamResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
+  const { cameras } = useCameraDevices();
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
     { id: 'mic',   label: 'Microphone working', done: false, auto: true },
@@ -69,7 +73,8 @@ export default function GreenroomEnhanced() {
     let stream;
     async function testMic() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+        stream = await navigator.mediaDevices.getUserMedia({ audio: prefMic ? { deviceId: { ideal: prefMic } } : true, video: false });
         const ctx = new AudioContext();
         audioCtxRef.current = ctx;
         const source = ctx.createMediaStreamSource(stream);
@@ -108,6 +113,27 @@ export default function GreenroomEnhanced() {
     if (cameraStream) cameraStream.getTracks().forEach(t => t.stop());
     setCameraStream(stream);
   }
+
+  const RES_MAP = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
+
+  async function acquireCamera(opts = {}) {
+    const camId = opts.camId ?? selectedCam;
+    const micId = opts.micId ?? selectedMic;
+    const res = RES_MAP[opts.resolution ?? camResolution] || RES_MAP['720p'];
+    try {
+      cameraStream?.getTracks().forEach(t => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { ...res, ...(camId ? { deviceId: { ideal: camId } } : {}) },
+        audio: false,
+      });
+      setCameraStream(stream);
+      setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
+    } catch {}
+  }
+
+  function handleVideoChange(id) { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} acquireCamera({ camId: id }); }
+  function handleAudioChange(id) { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }
+  function handleResolutionChange(r) { setCamResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraStream) acquireCamera({ resolution: r }); }
 
   async function generatePin() {
     const pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
@@ -293,7 +319,7 @@ export default function GreenroomEnhanced() {
           ) : isLive ? (
             <div className="text-center py-2">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <motion.div className="w-3 h-3 rounded-full bg-red-500"
+                <motion.div className="w-3 h-3 rounded-full bg-[#C0392B]"
                   animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 0.8, repeat: Infinity }} />
                 <span className="text-lg font-black text-white">YOU ARE LIVE</span>
               </div>

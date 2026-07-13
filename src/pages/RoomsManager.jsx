@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import GlobalSearch from '../components/shared/GlobalSearch';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -8,10 +14,10 @@ const SLATE = '#1A1530';
 const TEXT  = '#F0EAF8';
 const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
-const GREEN = '#22c55e';
-const RED   = '#ef4444';
+const GREEN = '#6DBF7E';
+const RED   = '#C0392B';
 const CYAN  = '#D4AF37';
-const PURPLE = '#a78bfa';
+const PURPLE = '#7B5DA6';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
@@ -216,7 +222,7 @@ export default function RoomsManager() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
                       <StatusBadge status={room.status} />
-                      <span style={{ ...MONO, fontSize: 9, color: PURPLE, letterSpacing: '0.08em', background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 999, padding: '2px 8px' }}>{room.category}</span>
+                      <span style={{ ...MONO, fontSize: 9, color: PURPLE, letterSpacing: '0.08em', background: 'rgba(123,93,166,0.1)', border: '1px solid rgba(123,93,166,0.2)', borderRadius: 999, padding: '2px 8px' }}>{room.category}</span>
                     </div>
                     <div style={{ ...T, fontSize: 18, fontWeight: 800, color: TEXT, letterSpacing: '0.04em', lineHeight: 1.2, marginBottom: 4 }}>{room.name}</div>
                     <div style={{ ...MONO, fontSize: 10, color: TEXTM }}>Host: {room.host} {room.viewers > 0 ? `· ${room.viewers} viewers` : ''}</div>
@@ -394,6 +400,12 @@ export default function RoomsManager() {
           </div>
         )}
       </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GlobalSearch />
+      <QuickActionPanel />
+      <BroadcastAnalyticsDashboard />
+      <SwanAIRecommendations roomId={null} currentLayout='rooms' viewerCount={rooms.length} />
     </div>
   );
 }

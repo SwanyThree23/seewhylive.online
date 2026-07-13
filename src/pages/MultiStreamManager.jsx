@@ -249,7 +249,7 @@ export default function MultiStreamManager() {
                   />
                 </div>
                 {totalBitrate > recommendedMax && (
-                  <p className="text-[10px] text-red-400 mt-1 flex items-center gap-1">
+                  <p className="text-[10px] text-[#C0392B] mt-1 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> Consider disabling a destination to stay under budget
                   </p>
                 )}
@@ -417,7 +417,7 @@ export default function MultiStreamManager() {
                             </button>
                             <button
                               onClick={() => { if (window.confirm('Remove this destination?')) deleteMutation.mutate(dest.id); }}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-red-400 hover:border-red-700/40"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#C0392B] hover:border-red-700/40"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>

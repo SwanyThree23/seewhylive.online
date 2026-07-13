@@ -4,6 +4,8 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import {
   Radio, Zap, AlertTriangle, CheckCircle, Eye, EyeOff, Copy,
   RefreshCw, Power, StopCircle, Cpu, Wifi, Clock, Monitor,
@@ -69,7 +71,7 @@ function StatusBadge({ status }) {
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
       {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
-      {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
+      {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-ping inline-block" />}
       {cfg.label}
     </span>
   );
@@ -222,6 +224,9 @@ export default function ControlRoomPage() {
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
+  const [micOn, setMicOn] = useState(true);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [isSharing, setIsSharing] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -322,6 +327,7 @@ export default function ControlRoomPage() {
     onError: () => toast.error('Action failed.'),
   });
 
+  const elapsed = Math.floor(uptime / 1000);
   const latestHealth = healthMetrics[0];
   const liveCount = destinations.filter(d => d.status === 'live').length;
   const enabledCount = destinations.filter(d => d.is_enabled).length;

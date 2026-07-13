@@ -77,6 +77,10 @@ export default function HybridStreamRoom() {
   const [spotlightId, setSpotlightId] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
+  const [micOn, setMicOn] = useState(true);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [isSharing, setIsSharing] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -98,6 +102,11 @@ export default function HybridStreamRoom() {
   useEffect(() => {
     setParticipants(fetchedParticipants);
   }, [fetchedParticipants]);
+
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   // Real-time participant sync
   useEffect(() => {

@@ -32,7 +32,7 @@ const C = {
   textM:  '#8A7A62',
   slate:  '#2A2418',
   slate2: '#1E1A0E',
-  green:  '#2ECC71',
+  green:  '#6DBF7E',
   amber:  '#D4854A',
 };
 

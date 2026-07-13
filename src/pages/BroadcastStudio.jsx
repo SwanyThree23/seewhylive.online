@@ -13,6 +13,7 @@ import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
 import AggregatedChat from '../components/live/AggregatedChat';
@@ -27,6 +28,8 @@ import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import LoveHearts from '../components/live/LoveHearts';
 import GiftShop from '../components/live/GiftShop';
 import GiftAnimation from '../components/live/GiftAnimation';
@@ -267,10 +270,26 @@ function OctAvatarThumb({ name, stream, size = 36 }) {
 }
 
 // ── Live camera tile (center stage when in 'live' or 'hybrid' mode) ──────────
-function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
+function NetBars({ bars, rtt }) {
+  if (bars == null) return null;
+  const color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
+  return (
+    <div className="flex items-end gap-0.5" title={rtt != null ? `${Math.round(rtt)}ms RTT` : undefined}>
+      {[1, 2, 3, 4].map(b => (
+        <div key={b} style={{ width: 3, height: b * 3 + 2, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />
+      ))}
+    </div>
+  );
+}
+
+function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, netBars, netRtt }) {
   const camRef = useRef(null);
   const pipRef = useRef(null);
   const screenRef = useRef(null);
+  const [isPip, setIsPip] = useState(false);
+  const [mirrored, setMirrored] = useState(true);
+  const pipSupported = typeof document !== 'undefined' && !!document.pictureInPictureEnabled;
+
   useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
   useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
   const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
@@ -290,7 +309,7 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream }) {
       )}
       <div className="absolute top-3 left-3 flex items-center gap-1 text-[11px] px-2 py-1 rounded"
         style={{ background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
-        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block mr-0.5" />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
       {/* PIP camera (octagonal) when screen sharing */}
@@ -498,11 +517,118 @@ export default function BroadcastStudio() {
     return unsub;
   }, [partyId]);
 
-  // Local media
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  // Local media — use stored device preferences from RoomEntryGate if available
+  const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
+    onPeerStateChange: useCallback((peerId, state) => {
+      if (state === 'disconnected') {
+        toast(`⚠️ A participant dropped — reconnecting…`, { duration: 5000, id: `peer-${peerId}-disc` });
+      } else if (state === 'connected') {
+        toast.dismiss(`peer-${peerId}-disc`);
+        toast.success(`✅ Participant reconnected`, { duration: 2500 });
+      } else if (state === 'failed') {
+        toast.error(`❌ Peer connection failed — removing from room`, { duration: 4000, id: `peer-${peerId}-fail` });
+      }
+    }, []),
+  });
+
+  // Connection quality — monitor first connected peer
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
+
+  // Warn broadcaster once when connection drops to 1 bar or below
+  const lastNetBarsRef = useRef(null);
+  useEffect(() => {
+    if (netBars === null || netBars === undefined) return;
+    if (netBars <= 1 && (lastNetBarsRef.current === null || lastNetBarsRef.current > 1)) {
+      toast.warning('Poor network connection — stream quality may be affected');
+    }
+    lastNetBarsRef.current = netBars;
+  }, [netBars]);
+
+  // Adaptive video quality — 3-tier system based on connection bars
+  // Tier: 'high' (bars≥3) | 'medium' (bars=2) | 'low' (bars≤1)
+  const prefRes = (() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } })();
+  const adaptiveTierRef = useRef('high');
+  useEffect(() => {
+    if (netBars == null || !localStream) return;
+    const track = localStream.getVideoTracks()[0];
+    if (!track) return;
+    const PRESETS = {
+      '360p':  { width: 640,  height: 360  },
+      '480p':  { width: 854,  height: 480  },
+      '720p':  { width: 1280, height: 720  },
+      '1080p': { width: 1920, height: 1080 },
+    };
+    const basePreset = PRESETS[prefRes] || PRESETS['720p'];
+    if (netBars <= 1 && adaptiveTierRef.current !== 'low') {
+      adaptiveTierRef.current = 'low';
+      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 12 } }).catch(() => {});
+    } else if (netBars === 2 && adaptiveTierRef.current !== 'medium') {
+      adaptiveTierRef.current = 'medium';
+      track.applyConstraints({ width: { ideal: 854 }, height: { ideal: 480 }, frameRate: { ideal: 20 } }).catch(() => {});
+    } else if (netBars >= 3 && adaptiveTierRef.current !== 'high') {
+      adaptiveTierRef.current = 'high';
+      track.applyConstraints({ ...Object.fromEntries(Object.entries(basePreset).map(([k, v]) => [k, { ideal: v }])), frameRate: { ideal: 30 } }).catch(() => {});
+    }
+  }, [netBars, localStream, prefRes]);
+
+  // Per-peer connection quality — Map<userId, {bars, rtt}>
+  const [peerQuality, setPeerQuality] = useState(() => new Map());
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const qual = new Map();
+      for (const [peerId, { pc }] of peersRef.current.entries()) {
+        if (pc.connectionState !== 'connected') continue;
+        const uid = peerUserIds?.get(peerId);
+        if (!uid) continue;
+        try {
+          const stats = await pc.getStats();
+          let totalRtt = 0, cnt = 0;
+          stats.forEach(r => {
+            if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.currentRoundTripTime != null) {
+              totalRtt += r.currentRoundTripTime * 1000;
+              cnt++;
+            }
+          });
+          const rtt = cnt > 0 ? Math.round(totalRtt / cnt) : null;
+          const bars = rtt == null ? 3 : rtt < 80 ? 4 : rtt < 200 ? 3 : rtt < 400 ? 2 : 1;
+          qual.set(uid, { bars, rtt });
+        } catch {}
+      }
+      setPeerQuality(qual);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [peerUserIds]); // peersRef is a stable ref — no dep needed
+
+  // Audio output (speaker) preference — applied to all video/audio elements via setSinkId
+  const { speakers } = useCameraDevices();
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function' && el.sinkId !== prefSpeaker) {
+        el.setSinkId(prefSpeaker).catch(() => {});
+      }
+    });
+  }, [prefSpeaker, remoteStreams]);
+
+  // Audio processing toggles — applied to the live audio track without re-acquiring
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
+  const [autoGain, setAutoGain] = useState(true);
+  useEffect(() => {
+    applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
   // Screen share
   const [screenStream, setScreenStream] = useState(null);
@@ -525,7 +651,7 @@ export default function BroadcastStudio() {
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always', frameRate: { ideal: 30 }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: true });
       const screenTrack = stream.getVideoTracks()[0];
       screenTrack.onended = () => {
         setScreenStream(null);
@@ -571,8 +697,52 @@ export default function BroadcastStudio() {
 
   const speakingName = members.find(m => m.is_audio_enabled && m.user_id !== user?.id)?.user_name || null;
 
+  function handleToggleAudio() {
+    toggleAudio();
+    if (myMember?.id) {
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+    }
+  }
+
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+
+  // Keyboard shortcuts: M = mic, V = camera, S = screen share, C = clip, Space = push-to-talk
+  useEffect(() => {
+    if (!canStream) return;
+    const onDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
+      if (e.key === 'v' || e.key === 'V') { e.preventDefault(); toggleVideo(); }
+      if (e.key === 's' || e.key === 'S') { e.preventDefault(); toggleScreenShare(); }
+      if ((e.key === 'c' || e.key === 'C') && isHost) { e.preventDefault(); triggerHighlightClip(1); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        if (!audioEnabled) {
+          pttWasEnabledRef.current = false;
+          setPttActive(true);
+          toggleAudio();
+        } else {
+          pttWasEnabledRef.current = true;
+        }
+      }
+    };
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (pttActive && !pttWasEnabledRef.current) toggleAudio();
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost, pttActive]);
+
   // AI highlight detector — auto-clips when hype + sentiment spike
-  useHighlightDetector({
+  const { triggerHighlightClip } = useHighlightDetector({
     partyId,
     roomId: partyId,
     isHost,
@@ -580,6 +750,7 @@ export default function BroadcastStudio() {
     messages: chatMessages,
     hypeLevel,
     elapsedSeconds: elapsed,
+    getClipBlobUrl: extractClipBlobUrl,
   });
 
   const onTimeSync = useCallback((data) => setSyncData(data), []);
@@ -792,7 +963,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     const slots = [];
     if (localStream) {
       const roleLabel = isHost ? 'Host' : isCoHost ? 'Co-Host' : isSpeaker ? 'Panel' : 'You';
-      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})` });
+      slots.push({ stream: localStream, label: user?.full_name || user?.email || `You (${roleLabel})`, speaking: isSpeaking });
     }
     if (remoteStreams) {
       remoteStreams.forEach((stream, peerId) => {
@@ -802,12 +973,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       });
     }
     return slots;
-  }, [localStream, remoteStreams, peerUserIds, members, user]);
+  }, [localStream, remoteStreams, peerUserIds, members, user, isSpeaking]);
+
+  // Use spotlight when there are remote peers, otherwise panel layout
+  const compositorLayout = remoteStreams?.size > 0 ? 'spotlight' : 'panel';
 
   const compositorOverlay = {
     title: party?.title || 'SeeWhy LIVE',
     subtitle: `${members.length} panelists`,
     showLive: true,
+    layout: compositorLayout,
+    spotlightIndex: 0, // local stream always featured
   };
 
   // ── Create screen ────────────────────────────────────────────────────────
@@ -873,6 +1049,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {/* Connection quality */}
+            <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
+              style={{ background: 'rgba(0,0,0,0.35)' }}
+              title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{
+                  width: 4, borderRadius: 2,
+                  height: 4 + i * 3,
+                  background: i < netBars
+                    ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                    : 'rgba(255,255,255,0.15)',
+                }} />
+              ))}
+            </div>
             <button onClick={copyLink}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">
@@ -906,7 +1096,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             )}
             {canStream && (
               <CompositorOverlay
-                layout={studioMode === 'watch' ? 'watchparty' : 'panel'}
+                layout={studioMode === 'watch' ? 'watchparty' : compositorLayout}
                 slots={compositorSlots}
                 overlayConfig={compositorOverlay}
                 userId={user?.id}
@@ -1028,6 +1218,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   remoteStreams={remoteStreams}
                   peerUserIds={peerUserIds}
                   localStream={localStream}
+                  peerQuality={peerQuality}
                 />
                 {members.length > 6 && (() => {
                   const stageMembers = members.filter(m => m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker');
@@ -1087,7 +1278,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 />
               )
             ) : (
-              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} />
+              <LiveCameraTile localStream={localStream} videoEnabled={videoEnabled} screenStream={screenStream} isSpeaking={isSpeaking} netBars={netBars} netRtt={netRtt} />
             )}
 
             {/* Hybrid PIP: local camera overlay when video is playing */}
@@ -1780,6 +1971,75 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               </div>
             )}
 
+            {/* 🎚 AUDIO MIXER TAB */}
+            {activeTab === 'audio' && canStream && (
+              <div className="p-3 space-y-3">
+                {/* In-room camera + mic device switcher */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Devices</p>
+                  <CameraDeviceSelector
+                    compact
+                    currentVideoId={activeVideoId}
+                    currentAudioId={activeAudioId}
+                    onVideoChange={(id) => { replaceVideoDevice(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} }}
+                    onAudioChange={(id) => { replaceAudioDevice(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} }}
+                    onScreenShare={toggleScreenShare}
+                    isSharingScreen={screenEnabled}
+                  />
+                  {/* Audio output (speaker) selector — Chrome/Edge only */}
+                  {speakers.length > 1 && (
+                    <div className="mt-2 flex items-center gap-2"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '8px 12px' }}>
+                      <span className="text-xs shrink-0" style={{ color: GOLD }}>🔊</span>
+                      <select
+                        value={prefSpeaker}
+                        onChange={e => {
+                          const id = e.target.value;
+                          setPrefSpeaker(id);
+                          try { if (id) localStorage.setItem('swl_pref_speaker', id); } catch {}
+                        }}
+                        style={{ flex: 1, background: 'transparent', border: 'none', color: prefSpeaker ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', outline: 'none', cursor: 'pointer' }}>
+                        <option value="" style={{ background: '#080B18' }}>Default speakers</option>
+                        {speakers.map(s => (
+                          <option key={s.deviceId} value={s.deviceId} style={{ background: '#080B18', color: '#fff' }}>{s.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                {/* Audio processing toggles */}
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Processing</p>
+                  {[
+                    { label: 'Noise Suppression', state: noiseSupp, set: setNoiseSupp },
+                    { label: 'Echo Cancellation', state: echoCan, set: setEchoCan },
+                    { label: 'Auto Gain Control', state: autoGain, set: setAutoGain },
+                  ].map(({ label, state, set }) => (
+                    <button key={label} onClick={() => set(v => !v)}
+                      className="w-full flex items-center justify-between py-1.5 px-0"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <span className="text-[12px]" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</span>
+                      <div className="w-8 h-4 rounded-full relative transition-colors shrink-0"
+                        style={{ background: state ? 'rgba(109,191,126,0.6)' : 'rgba(255,255,255,0.12)', border: `1px solid ${state ? 'rgba(109,191,126,0.8)' : 'rgba(255,255,255,0.15)'}` }}>
+                        <div className="absolute top-0.5 w-3 h-3 rounded-full transition-all"
+                          style={{ background: state ? '#6DBF7E' : 'rgba(255,255,255,0.35)', left: state ? 'calc(100% - 14px)' : '2px' }} />
+                      </div>
+                    </button>
+                  ))}
+                  <p className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    Disable if using professional hardware/software processing
+                  </p>
+                </div>
+                <EnhancedAudioMixer
+                  micMuted={!audioEnabled}
+                  onMicToggle={handleToggleAudio}
+                  onAudioSettingsChange={() => {}}
+                  stream={localStream}
+                />
+                <SoundboardWidget isVisible={true} disabled={false} />
+              </div>
+            )}
+
             {/* 🤖 AI HUB TAB */}
             {activeTab === 'ai' && (
               <div className="flex flex-col h-full">
@@ -2339,15 +2599,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {showCameraPicker && (
         <CameraSourcePicker
           currentStream={localStream}
-          onSelect={(stream) => {
-            if (stream && localStream) {
-              const newTrack = stream.getVideoTracks()[0];
-              if (newTrack) {
-                peersRef.current.forEach(({ pc }) => {
-                  const sender = pc.getSenders().find(s => s.track?.kind === 'video');
-                  if (sender) sender.replaceTrack(newTrack).catch(() => {});
-                });
-              }
+          onSelect={(stream, meta) => {
+            // Release picker's own acquired stream tracks
+            stream?.getVideoTracks().forEach(t => t.stop());
+            if (meta?.deviceId) {
+              // replaceVideoDevice updates localStream state; useWebRTCPeers auto-replaces
+              // sender tracks when localStream changes
+              replaceVideoDevice(meta.deviceId);
+              try { localStorage.setItem('swl_pref_cam', meta.deviceId); } catch {}
             }
             setShowCameraPicker(false);
           }}
@@ -2427,6 +2686,8 @@ function PipCameraTile({ localStream, videoEnabled }) {
       </div>
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
+      <TipGoalBar roomId={null} goal={100} current={0} />
+      <TopTippers roomId={null} />
     </div>
   );
 }

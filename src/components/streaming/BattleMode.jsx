@@ -186,7 +186,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
           {/* Timer */}
           <div className="flex items-center justify-center gap-2">
             <Timer className="w-3.5 h-3.5 text-white/50" />
-            <span className={`font-mono text-sm font-bold ${timeLeft < 30 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
+            <span className={`font-mono text-sm font-bold ${timeLeft < 30 ? 'text-[#C0392B] animate-pulse' : 'text-white'}`}>
               {formatTime(timeLeft)}
             </span>
           </div>

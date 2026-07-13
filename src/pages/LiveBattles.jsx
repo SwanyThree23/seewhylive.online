@@ -132,6 +132,10 @@ export default function LiveBattles() {
     refetchInterval: 10000,
   });
 
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const activeBattle = battles.find(b => b.status === 'active') || null;
+  const roomId = activeBattle?.id || null;
+
   return (
     <div className="min-h-screen text-white pb-10"
       style={{ background: 'linear-gradient(135deg, #080B18 0%, #0D1528 50%, #080B18 100%)' }}>

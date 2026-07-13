@@ -1182,7 +1182,7 @@ function SettingsTab({ user }) {
                   style={{ background: d.is_enabled ? '#000' : 'rgba(255,255,255,0.4)' }} />
               </button>
               <button onClick={() => deleteDest.mutate(d.id)}>
-                <Trash2 className="w-3.5 h-3.5 text-white/20 hover:text-red-400 transition-colors" />
+                <Trash2 className="w-3.5 h-3.5 text-white/20 hover:text-[#C0392B] transition-colors" />
               </button>
             </div>
           ))}

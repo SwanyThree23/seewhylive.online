@@ -184,7 +184,7 @@ function WebRTCTab() {
       </Section>
 
       <Section title="LiveKit Credentials (VPS .env)">
-        <div className="bg-red-500/10 border border-red-500/30 rounded p-3 mb-3 text-xs text-red-200">
+        <div className="bg-[#C0392B]/10 border border-red-500/30 rounded p-3 mb-3 text-xs text-red-200">
           🔴 All 3 LiveKit keys are pending — add to /var/www/seewhylive/.env and ecosystem.config.js
         </div>
         <Row label="LIVEKIT_URL"        pending />
@@ -551,8 +551,8 @@ function EnvTab() {
           <div className="text-2xl font-mono text-[#D4AF37]">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
-        <div className="bg-red-500/10 border border-red-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-red-400">{statusCounts.critical}</div>
+        <div className="bg-[#C0392B]/10 border border-red-500/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#C0392B]">{statusCounts.critical}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Critical</div>
         </div>
       </div>
@@ -579,7 +579,7 @@ function EnvTab() {
         <Code>{"sed -i 's/STRIPE_WEBHOOK_SECRET=.*/STRIPE_WEBHOOK_SECRET=whsec_xxx/' .env"}</Code>
         <Code>pm2 restart seewhylive-backend</Code>
         <Code>{"pm2 env 0  # verify injected"}</Code>
-        <div className="mt-2 bg-red-500/10 border border-red-500/20 rounded p-2 text-xs text-red-200">
+        <div className="mt-2 bg-[#C0392B]/10 border border-red-500/20 rounded p-2 text-xs text-red-200">
           ⚠ Never paste live secret keys in this chat — use terminal only
         </div>
       </Section>

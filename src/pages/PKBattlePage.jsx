@@ -166,7 +166,7 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
           style={{ width: `${leftPct}%` }}
         />
         <motion.div
-          className="bg-red-500 transition-all duration-700"
+          className="bg-[#C0392B] transition-all duration-700"
           style={{ width: `${100 - leftPct}%` }}
         />
       </div>
@@ -492,7 +492,7 @@ export default function PKBattlePage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] text-red-400 font-semibold uppercase tracking-wider mb-1 block">Right Creator</label>
+                <label className="text-[11px] text-[#C0392B] font-semibold uppercase tracking-wider mb-1 block">Right Creator</label>
                 <input
                   placeholder="Name"
                   value={rightName}
@@ -710,7 +710,7 @@ export default function PKBattlePage() {
               <AnimatePresence>
                 <ComboBadge combo={rightCombo} />
               </AnimatePresence>
-              <p className="text-3xl font-black text-red-400 font-mono">{rightVotes.toLocaleString()}</p>
+              <p className="text-3xl font-black text-[#C0392B] font-mono">{rightVotes.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">points</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)' }}>👥 {rightSupporters.size} supporting</p>
               <OnFireBadge show={rightOnFire} />
@@ -772,7 +772,7 @@ export default function PKBattlePage() {
         <div className="flex items-center gap-3 mb-2">
           <span className="text-sm font-bold text-[#D4AF37] truncate flex-1 text-right">{bLeftName}</span>
           <Swords className="w-4 h-4 text-[#d4af37] shrink-0" />
-          <span className="text-sm font-bold text-red-400 truncate flex-1">{bRightName}</span>
+          <span className="text-sm font-bold text-[#C0392B] truncate flex-1">{bRightName}</span>
         </div>
         <ScoreBar leftVotes={leftVotes} rightVotes={rightVotes} leftName={bLeftName} rightName={bRightName} />
       </div>

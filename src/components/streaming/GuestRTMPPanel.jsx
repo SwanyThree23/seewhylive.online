@@ -88,7 +88,7 @@ function DestinationRow({ dest, userId, onRemove }) {
           </span>
           <StatusPill status={dest.status} validationState={validationState} />
           <div onClick={toggleEnabled} style={{ width:40, height:22, borderRadius:99, background:dest.is_enabled?'#800020':'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}><div style={{ position:'absolute', top:3, left:dest.is_enabled?21:3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }}/></div>
-          <button onClick={() => onRemove(dest.id)} className="w-5 h-5 flex items-center justify-center text-white/20 hover:text-red-400 transition-colors">
+          <button onClick={() => onRemove(dest.id)} className="w-5 h-5 flex items-center justify-center text-white/20 hover:text-[#C0392B] transition-colors">
             <Trash2 className="w-3 h-3" />
           </button>
         </div>

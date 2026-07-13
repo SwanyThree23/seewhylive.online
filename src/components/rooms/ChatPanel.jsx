@@ -262,7 +262,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-6 w-6 bg-red-500 hover:bg-red-600 text-white"
+                className="h-6 w-6 bg-[#C0392B] hover:bg-red-600 text-white"
                 onClick={onDelete}
               >
                 <Trash2 className="w-3 h-3" />

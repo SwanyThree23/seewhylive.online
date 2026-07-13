@@ -168,7 +168,7 @@ function PollCreator({ partyId, roomId, currentUser, onPollCreated }) {
                       <button onClick={() => removeOption(i)}
                         className="w-7 h-7 rounded flex items-center justify-center shrink-0"
                         style={{ background: 'rgba(180,50,30,0.15)', border: '1px solid rgba(180,50,30,0.2)' }}>
-                        <X className="w-3 h-3 text-red-400" />
+                        <X className="w-3 h-3 text-[#C0392B]" />
                       </button>
                     )}
                   </div>

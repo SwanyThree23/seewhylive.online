@@ -56,7 +56,7 @@ export default function BattleScoreboard({ roomId }) {
           <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Live Battle
           </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse ml-1" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse ml-1" />
         </div>
         {timeLeft !== null && (
           <span className="text-[11px] font-mono" style={{ color: '#d4af37' }}>

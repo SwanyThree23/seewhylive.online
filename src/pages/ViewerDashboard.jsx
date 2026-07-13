@@ -191,7 +191,7 @@ export default function ViewerDashboard() {
             {/* Live Now */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#D4854A', ...T }}>{liveRooms.length}</span>
               </div>
@@ -207,7 +207,7 @@ export default function ViewerDashboard() {
                             <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-sm" style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`, color: '#fff', ...T }}>
                               {initials(room.title)}
                             </div>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 bg-red-500" style={{ borderColor: BG }} />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 bg-[#C0392B]" style={{ borderColor: BG }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-black text-white text-sm truncate" style={T}>{room.title}</p>
@@ -349,7 +349,7 @@ export default function ViewerDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                       <div className="flex items-center gap-2 text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse" />
                         <Users className="w-3 h-3" />{room.viewer_count || 0}
                         {room.type && <span>· {room.type}</span>}
                       </div>

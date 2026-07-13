@@ -16,8 +16,8 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'];
 const STATUS_COLOR = {
   pending:   { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD    },
-  confirmed: { bg: 'rgba(0,229,255,0.1)',     border: 'rgba(0,229,255,0.3)',    color: '#00E5FF' },
-  shipped:   { bg: 'rgba(167,139,250,0.1)',   border: 'rgba(167,139,250,0.3)', color: '#a78bfa' },
+  confirmed: { bg: 'rgba(74,138,122,0.1)',     border: 'rgba(74,138,122,0.3)',    color: '#4A8A7A' },
+  shipped:   { bg: 'rgba(123,93,166,0.1)',   border: 'rgba(123,93,166,0.3)', color: '#7B5DA6' },
   delivered: { bg: 'rgba(109,191,126,0.1)',   border: 'rgba(109,191,126,0.3)', color: GREEN   },
   cancelled: { bg: 'rgba(255,30,80,0.1)',     border: 'rgba(255,30,80,0.3)',    color: '#ff1e50' },
 };
@@ -332,7 +332,7 @@ export default function MerchStorePage() {
         {isOwnStore && (
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[
-              { label: 'Items',    value: allItems.length,             color: '#00E5FF' },
+              { label: 'Items',    value: allItems.length,             color: '#4A8A7A' },
               { label: 'Sold',     value: totalSold,                   color: GOLD      },
               { label: 'Revenue',  value: `$${totalRevenue.toFixed(0)}`, color: GREEN   },
             ].map(({ label, value, color }) => (
@@ -530,6 +530,11 @@ export default function MerchStorePage() {
           <AddItemModal creatorId={targetCreatorId} onClose={() => setShowAdd(false)} />
         )}
       </AnimatePresence>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <RewardShop creatorId={null} roomId={null} currentUser={null} />
+      <StreamerMonetizationCenter />
+      <SwanAIRecommendations roomId={null} currentLayout='merch' viewerCount={0} />
     </div>
   );
 }

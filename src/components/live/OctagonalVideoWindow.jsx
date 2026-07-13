@@ -145,6 +145,7 @@ export default function OctagonalVideoWindow({
                 ? 'bg-red-900/50 border border-red-600 text-red-400'
                 : 'bg-[#0F1428]/50 border border-[#6DBF7E]/35 text-[#6DBF7E]'
             }`}
+            style={isMuted ? undefined : { background: 'rgba(109,191,126,0.15)' }}
           >
             {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
           </motion.button>

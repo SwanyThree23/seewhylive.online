@@ -155,7 +155,7 @@ function FormatCard({ fmt, onSelect }) {
   );
 }
 
-function CameraPreview({ onStreamReady }) {
+function CameraPreview({ onStreamReady, onMicChange }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [stream,  setStream]  = useState(null);
@@ -167,6 +167,7 @@ function CameraPreview({ onStreamReady }) {
 
   const start = useCallback(async () => {
     setError(null);
+    stream?.getTracks().forEach(t => t.stop());
     try {
       const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = s;
@@ -174,9 +175,9 @@ function CameraPreview({ onStreamReady }) {
       setCamOn(true);
       if (onStreamReady) onStreamReady(s);
     } catch {
-      setError('Camera/mic access denied');
+      setError('Camera/mic access denied — check browser permissions');
     }
-  }, [onStreamReady]);
+  }, [onStreamReady, videoId, audioId, resolution, micOn, stream]);
 
   useEffect(() => {
     start();
@@ -208,18 +209,16 @@ function CameraPreview({ onStreamReady }) {
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: FONT, textAlign: 'center', padding: '0 16px' }}>{error}</span>
         </div>
-      )}
 
-      <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          padding: '3px 8px', borderRadius: 999,
-          background: camOn ? 'rgba(192,57,43,0.85)' : 'rgba(0,0,0,0.5)',
-          fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT,
-          letterSpacing: '0.08em',
-        }}>
-          {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
-          {camOn ? 'PREVIEW' : 'NO SIGNAL'}
+        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
+          <button onClick={toggleMic} style={{ width: 32, height: 32, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            {micOn ? <Mic style={{ width: 14, height: 14, color: GOLD }} /> : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
+          </button>
+          {cameras.length > 1 && (
+            <button onClick={handleSwitchCamera} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+              <Camera style={{ width: 14, height: 14, color: GOLD }} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -354,6 +353,18 @@ export default function GoLive() {
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
+  const [localStream,  setLocalStream]  = useState(null);
+  const [micOn,       setMicOn]       = useState(true);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [elapsed,     setElapsed]     = useState(0);
+  const handleStreamReady = useCallback((s) => setLocalStream(s), []);
+
+  // Elapsed counter — only runs while live (partyId set)
+  useEffect(() => {
+    if (!partyId) return;
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [partyId]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -543,7 +554,7 @@ export default function GoLive() {
             exit={{ opacity: 0, x: 30 }}
             style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 120px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
-            <CameraPreview />
+            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} />
 
             <div>
               <div style={{ ...SL, justifyContent: 'space-between' }}>

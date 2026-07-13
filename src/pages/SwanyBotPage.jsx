@@ -287,6 +287,7 @@ export default function SwanyBotPage() {
         <StreamGoals isHost={false} />
         <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
       </div>
+      <VoiceAISettings />
     </div>
   );
 }

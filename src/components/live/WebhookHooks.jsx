@@ -139,7 +139,7 @@ export default function WebhookHooks({ roomId, isHost }) {
                       >
                         {testing === hook.id ? '...' : 'Test'}
                       </button>
-                      <button onClick={() => removeHook(hook.id)} className="text-red-400/50 hover:text-red-400">
+                      <button onClick={() => removeHook(hook.id)} className="text-[#C0392B]/50 hover:text-[#C0392B]">
                         <Trash2 className="w-3 h-3" />
                       </button>
                     </div>

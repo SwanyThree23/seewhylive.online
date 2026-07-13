@@ -106,7 +106,7 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
                 {item.thumb
                   ? <img src={item.thumb} className="w-full h-full object-cover" alt="" />
                   : item.type === 'youtube'
-                    ? <Youtube className="w-3 h-3 text-red-400" />
+                    ? <Youtube className="w-3 h-3 text-[#C0392B]" />
                     : <Video className="w-3 h-3 text-white/40" />}
               </div>
               {/* Info */}
@@ -131,7 +131,7 @@ export default function CollabPlaylist({ isHost, currentUser, onPlayVideo }) {
                     <button onClick={() => remove(item.id)}
                       className="w-5 h-5 rounded flex items-center justify-center"
                       style={{ background: 'rgba(180,50,30,0.15)', border: '1px solid rgba(180,50,30,0.25)' }}>
-                      <Trash2 className="w-2.5 h-2.5 text-red-400" />
+                      <Trash2 className="w-2.5 h-2.5 text-[#C0392B]" />
                     </button>
                   </>
                 )}

@@ -45,7 +45,7 @@ export default function ChapterEditor({ video, onSave, onCancel }) {
           <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2">
             <span className="text-[#D4AF37] font-mono text-xs w-10 shrink-0">{fmt(ch.time)}</span>
             <span className="text-sm text-white flex-1 truncate">{ch.title}</span>
-            <button onClick={() => remove(i)} className="text-white/30 hover:text-red-400" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => remove(i)} className="text-white/30 hover:text-[#C0392B]" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>

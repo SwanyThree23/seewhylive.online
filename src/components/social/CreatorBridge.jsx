@@ -29,7 +29,7 @@ export default function CreatorBridge({ user }) {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Youtube className="w-4 h-4 text-red-500" />
+          <Youtube className="w-4 h-4 text-[#C0392B]" />
           <h3 className="text-sm font-bold text-white">Connect YouTube Channel</h3>
         </div>
         {linked && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
@@ -53,7 +53,7 @@ export default function CreatorBridge({ user }) {
             }}
           />
           {error && (
-            <div className="flex items-center gap-1 text-[10px] text-red-400">
+            <div className="flex items-center gap-1 text-[10px] text-[#C0392B]">
               <AlertCircle className="w-3 h-3" />
               {error}
             </div>

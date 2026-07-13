@@ -54,6 +54,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
                     permissions.canMultistream ? 'bg-[#4A9B5E]/30 border border-[#6DBF7E]/40' : 'bg-white/5 border border-white/10'
                   }`}
+                  style={permissions.canMultistream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                 >
                   {permissions.canMultistream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
                 </button>
@@ -78,6 +79,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
                     permissions.canStream ? 'bg-[#4A9B5E]/30 border border-[#6DBF7E]/40' : 'bg-white/5 border border-white/10'
                   }`}
+                  style={permissions.canStream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                 >
                   {permissions.canStream && <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />}
                 </button>
@@ -103,7 +105,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                   {permissions.recordingAllowed ? (
                     <CheckCircle2 className="w-4 h-4 text-[#D4AF37]" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-red-400" />
+                    <XCircle className="w-4 h-4 text-[#C0392B]" />
                   )}
                 </button>
               </div>

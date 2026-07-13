@@ -93,7 +93,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center gap-4 p-8 text-center rounded-2xl"
         style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
-        <X className="w-12 h-12 text-red-400" />
+        <X className="w-12 h-12 text-[#C0392B]" />
         <div>
           <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
@@ -179,6 +179,7 @@ export default function GreenroomPage() {
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
 
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
   const [displayName, setDisplayName] = useState('');
   const [roleRequested, setRoleRequested] = useState('audience');
@@ -193,13 +194,26 @@ export default function GreenroomPage() {
   const [waitlistEntry, setWaitlistEntry] = useState(null);
   const [newRoomTitle, setNewRoomTitle] = useState('');
   const [newRoomCategory, setNewRoomCategory] = useState('other');
+  const [isSharing, setIsSharing] = useState(false);
 
+  const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
     queryKey: ['greenroom-target', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId && destType !== 'new_room',
   });
+  const { data: participants = [] } = useQuery({
+    queryKey: ['greenroomParticipants', roomId],
+    queryFn: () => base44.entities.RoomParticipant.filter({ room_id: roomId }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+
+  useEffect(() => {
+    const iv = setInterval(() => setElapsed(s => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -338,6 +352,7 @@ export default function GreenroomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      <NetworkQualityBanner quality={['offline','poor','fair','good','excellent'][deviceState.networkQuality] || 'good'} />
       {/* ── FANBASE-STYLE HEADER ── */}
       <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 px-3 h-12">

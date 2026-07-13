@@ -17,7 +17,7 @@ function WaveformBars() {
         <motion.div
           key={i}
           className="w-1.5 rounded-full"
-          style={{ backgroundColor: '#22c55e', height: `${h}%` }}
+          style={{ backgroundColor: '#6DBF7E', height: `${h}%` }}
           animate={{ scaleY: [1, 1.6, 0.6, 1.4, 1] }}
           transition={{
             repeat: Infinity,
@@ -340,8 +340,8 @@ export default function GreenRoomModal({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0 }}
                         >
-                          <CheckCircle size={16} color="#22c55e" />
-                          <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>
+                          <CheckCircle size={16} color="#6DBF7E" />
+                          <span className="text-sm font-semibold" style={{ color: '#6DBF7E' }}>
                             {currentStepData.pass}
                           </span>
                         </motion.div>
@@ -391,7 +391,7 @@ export default function GreenRoomModal({
                     {result === null ? (
                       <span className="text-white/25 text-sm">—</span>
                     ) : result === true ? (
-                      <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>✓</span>
+                      <span className="text-sm font-semibold" style={{ color: '#6DBF7E' }}>✓</span>
                     ) : (
                       <span className="text-sm font-semibold" style={{ color: PINK }}>✗</span>
                     )}

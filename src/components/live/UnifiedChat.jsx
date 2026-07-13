@@ -9,6 +9,10 @@ import {
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
 
+const MSG_BG = {
+  poll: { background: 'rgba(109,191,126,0.15)' },
+};
+
 const MSG_STYLES = {
   regular: '',
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
@@ -149,7 +153,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
-                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
+                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-[#C0392B] flex items-center justify-center gap-1"
                   style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
@@ -188,7 +192,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <motion.div key={msg.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.12 }}
-              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}>
+              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}
+              style={MSG_BG[msg.message_type] || undefined}>
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
                 <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"

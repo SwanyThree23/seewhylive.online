@@ -289,6 +289,19 @@ export default function PKBattleArena() {
           </Link>
         ))}
       </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GiftSystem roomId={null} userId={user?.id || null} isHost={true} />
+      <GiftLeaderboard roomId={null} />
+      <ViewerCount count={totalVotes} peakViewers={totalVotes} />
+      <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={totalVotes} />
+      <HostAlertCenter />
+      <StreamHealthMonitor isStreaming={battleActive} />
+      <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
+      <PKBattleInterface roomId={null} />
+      <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+      <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+      <LivePoll roomId={null} isHost={true} />
     </div>
   );
 }
