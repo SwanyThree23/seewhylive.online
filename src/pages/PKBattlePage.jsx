@@ -41,6 +41,7 @@ import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import BattleArenaManager from '../components/live/BattleArenaManager';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -537,7 +538,11 @@ export default function PKBattlePage() {
 
   const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamPK, audioDeviceId: prefMicPK });
+  const [activeCamId, setActiveCamId] = useState(prefCamPK);
+  const [activeMicId, setActiveMicId] = useState(prefMicPK);
+  const { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
   const announceJoinBattleRef = useRef(announceJoinBattle);
   const leaveRoomBattleRef = useRef(leaveRoomBattle);
@@ -813,6 +818,7 @@ export default function PKBattlePage() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {battleId && <BattleMode roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {user?.id && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={battle?.status === 'active'} />}
       {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={battle?.title || ''} />}

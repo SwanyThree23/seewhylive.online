@@ -362,6 +362,10 @@ export default function ControlRoomPage() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
@@ -640,7 +644,7 @@ export default function ControlRoomPage() {
       <StreamHealthDashboard isLive={roomId != null} />
       {!true && roomId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
-      {<SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} />}
@@ -699,7 +703,7 @@ export default function ControlRoomPage() {
       {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
       {<AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
       {<EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
-      {<ScreenSharePanel isSharing={isSharing} onStartShare={() => setIsSharing(true)} onStopShare={() => setIsSharing(false)} />}
+      {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
       {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={true ? 'host' : 'viewer'} />}
