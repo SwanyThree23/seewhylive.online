@@ -484,6 +484,8 @@ export default function WatchPartyPage() {
   const [showSyncWarn, setShowSyncWarn] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
 
@@ -1460,7 +1462,7 @@ export default function WatchPartyPage() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={members.length} />
-      <ViewerCount count={members.length} peakViewers={members.length} />
+      <ViewerCount count={members.length} peakViewers={peakViewers} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}

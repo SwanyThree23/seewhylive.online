@@ -958,7 +958,7 @@ export default function RoomPage() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={participants.length} />
-      <ViewerCount count={participants.length} peakViewers={participants.length} />
+      <ViewerCount count={participants.length} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
@@ -977,7 +977,7 @@ export default function RoomPage() {
       {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
       {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
-      <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={participants.length} netQuality={netQuality} netRtt={netRtt} />
+      <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <SuperChatRail superchats={[]} />
       <LiveGoalWidget memberCount={participants.length} tipTotal={tipTotal} subCount={0} />
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}

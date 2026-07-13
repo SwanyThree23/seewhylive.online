@@ -553,11 +553,14 @@ export default function BroadcastStudio() {
   const [musicVolume, setMusicVolume] = useState(70);
   const streamStartRef = useRef(Date.now());
   const [tipTotal, setTipTotal] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [superchats, setSuperchats] = useState([]);
   const [raisedHands, setRaisedHands] = useState(new Set());
   const [slowMode, setSlowMode] = useState(false);
   const [slowModeCooldown, setSlowModeCooldown] = useState(30);
   const [pinnedMessage, setPinnedMessage] = useState(null);
+
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -1264,7 +1267,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           startTime={streamStartRef.current}
           memberCount={members.length}
           tipTotal={tipTotal}
-          peakViewers={members.length}
+          peakViewers={peakViewers}
           netQuality={netQuality}
           netRtt={netRtt}
         />
@@ -2528,7 +2531,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={members.length} />
-      <ViewerCount count={members.length} peakViewers={members.length} />
+      <ViewerCount count={members.length} peakViewers={peakViewers} />
       {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}
