@@ -46,11 +46,6 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
-import StreamGoals from '../components/live/StreamGoals';
-import LivePoll from '../components/live/LivePoll';
-import CoStreamPanel from '../components/collaboration/CoStreamPanel';
-import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
-import { toast } from 'sonner';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
 import VideoQueuePanel from '../components/watchparty/VideoQueuePanel';
@@ -64,12 +59,8 @@ import { MerchStrip } from '../components/merch/MerchWidget';
 import SuperChatRail from '../components/live/SuperChatRail';
 import GiftShopTray from '../components/live/GiftShopTray';
 import GiftAnimation from '../components/live/GiftAnimation';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import LoveTap from '../components/live/LoveTap';
-import GiftTray from '../components/live/GiftTray';
 import TipWidget from '../components/live/TipWidget';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 export default function HybridStreamRoom() {
   const navigate = useNavigate();

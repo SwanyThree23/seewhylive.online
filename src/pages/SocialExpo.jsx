@@ -21,32 +21,17 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import ShareToSocial from '../components/social/ShareToSocial';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamGoals from '../components/live/StreamGoals';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';

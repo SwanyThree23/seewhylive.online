@@ -18,7 +18,6 @@ import {
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 

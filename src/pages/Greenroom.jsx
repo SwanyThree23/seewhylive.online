@@ -52,6 +52,7 @@ function PermissionPill({ label, status }) {
 function WaitingRoom({ waitlistEntry, onCancel }) {
   const [elapsed, setElapsed] = useState(0);
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const iv = setInterval(() => setElapsed(e => e + 1), 1000);

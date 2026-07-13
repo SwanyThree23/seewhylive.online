@@ -21,28 +21,17 @@ import StreamGoals from '../components/live/StreamGoals';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ShareToSocial from '../components/social/ShareToSocial';
-import StreamGoals from '../components/live/StreamGoals';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);

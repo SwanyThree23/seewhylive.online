@@ -18,6 +18,8 @@ import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import { useLocalMedia } from '../hooks/useLocalMedia';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -27,23 +29,6 @@ export default function GuestJoin() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('room') || urlParams.get('id');
   const inviteToken = urlParams.get('token');
-
-  // If arriving via invite link, show the enhanced landing panel
-  if (inviteToken) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18' }}>
-        <div className="w-full max-w-sm rounded-2xl" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.15)' }}>
-          <GuestLandingPanel
-            token={inviteToken}
-            roomId={roomId}
-            onJoin={({ name }) => {
-              toast.success(`Welcome, ${name}! Waiting for host to admit you.`);
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
 
   const [name, setName] = useState('');
   const [participantId, setParticipantId] = useState(null);
@@ -110,6 +95,23 @@ export default function GuestJoin() {
     onSuccess: (_, ready) => { setReadyState(ready); toast.success(ready ? '✅ Marked as ready!' : 'Status set to waiting'); },
     onError: () => toast.error('Failed to update status.'),
   });
+
+  // If arriving via invite link, show the enhanced landing panel
+  if (inviteToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18' }}>
+        <div className="w-full max-w-sm rounded-2xl" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.15)' }}>
+          <GuestLandingPanel
+            token={inviteToken}
+            roomId={roomId}
+            onJoin={({ name }) => {
+              toast.success(`Welcome, ${name}! Waiting for host to admit you.`);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
 

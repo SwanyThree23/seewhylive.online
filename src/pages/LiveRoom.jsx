@@ -47,26 +47,8 @@ import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 import ClipCreator from '../components/live/ClipCreator';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import LiveTranscription from '../components/live/LiveTranscription';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import SuperChatBar from '../components/live/SuperChatBar';
-import SubscriptionGate from '../components/live/SubscriptionGate';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import ReportModal from '../components/moderation/ReportModal';
-import PayPerViewGate from '../components/live/PayPerViewGate';
-import PaywallGate from '../components/live/PaywallGate';
-import PointsNotification from '../components/live/PointsNotification';
-import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
-import GiftAnimation from '../components/live/GiftAnimation';
-import QuickPollLauncher from '../components/live/QuickPollLauncher';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import LiveGoalWidget from '../components/live/LiveGoalWidget';
-import { DollarSign, Gift } from 'lucide-react';
 import ViewerCount from '../components/live/ViewerCount';
 import SuperChatRail from '../components/live/SuperChatRail';
 import EmbedPlayer from '../components/streaming/EmbedPlayer';
@@ -86,19 +68,15 @@ import { WhisperPanel } from '../components/live/DMWhisperPanel';
 import { MerchStrip } from '../components/merch/MerchWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import ChatModeration from '../components/live/ChatModeration';
-import ClipCreator from '../components/live/ClipCreator';
 import StreamMetadata from '../components/live/StreamMetadata';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import PrivatePanel from '../components/live/PrivatePanel';
 import ReactionOverlay from '../components/watchparty/ReactionOverlay';
-import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import CreatePollModal from '../components/community/CreatePollModal';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import GiftTray from '../components/live/GiftTray';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import AudioMixer from '../components/live/AudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
@@ -454,7 +432,6 @@ export default function LiveRoom() {
       setSpotlit(prev => prev ?? stage.find(s => s.role === 'host') ?? null);
     }
   }, [members]);
-
 
   const activeSpeaker = stageData.find(s => s.speaking);
   const stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;

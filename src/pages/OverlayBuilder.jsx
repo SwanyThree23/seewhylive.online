@@ -158,6 +158,7 @@ export default function OverlayBuilderPage() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),

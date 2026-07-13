@@ -15,8 +15,6 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-
   // Fetch all stage participants for this room
   const { data: participants = [], isLoading } = useQuery({
     queryKey: ['greenroom', roomId],

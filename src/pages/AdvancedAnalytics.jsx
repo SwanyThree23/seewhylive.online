@@ -20,21 +20,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import PayPerViewManager from '../components/monetization/PayPerViewManager';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';

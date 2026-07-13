@@ -46,17 +46,6 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import DiscussionFeed from '../components/community/DiscussionFeed';
-import PollCard from '../components/community/PollCard';
-import RaidPanelButton from '../components/live/RaidPanel';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import SpotlightSection from '../components/community/SpotlightSection';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);

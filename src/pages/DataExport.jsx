@@ -17,24 +17,11 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import AudienceInsights from '../components/dashboard/AudienceInsights';
-import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
-import ShareToSocial from '../components/social/ShareToSocial';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -106,7 +93,6 @@ export default function DataExportPage() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
-
 
   const handleExport = async (set, format) => {
     const key = `${set.id}-${format}`;

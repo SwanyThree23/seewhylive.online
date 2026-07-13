@@ -112,6 +112,7 @@ function ProgressBar({ value, max, color }) {
 export default function MultiPlatform() {
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const activeRoomId = roomId;
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({

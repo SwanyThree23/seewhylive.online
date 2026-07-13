@@ -19,22 +19,9 @@ import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDas
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import ShareToSocial from '../components/social/ShareToSocial';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

@@ -19,14 +19,6 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import 'react-quill/dist/quill.snow.css';
 
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import 'react-quill/dist/quill.snow.css';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';

@@ -100,14 +100,6 @@ export default function ActivityPage() {
     enabled: !!user?.id,
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
-
-  const { data: activities = [], isLoading, refetch } = useQuery({
-    queryKey: ['activities', user?.id],
-    queryFn: () => base44.entities.Activity.list('-created_date', 200),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -161,61 +153,6 @@ export default function ActivityPage() {
 
   const badgesEarned = myActivities.filter(a => a.type === 'badge_earned').length;
   const totalFollowers = myActivities.filter(a => a.type === 'follow').length;
-
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: () => base44.entities.Notification.filter({ user_id: user?.id }, '-created_date', 50),
-    enabled: !!user?.id,
-    refetchInterval: 15000,
-  });
-
-  useEffect(() => {
-    if (!user?.id) return;
-    const unsub = base44.entities.Activity.subscribe(() => {
-      qc.invalidateQueries({ queryKey: ['activities', user.id] });
-    });
-    return unsub;
-  }, [user?.id, qc]);
-
-  const markAllNotifRead = useMutation({
-    mutationFn: () => Promise.all(
-      notifications.filter(n => !n.is_read).map(n =>
-        base44.entities.Notification.update(n.id, { is_read: true })
-      )
-    ),
-    onError: () => toast.error('Failed to mark notifications as read.'),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications', user?.id] }),
-  });
-
-  const myActivities = activities.filter(a =>
-    a.user_id === user?.id || a.creator_id === user?.id || a.recipient_id === user?.id
-  );
-
-  const unreadNotifs = notifications.filter(n => !n.is_read);
-
-  const filterCfg = FILTERS.find(f => f.id === filter);
-  const filtered = myActivities.filter(a => {
-    if (filter !== 'all' && filterCfg?.types && !filterCfg.types.includes(a.type)) return false;
-    return true;
-  });
-
-  const grouped = groupByDate(filtered);
-  const dateKeys = Object.keys(grouped);
-
-  // Stats summary
-  const streamsThisWeek = myActivities.filter(a => {
-    const isStream = ['room_created', 'room_ended'].includes(a.type);
-    const isRecent = Date.now() - new Date(a.created_date).getTime() < 7 * 86400000;
-    return isStream && isRecent;
-  }).length;
-
-  const tipsThisWeek = myActivities
-    .filter(a => a.type === 'tip_received' && Date.now() - new Date(a.created_date).getTime() < 7 * 86400000)
-    .reduce((sum, a) => sum + (a.amount || 0), 0);
-
-  const badgesEarned = myActivities.filter(a => a.type === 'badge_earned').length;
-  const totalFollowers = myActivities.filter(a => a.type === 'follow').length;
-
   return (
     <div className="min-h-screen pb-20" style={{ background: BG }}>
       {user?.id && <MilestoneAlerts creatorId={user.id} />}

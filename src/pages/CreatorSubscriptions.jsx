@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
 import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import MySubscriptions from '../components/subscriptions/MySubscriptions';

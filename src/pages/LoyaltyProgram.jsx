@@ -65,6 +65,8 @@ export default function LoyaltyProgram() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const roomId = activeRoomId;
+  const activeChallengeId = null;
   const isOwnProgram = !creatorId || creatorId === user?.id;
 
   React.useEffect(() => {

@@ -20,18 +20,7 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import VODLibrary from '../components/vod/VODLibrary';
-import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
-import StreamEventBus from '../components/live/StreamEventBus';
-import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ShareToSocial from '../components/social/ShareToSocial';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import StreamGoals from '../components/live/StreamGoals';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';

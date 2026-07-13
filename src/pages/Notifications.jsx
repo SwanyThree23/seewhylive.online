@@ -17,23 +17,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import PointsNotification from '../components/live/PointsNotification';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';

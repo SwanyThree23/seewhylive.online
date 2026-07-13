@@ -27,17 +27,6 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import RedemptionQueue from '../components/loyalty/RedemptionQueue';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

@@ -122,6 +122,7 @@ export default function MultiPlatformIntegration() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');

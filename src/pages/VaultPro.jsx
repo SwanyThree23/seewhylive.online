@@ -17,19 +17,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
-import RevenueDashboard from '../components/monetization/RevenueDashboard';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';

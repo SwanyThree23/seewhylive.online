@@ -20,13 +20,10 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import MobileStreamControls from '../components/live/MobileStreamControls';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -34,19 +31,7 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import StreamGoals from '../components/live/StreamGoals';
-import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import QuickPollLauncher from '../components/live/QuickPollLauncher';
-import LivePollWidget from '../components/live/LivePollWidget';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import SubscriptionGate from '../components/live/SubscriptionGate';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

@@ -14,16 +14,6 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import ShareToSocial from '../components/social/ShareToSocial';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG      = '#080B18';

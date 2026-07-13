@@ -227,17 +227,6 @@ function CreateEventForm({ onSuccess }) {
     </div>
   );
 }
-
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-
-const BG   = '#080B18';
-const BG2  = '#0D0A08';
-const GOLD = '#D4AF37';
-const CRIM = '#800020';
-const AMB  = '#D4854A';
-const GRN  = '#6DBF7E';
 const FONT = 'Barlow Condensed, sans-serif';
 const MONO = 'Space Mono, monospace';
 

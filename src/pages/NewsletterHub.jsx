@@ -17,16 +17,6 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamGoals from '../components/live/StreamGoals';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };

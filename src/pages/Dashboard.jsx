@@ -8,7 +8,6 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer,
   CartesianGrid, Tooltip, PieChart, Pie, Cell
 } from 'recharts';
-import {
   Radio, Users, DollarSign, TrendingUp, Eye, Clock, MessageSquare,
   Heart, Zap, Plus, Video, BookOpen, Settings, ChevronRight,
   Star, Play, Trash2, Edit, X, Check, FileText, Target, BarChart2,
@@ -46,33 +45,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import RecordingManager from '../components/content/RecordingManager';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import NotificationBell from '../components/shared/NotificationBell';
-import SubscriptionManager from '@/components/monetization/SubscriptionManager';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import PayPerViewCard from '../components/monetization/PayPerViewCard';
-import PayPerViewManager from '../components/monetization/PayPerViewManager';
-import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import DirectPayments from '../components/live/DirectPayments';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import SpotlightSection from '../components/community/SpotlightSection';
-import PollCard from '../components/community/PollCard';
-import CreatorBridge from '../components/social/CreatorBridge';
-import { toast } from 'sonner';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 import StreamGoals from '../components/live/StreamGoals';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

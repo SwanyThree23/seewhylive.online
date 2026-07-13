@@ -100,6 +100,7 @@ export default function GuardianAI() {
     enabled: !!user?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+  const roomId = activeRoomId;
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
   const [banT,   setBanT]   = useState(95);

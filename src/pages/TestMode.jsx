@@ -14,7 +14,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import StreamGoals from '../components/live/StreamGoals';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -22,9 +21,6 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 

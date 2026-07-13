@@ -30,9 +30,7 @@ export default function MonetizationDashboard({ roomId }) {
           net_creator_payout: creatorEarnings,
         });
 
-        if (result?.data) {
-          setAnalytics(result.data);
-        }
+
       } catch (error) {
       }
       setLoading(false);

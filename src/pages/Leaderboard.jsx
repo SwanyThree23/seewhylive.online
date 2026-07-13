@@ -23,19 +23,6 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import TipWidget from '../components/live/TipWidget';
-import TippingOverlay from '../components/live/TippingOverlay';
-import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const SVS_STATES = [
   { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },

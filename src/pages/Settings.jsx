@@ -21,27 +21,10 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
-import TierEditor from '../components/subscriptions/TierEditor';
-import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
-import MySubscriptions from '../components/subscriptions/MySubscriptions';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
-import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
-import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
-import StripeConnectButton from '../components/monetization/StripeConnectButton';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';

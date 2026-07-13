@@ -17,21 +17,9 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import PollLaunchBar from '../components/live/PollLaunchBar';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import GiftAnimation from '../components/live/GiftAnimation';
-import TippingModal from '../components/monetization/TippingModal';
-import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

@@ -48,6 +48,7 @@ export default function CreatorChannel() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['creator-profile', userId],

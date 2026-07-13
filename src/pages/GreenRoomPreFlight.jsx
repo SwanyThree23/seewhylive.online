@@ -98,6 +98,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());
   const [token]      = useState(() => genToken());
+  const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKey, setShowKey] = useState(false);
   const streamRef = useRef(null);
 

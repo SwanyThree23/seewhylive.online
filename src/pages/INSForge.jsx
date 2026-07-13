@@ -3,10 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { base44 } from '@/api/base44Client';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -18,7 +14,6 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
-
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -32,16 +27,6 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AudienceInsights from '../components/dashboard/AudienceInsights';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';

@@ -22,7 +22,6 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G = '#D4AF37';
 const BG = '#080B18';

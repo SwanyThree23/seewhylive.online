@@ -32,18 +32,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import PayPerViewCard from '@/components/monetization/PayPerViewCard';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { toast } from 'sonner';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';

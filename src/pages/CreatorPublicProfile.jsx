@@ -11,7 +11,7 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Radio, Users, DollarSign, Clock, Star,

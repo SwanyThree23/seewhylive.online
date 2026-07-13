@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -38,6 +38,10 @@ import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
 import GiftTray from '../components/live/GiftTray';
 import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
 import TippingModal from '../components/monetization/TippingModal';

@@ -228,7 +228,7 @@ export default function FallenLegendsPage() {
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-              {CEREMONY_2026.map(legend => (
+              {ceremony2026.map(legend => (
                 <LegendCard
                   key={legend.id}
                   legend={legend}
