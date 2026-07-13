@@ -228,6 +228,9 @@ export default function RoomPage() {
   // VOD recording — activated once host has a local stream and room is loaded
   useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
 
+  // Stream start time — set once on mount
+  const streamStartRef = useRef(Date.now());
+
   // Elapsed-seconds counter (starts when component mounts)
   const [elapsed, setElapsed] = useState(0);
   const elapsedTimerRef = useRef(null);
@@ -972,9 +975,9 @@ export default function RoomPage() {
       {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={room?.status === 'live'} />}
       {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
       {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
-      {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={null} />}
+      {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
-      <StreamMetricsBar startTime={null} memberCount={participants.length} tipTotal={0} />
+      <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={0} peakViewers={participants.length} netQuality={netQuality} netRtt={netRtt} />
       <SuperChatRail superchats={[]} />
       <LiveGoalWidget memberCount={participants.length} tipTotal={0} subCount={0} />
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
