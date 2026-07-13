@@ -217,7 +217,13 @@ export default function RoomPage() {
 
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
-  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef?.current?.entries() || []);
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
   // VOD recording — activated once host has a local stream and room is loaded
   useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
@@ -267,7 +273,7 @@ export default function RoomPage() {
   }, [toggleAudio, toggleVideo]);
 
   // WebRTC peer mesh — connects to all other participants via STUN/TURN
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   const announceJoinRef = useRef(announceJoin);
   const leaveRoomRef = useRef(leaveRoom);
   useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
