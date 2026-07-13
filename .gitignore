@@ -50,3 +50,4 @@ data/*.db-wal
 # Transfer artifacts from chunked file transfers
 *.tar.gz
 *.tar.gz.b64
+base44/.app.jsonc
