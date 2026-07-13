@@ -34,6 +34,20 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
       toast.success(`Following ${targetUserName || 'creator'}!`);
       qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
       qc.invalidateQueries(['followers', targetUserId]);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'follow',
+          title: `Now following ${targetUserName || 'a creator'}`,
+          recipient_id: targetUserId,
+        }),
+        base44.entities.Activity.create({
+          user_id: targetUserId,
+          type: 'follow',
+          title: `${currentUser.full_name || 'Someone'} is now following you`,
+          sender_id: currentUser.id,
+        }),
+      ]);
     },
   });
 

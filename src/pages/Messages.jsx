@@ -3,6 +3,19 @@ import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, PenSquare, Send, ArrowLeft, ChevronLeft, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import TippingModal from '../components/monetization/TippingModal';
+import NotificationBell from '../components/shared/NotificationBell';
+import SuperChatRail from '../components/live/SuperChatRail';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import UnifiedChat from '../components/live/UnifiedChat';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import ShareButtons from '../components/shared/ShareButtons';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -132,6 +145,13 @@ export default function Messages() {
       setShowCompose(false);
       setComposeName("");
       setComposeMsg("");
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Sent a direct message to ${composeName.trim()}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -205,7 +225,7 @@ export default function Messages() {
             width: selectedThread ? "35%" : undefined,
             borderRight: selectedThread ? "1px solid rgba(255,255,255,0.04)" : "none",
             overflowY: "auto",
-            background: "rgba(13,6,24,0.9)",
+            background: "rgba(8,11,24,0.9)",
             minWidth: 0,
           }}>
 
@@ -309,7 +329,7 @@ export default function Messages() {
             {/* Thread sub-header (visible on desktop alongside list) */}
             <div className="hidden md:flex items-center gap-3 px-4 py-2.5"
               style={{
-                background: "rgba(13,6,24,0.97)",
+                background: "rgba(8,11,24,0.97)",
                 borderBottom: "1px solid rgba(255,255,255,0.04)",
               }}>
               <div style={{
@@ -344,7 +364,7 @@ export default function Messages() {
                         position: "absolute", bottom: "calc(100% + 4px)",
                         [isMe ? "right" : "left"]: 0,
                         zIndex: 10,
-                        background: "rgba(13,6,24,0.97)",
+                        background: "rgba(8,11,24,0.97)",
                         border: "1px solid rgba(212,175,55,0.2)",
                         borderRadius: 12,
                         padding: "4px 8px",
@@ -385,7 +405,7 @@ export default function Messages() {
                           {reaction && (
                             <span style={{
                               position: "absolute", bottom: -8, [isMe ? "left" : "right"]: -4,
-                              fontSize: 12, background: "rgba(13,6,24,0.9)",
+                              fontSize: 12, background: "rgba(8,11,24,0.9)",
                               border: "1px solid rgba(212,175,55,0.2)",
                               borderRadius: 10, padding: "0 3px", lineHeight: "16px",
                             }}>{reaction}</span>
@@ -427,7 +447,7 @@ export default function Messages() {
             <div className="flex items-center gap-2 px-4 py-3"
               style={{
                 borderTop: "1px solid rgba(255,255,255,0.04)",
-                background: "rgba(13,6,24,0.97)",
+                background: "rgba(8,11,24,0.97)",
               }}>
               <input
                 className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
@@ -467,7 +487,7 @@ export default function Messages() {
             padding: "0 16px",
           }}>
           <div style={{
-            background: "rgba(13,6,24,0.98)",
+            background: "rgba(8,11,24,0.98)",
             border: "1px solid rgba(212,175,55,0.2)",
             borderRadius: 20, padding: 24, width: "100%", maxWidth: 400,
           }}>

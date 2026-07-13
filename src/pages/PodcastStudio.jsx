@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
@@ -39,8 +40,8 @@ const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
-const GREEN  = '#5A7A4A';
+const PURPLE = '#D4854A';
+const GREEN  = '#4A9B5E';
 const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -1215,6 +1216,15 @@ export default function PodcastStudio() {
         {tab === 'record' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
+            {/* Audio Mixer */}
+            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
+            {/* Enhanced Audio Mixer */}
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+
+            {/* Soundboard */}
+            <SoundboardWidget />
+
             {/* Panel slots */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
@@ -1450,6 +1460,12 @@ export default function PodcastStudio() {
           </div>
         )}
       </div>
+
+      {tab === 'library' && library.length > 0 && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+        </div>
+      )}
 
       <Toast message={toast} />
       <SwanAIRecommendations roomId={null} currentLayout="podcast" viewerCount={0} />

@@ -46,7 +46,7 @@ export default function RevenueDashboard({ userId }) {
   }, {});
 
   const tierData = [
-    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#ea580c' },
+    { name: 'Bronze', price: 1, count: tierCounts.bronze || 0, color: '#C0392B' },
     { name: 'Silver', price: 5, count: tierCounts.premium || 0, color: '#9ca3af' },
     { name: 'Gold', price: 15, count: tierCounts.elite || 0, color: GOLD },
   ];
@@ -88,7 +88,7 @@ export default function RevenueDashboard({ userId }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
             <span style={{ color: '#9ca3af' }}>Available for payout</span>
-            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: '#16a34a', color: '#fff', ...T }}>Ready</span>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: '#4A9B5E', color: '#fff', ...T }}>Ready</span>
           </div>
         </div>
 

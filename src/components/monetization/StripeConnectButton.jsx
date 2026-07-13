@@ -10,6 +10,8 @@ export default function StripeConnectButton({ creatorId }) {
   const qc = useQueryClient();
   const [connecting, setConnecting] = useState(false);
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: payout } = useQuery({
     queryKey: ['creator-payout', creatorId],
     queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: creatorId }).then(r => r[0]),
@@ -19,27 +21,27 @@ export default function StripeConnectButton({ creatorId }) {
   const connectMutation = useMutation({
     mutationFn: async () => {
       setConnecting(true);
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Generate a mock Stripe Connect Express onboarding response for creator ID: ${creatorId}.
-Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.com/express/onboarding/xxx" }`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            account_id: { type: 'string' },
-            onboarding_url: { type: 'string' },
-          },
-        },
+      if (!currentUser?.email) throw new Error('User email required');
+      const res = await fetch('/api/connect/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to connect Stripe');
+      }
+      const result = await res.json();
 
       if (payout?.id) {
         await base44.entities.CreatorPayout.update(payout.id, {
-          stripe_account_id: result.account_id,
+          stripe_account_id: result.accountId,
           stripe_connected: true,
         });
       } else {
         await base44.entities.CreatorPayout.create({
           creator_id: creatorId,
-          stripe_account_id: result.account_id,
+          stripe_account_id: result.accountId,
           stripe_connected: true,
           pending_balance: 0,
           total_paid_out: 0,
@@ -47,13 +49,20 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
         });
       }
 
-      return result.onboarding_url;
+      return result.onboardingUrl;
     },
     onSuccess: (url) => {
       qc.invalidateQueries(['creator-payout', creatorId]);
       setConnecting(false);
       toast.success('Stripe account connected! Redirecting to onboarding...');
-      toast.info("In production, you would be redirected to Stripe's onboarding flow.");
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: 'Connected Stripe payout account',
+        }).catch(() => {});
+      }
+      if (url) window.location.href = url;
     },
     onError: () => { setConnecting(false); toast.error('Failed to connect Stripe. Please try again.'); },
   });
@@ -79,7 +88,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
   const cardStyle = {
     border: `2px solid ${isConnected ? '#6DBF7E' : '#e2e8f0'}`,
     borderRadius: 12,
-    background: 'rgba(13,6,24,0.95)',
+    background: 'rgba(8,11,24,0.95)',
     color: '#fff',
     fontFamily: 'Barlow Condensed, sans-serif',
     overflow: 'hidden',
@@ -103,7 +112,7 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
               <CheckCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Payouts enabled</p>
-                <p style={{ fontSize: 12, color: '#15803d' }}>Account: {payout?.stripe_account_id}</p>
+                <p style={{ fontSize: 12, color: '#4A9B5E' }}>Account: {payout?.stripe_account_id}</p>
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 14 }}>
@@ -133,11 +142,11 @@ Return JSON: { account_id: "acct_xxx", onboarding_url: "https://connect.stripe.c
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#b45309', background: 'rgba(245,158,11,0.08)', borderRadius: 8, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 14, color: '#C9A84C', background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 12 }}>
               <AlertCircle style={{ width: 16, height: 16, flexShrink: 0, marginTop: 2 }} />
               <div>
                 <p style={{ fontWeight: 600 }}>Connect Stripe to receive payouts</p>
-                <p style={{ fontSize: 12, color: '#d97706', marginTop: 2 }}>You earn 90% of all subscriptions and tips. Payouts via Stripe Express.</p>
+                <p style={{ fontSize: 12, color: '#D4854A', marginTop: 2 }}>You earn 90% of all subscriptions and tips. Payouts via Stripe Express.</p>
               </div>
             </div>
             <ul style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>

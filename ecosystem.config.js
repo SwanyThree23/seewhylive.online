@@ -2,9 +2,9 @@ module.exports = {
   apps: [
     {
       name: 'seewhy-server',
-      script: '/opt/seewhy/server/index.js',
-      instances: 1,
-      exec_mode: 'fork',
+      script: '/opt/seewhy/server/server.js',
+      instances: 2,
+      exec_mode: 'cluster',
       watch: false,
       max_memory_restart: '1024M',
       node_args: '--max-old-space-size=2048',

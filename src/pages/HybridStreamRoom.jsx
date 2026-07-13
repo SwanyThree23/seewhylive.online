@@ -1,11 +1,26 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
 import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestGrid from '../components/live/GuestGrid';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import UnifiedChat from '../components/live/UnifiedChat';
+import StageView from '../components/rooms/StageView';
 import ChatPanel from '../components/rooms/ChatPanel';
 import ParticipantsList from '../components/rooms/ParticipantsList';
+import StreamGoals from '../components/live/StreamGoals';
+import LivePoll from '../components/live/LivePoll';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
 import { toast } from 'sonner';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -196,6 +211,15 @@ export default function HybridStreamRoom() {
     return unsubscribe;
   }, [roomId]);
 
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [roomId, user?.id]);
+
   const leaveMutation = useMutation({
     mutationFn: async () => {
       const myParticipant = participants.find(p => p.user_id === user?.id);
@@ -295,12 +319,15 @@ export default function HybridStreamRoom() {
               spotlightId={spotlightId}
               onSpotlight={(id) => setSpotlightId(spotlightId === id ? null : id)}
               maxGuests={20}
+              roomId={roomId}
+              isHost={isHost}
+              currentUser={user}
             />
           </div>
         </div>
 
         {/* Right: Chat & Participants */}
-        <div className="w-80 flex flex-col" style={{ borderLeft: '1px solid rgba(212,175,55,0.08)', background: 'rgba(13,6,24,0.7)' }}>
+        <div className="w-80 flex flex-col" style={{ borderLeft: '1px solid rgba(212,175,55,0.08)', background: 'rgba(8,11,24,0.7)' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Tab bar */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flexShrink: 0, background: 'rgba(8,11,24,0.8)', borderBottom: '1px solid rgba(212,175,55,0.08)', height: 40 }}>

@@ -2,11 +2,18 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Gift, Megaphone, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ReferralProgram from '../components/community/ReferralProgram';
 import ChallengeCard from '../components/community/ChallengeCard';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import SpotlightSection from '../components/community/SpotlightSection';
+import CreatePollModal from '../components/community/CreatePollModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -131,7 +138,7 @@ export default function CommunityGrowthPage() {
                 ))}
                 {challenges.filter(c => c.status === 'active').length === 0 && (
                   <div className="text-center py-12 rounded-2xl"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                     <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                     <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No active challenges</p>
                   </div>
@@ -155,7 +162,7 @@ export default function CommunityGrowthPage() {
                 <ChallengeLeaderboard challengeId={selectedChallenge} />
               ) : (
                 <div className="text-center py-12 rounded-2xl"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                   <p className="text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Select a challenge to view leaderboard</p>
                 </div>
@@ -188,6 +195,26 @@ export default function CommunityGrowthPage() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <SpotlightSection communityId={communityId || null} />
+          <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Admin</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚡ Settings</span>
+          </Link>
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

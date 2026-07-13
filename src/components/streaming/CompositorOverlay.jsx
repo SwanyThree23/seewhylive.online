@@ -231,7 +231,7 @@ export default function CompositorOverlay({
           className="absolute right-0 top-full mt-2 z-50 rounded-2xl p-4 shadow-2xl space-y-3"
           style={{
             width: 360,
-            background: '#0D0618',
+            background: '#080B18',
             border: '1px solid rgba(212,175,55,0.2)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           }}

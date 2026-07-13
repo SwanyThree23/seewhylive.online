@@ -9,7 +9,7 @@ const G = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK = '#C0392B';
 const BG = '#080B18';
-const BG2 = 'rgba(13,6,24,0.97)';
+const BG2 = 'rgba(8,11,24,0.97)';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TIERS = [
@@ -175,6 +175,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
       });
     },
     onSuccess: () => {
+      navigator.vibrate?.([50, 30, 80]);
       const name = (currentUser.full_name || currentUser.email || 'Viewer').split(' ')[0];
       setAnimating({ name, amount: rawAmount, emoji: selectedEmoji });
       setOpen(false);
@@ -183,6 +184,22 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
       setUseCustom(false);
       setSelected(5);
       setSelectedEmoji(null);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'tip_sent',
+          title: `Tipped $${rawAmount} to creator`,
+          amount: rawAmount,
+          recipient_id: hostId,
+        }),
+        hostId && base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'tip_received',
+          title: `Received $${rawAmount} tip from ${name}`,
+          amount: rawAmount,
+          sender_id: currentUser.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Could not send tip'),
   });
@@ -321,7 +338,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                           value={custom} onChange={e => setCustom(e.target.value)}
                           placeholder="Enter amount"
                           className="w-full rounded-xl pl-7 pr-4 py-2.5 text-sm font-bold outline-none"
-                          style={{ background: 'rgba(17,8,34,0.9)', border: `1px solid ${G}30`, color: '#fff', ...T }}
+                          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}30`, color: '#fff', ...T }}
                         />
                       </motion.div>
                     )}
@@ -388,7 +405,7 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
                     placeholder="Say something nice..."
                     rows={2}
                     className="w-full rounded-xl px-4 py-2.5 text-sm outline-none resize-none"
-                    style={{ background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
+                    style={{ background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', ...T }}
                   />
                   <p className="text-right text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
                     {message.length}/140

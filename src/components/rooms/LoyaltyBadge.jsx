@@ -26,11 +26,11 @@ export default function LoyaltyBadge({ userId, creatorId }) {
       case 'platinum':
         return { icon: Crown, color: 'bg-[#7B5DA6]', label: 'Platinum' };
       case 'gold':
-        return { icon: Award, color: 'bg-yellow-500', label: 'Gold' };
+        return { icon: Award, color: 'bg-[#D4AF37]', label: 'Gold' };
       case 'silver':
         return { icon: Sparkles, color: 'bg-gray-400', label: 'Silver' };
       default:
-        return { icon: Sparkles, color: 'bg-orange-600', label: 'Bronze' };
+        return { icon: Sparkles, color: 'bg-[#D4854A]', label: 'Bronze' };
     }
   };
 

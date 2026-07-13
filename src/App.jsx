@@ -79,6 +79,7 @@ const AuthenticatedApp = () => {
       <Route path="/onboarding"  element={<Pages.Onboarding />} />
       <Route path="/clips"       element={<LayoutWrapper currentPageName="ClipsLibrary"><Pages.ClipsLibrary /></LayoutWrapper>} />
       <Route path="/newsletter"  element={<LayoutWrapper currentPageName="NewsletterHub"><Pages.NewsletterHub /></LayoutWrapper>} />
+      <Route path="/login"       element={<Pages.Login />} />
       <Route path="*"            element={<PageNotFound />} />
     </Routes>
     </Suspense>

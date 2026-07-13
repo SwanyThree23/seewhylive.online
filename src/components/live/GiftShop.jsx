@@ -13,8 +13,8 @@ const GREEN   = '#6DBF7E';
 
 export const GIFTS = [
   { id: 'rose',     emoji: '🌹', name: 'Rose',      price: 0.99,   color: '#E8003D', particles: 12 },
-  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#FF9500', particles: 20 },
-  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#00B4FF', particles: 24 },
+  { id: 'confetti', emoji: '🎉', name: 'Confetti',  price: 1.99,   color: '#D4854A', particles: 20 },
+  { id: 'rocket',   emoji: '🚀', name: 'Rocket',    price: 4.99,   color: '#C9A84C', particles: 24 },
   { id: 'crown',    emoji: '👑', name: 'Crown',     price: 9.99,   color: GOLD,      particles: 30 },
   { id: 'lion',     emoji: '🦁', name: 'Lion King', price: 19.99,  color: '#D4854A', particles: 36 },
   { id: 'diamond',  emoji: '💎', name: 'Diamond',   price: 49.99,  color: '#C9A84C', particles: 48 },

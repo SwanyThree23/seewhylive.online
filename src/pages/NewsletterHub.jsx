@@ -3,6 +3,19 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast as showToast } from 'sonner';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -21,7 +34,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
-const STATUS_COLORS = { draft:C.gray, scheduled:'#FFB800', sent:'#6DBF7E' };
+const STATUS_COLORS = { draft:C.gray, scheduled:'#D4AF37', sent:'#6DBF7E' };
 const TEMPLATES = {
   stream_recap: {
     title: 'Stream Recap — [Date]',
@@ -84,6 +97,12 @@ export default function NewsletterHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey:['currentUser'], queryFn:() => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: letters=[], isLoading } = useQuery({
     queryKey: ['newsletters', user?.id],
     queryFn: () => base44.entities.Newsletter.filter({ community_id: user.id }, '-created_date', 50),

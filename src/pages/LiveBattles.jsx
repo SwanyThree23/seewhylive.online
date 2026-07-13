@@ -6,6 +6,22 @@ import { Swords, Plus, ArrowLeft, Trophy, Clock, Users, Zap } from 'lucide-react
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { format, formatDistanceToNow } from 'date-fns';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import LoveTap from '../components/live/LoveTap';
+import GiftShopTray from '../components/live/GiftShopTray';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import BattleMode from '../components/streaming/BattleMode';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -45,7 +61,7 @@ function BattleCard({ battle, index }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} whileHover={{ y: -3 }}
       className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: 'linear-gradient(135deg, #0d0618, #15021f)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18, #0D1528)', border: '1px solid rgba(212,175,55,0.15)' }}>
       {/* Status bar */}
       <div className="h-1 w-full" style={{ background: isActive ? `linear-gradient(90deg, #800020, ${GOLD})` : 'rgba(255,255,255,0.06)', animation: isActive ? 'pulse 2s infinite' : 'none' }} />
 
@@ -82,12 +98,12 @@ function BattleCard({ battle, index }) {
         {/* VS display */}
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 text-center">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-blue-300 mx-auto mb-1"
-              style={{ background: 'rgba(59,130,246,0.15)', border: '2px solid rgba(59,130,246,0.4)' }}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-black text-[#D4AF37] mx-auto mb-1"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '2px solid rgba(212,175,55,0.4)' }}>
               {leftName?.charAt(0)?.toUpperCase()}
             </div>
             <p className="text-sm font-bold text-white truncate" style={T}>{leftName}</p>
-            <p className="text-lg font-black font-mono" style={{ color: '#60a5fa' }}>{leftVotes.toLocaleString()}</p>
+            <p className="text-lg font-black font-mono" style={{ color: '#D4AF37' }}>{leftVotes.toLocaleString()}</p>
           </div>
           <div className="flex flex-col items-center gap-1">
             <span className="font-black text-sm" style={{ color: GOLD }}>VS</span>
@@ -111,7 +127,7 @@ function BattleCard({ battle, index }) {
 
         <Link to={`${createPageUrl('PKBattlePage')}?id=${battle.id}`}>
           <button className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl font-black uppercase text-xs"
-            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #2563eb, #dc2626)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+            style={{ ...T, background: isActive ? 'linear-gradient(90deg, #800020, #C0392B)' : 'rgba(255,255,255,0.05)', border: isActive ? 'none' : '1px solid rgba(255,255,255,0.1)', color: isActive ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
             {isActive ? <><Zap className="w-3.5 h-3.5" /> Join Battle</> : <><Trophy className="w-3.5 h-3.5" /> View Results</>}
           </button>
         </Link>
@@ -135,7 +151,7 @@ export default function LiveBattles() {
 
   return (
     <div className="min-h-screen text-white pb-10"
-      style={{ background: 'linear-gradient(135deg, #0d0618 0%, #15021f 50%, #0d0618 100%)' }}>
+      style={{ background: 'linear-gradient(135deg, #080B18 0%, #0D1528 50%, #080B18 100%)' }}>
       {/* Header */}
       <div className="sticky top-0 z-20 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
@@ -159,7 +175,7 @@ export default function LiveBattles() {
             </div>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Start Battle
               </button>
             </Link>
@@ -206,7 +222,7 @@ export default function LiveBattles() {
             </p>
             <Link to={createPageUrl('PKBattlePage')}>
               <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-black uppercase text-xs mx-auto"
-                style={{ ...T, background: 'linear-gradient(90deg, #2563eb, #dc2626)', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                style={{ ...T, background: 'linear-gradient(90deg, #800020, #C0392B)', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <Plus className="w-4 h-4" /> Create First Battle
               </button>
             </Link>

@@ -49,48 +49,6 @@ const EMOJI_CATEGORIES = {
 
 const QUICK_REACTIONS = ["🔥","💯","❤️","😂","🚀","👑","💎","🎉"];
 
-const MOCK_VODS = [
-  {
-    id: "vod-001", title: "Late Night Lo-Fi Beats & Chill Session",
-    creator: "DJ SwanyThree", creatorAvatar: "🎧",
-    duration: "3:24:17", views: "12.4K", date: "2 days ago",
-    thumbnail_color: "#1a0a20", chapters: [
-      { time: "0:00", label: "Intro & Setup" },
-      { time: "12:30", label: "Lo-Fi Set Begins" },
-      { time: "1:04:15", label: "Q&A Break" },
-      { time: "1:45:00", label: "Deep House Mix" },
-      { time: "2:30:00", label: "Subscriber Shoutouts" },
-      { time: "3:10:00", label: "Outro" },
-    ],
-    tags: ["Music", "Lo-Fi", "Chill"], highlights: 3,
-  },
-  {
-    id: "vod-002", title: "DOMINO! ARENA Championship Finals 🏆",
-    creator: "Domino King", creatorAvatar: "🎲",
-    duration: "1:48:33", views: "8.7K", date: "4 days ago",
-    thumbnail_color: "#200a0a", chapters: [
-      { time: "0:00", label: "Tournament Bracket Reveal" },
-      { time: "15:00", label: "Quarterfinals Begin" },
-      { time: "42:00", label: "Semifinals" },
-      { time: "1:10:00", label: "Championship Match" },
-      { time: "1:40:00", label: "Trophy Ceremony" },
-    ],
-    tags: ["Gaming", "Dominoes", "Tournament"], highlights: 7,
-  },
-  {
-    id: "vod-003", title: "AI Music Production Masterclass",
-    creator: "SwanyBot Studio", creatorAvatar: "🤖",
-    duration: "2:11:05", views: "5.2K", date: "1 week ago",
-    thumbnail_color: "#0a1520", chapters: [
-      { time: "0:00", label: "Intro to AI Music Tools" },
-      { time: "20:00", label: "Suno Generation Demo" },
-      { time: "55:00", label: "Mixing & Mastering with AI" },
-      { time: "1:30:00", label: "Distribution Strategy" },
-    ],
-    tags: ["Music", "AI", "Tutorial"], highlights: 4,
-  },
-];
-
 const SHARE_PLATFORMS = [
   { id: "twitter", name: "X / Twitter", icon: "𝕏", color: "#1a1a1a", textColor: "#fff" },
   { id: "facebook", name: "Facebook", icon: "f", color: "#1877F2", textColor: "#fff" },
@@ -98,7 +56,7 @@ const SHARE_PLATFORMS = [
   { id: "tiktok", name: "TikTok", icon: "♪", color: "#010101", textColor: "#fff" },
   { id: "whatsapp", name: "WhatsApp", icon: "✉", color: "#25D366", textColor: "#fff" },
   { id: "telegram", name: "Telegram", icon: "✈", color: "#0088CC", textColor: "#fff" },
-  { id: "discord", name: "Discord", icon: "◈", color: "#5865F2", textColor: "#fff" },
+  { id: "discord", name: "Discord", icon: "◈", color: "#D4854A", textColor: "#fff" },
   { id: "copy", name: "Copy Link", icon: "⧉", color: CV.bgPanel, textColor: CV.gold },
 ];
 
@@ -254,7 +212,7 @@ const GLOBAL_STYLES = css`
   }
   .chat-msg-name { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: ${CV.gold}; margin-bottom: 3px; }
   .chat-msg-name.mod { color: ${CV.cyan}; }
-  .chat-msg-name.sub { color: #A855F7; }
+  .chat-msg-name.sub { color: #D4854A; }
   .chat-msg-text { font-family: 'Cormorant Garamond', serif; font-size: 0.92rem; color: ${CV.text}; line-height: 1.4; }
 
   .quick-reactions {
@@ -455,7 +413,7 @@ const GLOBAL_STYLES = css`
   .share-card-sub { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: ${CV.textMid}; text-transform: uppercase; letter-spacing: 0.06em; }
   .share-card-body { padding: 20px; }
   .stream-og-card { background: ${CV.bgPanel}; border: 1px solid ${CV.border}; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
-  .stream-og-thumb { height: 120px; background: linear-gradient(135deg, #1a0a20, #0a1020); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; }
+  .stream-og-thumb { height: 120px; background: linear-gradient(135deg, #0F1428, #0D1022); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; position: relative; }
   .stream-og-live-badge { position: absolute; top: 10px; left: 10px; background: ${CV.live}; color: #fff; font-family: 'DM Mono', monospace; font-size: 0.6rem; padding: 2px 8px; border-radius: 3px; letter-spacing: 0.1em; display: flex; align-items: center; gap: 4px; }
   .stream-og-body { padding: 12px; }
   .stream-og-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; color: ${CV.text}; margin-bottom: 4px; }
@@ -510,28 +468,20 @@ const GLOBAL_STYLES = css`
   }
 `;
 
-const INITIAL_MSGS = [
-  { id: 1, user: "SwanyKing99", role: "mod", avatar: "👑", text: "Stream is live! 🔥🔥🔥", time: "21:04" },
-  { id: 2, user: "viewer_zara", role: "sub", avatar: "💜", text: "Finally here! Been waiting all day 😍", time: "21:04" },
-  { id: 3, user: "DominoFan23", role: "viewer", avatar: "🎲", text: "Let's gooooo 🚀💯", time: "21:05" },
-  { id: 4, user: "SwanyKing99", role: "mod", avatar: "👑", text: "Welcome everyone dropping in! ❤️🎉", time: "21:05" },
-  { id: 5, user: "MusicHead_Tony", role: "viewer", avatar: "🎵", text: "This beat is 🔥🔥 what's the track?", time: "21:06" },
-  { id: 6, user: "viewer_zara", role: "sub", avatar: "💜", text: "New sub here — loving the vibes! 💎👑", time: "21:06" },
-];
-
-const SHARE_ANALYTICS_DATA = [
-  { label: "Twitter/X", count: 284, pct: 92, color: CV.cyan },
-  { label: "Discord", count: 197, pct: 64, color: "#5865F2" },
-  { label: "WhatsApp", count: 143, pct: 46, color: "#25D366" },
-  { label: "TikTok", count: 98, pct: 32, color: "#FF0050" },
-  { label: "Instagram", count: 76, pct: 25, color: "#E1306C" },
-  { label: "Facebook", count: 52, pct: 17, color: "#1877F2" },
-];
+function fmtAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 export default function EnhancementSuite() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState("emoji");
-  const [messages, setMessages] = useState(INITIAL_MSGS);
+  const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [activeCategory, setActiveCategory] = useState("🔥 Hype");
   const [hoveredEmoji, setHoveredEmoji] = useState(null);
@@ -548,6 +498,62 @@ export default function EnhancementSuite() {
   const messagesEndRef = useRef(null);
   const progressTimerRef = useRef(null);
   const styleRef = useRef(null);
+
+  const { data: clips = [] } = useQuery({
+    queryKey: ['enhancement-clips'],
+    queryFn: () => base44.entities.Clip.list('-created_date', 12),
+  });
+
+  const { data: recentMessages = [] } = useQuery({
+    queryKey: ['enhancement-messages'],
+    queryFn: () => base44.entities.Message.list('-created_date', 20),
+  });
+
+  const { data: shareActivities = [] } = useQuery({
+    queryKey: ['share-activities'],
+    queryFn: () => base44.entities.Activity.filter({ type: 'share' }),
+  });
+
+  const displayVods = clips.map(c => ({
+    id: c.id,
+    title: c.title || 'Untitled Recording',
+    creator: c.creator_name || 'Creator',
+    creatorAvatar: '🎬',
+    duration: c.duration || '–',
+    views: c.view_count ? c.view_count.toLocaleString() : '0',
+    date: c.created_date ? fmtAgo(c.created_date) : '',
+    thumbnail_color: '#0F1428',
+    chapters: (() => { try { return Array.isArray(c.chapters) ? c.chapters : JSON.parse(c.chapters || '[]'); } catch { return []; } })(),
+    tags: (() => { try { return Array.isArray(c.tags) ? c.tags : JSON.parse(c.tags || '[]'); } catch { return []; } })(),
+    highlights: c.highlights || 0,
+  }));
+
+  const SHARE_ANALYTICS_DATA = (() => {
+    const defs = [
+      { label: 'Twitter/X', color: CV.cyan },
+      { label: 'Discord',   color: '#D4854A' },
+      { label: 'WhatsApp',  color: '#25D366' },
+      { label: 'TikTok',    color: '#FF0050' },
+      { label: 'Instagram', color: '#E1306C' },
+      { label: 'Facebook',  color: '#1877F2' },
+    ];
+    const counts = defs.map(d => shareActivities.filter(a => a.title?.toLowerCase().includes(d.label.toLowerCase())).length);
+    const maxCount = Math.max(...counts, 1);
+    return defs.map((d, i) => ({ ...d, count: counts[i], pct: Math.round((counts[i] / maxCount) * 100) }));
+  })();
+
+  useEffect(() => {
+    if (recentMessages.length > 0 && messages.length === 0) {
+      setMessages(recentMessages.slice().reverse().slice(0, 20).map(m => ({
+        id: m.id,
+        user: m.user_name || 'viewer',
+        role: m.is_mod ? 'mod' : m.is_subscriber ? 'sub' : 'viewer',
+        avatar: '💬',
+        text: m.content || '',
+        time: new Date(m.created_date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      })));
+    }
+  }, [recentMessages]);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -782,7 +788,12 @@ export default function EnhancementSuite() {
             <button className="sw-btn" style={{ marginLeft: "auto", padding: "6px 16px", fontSize: "0.7rem" }}>+ Upload VOD</button>
           </div>
           <div className="vod-grid">
-            {MOCK_VODS.map(vod => (
+            {displayVods.length === 0 && (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px 0', color: CV.textMid, fontFamily: "'DM Mono', monospace", fontSize: '0.8rem' }}>
+                No recordings yet — go live to start capturing VODs
+              </div>
+            )}
+            {displayVods.map(vod => (
               <div key={vod.id} className="vod-card" onClick={() => { setSelectedVod(vod); setVodProgress(0); setVodPlaying(false); }}>
                 <div className="vod-thumb" style={{ background: `linear-gradient(135deg, ${vod.thumbnail_color}, #0D0508)` }}>
                   <span style={{ fontSize: "2.5rem" }}>{vod.creatorAvatar}</span>

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Users, Zap, Clock, Swords, LogIn, LogOut, Shield, Trophy, Star } from 'lucide-react';
+import { Users, Zap, Clock, Swords, LogIn, LogOut, Shield, Trophy, Star, RefreshCw } from 'lucide-react';
 
 /* Earth tone palette */
 var ET = {
@@ -21,14 +21,6 @@ var ET = {
 var SKILL_LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Elite'];
 var CATEGORIES = ['Gaming', 'Music', 'Talk', 'IRL', 'Art', 'Tech', 'Fitness', 'Any'];
 
-var MOCK_QUEUE = [
-  { id: 'q1', name: 'StormCaster', level: 'Advanced', category: 'Gaming', viewers: 1240, wait: 45, wins: 23, losses: 8 },
-  { id: 'q2', name: 'NeonBeat', level: 'Intermediate', category: 'Music', viewers: 880, wait: 120, wins: 14, losses: 11 },
-  { id: 'q3', name: 'TalkMaster99', level: 'Elite', category: 'Talk', viewers: 3200, wait: 20, wins: 41, losses: 6 },
-  { id: 'q4', name: 'PixelQueen', level: 'Advanced', category: 'Art', viewers: 560, wait: 90, wins: 19, losses: 14 },
-  { id: 'q5', name: 'IRL_Drifter', level: 'Beginner', category: 'IRL', viewers: 340, wait: 200, wins: 5, losses: 7 },
-];
-
 var levelColor = {
   Beginner: ET.moss,
   Intermediate: ET.terracotta,
@@ -37,37 +29,97 @@ var levelColor = {
 };
 
 export default function MatchmakingQueue({ user, onMatchFound }) {
+  var qc = useQueryClient();
   var [inQueue, setInQueue] = useState(false);
   var [myLevel, setMyLevel] = useState('Intermediate');
   var [myCategory, setMyCategory] = useState('Any');
   var [matchingFor, setMatchingFor] = useState(0);
   var [matchedWith, setMatchedWith] = useState(null);
+  var [myQueueId, setMyQueueId] = useState(null);
   var intervalRef = React.useRef(null);
   var [myQueueId, setMyQueueId] = useState(null);
   var qc = useQueryClient();
 
-  function joinQueue() {
-    setInQueue(true);
-    setMatchingFor(0);
-    setMatchedWith(null);
-    intervalRef.current = setInterval(function() {
-      setMatchingFor(function(s) {
-        var next = s + 1;
-        // Simulate a match after 8 seconds
-        if (next === 8) {
-          clearInterval(intervalRef.current);
-          var match = MOCK_QUEUE.find(function(p) {
-            return myCategory === 'Any' || p.category === myCategory;
-          }) || MOCK_QUEUE[0];
-          setMatchedWith(match);
-          setInQueue(false);
-          toast.success('Match found! ' + match.name + ' wants to battle!');
-          if (onMatchFound) { onMatchFound(match); }
-        }
-        return next;
+  // Fetch real queue from backend
+  var { data: liveQueue = [], isLoading: queueLoading, refetch: refetchQueue } = useQuery({
+    queryKey: ['pk-queue'],
+    queryFn: function() { return base44.entities.PKBattle.filter({ status: 'seeking' }); },
+    refetchInterval: 10000,
+  });
+
+  // Real-time subscription: detect when someone challenges us
+  useEffect(function() {
+    if (!inQueue || !myQueueId) return;
+    var unsub = base44.entities.PKBattle.subscribe(function(event) {
+      if (event.type === 'update' && event.id === myQueueId && event.data.status === 'active') {
+        clearInterval(intervalRef.current);
+        var match = { id: event.data.id, name: event.data.challenger_name || 'Challenger' };
+        setMatchedWith(match);
+        setInQueue(false);
+        toast.success('Match found! ' + match.name + ' accepted your challenge!');
+        if (onMatchFound) { onMatchFound(event.data); }
+      }
+    });
+    return unsub;
+  }, [inQueue, myQueueId, onMatchFound]);
+
+  var joinMutation = useMutation({
+    mutationFn: function() {
+      return base44.entities.PKBattle.create({
+        creator_id: user?.id,
+        creator_name: user?.full_name || user?.email || 'Host',
+        status: 'seeking',
+        category: myCategory === 'Any' ? null : myCategory,
+        skill_level: myLevel,
+        creator_score: 0,
+        challenger_score: 0,
       });
-    }, 1000);
-  }
+    },
+    onSuccess: function(data) {
+      setMyQueueId(data.id);
+      setInQueue(true);
+      setMatchingFor(0);
+      setMatchedWith(null);
+      qc.invalidateQueries(['pk-queue']);
+      intervalRef.current = setInterval(function() {
+        setMatchingFor(function(s) { return s + 1; });
+      }, 1000);
+    },
+    onError: function(err) { toast.error('Could not join queue: ' + err.message); },
+  });
+
+  var leaveMutation = useMutation({
+    mutationFn: function() {
+      if (!myQueueId) return Promise.resolve();
+      return base44.entities.PKBattle.update(myQueueId, { status: 'cancelled' });
+    },
+    onSettled: function() {
+      clearInterval(intervalRef.current);
+      setInQueue(false);
+      setMatchingFor(0);
+      setMyQueueId(null);
+      qc.invalidateQueries(['pk-queue']);
+      toast('Left the matchmaking queue');
+    },
+  });
+
+  var challengeMutation = useMutation({
+    mutationFn: function(opponent) {
+      return base44.entities.PKBattle.update(opponent.id, {
+        challenger_id: user?.id,
+        challenger_name: user?.full_name || user?.email || 'Challenger',
+        status: 'active',
+        started_at: new Date().toISOString(),
+        duration_seconds: 180,
+      });
+    },
+    onSuccess: function(data, opponent) {
+      toast.success('Challenged ' + opponent.creator_name + '!');
+      if (onMatchFound) { onMatchFound(data); }
+      qc.invalidateQueries(['pk-queue']);
+    },
+    onError: function(err) { toast.error('Challenge failed: ' + err.message); },
+  });
 
   var leaveMutation = useMutation({
     mutationFn: function() {
@@ -108,6 +160,13 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
   React.useEffect(function() {
     return function() { clearInterval(intervalRef.current); };
   }, []);
+
+  // Filter queue: exclude own entry and closed battles; apply category filter
+  var visibleQueue = liveQueue.filter(function(p) {
+    if (p.id === myQueueId) return false;
+    if (myCategory !== 'Any' && p.category && p.category !== myCategory) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-4">
@@ -174,15 +233,16 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
         {!inQueue && !matchedWith && (
           <button
             onClick={joinQueue}
+            disabled={joinMutation.isPending}
             style={{
               width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 14,
               textTransform: 'uppercase', letterSpacing: '0.07em', cursor: 'pointer',
-              background: 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.gold + ')',
-              color: '#fff', border: 'none', borderRadius: 8,
+              background: joinMutation.isPending ? 'rgba(255,255,255,0.1)' : 'linear-gradient(90deg, ' + ET.rust + ', ' + ET.gold + ')',
+              color: '#fff', border: 'none', borderRadius: 8, opacity: joinMutation.isPending ? 0.7 : 1,
             }}
           >
-            <LogIn className="w-4 h-4" /> Join Matchmaking Queue
+            <LogIn className="w-4 h-4" /> {joinMutation.isPending ? 'Joining…' : 'Join Matchmaking Queue'}
           </button>
         )}
 
@@ -205,6 +265,7 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
             </div>
             <button
               onClick={leaveQueue}
+              disabled={leaveMutation.isPending}
               style={{
                 width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 gap: 8, fontSize: 12, cursor: 'pointer', borderRadius: 8,
@@ -259,41 +320,51 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" style={{ color: ET.terracotta }} />
             <span className="text-xs font-bold uppercase tracking-wider" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: ET.terracotta }}>
-              Live Queue · {MOCK_QUEUE.length} waiting
+              Live Queue · {visibleQueue.length} waiting
             </span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: ET.terracotta + '22', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '40' }}>
-            OPEN
-          </span>
+          <div className="flex items-center gap-2">
+            <button onClick={function() { refetchQueue(); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: ET.sand + '60', padding: 4 }}>
+              <RefreshCw className="w-3 h-3" />
+            </button>
+            <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: ET.terracotta + '22', color: ET.terracotta, border: '1px solid ' + ET.terracotta + '40' }}>
+              OPEN
+            </span>
+          </div>
         </div>
         <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-          {MOCK_QUEUE.map(function(p) {
-            var lc = levelColor[p.level] || ET.gold;
+          {queueLoading ? (
+            <div className="text-center py-6 text-[10px]" style={{ color: ET.sand + '50' }}>Loading queue…</div>
+          ) : visibleQueue.length === 0 ? (
+            <div className="text-center py-8 text-[11px]" style={{ color: ET.sand + '40' }}>
+              No challengers in queue — join to be the first!
+            </div>
+          ) : visibleQueue.map(function(p) {
+            var lc = levelColor[p.skill_level] || ET.gold;
+            var waitSecs = p.created_at ? Math.floor((Date.now() - new Date(p.created_at).getTime()) / 1000) : 0;
             return (
               <div key={p.id} className="flex items-center gap-3 px-4 py-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-sm shrink-0" style={{ background: lc + '22', border: '1px solid ' + lc + '40', color: lc }}>
-                  {p.name.charAt(0)}
+                  {(p.creator_name || '?').charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold" style={{ color: ET.cream }}>{p.name}</span>
-                    <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: lc + '18', color: lc }}>{p.level}</span>
+                    <span className="text-sm font-bold" style={{ color: ET.cream }}>{p.creator_name || 'Unknown'}</span>
+                    {p.skill_level && <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded" style={{ background: lc + '18', color: lc }}>{p.skill_level}</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-[10px]" style={{ color: ET.sand + '80' }}>{p.category}</span>
-                    <span className="text-[10px]" style={{ color: ET.sand + '60' }}>{p.viewers.toLocaleString()} viewers</span>
-                    <span className="text-[10px]" style={{ color: ET.sand + '50' }}>{p.wins}W/{p.losses}L</span>
+                    {p.category && <span className="text-[10px]" style={{ color: ET.sand + '80' }}>{p.category}</span>}
+                    <span className="text-[10px]" style={{ color: ET.sand + '50' }}>waiting {waitSecs}s</span>
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <div className="flex items-center gap-1 text-[10px]" style={{ color: ET.sand + '60' }}>
-                    <Clock className="w-2.5 h-2.5" />
-                    {p.wait}s
-                  </div>
                   <button
+                    onClick={function() { challengeMutation.mutate(p); }}
+                    disabled={challengeMutation.isPending || inQueue}
                     style={{
-                      marginTop: 4, height: 24, fontSize: 10, padding: '0 8px', borderRadius: 6, cursor: 'pointer',
-                      background: ET.burgundy + '30', color: ET.terracotta, border: '1px solid ' + ET.burgundy + '50',
+                      height: 26, fontSize: 10, padding: '0 10px', borderRadius: 6, cursor: 'pointer',
+                      background: 'rgba(128,0,32,0.25)', color: ET.terracotta, border: '1px solid rgba(128,0,32,0.45)',
+                      opacity: (challengeMutation.isPending || inQueue) ? 0.5 : 1,
                     }}
                   >
                     Challenge

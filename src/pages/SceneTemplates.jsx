@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import ChatOverlay from '../components/live/ChatOverlay';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import {
   Layers, Grid3X3, Monitor, Maximize, PictureInPicture2,
   Layout, Plus, Check, Star, Trash2, Edit3,
@@ -139,7 +151,7 @@ function PresetCard({ preset, isActive, onApply }) {
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid ${isActive ? `rgba(212,175,55,0.45)` : 'rgba(212,175,55,0.1)'}`,
         borderRadius: '16px',
         padding: '14px',
@@ -208,7 +220,7 @@ function CustomCard({ tpl, isActive, onApply, onEdit, onDelete }) {
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid ${isActive ? `rgba(212,175,55,0.45)` : 'rgba(212,175,55,0.1)'}`,
         borderRadius: '16px',
         padding: '14px',
@@ -293,12 +305,19 @@ function CreateForm({ userId, onSuccess }) {
         description: description.trim(),
         layout_type: selectedBase,
       }),
-    onSuccess: () => {
+    onSuccess: (template) => {
       toast.success('Template saved!');
       qc.invalidateQueries(['scene-templates', userId]);
       setName('');
       setDesc('');
       setBase('single');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Created scene template: ${template?.name || 'Scene Template'}`,
+        }).catch(() => {});
+      }
       onSuccess?.();
     },
     onError: (err) => {
@@ -410,15 +429,110 @@ function CreateForm({ userId, onSuccess }) {
   );
 }
 
+// ─── Edit modal ───────────────────────────────────────────────────────────────
+function EditModal({ tpl, onClose, onSave, isSaving }) {
+  const [name, setName]   = useState(tpl.name || '');
+  const [desc, setDesc]   = useState(tpl.description || '');
+  const inputStyle = {
+    ...T,
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(212,175,55,0.2)',
+    color: '#fff',
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        background: 'rgba(0,0,0,0.75)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        style={{
+          background: '#0D1022',
+          border: '1px solid rgba(212,175,55,0.25)',
+          borderRadius: '16px',
+          padding: '24px',
+          width: '100%',
+          maxWidth: '380px',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+          <span style={{ ...T, fontSize: '18px', fontWeight: 800, color: GOLD }}>Edit Template</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: '18px' }}>×</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={{ ...T, fontSize: '11px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>
+              Name
+            </label>
+            <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} maxLength={80} />
+          </div>
+          <div>
+            <label style={{ ...T, fontSize: '11px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: '5px' }}>
+              Description
+            </label>
+            <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Short description (optional)" style={inputStyle} maxLength={160} />
+          </div>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => onSave({ name: name.trim(), description: desc.trim() })}
+              disabled={!name.trim() || isSaving}
+              style={{
+                ...T, flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none',
+                background: !name.trim() || isSaving ? 'rgba(128,0,32,0.35)' : CRIMSON,
+                color: GOLD, fontWeight: 700, fontSize: '14px', letterSpacing: '0.05em',
+                cursor: !name.trim() || isSaving ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              }}
+            >
+              {isSaving ? '…Saving' : <><Check size={13} /> Save Changes</>}
+            </motion.button>
+            <button
+              onClick={onClose}
+              style={{ ...T, padding: '10px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function SceneTemplates() {
   const qc = useQueryClient();
   const [activeTemplate, setActiveTemplate] = useState('single');
   const [showCreate, setShowCreate]         = useState(false);
+  const [editingTpl, setEditingTpl]         = useState(null);
 
-  // Attempt to get current user from base44 session helper (may not exist)
-  let user = null;
-  try { user = base44.auth?.currentUser?.(); } catch (_) {}
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: customTemplates = [], isLoading: loadingCustom } = useQuery({
     queryKey: ['scene-templates', user?.id],
@@ -435,6 +549,16 @@ export default function SceneTemplates() {
     onError: () => toast.error('Failed to delete template'),
   });
 
+  const { mutate: updateTemplate, isPending: isUpdating } = useMutation({
+    mutationFn: ({ id, ...fields }) => base44.entities.SceneTemplate.update(id, fields),
+    onSuccess: () => {
+      toast.success('Template updated');
+      qc.invalidateQueries(['scene-templates', user?.id]);
+      setEditingTpl(null);
+    },
+    onError: () => toast.error('Failed to update template'),
+  });
+
   function handleApply(item) {
     const key = item.id ?? item.layout_type ?? 'single';
     setActiveTemplate(key);
@@ -442,7 +566,7 @@ export default function SceneTemplates() {
   }
 
   function handleEdit(tpl) {
-    toast(`Edit "${tpl.name}" — coming soon`);
+    setEditingTpl(tpl);
   }
 
   function handleDelete(tpl) {
@@ -451,6 +575,16 @@ export default function SceneTemplates() {
 
   return (
     <div style={{ minHeight: '100vh', background: BG, ...T }}>
+      <AnimatePresence>
+        {editingTpl && (
+          <EditModal
+            tpl={editingTpl}
+            isSaving={isUpdating}
+            onClose={() => setEditingTpl(null)}
+            onSave={(fields) => updateTemplate({ id: editingTpl.id, ...fields })}
+          />
+        )}
+      </AnimatePresence>
       {/* ── Sticky header ─────────────────────────────────────────────────── */}
       <div style={{
         position: 'sticky',
@@ -560,7 +694,7 @@ export default function SceneTemplates() {
             </div>
           ) : customTemplates.length === 0 ? (
             <div style={{
-              background: 'rgba(13,6,24,0.7)',
+              background: 'rgba(8,11,24,0.7)',
               border: '1px dashed rgba(212,175,55,0.15)',
               borderRadius: '14px',
               padding: '32px',
@@ -636,7 +770,7 @@ export default function SceneTemplates() {
                 style={{ overflow: 'hidden' }}
               >
                 <div style={{
-                  background: 'rgba(13,6,24,0.9)',
+                  background: 'rgba(8,11,24,0.9)',
                   border: '1px solid rgba(212,175,55,0.12)',
                   borderTop: 'none',
                   borderRadius: '0 0 14px 14px',

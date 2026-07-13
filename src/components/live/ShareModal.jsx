@@ -12,7 +12,7 @@ const PLATFORMS = [
   },
   {
     name: 'Facebook',
-    color: 'from-blue-600 to-blue-700',
+    color: 'from-[#0D1022] to-[#080B18]',
     emoji: '👥',
     action: (url, title) => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`,
     note: 'Opens Facebook share dialog',
@@ -26,7 +26,7 @@ const PLATFORMS = [
   },
   {
     name: 'Snapchat',
-    color: 'from-yellow-400 to-yellow-500',
+    color: 'from-[#C9A84C] to-[#D4AF37]',
     emoji: '👻',
     action: (url, title) => `https://www.snapchat.com/scan?attachmentUrl=${encodeURIComponent(url)}`,
     note: 'Share via Snapchat link',
@@ -88,7 +88,7 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
   return (
     <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background:'#0d0618', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
+      <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:448, color:'#fff' }}
         onClick={e => e.stopPropagation()}>
         <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
           <span style={{ color:'#d4af37', fontWeight:700, fontSize:18 }}>🔴 Share Your Live</span>
@@ -104,11 +104,11 @@ export default function ShareModal({ isOpen, onClose, url, title }) {
             <input
               value={shareUrl}
               readOnly
-              style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.7)', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'rgba(255,255,255,0.7)', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
             />
             <button
               onClick={handleCopy}
-              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#16a34a' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, border:'none', background: copied ? '#4A9B5E' : '#d4af37', color: copied ? '#fff' : '#000', cursor:'pointer', display:'flex', alignItems:'center' }}
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </button>

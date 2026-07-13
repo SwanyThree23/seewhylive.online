@@ -213,7 +213,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(7,7,15,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}>
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
           </h3>
           <span className="text-[11px] text-white/40">({messages.length})</span>
         </div>
-        <Shield className="w-3 h-3 text-green-400" title="Automated moderation active" />
+        <Shield className="w-3 h-3 text-[#6DBF7E]" title="Automated moderation active" />
       </div>
 
       {/* Moderation Alerts */}

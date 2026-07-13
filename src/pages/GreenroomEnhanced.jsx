@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import { useQuery } from '@tanstack/react-query';
@@ -30,6 +34,7 @@ export default function GreenroomEnhanced() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
+  const [webrtcError, setWebrtcError] = useState(null);
   const [audioLevel, setAudioLevel] = useState(0);
   const [checklist, setChecklist] = useState([
     { id: 'cam',   label: 'Camera connected & working', done: false, auto: true },
@@ -142,7 +147,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Camera preview + source picker */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="relative aspect-video bg-black">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             {!cameraStream && (
@@ -176,7 +181,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Pre-broadcast checklist */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-black" style={{ color: GOLD }}>Pre-Broadcast Checklist</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
@@ -201,7 +206,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Room PIN (AES-encrypted) */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm">🔐</span>
             <span className="text-sm font-black" style={{ color: CRIMSON }}>Private Room PIN</span>
@@ -224,6 +229,53 @@ export default function GreenroomEnhanced() {
             </button>
           )}
         </div>
+
+        {/* Device Preview */}
+        <DevicePreview user={null} onDeviceState={() => {}} />
+
+        {/* WebRTC Setup Banner (shows if camera/mic fails) */}
+        {webrtcError && (
+          <WebRTCSetupBanner
+            error={webrtcError}
+            audioEnabled={audioLevel > 0}
+            videoEnabled={!!cameraStream}
+            onRetry={() => setWebrtcError(null)}
+          />
+        )}
+
+        {/* Streaming presets */}
+        <StreamingPresets onApply={() => {}} />
+
+        {/* Stream metadata editor (title/category) */}
+        <StreamMetadataEditor />
+
+        {/* Room branding (logo, banner colors) */}
+        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+
+        {/* Guest connector + queue */}
+        <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={activeRoomId} isHost={true} />
+
+        {/* Participant queue */}
+        <GreenroomQueue roomId={activeRoomId} isHost={true} />
+
+        {/* RTMP / WHIP Ingest Panel */}
+        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+
+        {/* Guest RTMP panel */}
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+
+        {/* Guest stream monitor */}
+        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+
+        {/* Guest streaming permissions */}
+        <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+
+        {/* Guest destinations panel */}
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+
+        {/* ZEGO guest approval */}
+        <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

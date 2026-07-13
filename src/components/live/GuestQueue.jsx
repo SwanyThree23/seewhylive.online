@@ -35,6 +35,8 @@ function timeAgo(dateStr) {
 export default function GuestQueue({ roomId, isHost }) {
   const qc = useQueryClient();
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: waitingGuests = [] } = useQuery({
     queryKey: ['guest-queue', roomId],
     queryFn: () =>
@@ -82,6 +84,13 @@ export default function GuestQueue({ roomId, isHost }) {
       toast.success(`${name} admitted to stage!`);
       qc.invalidateQueries(['guest-queue', roomId]);
       qc.invalidateQueries(['admitted-guests', roomId]);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'room_joined',
+          title: `Admitted ${name} to the stage`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -116,7 +125,7 @@ export default function GuestQueue({ roomId, isHost }) {
         ...T,
         maxWidth: 300,
         width: '100%',
-        background: 'rgba(7,7,15,0.92)',
+        background: 'rgba(8,11,24,0.92)',
         border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: 14,
         padding: '12px 10px',
@@ -325,7 +334,7 @@ export default function GuestQueue({ roomId, isHost }) {
                           background: 'rgba(255,68,68,0.08)',
                           border: '1px solid rgba(255,68,68,0.2)',
                           borderRadius: 6,
-                          color: '#FF6666',
+                          color: '#D4854A',
                           fontSize: 11,
                           fontWeight: 700,
                           padding: '5px 0',
@@ -448,7 +457,7 @@ export default function GuestQueue({ roomId, isHost }) {
                         borderRadius: 5,
                         padding: '4px',
                         cursor: 'pointer',
-                        color: '#FF6666',
+                        color: '#D4854A',
                         flexShrink: 0,
                         opacity: removeMutation.isPending ? 0.5 : 1,
                       }}

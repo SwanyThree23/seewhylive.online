@@ -23,7 +23,6 @@ export default function AuraEmotionDisplay({ roomId, sessionId, auraPersona = 'h
           setEnergy(result.data.energy_level);
         }
       } catch (error) {
-        console.error('Emotion detection error:', error);
       }
     };
 

@@ -9,7 +9,7 @@ import NativeSelect from '@/components/shared/NativeSelect';
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
 const CARD_CONTENT = { padding:'0 20px 20px' };
-const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 const TEXTAREA_STYLE = { ...INPUT_STYLE, resize:'none', minHeight:80 };
 const SELECT_STYLE = { ...INPUT_STYLE };
 const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
@@ -48,10 +48,17 @@ export default function AnnouncementScheduler({ communityId, userId }) {
     mutationFn: async (announcementData) => {
       return await base44.entities.Announcement.create(announcementData);
     },
-    onSuccess: () => {
+    onSuccess: (announcement) => {
       toast.success('Announcement created!');
       queryClient.invalidateQueries(['communityAnnouncements']);
       resetForm();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Published community announcement: ${announcement?.title || title}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });

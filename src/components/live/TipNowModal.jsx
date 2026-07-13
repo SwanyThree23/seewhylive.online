@@ -27,7 +27,7 @@ export default function TipNowModal({ roomId, currentUser, hostId, onClose }) {
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: finalAmount, platform_cut: finalAmount * 0.1, creator_payout: finalAmount * 0.9,
+        amount: finalAmount, creator_payout: Math.floor(finalAmount * 0.9), platform_cut: finalAmount - Math.floor(finalAmount * 0.9),
         payment_method: method.toLowerCase(), transaction_type: "direct_support", status: "completed",
       }),
       base44.entities.TipAlert.create({

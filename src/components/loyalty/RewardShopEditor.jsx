@@ -16,7 +16,7 @@ const REWARD_TYPES = [
   { value: 'exclusive_content', label: '🔒 Exclusive Content' },
 ];
 
-const INPUT_STYLE = { width:'100%', padding:'7px 10px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', height:32 };
+const INPUT_STYLE = { width:'100%', padding:'7px 10px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', height:32 };
 const SELECT_STYLE = { ...INPUT_STYLE };
 
 const DEFAULT_FORM = { name: '', description: '', points_required: 200, reward_type: 'shoutout', icon: '', stock: '', reward_value: '' };
@@ -41,11 +41,18 @@ export default function RewardShopEditor({ creatorId }) {
       is_active: true,
       claimed_count: 0,
     }),
-    onSuccess: () => {
+    onSuccess: (reward) => {
       toast.success('Reward created!');
       setForm(DEFAULT_FORM);
       setShowForm(false);
       qc.invalidateQueries(['loyalty-rewards', creatorId]);
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created loyalty reward: ${reward?.name || form.name}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to create reward.'),
   });

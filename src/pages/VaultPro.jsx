@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -20,7 +32,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 const GOLD = '#D4AF37';
 const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -78,7 +90,7 @@ function Modal({ title, onClose, children }) {
     <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center px-4 pb-4">
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
       <div className="relative w-full max-w-sm rounded-2xl p-5 space-y-4 z-10"
-        style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}>
         <p className="font-black text-base text-white" style={T}>{title}</p>
         {children}
         <button onClick={onClose} className="w-full py-2 rounded-xl text-xs font-black uppercase"
@@ -416,7 +428,7 @@ export default function VaultPro() {
                         {revealedKeys[key.id] ? revealedKeys[key.id] : 'RTMP Key — [ENCRYPTED]'}
                       </p>
                       {revealedKeys[key.id] && (
-                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,136,0,0.7)', ...T }}>Auto-hides in 10s</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: 'rgba(212,133,74,0.7)', ...T }}>Auto-hides in 10s</p>
                       )}
                     </div>
                     <button onClick={() => handleRevealKey(key)}

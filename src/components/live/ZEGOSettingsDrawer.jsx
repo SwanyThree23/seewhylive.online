@@ -115,7 +115,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
                 <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>FPS</div>
                 <div style={{ display: "flex", gap: 6 }}>
                   {[24, 30, 60].map(f => (
-                    <button key={f} onClick={() => setFps(f)} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(200,255,0,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
+                    <button key={f} onClick={() => setFps(f)} style={{ flex: 1, padding: "6px", borderRadius: 6, border: "1px solid " + (fps === f ? C.volt : "#333"), background: fps === f ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 10, color: fps === f ? C.volt : C.gray }}>{f}</button>
                   ))}
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function ZEGOSettingsDrawer({ roomId, streamKey, onClose }) {
               <div style={{ fontFamily: C.fMon, fontSize: 11, color: C.dim, letterSpacing: 1, marginBottom: 8 }}>LATENCY MODE</div>
               <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
                 {["Ultra-Low", "Low", "Standard"].map(m => (
-                  <button key={m} onClick={() => setLatencyMode(m)} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(200,255,0,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
+                  <button key={m} onClick={() => setLatencyMode(m)} style={{ flex: 1, padding: "8px 4px", borderRadius: 6, border: "1px solid " + (latencyMode === m ? C.volt : "#333"), background: latencyMode === m ? "rgba(212,175,55,0.08)" : C.surface, cursor: "pointer", fontFamily: C.fMon, fontSize: 11, color: latencyMode === m ? C.volt : C.gray }}>{m}</button>
                 ))}
               </div>
             </div>

@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import StreamGoals from '../components/live/StreamGoals';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import GiftAnimation from '../components/live/GiftAnimation';
+import TippingModal from '../components/monetization/TippingModal';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -73,8 +85,14 @@ export default function StreamAlerts() {
     () => new Set(OVERLAY_TYPES.map((o) => o.type))
   );
 
-  // Attempt to read current user from base44 if available
-  const user = base44?.auth?.currentUser?.() ?? null;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],
@@ -228,7 +246,7 @@ export default function StreamAlerts() {
               <div
                 style={{
                   borderRadius: 16,
-                  background: 'rgba(13,6,24,0.9)',
+                  background: 'rgba(8,11,24,0.9)',
                   border: '1px solid rgba(212,175,55,0.1)',
                   padding: 24,
                 }}
@@ -258,7 +276,7 @@ export default function StreamAlerts() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 16,
-                        background: 'rgba(13,6,24,0.85)',
+                        background: 'rgba(8,11,24,0.85)',
                         border: '1px solid rgba(212,175,55,0.08)',
                         borderRadius: 14,
                         padding: '14px 18px',
@@ -322,6 +340,13 @@ export default function StreamAlerts() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Sound Alerts Manager ── */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <SoundAlertsManager creatorId={user.id} />
+          </div>
+        )}
 
         {/* ── Footer note ── */}
         <p

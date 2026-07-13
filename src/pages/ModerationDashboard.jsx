@@ -2,6 +2,18 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   Shield, AlertTriangle, CheckCircle, XCircle, Zap, RefreshCw,
   MessageSquare, Eye, Clock, Flag, TrendingUp, ChevronDown
@@ -62,7 +74,7 @@ function FlaggedItem({ mod, onAction, user }) {
   const vStyle = VIOLATION_STYLES[mod.violation_type] || VIOLATION_STYLES.inappropriate;
   return (
     <div className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${vStyle.border}` }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${vStyle.border}` }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5 items-center">
           <span className="text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
@@ -75,7 +87,7 @@ function FlaggedItem({ mod, onAction, user }) {
           </span>
           {mod.auto_detected && (
             <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               AI
             </span>
           )}
@@ -128,7 +140,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           </span>
           {entry.auto_detected && (
             <span className="text-[7px] px-1 py-0.5 rounded font-black"
-              style={{ background: 'rgba(255,215,0,0.12)', color: '#FFD700' }}>AI</span>
+              style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37' }}>AI</span>
           )}
           <span className="text-[11px] font-bold text-white">{entry.target_user_name || entry.target_user_id}</span>
         </div>
@@ -137,7 +149,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
           <div className="flex flex-wrap gap-1 mt-1">
             {entry.keywords_matched.map((kw, i) => (
               <span key={i} className="text-[7px] px-1 py-0.5 rounded"
-                style={{ background: 'rgba(255,100,0,0.12)', color: '#FF6B00', border: '1px solid rgba(255,100,0,0.2)' }}>{kw}</span>
+                style={{ background: 'rgba(192,57,43,0.12)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.2)' }}>{kw}</span>
             ))}
           </div>
         )}
@@ -149,7 +161,7 @@ function ChatModEntry({ entry, onQuickAction, user }) {
         ].map(({ label, timeout }) => (
           <button key={label} onClick={() => onQuickAction(entry, 'timeout', timeout)}
             className="w-8 py-0.5 rounded text-[7px] font-black uppercase"
-            style={{ background: 'rgba(255,215,0,0.1)', color: '#FFD700', border: '1px solid rgba(255,215,0,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {label}
           </button>
         ))}
@@ -167,7 +179,7 @@ function ReportItem({ report, onAction, user }) {
   const pri = PRIORITY_STYLES[report.priority] || PRIORITY_STYLES.medium;
   return (
     <div className="rounded-xl p-3 space-y-2"
-      style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${pri.color}25` }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${pri.color}25` }}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
@@ -205,6 +217,12 @@ export default function ModerationDashboardPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const { data: moderations = [] } = useQuery({
     queryKey: ['mod-content'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 100),
@@ -276,7 +294,7 @@ export default function ModerationDashboardPage() {
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Shield className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -357,6 +375,32 @@ export default function ModerationDashboardPage() {
                   onAction={(r, action) => reportMut.mutate({ id: r.id, action })} />
               ))
         )}
+
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+        {user?.id && <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={userCommunityId} moderatorId={user.id} />}
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🛡 AI Moderation',   href: 'AIModeration'    },
+            { label: '👮 Guardian AI',     href: 'GuardianAI'      },
+            { label: '⚙️ Admin Dashboard', href: 'AdminDashboard'  },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff9999', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <AIModeration roomId={roomId} isHost={true} />
+          <HostAlertCenter roomId={roomId} hostId={user?.id} />
+          <ReportModal isOpen={false} onClose={() => {}} targetUserId={null} roomId={roomId} reporterId={user?.id} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <StreamHealthDashboard roomId={roomId} isHost={true} />
+          <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <CollaborationMatcher />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

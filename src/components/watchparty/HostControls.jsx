@@ -37,17 +37,17 @@ export default function HostControls({ isHost, party, onUpdate }) {
   const THEMES = [
     { id: 'dark',     label: 'Dark',    color: '#0B0B18' },
     { id: 'cinema',   label: 'Cinema',  color: '#1A0F0A' },
-    { id: 'neon',     label: 'Neon',    color: '#0d0618' },
+    { id: 'neon',     label: 'Neon',    color: '#080B18' },
     { id: 'forest',   label: 'Forest',  color: '#0a1a0a' },
   ];
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(7,7,15,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.18)' }}>
       {/* Header toggle */}
       <button className="w-full flex items-center gap-2 px-3 py-2 transition-all"
         style={{ background: 'rgba(0,0,0,0.3)', borderBottom: open ? '1px solid rgba(255,255,255,0.06)' : 'none' }}
         onClick={() => setOpen(v => !v)}>
-        <Settings className="w-3.5 h-3.5 text-yellow-400 shrink-0" />
+        <Settings className="w-3.5 h-3.5 text-[#D4AF37] shrink-0" />
         <span className="text-[10px] font-black uppercase tracking-widest flex-1 text-left" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#d4af37' }}>
           Host Controls
         </span>

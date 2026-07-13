@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
@@ -156,10 +158,10 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const BG      = '#080B18';
-const BG2     = '#0d0618';
+const BG2     = '#0D1022';
 const GREEN   = '#6DBF7E';
 
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B3A','#7C4A3A','#6B5C3A','#A6263A','#D4854A'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
@@ -170,6 +172,8 @@ function getYouTubeId(url) {
   const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 }
+
+const OCT = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
 
 function SpeakerTile({ member, size = 80 }) {
   const isHost    = member.role === 'host';
@@ -183,24 +187,27 @@ function SpeakerTile({ member, size = 80 }) {
       <div className="relative" style={{ width: size, height: size }}>
         {isSpeaking && (
           <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ background: GOLD, opacity: 0.2 }}
-            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.08, 1] }}
+            className="absolute inset-0"
+            style={{ clipPath: OCT, background: GOLD, opacity: 0.25 }}
+            animate={{ opacity: [0.25, 0.55, 0.25], scale: [1, 1.08, 1] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            border: isSpeaking ? `2.5px solid ${GOLD}` : `2px solid rgba(255,255,255,0.15)`,
-            transition: 'border-color 0.3s',
-          }}
-        />
-        <div
-          className="absolute inset-[3px] rounded-full flex items-center justify-center font-black text-lg text-white"
-          style={{ background: `linear-gradient(135deg, ${color}88, ${BG2})` }}
-        >
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+        {/* OCT outer ring */}
+        <div className="absolute inset-0" style={{
+          clipPath: OCT,
+          background: isSpeaking ? GOLD : (isHost ? '#D4AF37' : 'rgba(255,255,255,0.18)'),
+          transition: 'background 0.3s',
+        }} />
+        {/* OCT inner fill */}
+        <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center font-black text-lg text-white" style={{
+          clipPath: OCT,
+          background: `linear-gradient(135deg, ${color}88, ${BG2})`,
+        }}>
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
 
         {(isHost || isCohost) && (
@@ -216,14 +223,8 @@ function SpeakerTile({ member, size = 80 }) {
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
         )}
-        <button
-          className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
-        >
-          <Heart className="w-2.5 h-2.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
-        </button>
       </div>
-      <p className="text-[12px] font-bold text-black truncate" style={{ maxWidth: size + 8 }}>
+      <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 8 }}>
         {(member.user_name || 'Guest').split(' ')[0]}
       </p>
     </div>
@@ -235,13 +236,17 @@ function AudienceTile({ member }) {
   const color = avatarColor(member.user_name || 'A');
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <div
-        className="rounded-full flex items-center justify-center font-bold text-sm text-white"
-        style={{ width: size, height: size, background: `linear-gradient(135deg, ${color}66, ${BG2})`, border: '2px solid rgba(255,255,255,0.1)' }}
-      >
-        {(member.user_name || '?').charAt(0).toUpperCase()}
+      <div className="relative" style={{ width: size, height: size }}>
+        <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
+        <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center font-bold text-sm text-white"
+          style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
+        </div>
       </div>
-      <p className="text-[11px] truncate" style={{ color: '#888', maxWidth: size + 4 }}>
+      <p className="text-[11px] truncate" style={{ color: '#888', fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 4 }}>
         {(member.user_name || 'Guest').slice(0, 8)}
       </p>
     </div>
@@ -253,7 +258,7 @@ export default function AudioRoom() {
   const roomId    = urlParams.get('id');
 
   const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
   const { data: party } = useQuery({
@@ -275,15 +280,25 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
-  const [chatOpen,   setChatOpen]   = useState(false);
-  const [handRaised, setHandRaised] = useState(false);
-  const [loveCount,  setLoveCount]  = useState(0);
+  const [chatOpen,    setChatOpen]    = useState(false);
+  const [handRaised,  setHandRaised]  = useState(false);
+  const [loveCount,   setLoveCount]   = useState(0);
+  const [reportOpen,  setReportOpen]  = useState(false);
+  const [tipModalOpen, setTipModalOpen] = useState(false);
+  const [tipNowOpen,   setTipNowOpen]   = useState(false);
+  const [activeScene,  setActiveScene]  = useState('main');
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
   const [creating,       setCreating]       = useState(false);
 
   useEffect(() => { setLoveCount(loves.length); }, [loves.length]);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leavePeerRoom;
+  }, [roomId, user?.id]);
 
   const speakers = members.length > 0
     ? members.filter(m => m.role === 'host' || m.role === 'cohost' || m.role === 'speaker')
@@ -418,7 +433,7 @@ export default function AudioRoom() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80, overscrollBehavior: "contain" }}>
 
         {party?.video_url && (
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
@@ -470,6 +485,17 @@ export default function AudioRoom() {
           remoteStreams={remoteStreams}
           onLeave={leaveRoom}
         />
+
+        {/* Multi-guest panel (host view) */}
+        {isHost && roomId && (
+          <MultiGuestPanel
+            participants={members}
+            spotlightId={null}
+            onSpotlight={() => {}}
+            roomId={roomId}
+            isHost={isHost}
+          />
+        )}
       </div>
 
       <div

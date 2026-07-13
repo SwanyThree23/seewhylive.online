@@ -184,7 +184,7 @@ const FORMATS = [
     title: 'Watch Party',
     subtitle: 'Sync a video. React together in real time.',
     features: ['🔗 Sync', '💬 Chat', '🖥️ Screen Share', '4K'],
-    color: '#5B6EF5',
+    color: '#D4854A',
     dest: 'WatchParty',
   },
   {
@@ -194,7 +194,7 @@ const FORMATS = [
     title: 'Audio Room',
     subtitle: 'Clubhouse-style stage. Speakers + listeners.',
     features: ['🎤 Stage', '✋ Hand Raise', '❤️ Love Tap', '📌 Pin Video'],
-    color: '#26A69A',
+    color: '#6DBF7E',
     dest: 'AudioRoom',
   },
 ];
@@ -216,7 +216,7 @@ function FormatCard({ fmt, onSelect }) {
         width: '100%',
         padding: '16px 18px',
         borderRadius: 16,
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: `1px solid rgba(255,255,255,0.08)`,
         borderLeft: `4px solid ${fmt.color}`,
         cursor: 'pointer',
@@ -446,12 +446,20 @@ export default function GoLive() {
   const [description, setDescription] = useState('');
   const [isExclusive, setIsExclusive] = useState(false);
   const [launching,   setLaunching]   = useState(false);
+  const [bitratePreset, setBitratePreset] = useState('720p30');
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const streamKey = user?.id
     ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
@@ -520,6 +528,12 @@ export default function GoLive() {
       });
       setPartyId(party.id);
       setCountdown(true);
+      base44.entities.Activity.create({
+        user_id: user?.id,
+        type: 'room_created',
+        title: `Started streaming: ${title.trim()}`,
+        description: category || '',
+      }).catch(() => {});
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);
@@ -601,7 +615,7 @@ export default function GoLive() {
             {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
 
             <div style={{ marginTop: 8, borderRadius: 16, padding: '14px 16px', background: 'rgba(109,191,126,0.04)', border: '1px solid rgba(109,191,126,0.12)' }}>
-              <Link to={createPageUrl('GreenroomEnhanced')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+              <Link to={createPageUrl('GreenRoomPreFlight')} style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
                 <span style={{ fontSize: 28 }}>🎬</span>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 900, color: '#fff', fontFamily: FONT }}>Green Room</div>
@@ -797,9 +811,51 @@ export default function GoLive() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, textAlign: 'center' }}>
               Configure OBS: Server → <code style={{ color: 'rgba(255,255,255,0.35)' }}>rtmp://ingest.seewhylive.online/live</code>
             </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 0' }}>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Stream Health</span>
+              <StreamHealthMonitor isStreaming={false} />
+            </div>
+
+            <BitratePresets selected={bitratePreset} onChange={setBitratePreset} />
+
+            {user?.id && (
+              <div style={{ background: 'rgba(13,6,24,0.9)', borderRadius: 14, border: '1px solid rgba(212,175,55,0.12)', padding: '16px' }}>
+                <DestinationsManager userId={user.id} />
+              </div>
+            )}
+
+            {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
+            {partyId && user?.id && (
+              <ZEGOGoLiveFlow roomId={partyId} userId={user.id} onLive={() => {}} />
+            )}
+
+            {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+
+            {partyId && user && (
+              <PreStreamCountdown room={{ id: partyId }} currentUser={user} onGoLive={() => {}} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Quick-links before the go-live button */}
+      {step === 'setup' && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '0 16px 80px', justifyContent: 'center' }}>
+          {[
+            { label: '📅 Scheduler', href: 'StreamScheduler' },
+            { label: '📡 Multi-Platform', href: 'MultiPlatform' },
+            { label: '🎛 Control Room', href: 'ControlRoom' },
+            { label: '📊 Analytics', href: 'StreamAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: FONT, fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.45)', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       {step === 'setup' && (
         <div style={{

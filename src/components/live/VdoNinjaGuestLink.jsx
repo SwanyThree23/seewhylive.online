@@ -27,7 +27,7 @@ export default function VdoNinjaGuestLink({ roomId }) {
   };
 
   return (
-    <div className="space-y-3 bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4">
+    <div className="space-y-3 bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4">
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold text-white uppercase tracking-wider">vdo.ninja Guest Links</p>
         <a

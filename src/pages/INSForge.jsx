@@ -1,7 +1,20 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -42,7 +55,7 @@ const QUICK_PROMPTS = {
 
 const FORGE_TYPES = [
   { id: 'svs_bracket',     label: 'SVS Bracket Graphic',      icon: '⚔️', color: BLUE },
-  { id: 'tribute_card',    label: 'Tribute Memorial Card',     icon: '🕊️', color: '#7B5EA7' },
+  { id: 'tribute_card',    label: 'Tribute Memorial Card',     icon: '🕊️', color: '#800020' },
   { id: 'stream_overlay',  label: 'Stream Overlay Pack',       icon: '🎥', color: GOLD },
   { id: 'podcast_cover',   label: 'Podcast Cover Art',         icon: '🎙️', color: CYAN },
   { id: 'music_promo',     label: 'Music Release Promo',       icon: '🎵', color: PURPLE },
@@ -87,6 +100,24 @@ export default function INSForge() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', currentUser?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   function copyBrief() {
     if (!result) return;
@@ -255,7 +286,7 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             }}
           />
           {error && (
-            <div style={{ ...T, fontSize: 12, color: '#ff6b6b', marginBottom: 10 }}>{error}</div>
+            <div style={{ ...T, fontSize: 12, color: '#D4854A', marginBottom: 10 }}>{error}</div>
           )}
           <button onClick={generate} disabled={loading || !prompt.trim()} style={{
             width: '100%', padding: '13px 0', borderRadius: 10, border: 'none', cursor: loading || !prompt.trim() ? 'not-allowed' : 'pointer',

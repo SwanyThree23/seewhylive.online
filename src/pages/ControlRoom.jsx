@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -185,7 +187,7 @@ function StatusBadge({ status }) {
   return (
     <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
       {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
       {cfg.label}
@@ -232,7 +234,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
   return (
     <div className="rounded-xl p-4 space-y-3"
       style={{
-        background: 'rgba(13,6,24,0.9)',
+        background: 'rgba(8,11,24,0.9)',
         border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
         boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
       }}>
@@ -251,7 +253,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         <div className="flex items-center gap-1.5">
           {(dest.reconnect_count || 0) > 0 && (
             <span className="text-[11px] px-1.5 py-0.5 rounded font-bold"
-              style={{ background: 'rgba(255,165,0,0.15)', color: '#FFA500', border: '1px solid rgba(255,165,0,0.3)' }}>
+              style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)' }}>
               ⚠ {dest.reconnect_count} reconnects
             </span>
           )}
@@ -309,10 +311,10 @@ function EndStreamModal({ onConfirm, onCancel }) {
       style={{ background: 'rgba(0,0,0,0.8)' }}>
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-red-400" />
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
         </div>
         <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
         <div className="flex gap-2">
@@ -342,6 +344,13 @@ export default function ControlRoomPage() {
   const [uptime, setUptime] = useState(0);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: room } = useQuery({
     queryKey: ['cr-room', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
@@ -442,7 +451,7 @@ export default function ControlRoomPage() {
 
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2.5">
           <Monitor className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -531,6 +540,27 @@ export default function ControlRoomPage() {
         ))}
       </div>
 
+      {/* Quick Tools Toolbar */}
+      <div className="px-4 md:px-8 py-2 flex items-center gap-2 flex-wrap"
+        style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.07)' }}>
+        {[
+          { label: '🎨 Scenes',       page: 'SceneTemplates',       color: 'rgba(212,175,55,0.12)' },
+          { label: '🔔 Alerts',       page: 'StreamAlerts',         color: 'rgba(212,133,74,0.12)' },
+          { label: '🛡️ Guardian AI',  page: 'GuardianAI',           color: 'rgba(192,57,43,0.12)' },
+          { label: '📡 Multi-Stream', page: 'MultiStreamManager',   color: 'rgba(109,191,126,0.1)' },
+          { label: '📊 Analytics',    page: 'AdvancedAnalytics',    color: 'rgba(212,175,55,0.08)' },
+          { label: '📅 Schedule',     page: 'StreamScheduler',      color: 'rgba(107,124,74,0.12)' },
+          { label: '📝 Captions',     page: 'TranscriptionStudio',  color: 'rgba(74,124,89,0.12)'  },
+        ].map(t => (
+          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+              {t.label}
+            </button>
+          </Link>
+        ))}
+      </div>
+
       {/* ZEGOCLOUD Health Card */}
       {roomId && (
         <div className="px-4 md:px-8 pt-4">
@@ -541,6 +571,21 @@ export default function ControlRoomPage() {
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
+      </div>
+
+      {/* Scene Switcher */}
+      <div className="px-4 md:px-8 pb-4">
+        <SceneSwitcher activeScene="main" onSceneChange={() => {}} />
+      </div>
+
+      {/* Extended control panels */}
+      <div className="px-4 md:px-8 pb-4 flex flex-col gap-4">
+        <EnhancedRoomControls isHost={true} roomData={null} micMuted={false} onMicToggle={() => {}} />
+        <ClipMarker roomId={roomId} user={user} streamStartTs={room?.started_at || null} />
+        <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />
+        <ParticipantsList participants={[]} currentUser={user} onUpdateParticipant={() => {}} onInviteToStage={() => {}} roomId={roomId} communityId={room?.community_id || null} />
+        <RoomAnalyticsPanel roomId={roomId} />
+        <CollaborativeWhiteboard roomId={roomId} />
       </div>
 
       {/* RTMP Cards Grid */}

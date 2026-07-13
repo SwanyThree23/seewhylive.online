@@ -76,7 +76,7 @@ export default function EmbedPlayer({
         style={{ filter: `blur(${blurAmount}px)`, transition: 'filter 0.5s ease' }}
       >
         {/* Fake video background */}
-        <div className="w-full h-full bg-gradient-to-br from-[#1a0a30] via-[#0d0618] to-[#001a20] flex items-center justify-center">
+        <div className="w-full h-full bg-gradient-to-br from-[#0F1428] via-[#080B18] to-[#080B18] flex items-center justify-center">
           {!playing ? (
             <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
               <Play className="w-8 h-8 text-white ml-1" />
@@ -181,9 +181,9 @@ export default function EmbedPlayer({
           <motion.div
             initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 20 }}
             className="absolute inset-0 flex flex-col justify-end"
-            style={{ backdropFilter: 'blur(12px)', background: 'rgba(13,6,24,0.85)' }}
+            style={{ backdropFilter: 'blur(12px)', background: 'rgba(8,11,24,0.85)' }}
           >
-            <div className="p-6 border border-[#d4af37]/20 rounded-t-2xl bg-gradient-to-t from-[#0d0618] to-transparent">
+            <div className="p-6 border border-[#d4af37]/20 rounded-t-2xl bg-gradient-to-t from-[#080B18] to-transparent">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-white text-xl font-bold">
                   {creatorName.charAt(0)}
@@ -232,7 +232,7 @@ export default function EmbedPlayer({
         {showEmbed && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute inset-4 bg-[#0d0618] border border-[#d4af37]/30 rounded-xl p-4 z-50"
+            className="absolute inset-4 bg-[#080B18] border border-[#d4af37]/30 rounded-xl p-4 z-50"
           >
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold text-[#d4af37]">Embed Code</p>

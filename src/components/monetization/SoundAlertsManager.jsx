@@ -8,7 +8,7 @@ import NativeSelect from '@/components/shared/NativeSelect';
 
 const GOLD = '#D4AF37';
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif',
 };
@@ -106,7 +106,7 @@ export function SoundAlertOverlay({ alerts, onTrigger }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', borderRadius: 16,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #0d0618)`,
+            background: `linear-gradient(135deg, ${activeAlert.color || GOLD}22, #080B18)`,
             border: `1px solid ${activeAlert.color || GOLD}`,
             boxShadow: `0 0 40px ${activeAlert.color || GOLD}44`,
           }}>

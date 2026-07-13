@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import NativeSelect from '@/components/shared/NativeSelect';
 
@@ -153,6 +155,13 @@ export default function OverlayBuilderPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
@@ -181,6 +190,13 @@ export default function OverlayBuilderPage() {
       qc.invalidateQueries(['overlay-layouts']);
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Saved overlay layout: ${layoutName || 'Overlay'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -217,8 +233,10 @@ export default function OverlayBuilderPage() {
     <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
+          <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>← Studio</Link>
+          <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>Editor</Link>
           <Layers className="w-4 h-4" style={{ color: GOLD }} />
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</span>
         </div>

@@ -535,7 +535,7 @@ export default function RoomPage() {
           {/* Left Column - Stage & Controls */}
           <div className="lg:col-span-3 space-y-4">
             {/* Stage */}
-            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               {stages.length > 0 ? (
                 <Tabs defaultValue={stages[0]?.id} className="space-y-4">
                   {stages.length > 1 && (
@@ -577,7 +577,7 @@ export default function RoomPage() {
 
             {/* Whiteboard */}
             {showWhiteboard && (
-              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                 <h3 className="font-semibold mb-4 text-white">Collaborative Whiteboard</h3>
                 <CollaborativeWhiteboard roomId={roomId} />
               </div>
@@ -585,7 +585,7 @@ export default function RoomPage() {
 
             {/* Quick Tip */}
             {room?.host_id !== user?.id && (
-              <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                 <h3 className="font-semibold mb-3 flex items-center gap-2 text-white">
                   <DollarSign className="w-5 h-5" style={{ color: '#D4AF37' }} />
                   Support the Creator
@@ -595,7 +595,7 @@ export default function RoomPage() {
             )}
 
             {/* Control Bar */}
-            <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+            <div className="rounded-xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center justify-center gap-3">
                 {/* Gift Shop Tray + Tip for viewers */}
                 {user && !isHost && (
@@ -729,6 +729,15 @@ export default function RoomPage() {
             <div className="mt-3 rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.08)' }}>
               <LivePollWidget roomId={roomId} currentUser={user} isHost={isHost} />
             </div>
+            <div className="mt-3 space-y-3">
+              {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+              {roomId && room?.host_id && (
+                <MerchStrip roomId={roomId} currentUser={user} hostId={room.host_id} />
+              )}
+              <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={8} />
+              <ContentRecommendations />
+            </div>
+            {isHost && <AICopilotSidebar roomId={roomId} hostId={user?.id} />}
           </div>
         </div>
       </div>

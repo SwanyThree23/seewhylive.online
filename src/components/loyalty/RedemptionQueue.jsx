@@ -17,9 +17,16 @@ export default function RedemptionQueue({ creatorId, roomId }) {
 
   const fulfillMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.RewardRedemption.update(id, { status, fulfilled_at: new Date().toISOString() }),
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
       toast.success('Reward updated!');
       qc.invalidateQueries(['redemptions', creatorId, roomId]);
+      if (status === 'fulfilled' && creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: 'Fulfilled a loyalty reward redemption',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });

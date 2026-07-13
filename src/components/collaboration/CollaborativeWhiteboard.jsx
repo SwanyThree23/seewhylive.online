@@ -164,7 +164,7 @@ export default function CollaborativeWhiteboard({ roomId }) {
     toast.success('Whiteboard downloaded');
   };
 
-  const colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
+  const colors = ['#000000', '#FF0000', '#6DBF7E', '#C9A84C', '#D4AF37', '#800020', '#D4AF37'];
 
   return (
     <div className="space-y-4">

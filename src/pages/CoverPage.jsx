@@ -4,12 +4,36 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Play, Bell, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NebulaBg from '../components/home/NebulaBg';
+import GridLines from '../components/home/GridLines';
+import StarField from '../components/home/StarField';
+import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
 
 export default function CoverPage() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: liveRooms } = useQuery({
     queryKey: ['cover-live-rooms'],
@@ -36,7 +60,7 @@ export default function CoverPage() {
       />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-[rgba(7,7,15,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
+      <header className="sticky top-0 z-50 bg-[rgba(8,11,24,0.97)] border-b border-[rgba(212,175,55,0.12)] backdrop-blur-md">
         <div className="flex h-14 items-center justify-between px-4 md:px-6">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
@@ -156,7 +180,7 @@ export default function CoverPage() {
       </section>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(7,7,15,0.98)] border-t border-white/5 px-4 py-3">
+      <nav className="fixed bottom-0 left-0 right-0 bg-[rgba(8,11,24,0.98)] border-t border-white/5 px-4 py-3">
         <div className="flex items-center justify-around max-w-md mx-auto text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
           <span>SeeWhy</span>
           <span className="flex items-center gap-1">
@@ -167,6 +191,23 @@ export default function CoverPage() {
           <span>90% Payout</span>
         </div>
       </nav>
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <NebulaBg />
+        <GridLines />
+        <StarField count={40} />
+        <FeaturedContentSection />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ZEGOMobileAppBanner />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <ContentRecommendations />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+      </div>
     </div>
   );
 }

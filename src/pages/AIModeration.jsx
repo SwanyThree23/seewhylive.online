@@ -2,7 +2,20 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Zap, RefreshCw, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ReportsManager from '../components/admin/ReportsManager';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
+import ReportModal from '../components/moderation/ReportModal';
+import AIModeration from '../components/live/AIModeration';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -24,7 +37,7 @@ const VIOLATION_STYLE = {
   harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
   hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
-  safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#00ff88' },
+  safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#6DBF7E' },
 };
 
 const TABS = ['pending', 'reviewed', 'insights'];
@@ -35,6 +48,21 @@ export default function AIModerationPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('pending');
+
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: moderations = [] } = useQuery({
     queryKey: ['moderations'],
@@ -114,6 +142,7 @@ export default function AIModerationPage() {
       <div className="sticky top-0 z-20 px-4 py-4 md:px-8 flex items-center justify-between gap-3 border-b"
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-3">
+          <Link to={createPageUrl('AdminDashboard')} style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textDecoration: 'none', letterSpacing: '0.06em', marginRight: 4 }}>← Admin</Link>
           <Shield className="w-5 h-5" style={{ color: GOLD }} />
           <div>
             <h1 className="text-xl font-black text-white leading-none" style={T}>AI Moderation</h1>
@@ -131,7 +160,7 @@ export default function AIModerationPage() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-5">
         {/* Scan progress */}
         {isScanning && (
-          <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             <div className="flex items-center gap-2 mb-2 text-xs" style={{ color: 'rgba(255,255,255,0.5)', ...T }}>
               <MessageSquare className="w-4 h-4 animate-pulse" />
               Analyzing messages with AI…
@@ -152,7 +181,7 @@ export default function AIModerationPage() {
             { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4 flex flex-col gap-2"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <div className="flex items-center gap-2">
                 <Icon className="w-4 h-4" style={{ color }} />
                 <span className="text-[10px] font-black uppercase" style={{ ...T, color: 'rgba(255,255,255,0.4)' }}>{label}</span>
@@ -186,7 +215,7 @@ export default function AIModerationPage() {
             <div className="space-y-3">
               {flagged.map(mod => (
                 <div key={mod.id} className="rounded-2xl p-4"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -211,7 +240,7 @@ export default function AIModerationPage() {
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'upheld', action: 'hidden' })}
                         disabled={reviewMutation.isPending}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                        style={{ ...T, background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#00ff88', cursor: 'pointer' }}>
+                        style={{ ...T, background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)', color: '#6DBF7E', cursor: 'pointer' }}>
                         <CheckCircle className="w-3.5 h-3.5" /> Uphold
                       </button>
                       <button onClick={() => reviewMutation.mutate({ id: mod.id, decision: 'reversed', action: 'none' })}
@@ -239,11 +268,11 @@ export default function AIModerationPage() {
             <div className="space-y-3">
               {reviewed.slice(0, 30).map(mod => (
                 <div key={mod.id} className="rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <ViolationBadge type={mod.violation_type} />
                     <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#00ff88' : 'rgba(255,255,255,0.45)' }}>
+                      style={{ ...T, background: mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.08)' : 'rgba(255,255,255,0.06)', border: `1px solid ${mod.override_decision === 'upheld' ? 'rgba(109,191,126,0.25)' : 'rgba(255,255,255,0.12)'}`, color: mod.override_decision === 'upheld' ? '#6DBF7E' : 'rgba(255,255,255,0.45)' }}>
                       {mod.override_decision}
                     </span>
                     <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>
@@ -259,7 +288,7 @@ export default function AIModerationPage() {
         {/* Insights */}
         {activeTab === 'insights' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-1" style={T}>Violation Distribution</p>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Breakdown of detected content types</p>
               {moderations.length === 0 ? (
@@ -283,7 +312,7 @@ export default function AIModerationPage() {
               )}
             </div>
 
-            <div className="rounded-2xl p-5" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
               <p className="font-black text-sm text-white mb-1" style={T}>AI Performance</p>
               <p className="text-[11px] mb-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Scan accuracy and review metrics</p>
               {moderations.length === 0 ? (
@@ -310,6 +339,23 @@ export default function AIModerationPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-6 space-y-4 px-4 pb-6">
+          <AIModeration roomId={activeRoomId} isHost={false} />
+          <HostAlertCenter roomId={activeRoomId} />
+          <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
+          <ModerationAppealPanel flagId={null} messageId={null} roomId={activeRoomId} onClose={() => {}} />
+          <ReportsManager communityId={userCommunityId} userId={user?.id} />
+          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

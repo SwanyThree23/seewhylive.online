@@ -4,6 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import StreamGoals from '../components/live/StreamGoals';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import TipWidget from '../components/live/TipWidget';
+import TippingOverlay from '../components/live/TippingOverlay';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -54,7 +67,7 @@ function OctAvatar({ size = 60, src, initials, rankColor = GOLD, glow = false })
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -125,7 +138,7 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
       style={{
         background: isCurrentUser
           ? 'rgba(212,175,55,0.08)'
-          : isEven ? 'rgba(17,8,34,0.6)' : 'rgba(13,6,24,0.4)',
+          : isEven ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.4)',
         border: `1px solid ${isCurrentUser ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.04)'}`,
       }}>
       {/* rank number */}
@@ -296,7 +309,7 @@ export default function LeaderboardPage() {
         {activeTab === 'svs' && (
           <>
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div className="flex items-center gap-2 px-4 py-3"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <Swords className="w-4 h-4" style={{ color: GOLD }} />
@@ -350,7 +363,7 @@ export default function LeaderboardPage() {
         {/* ── top-3 podium ── */}
         {activeTab !== 'svs' && top3.length > 0 && (
           <div className="rounded-2xl p-5"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
             {/* reorder: 2nd | 1st | 3rd */}
             <div className="flex items-end justify-center gap-4">
               {top3[1] && (
@@ -381,12 +394,17 @@ export default function LeaderboardPage() {
         {/* ── rank list (4th+) ── */}
         {activeTab !== 'svs' && list.length === 0 ? (
           <div className="rounded-2xl flex items-center justify-center py-16"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-sm text-center" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No data yet</p>
           </div>
-        ) : activeTab !== 'svs' && rest.length > 0 && (
+        ) : activeTab === 'earnings' && (
+          <div className="mb-4">
+            <RealtimeLeaderboard creatorId={currentUser?.id} roomId={activeRoomId} />
+          </div>
+        )}
+        {activeTab !== 'svs' && rest.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <div className="flex items-center gap-2 px-4 py-3"
               style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
               <Trophy className="w-4 h-4" style={{ color: 'rgba(212,175,55,0.5)' }} />

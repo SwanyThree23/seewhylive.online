@@ -67,12 +67,19 @@ export default function RecordingManager({ userId }) {
         ai_keywords: aiResult.keywords,
       });
     },
-    onSuccess: () => {
+    onSuccess: (recording) => {
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setUploadDialogOpen(false);
       setUploadFile(null);
       setFormData({ title: '', description: '', tags: [], category: '', is_public: true });
       toast.success('Recording uploaded successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Uploaded recording: ${recording?.title || 'New Recording'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -122,15 +129,22 @@ export default function RecordingManager({ userId }) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success).length;
       const failed = results.filter(r => !r.success).length;
-      
+
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setBatchUploadDialogOpen(false);
       setBatchFiles([]);
-      
+
       if (failed === 0) {
         toast.success(`Successfully uploaded ${successful} recordings!`);
       } else {
         toast.warning(`Uploaded ${successful} recordings, ${failed} failed`);
+      }
+      if (successful > 0 && userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Batch uploaded ${successful} recording${successful !== 1 ? 's' : ''}`,
+        }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
@@ -395,10 +409,10 @@ export default function RecordingManager({ userId }) {
                 </p>
               )}
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-[#D4AF37]/5 p-3 rounded-lg">
               <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-blue-600 mt-0.5" />
-                <div className="text-sm text-blue-700">
+                <Sparkles className="w-4 h-4 text-[#D4AF37] mt-0.5" />
+                <div className="text-sm text-[#D4AF37]">
                   <p className="font-medium">AI-Powered Upload</p>
                   <p>Files will be automatically analyzed to generate titles, descriptions, categories, and keywords.</p>
                 </div>

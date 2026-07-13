@@ -6,8 +6,8 @@ import { Scissors, Play, Copy, Share2, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function ClipCreator({ streamSessionId, roomId, creatorId, onClipCreated }) {
@@ -20,12 +20,13 @@ export default function ClipCreator({ streamSessionId, roomId, creatorId, onClip
   const createClipMutation = useMutation({
     mutationFn: async () => {
       setIsLoading(true);
+      const me = await base44.auth.me();
       const clip = await base44.entities.StreamClip.create({
         stream_session_id: streamSessionId,
         room_id: roomId,
         creator_id: creatorId,
-        clipped_by_id: (await base44.auth.me()).id,
-        clipped_by_username: (await base44.auth.me()).full_name,
+        clipped_by_id: me.id,
+        clipped_by_username: me.full_name,
         title: title || `Clip ${new Date().toLocaleTimeString()}`,
         start_timestamp_seconds: startSec,
         end_timestamp_seconds: endSec,
@@ -37,7 +38,14 @@ export default function ClipCreator({ streamSessionId, roomId, creatorId, onClip
       queryClient.invalidateQueries({ queryKey: ['streamClips'] });
       if (onClipCreated) onClipCreated(clip);
       setTitle('');
-      return clip;
+      return { clip, userId: me.id };
+    },
+    onSuccess: ({ clip, userId }) => {
+      base44.entities.Activity.create({
+        user_id: userId,
+        type: 'clip_created',
+        title: `Clipped: ${clip?.title || 'Stream clip'}`,
+      }).catch(() => {});
     },
     onError: () => toast.error('Failed to create clip.'),
   });

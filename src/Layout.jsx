@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
@@ -7,8 +7,10 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
+  Film, FileText, Calendar, Sliders, Scissors, Bell, TrendingUp, Star, Users, BarChart2, Activity as ActivityIcon
 } from 'lucide-react';
+// DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -34,32 +36,77 @@ var DRAWER_WATCH = [
   { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
+  { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
+  { name: 'SwanyBot',         icon: Bot,     href: createPageUrl('SwanyBotPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
   { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
   { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
-  { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
+  { name: 'Leaderboard',      icon: Trophy,       href: createPageUrl('Leaderboard') },
+  { name: 'VOD Library',      icon: Film,         href: createPageUrl('VODLibrary') },
+  { name: 'Live Battles',     icon: Swords,       href: createPageUrl('LiveBattles') },
+  { name: 'PK Arena',         icon: Trophy,       href: createPageUrl('PKBattleArena') },
+  { name: 'PPV Events',       icon: Lock,         href: createPageUrl('PayPerViewEvents') },
+  { name: 'Featured Content', icon: Tv2,          href: createPageUrl('FeaturedContent') },
+  { name: 'Challenges',       icon: Star,         href: createPageUrl('ChallengesHub') },
+  { name: 'Loyalty Hub',      icon: Trophy,       href: createPageUrl('LoyaltyHub') },
+  { name: 'Communities',      icon: Users,        href: createPageUrl('Communities') },
 ];
 
 var DRAWER_CREATE = [
   { name: 'Go Live',          icon: Radio,           href: createPageUrl('GoLive') },
-  { name: 'LIVE Studio v37',  icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
-  { name: 'LIVE Studio v36',  icon: Tv,              href: '/SeeWhyLIVEv36' },
+  { name: 'LIVE Studio',      icon: Tv,              href: createPageUrl('SeeWhyLIVEv37') },
   { name: 'Broadcast Studio', icon: Video,           href: createPageUrl('BroadcastStudio') },
   { name: 'Green Room',       icon: Video,           href: createPageUrl('GreenroomEnhanced') },
   { name: 'Monetize',         icon: DollarSign,      href: createPageUrl('Monetization') },
   { name: 'Dashboard',        icon: LayoutDashboard, href: createPageUrl('CreatorDashboard') },
+  { name: 'Stream Analytics', icon: BarChart2,       href: createPageUrl('StreamAnalytics') },
+  { name: 'Analytics',        icon: BarChart2,       href: createPageUrl('Analytics') },
+  { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Enhancement Suite', icon: Sparkles,       href: createPageUrl('EnhancementSuite') },
   { name: 'AI Hub',           icon: Sparkles,        href: createPageUrl('AIHub') },
   { name: 'INS Forge',        icon: Sparkles,        href: createPageUrl('INSForge') },
   { name: 'AI Music Studio',  icon: Radio,           href: createPageUrl('AIMusic') },
   { name: 'Podcast Studio',   icon: Mic2,            href: createPageUrl('PodcastStudio') },
   { name: 'Multi-Platform',   icon: Globe,           href: createPageUrl('MultiPlatform') },
   { name: 'Multi-Platform+',  icon: Globe,           href: createPageUrl('MultiPlatformIntegration') },
+  { name: 'Multi-Stream Mgr', icon: Globe,          href: createPageUrl('MultiStreamManager') },
   { name: 'Newsletter Hub',   icon: MessageSquare,   href: createPageUrl('NewsletterHub') },
   { name: 'Creator Profile',  icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',         icon: Bot,             href: createPageUrl('JoyceAI') },
+  { name: 'Aura AI',          icon: Sparkles,        href: createPageUrl('AuraAI') },
+  { name: 'Pre-Flight',       icon: Sliders,         href: createPageUrl('GreenRoomPreFlight') },
+  { name: 'Overlay Editor',   icon: Layers,          href: createPageUrl('OverlayEditor') },
+  { name: 'Stream Alerts',    icon: Bell,            href: createPageUrl('StreamAlerts') },
+  { name: 'Captions',         icon: FileText,        href: createPageUrl('TranscriptionStudio') },
+  { name: 'Clips',            icon: Scissors,        href: createPageUrl('ClipsLibrary') },
+  { name: 'Content Calendar', icon: Calendar,        href: createPageUrl('ContentCalendar') },
+  { name: 'Stream Scheduler', icon: Calendar,        href: createPageUrl('StreamScheduler') },
+  { name: 'Stream Analytics', icon: TrendingUp,      href: createPageUrl('StreamAnalytics') },
+  { name: 'Advanced Analytics',icon: BarChart2,      href: createPageUrl('AdvancedAnalytics') },
+  { name: 'Poll Manager',     icon: Sliders,         href: createPageUrl('PollManager') },
+  { name: 'Multi-Stream Mgr', icon: Radio,           href: createPageUrl('MultiStreamManager') },
+  { name: 'Voice AI',         icon: Sliders,         href: createPageUrl('VoiceAISettings') },
+  { name: 'Challenges',       icon: Star,            href: createPageUrl('ChallengesHub') },
+  { name: 'Scene Templates',  icon: Layers,          href: createPageUrl('SceneTemplates') },
+  { name: 'SwanyBot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Hybrid Room',      icon: Radio,           href: createPageUrl('HybridStreamRoom') },
+  { name: 'Enhancement Suite',icon: Sparkles,        href: createPageUrl('EnhancementSuite') },
   { name: 'Messages',         icon: MessageSquare,   href: createPageUrl('Messages') },
+  { name: 'Control Room',     icon: LayoutDashboard, href: createPageUrl('ControlRoom') },
+  { name: 'PK Battle Mgr',    icon: Swords,          href: createPageUrl('PKBattleManager') },
+  { name: 'Creator Subs',     icon: DollarSign,      href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Users',     icon: Users,           href: createPageUrl('InviteUsers') },
+  { name: 'Analytics',        icon: BarChart2,       href: createPageUrl('Analytics') },
+  { name: 'Creator Dashboard',icon: LayoutDashboard, href: createPageUrl('Dashboard') },
+  { name: 'Newsletter',       icon: MessageSquare,   href: createPageUrl('Newsletter') },
+  { name: 'Overlay Builder',  icon: Layers,          href: createPageUrl('OverlayBuilder') },
+  { name: 'Greenroom',        icon: Video,           href: createPageUrl('Greenroom') },
+  { name: 'PPV Events',       icon: DollarSign,      href: createPageUrl('PayPerViewEvents') },
+  { name: 'VOD Library',      icon: Video,           href: createPageUrl('VODLibrary') },
+  { name: 'Social Expo',      icon: Globe,           href: createPageUrl('SocialExpo') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -68,26 +115,54 @@ var DRAWER_ACCOUNT = [
   { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
-  { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },
+  { name: 'BetaStatus', icon: Radio,         href: createPageUrl('BetaStatus') },
+  { name: 'Payouts',    icon: DollarSign,    href: createPageUrl('Payouts') },
+  { name: 'Notifications', icon: Bell,       href: createPageUrl('Notifications') },
+  { name: 'Activity',   icon: ActivityIcon,  href: createPageUrl('Activity') },
+  { name: 'Data Export',icon: FileText,      href: createPageUrl('DataExport') },
+  { name: 'Viewer Dashboard',icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
+  { name: 'Loyalty Program',  icon: Trophy,         href: createPageUrl('LoyaltyProgram') },
+  { name: 'Loyalty Hub',      icon: Trophy,         href: createPageUrl('LoyaltyHub') },
+  { name: 'My Subscriptions', icon: Star,           href: createPageUrl('CreatorSubscriptions') },
+  { name: 'Invite Friends',   icon: Users,          href: createPageUrl('InviteUsers') },
+  { name: 'Communities',      icon: Users,          href: createPageUrl('Communities') },
+  { name: 'Messages',         icon: MessageSquare,  href: createPageUrl('Messages') },
+  { name: 'Leaderboard',      icon: Trophy,         href: createPageUrl('Leaderboard') },
 ];
 
 var DRAWER_ADMIN = [
   { name: 'AdminDashboard',  icon: Shield, href: createPageUrl('AdminDashboard') },
   { name: 'Guardian AI',     icon: Shield, href: createPageUrl('GuardianAI') },
   { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
-  { name: 'RTMPServer',      icon: Server, href: createPageUrl('RTMPServer') },
-  { name: 'Infra Reference', icon: Server, href: createPageUrl('StreamInfraRef') },
+  { name: 'RTMPServer',         icon: Server,  href: createPageUrl('RTMPServer') },
+  { name: 'Infra Reference',   icon: Server,  href: createPageUrl('StreamInfraRef') },
+  { name: 'Moderation',        icon: Shield,  href: createPageUrl('ModerationDashboard') },
+  { name: 'AI Moderation',     icon: Shield,  href: createPageUrl('AIModeration') },
 ];
+
+// Tab ownership map — which URL patterns belong to each bottom-nav tab
+var TAB_OWNERSHIP = {
+  Home: /^(\/|\/Home)$/,
+  Watch: /\/(Discover|LiveRoom|Room|StateVsState|WashingtonClassic|SVSArena|PKBattleArena|LiveBattles|VODLibrary|WatchParty|TributeWall|FallenLegends|AudioRoom)/i,
+  Chat: /\/[Mm]essages/,
+  Me: /\/(Profile|Settings|CreatorDashboard|CreatorAnalytics|CreatorPublicProfile|Payouts|PayoutCenter|Notifications|Activity|CreatorSubscriptions|ViewerDashboard)/i,
+};
 
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
   var navigate = useNavigate();
-  var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab
-  var scrollPositions = React.useRef({});
+  var scrollPositions = useRef({});
+  // Virtual tab history stacks — remember last path visited per tab
+  var tabMemory = useRef({
+    Home: BOTTOM_NAV[0].href,
+    Watch: BOTTOM_NAV[1].href,
+    Chat: BOTTOM_NAV[3].href,
+    Me: BOTTOM_NAV[4].href,
+  });
   useEffect(function() {
     var key = location.pathname;
     var saved = scrollPositions.current[key];
@@ -142,10 +217,28 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [location.pathname]);
 
+  // Update tab memory when navigation occurs within a tab's domain
+  useEffect(function() {
+    var path = location.pathname;
+    var tabs = Object.keys(TAB_OWNERSHIP);
+    for (var i = 0; i < tabs.length; i++) {
+      if (TAB_OWNERSHIP[tabs[i]].test(path)) {
+        tabMemory.current[tabs[i]] = path + location.search;
+        break;
+      }
+    }
+  }, [location.pathname, location.search]);
+
   function isActive(href) {
     var path = location.pathname;
     var hrefPath = href.split('?')[0];
     return path === hrefPath || path === '/' + currentPageName;
+  }
+
+  function isTabActive(item) {
+    var pattern = TAB_OWNERSHIP[item.name];
+    if (pattern) return pattern.test(location.pathname);
+    return isActive(item.href);
   }
 
   var MAIN_PATHS = BOTTOM_NAV.map(function(i) { return i.href.split('?')[0]; });
@@ -194,13 +287,13 @@ export default function Layout({ children, currentPageName }) {
       {!isFullscreen && <>
       {/* Brand accent line — sits below status bar on notch devices */}
       <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
-        style={{ background: 'rgba(7,7,15,0.97)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)' }}>
         <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
       </div>
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -270,7 +363,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between px-4 py-1 text-[10px] font-bold"
             style={{ background: 'rgba(180,50,30,0.12)', borderTop: '1px solid rgba(200,80,30,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}>SeeWhy LIVE</span>
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
               <span style={{ color: '#CC7755' }}>{liveCount} stream{liveCount !== 1 ? 's' : ''} live now</span>
@@ -392,21 +485,24 @@ export default function Layout({ children, currentPageName }) {
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 pb-safe"
-          style={{ background: 'rgba(7,7,15,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+          style={{ background: 'rgba(8,11,24,0.98)', borderTop: '1px solid rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
-              var active = isActive(item.href);
+              var active = item.isCenter ? isActive(item.href) : isTabActive(item);
 
               function handleTabPress(e) {
-                if (active) {
-                  // Double-tap active tab → scroll to top
-                  e.preventDefault();
+                e.preventDefault();
+                if (active && !item.isCenter) {
+                  // Tap active tab → scroll to top
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  navigate(item.href, { replace: true });
                 } else {
-                  // Save current scroll before leaving
+                  // Save scroll of current page, then navigate to tab's remembered path
                   scrollPositions.current[location.pathname] = window.scrollY;
+                  var dest = item.isCenter
+                    ? item.href
+                    : (tabMemory.current[item.name] || item.href);
+                  navigate(dest);
                 }
               }
 
@@ -448,7 +544,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop footer */}
       <footer className="hidden md:block py-3 px-6 text-[10px]"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
           <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">

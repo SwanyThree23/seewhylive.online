@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, Eye, MessageSquare, Heart, Share2 } from 'lucide-react';
@@ -14,7 +14,7 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
         <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
         <p className="text-xl font-bold text-white mt-1">{value}</p>
         {trend && (
-          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#6DBF7E]' : 'text-red-400'}`}>
             {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}
@@ -27,13 +27,7 @@ const StatCard = ({ icon: IconComponent, label, value, trend, color }) => (
 );
 
 export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
-  const [viewerData, setViewerData] = useState([
-    { time: '8:00', viewers: 120 },
-    { time: '8:15', viewers: 180 },
-    { time: '8:30', viewers: 245 },
-    { time: '8:45', viewers: 320 },
-    { time: '9:00', viewers: 380 },
-  ]);
+  const [viewerData] = useState([]);
 
   const [engagementData, setEngagementData] = useState([
     { label: 'Likes', value: 1240, color: '#C0392B' },
@@ -65,7 +59,7 @@ export default function BroadcastAnalyticsDashboard({ streamSession, isLive }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
+      className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4 space-y-4"
     >
       <div>
         <h3 className="text-sm font-bold text-white mb-3">Stream Analytics</h3>

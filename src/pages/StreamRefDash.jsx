@@ -1,4 +1,19 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ChatModeration from '../components/live/ChatModeration';
+import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -24,11 +39,11 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-green-500/20 text-green-300 border border-green-500/40",
-    pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
+    live:     "bg-[#6DBF7E]/15 text-[#6DBF7E] border border-[#6DBF7E]/35",
+    pending:  "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/35",
     critical: "bg-red-500/20 text-red-300 border border-red-500/40",
-    info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
-    gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
+    info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
+    gold:     "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/35",
     ruby:     "bg-red-900/30 text-red-200 border border-red-800/50",
   };
   return (
@@ -85,7 +100,7 @@ const Row = ({ label, value, badge, pending }) => (
 
 const CheckItem = ({ done, children }) => (
   <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-green-400" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
+    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
     {children}
   </div>
 );
@@ -143,7 +158,7 @@ function RTMPTab() {
             <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
         ))}
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ YouTube Data API v3 key required for auto-stream-title injection — <Badge type="pending">pending</Badge>
         </div>
       </Section>
@@ -533,12 +548,12 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-green-400">{statusCounts.live}</div>
+        <div className="bg-[#6DBF7E]/10 border border-[#6DBF7E]/40/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-yellow-400">{statusCounts.pending}</div>
+        <div className="bg-[#D4AF37]/8 border border-[#D4AF37]/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#D4AF37]">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
         <div className="bg-red-500/10 border border-red-500/30 rounded p-3 text-center">
@@ -627,7 +642,7 @@ function StatusTab() {
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>
               </div>
               <div className="text-right">
-                {isChecking && <span className="text-yellow-300 text-xs animate-pulse">checking...</span>}
+                {isChecking && <span className="text-[#D4AF37]/80 text-xs animate-pulse">checking...</span>}
                 {r && !isChecking && (
                   <div>
                     <Badge type={r.ok ? "live" : "critical"}>{r.ok ? "reachable" : "error"}</Badge>
@@ -897,7 +912,7 @@ function JudgesTab() {
         <Row label="Audit Trail" value="All judge actions signed with JWT sub + timestamp" />
         <Code>POST /api/judge/authenticate  # returns judge session token</Code>
         <Code>GET  /api/judge/my-matches     # active + upcoming assignments</Code>
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ Judge role must be assigned by platform admin before tournament day — allow 24h for propagation
         </div>
       </Section>
@@ -940,6 +955,14 @@ const TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -964,11 +987,17 @@ export default function StreamRefDash() {
               <div className="text-white/20 text-[9px] font-mono mt-1">v41 · Washington Classic 2026</div>
             </div>
           </div>
-          <div className="flex gap-3 mt-3 flex-wrap">
+          <div className="flex gap-3 mt-3 flex-wrap items-center">
             <Badge type="live">Production Live</Badge>
             <Badge type="gold">90/10 Creator Split</Badge>
             <Badge type="pending">4 keys pending</Badge>
             <Badge type="info">9 tabs</Badge>
+            <Link to={createPageUrl('StreamAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(192,57,43,0.15)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.35)' }}>📊 Stream Analytics</span>
+            </Link>
+            <Link to={createPageUrl('AdvancedAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>📈 Advanced Analytics</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -998,6 +1027,16 @@ export default function StreamRefDash() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <ActiveContent />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <ZEGOConfigPanel roomId={activeRoomId} />
+        <OBSBridge roomId={activeRoomId} isHost={true} />
+        <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ChatModeration />
+        <StreamMetadata room={null} isHost={false} />
       </div>
 
       {/* Footer */}
