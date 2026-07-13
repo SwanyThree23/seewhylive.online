@@ -101,13 +101,7 @@ export default function Layout({ children, currentPageName }) {
   var navigate = useNavigate();
   var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
-  // Scroll-position preservation per bottom-nav tab
-  var scrollPositions = React.useRef({});
-  useEffect(function() {
-    var key = location.pathname;
-    var saved = scrollPositions.current[key];
-    if (saved !== undefined) window.scrollTo(0, saved);
-  }, [location.pathname]);
+  // Scroll-position preservation per bottom-nav tab: save on scroll, restore via rAF on navigate
   useEffect(function() {
     function saveScroll() {
       scrollPositions.current[location.pathname] = window.scrollY;
