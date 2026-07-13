@@ -122,6 +122,7 @@ function BattleCard({ battle, index }) {
 
 export default function LiveBattles() {
   const [filter, setFilter] = useState('active');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
 
   const { data: battles = [], isLoading } = useQuery({
     queryKey: ['battles', filter],
@@ -226,7 +227,7 @@ export default function LiveBattles() {
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

@@ -37,6 +37,7 @@ const BORDER = 'rgba(212,175,55,0.18)';
 export default function PKBattlePage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedBattle, setSelectedBattle] = useState(null);
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -225,7 +226,7 @@ export default function PKBattlePage() {
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={false} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={activeBattle?.status === 'active'} />}
       {activeBattle?.id && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
