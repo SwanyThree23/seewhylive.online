@@ -997,7 +997,7 @@ export default function GoLive() {
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
       {partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => {}} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onUpdate={() => {}} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
       <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => {}} />

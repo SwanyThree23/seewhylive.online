@@ -1410,7 +1410,7 @@ export default function WatchPartyPage() {
       {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
       {partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => {}} />}
       {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onUpdate={() => {}} />}
       {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />

@@ -341,7 +341,7 @@ export default function ControlRoomPage() {
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const [viewerCount, setViewerCount] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
 
@@ -657,10 +657,10 @@ export default function ControlRoomPage() {
       {roomId && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
       {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onUpdate={() => {}} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
+      <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
