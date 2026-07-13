@@ -501,6 +501,8 @@ export default function LiveRoom() {
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
 
   // Elapsed-seconds counter (starts on mount)
   const [elapsed, setElapsed] = useState(0);
@@ -1344,7 +1346,7 @@ export default function LiveRoom() {
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
@@ -1418,7 +1420,7 @@ export default function LiveRoom() {
       <SuperChatRail superchats={[]} />
       {roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={hostName} viewerCount={liveCount} />}
-      {roomId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />}
+      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />}
 
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 

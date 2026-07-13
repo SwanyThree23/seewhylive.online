@@ -430,6 +430,8 @@ function applyFilter(rooms, filter) {
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
   var [activeFilter, setActiveFilter] = useState('All');
+  var [showQuickAction, setShowQuickAction] = useState(false);
+  var [showOnboarding, setShowOnboarding] = useState(false);
   var qc = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {
     await qc.invalidateQueries();
@@ -642,8 +644,8 @@ export default function Home() {
       <GridLines />
       <NebulaBg />
       <StarField count={80} />
-      <QuickActionPanel isOpen={false} onClose={() => {}} />
-      <OnboardingFlow isOpen={false} onClose={() => {}} />
+      <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
+      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

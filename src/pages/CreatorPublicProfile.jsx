@@ -179,6 +179,7 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get("id");
   var navigate = useNavigate();
@@ -542,7 +543,7 @@ export default function CreatorPublicProfile() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

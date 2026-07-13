@@ -1268,6 +1268,7 @@ const TABS = [
 
 export default function SeeWhyLIVEv37() {
   const [activeTab, setActiveTab] = useState('stage');
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const panelMap = {
@@ -1345,7 +1346,7 @@ export default function SeeWhyLIVEv37() {
       <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
       <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
       <StreamHealthDashboard roomId={null} isHost={true} />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
     </div>
   );

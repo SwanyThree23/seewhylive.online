@@ -206,6 +206,11 @@ export default function RoomPage() {
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const screenStreamRef = useRef(null);
   const handleStartShare = (stream) => { if (!stream) return; screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
@@ -934,7 +939,7 @@ export default function RoomPage() {
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
@@ -988,7 +993,7 @@ export default function RoomPage() {
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={isHost} />}
       <BackgroundCustomizer />
-      <InviteSheet isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={room?.title || ''} isHost={isHost} isCoHost={false} />
+      <InviteSheet isOpen={showInviteSheet} onClose={() => setShowInviteSheet(false)} roomId={roomId} roomTitle={room?.title || ''} isHost={isHost} isCoHost={false} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={room?.status === 'live'} userTier="free" />
       {isHost && <GuestControls
         participants={participants}
@@ -1006,9 +1011,9 @@ export default function RoomPage() {
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={room?.host_id || user?.id} creatorName={''} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={participants.length} />}
-      {roomId && <PKBattleModal isOpen={false} onClose={() => {}} roomId={roomId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
-      {roomId && <BreakoutRoomsModal isOpen={false} onClose={() => {}} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />}
-      <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title || ''} />
+      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={user?.full_name || ''} />}
+      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />}
+      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title || ''} />
       <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
       {isHost && roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
       {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}

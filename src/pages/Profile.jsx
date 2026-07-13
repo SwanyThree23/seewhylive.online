@@ -99,6 +99,7 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 export default function ProfilePage() {
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   const [isEditing, setIsEditing]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');
@@ -586,7 +587,7 @@ export default function ProfilePage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

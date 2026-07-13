@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Users, Radio, Video, ExternalLink } from 'lucide-react';
@@ -33,6 +33,7 @@ const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PublicProfile() {
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('id');
@@ -174,7 +175,7 @@ export default function PublicProfile() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
