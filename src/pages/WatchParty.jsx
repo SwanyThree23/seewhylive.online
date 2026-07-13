@@ -610,7 +610,14 @@ export default function WatchPartyPage() {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
 
-  const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
+  const wpCompositorSlots = [
+    { stream: screenCaptureStream, label: '' },
+    { stream: localStream, label: 'You' },
+    ...Array.from(remoteStreams.entries()).map(([peerId, stream]) => ({
+      stream,
+      label: peerUserIds?.get(peerId) || 'Guest',
+    })),
+  ];
   const wpOverlayConfig = {
     title: party?.title || 'Watch Party',
     subtitle: `${members?.length || 0} watching`,

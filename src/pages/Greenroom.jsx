@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
@@ -337,6 +338,7 @@ export default function GreenroomPage() {
     enabled: !!roomId,
     refetchInterval: 10000,
   });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   useEffect(() => {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
@@ -879,7 +881,7 @@ export default function GreenroomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={participants.length} />
+      <StreamGoals isHost={isHost} currentTips={0} currentSubs={subCount} currentViewers={participants.length} />
       <ViewerCount count={participants.length} peakViewers={participants.length} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
       {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}

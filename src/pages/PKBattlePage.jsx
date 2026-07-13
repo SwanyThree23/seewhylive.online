@@ -580,6 +580,11 @@ export default function PKBattlePage() {
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
+    { stream: localCamStream, label: 'You', speaking: battleLocalSpeaking },
+    ...Array.from(battleRemoteStreams.entries()).map(([peerId, stream]) => ({
+      stream,
+      label: battlePeerUserIds?.get(peerId) || 'Viewer',
+    })),
   ];
   const battleOverlay = {
     title: battle?.title || `${bLeftName} vs ${bRightName}`,

@@ -14,6 +14,7 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
@@ -182,6 +183,7 @@ import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import SuperChatRail from '../components/live/SuperChatRail';
 import GuestQueue from '../components/live/GuestQueue';
 import AggregatedChat from '../components/live/AggregatedChat';
+import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import PKBattle from '../components/live/PKBattle';
 import PKBattleModal from '../components/live/PKBattleModal';
 
@@ -502,6 +504,11 @@ export default function LiveRoom() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+
+  // Highlight auto-clip detector
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   // Local UI state
   const [stageData, setStageData]       = useState(stage);
@@ -1372,7 +1379,7 @@ export default function LiveRoom() {
       <TopTippers roomId={null} />
 
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
-      {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
+      {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}
       {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {isHost && roomId && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
       {isHost && roomId && <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />}
@@ -1384,6 +1391,7 @@ export default function LiveRoom() {
       {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={roomTitle} onClose={() => {}} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
       <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} />
+      {roomId && <PartyHypeMeter partyId={roomId} memberCount={liveCount} onHypeChange={setHypeLevel} />}
       <SuperChatRail superchats={[]} />
       {roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={hostName} viewerCount={liveCount} />}
