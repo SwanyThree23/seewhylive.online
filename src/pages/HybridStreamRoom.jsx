@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Users, PhoneOff, Settings, Share2, Radio } from 'lucide-react';
@@ -158,6 +159,7 @@ export default function HybridStreamRoom() {
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const [viewerCount, setViewerCount] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -410,7 +412,7 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}

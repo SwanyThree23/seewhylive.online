@@ -87,6 +87,7 @@ import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import { useCameraDevices } from '../hooks/useCameraDevices';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -500,6 +501,7 @@ export default function GoLive() {
   const [viewerCount, setViewerCount] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
 
   // Elapsed counter — only runs while live (partyId set)
   useEffect(() => {
@@ -972,7 +974,7 @@ export default function GoLive() {
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}

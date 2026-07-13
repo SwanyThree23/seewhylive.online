@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -342,6 +343,7 @@ export default function ControlRoomPage() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const [viewerCount, setViewerCount] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
 
@@ -632,7 +634,7 @@ export default function ControlRoomPage() {
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={true} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
       {<AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
