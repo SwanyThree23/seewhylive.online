@@ -158,6 +158,7 @@ import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -346,7 +347,13 @@ export default function ControlRoomPage() {
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const prefCamCR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicCR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamCR);
+  const [activeMicId, setActiveMicId] = useState(prefMicCR);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamCR, audioDeviceId: prefMicCR });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
@@ -650,6 +657,7 @@ export default function ControlRoomPage() {
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {<LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
+      {<CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {<AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}

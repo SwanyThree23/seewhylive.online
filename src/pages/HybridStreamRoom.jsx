@@ -148,6 +148,7 @@ import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
@@ -162,7 +163,13 @@ export default function HybridStreamRoom() {
   const [spotlightId, setSpotlightId] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const prefCamHR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicHR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamHR);
+  const [activeMicId, setActiveMicId] = useState(prefMicHR);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamHR, audioDeviceId: prefMicHR });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
@@ -428,6 +435,7 @@ export default function HybridStreamRoom() {
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
+      {isHost && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
