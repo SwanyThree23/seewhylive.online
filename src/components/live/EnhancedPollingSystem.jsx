@@ -20,11 +20,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     queryKey: ['polls', roomId],
     queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }, '-created_at', 1),
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   const { data: pollTemplates } = useQuery({
     queryKey: ['pollTemplates', hostId],
     queryFn: () => base44.entities.PollTemplate.filter({ creator_id: hostId }, '-created_at'),
+    enabled: !!hostId,
   });
 
   const { data: pollVotes } = useQuery({
@@ -279,7 +281,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       {/* Re-vote notice */}
       {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-        <div className="flex items-center gap-2 text-xs text-[#4A8A7A]" style={{ color: '#C9A84C' }}>
+        <div className="flex items-center gap-2 text-xs text-[#C9A84C]" style={{ color: '#C9A84C' }}>
           <RotateCcw className="w-3 h-3" />
           You can change your vote anytime
         </div>

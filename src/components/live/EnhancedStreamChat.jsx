@@ -16,6 +16,12 @@ const SPAM_PATTERNS = [
   /(?:visit|click|buy|now|free)[^\s]*/gi, // spam keywords
 ];
 
+function userHue(id = '') {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return h % 360;
+}
+
 const EMOTES = {
   ':)': '😊',
   ':(': '😢',
@@ -150,6 +156,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       return msgs;
     },
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   // Subscribe to real-time messages
@@ -185,7 +192,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+        user_color: `hsl(${userHue(userId)}, 70%, 50%)`,
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },
@@ -217,7 +224,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
       {/* Header */}
       <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#7B5DA6]" />
+          <Sparkles className="w-4 h-4 text-[#D4854A]" />
           <h3 className="text-xs font-bold uppercase tracking-wide text-white/70" style={{ fontFamily: 'Barlow Condensed' }}>
             Live Chat
           </h3>

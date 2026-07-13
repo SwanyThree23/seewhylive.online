@@ -16,7 +16,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
   const healthColor = {
     excellent: '#6DBF7E',
     good: '#d4af37',
-    warning: '#FFB800',
+    warning: '#D4AF37',
     critical: '#C0392B'
   };
 
@@ -58,7 +58,7 @@ export default function GuestStreamMonitor({ guestName, isStreaming }) {
         </div>
 
         <div className="flex items-center gap-1.5 bg-white/5 rounded p-1.5">
-          <Zap className="w-3 h-3 text-[#4A8A7A]" />
+          <Zap className="w-3 h-3 text-[#6DBF7E]" />
           <div>
             <p className="text-white/40">Latency</p>
             <p className="text-white font-semibold">{Math.round(stats.latency)}ms</p>

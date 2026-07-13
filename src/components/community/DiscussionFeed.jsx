@@ -64,7 +64,7 @@ export default function DiscussionFeed({ communityId }) {
           style={{ background: PANEL, border: `1px solid ${BORDER}` }}
         >
           <div className="flex gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
             <textarea
               placeholder="Share your thoughts with the community..."
               value={newPost}
@@ -109,7 +109,7 @@ export default function DiscussionFeed({ communityId }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-[#4A8A7A]" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
                 <div>
                   <p className="text-sm font-bold text-white">{post.user_name}</p>
                   <p className="text-[10px] text-white/40">{new Date(post.created_date).toLocaleDateString()}</p>

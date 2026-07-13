@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Upload, Play, Edit, Trash2, Eye, Sparkles, Video, Loader2 } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 import { toast } from 'sonner';
 import AIHighlightGenerator from './AIHighlightGenerator';
 
@@ -265,12 +264,12 @@ export default function RecordingManager({ userId }) {
                 </div>
 
                 {recording.ai_summary && (
-                  <div className="bg-[#7B5DA6] p-2 rounded text-xs">
+                  <div className="bg-[#D4854A]/10 p-2 rounded text-xs">
                     <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="w-3 h-3 text-[#7B5DA6]" />
-                      <span className="font-semibold text-[#7B5DA6]">AI Summary</span>
+                      <Sparkles className="w-3 h-3 text-[#D4854A]" />
+                      <span className="font-semibold text-[#D4854A]">AI Summary</span>
                     </div>
-                    <p className="text-[#7B5DA6] line-clamp-2">{recording.ai_summary}</p>
+                    <p className="text-[#D4854A] line-clamp-2">{recording.ai_summary}</p>
                   </div>
                 )}
 
@@ -370,12 +369,16 @@ export default function RecordingManager({ userId }) {
             </div>
             <div>
               <label className="text-sm font-medium">Category</label>
-              <NativeSelect
+              <select
                 className="w-full border rounded-md p-2"
                 value={formData.category}
-                onChange={(val) => setFormData({ ...formData, category: val })}
-                options={[{value:'',label:'Select category'},...categories.filter(c => c !== 'all').map(cat => ({value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1)}))]}
-              />
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              >
+                <option value="">Select category</option>
+                {categories.filter(c => c !== 'all').map(cat => (
+                  <option key={cat} value={cat} className="capitalize">{cat}</option>
+                ))}
+              </select>
             </div>
             <Button 
               onClick={handleUpload} 

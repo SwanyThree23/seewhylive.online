@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -72,6 +67,8 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['analyticsRooms', user?.id],
@@ -80,7 +77,7 @@ export default function AnalyticsPage() {
   });
   const { data: transactions = [] } = useQuery({
     queryKey: ['analyticsTransactions', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user,
   });
   const { data: subscriptions = [] } = useQuery({
@@ -99,7 +96,7 @@ export default function AnalyticsPage() {
   });
 
   const totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
   const liveRooms = rooms.filter(r => r.status === 'live').length;
@@ -109,7 +106,7 @@ export default function AnalyticsPage() {
 
   const revenueByMonth = transactions.reduce((acc, t) => {
     const month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[month] = (acc[month] || 0) + (t.amount || 0);
+    acc[month] = (acc[month] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
@@ -282,9 +279,9 @@ export default function AnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-black" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Orbitron, monospace' }}>{room.viewer_count || 0}</span>
                         <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase" style={{ ...T,
-                          background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(0,212,255,0.1)',
-                          border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(0,212,255,0.3)'}`,
-                          color: room.status === 'live' ? '#C0392B' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#00d4ff',
+                          background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : room.status === 'ended' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.1)',
+                          border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : room.status === 'ended' ? 'rgba(255,255,255,0.1)' : 'rgba(212,175,55,0.3)'}`,
+                          color: room.status === 'live' ? '#C0392B' : room.status === 'ended' ? 'rgba(255,255,255,0.4)' : '#D4AF37',
                         }}>{room.status}</span>
                       </div>
                     </div>
@@ -403,22 +400,6 @@ export default function AnalyticsPage() {
           <EarningsBreakdown userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <AIHighlightGenerator recording={null} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

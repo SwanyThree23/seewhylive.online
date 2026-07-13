@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SelectSheet from '../components/shared/SelectSheet';
+import QuickTip from '../components/rooms/QuickTip';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const C = { burg: '#800020', gold: '#D4AF37', amber: '#D4854A', obs: '#080B18', gray: '#666', white: '#F5F0E8' };
 const FONT = 'Barlow Condensed, sans-serif';
@@ -589,7 +599,13 @@ export default function OnboardingPage() {
   });
   const [step, setStep] = useState(1);
   const [flowOpen, setFlowOpen] = useState(false);
-  useEffect(() => { if (onboarding) setStep(onboarding.current_step || 1); }, [onboarding]);
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+    if (onboarding) {
+      setStep(onboarding.current_step || 1);
+      setShowSplash(false); // already started setup, skip splash
+    }
+  }, [onboarding]);
 
   const updateOnboarding = useMutation({
     mutationFn: async (data) => {
@@ -634,20 +650,46 @@ export default function OnboardingPage() {
           <span style={{ fontSize: 16 }}>📡</span>
           <span style={{ fontFamily: FONT, fontSize: 13, color: C.gold, letterSpacing: '0.12em', fontWeight: 900 }}>SEEWHY LIVE — CREATOR SETUP</span>
         </div>
-        <ProgressBar step={step} onboarding={onboarding} />
-        <AnimatePresence mode="wait">
-          <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.2 }}>
-            {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} />}
-            {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} />}
-            {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} />}
-            {step === 4 && <Step4 user={user} onDone={handleDone} />}
-            {step === 5 && <Step5 user={user} onDone={handleDone} />}
-            {step === 6 && <Step6 user={user} onDone={handleDone} />}
-            {step === 7 && <Step7 onDone={handleDone} />}
-          </motion.div>
-        </AnimatePresence>
-      </motion.div>
+        <a href="/Home" style={{ fontFamily: FONT, fontSize: 11, color: 'rgba(255,255,255,0.3)', textDecoration: 'none', letterSpacing: '0.06em' }}>
+          Skip for now →
+        </a>
+      </div>
+
+      {/* Main card — scrollable, responsive width */}
+      <div style={{ maxWidth: 540, margin: '0 auto', padding: '16px 0 40px' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ background: 'rgba(8,11,24,0.97)', borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)', overflow: 'hidden', margin: '0 12px' }}
+        >
+          <StepProgress step={step} onboarding={onboarding} />
+          <AnimatePresence mode="wait">
+            <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+              {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} setStep={setStep} />}
+              {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+              {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+              {step === 4 && <Step4 user={user} onDone={handleDone} setStep={setStep} />}
+              {step === 5 && <Step5 user={user} onDone={handleDone} setStep={setStep} />}
+              {step === 6 && <Step6 user={user} onDone={handleDone} setStep={setStep} />}
+              {step === 7 && <Step7 onDone={handleDone} setStep={setStep} />}
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
       <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      <SwanyBotContextEnhancer userId={user?.id || null} conversationId={user?.id ? `conv_${user.id}` : null} onContextReady={() => {}} />
+      <QuickTip recipientId={null} recipientName="" onTipSent={() => {}} />
+      <SelectSheet label="" value="" options={[]} onChange={() => {}} />
+      <div style={{ padding: '0 0 16px' }}>
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={12} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+      </div>
     </div>
   );
 }

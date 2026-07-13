@@ -232,6 +232,8 @@ export default function StageCleanupPage() {
           ))}
         </div>
       </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

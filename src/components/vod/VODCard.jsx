@@ -12,7 +12,7 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
   const trimmedDuration = (vod.trim_end || vod.duration_seconds || 0) - (vod.trim_start || 0);
 
   const statusStyle = {
-    published: { color: '#6DBF7E', borderColor: '#166534', background: 'rgba(20,83,45,0.2)' },
+    published: { color: '#6DBF7E', borderColor: '#4A9B5E', background: 'rgba(109,191,126,0.12)' },
     draft: { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' },
     unlisted: { color: '#D4AF37', borderColor: '#800020', background: 'rgba(113,63,18,0.2)' },
   }[vod.status] || { color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' };

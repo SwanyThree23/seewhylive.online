@@ -114,7 +114,7 @@ function WinnerCelebration({ battle, onClose }) {
   const winScore = winnerIsCreator ? (battle.creator_score || 0) : (battle.challenger_score || 0);
   const loseScore = winnerIsCreator ? (battle.challenger_score || 0) : (battle.creator_score || 0);
   const winTips = winnerIsCreator ? (battle.creator_tips || 0) : (battle.challenger_tips || 0);
-  const winColor = winnerIsCreator ? '#3b82f6' : '#C0392B';
+  const winColor = winnerIsCreator ? '#D4AF37' : '#C0392B';
 
   const particles = [...Array(30)].map((_, i) => ({
     id: i,
@@ -280,7 +280,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
       return base44.entities.PKBattle.update(battle.id, update);
     },
     onSuccess: () => {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       onBattleUpdate?.();
     },
     onError: () => toast.error('Action failed.'),
@@ -293,7 +293,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
     base44.entities.PKBattle.update(battle.id, {
       status: 'ended', winner_id: winnerId, winner_name: winnerName, ended_at: new Date().toISOString(),
     }).then(() => {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setEnded(true);
       setShowWinner(true);
     }).catch(() => toast.error('Failed to end battle.'));
@@ -425,9 +425,11 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             style={{ background: 'rgba(192,57,43,0.06)', borderLeft: '1px solid rgba(255,255,255,0.04)' }}>
             <div className="flex items-center justify-between w-full">
               <ViewerBar count={challengerViewers} side="left" color="#C0392B" />
-              <div className="w-6 md:w-8 h-6 md:h-8 rounded-lg md:rounded-xl flex items-center justify-center font-black text-xs md:text-sm flex-shrink-0"
-                style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>
-                {(battle.challenger_name || '?').charAt(0).toUpperCase()}
+              <div className="relative w-6 md:w-8 h-6 md:h-8 flex-shrink-0">
+                <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(192,57,43,0.45)' }} />
+                <div className="absolute inset-[2px] flex items-center justify-center font-black text-xs md:text-sm" style={{ clipPath: OCT, background: 'rgba(192,57,43,0.18)', color: '#C0392B' }}>
+                  {(battle.challenger_name || '?').charAt(0).toUpperCase()}
+                </div>
               </div>
             </div>
             <p className="text-[10px] md:text-xs font-bold text-white truncate mt-0.5 text-right">{battle.challenger_name || 'Challenger'}</p>
@@ -447,10 +449,10 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
             <motion.div className="h-full rounded-l-full transition-all duration-700"
               style={{ width: `${creatorPct}%`, background: 'linear-gradient(90deg, #800020, #D4AF37)' }} />
             <motion.div className="h-full rounded-r-full transition-all duration-700"
-              style={{ width: `${challengerPct}%`, background: 'linear-gradient(90deg, #C0392B, #dc2626)' }} />
+              style={{ width: `${challengerPct}%`, background: 'linear-gradient(90deg, #C0392B, #C0392B)' }} />
           </div>
           <div className="flex justify-between mt-0.5 md:mt-1">
-            <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#3b82f6' }}>{creatorPct}%</span>
+            <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#D4AF37' }}>{creatorPct}%</span>
             <span className="text-[11px] md:text-[11px] font-black" style={{ color: '#C0392B' }}>{challengerPct}%</span>
           </div>
         </div>
@@ -483,7 +485,7 @@ export default function BattleOverlay({ battle, onBattleUpdate }) {
                 className="flex items-center gap-1.5 px-2 md:px-3 py-1">
                 <span className="text-xs md:text-sm flex-shrink-0">{t.emoji}</span>
                 <span className="text-[11px] md:text-[10px] text-white/60 flex-1 truncate">{t.name}</span>
-                <span className="text-[11px] font-black flex-shrink-0" style={{ color: t.side === 'creator' ? '#3b82f6' : '#C0392B' }}>
+                <span className="text-[11px] font-black flex-shrink-0" style={{ color: t.side === 'creator' ? '#D4AF37' : '#C0392B' }}>
                   +{t.pts}
                 </span>
               </motion.div>

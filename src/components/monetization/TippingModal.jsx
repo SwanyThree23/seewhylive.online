@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { DollarSign, Heart, Star, Award } from 'lucide-react';
-import { hapticMedium } from '@/utils/haptics';
 
 const inputStyle = {
   width: '100%',
@@ -59,7 +58,7 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
     },
     onSuccess: () => {
       toast.success('Tip sent successfully! 💸');
-      queryClient.invalidateQueries(['transactions']);
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       onClose();
       setAmount('');
       setMessage('');
@@ -80,9 +79,10 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
 
     sendTipMutation.mutate({
       type: 'tip',
-      amount: tipAmount,
-      from_user_id: currentUser?.id,
-      to_user_id: recipient.user_id || recipient.id,
+      creator_payout: Math.floor(tipAmount * 90) / 100,
+      platform_cut: tipAmount - Math.floor(tipAmount * 90) / 100,
+      sender_id: currentUser?.id,
+      recipient_id: recipient.user_id || recipient.id,
       room_id: roomId,
       community_id: communityId,
       message: message,
@@ -161,9 +161,9 @@ export default function TippingModal({ isOpen, onClose, recipient, roomId, commu
               Cancel
             </button>
             <button
-              onClick={() => { hapticMedium(); handleSendTip(); }}
+              onClick={handleSendTip}
               disabled={sendTipMutation.isPending}
-              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #7B5DA6, #C0392B)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
+              style={{ flex: 1, padding: '10px 0', background: 'linear-gradient(135deg, #800020, #D4854A)', border: 'none', borderRadius: 8, color: '#fff', fontSize: 14, fontWeight: 700, cursor: sendTipMutation.isPending ? 'not-allowed' : 'pointer', opacity: sendTipMutation.isPending ? 0.7 : 1, fontFamily: 'Barlow Condensed, sans-serif' }}
             >
               {sendTipMutation.isPending ? 'Sending...' : 'Send Tip'}
             </button>

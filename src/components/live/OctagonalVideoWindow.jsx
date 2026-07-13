@@ -58,7 +58,7 @@ export default function OctagonalVideoWindow({
       <div
         className="absolute inset-0"
         style={{
-          clipPath,
+          clipPath: OCT,
           background: 'linear-gradient(135deg, #d4af37, #C0392B)',
           padding: '3px',
           opacity: 0.5,
@@ -164,7 +164,7 @@ export default function OctagonalVideoWindow({
           <motion.button
             whileHover={{ scale: 1.1 }}
             onClick={onShareScreen}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#7B5DA6]/50 border border-[#7B5DA6] text-[#7B5DA6] transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#800020]/30 border border-[#800020] text-[#D4854A] transition-all"
           >
             <Share2 className="w-3.5 h-3.5" />
           </motion.button>

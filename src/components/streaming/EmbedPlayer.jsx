@@ -94,7 +94,7 @@ export default function EmbedPlayer({
       {/* Top overlay: stream info */}
       <div className="absolute top-0 left-0 right-0 p-3 bg-gradient-to-b from-black/70 to-transparent flex items-center gap-2">
         {isLive && (
-          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
+          <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff', display:'inline-flex', alignItems:'center', gap:4 }}>
             <div style={{ width:6, height:6, borderRadius:'50%', background:'#fff' }} />
             LIVE
           </span>
@@ -199,7 +199,7 @@ export default function EmbedPlayer({
                 <button className="py-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#d4af37] text-white font-bold text-sm hover:opacity-90 transition-opacity">
                   Unlock ${price} — One-time
                 </button>
-                <button className="py-3 rounded-xl bg-gradient-to-r from-[#7B5DA6] to-[#7B5DA6] text-white font-bold text-sm hover:opacity-90 transition-opacity">
+                <button className="py-3 rounded-xl bg-gradient-to-r from-[#800020] to-[#C0392B] text-white font-bold text-sm hover:opacity-90 transition-opacity">
                   Subscribe ${subscriptionPrice}/mo
                 </button>
               </div>
@@ -255,7 +255,7 @@ export default function EmbedPlayer({
 
       {/* Watermark */}
       <div className="absolute bottom-2 right-3 text-[#d4af37]/40 text-[10px] font-bold pointer-events-none">
-        SeeWhy LIVE
+        StreamSpace
       </div>
     </div>
   );

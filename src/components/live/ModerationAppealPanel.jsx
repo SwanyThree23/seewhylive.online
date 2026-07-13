@@ -13,15 +13,21 @@ export default function ModerationAppealPanel({ flagId, messageId, roomId, onClo
   const handleSubmitAppeal = async () => {
     setSubmitting(true);
     try {
-      const res = await base44.functions.invoke('aiModerationAppeal', {
-        message_id: messageId,
-        flag_id: flagId,
-        appeal_reason: appealReason,
-        room_id: roomId,
+      const msgs = await base44.entities.Message.filter({ room_id: roomId }, '-created_date', 100).catch(() => []);
+      const msgContent = msgs.find(m => m.id === messageId)?.content || '';
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `A live stream chat message was flagged as "${flagId || 'inappropriate'}". The user appeals with: "${appealReason}"${msgContent ? `\nMessage: "${msgContent}"` : ''}. Should this appeal be approved? Return JSON: { "appeal_approved": true or false, "reason": "brief explanation", "confidence": 0.0-1.0 }`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            appeal_approved: { type: 'boolean' },
+            reason: { type: 'string' },
+            confidence: { type: 'number' },
+          },
+        },
       });
-
-      if (res?.data) {
-        setResult(res.data);
+      if (res) {
+        setResult(res);
       }
     } catch (error) {
     }

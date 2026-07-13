@@ -22,11 +22,16 @@ export default function TippingOverlay({ roomId, creatorId, isVisible = true }) 
   const handleTip = async (amount) => {
     setProcessing(true);
     try {
-      await base44.functions.invoke('processTip', {
+      await base44.entities.Transaction.create({
         room_id: roomId,
-        creator_id: creatorId,
+        recipient_id: creatorId,
         amount,
+        creator_payout: Math.floor(amount * 90) / 100,
+        platform_fee: amount - Math.floor(amount * 90) / 100,
+        transaction_type: 'direct_support',
         message: 'Support tip',
+        status: 'completed',
+        created_at: new Date().toISOString(),
       });
       
       // Show celebration

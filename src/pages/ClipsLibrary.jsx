@@ -32,8 +32,9 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
@@ -72,6 +73,8 @@ function ClipCard({ clip, onDelete, onShare }) {
 }
 
 export default function ClipsLibraryPage() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
@@ -249,22 +252,44 @@ export default function ClipsLibraryPage() {
         )}
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-      <SwanAIRecommendations roomId={null} currentLayout="clips" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <AIHighlightGenerator recording={null} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* VOD Trim Editor */}
+      {trimVod && (
+        <VODTrimEditor
+          video={trimVod}
+          onSave={() => { setTrimVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setTrimVod(null)}
+        />
+      )}
+
+      {/* VOD Chapter Editor */}
+      {chapterVod && (
+        <ChapterEditor
+          video={chapterVod}
+          onSave={() => { setChapterVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
+          onCancel={() => setChapterVod(null)}
+        />
+      )}
+
+      {/* Clip creator sheet */}
+      {clipSheetOpen && (
+        <ClipCreatorSheet
+          roomId={roomId}
+          sessionId={user?.id}
+          creatorId={user?.id}
+          elapsedSeconds={0}
+          roomTitle="My Stream"
+          onClose={() => setClipSheetOpen(false)}
+        />
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      </div>
     </div>
   );
 }

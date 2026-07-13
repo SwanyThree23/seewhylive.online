@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, X, Star, Users, DollarSign, Radio, Zap } from 'lucide-react';
 
 const MILESTONES = [
-  { type: 'subscribers', thresholds: [1, 5, 10, 25, 50, 100, 250, 500, 1000], icon: Users, label: 'subscribers', color: 'from-[#7B5DA6] to-[#5B7FA6]' },
-  { type: 'rooms', thresholds: [1, 5, 10, 25, 50], icon: Radio, label: 'streams', color: 'from-red-500 to-orange-500' },
-  { type: 'revenue', thresholds: [10, 50, 100, 500, 1000, 5000], icon: DollarSign, label: 'earned', color: 'from-[#6DBF7E] to-[#6DBF7E]' },
+  { type: 'subscribers', thresholds: [1, 5, 10, 25, 50, 100, 250, 500, 1000], icon: Users, label: 'subscribers', color: 'from-[#800020] to-[#C0392B]' },
+  { type: 'rooms', thresholds: [1, 5, 10, 25, 50], icon: Radio, label: 'streams', color: 'from-[#C0392B] to-[#D4854A]' },
+  { type: 'revenue', thresholds: [10, 50, 100, 500, 1000, 5000], icon: DollarSign, label: 'earned', color: 'from-[#4A9B5E] to-[#6DBF7E]' },
 ];
 
 function MilestoneToast({ milestone, onDismiss }) {
@@ -64,7 +64,7 @@ export default function MilestoneAlerts({ creatorId }) {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['milestone-txns', creatorId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: creatorId }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: creatorId }),
     enabled: !!creatorId,
     refetchInterval: 60000,
   });
@@ -73,7 +73,7 @@ export default function MilestoneAlerts({ creatorId }) {
     const counts = {
       subscribers: subscriptions.length,
       rooms: rooms.length,
-      revenue: transactions.reduce((s, t) => s + (t.amount || 0), 0),
+      revenue: transactions.reduce((s, t) => s + (t.creator_payout || t.amount || 0), 0),
     };
 
     const newMilestones = [];

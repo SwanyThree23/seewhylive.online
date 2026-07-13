@@ -6,7 +6,7 @@ import {
   Settings, DollarSign, Activity, Clock, Share2, Scissors, Sparkles, Layout,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import OnlinePresenceDot from '../components/shared/OnlinePresence';
@@ -36,8 +36,10 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -109,6 +111,8 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
   const [isEditing, setIsEditing]         = useState(false);
@@ -159,7 +163,7 @@ export default function ProfilePage() {
 
   const { data: myClips = [] } = useQuery({
     queryKey: ['myClips', user?.id],
-    queryFn: () => base44.entities.Clip.filter({ creator_id: user?.id }, '-created_date', 12),
+    queryFn: () => base44.entities.StreamClip.filter({ creator_id: user?.id }, '-created_date', 12),
     enabled: !!user?.id,
   });
 
@@ -168,7 +172,7 @@ export default function ProfilePage() {
     mutationFn: async (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile updated!');
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setIsEditing(false);
       if (user?.id) {
         base44.entities.Activity.create({
@@ -180,6 +184,12 @@ export default function ProfilePage() {
     },
     onError: () => toast.error('Action failed.'),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   useEffect(() => {
     if (user) {
@@ -617,22 +627,23 @@ export default function ProfilePage() {
         )}
 
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {user && (
+        <>
+          <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
+          <OnlinePresenceDot isOnline size="sm" />
+        </>
+      )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        {user?.id && <RevenueDashboard userId={user.id} />}
+        <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

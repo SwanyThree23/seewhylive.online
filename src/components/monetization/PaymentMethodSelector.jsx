@@ -21,16 +21,21 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
   const handlePayment = async () => {
     setProcessing(true);
     try {
-      const result = await base44.functions.invoke('processPaymentWithPlatformCut', {
+      const creatorPayout = Math.floor(amount * 90) / 100;
+      const tx = await base44.entities.Transaction.create({
         recipient_id: creatorId,
         amount,
+        creator_payout: creatorPayout,
+        platform_fee: amount - creatorPayout,
         payment_method: selectedMethod,
         room_id: roomId,
         transaction_type: 'direct_support',
+        status: 'pending',
+        created_at: new Date().toISOString(),
       });
 
-      if (result?.data?.status === 'success') {
-        onPaymentComplete?.(result.data);
+      if (tx?.id) {
+        onPaymentComplete?.(tx);
         setAmount(5);
         setSelectedMethod(null);
       }

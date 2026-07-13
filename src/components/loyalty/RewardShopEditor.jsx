@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const REWARD_TYPES = [
   { value: 'soundboard',        label: '🔊 Sound Effect' },
@@ -86,8 +85,9 @@ export default function RewardShopEditor({ creatorId }) {
         <div style={{ borderRadius:12, padding:12, background:'rgba(212,175,55,0.05)', border:'1px solid rgba(212,175,55,0.15)', display:'flex', flexDirection:'column', gap:8 }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
             <input style={INPUT_STYLE} placeholder="Reward name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-            <NativeSelect style={SELECT_STYLE} value={form.reward_type} onChange={val => setForm(f => ({ ...f, reward_type: val }))}
-              options={REWARD_TYPES.map(t => ({value: t.value, label: t.label}))} />
+            <select style={SELECT_STYLE} value={form.reward_type} onChange={e => setForm(f => ({ ...f, reward_type: e.target.value }))}>
+              {REWARD_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
           </div>
           <input style={INPUT_STYLE} placeholder="Description (optional)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
@@ -118,7 +118,7 @@ export default function RewardShopEditor({ creatorId }) {
             </button>
             <button onClick={() => deleteMutation.mutate(reward.id)}
               style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,0.2)', padding:2 }}
-              onMouseEnter={e => e.currentTarget.style.color='#C0392B'}
+              onMouseEnter={e => e.currentTarget.style.color='#FF4444'}
               onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.2)'}>
               <Trash2 style={{ width:14, height:14 }} />
             </button>

@@ -24,26 +24,8 @@ function Toggle({ checked, onChange }) {
   );
 }
 import { toast } from 'sonner';
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import SubscriptionCard from '../components/monetization/SubscriptionCard';
-import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
-import TierEditor from '../components/subscriptions/TierEditor';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -399,25 +381,42 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
-      <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
-      <RewardShopEditor creatorId={user?.id} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* Reward shop editor and redemption queue for admins */}
+      {isOwnProgram && user?.id && (
+        <div style={{ padding: '0 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <RewardShopEditor creatorId={user.id} />
+          <RedemptionQueue creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+        <ChallengeLeaderboard challengeId={activeChallengeId} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏆 Loyalty Hub',  href: 'LoyaltyHub'    },
+          { label: '🛍 Reward Shop',  href: 'RewardShop'    },
+          { label: '🔴 Go Live',      href: 'GoLive'        },
+          { label: '📊 Analytics',    href: 'Analytics'     },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -20,21 +20,15 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const VIOLATION_STYLE = {
-  spam:         { bg: 'rgba(255,200,0,0.1)',   border: 'rgba(255,200,0,0.3)',   color: '#ffc800' },
-  harassment:   { bg: 'rgba(255,100,0,0.1)',   border: 'rgba(255,100,0,0.3)',   color: '#ff6400' },
+  spam:         { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
+  harassment:   { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
   hate_speech:  { bg: 'rgba(192,57,43,0.1)',  border: 'rgba(192,57,43,0.3)',  color: '#C0392B' },
   inappropriate:{ bg: 'rgba(212,175,55,0.1)',  border: 'rgba(212,175,55,0.3)',  color: GOLD },
   safe:         { bg: 'rgba(109,191,126,0.08)',  border: 'rgba(109,191,126,0.25)', color: '#6DBF7E' },
@@ -43,8 +37,8 @@ const VIOLATION_STYLE = {
 const TABS = ['pending', 'reviewed', 'insights'];
 
 export default function AIModerationPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('pending');
@@ -80,7 +74,7 @@ export default function AIModerationPage() {
     },
     onSuccess: () => {
       toast.success('Review submitted');
-      queryClient.invalidateQueries(['moderations']);
+      queryClient.invalidateQueries({ queryKey: ['moderations'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -106,7 +100,7 @@ export default function AIModerationPage() {
       await Promise.all(scanResults.map(r => base44.entities.ContentModeration.create({ content_type: 'message', content_id: r.id, violation_type: r.violation_type, ai_confidence: r.ai_confidence, ai_explanation: r.ai_explanation || null, action_taken: r.violation_type !== 'safe' ? 'flagged' : 'none' })));
       setScanProgress(100);
       toast.success(`Scanned ${scanResults.length} messages — ${violations.length} violation(s) found.`);
-      queryClient.invalidateQueries(['moderations']);
+      queryClient.invalidateQueries({ queryKey: ['moderations'] });
     } catch (err) {
       toast.error('AI scan failed. Please try again.');
     } finally {
@@ -176,8 +170,8 @@ export default function AIModerationPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total Scanned', value: stats.total, icon: Shield, color: GOLD },
-            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#ff6400' },
-            { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#00ff88' },
+            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#C0392B' },
+            { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#6DBF7E' },
             { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4 flex flex-col gap-2"
@@ -321,7 +315,7 @@ export default function AIModerationPage() {
                 <div className="space-y-4">
                   {[
                     { label: 'Average Confidence', value: moderations.reduce((acc, m) => acc + (m.ai_confidence || 0), 0) / moderations.length * 100, color: GOLD },
-                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#00d4ff' },
+                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#D4AF37' },
                     { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#C0392B' },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
@@ -357,15 +351,8 @@ export default function AIModerationPage() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <BackgroundCustomizer />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

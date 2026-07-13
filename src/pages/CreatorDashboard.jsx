@@ -6,7 +6,7 @@ import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Use
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -21,25 +21,18 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import SubscriptionCard from '../components/monetization/SubscriptionCard';
-import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
-import TierEditor from '../components/subscriptions/TierEditor';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import VODLibrary from '../components/vod/VODLibrary';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
@@ -56,6 +49,8 @@ function fmtDuration(seconds) {
 }
 
 export default function CreatorDashboardPage() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [timeRange, setTimeRange] = useState('7d');
 
   const { data: user } = useQuery({
@@ -87,14 +82,14 @@ export default function CreatorDashboardPage() {
 
   const { data: recentTips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
-    queryFn: () => base44.entities.Tip.list('-created_date', 10),
+    queryFn: () => base44.entities.TipAlert.list('-created_date', 10),
     enabled: !!user?.id,
   });
 
   const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const tipsThisWeek = recentTips
     .filter(t => t.creator_id === user?.id && new Date(t.created_date).getTime() > oneWeekAgo)
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .reduce((sum, t) => sum + (t.amount_usd || 0), 0);
 
   const quickActions = [
     {
@@ -401,27 +396,6 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="creator" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
-      <RewardShopEditor creatorId={user?.id} />
-      <QuickActionPanel isOpen={false} onClose={() => {}} />
-      <OnboardingFlow isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

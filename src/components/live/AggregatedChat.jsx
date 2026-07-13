@@ -152,13 +152,20 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
     if (appealingId === msgId) return;
     setAppealingId(msgId);
     try {
-      const result = await base44.functions.invoke('aiModerationAppeal', {
-        message_id: msgId,
-        flag_id: modMap[msgId] || 'unknown',
-        appeal_reason: 'User-requested re-evaluation',
-        room_id: room_id || roomId,
+      const msg = messages.find(m => m.id === msgId);
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `A chat message was flagged as "${modMap[msgId] || 'inappropriate'}". Re-evaluate if this is genuinely harmful or a false positive.
+Message: "${msg?.content || ''}"
+Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            appeal_approved: { type: 'boolean' },
+            reason: { type: 'string' },
+          },
+        },
       });
-      if (result?.data?.appeal_approved) {
+      if (result?.appeal_approved) {
         setModMap(prev => ({ ...prev, [msgId]: 'safe' }));
         toast.success('Appeal approved — message cleared ✅');
       } else {
@@ -169,21 +176,20 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
     } finally {
       setAppealingId(null);
     }
-  }, [appealingId, modMap, roomId]);
+  }, [appealingId, modMap, roomId, messages]);
 
-  // ── TRANSLATE ALL using translateText backend function ───────────────────────
+  // ── TRANSLATE ALL via InvokeLLM ─────────────────────────────────────────────
   const translateAll = useCallback(async () => {
     const untranslated = messages.filter(m => !translationMap[m.id]).slice(0, LIMITS.TRANSLATE_BATCH);
     if (!untranslated.length) return;
     setIsTranslating(true);
+    const langLabel = LANG_OPTIONS.find(l => l.value === targetLang)?.label || targetLang;
     try {
-      // Call each message through the translateText backend function (batched via Promise.allSettled)
       const results = await Promise.allSettled(
         untranslated.map(msg =>
-          base44.functions.invoke('translateText', {
-            text: msg.content,
-            target_language: targetLang,
-          }).then(r => ({ id: msg.id, translated: r.data?.translated_text || msg.content }))
+          base44.integrations.Core.InvokeLLM({
+            prompt: `Translate to ${langLabel}. Return only the translated text:\n${msg.content}`,
+          }).then(translated => ({ id: msg.id, translated: translated || msg.content }))
         )
       );
       const newMap = { ...translationMap };

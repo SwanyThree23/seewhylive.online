@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -17,24 +18,8 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { TrendingUp, Users, DollarSign, MessageSquare, Download, BarChart2 } from 'lucide-react';
-
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+
 const GOLD = '#D4AF37';
 const CYAN = '#C9A84C';
 const CRIMSON = '#800020';
@@ -64,8 +49,8 @@ function ChartCard({ title, icon: Icon, children, height = 'h-64', colSpan = '' 
 }
 
 export default function StreamAnalytics() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const [mode, setMode] = useState('post');
 
@@ -122,7 +107,7 @@ export default function StreamAnalytics() {
       `Average Viewers: ${avgViewers}`,
       `Total Tips: $${totalTips.toFixed(2)}`,
       `Total Messages: ${totalMessages}`,
-      `Creator Revenue (90%): $${(totalTips * 0.9).toFixed(2)}`,
+      `Creator Revenue (90%): $${(Math.floor(totalTips * 90) / 100).toFixed(2)}`,
     ];
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -355,22 +340,6 @@ export default function StreamAnalytics() {
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <AIHighlightGenerator recording={null} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

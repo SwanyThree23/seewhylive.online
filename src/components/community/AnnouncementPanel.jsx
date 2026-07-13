@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Megaphone, Send, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const inputStyle = {
@@ -127,23 +126,32 @@ export default function AnnouncementPanel({ communityId, userId }) {
           {/* Priority */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Priority</label>
-            <NativeSelect
+            <select
               value={priority}
-              onChange={(val) => setPriority(val)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-              options={[{value:'low',label:'Low'},{value:'normal',label:'Normal'},{value:'high',label:'High'},{value:'urgent',label:'Urgent'}]}
-            />
+              onChange={(e) => setPriority(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+            >
+              <option value="low">Low</option>
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
           </div>
 
           {/* Target Audience */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)', ...T }}>Target</label>
-            <NativeSelect
+            <select
               value={targetAudience}
-              onChange={(val) => setTargetAudience(val)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-              options={[{value:'all',label:'All Members'},{value:'admins',label:'Admins Only'},{value:'moderators',label:'Moderators'},{value:'subscribers',label:'Subscribers'},{value:'new_members',label:'New Members'}]}
-            />
+              onChange={(e) => setTargetAudience(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+            >
+              <option value="all">All Members</option>
+              <option value="admins">Admins Only</option>
+              <option value="moderators">Moderators</option>
+              <option value="subscribers">Subscribers</option>
+              <option value="new_members">New Members</option>
+            </select>
           </div>
         </div>
 

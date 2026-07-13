@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 const PLATFORMS = [
   {
     name: 'Instagram',
-    color: 'from-[#7B5DA6] to-[#C0392B]',
+    color: 'from-[#800020] to-[#D4854A]',
     emoji: '📸',
     action: (url, title) => `https://www.instagram.com/`,
     note: 'Copy link → paste in your Story or Bio',
@@ -33,14 +33,14 @@ const PLATFORMS = [
   },
   {
     name: 'Twitter/X',
-    color: 'from-[#5B7FA6] to-[#5B7FA6]',
+    color: 'from-[#080B18] to-[#0D1022]',
     emoji: '🐦',
     action: (url, title) => `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🔴 I\'m LIVE on SeeWhy! Join me: ' + title)}`,
     note: 'Tweet your live link',
   },
   {
     name: 'WhatsApp',
-    color: 'from-[#6DBF7E] to-[#6DBF7E]',
+    color: 'from-[#4A9B5E] to-[#6DBF7E]',
     emoji: '💬',
     action: (url, title) => `https://wa.me/?text=${encodeURIComponent('🔴 Join me LIVE on SeeWhy! ' + title + ' → ' + url)}`,
     note: 'Share via WhatsApp',
@@ -54,7 +54,7 @@ const PLATFORMS = [
   },
   {
     name: 'Telegram',
-    color: 'from-[#5B7FA6] to-blue-500',
+    color: 'from-[#0D1022] to-[#0B0B18]',
     emoji: '✈️',
     action: (url, title) => `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent('🔴 LIVE on SeeWhy: ' + title)}`,
     note: 'Share via Telegram',

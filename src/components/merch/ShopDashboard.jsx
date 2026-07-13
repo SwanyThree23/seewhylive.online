@@ -2,7 +2,6 @@ import { useState } from "react";
 import { toast } from 'sonner';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import NativeSelect from "@/components/shared/NativeSelect";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -12,7 +11,7 @@ var C = {
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
-var STATUS_COLORS = { pending: C.gold, confirmed: "#4A8A7A", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
+var STATUS_COLORS = { pending: C.gold, confirmed: "#6DBF7E", shipped: C.volt, delivered: C.green, cancelled: C.red, refunded: C.gray };
 
 export default function ShopDashboard({ creatorId }) {
   var [view, setView] = useState("items"); // items | orders
@@ -74,7 +73,7 @@ export default function ShopDashboard({ creatorId }) {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, padding: "12px 0 8px" }}>
         {[
-          { label: "ITEMS", value: items.length, color: "#4A8A7A" },
+          { label: "ITEMS", value: items.length, color: "#6DBF7E" },
           { label: "SOLD", value: totalSold, color: C.volt },
           { label: "REVENUE", value: "$" + totalRevenue.toFixed(0), color: C.gold },
         ].map(s => (
@@ -146,9 +145,10 @@ export default function ShopDashboard({ creatorId }) {
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ padding: "2px 8px", borderRadius: 10, fontFamily: C.fMon, fontSize: 11, background: (STATUS_COLORS[order.status] || C.gray) + "22", border: "1px solid " + (STATUS_COLORS[order.status] || C.gray) + "66", color: STATUS_COLORS[order.status] || C.gray }}>{order.status}</span>
                 {order.ordered_during_stream && <span style={{ fontFamily: C.fMon, fontSize: 7, background: C.burgundy, color: C.gold, padding: "2px 6px", borderRadius: 4 }}>LIVE ORDER</span>}
-                <NativeSelect value={order.status} onChange={val => updateOrderMutation.mutate({ id: order.id, status: val })}
-                  style={{ marginLeft: "auto", background: "#111", border: "1px solid #333", color: C.white, borderRadius: 4, padding: "2px 6px", fontFamily: C.fMon, fontSize: 11, cursor: "pointer" }}
-                  options={["pending", "confirmed", "shipped", "delivered", "cancelled"].map(s => ({value: s, label: s}))} />
+                <select value={order.status} onChange={e => updateOrderMutation.mutate({ id: order.id, status: e.target.value })}
+                  style={{ marginLeft: "auto", background: "#111", border: "1px solid #333", color: C.white, borderRadius: 4, padding: "2px 6px", fontFamily: C.fMon, fontSize: 11, cursor: "pointer" }}>
+                  {["pending", "confirmed", "shipped", "delivered", "cancelled"].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
             </div>
           ))}

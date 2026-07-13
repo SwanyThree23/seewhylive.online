@@ -19,29 +19,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+
 var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#4A8A7A",
+  cyan: "#6DBF7E",
   volt: "#D4AF37",
   purple: "#D4854A",
   gray: "#888",
@@ -49,21 +34,21 @@ var G = {
 };
 
 var BADGE_COLORS = {
-  super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
-  top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#4A8A7A", bg: "rgba(74,138,122,0.12)", icon: "⚡" },
-  poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
-  chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
-  watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
-  gifter: { color: "#FF69B4", bg: "rgba(255,105,180,0.12)", icon: "🎁" },
+  super_fan: { color: "#D4AF37", bg: "rgba(212,175,55,0.15)", icon: "👑" },
+  top_supporter: { color: "#C0392B", bg: "rgba(192,57,43,0.15)", icon: "❤️" },
+  raid_master: { color: "#D4AF37", bg: "rgba(212,175,55,0.12)", icon: "⚡" },
+  poll_champion: { color: "#800020", bg: "rgba(128,0,32,0.15)", icon: "🏆" },
+  chat_legend: { color: "#D4AF37", bg: "rgba(212,175,55,0.1)", icon: "💬" },
+  watch_streak: { color: "#D4854A", bg: "rgba(212,133,74,0.15)", icon: "🔥" },
+  gifter: { color: "#C9A84C", bg: "rgba(201,168,76,0.12)", icon: "🎁" },
   first_subscriber: { color: "#d4af37", bg: "rgba(212,175,55,0.15)", icon: "⭐" },
 };
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#4A8A7A",
-  epic: "#BF5FFF",
-  legendary: "#FFD700",
+  rare: "#D4AF37",
+  epic: "#800020",
+  legendary: "#C9A84C",
 };
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -189,15 +174,21 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
-  var urlParams = new URLSearchParams(window.location.search);
-  var creatorId = urlParams.get("id");
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
+  var creatorId = searchParams.get("id");
   var navigate = useNavigate();
 
   var { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
-  var user = currentUser;
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  var userCommunityId = userCommunity?.id || null;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -554,22 +545,22 @@ export default function CreatorPublicProfile() {
           </div>
         </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {creatorId && (
+        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <VirtualCurrencyTips roomId={roomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
+          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
+          <SignalBars count={5} active={true} size="sm" />
+          <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <CollaborationMatcher />
+        </div>
+      )}
     </div>
   );
 }

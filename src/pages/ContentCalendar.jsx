@@ -24,15 +24,18 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import ShareToSocial from '../components/social/ShareToSocial';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -42,8 +45,8 @@ const lbl = { display: 'block', fontSize: 11, fontFamily: 'Barlow Condensed, san
 
 const STATUS_STYLE = {
   draft:      { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.45)' },
-  scheduled:  { bg: 'rgba(0,212,255,0.1)',    border: 'rgba(0,212,255,0.3)',    color: '#00d4ff' },
-  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#00ff88' },
+  scheduled:  { bg: 'rgba(212,175,55,0.1)',    border: 'rgba(212,175,55,0.3)',    color: '#D4AF37' },
+  published:  { bg: 'rgba(109,191,126,0.1)',    border: 'rgba(109,191,126,0.3)',    color: '#6DBF7E' },
   cancelled:  { bg: 'rgba(192,57,43,0.1)',   border: 'rgba(192,57,43,0.3)',   color: '#C0392B' },
 };
 
@@ -279,21 +282,49 @@ export default function ContentCalendarPage() {
           </div>
         </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="calendar" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {user?.id && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
+          <AIHighlightGenerator creatorId={user.id} />
+        </div>
+      )}
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AutomatedHighlightReels streamSession={null} />
+        <ShareToSocial />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
+          { label: '📰 Newsletter Hub',   href: 'NewsletterHub'   },
+          { label: '📊 Analytics',        href: 'Analytics'       },
+          { label: '🔴 Go Live',          href: 'GoLive'          },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

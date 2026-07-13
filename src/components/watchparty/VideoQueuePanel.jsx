@@ -64,7 +64,7 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
       notes: notes.trim(),
     }),
     onSuccess: (item) => {
-      qc.invalidateQueries(['vq', partyId]);
+      qc.invalidateQueries({ queryKey: ['vq', partyId] });
       onAdded(item);
       onClose();
       toast.success(requireApproval ? 'Added — waiting for host approval' : 'Added to queue!');
@@ -321,7 +321,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
             nextPosition={nextPosition}
             requireApproval={requireApproval}
             onClose={() => setShowModal(false)}
-            onAdded={() => qc.invalidateQueries(['vq', partyId])}
+            onAdded={() => qc.invalidateQueries({ queryKey: ['vq', partyId] })}
           />
         )}
       </AnimatePresence>

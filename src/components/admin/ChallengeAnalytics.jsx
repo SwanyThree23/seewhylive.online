@@ -71,8 +71,8 @@ export default function ChallengeAnalytics({ communityId }) {
       {/* Overview Stats */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Challenges" value={challenges.length} icon={Trophy} sub={`${activeChallenges.length} active`} />
-        <StatCard label="Total Participants" value={totalParticipations} color="#60a5fa" icon={Users} sub="All challenges" />
-        <StatCard label="Avg Participants" value={avgParticipantsPerChallenge} color="#a78bfa" icon={TrendingUp} sub="Per challenge" />
+        <StatCard label="Total Participants" value={totalParticipations} color="#D4AF37" icon={Users} sub="All challenges" />
+        <StatCard label="Avg Participants" value={avgParticipantsPerChallenge} color="#D4AF37" icon={TrendingUp} sub="Per challenge" />
         <StatCard label="Completion Rate" value={`${completionRate}%`} color="#6DBF7E" icon={Award} sub="Success rate" />
       </div>
 

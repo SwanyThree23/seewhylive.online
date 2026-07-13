@@ -98,9 +98,9 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
   const videoRef = useRef(null);
 
   useEffect(() => {
-    if (videoRef.current && localStream) {
-      videoRef.current.srcObject = localStream;
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = localStream || null;
   }, [localStream]);
 
   const getRoleColor = (role) => {
@@ -126,17 +126,16 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
         aspectRatio: '4/3',
         boxShadow: `0 0 30px ${getRoleColor(participant?.role)}66, inset 0 0 20px ${getRoleColor(participant?.role)}33`
       }}>
-        {/* Video feed */}
-        {localStream && videoEnabled ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(-1)' }}
-          />
-        ) : (
+        {/* Video feed — always mounted */}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ transform: 'scaleX(-1)', display: localStream && videoEnabled ? 'block' : 'none' }}
+        />
+        {!(localStream && videoEnabled) && (
           <div className="w-full h-full flex items-center justify-center">
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold text-white"
               style={{ background: 'linear-gradient(135deg, #800020, #d4af37)' }}>
@@ -167,14 +166,14 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#C0392B'}` }}>
-            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-green-400" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
+            style={{ background: audioEnabled ? 'rgba(109,191,126,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${audioEnabled ? '#6DBF7E' : '#C0392B'}` }}>
+            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#C0392B'}` }}>
-            {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
+            style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${videoEnabled ? '#D4AF37' : '#C0392B'}` }}>
+            {videoEnabled ? <Video className="w-3.5 h-3.5 text-[#D4AF37]" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
           </button>
         </div>
       </div>
@@ -196,16 +195,6 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
   useEffect(() => {
     if (videoRef.current && remoteStream) videoRef.current.srcObject = remoteStream;
   }, [remoteStream]);
-
-  const getRoleColor = (role) => {
-    switch(role) {
-      case 'host': return 'bg-[#7B5DA6]';
-      case 'co-host': return 'bg-blue-500';
-      case 'speaker': return 'bg-green-500';
-      case 'guest': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
-    }
-  };
 
   return (
     <motion.div

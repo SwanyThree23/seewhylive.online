@@ -12,7 +12,7 @@ const BattleCard = ({ player, score, tips, isWinner }) => (
       isWinner ? 'border-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/20 bg-white/5'
     }`}
   >
-    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-[#7B5DA6] to-[#C0392B] flex items-center justify-center">
+    <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A] flex items-center justify-center">
       <span className="text-xl font-bold text-white">{player?.initials || 'N/A'}</span>
     </div>
     <h3 className="font-bold text-white mb-1">{player?.name || 'Player'}</h3>
@@ -180,7 +180,7 @@ export default function PKBattleInterface({ roomId }) {
           <button
             style={{
               width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: 14, cursor: 'pointer', borderRadius: 8,
+              fontWeight: 600, fontSize: 14, cursor: 'default', borderRadius: 8,
               background: '#6DBF7E', color: '#fff', border: 'none',
             }}
           >

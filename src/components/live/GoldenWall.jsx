@@ -27,7 +27,7 @@ function GoldenWallItem({ item, onExpire }) {
           ? 'border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.4)] bg-gradient-to-br from-[#1a1000] to-[#0B0B18]'
           : isGift
           ? 'border-[#C0392B]/50 shadow-[0_0_16px_rgba(192,57,43,0.3)] bg-gradient-to-br from-[#1a0010] to-[#0B0B18]'
-          : 'border-[#FFB800]/30 bg-[#10101E]'
+          : 'border-[#D4AF37]/30 bg-[#10101E]'
       } px-3 py-2.5`}
     >
       {/* Shimmer line */}
@@ -35,7 +35,7 @@ function GoldenWallItem({ item, onExpire }) {
 
       <div className="flex items-center gap-2">
         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${
-          isSuperChat ? 'bg-[#FFB800]/20 text-[#FFB800]' : 'bg-[#C0392B]/20 text-[#C0392B]'
+          isSuperChat ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'bg-[#C0392B]/20 text-[#C0392B]'
         }`}>
           {isGift ? (GIFT_EMOJIS[item.gift_type] || '🎁') : <DollarSign className="w-4 h-4" />}
         </div>
@@ -45,7 +45,7 @@ function GoldenWallItem({ item, onExpire }) {
             {isSuperChat && <Crown className="w-3 h-3 text-[#D4AF37] shrink-0" />}
           </div>
           <div className="flex items-center gap-1">
-            <span className={`text-sm font-black font-mono ${isSuperChat ? 'text-[#FFB800]' : 'text-[#C0392B]'}`}>
+            <span className={`text-sm font-black font-mono ${isSuperChat ? 'text-[#D4AF37]' : 'text-[#C0392B]'}`}>
               ${item.amount?.toFixed(2)}
             </span>
             {item.message && (
@@ -74,16 +74,17 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
       if (event.type !== 'create') return;
       const t = event.data;
       if (t.room_id !== roomId) return;
-      if (!['tip', 'gift', 'super_chat'].includes(t.type)) return;
+      if (!['tip', 'gift', 'super_chat'].includes(t.transaction_type)) return;
+      const gross = (t.creator_payout || 0) + (t.platform_cut || 0);
 
       setWallItems(prev => [{
         id: event.id || Date.now(),
         user_name: t.sender_name || 'Anonymous',
-        amount: t.amount || 0,
+        amount: gross,
         message: t.message || t.note,
-        type: t.type,
+        type: t.transaction_type,
         gift_type: t.gift_type,
-        is_super_chat: t.type === 'super_chat' || t.amount >= 25,
+        is_super_chat: t.transaction_type === 'super_chat' || gross >= 25,
       }, ...prev].slice(0, 20));
     });
     return unsub;
@@ -99,16 +100,19 @@ export default function GoldenWall({ roomId, isExpanded = true }) {
         10
       );
       const items = txns
-        .filter(t => ['tip', 'gift', 'super_chat'].includes(t.type))
-        .map(t => ({
+        .filter(t => ['tip', 'gift', 'super_chat'].includes(t.transaction_type))
+        .map(t => {
+          const gross = (t.creator_payout || 0) + (t.platform_cut || 0);
+          return {
           id: t.id,
           user_name: t.sender_name || 'Anonymous',
-          amount: t.amount || 0,
+          amount: gross,
           message: t.message || t.note,
-          type: t.type,
+          type: t.transaction_type,
           gift_type: t.gift_type,
-          is_super_chat: t.type === 'super_chat' || t.amount >= 25,
-        }));
+          is_super_chat: t.transaction_type === 'super_chat' || gross >= 25,
+          };
+        });
       setWallItems(items);
       return items;
     },

@@ -22,9 +22,9 @@ export default function LoyaltyBadge({ userId, creatorId }) {
   const getTierConfig = (tier) => {
     switch (tier) {
       case 'diamond':
-        return { icon: Gem, color: 'bg-[#4A8A7A]', label: 'Diamond' };
+        return { icon: Gem, color: 'bg-[#D4AF37]', label: 'Diamond' };
       case 'platinum':
-        return { icon: Crown, color: 'bg-[#7B5DA6]', label: 'Platinum' };
+        return { icon: Crown, color: 'bg-[#800020]', label: 'Platinum' };
       case 'gold':
         return { icon: Award, color: 'bg-[#D4AF37]', label: 'Gold' };
       case 'silver':

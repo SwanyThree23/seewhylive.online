@@ -97,8 +97,8 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
 }
 
 async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
-  const creatorAmount = Math.floor(grossUsd * 90) / 100;
-  const platformAmount = Math.round((grossUsd - creatorAmount) * 100) / 100;
+  const creatorAmount = Math.floor(grossUsd * 100 * 0.90) / 100;
+  const platformAmount = grossUsd - creatorAmount;
 
   await Promise.all([
     base44.entities.ViewerSubscription.update(subId, {
@@ -107,14 +107,15 @@ async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
       expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
     }),
     base44.entities.Transaction.create({
-      from_user_id: viewerId,
-      to_user_id: creatorId,
-      amount: grossUsd,
-      type: 'subscription',
+      sender_id: viewerId,
+      recipient_id: creatorId,
+      creator_payout: Math.floor(grossUsd * 90) / 100,
+      platform_cut: grossUsd - Math.floor(grossUsd * 90) / 100,
+      transaction_type: 'subscription',
       status: 'completed',
       description: `Subscription payment`,
       metadata: {
-        creator_amount: creatorAmount,
+        creator_payout: creatorAmount,
         platform_amount: platformAmount,
         split: '90/10',
       },

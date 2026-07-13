@@ -35,26 +35,21 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import PayPerViewCard from '@/components/monetization/PayPerViewCard';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import SubscriptionCard from '../components/monetization/SubscriptionCard';
-import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
-import TierEditor from '../components/subscriptions/TierEditor';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const G       = '#D4AF37';
 const BG      = '#080B18';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#4A8A7A';
+const TEAL    = '#D4854A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const FLYWHEEL_STAGES = [
@@ -78,8 +73,8 @@ const REVENUE_STREAMS = [
   { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: G,         desc: 'Monthly recurring tiers', split: '90%' },
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
-  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#f97316', desc: 'Animated gift shop',       split: '80%' },
-  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#a855f7', desc: 'Stream your AI tracks',    split: '70%' },
+  { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#D4854A', desc: 'Animated gift shop',       split: '80%' },
+  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
@@ -95,7 +90,7 @@ const MILESTONES = [
 function exportCSV(transactions, subscriptions) {
   const rows = [
     ['Type', 'Amount', 'Date', 'Description'],
-    ...transactions.map(t => [t.type || 'transaction', `$${t.amount || 0}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0) + (t.platform_cut || 0)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
   const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
@@ -251,10 +246,11 @@ function TierLadderPanel({ subCount }) {
 
 /* ─── RevenueStreamsPanel ─────────────────────────────────────────────── */
 function RevenueStreamsPanel({ transactions, subscriptions }) {
-  const tipTotal  = transactions.filter(t => t.type === 'tip').reduce((s, t) => s + (t.amount || 0), 0);
-  const ppvTotal  = transactions.filter(t => t.type === 'ppv').reduce((s, t) => s + (t.amount || 0), 0);
+  const txGross = (t) => (t.creator_payout || 0) + (t.platform_cut || 0);
+  const tipTotal  = transactions.filter(t => t.transaction_type === 'tip').reduce((s, t) => s + txGross(t), 0);
+  const ppvTotal  = transactions.filter(t => t.transaction_type === 'ppv').reduce((s, t) => s + txGross(t), 0);
   const subTotal  = subscriptions.reduce((s, sub) => s + (sub.price || 0), 0);
-  const giftTotal = transactions.filter(t => t.type === 'gift').reduce((s, t) => s + (t.amount || 0), 0);
+  const giftTotal = transactions.filter(t => t.transaction_type === 'gift').reduce((s, t) => s + txGross(t), 0);
   const gross     = tipTotal + ppvTotal + subTotal + giftTotal;
 
   const streams = [
@@ -536,7 +532,7 @@ export default function MonetizationPage() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['userEarnings', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user.id }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user.id }),
     enabled: !!user?.id,
   });
 
@@ -548,7 +544,13 @@ export default function MonetizationPage() {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['creatorTips', user?.id],
-    queryFn: () => base44.entities.Tip.filter({ creator_id: user.id }),
+    queryFn: () => base44.entities.TipAlert.filter({ creator_id: user.id }),
+    enabled: !!user?.id,
+  });
+
+  const { data: ppvEvents = [] } = useQuery({
+    queryKey: ['ppv-events-monetization', user?.id],
+    queryFn: () => base44.entities.PayPerViewEvent.filter({ creator_id: user.id }, '-event_date', 3),
     enabled: !!user?.id,
   });
 
@@ -559,7 +561,7 @@ export default function MonetizationPage() {
   });
 
   // Revenue calculations (90/10 split)
-  const grossEarnings  = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const grossEarnings  = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const platformFee    = grossEarnings * 0.10;
   const processingFee  = transactions.length * 0.30 + (grossEarnings * 0.029);
   const netEarnings    = grossEarnings - platformFee - processingFee;
@@ -792,7 +794,7 @@ export default function MonetizationPage() {
                       { name: 'Gold',   key: 'elite',  price: 15, color: G },
                     ].map(tier => {
                       const cnt     = tierCounts[tier.key] || 0;
-                      const tierMrr = cnt * tier.price * 0.9;
+                      const tierMrr = Math.floor(cnt * tier.price * 90) / 100;
                       return (
                         <div key={tier.key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                           <div style={{ width: 10, height: 10, borderRadius: '50%', background: tier.color, flexShrink: 0 }} />
@@ -804,7 +806,7 @@ export default function MonetizationPage() {
                     })}
                     <div style={{ paddingTop: 10, display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 13, color: G, fontWeight: 700, ...T }}>Total MRR (90%)</span>
-                      <span style={{ fontSize: 15, color: G, fontWeight: 700, ...T }}>${(mrr * 0.9).toFixed(2)}</span>
+                      <span style={{ fontSize: 15, color: G, fontWeight: 700, ...T }}>${(Math.floor(mrr * 90) / 100).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -869,25 +871,14 @@ export default function MonetizationPage() {
           )}
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
-      <RewardShopEditor creatorId={user?.id} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher currentUserId={user?.id} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+      </div>
     </div>
   );
 }

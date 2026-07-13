@@ -29,19 +29,7 @@ import { createPageUrl } from '../utils';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -101,6 +89,7 @@ export default function AdminDashboard() {
   ]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const { data: allUsers = [], isLoading: loadingUsers } = useQuery({ queryKey: ['adminUsers'], queryFn: () => base44.entities.User.list('-created_date', 200), enabled: user?.role === 'admin' });
   const { data: allRooms = [] } = useQuery({ queryKey: ['adminRooms'], queryFn: () => base44.entities.Room.list('-created_date', 100), enabled: user?.role === 'admin' });
   const { data: transactions = [] } = useQuery({ queryKey: ['adminTransactions'], queryFn: () => base44.entities.Transaction.list('-created_date', 200), enabled: user?.role === 'admin' });
@@ -131,7 +120,7 @@ export default function AdminDashboard() {
     </div>
   );
 
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const liveRooms = allRooms.filter(r => r.status === 'live');
   const pendingReports = reports.filter(r => r.status === 'pending');
   const todayUsers = allUsers.filter(u => new Date(u.created_date).toDateString() === new Date().toDateString());
@@ -143,7 +132,7 @@ export default function AdminDashboard() {
 
   const revenueChartData = Object.entries(transactions.reduce((acc, t) => {
     const m = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[m] = (acc[m] || 0) + (t.amount || 0); return acc;
+    acc[m] = (acc[m] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0); return acc;
   }, {})).slice(-8).map(([month, revenue]) => ({ month, revenue }));
 
   const filteredUsers = allUsers.filter(u => !userSearch || u.full_name?.toLowerCase().includes(userSearch.toLowerCase()) || u.email?.toLowerCase().includes(userSearch.toLowerCase()));
@@ -151,7 +140,7 @@ export default function AdminDashboard() {
 
   const roomStatusStyle = (status) => ({
     live:      { bg: 'rgba(192,57,43,0.12)', border: 'rgba(192,57,43,0.35)', color: '#C0392B' },
-    scheduled: { bg: 'rgba(0,212,255,0.1)',   border: 'rgba(0,212,255,0.3)',   color: '#00d4ff' },
+    scheduled: { bg: 'rgba(212,175,55,0.1)',   border: 'rgba(212,175,55,0.3)',   color: '#D4AF37' },
     ended:     { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.4)' },
   })[status] || { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' };
 
@@ -189,7 +178,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 pt-6 space-y-6">
         {/* KPI grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(99,102,241,0.8)" sub={`+${todayUsers.length} today`} />
+          <StatCard label="Total Users" value={allUsers.length} icon={Users} color="rgba(212,175,55,0.8)" sub={`+${todayUsers.length} today`} />
           <StatCard label="Live Rooms" value={liveRooms.length} icon={Radio} color="rgba(192,57,43,0.7)" badge={liveRooms.length > 0 ? 'LIVE' : undefined} />
           <StatCard label="Total Rooms" value={allRooms.length} icon={Globe} color="rgba(212,175,55,0.7)" />
           <StatCard label="Revenue" value={`$${totalRevenue.toFixed(0)}`} icon={DollarSign} color="rgba(109,191,126,0.6)" />
@@ -237,9 +226,9 @@ export default function AdminDashboard() {
                       <div key={t.id} className="flex items-center justify-between py-2 border-b text-sm" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
                         <div>
                           <p className="font-black text-xs text-white" style={T}>{t.sender_name || 'Anonymous'} → {t.recipient_name || 'Creator'}</p>
-                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.type} · {format(new Date(t.created_date), 'MMM d, h:mm a')}</p>
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{t.transaction_type} · {format(new Date(t.created_date), 'MMM d, h:mm a')}</p>
                         </div>
-                        <span className="font-black text-sm" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${(t.amount || 0).toFixed(2)}</span>
+                        <span className="font-black text-sm" style={{ color: '#6DBF7E', fontFamily: 'Orbitron, monospace' }}>+${((t.creator_payout || 0) + (t.platform_cut || 0)).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -430,8 +419,8 @@ export default function AdminDashboard() {
             <div className="rounded-2xl p-4" style={{ background: BG2, border: '1px solid rgba(255,68,68,0.15)' }}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm">🚫</span>
-                <span className="text-sm font-black uppercase" style={{ color: '#C0392B', ...T }}>IP Bans</span>
-                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
+                <span className="text-sm font-black uppercase" style={{ color: '#FF4444', ...T }}>IP Bans</span>
+                <span className="ml-auto text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.2)', ...T }}>{bannedIPs.length} active</span>
               </div>
               <div className="flex gap-2 mb-3">
                 <input value={newBanIP} onChange={e => setNewBanIP(e.target.value)}
@@ -440,7 +429,7 @@ export default function AdminDashboard() {
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <button onClick={() => { if(newBanIP.trim()) { setBannedIPs(p => [...p, { ip: newBanIP.trim(), reason: banReason, date: new Date().toISOString() }]); setNewBanIP(''); setBanReason(''); toast.success('IP banned'); }}}
                   className="h-9 px-3 rounded-xl text-xs font-black"
-                  style={{ background: 'rgba(255,68,68,0.15)', color: '#C0392B', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
+                  style={{ background: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.3)', ...T }}>
                   Ban IP
                 </button>
               </div>
@@ -609,21 +598,8 @@ export default function AdminDashboard() {
           <AnnouncementPanel communityId={firstCommunityId} userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="admin" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

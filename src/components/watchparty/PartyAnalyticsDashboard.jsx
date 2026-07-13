@@ -25,9 +25,9 @@ function fmtTime(ts) {
 const REACTION_COLORS = {
   domino:   GOLD,
   love:     '#CC2244',
-  superchat: '#4A8A7A',
-  hype:     '#FF6B00',
-  lol:      '#FFD700',
+  superchat: '#D4AF37',
+  hype:     '#D4854A',
+  lol:      '#D4AF37',
   wow:      '#D4AF37',
   rage:     BURGUNDY,
   standard: 'rgba(255,255,255,0.4)',

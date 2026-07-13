@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, Globe, MessageSquare, Menu, Search } from 'lucide-react';
@@ -14,8 +14,11 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import { motion } from 'framer-motion';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 export default function BackPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
 
@@ -40,7 +43,7 @@ export default function BackPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 

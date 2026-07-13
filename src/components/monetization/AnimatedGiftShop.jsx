@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gift, Sparkles, Heart, PartyPopper, Laugh, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { hapticMedium } from '@/utils/haptics';
 
 export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
   const [selectedGift, setSelectedGift] = useState(null);
@@ -33,10 +32,11 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
-        amount: gift.price,
-        from_user_id: user.id,
-        to_user_id: recipientId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
+        sender_id: user.id,
+        recipient_id: recipientId,
         room_id: roomId,
         virtual_good_id: gift.id,
         message: `Sent ${gift.name}`,
@@ -84,9 +84,9 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
-    rare: 'bg-blue-100 text-blue-800',
-    epic: 'bg-[#7B5DA6] text-[#7B5DA6]',
-    legendary: 'bg-yellow-100 text-yellow-800',
+    rare: 'bg-[#D4AF37]/12 text-[#800020]',
+    epic: 'bg-[#800020]/20 text-[#C9A84C]',
+    legendary: 'bg-[#D4AF37]/15 text-[#C9A84C]',
   };
 
   return (
@@ -169,7 +169,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]">
+        <Card className="bg-gradient-to-br from-[#0D1022] to-[#0F1428]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -181,7 +181,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Gift className="w-8 h-8 text-[#7B5DA6]" />
+                    <Gift className="w-8 h-8 text-[#800020]" />
                   )}
                 </div>
                 <div>
@@ -199,7 +199,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                   ${selectedGift.price}
                 </p>
                 <Button
-                  onClick={() => { hapticMedium(); sendGiftMutation.mutate(selectedGift); }}
+                  onClick={() => sendGiftMutation.mutate(selectedGift)}
                   disabled={sendGiftMutation.isPending}
                   className="mt-2"
                 >

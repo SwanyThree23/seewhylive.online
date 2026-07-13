@@ -21,29 +21,48 @@ export default function AIModeration({ roomId, isHost = false }) {
           '-created_date',
           20
         );
+        if (!recentMessages.length) { setProcessing(false); return; }
 
-        for (const msg of recentMessages) {
-          const result = await base44.functions.invoke('validateStreamSecurity', {
-            content: msg.content,
-            message_id: msg.id,
-            user_id: msg.user_id,
-            room_id: roomId,
-          });
+        const msgLines = recentMessages
+          .map(m => `[${m.id}|${m.user_name}] ${m.content}`)
+          .join('\n');
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Review these chat messages for toxicity, harassment, hate speech, or spam. Return JSON with "flags" array — only include genuinely problematic messages: { "flags": [{ "message_id": string, "severity": 0.0-1.0, "reason": string }] }\n\n${msgLines}`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              flags: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    message_id: { type: 'string' },
+                    severity: { type: 'number' },
+                    reason: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        });
 
-          if (result?.data?.flagged) {
+        if (result?.flags?.length) {
+          result.flags.forEach(flag => {
+            const msg = recentMessages.find(m => m.id === flag.message_id);
+            if (!msg) return;
             setFlags(prev => {
               const exists = prev.find(f => f.message_id === msg.id);
               return exists ? prev : [...prev, {
-                id: Date.now(),
+                id: Date.now() + Math.random(),
                 message_id: msg.id,
                 user: msg.user_name,
                 content: msg.content.slice(0, 50),
-                severity: result.data.severity,
-                reason: result.data.reason,
+                severity: flag.severity,
+                reason: flag.reason,
                 timestamp: new Date(msg.created_date),
               }];
             });
-          }
+          });
         }
       } catch (error) {
       }

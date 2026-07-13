@@ -119,7 +119,7 @@ Generate highlight segments with:
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#7B5DA6]" />
+          <Sparkles className="w-5 h-5" style={{ color: '#D4AF37' }} />
           AI Highlight Generator
         </CardTitle>
       </CardHeader>

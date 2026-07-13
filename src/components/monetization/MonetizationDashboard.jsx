@@ -12,9 +12,22 @@ export default function MonetizationDashboard({ roomId }) {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const result = await base44.functions.invoke('getMonetizationAnalytics', {
-          room_id: roomId,
-          time_range: '24h',
+        const [transactions, tips] = await Promise.all([
+          base44.entities.Transaction.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
+          base44.entities.TipAlert.filter({ room_id: roomId }, '-created_date', 200).catch(() => []),
+        ]);
+        const txnGross = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
+        const tipGross = tips.reduce((s, t) => s + (t.amount_usd || 0), 0);
+        const gross = txnGross + tipGross;
+        const creatorEarnings = Math.floor(gross * 90) / 100;
+        const platformCut = gross - creatorEarnings;
+        setAnalytics({
+          total_revenue: gross,
+          platform_cut: platformCut,
+          creator_earnings: creatorEarnings,
+          total_transactions: transactions.length,
+          total_paywall_conversions: 0,
+          net_creator_payout: creatorEarnings,
         });
 
         if (result?.data) {

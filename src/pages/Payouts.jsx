@@ -79,22 +79,6 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-
 export default function PayoutsPage() {
   const qc = useQueryClient();
   const [stripeId, setStripeId]     = useState('');
@@ -122,8 +106,8 @@ export default function PayoutsPage() {
 
   /* ─── derived ──────────────────────────────────────────────────────── */
   const pendingTips = transactions
-    .filter(t => t.type === 'tip' && t.status !== 'paid_out')
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .filter(t => t.transaction_type === 'tip' && t.status !== 'paid_out')
+    .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
 
   const balance     = payoutRecord?.pending_balance ?? pendingTips;
   const isConnected = payoutRecord?.stripe_connected;
@@ -142,7 +126,7 @@ export default function PayoutsPage() {
           const d = new Date(t.created_date).getTime();
           return d >= dayStart && d < dayEnd;
         })
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
       result.push({ label, earned });
     }
     return result;
@@ -171,7 +155,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account connected!');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
       setConnecting(false);
       setStripeId('');
       setBank4('');
@@ -189,7 +173,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account disconnected');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
     onError: () => toast.error('Failed to disconnect Stripe account.'),
   });
@@ -208,7 +192,7 @@ export default function PayoutsPage() {
     },
     onSuccess: (amount) => {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
     onError: (e) => toast.error(e?.message === 'No balance to pay out' ? 'No balance to pay out.' : 'Payout request failed. Please try again.'),
   });
@@ -591,7 +575,7 @@ export default function PayoutsPage() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: GREEN, marginBottom: 4 }}>
-                      +${(t.amount || 0).toFixed(2)}
+                      +${((t.creator_payout || 0) + (t.platform_cut || 0)).toFixed(2)}
                     </div>
                     <span style={{
                       display: 'inline-block',
@@ -649,21 +633,6 @@ export default function PayoutsPage() {
           <CollaborationMatcher />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

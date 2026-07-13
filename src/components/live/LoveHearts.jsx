@@ -13,12 +13,12 @@ export default function LoveHearts({ roomId, currentUser, creatorId }) {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['love-tips', roomId],
-    queryFn: () => base44.entities.Tip.filter({ room_id: roomId, currency: 'love' }),
+    queryFn: () => base44.entities.TipAlert.filter({ room_id: roomId, message: 'love_tap' }),
     enabled: !!roomId,
     refetchInterval: 5000,
   });
 
-  const totalLove = tips.reduce((sum, t) => sum + (t.amount || 1), 0);
+  const totalLove = tips.reduce((sum, t) => sum + (t.amount_usd || 1), 0);
 
   const spawnHearts = useCallback((count) => {
     const batch = Array.from({ length: count }, (_, i) => ({
@@ -38,14 +38,14 @@ export default function LoveHearts({ roomId, currentUser, creatorId }) {
     setPopup({ id, text: amount === 10 ? '+10 💛' : '+1 💛' });
     setTimeout(() => setPopup(p => p?.id === id ? null : p), 1000);
     if (!roomId || !currentUser) return;
-    await base44.entities.Tip.create({
+    await base44.entities.TipAlert.create({
       room_id: roomId,
       sender_id: currentUser?.id,
       sender_name: currentUser?.full_name || currentUser?.email,
       creator_id: creatorId,
-      amount,
-      currency: 'love',
-      created_date: new Date().toISOString(),
+      amount_usd: amount,
+      message: 'love_tap',
+      animation_type: 'hearts',
     }).catch(() => {});
   }, [roomId, currentUser, creatorId, spawnHearts]);
 

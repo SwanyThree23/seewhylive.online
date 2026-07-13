@@ -56,8 +56,8 @@ export default function FollowButton({ targetUserId, targetUserName, size = 'sm'
     onError: () => toast.error('Could not unfollow. Please try again.'),
     onSuccess: () => {
       toast.success('Unfollowed');
-      qc.invalidateQueries(['follow', currentUser?.id, targetUserId]);
-      qc.invalidateQueries(['followers', targetUserId]);
+      qc.invalidateQueries({ queryKey: ['follow', currentUser?.id, targetUserId] });
+      qc.invalidateQueries({ queryKey: ['followers', targetUserId] });
     },
   });
 

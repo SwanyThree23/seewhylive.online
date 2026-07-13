@@ -20,23 +20,11 @@ import ShareButtons from '../components/shared/ShareButtons';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
 const PINK    = "#C0392B";
-const CYAN    = "#00d4ff";
+const CYAN    = "#D4AF37";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
@@ -57,6 +45,7 @@ function fmtTime(ts) {
 }
 
 export default function Messages() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [user, setUser] = useState(null);
   var [selectedThread, setSelectedThread] = useState(null);
   var [input, setInput] = useState("");
@@ -73,6 +62,13 @@ export default function Messages() {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
 
+  var { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  var userCommunityId = userCommunity?.id || null;
+
   var { data: allMessages = [] } = useQuery({
     queryKey: ["all-dms", user?.id],
     queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
@@ -82,7 +78,7 @@ export default function Messages() {
 
   var { data: onlineRecords = [] } = useQuery({
     queryKey: ["presence-online"],
-    queryFn: () => base44.entities.PresenceRecord.filter({ is_online: true }),
+    queryFn: () => base44.entities.OnlinePresence.filter({ is_online: true }),
     enabled: !!user?.id,
     refetchInterval: 15000,
   });
@@ -141,7 +137,7 @@ export default function Messages() {
       content: composeMsg.trim(), is_whisper: false,
     }),
     onSuccess: () => {
-      qc.invalidateQueries(["all-dms", user?.id]);
+      qc.invalidateQueries({ queryKey: ["all-dms", user?.id] });
       setShowCompose(false);
       setComposeName("");
       setComposeMsg("");
@@ -531,21 +527,37 @@ export default function Messages() {
           </div>
         </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {user && (
+        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <NotificationBell />
+          <UnifiedChat roomId={roomId} currentUser={user} isHost={false} />
+          <WhisperPanel roomId={roomId} currentUser={user} recipientId={null} recipientName="" onClose={() => {}} />
+          <ShareButtons url={window.location.href} title="Messages" />
+          <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
+          <SuperChatRail superchats={[]} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <OnlineUsersGrid compact maxVisible={12} />
+          <ContentRecommendations />
+        <MilestoneAlerts userId={null} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <CollaborationMatcher />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={selectedThread || null} communityId={userCommunityId} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
+        {[
+          { label: '🏠 Home',        href: 'Home'        },
+          { label: '👤 Profile',     href: 'Profile'     },
+          { label: '🔔 Alerts',      href: 'Notifications' },
+          { label: '👥 Communities', href: 'Communities' },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

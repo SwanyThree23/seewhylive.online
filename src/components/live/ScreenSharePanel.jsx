@@ -51,7 +51,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
           <Share2 className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Screen Share</span>
           {isSharing && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#7B5DA6]/60 text-[#7B5DA6] animate-pulse">
+            <span className="text-[11px] px-1.5 py-0.5 rounded-full animate-pulse" style={{ background: 'rgba(192,57,43,0.4)', color: '#D4AF37' }}>
               ACTIVE
             </span>
           )}
@@ -71,7 +71,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
               {isSharing ? (
                 <button
                   onClick={handleStopShare}
-                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(192,57,43,0.5)', background:'rgba(127,29,29,0.5)', color:'#C0392B', cursor:'pointer', fontSize:13 }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px 14px', borderRadius:8, border:'1px solid rgba(192,57,43,0.5)', background:'rgba(127,29,29,0.5)', color:'#FF4444', cursor:'pointer', fontSize:13 }}
                 >
                   <StopCircle className="w-4 h-4" />
                   Stop Sharing

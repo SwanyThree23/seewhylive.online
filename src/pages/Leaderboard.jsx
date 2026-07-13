@@ -24,22 +24,26 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import TipWidget from '../components/live/TipWidget';
+import TippingOverlay from '../components/live/TippingOverlay';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#5B7FA6', w: 4, l: 1, pts: 1820 },
-  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#E65100', w: 3, l: 1, pts: 1740 },
-  { id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20', w: 3, l: 2, pts: 1650 },
-  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#B71C1C', w: 3, l: 2, pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#4A148C', w: 2, l: 3, pts: 1380 },
-  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#BF360C', w: 1, l: 4, pts: 1120 },
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', w: 3, l: 1, pts: 1740 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', w: 3, l: 2, pts: 1650 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', w: 3, l: 2, pts: 1610 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', w: 2, l: 3, pts: 1380 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', w: 1, l: 4, pts: 1120 },
 ];
 
 const GOLD    = '#D4AF37';
@@ -179,7 +183,19 @@ function RankRow({ rank, user, stat, statLabel, isCurrentUser, isEven }) {
 /* ── main page ──────────────────────────────────────────────────────── */
 export default function LeaderboardPage() {
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const user = currentUser;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
   const { data: creators = [] } = useQuery({
     queryKey: ['leaderboardCreators'],
@@ -203,8 +219,9 @@ export default function LeaderboardPage() {
 
   // Revenue leaderboard: aggregate by creator
   const revenueByCreator = transactions.reduce((acc, t) => {
-    if (!t.to_user_id) return acc;
-    acc[t.to_user_id] = (acc[t.to_user_id] || 0) + (t.amount || 0);
+    const key = t.recipient_id || t.to_user_id;
+    if (!key) return acc;
+    acc[key] = (acc[key] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
 
@@ -428,21 +445,26 @@ export default function LeaderboardPage() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="leaderboard" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* Social Leaderboard (engagement-based) */}
+      <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
+        <SocialLeaderboard />
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={false} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <TipWidget roomId={roomId} hostId={currentUser?.id} currentUser={currentUser} />
+          <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />
+          <AnimatedGiftShop recipientId={currentUser?.id} roomId={roomId} onClose={() => {}} />
+          <LeaderboardPanel roomId={roomId} />
+          <ChallengeLeaderboard challengeId={activeChallengeId} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="Check out the SeeWhy LIVE leaderboard!" />
+        </div>
+      </div>
     </div>
   );
 }

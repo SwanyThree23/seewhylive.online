@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 const TYPE_COLORS = { member:C.gold, content:'#C9A84C', achievement:C.volt, stream:'#C0392B' };
@@ -32,14 +31,17 @@ function AddSpotlightModal({ communityId, onClose }) {
           <button onClick={onClose} style={{ background:'transparent', border:'none', color:C.gray, cursor:'pointer', fontSize:18 }}>✕</button>
         </div>
         <label style={lbl}>Spotlight Type</label>
-        <NativeSelect style={{...inp,cursor:'pointer'}} value={form.spotlight_type} onChange={val=>setForm(f=>({...f,spotlight_type:val}))}
-          options={['member','content','achievement','stream'].map(t=>({value:t,label:t.charAt(0).toUpperCase()+t.slice(1)}))} />
+        <select style={{...inp,cursor:'pointer'}} value={form.spotlight_type} onChange={e=>setForm(f=>({...f,spotlight_type:e.target.value}))}>
+          {['member','content','achievement','stream'].map(t=><option key={t} value={t}>{t.charAt(0).toUpperCase()+t.slice(1)}</option>)}
+        </select>
         <label style={lbl}>Member</label>
-        <NativeSelect style={{...inp,cursor:'pointer'}} value={form.user_id} onChange={val=>{
-          const m=members.find(m=>m.user_id===val);
-          setForm(f=>({...f,user_id:val,user_name:m?.user_name||''}));
-        }}
-          options={[{value:'',label:'Select member…'},...members.map(m=>({value:m.user_id,label:m.user_name||m.user_id}))]} />
+        <select style={{...inp,cursor:'pointer'}} value={form.user_id} onChange={e=>{
+          const m=members.find(m=>m.user_id===e.target.value);
+          setForm(f=>({...f,user_id:e.target.value,user_name:m?.user_name||''}));
+        }}>
+          <option value="">Select member…</option>
+          {members.map(m=><option key={m.user_id} value={m.user_id}>{m.user_name||m.user_id}</option>)}
+        </select>
         <label style={lbl}>Title</label>
         <input style={inp} value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} placeholder="e.g. Member of the Month" maxLength={120} />
         <label style={lbl}>Description</label>

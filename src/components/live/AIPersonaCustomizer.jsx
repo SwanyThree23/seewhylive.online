@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Sparkles } from 'lucide-react';
+import { toast } from 'sonner';
 
 const G = '#d4af37';
 
@@ -19,17 +20,27 @@ export default function AIPersonaCustomizer({ roomId, sessionId, onCustomized })
   const handleSave = async () => {
     setSaving(true);
     try {
-      const result = await base44.functions.invoke('customizeAIPersona', {
-        room_id: roomId,
-        session_id: sessionId,
-        persona_name: personaName,
-        persona_style: personaStyle,
-        custom_instructions: customInstructions,
-        avatar_preset: avatarPreset,
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Generate AI co-host persona configuration:
+- Name: ${personaName}
+- Style: ${personaStyle}
+- Avatar: ${avatarPreset}
+- Instructions: ${customInstructions || 'none'}
+Return JSON: { "persona_name": string, "style": string, "tone": string, "greeting": string, "catchphrase": string }`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            persona_name: { type: 'string' },
+            style: { type: 'string' },
+            tone: { type: 'string' },
+            greeting: { type: 'string' },
+            catchphrase: { type: 'string' },
+          },
+        },
       });
-
-      if (result?.data) {
-        onCustomized?.(result.data);
+      if (result) {
+        onCustomized?.(result);
+        toast.success(`${personaName} AI persona saved!`);
         setExpanded(false);
       }
     } catch (error) {

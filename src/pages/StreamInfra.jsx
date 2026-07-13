@@ -3,24 +3,22 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BitratePresets from '../components/streaming/BitratePresets';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -37,7 +35,9 @@ function copyText(val) {
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
-  return prefix + '_' + id + '_' + Math.random().toString(36).slice(2, 10);
+  var arr = crypto.getRandomValues(new Uint8Array(4));
+  var rnd = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  return prefix + '_' + id + '_' + rnd;
 }
 
 /* ─── Sub-components ─── */
@@ -99,7 +99,7 @@ function CopyField({ label, value, mono }) {
           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
           style={{ background: copied ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#6DBF7E60' : '#d4af3740') }}
         >
-          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-yellow-400" />}
+          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-[#D4AF37]" />}
         </button>
       </div>
     </div>
@@ -132,7 +132,10 @@ function StreamTab({ user }) {
   var userId = (user && user.id) || 'demo0000';
   var [streamKey, setStreamKey] = useState(function() { return genKey('sw', userId); });
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
-  var [vdoRoom] = useState(function() { return 'sw_' + Math.random().toString(36).slice(2, 10); });
+  var [vdoRoom] = useState(function() {
+    var arr = crypto.getRandomValues(new Uint8Array(5));
+    return 'sw_' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, 10);
+  });
   var [perms, setPerms] = useState({
     speakers_can_share_screen: true,
     listeners_can_react: true,
@@ -386,9 +389,9 @@ function LiveRoomTab({ user }) {
     ? [{ id: user.id, name: user.full_name || user.email || 'You', role: myRole, mic: micOn, video: videoOn, hand: handRaised, speaking: micOn && myRole !== 'listener' }]
     : [];
 
-  var roleColors = { host: '#C0392B', cohost: '#FFB800', speaker: '#d4af37', listener: '#D4AF37' };
-  var hostParticipants = mockParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
-  var listenerParticipants = mockParticipants.filter(function(p) { return p.role === 'listener'; });
+  var roleColors = { host: '#C0392B', cohost: '#D4AF37', speaker: '#d4af37', listener: '#D4AF37' };
+  var hostParticipants = liveParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
+  var listenerParticipants = liveParticipants.filter(function(p) { return p.role === 'listener'; });
 
   return (
     <div className="space-y-4">
@@ -535,7 +538,7 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: videoOn ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.08)') }}
               >
-                {videoOn ? <Video className="w-4 h-4 text-[#4A8A7A]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
+                {videoOn ? <Video className="w-4 h-4 text-[#6DBF7E]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
                 <span className="text-xs" style={{ color: videoOn ? '#C9A84C' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
               </button>
               <button
@@ -671,13 +674,15 @@ function StudioTab({ user }) {
               className="flex-1 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
             />
-            <NativeSelect
+            <select
               value={newRoomType}
-              onChange={function(val) { setNewRoomType(val); }}
+              onChange={function(e) { setNewRoomType(e.target.value); }}
               className="rounded-lg px-2 py-2 text-xs focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
-              options={[{value:'video',label:'Video'},{value:'audio',label:'Audio'}]}
-            />
+            >
+              <option value="video">Video</option>
+              <option value="audio">Audio</option>
+            </select>
             <button
               onClick={addRoom}
               style={{ display:'flex', alignItems:'center', gap:4, height:36, padding:'0 12px', borderRadius:8, background:'rgba(212,175,55,0.15)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}
@@ -726,6 +731,7 @@ var TABS = [
 ];
 
 export default function StreamInfra() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('stream');
 
   var { data: user } = useQuery({
@@ -801,21 +807,27 @@ export default function StreamInfra() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="infra" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <OBSBridge roomId={roomId} isHost={false} />
+        <EnhancedIngestPanel roomId={roomId} isHost={false} />
+        <ZEGOConfigPanel roomId={roomId} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <StreamingPresets onApply={() => {}} />
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={false} isLive={false} />
+        <ZEGOStreamHealthCard roomId={activeRoomId} />
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
+        <AutomatedHighlightReels streamSession={null} />
+        <RTMPFanoutPanel roomId={activeRoomId} isHost={true} />
+        <GuestInviteGenerator roomId={activeRoomId} isHost={true} />
+        <StreamGoals isHost={true} />
+      </div>
     </div>
   );
 }

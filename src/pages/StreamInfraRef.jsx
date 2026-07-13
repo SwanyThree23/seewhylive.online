@@ -23,7 +23,11 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
   { id: "webrtc",   icon: "🌐", label: "WebRTC" },
@@ -476,7 +480,7 @@ function SupabaseTab() {
             </div>
             <div className="flex flex-wrap gap-1">
               {t.cols.map((c) => (
-                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/20 px-1.5 py-0.5 rounded">{c}</span>
+                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/8 px-1.5 py-0.5 rounded">{c}</span>
               ))}
             </div>
           </div>
@@ -560,7 +564,7 @@ function EnvTab() {
         <div className="text-xs text-white/30 mb-3">Files: /var/www/seewhylive/.env · ecosystem.config.js (env block)</div>
         {envVars.map((v) => (
           <div key={v.key} className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
-            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-yellow-300" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
+            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-[#D4AF37]/80" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
               {v.key}
             </span>
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -806,16 +810,6 @@ export default function StreamInfraRef() {
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

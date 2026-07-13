@@ -21,8 +21,8 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['challenges']);
-      queryClient.invalidateQueries(['challengeParticipation']);
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipation'] });
       toast.success('Joined challenge successfully!');
       if (userId) {
         base44.entities.Activity.create({
@@ -40,7 +40,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
   const isCompleted = userParticipation?.completed;
 
   const statusBadgeStyle = {
-    upcoming: { background: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
+    upcoming: { background: 'rgba(212,175,55,0.2)', color: '#D4AF37' },
     active:   { background: 'rgba(109,191,126,0.2)',  color: '#6DBF7E' },
     completed:{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
   };

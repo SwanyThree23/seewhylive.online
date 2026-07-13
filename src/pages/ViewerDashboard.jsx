@@ -35,7 +35,19 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LivePollWidget from '../components/live/LivePollWidget';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -117,7 +129,7 @@ export default function ViewerDashboard() {
 
   useEffect(() => {
     const unsub = base44.entities.Room.subscribe(() => {
-      qc.invalidateQueries(['all-live-rooms']);
+      qc.invalidateQueries({ queryKey: ['all-live-rooms'] });
     });
     return unsub;
   }, [qc]);
@@ -126,7 +138,7 @@ export default function ViewerDashboard() {
     if (!user) return;
     const unsub = base44.entities.Notification.subscribe((event) => {
       if (event.data?.user_id === user.id) {
-        qc.invalidateQueries(['notifications', user.id]);
+        qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });
     return unsub;
@@ -196,7 +208,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#D4854A', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -221,7 +233,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
+                            style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.5)', color: '#D4854A', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>
@@ -426,21 +438,6 @@ export default function ViewerDashboard() {
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="viewer" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

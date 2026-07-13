@@ -142,7 +142,7 @@ export default function PKBattleProgress({ battleId, currentUserId }) {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #C0392B, #FFB800)',
+                background: 'linear-gradient(90deg, #C0392B, #D4AF37)',
               }}
             />
           </div>
@@ -223,24 +223,53 @@ export default function PKBattleProgress({ battleId, currentUserId }) {
 
       {/* Action buttons */}
       {isActive && (
-        <div className="px-4 py-3 grid grid-cols-2 gap-2"
-          style={{ background: 'rgba(0,0,0,0.2)', borderTop: `1px solid ${BORDER}` }}>
-          <button
-            style={{
-              fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
-              background: 'rgba(192,57,43,0.2)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)',
-            }}
-          >
-            💰 Tip Creator
-          </button>
-          <button
-            style={{
-              fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
-              background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)',
-            }}
-          >
-            💜 Tip Challenger
-          </button>
+        <div className="px-4 py-3 space-y-2" style={{ background: 'rgba(0,0,0,0.2)', borderTop: `1px solid ${BORDER}` }}>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setTipTarget(tipTarget === 'creator' ? null : 'creator')}
+              style={{
+                fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
+                background: tipTarget === 'creator' ? 'rgba(192,57,43,0.35)' : 'rgba(192,57,43,0.2)',
+                color: '#C0392B', border: '1px solid rgba(192,57,43,0.3)',
+              }}
+            >
+              💰 Tip Creator
+            </button>
+            <button
+              onClick={() => setTipTarget(tipTarget === 'challenger' ? null : 'challenger')}
+              style={{
+                fontSize: 12, fontWeight: 900, height: 32, borderRadius: 6, cursor: 'pointer',
+                background: tipTarget === 'challenger' ? 'rgba(212,175,55,0.35)' : 'rgba(212,175,55,0.2)',
+                color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)',
+              }}
+            >
+              💛 Tip Challenger
+            </button>
+          </div>
+          {tipTarget && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-3 gap-1.5"
+            >
+              {TIP_AMOUNTS_CENTS.map(cents => (
+                <button
+                  key={cents}
+                  onClick={() => tipMutation.mutate({ side: tipTarget, amountCents: cents })}
+                  disabled={tipMutation.isPending}
+                  style={{
+                    height: 28, fontSize: 11, fontWeight: 900, borderRadius: 6, cursor: 'pointer',
+                    background: tipTarget === 'creator' ? 'rgba(192,57,43,0.25)' : 'rgba(212,175,55,0.2)',
+                    color: tipTarget === 'creator' ? '#C0392B' : '#D4AF37',
+                    border: `1px solid ${tipTarget === 'creator' ? 'rgba(192,57,43,0.35)' : 'rgba(212,175,55,0.3)'}`,
+                    opacity: tipMutation.isPending ? 0.6 : 1,
+                  }}
+                >
+                  ${(cents / 100).toFixed(2)}
+                </button>
+              ))}
+            </motion.div>
+          )}
         </div>
       )}
     </motion.div>

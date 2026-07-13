@@ -118,7 +118,7 @@ export default function GreenroomWaitlistPanel({ roomId, currentUser, onAdmit })
         : Promise.resolve(),
     ]),
     onSuccess: (_, entry) => {
-      qc.invalidateQueries(['greenroom-waitlist', roomId]);
+      qc.invalidateQueries({ queryKey: ['greenroom-waitlist', roomId] });
       onAdmit?.(entry);
       if (currentUser?.id) {
         base44.entities.Activity.create({

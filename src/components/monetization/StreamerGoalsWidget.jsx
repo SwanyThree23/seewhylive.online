@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Target, Plus, Check, Trash2, X, Zap, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
-import NativeSelect from '@/components/shared/NativeSelect';
+import NativeSelect from '../ui/NativeSelect';
 
 const inputStyle = {
   width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
@@ -14,7 +14,7 @@ const inputStyle = {
 };
 
 const GOAL_ICONS = { tips: '💰', subscribers: '⭐', viewers: '👁', messages: '💬', custom: '🎯' };
-const GOAL_COLORS = ['#d4af37', '#00d4ff', '#a78bfa', '#6DBF7E', '#f97316', '#f472b6'];
+const GOAL_COLORS = ['#d4af37', '#D4AF37', '#D4AF37', '#6DBF7E', '#D4854A', '#D4854A'];
 
 function GoalBar({ goal, onUpdate, isCreator }) {
   const pct = Math.min(100, ((goal.current_amount || 0) / goal.target_amount) * 100);
@@ -104,7 +104,7 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
   useEffect(() => {
     const unsub = base44.entities.StreamerGoal.subscribe((event) => {
       if (event.data?.creator_id === creatorId) {
-        qc.invalidateQueries(['streamer-goals', creatorId, roomId]);
+        qc.invalidateQueries({ queryKey: ['streamer-goals', creatorId, roomId] });
       }
     });
     return unsub;
@@ -192,9 +192,11 @@ export default function StreamerGoalsWidget({ creatorId, roomId, isCreator, embe
                 style={{ ...inputStyle, height: 32, fontSize: 12 }} />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <NativeSelect value={form.goal_type} onChange={val => setForm(f => ({ ...f, goal_type: val }))}
-                  style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-                  options={Object.entries(GOAL_ICONS).map(([k, v]) => ({value: k, label: `${v} ${k}`}))} />
+                <NativeSelect
+                  value={form.goal_type}
+                  onChange={e => setForm(f => ({ ...f, goal_type: e.target.value }))}
+                  options={Object.entries(GOAL_ICONS).map(([k, v]) => ({ value: k, label: v + ' ' + k }))}
+                />
                 <input type="number" value={form.target_amount}
                   onChange={e => setForm(f => ({ ...f, target_amount: Number(e.target.value) }))}
                   placeholder="Target" style={{ ...inputStyle, height: 32, fontSize: 12 }} />

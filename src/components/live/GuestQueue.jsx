@@ -65,8 +65,8 @@ export default function GuestQueue({ roomId, isHost }) {
     if (!roomId) return;
     const unsub = base44.entities.Participant.subscribe((event) => {
       if (event.data?.room_id === roomId) {
-        qc.invalidateQueries(['guest-queue', roomId]);
-        qc.invalidateQueries(['admitted-guests', roomId]);
+        qc.invalidateQueries({ queryKey: ['guest-queue', roomId] });
+        qc.invalidateQueries({ queryKey: ['admitted-guests', roomId] });
       }
     });
     return () => {
@@ -100,8 +100,8 @@ export default function GuestQueue({ roomId, isHost }) {
       base44.entities.Participant.update(id, { status: 'rejected' }),
     onSuccess: (_, { name }) => {
       toast.info(`${name} removed from queue`);
-      qc.invalidateQueries(['guest-queue', roomId]);
-      qc.invalidateQueries(['admitted-guests', roomId]);
+      qc.invalidateQueries({ queryKey: ['guest-queue', roomId] });
+      qc.invalidateQueries({ queryKey: ['admitted-guests', roomId] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -111,8 +111,8 @@ export default function GuestQueue({ roomId, isHost }) {
       base44.entities.Participant.update(id, { status: 'removed' }),
     onSuccess: (_, { name }) => {
       toast.info(`${name} removed from stage`);
-      qc.invalidateQueries(['guest-queue', roomId]);
-      qc.invalidateQueries(['admitted-guests', roomId]);
+      qc.invalidateQueries({ queryKey: ['guest-queue', roomId] });
+      qc.invalidateQueries({ queryKey: ['admitted-guests', roomId] });
     },
     onError: () => toast.error('Action failed.'),
   });
