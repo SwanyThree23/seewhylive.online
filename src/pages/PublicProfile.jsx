@@ -33,6 +33,7 @@ const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function PublicProfile() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const urlParams = new URLSearchParams(window.location.search);
   const userId = urlParams.get('id');
 
