@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   ChevronLeft, ChevronRight, Radio, Swords, Tv2, Mic2,
@@ -488,6 +488,7 @@ function Countdown({ onDone }) {
 }
 
 export default function GoLive() {
+  const navigate = useNavigate();
   const [step,        setStep]        = useState('pick');
   const [format,      setFormat]      = useState(null);
   const [title,       setTitle]       = useState('');
@@ -527,6 +528,7 @@ export default function GoLive() {
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
@@ -1017,7 +1019,7 @@ export default function GoLive() {
       {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
-      {<EvmuxWebSource isActive={false} onClose={() => {}} />}
+      {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
       {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
@@ -1028,7 +1030,7 @@ export default function GoLive() {
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
-      {partyId && <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />}
+      {partyId && <GuestGrid participants={[]} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
       {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
       <YouTubeDiscovery />
@@ -1065,7 +1067,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1086,7 +1088,7 @@ export default function GoLive() {
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
       {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} />}
-      {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => {}} />}
+      {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => setTimeout(() => navigate('/'), 2000)} />}
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
       {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}

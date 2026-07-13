@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -274,6 +274,7 @@ export default function PKBattlePage() {
   const urlParams = new URLSearchParams(window.location.search);
   const battleId = urlParams.get('id');
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [leftName, setLeftName] = useState('');
   const [rightName, setRightName] = useState('');
@@ -834,7 +835,7 @@ export default function PKBattlePage() {
       <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       <BackgroundCustomizer />
-      <BattleArenaManager roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} onBattleEnd={() => {}} />
+      <BattleArenaManager roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} onBattleEnd={() => { qc.invalidateQueries({ queryKey: ['pk-battle', battleId] }); setTimeout(() => navigate('/'), 2000); }} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -86,6 +87,8 @@ function VoteBar({ leftPct }) {
 }
 
 export default function PKBattleArena() {
+  const roomId = new URLSearchParams(window.location.search).get('id') || null;
+  const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [battleActive, setBattleActive]         = useState(false);
@@ -349,17 +352,17 @@ export default function PKBattleArena() {
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <GiftSystem roomId={null} userId={user?.id || null} isHost={true} />
-      <GiftLeaderboard roomId={null} />
+      <GiftSystem roomId={roomId} userId={user?.id || null} isHost={true} />
+      <GiftLeaderboard roomId={roomId} />
       <ViewerCount count={totalVotes} peakViewers={totalVotes} />
-      <SwanAIRecommendations roomId={null} currentLayout='pkbattle' viewerCount={totalVotes} />
+      <SwanAIRecommendations roomId={roomId} currentLayout='pkbattle' viewerCount={totalVotes} />
       <HostAlertCenter />
       <StreamHealthMonitor isStreaming={battleActive} />
-      <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
-      <PKBattleInterface roomId={null} />
-      <StreamAnalyticsDashboard roomId={null} isHost={true} isLive={false} />
+      <BattleArenaManager roomId={roomId} isHost={true} onBattleEnd={() => { setTimeout(() => navigate('/'), 2000); }} />
+      <PKBattleInterface roomId={roomId} />
+      <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={battleActive} />
       <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
-      <LivePoll roomId={null} isHost={true} />
+      <LivePoll roomId={roomId} isHost={true} />
     </div>
   );
 }
