@@ -344,6 +344,8 @@ export default function GreenroomPage() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -882,7 +884,7 @@ export default function GreenroomPage() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={0} currentSubs={subCount} currentViewers={participants.length} />
-      <ViewerCount count={participants.length} peakViewers={participants.length} />
+      <ViewerCount count={participants.length} peakViewers={peakViewers} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={participants.length} isLive={roomId != null} userTier="free" />
       {isHost && roomId && <LivePoll roomId={roomId} isHost={isHost} />}
     </div>

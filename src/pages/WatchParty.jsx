@@ -28,7 +28,10 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -487,6 +490,8 @@ export default function WatchPartyPage() {
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
 
@@ -565,7 +570,7 @@ export default function WatchPartyPage() {
   const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
 
   // VOD recording — runs while host has local stream and party is loaded
-  useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: isHost ? localStream : null });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: isHost ? localStream : null });
 
   // Per-peer connection quality — Map<userId, {bars, rtt}>
   const [peerQuality, setPeerQuality] = useState(() => new Map());
@@ -592,6 +597,16 @@ export default function WatchPartyPage() {
     }, 5000);
     return () => clearInterval(interval);
   }, [peerUserIds]); // peersRef is a stable ref
+
+  const [activeWpPc, setActiveWpPc] = useState(null);
+  useEffect(() => {
+    for (const { pc } of peersRef.current.values()) {
+      if (pc.connectionState === 'connected') { setActiveWpPc(pc); return; }
+    }
+    setActiveWpPc(null);
+  }, [peerUserIds]);
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
+  useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -1006,7 +1021,7 @@ export default function WatchPartyPage() {
       <ViewerRail members={members} hostId={party.host_id} />
 
       <div className="shrink-0 px-3 py-1.5">
-        <PartyHypeMeter partyId={partyId} memberCount={members.length} />
+        <PartyHypeMeter partyId={partyId} memberCount={members.length} onHypeChange={setHypeLevel} />
       </div>
 
       <div className="shrink-0 relative">
@@ -1260,7 +1275,7 @@ export default function WatchPartyPage() {
                 {isHost && (
                   <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
                 )}
-                <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+                <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />
                 {members.length < 10 && (
                   <InviteCard partyUrl={window.location.href} />
                 )}
@@ -1480,6 +1495,7 @@ export default function WatchPartyPage() {
       <BackgroundCustomizer />
       <WatchPartyCoStreamPanel roomId={partyId} currentUser={user || null} isHost={true} />
       <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={''} onPlayVideo={() => {}} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
     </div>
   );
 }
