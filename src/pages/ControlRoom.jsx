@@ -357,7 +357,8 @@ export default function ControlRoomPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
@@ -703,7 +704,7 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
       {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {<BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

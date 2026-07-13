@@ -493,7 +493,8 @@ export default function WatchPartyPage() {
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
   const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
   const [busViewerCount, setBusViewerCount] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
@@ -1480,7 +1481,7 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {isHost && <BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
       {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
       {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

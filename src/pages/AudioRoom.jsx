@@ -279,7 +279,8 @@ export default function AudioRoom() {
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   const [activePc, setActivePc] = useState(null);
   useEffect(() => {
@@ -935,7 +936,7 @@ export default function AudioRoom() {
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
       {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {isHost && <BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
       {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
