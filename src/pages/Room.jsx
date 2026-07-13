@@ -203,6 +203,8 @@ export default function RoomPage() {
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [showPreflight, setShowPreflight] = useState(false);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
@@ -999,8 +1001,8 @@ export default function RoomPage() {
       <ShareModal isOpen={false} onClose={() => {}} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title || ''} />
       <WebRTCConfigModal isOpen={false} onClose={() => {}} onApply={() => {}} currentConfig={{}} />
       {isHost && roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} />}
-      {isHost && <GreenRoomModal isOpen={false} onClose={() => {}} onReady={() => {}} localStream={localStream} audioEnabled={audioEnabled} />}
-      {isHost && room && user && <GreenRoomPreflight isOpen={false} onClose={() => {}} onGoLive={() => {}} party={room} user={user} />}
+      {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && room && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} party={room} user={user} />}
       {isHost && user?.id && <OverlayThemeBuilder creatorId={room?.host_id || user?.id} />}
       {isHost && roomId && user?.id && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => {}} />}
       {isHost && roomId && <AuraPanelDrawer roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => {}} />}
