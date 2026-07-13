@@ -14,7 +14,7 @@ import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
-import panelService from '../services/panelService';
+import * as panelService from '../services/panelService';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';

@@ -20,6 +20,10 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import { isSafeUrl } from '@/lib/security';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';

@@ -20,7 +20,7 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
-import GiftSystem from '../components/live/GiftSystem';
+import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
 import GiftLeaderboard from '../components/live/GiftLeaderboard';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -308,7 +308,7 @@ export default function PKBattleArena() {
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <GiftSystem roomId={roomId} userId={user?.id || null} isHost={true} />
+      <GiftSystem roomId={roomId} currentUser={user} hostId={user?.id} />
       <GiftLeaderboard roomId={roomId} />
       <ViewerCount count={totalVotes} peakViewers={totalVotes} />
       <SwanAIRecommendations roomId={roomId} currentLayout='pkbattle' viewerCount={totalVotes} />
