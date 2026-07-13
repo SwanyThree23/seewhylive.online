@@ -565,6 +565,8 @@ export default function PKBattlePage() {
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
   const subCount = useSubscriptionCount(user?.id);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
 
   const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
@@ -815,7 +817,7 @@ export default function PKBattlePage() {
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {battleId && <BattleMode roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={battle?.status === 'active'} />}
       {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={battle?.title || ''} />}

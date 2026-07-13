@@ -204,6 +204,8 @@ export default function RoomPage() {
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
@@ -887,7 +889,7 @@ export default function RoomPage() {
       <StreamHealthDashboard isLive={roomId != null} />
       {!isHost && roomId && <QuickTip recipientId={room?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
-      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} />}
@@ -957,7 +959,7 @@ export default function RoomPage() {
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
       {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
+      {isHost && <BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

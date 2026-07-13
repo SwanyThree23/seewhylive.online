@@ -492,6 +492,8 @@ export default function WatchPartyPage() {
   useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const [busViewerCount, setBusViewerCount] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
@@ -1408,7 +1410,7 @@ export default function WatchPartyPage() {
       <StreamHealthDashboard isLive={partyId != null} />
       {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
-      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
@@ -1478,7 +1480,7 @@ export default function WatchPartyPage() {
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
+      {isHost && <BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
       {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

@@ -134,6 +134,7 @@ import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useVODRecording } from '../hooks/useVODRecording';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
@@ -347,6 +348,7 @@ export default function ControlRoomPage() {
   const [uptime, setUptime] = useState(0);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
   const [viewerCount, setViewerCount] = useState(0);
@@ -354,6 +356,8 @@ export default function ControlRoomPage() {
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
@@ -628,7 +632,7 @@ export default function ControlRoomPage() {
       <StreamHealthDashboard isLive={roomId != null} />
       {!true && roomId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
-      {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} />}
@@ -699,7 +703,7 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
       {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}

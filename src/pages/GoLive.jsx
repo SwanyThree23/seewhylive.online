@@ -520,6 +520,8 @@ export default function GoLive() {
   useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
   const [isSharing, setIsSharing] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
     try {
@@ -983,7 +985,7 @@ export default function GoLive() {
       <StreamHealthDashboard isLive={partyId != null} />
       {!true && partyId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
-      {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}
@@ -1062,7 +1064,7 @@ export default function GoLive() {
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={true} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
       {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
