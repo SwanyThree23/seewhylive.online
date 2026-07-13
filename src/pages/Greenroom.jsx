@@ -204,6 +204,7 @@ export default function GreenroomPage() {
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });

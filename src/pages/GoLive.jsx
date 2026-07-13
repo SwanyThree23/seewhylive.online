@@ -378,6 +378,7 @@ export default function GoLive() {
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {

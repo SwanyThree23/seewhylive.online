@@ -406,6 +406,7 @@ export default function LiveRoom() {
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showPKBattleModal, setShowPKBattleModal] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
 
   // Elapsed-seconds counter (starts on mount)

@@ -63,6 +63,7 @@ export default function RoomPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const screenStreamRef = useRef(null);

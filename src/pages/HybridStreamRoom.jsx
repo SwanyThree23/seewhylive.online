@@ -98,6 +98,7 @@ export default function HybridStreamRoom() {
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };

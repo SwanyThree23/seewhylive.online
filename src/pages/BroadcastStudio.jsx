@@ -462,6 +462,7 @@ export default function BroadcastStudio() {
   const [showPKBattleModal, setShowPKBattleModal] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);

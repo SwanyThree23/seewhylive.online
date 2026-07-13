@@ -263,6 +263,7 @@ export default function PKBattlePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const battleId = searchParams.get('id');
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   const [leftName, setLeftName] = useState('');
   const [rightName, setRightName] = useState('');

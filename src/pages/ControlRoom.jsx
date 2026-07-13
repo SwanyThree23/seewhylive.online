@@ -240,6 +240,7 @@ export default function ControlRoomPage() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const screenStreamRef = useRef(null);
   const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
   const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };

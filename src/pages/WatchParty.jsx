@@ -420,6 +420,7 @@ export default function WatchPartyPage() {
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
   const [wpAriaMessage, setWpAriaMessage] = useState('');
