@@ -561,14 +561,12 @@ export default function BroadcastStudio() {
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
   const subCount = useSubscriptionCount(user?.id);
-
-  // Warn broadcaster once when connection drops to 1 bar or below
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Broadcast', stream: localStream });
   const lastNetBarsRef = useRef(null);
   useEffect(() => {
-    if (netBars === null || netBars === undefined) return;
-    if (netBars <= 1 && (lastNetBarsRef.current === null || lastNetBarsRef.current > 1)) {
-      toast.warning('Poor network connection — stream quality may be affected');
-    }
+    if (netBars == null) return;
+    if (netBars <= 1 && (lastNetBarsRef.current === null || lastNetBarsRef.current > 1)) toast.warning('Poor network connection — stream quality may be affected');
     lastNetBarsRef.current = netBars;
   }, [netBars]);
 
@@ -2687,24 +2685,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   );
 }
 
-// ── Picture-in-picture local camera (hybrid mode overlay) ───────────────────
-function PipCameraTile({ localStream, videoEnabled }) {
-  const ref = useRef(null);
-  useEffect(() => { if (ref.current && localStream) ref.current.srcObject = localStream; }, [localStream]);
-  const showVideo = !!(localStream && videoEnabled);
-  return (
-    <div className="absolute bottom-3 right-3 rounded-xl overflow-hidden shadow-xl"
-      style={{ width: 120, height: 90, border: '2px solid rgba(212,175,55,0.4)', background: '#000', zIndex: 10 }}>
-      <video ref={ref} autoPlay muted playsInline className="w-full h-full object-cover"
-        style={{ display: showVideo ? 'block' : 'none' }} />
-      <div className="w-full h-full flex items-center justify-center"
-        style={{ color: 'rgba(255,255,255,0.3)', display: showVideo ? 'none' : 'flex' }}>
-        <VideoOff className="w-5 h-5" />
-      </div>
-      <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
-        style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
-      <TipGoalBar roomId={null} goal={100} current={0} />
-      <TopTippers roomId={null} />
-    </div>
-  );
-}
+import PipCameraTile from '../components/live/PipCameraTile';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useVODRecording } from '../hooks/useVODRecording';

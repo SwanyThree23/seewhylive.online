@@ -9,6 +9,12 @@ import {
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useCameraDevices } from '../hooks/useCameraDevices';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { toast } from 'sonner';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -162,6 +168,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   const [camOn,   setCamOn]   = useState(false);
   const [micOn,   setMicOn]   = useState(true);
   const [error,   setError]   = useState(null);
+  const { cameras, handleSwitchCamera } = useCameraDevices();
 
   useEffect(() => { if (videoRef.current) videoRef.current.srcObject = stream || null; }, [stream]);
 
@@ -177,7 +184,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
     } catch {
       setError('Camera/mic access denied — check browser permissions');
     }
-  }, [onStreamReady, videoId, audioId, resolution, micOn, stream]);
+  }, [onStreamReady, micOn, stream]);
 
   useEffect(() => {
     start();

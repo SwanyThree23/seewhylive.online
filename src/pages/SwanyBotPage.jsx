@@ -14,6 +14,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';

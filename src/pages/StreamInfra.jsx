@@ -21,6 +21,7 @@ import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,

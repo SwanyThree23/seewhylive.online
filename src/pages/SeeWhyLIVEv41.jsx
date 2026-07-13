@@ -9,6 +9,22 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import CoStreamHub from '../components/live/CoStreamHub';
 import NativeSelect from '@/components/shared/NativeSelect';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import NotificationBell from '../components/shared/NotificationBell';
+import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import GiftSystem from '../components/live/GiftSystem';
+import GiftLeaderboard from '../components/live/GiftLeaderboard';
+import ViewerCount from '../components/live/ViewerCount';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import RewardShop from '../components/loyalty/RewardShop';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {

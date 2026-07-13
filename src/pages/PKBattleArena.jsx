@@ -18,6 +18,19 @@ import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import GiftSystem from '../components/live/GiftSystem';
+import GiftLeaderboard from '../components/live/GiftLeaderboard';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import BattleArenaManager from '../components/live/BattleArenaManager';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import GuestControls from '../components/live/GuestControls';
+import LivePoll from '../components/live/LivePoll';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
@@ -211,6 +224,8 @@ export default function PKBattleArena() {
   const liveBattles     = battles.filter(b => b.status === 'live');
   const upcomingBattles = battles.filter(b => b.status === 'upcoming' || b.status === 'pending');
   const displayed       = tab === 'live' ? liveBattles : upcomingBattles;
+  const totalVotes = battles.length;
+  const battleActive = liveBattles.length > 0;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>

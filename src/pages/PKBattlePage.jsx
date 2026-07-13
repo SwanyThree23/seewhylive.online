@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -17,6 +17,8 @@ import PKBattleProgress from '../components/pk/PKBattleProgress';
 import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
 import PKInviteModal from '../components/pk/PKInviteModal';
 import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useIsMobile } from '../hooks/use-mobile';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import GiftTray from '../components/live/GiftTray';
 import TipNowModal from '../components/live/TipNowModal';
@@ -442,6 +444,7 @@ export default function PKBattlePage() {
 
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
+  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
   React.useEffect(() => {

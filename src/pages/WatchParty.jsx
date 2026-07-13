@@ -476,8 +476,8 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
-  const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(partyId, localStream);
+  const { localStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
 
   const [activeWpPc, setActiveWpPc] = useState(null);
   useEffect(() => {
@@ -487,6 +487,8 @@ export default function WatchPartyPage() {
     setActiveWpPc(null);
   }, [peerUserIds]);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: localStream });
+  const [peerQuality, setPeerQuality] = useState(() => new Map());
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
