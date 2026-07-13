@@ -48,6 +48,8 @@ export default function LoyaltyProgram() {
   const creatorId = urlParams.get('creator');
   const [activeTab, setActiveTab] = useState(null);
   const [showRewardForm, setShowRewardForm] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const [rewardForm, setRewardForm] = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
   const [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
 

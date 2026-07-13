@@ -14,8 +14,10 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
@@ -240,6 +242,7 @@ export default function AudioRoom() {
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   function handleToggleAudio() {
     toggleAudio();
@@ -480,6 +483,7 @@ export default function AudioRoom() {
           members={members.map(m => ({
             ...m,
             display_name: m.user_name,
+            speaking: m.user_id === user?.id ? localIsSpeaking : m.speaking,
           }))}
           localStream={localStream}
           remoteStreams={remoteStreams}

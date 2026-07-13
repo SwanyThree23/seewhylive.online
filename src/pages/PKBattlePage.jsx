@@ -282,7 +282,7 @@ export default function PKBattlePage() {
   const [leftOnFire, setLeftOnFire] = useState(false);
   const [rightOnFire, setRightOnFire] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [pkRound, setPkRound] = useState(1);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [leftSupporters, setLeftSupporters] = useState(new Set());
@@ -301,12 +301,6 @@ export default function PKBattlePage() {
   const countdownStartedRef = useRef(false);
   const battleDurationRef = useRef(BATTLE_DURATION);
 
-  useEffect(() => {
-    var check = function() { setIsMobile(window.innerWidth < 768); };
-    check();
-    window.addEventListener('resize', check);
-    return function() { window.removeEventListener('resize', check); };
-  }, []);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -548,6 +542,11 @@ export default function PKBattlePage() {
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
+    { stream: localCamStream, label: 'You', speaking: battleLocalSpeaking },
+    ...Array.from(battleRemoteStreams.entries()).map(([peerId, stream]) => ({
+      stream,
+      label: battlePeerUserIds?.get(peerId) || 'Viewer',
+    })),
   ];
   const battleOverlay = {
     title: battle?.title || `${bLeftName} vs ${bRightName}`,

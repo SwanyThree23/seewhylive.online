@@ -113,6 +113,7 @@ function FanbaseRoomCard({ room }) {
 }
 
 export default function DiscoverPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');

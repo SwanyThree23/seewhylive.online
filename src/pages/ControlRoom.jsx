@@ -223,10 +223,31 @@ export default function ControlRoomPage() {
 
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [uptime, setUptime] = useState(0);
-  const [micOn, setMicOn] = useState(true);
+  const prefCamCR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicCR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamCR);
+  const [activeMicId, setActiveMicId] = useState(prefMicCR);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamCR, audioDeviceId: prefMicCR });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const subCount = useSubscriptionCount(user?.id);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -269,6 +290,7 @@ export default function ControlRoomPage() {
     }, 1000);
     return () => clearInterval(iv);
   }, [session?.started_at]);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),

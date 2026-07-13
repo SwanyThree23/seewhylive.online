@@ -14,6 +14,7 @@ import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
 import AggregatedChat from '../components/live/AggregatedChat';
@@ -452,6 +453,17 @@ export default function BroadcastStudio() {
   const [gateComplete, setGateComplete]           = useState(false);
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [isExclusive, setIsExclusive] = useState(false);
+  const [showPreflight, setShowPreflight] = useState(false);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
@@ -464,11 +476,15 @@ export default function BroadcastStudio() {
   const streamStartRef = useRef(Date.now());
   const [bitratePreset, setBitratePreset] = useState(3000);
   const [tipTotal, setTipTotal] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const [superchats, setSuperchats] = useState([]);
   const [raisedHands, setRaisedHands] = useState(new Set());
   const [slowMode, setSlowMode] = useState(false);
   const [slowModeCooldown, setSlowModeCooldown] = useState(30);
   const [pinnedMessage, setPinnedMessage] = useState(null);
+
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);
 
   // Elapsed timer for clip timestamps
   useEffect(() => {
@@ -521,6 +537,7 @@ export default function BroadcastStudio() {
   const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
@@ -544,6 +561,7 @@ export default function BroadcastStudio() {
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
+  const subCount = useSubscriptionCount(user?.id);
 
   // Warn broadcaster once when connection drops to 1 bar or below
   const lastNetBarsRef = useRef(null);
@@ -1529,7 +1547,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <span className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>
                     {members.length} / 20 panelists
                   </span>
-                  <button onClick={copyLink} className="text-[11px] px-2 py-0.5 rounded"
+                  <button onClick={() => setShowInviteSheet(true)} className="text-[11px] px-2 py-0.5 rounded"
                     style={{ background: 'rgba(212,175,55,0.08)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
                     + Invite
                   </button>

@@ -400,6 +400,13 @@ export default function LiveRoom() {
   const [echoCan,     setEchoCan]       = useState(true);
   const [autoGain,    setAutoGain]      = useState(true);
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
 
   // Elapsed-seconds counter (starts on mount)
   const [elapsed, setElapsed] = useState(0);
@@ -407,6 +414,30 @@ export default function LiveRoom() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+
+  // Highlight auto-clip detector
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+
+  // Screen share
+  const [isSharing, setIsSharing] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const screenStreamRef = useRef(null);
+  const handleStartShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      screenStreamRef.current = stream;
+      stream.getVideoTracks()[0].onended = () => { screenStreamRef.current = null; setIsSharing(false); };
+      setIsSharing(true);
+    } catch {}
+  };
+  const handleStopShare = () => {
+    screenStreamRef.current?.getTracks().forEach(t => t.stop());
+    screenStreamRef.current = null;
+    setIsSharing(false);
+  };
 
   // Local UI state
   const [stageData, setStageData]   = useState(stage);

@@ -770,7 +770,10 @@ export default function MonetizationPage() {
                 <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <MilestonesPanel subCount={subCount} />
                   <div style={card()}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: '0 0 14px', ...T }}>Tier Breakdown</p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                      <p style={{ fontSize: 15, fontWeight: 700, color: TEAL, margin: 0, ...T }}>Tier Breakdown</p>
+                      <button onClick={() => { setEditingTier(null); setShowTierEditor(true); }} style={{ padding: '5px 12px', borderRadius: 8, background: `${G}18`, border: `1px solid ${G}40`, color: G, fontSize: 12, fontWeight: 700, cursor: 'pointer', ...T }}>+ Create Tier</button>
+                    </div>
                     {[
                       { name: 'Bronze', key: 'bronze', price: 1,  color: '#C0392B' },
                       { name: 'Silver', key: 'premium', price: 5,  color: '#9ca3af' },

@@ -62,6 +62,16 @@ export default function VODCard({ vod, onEdit, onTrim, onChapters, onPublish }) 
           </div>
           <div style={{ display: 'flex', gap: 6, paddingTop: 4 }}>
             <button
+              onClick={() => onEdit && onEdit(vod)}
+              style={{
+                height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,
+                fontSize: 10, borderRadius: 6, cursor: 'pointer',
+                background: 'transparent', color: 'rgba(255,255,255,0.5)', border: 'none',
+              }}
+            >
+              <Edit className="w-3 h-3" /> Edit
+            </button>
+            <button
               onClick={() => onTrim(vod)}
               style={{
                 height: 28, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4,

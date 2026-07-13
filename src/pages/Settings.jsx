@@ -80,6 +80,9 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 export default function SettingsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const [fullName, setFullName] = useState('');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);

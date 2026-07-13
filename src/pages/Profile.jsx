@@ -109,6 +109,7 @@ export default function ProfilePage() {
   const roomId = searchParams.get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   const [isEditing, setIsEditing]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');

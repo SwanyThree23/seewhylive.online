@@ -676,15 +676,13 @@ function StudioTab({ user }) {
               className="flex-1 rounded-lg px-3 py-2 text-xs text-white/70 focus:outline-none"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
             />
-            <select
+            <NativeSelect
               value={newRoomType}
-              onChange={function(e) { setNewRoomType(e.target.value); }}
-              className="rounded-lg px-2 py-2 text-xs focus:outline-none"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.6)' }}
-            >
-              <option value="video">Video</option>
-              <option value="audio">Audio</option>
-            </select>
+              onChange={function(v) { setNewRoomType(v); }}
+              options={[{ value: 'video', label: 'Video' }, { value: 'audio', label: 'Audio' }]}
+              placeholder="Type"
+              style={{ minWidth: 80 }}
+            />
             <button
               onClick={addRoom}
               style={{ display:'flex', alignItems:'center', gap:4, height:36, padding:'0 12px', borderRadius:8, background:'rgba(212,175,55,0.15)', color:'#d4af37', border:'1px solid rgba(212,175,55,0.3)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}

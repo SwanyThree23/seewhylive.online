@@ -41,6 +41,10 @@ export default function CreatorDashboardPage() {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room_id');
   const [timeRange, setTimeRange] = useState('7d');
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],

@@ -57,7 +57,7 @@ function SimulatedCamera({ user }) {
   );
 }
 
-export default function DevicePreview({ user, onDeviceState }) {
+export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const analyserRef = useRef(null);
@@ -131,6 +131,7 @@ export default function DevicePreview({ user, onDeviceState }) {
       setCameraOn(true);
       setMicOn(true);
       setPermDenied(false);
+      onStreamReady?.(stream);
     } catch (err) {
       if (err.name === 'NotAllowedError') { setPermDenied(true); }
       else { setIsSim(true); setCameraOn(true); setMicOn(true); }
@@ -157,6 +158,7 @@ export default function DevicePreview({ user, onDeviceState }) {
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
     setMicLevel(0);
+    onStreamReady?.(null);
   };
 
   const toggleCamera = () => { cameraOn ? stopCamera() : startCamera(); };

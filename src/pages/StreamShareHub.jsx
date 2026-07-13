@@ -459,7 +459,7 @@ export default function StreamShareHub() {
       <NotificationBell />
       <ContentRecommendations />
       <CollaborationMatcher />
-      <CreatorBridge user={null} />
+      <CreatorBridge user={user || null} />
       <GlobalSearch />
     </div>
   );

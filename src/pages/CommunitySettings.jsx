@@ -59,6 +59,7 @@ const TAG_OPTIONS = [
 ];
 
 export default function CommunitySettingsPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const urlParams = new URLSearchParams(window.location.search);
   const communityId = urlParams.get('id');
   const queryClient = useQueryClient();

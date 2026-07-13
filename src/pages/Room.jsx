@@ -54,7 +54,23 @@ export default function RoomPage() {
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [showPreflight, setShowPreflight] = useState(false);
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [showPKBattleModal, setShowPKBattleModal] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const handleStartShare = (stream) => { if (!stream) return; screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
   const [isRecording, setIsRecording] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
@@ -67,11 +83,32 @@ export default function RoomPage() {
   // Real local camera/mic stream — seed device IDs from stored preferences
   const prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamRoom);
+  const [activeMicId, setActiveMicId] = useState(prefMicRoom);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
 
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
-  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const [activePc, setActivePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(peersRef?.current?.entries() || []);
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActivePc(connected ? connected[1].pc : null);
+  }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
+
+  // VOD recording — activated once host has a local stream and room is loaded
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
+  const [busViewerCount, setBusViewerCount] = useState(0);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+
+  // Stream start time — set once on mount
+  const streamStartRef = useRef(Date.now());
 
   // Elapsed-seconds counter (starts when component mounts)
   const [elapsed, setElapsed] = useState(0);
@@ -118,7 +155,7 @@ export default function RoomPage() {
   }, [toggleAudio, toggleVideo]);
 
   // WebRTC peer mesh — connects to all other participants via STUN/TURN
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   const announceJoinRef = useRef(announceJoin);
   const leaveRoomRef = useRef(leaveRoom);
   useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);

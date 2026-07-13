@@ -155,7 +155,7 @@ function FormatCard({ fmt, onSelect }) {
   );
 }
 
-function CameraPreview({ onStreamReady, onMicChange }) {
+function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [stream,  setStream]  = useState(null);
@@ -355,9 +355,44 @@ export default function GoLive() {
   const [suggestingTitles, setSuggestingTitles] = useState(false);
   const [localStream,  setLocalStream]  = useState(null);
   const [micOn,       setMicOn]       = useState(true);
+  const [videoOn,     setVideoOn]     = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
+  const cameraRetryRef = useRef(null);
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const subCount = useSubscriptionCount(user?.id);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
+  const [isSharing, setIsSharing] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
+  const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const screenStreamRef = useRef(null);
+  const handleStartShare = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      screenStreamRef.current = stream;
+      stream.getVideoTracks()[0].onended = () => { screenStreamRef.current = null; setIsSharing(false); };
+      setIsSharing(true);
+    } catch {}
+  };
+  const handleStopShare = () => {
+    screenStreamRef.current?.getTracks().forEach(t => t.stop());
+    screenStreamRef.current = null;
+    setIsSharing(false);
+  };
 
   // Elapsed counter — only runs while live (partyId set)
   useEffect(() => {
@@ -554,7 +589,7 @@ export default function GoLive() {
             exit={{ opacity: 0, x: 30 }}
             style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 120px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
-            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} />
+            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} startRef={cameraRetryRef} />
 
             <div>
               <div style={{ ...SL, justifyContent: 'space-between' }}>

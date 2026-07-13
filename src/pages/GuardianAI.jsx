@@ -85,6 +85,7 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 }
 
 export default function GuardianAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({

@@ -77,9 +77,30 @@ export default function HybridStreamRoom() {
   const [spotlightId, setSpotlightId] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
-  const [micOn, setMicOn] = useState(true);
+  const prefCamHR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicHR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamHR);
+  const [activeMicId, setActiveMicId] = useState(prefMicHR);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamHR, audioDeviceId: prefMicHR });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
   const [elapsed, setElapsed] = useState(0);
 
   const { data: user } = useQuery({
@@ -92,6 +113,7 @@ export default function HybridStreamRoom() {
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   const { data: fetchedParticipants = [] } = useQuery({
     queryKey: ['participants', roomId],
@@ -107,6 +129,7 @@ export default function HybridStreamRoom() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   // Real-time participant sync
   useEffect(() => {

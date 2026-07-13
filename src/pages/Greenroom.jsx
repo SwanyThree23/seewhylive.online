@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -181,6 +181,7 @@ export default function GreenroomPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
+  const [previewStream, setPreviewStream] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [roleRequested, setRoleRequested] = useState('audience');
   const [joinMessage, setJoinMessage] = useState('');
@@ -195,6 +196,14 @@ export default function GreenroomPage() {
   const [newRoomTitle, setNewRoomTitle] = useState('');
   const [newRoomCategory, setNewRoomCategory] = useState('other');
   const [isSharing, setIsSharing] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [showTippingModal, setShowTippingModal] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -209,11 +218,16 @@ export default function GreenroomPage() {
     enabled: !!roomId,
     refetchInterval: 10000,
   });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   useEffect(() => {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
+  const [deviceRetryKey, setDeviceRetryKey] = useState(0);
+  const [busViewerCount, setBusViewerCount] = useState(0);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -383,7 +397,7 @@ export default function GreenroomPage() {
 
         {/* ── LEFT: Device Preview ── */}
         <div className="w-full md:w-[60%] space-y-4">
-          <DevicePreview user={user} onDeviceState={setDeviceState} />
+          <DevicePreview key={deviceRetryKey} user={user} onDeviceState={setDeviceState} onStreamReady={setPreviewStream} />
         </div>
 
         {/* ── RIGHT: Controls ── */}

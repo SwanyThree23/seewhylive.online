@@ -123,6 +123,7 @@ export default function LiveBattles() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [filter, setFilter] = useState('active');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
 
   const { data: battles = [], isLoading } = useQuery({
     queryKey: ['battles', filter],

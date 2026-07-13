@@ -37,6 +37,7 @@ const VIOLATION_STYLE = {
 const TABS = ['pending', 'reviewed', 'insights'];
 
 export default function AIModerationPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
   const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [isScanning, setIsScanning] = useState(false);

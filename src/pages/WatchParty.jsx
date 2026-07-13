@@ -29,6 +29,11 @@ import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
@@ -399,11 +404,22 @@ export default function WatchPartyPage() {
   const [theaterMode, setTheaterMode] = useState(false);
   const [showSyncWarn, setShowSyncWarn] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const directVideoRef = useRef(null);
   const prevMemberCountRef = useRef(null);
 
   // AI panel state
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [showTippingModal, setShowTippingModal] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
   const [wpAriaMessage, setWpAriaMessage] = useState('');
@@ -457,9 +473,20 @@ export default function WatchPartyPage() {
   });
 
   const isHost = party?.host_id === user?.id;
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   const { localStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(partyId, localStream);
+
+  const [activeWpPc, setActiveWpPc] = useState(null);
+  useEffect(() => {
+    for (const { pc } of peersRef.current.values()) {
+      if (pc.connectionState === 'connected') { setActiveWpPc(pc); return; }
+    }
+    setActiveWpPc(null);
+  }, [peerUserIds]);
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
+  useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -883,7 +910,7 @@ export default function WatchPartyPage() {
       <ViewerRail members={members} hostId={party.host_id} />
 
       <div className="shrink-0 px-3 py-1.5">
-        <PartyHypeMeter partyId={partyId} memberCount={members.length} />
+        <PartyHypeMeter partyId={partyId} memberCount={members.length} onHypeChange={setHypeLevel} />
       </div>
 
       <div className="shrink-0 relative">
