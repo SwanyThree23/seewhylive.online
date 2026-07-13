@@ -985,7 +985,7 @@ export default function GoLive() {
       <StreamHealthDashboard isLive={partyId != null} />
       {!true && partyId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
       {<LowerThirdsBanner onBannerChange={() => {}} />}
-      {<SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}

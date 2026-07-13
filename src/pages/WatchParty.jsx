@@ -1411,7 +1411,7 @@ export default function WatchPartyPage() {
       <StreamHealthDashboard isLive={partyId != null} />
       {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
       {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
-      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenCaptureStream) handleScreenCapture(); else if (s === 'camera' && screenCaptureStream) { screenCaptureStream.getTracks().forEach(t => t.stop()); setScreenCaptureStream(null); } }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
