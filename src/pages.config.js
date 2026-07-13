@@ -122,6 +122,7 @@ const INSForgeStudio           = lazy(() => import('./pages/INSForgeStudio'));
 const CreatorAnalytics         = lazy(() => import('./pages/CreatorAnalytics'));
 const SVSArena                 = lazy(() => import('./pages/SVSArena'));
 const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
+const StudioHub                = lazy(() => import('./pages/StudioHub'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -237,6 +238,7 @@ export const PAGES = {
     "CreatorAnalytics": CreatorAnalytics,
     "SVSArena": SVSArena,
     "WisperFlo": WisperFlo,
+    "StudioHub": StudioHub,
 }
 
 export const pagesConfig = {
