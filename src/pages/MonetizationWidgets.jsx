@@ -16,23 +16,9 @@ import MonetizationDashboard from '../components/monetization/MonetizationDashbo
 import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -40,12 +26,19 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
   { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#6DBF7E' },
-  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#a78bfa' },
+  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#D4AF37' },
 ];
 
 export default function MonetizationWidgets() {
   const [activeTab, setActiveTab] = useState('goals');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: myRooms = [] } = useQuery({
     queryKey: ['my-live-rooms', user?.id],
@@ -125,7 +118,7 @@ export default function MonetizationWidgets() {
 
         {/* Sound Alerts */}
         {activeTab === 'alerts' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
@@ -167,21 +160,6 @@ export default function MonetizationWidgets() {
         <MonetizationDashboard roomId={activeRoom?.id || null} />
         <VirtualGoodsStore userId={user?.id} />
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

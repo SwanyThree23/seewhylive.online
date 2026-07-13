@@ -4,17 +4,16 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCanvasCompositor } from '@/hooks/useCanvasCompositor';
-import { hapticMedium } from '@/utils/haptics';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
-  connecting: { label: 'Connecting…', color: '#F59E0B' },
+  connecting: { label: 'Connecting…', color: '#D4AF37' },
   live: { label: 'LIVE', color: '#C0392B' },
   recording: { label: 'Recording', color: '#6DBF7E' },
-  error: { label: 'Error', color: '#C0392B' },
+  error: { label: 'Error', color: '#EF4444' },
 };
 
 /**
@@ -215,7 +214,7 @@ export default function CompositorOverlay({
         style={{
           background: open ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.1)',
           border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : 'rgba(192,57,43,0.3)'}`,
-          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#C0392B',
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#FF8899',
           ...T,
         }}
       >
@@ -313,7 +312,7 @@ export default function CompositorOverlay({
           {/* Action buttons */}
           {status === 'idle' && (
             <button
-              onClick={() => { hapticMedium(); useRecord ? startRecord() : goLive(); }}
+              onClick={useRecord ? startRecord : goLive}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-2 transition-all"
               style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD, ...T }}
             >

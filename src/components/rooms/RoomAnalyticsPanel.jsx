@@ -46,7 +46,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
       label: 'Total Viewers',
       value: latest.total_viewers || 0,
       icon: Eye,
-      color: 'text-[#7B5DA6]',
+      color: 'text-[#D4854A]',
     },
     {
       label: 'Avg Watch Time',
@@ -112,7 +112,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
                 <XAxis dataKey="timestamp" hide />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="viewer_count" stroke="#7B5DA6" strokeWidth={2} />
+                <Line type="monotone" dataKey="viewer_count" stroke="#D4AF37" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

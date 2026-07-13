@@ -67,9 +67,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
   var isRaised = raisedHands && member.user_id && raisedHands.has(member.user_id);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
 
   var borderColor = speaking
@@ -119,15 +117,15 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           background: 'linear-gradient(135deg, #1A0F0A, #080B18)',
         }}
       >
-        {stream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isLocal}
-            className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={isLocal}
+          className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+          style={{ display: stream ? 'block' : 'none' }}
+        />
+        {!stream && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
             <div style={{ width: 32, height: 32, borderRadius: '50%', border: `1px solid ${color}60`, background: color + '40', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
               {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
@@ -198,7 +196,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
               {menuOpen && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, minWidth: 100, overflow: 'hidden' }}
                   onMouseLeave={() => setMenuOpen(false)}>
-                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#C0392B' }].map(item => (
+                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#FF4444' }].map(item => (
                     <button key={item.label} onClick={() => setMenuOpen(false)}
                       style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
@@ -219,7 +217,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
 function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
   var videoRef = useRef(null);
   useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
 
   return (
@@ -278,7 +276,7 @@ function EmptyTile({ onClick, canInvite }) {
 function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
   var videoRef = useRef(null);
   useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
   var isHostMember = member.user_id === hostId;
   var color = getColor(member.user_name);
@@ -296,10 +294,10 @@ function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
       >
         <div className="absolute inset-0" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.15)' }} />
         <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: color + '30' }}>
-          {stream ? (
-            <video ref={videoRef} autoPlay playsInline muted={isLocal}
-              className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
-          ) : (
+          <video ref={videoRef} autoPlay playsInline muted={isLocal}
+            className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+            style={{ display: stream ? 'block' : 'none' }} />
+          {!stream && (
             <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
               {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
             </div>
@@ -319,7 +317,7 @@ function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
 function ScreenShareTile({ screenStream }) {
   var videoRef = useRef(null);
   useEffect(() => {
-    if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
+    if (videoRef.current) videoRef.current.srcObject = screenStream || null;
   }, [screenStream]);
 
   return (

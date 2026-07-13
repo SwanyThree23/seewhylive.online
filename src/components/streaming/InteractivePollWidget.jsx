@@ -196,7 +196,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${percentage}%` }}
-                      className="h-full bg-gradient-to-r from-blue-500 to-[#4A8A7A]"
+                      className="h-full bg-gradient-to-r from-[#800020] to-[#D4AF37]"
                     />
                   </div>
                 </button>

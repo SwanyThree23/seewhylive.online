@@ -7,7 +7,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import NativeSelect from '@/components/shared/NativeSelect';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -23,21 +35,21 @@ const C = {
   slate:   "#2A2010",
   slateL:  "#3D3520",
   slate2:  "#1E1A2E",
-  text:    "#F0EAF8",
-  textD:   "#B8AECF",
-  textM:   "#8A7A94",
+  text:    "#F0E8D4",
+  textD:   "#C4B596",
+  textM:   "#8A7A62",
   green:   "#6DBF7E",
-  red:     "#E74C3C",
-  blue:    "#5B7FA6",
-  purple:  "#8B44B0",
+  red:     "#C0392B",
+  blue:    "#D4AF37",
+  purple:  "#D4854A",
   cyan:    "#D4854A",
   orange:  "#D4854A",
-  teal:    "#4A8A7A",
-  warn:    "#F39C12",
-  tribute: "#7B5EA7",
-  tribL:   "#A07BC4",
-  state1:  "#5B7FA6",
-  state2:  "#C62828",
+  teal:    "#6DBF7E",
+  warn:    "#D4854A",
+  tribute: "#800020",
+  tribL:   "#C9A84C",
+  state1:  "#D4854A",
+  state2:  "#C0392B",
 };
 
 const F = {
@@ -963,15 +975,17 @@ function MusicStudioPanel() {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Genre</div>
-                <NativeSelect value={genre} onChange={val=>setGenre(val)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}
-                  options={GENRES.map(g=>({value:g,label:g}))} />
+                <select value={genre} onChange={e=>setGenre(e.target.value)}
+                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
+                  {GENRES.map(g=><option key={g}>{g}</option>)}
+                </select>
               </div>
               <div>
                 <div style={{fontSize:10,color:C.textM,fontWeight:700,marginBottom:4,textTransform:"uppercase",letterSpacing:1}}>Key</div>
-                <NativeSelect value={keyVal} onChange={val=>setKeyVal(val)}
-                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}
-                  options={KEYS_LIST.map(k=>({value:k,label:k}))} />
+                <select value={keyVal} onChange={e=>setKeyVal(e.target.value)}
+                  style={{width:"100%",background:C.bg2,border:`1px solid ${C.slate}`,borderRadius:R.sm,padding:"8px 10px",fontFamily:F.body,fontSize:12,outline:"none"}}>
+                  {KEYS_LIST.map(k=><option key={k}>{k}</option>)}
+                </select>
               </div>
             </div>
             <div style={{marginBottom:14}}>
@@ -1171,7 +1185,7 @@ function PlatformsPanel() {
   const totalViewers = platforms.filter(p=>p.live).reduce((a,p)=>a+p.viewers,0);
 
   function togglePlatform(id) {
-    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:p.live?0:Math.floor(Math.random()*600+100)}:p));
+    setPlatforms(ps=>ps.map(p=>p.id===id?{...p,live:!p.live,viewers:0}:p));
   }
 
   const SCENES = ["Main Stage","State vs State Matchup","Tribute Memorial","Podcast Booth","Music Studio","Watch Party","Intermission","Outro Slate"];
@@ -2026,6 +2040,8 @@ export default function SeeWhyLIVEv36() {
   const [activeTab, setActiveTab] = useState("stage");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isLive] = useState(true);
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   const currentTab = TABS.find(t=>t.id===activeTab)||TABS[0];
 

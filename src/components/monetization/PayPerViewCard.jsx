@@ -1,28 +1,13 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Lock, Users, DollarSign, Calendar, Clock, CheckCircle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Lock, Users, DollarSign, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
-
-const GOLD    = '#D4AF37';
-const CRIMSON = '#800020';
-const GREEN   = '#6DBF7E';
-const PANEL   = 'rgba(13,6,24,0.95)';
-const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
-
-const ACCESS_LABELS = {
-  single_event:      'Single Event',
-  early_access:      'Early Access',
-  exclusive_content: 'Exclusive',
-};
-
-const STATUS_CONFIG = {
-  upcoming: { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD,    label: 'Upcoming'  },
-  live:     { bg: 'rgba(255,21,100,0.12)',  border: 'rgba(255,21,100,0.4)',   color: '#C0392B', label: '🔴 LIVE' },
-  ended:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)', label: 'Ended' },
-};
+import moment from 'moment';
 
 export default function PayPerViewCard({ event }) {
   const queryClient = useQueryClient();
@@ -35,7 +20,10 @@ export default function PayPerViewCard({ event }) {
   const { data: hasAccess } = useQuery({
     queryKey: ['ppv-access', event.id, user?.id],
     queryFn: async () => {
-      const access = await base44.entities.PayPerViewAccess.filter({ event_id: event.id, user_id: user.id });
+      const access = await base44.entities.PayPerViewAccess.filter({
+        event_id: event.id,
+        user_id: user.id,
+      });
       return access.length > 0;
     },
     enabled: !!user,
@@ -43,22 +31,28 @@ export default function PayPerViewCard({ event }) {
 
   const purchaseAccessMutation = useMutation({
     mutationFn: async () => {
+      // Create transaction
       const transaction = await base44.entities.Transaction.create({
-        type: 'subscription',
-        amount: event.price,
-        from_user_id: user.id,
+        transaction_type: 'ppv',
+        creator_payout: Math.floor(event.price * 90) / 100,
+        platform_cut: event.price - Math.floor(event.price * 90) / 100,
+        sender_id: user.id,
         room_id: event.room_id,
         community_id: event.community_id,
       });
+
+      // Grant access
       await base44.entities.PayPerViewAccess.create({
         event_id: event.id,
         user_id: user.id,
         amount_paid: event.price,
         transaction_id: transaction.id,
       });
+
+      // Update event stats
       await base44.entities.PayPerViewEvent.update(event.id, {
-        current_participants: (event.current_participants || 0) + 1,
-        revenue: (event.revenue || 0) + event.price,
+        current_participants: event.current_participants + 1,
+        revenue: event.revenue + event.price,
       });
 
       // Log activity
@@ -77,143 +71,109 @@ export default function PayPerViewCard({ event }) {
     onError: () => toast.error('Action failed.'),
   });
 
-  const isSoldOut = event.max_participants && (event.current_participants || 0) >= event.max_participants;
-  const sc        = STATUS_CONFIG[event.status] || STATUS_CONFIG.upcoming;
-  const eventDate = event.event_date ? new Date(event.event_date) : null;
+  const statusColors = {
+    upcoming: 'bg-[#D4AF37]/12 text-[#800020]',
+    live: 'bg-red-100 text-red-800 animate-pulse',
+    ended: 'bg-gray-100 text-gray-800',
+  };
+
+  const accessTypeLabels = {
+    single_event: 'Single Event',
+    early_access: 'Early Access',
+    exclusive_content: 'Exclusive Content',
+  };
+
+  const isSoldOut = event.max_participants && event.current_participants >= event.max_participants;
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
-      transition={{ duration: 0.18 }}
-      className="rounded-2xl overflow-hidden flex flex-col"
-      style={{ background: PANEL, border: `1px solid rgba(212,175,55,0.12)` }}>
-
-      {/* Thumbnail */}
-      <div className="relative h-44 overflow-hidden flex-shrink-0"
-        style={{ background: `linear-gradient(135deg, ${CRIMSON}44, rgba(13,6,24,0.9))` }}>
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.2 }}
+    >
+      <Card className="overflow-hidden">
         {event.thumbnail_url && (
-          <img src={event.thumbnail_url} alt={event.title}
-            className="w-full h-full object-cover absolute inset-0" />
+          <div className="relative h-48 overflow-hidden">
+            <img
+              src={event.thumbnail_url}
+              alt={event.title}
+              className="w-full h-full object-cover"
+            />
+            {!hasAccess && (
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                <Lock className="w-12 h-12 text-white" />
+              </div>
+            )}
+            <Badge className={`absolute top-3 right-3 ${statusColors[event.status]}`}>
+              {event.status === 'live' ? '🔴 LIVE' : event.status.toUpperCase()}
+            </Badge>
+          </div>
         )}
-
-        {/* Lock overlay when not purchased */}
-        {!hasAccess && (
-          <div className="absolute inset-0 flex items-center justify-center"
-            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ background: 'rgba(0,0,0,0.6)', border: '2px solid rgba(212,175,55,0.4)' }}>
-              <Lock className="w-5 h-5" style={{ color: GOLD }} />
+        
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-lg mb-2">{event.title}</CardTitle>
+              <Badge variant="outline">{accessTypeLabels[event.access_type]}</Badge>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-primary">${event.price}</p>
+              {hasAccess && (
+                <Badge className="mt-1 bg-[#6DBF7E]/15 text-[#6DBF7E]">
+                  Purchased
+                </Badge>
+              )}
             </div>
           </div>
-        )}
+        </CardHeader>
 
-        {/* Status badge */}
-        <div className="absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-black uppercase"
-          style={{ background: sc.bg, border: `1px solid ${sc.border}`, color: sc.color, ...T,
-            animation: event.status === 'live' ? 'pulse 2s infinite' : 'none' }}>
-          {sc.label}
-        </div>
-
-        {/* Access type chip */}
-        {event.access_type && (
-          <div className="absolute top-3 left-3 px-2 py-1 rounded-full text-[10px] font-black uppercase"
-            style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', ...T }}>
-            {ACCESS_LABELS[event.access_type] || event.access_type}
-          </div>
-        )}
-
-        {/* Purchased badge */}
-        {hasAccess && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full"
-            style={{ background: `${GREEN}20`, border: `1px solid ${GREEN}50`, ...T }}>
-            <CheckCircle className="w-3 h-3" style={{ color: GREEN }} />
-            <span className="text-[10px] font-black uppercase" style={{ color: GREEN }}>Purchased</span>
-          </div>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
-        {/* Title + price */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-black text-sm text-white leading-snug flex-1" style={T}>{event.title}</h3>
-          <div className="text-right shrink-0">
-            <span className="text-xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
-              ${event.price}
-            </span>
-          </div>
-        </div>
-
-        {/* Description */}
-        {event.description && (
-          <p className="text-[11px] line-clamp-2" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground line-clamp-2">
             {event.description}
           </p>
-        )}
 
-        {/* Meta row */}
-        <div className="space-y-1.5">
-          {eventDate && (
-            <div className="flex items-center gap-2 text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
-              <Calendar className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
-              <span>{format(eventDate, 'MMM d, yyyy')}</span>
-              <span>·</span>
-              <Clock className="w-3 h-3 shrink-0" />
-              <span>{format(eventDate, 'h:mm a')}</span>
-              {event.duration_minutes && <span>· {event.duration_minutes}m</span>}
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="w-4 h-4" />
+              <span>{moment(event.event_date).format('MMM D, YYYY')}</span>
             </div>
-          )}
-          <div className="flex items-center gap-2 text-[11px]" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>
-            <Users className="w-3 h-3 shrink-0" style={{ color: GOLD }} />
-            <span>{event.current_participants || 0} attending</span>
-            {event.max_participants && (
-              <>
-                <span>/</span>
-                <span>{event.max_participants} max</span>
-              </>
-            )}
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              <span>{moment(event.event_date).format('h:mm A')}</span>
+              {event.duration_minutes && (
+                <span>• {event.duration_minutes} min</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="w-4 h-4" />
+              <span>
+                {event.current_participants} attending
+                {event.max_participants && ` / ${event.max_participants}`}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* CTA button */}
-        <div className="mt-auto pt-1">
           {!hasAccess ? (
-            <motion.button
-              whileTap={{ scale: 0.96 }}
+            <Button
               onClick={() => purchaseAccessMutation.mutate()}
-              disabled={isSoldOut || purchaseAccessMutation.isPending || event.status === 'ended'}
-              className="w-full py-2.5 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-              style={{
-                ...T,
-                background: isSoldOut || event.status === 'ended'
-                  ? 'rgba(255,255,255,0.06)'
-                  : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`,
-                border: 'none',
-                color: isSoldOut || event.status === 'ended' ? 'rgba(255,255,255,0.25)' : '#07050A',
-                cursor: isSoldOut || event.status === 'ended' ? 'default' : 'pointer',
-              }}>
-              {purchaseAccessMutation.isPending ? (
-                'Processing…'
-              ) : isSoldOut ? (
+              disabled={isSoldOut || purchaseAccessMutation.isPending}
+              className="w-full"
+            >
+              {isSoldOut ? (
                 'Sold Out'
-              ) : event.status === 'ended' ? (
-                'Event Ended'
               ) : (
                 <>
-                  <DollarSign className="w-3.5 h-3.5" />
-                  Purchase Access — ${event.price}
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  Purchase Access
                 </>
               )}
-            </motion.button>
+            </Button>
           ) : (
-            <div className="w-full py-2.5 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-              style={{ background: `${GREEN}15`, border: `1px solid ${GREEN}40`, color: GREEN, ...T }}>
-              <CheckCircle className="w-3.5 h-3.5" />
+            <Button className="w-full" variant="secondary">
               Join Event
-            </div>
+            </Button>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

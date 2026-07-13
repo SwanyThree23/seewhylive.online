@@ -59,8 +59,8 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => {
       toast.success('Poll ended');
-      qc.invalidateQueries(['livepoll', roomId]);
-      qc.invalidateQueries(['polls', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
+      qc.invalidateQueries({ queryKey: ['polls', roomId] });
     },
     onError: () => toast.error('Action failed.'),
   });

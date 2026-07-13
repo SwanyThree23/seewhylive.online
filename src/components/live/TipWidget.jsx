@@ -16,13 +16,13 @@ const TIERS = [
   { amount: 1,   label: 'Bronze', color: '#CD7F32', icon: '🪙', glow: 'rgba(205,127,50,0.4)' },
   { amount: 5,   label: 'Silver', color: '#C0C0C0', icon: '⭐', glow: 'rgba(192,192,192,0.4)' },
   { amount: 15,  label: 'Gold',   color: G,         icon: '💛', glow: 'rgba(212,175,55,0.5)' },
-  { amount: 50,  label: 'Plat',   color: '#00d4ff', icon: '💎', glow: 'rgba(0,212,255,0.5)' },
+  { amount: 50,  label: 'Plat',   color: '#D4AF37', icon: '💎', glow: 'rgba(212,175,55,0.5)' },
   { amount: 100, label: 'Diam',   color: PINK,      icon: '👑', glow: 'rgba(192,57,43,0.6)' },
 ];
 
 const QUICK_EMOJIS = ['🔥', '💯', '❤️', '🚀', '👑', '💎', '🎉', '🤑'];
 
-const CONFETTI_COLORS = [G, CRIMSON, PINK, '#00d4ff', '#a78bfa', '#6DBF7E'];
+const CONFETTI_COLORS = [G, CRIMSON, PINK, '#D4AF37', '#D4AF37', '#6DBF7E'];
 
 function Particle({ x, color, delay }) {
   const angle = Math.random() * 360;
@@ -139,7 +139,8 @@ function TipAnimation({ senderName, amount, emoji, tier, onDone }) {
   );
 }
 
-export default function TipWidget({ roomId, hostId, currentUser }) {
+export default function TipWidget({ roomId, hostId, recipient, currentUser }) {
+  const resolvedHostId = hostId || recipient?.id;
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(5);
   const [custom, setCustom] = useState('');
@@ -151,24 +152,23 @@ export default function TipWidget({ roomId, hostId, currentUser }) {
 
   const rawAmount = useCustom ? parseFloat(custom) : selected;
   const validAmount = rawAmount > 0 && !isNaN(rawAmount);
-  const creatorReceives = validAmount ? (rawAmount * 0.9).toFixed(2) : '0.00';
-  const platformFee = validAmount ? (rawAmount * 0.1).toFixed(2) : '0.00';
+  const creatorReceives = validAmount ? (Math.floor(rawAmount * 90) / 100).toFixed(2) : '0.00';
+  const platformFee = validAmount ? (rawAmount - Math.floor(rawAmount * 90) / 100).toFixed(2) : '0.00';
 
   const activeTier = TIERS.slice().reverse().find(t => t.amount <= rawAmount) || TIERS[0];
 
   const sendTip = useMutation({
     mutationFn: async () => {
+      if (!currentUser?.id) throw new Error('Not authenticated');
       const amt = rawAmount;
       await base44.entities.Transaction.create({
         room_id: roomId,
-        type: 'tip',
-        amount: amt,
-        creator_amount: parseFloat((amt * 0.9).toFixed(2)),
-        platform_fee: parseFloat((amt * 0.1).toFixed(2)),
-        from_user_id: currentUser.id,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(amt * 90) / 100,
+        platform_fee: amt - Math.floor(amt * 90) / 100,
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
-        to_user_id: hostId,
+        recipient_id: resolvedHostId,
         status: 'completed',
         message: message,
         emoji: selectedEmoji,

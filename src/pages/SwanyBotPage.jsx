@@ -82,6 +82,13 @@ function speakText(text) {
 }
 
 function ThinkDots() {
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   return (
     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {[0, 1, 2].map(i => (

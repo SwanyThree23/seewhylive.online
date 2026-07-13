@@ -6,7 +6,7 @@ const HealthMetric = ({ label, value, unit, status, trend }) => {
   const statusColor = {
     excellent: '#6DBF7E',
     good: '#d4af37',
-    warning: '#FFB800',
+    warning: '#D4AF37',
     critical: '#C0392B'
   };
 

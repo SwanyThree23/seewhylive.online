@@ -22,20 +22,13 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+
+function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
 function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
 function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
@@ -80,6 +73,7 @@ function StatusDot({ status }) {
 
 export default function MultiStreamManager() {
   const qc = useQueryClient();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKeyFor, setShowKeyFor] = useState({});
   const [testingId, setTestingId] = useState(null);
   const [newLabel, setNewLabel] = useState('');
@@ -497,21 +491,6 @@ export default function MultiStreamManager() {
           ))}
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="multistream" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

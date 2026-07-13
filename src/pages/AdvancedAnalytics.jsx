@@ -22,21 +22,21 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -52,7 +52,6 @@ const GRID = { stroke: 'rgba(255,255,255,0.06)' };
 const TABS = ['revenue', 'engagement', 'performance', 'retention', 'insights'];
 
 export default function AdvancedAnalyticsPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -72,7 +71,7 @@ export default function AdvancedAnalyticsPage() {
     queryFn: () => base44.entities.Transaction.list('-created_date', 500),
   });
 
-  const totalRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const activeRooms = rooms.filter(r => r.status === 'live').length;
   const totalViewers = rooms.reduce((sum, r) => sum + (r.viewer_count || 0), 0);
 
@@ -81,7 +80,7 @@ export default function AdvancedAnalyticsPage() {
 
   const revenueData = transactions.reduce((acc, t) => {
     const date = new Date(t.created_date).toLocaleDateString();
-    acc[date] = (acc[date] || 0) + t.amount;
+    acc[date] = (acc[date] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueData).slice(-14).map(([date, amount]) => ({ date, amount }));
@@ -104,9 +103,9 @@ export default function AdvancedAnalyticsPage() {
         {/* KPI cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#00ff88' },
+            { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#6DBF7E' },
             { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#C0392B' },
-            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#00d4ff' },
+            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#D4AF37' },
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
@@ -287,22 +286,6 @@ export default function AdvancedAnalyticsPage() {
           </div>
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <AIHighlightGenerator recording={null} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

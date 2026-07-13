@@ -10,13 +10,13 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const CATEGORY_COLORS = {
   music:         '#C0392B',
-  gaming:        '#00d4ff',
+  gaming:        '#D4AF37',
   tech:          '#D4AF37',
   education:     '#6DBF7E',
-  business:      '#fb923c',
-  entertainment: '#a78bfa',
-  sports:        '#38bdf8',
-  lifestyle:     '#f472b6',
+  business:      '#D4854A',
+  entertainment: '#D4AF37',
+  sports:        '#D4AF37',
+  lifestyle:     '#D4854A',
   all:           '#D4AF37',
 };
 

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import {
   Swords, Trophy, Crown, ArrowLeft, Plus, Users, Zap, Clock,
@@ -25,19 +25,7 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) {
   return (
     <button onClick={onClick} disabled={disabled} {...rest}
@@ -110,7 +98,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftName}</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftName}</span>
         <span style={{ color: rightColor || '#C0392B' }}>{rightName}</span>
       </div>
       <div className="h-4 rounded-full flex overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
@@ -124,7 +112,7 @@ function ScoreBar({ leftScore, rightScore, leftName, rightName, leftColor, right
         />
       </div>
       <div className="flex items-center justify-between text-[11px] font-black font-mono">
-        <span style={{ color: leftColor || '#3b82f6' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
+        <span style={{ color: leftColor || '#D4AF37' }}>{leftScore.toLocaleString()} pts ({lp}%)</span>
         <span style={{ color: rightColor || '#C0392B' }}>{rightScore.toLocaleString()} pts ({rp}%)</span>
       </div>
     </div>
@@ -251,7 +239,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var createMutation = useMutation({
     mutationFn: function(data) { return base44.entities.PKBattle.create(data); },
     onSuccess: function(b) {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setShowCreateForm(false);
       setChallengerName('');
       setChallengerStream('');
@@ -272,7 +260,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
   var respondMutation = useMutation({
     mutationFn: function(vars) { return base44.entities.PKBattle.update(vars.id, { status: vars.status }); },
     onSuccess: function(_, vars) {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
     onError: () => toast.error('Action failed.'),
@@ -504,7 +492,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
     if (!battle || !battle.id) { return; }
     var unsub = base44.entities.PKBattle.subscribe(function(ev) {
       if (ev.id !== battle.id) { return; }
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
     });
     return unsub;
   }, [battle && battle.id]);
@@ -572,7 +560,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
 
       <BattleOverlay
         battle={battle}
-        onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }}
+        onBattleUpdate={function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); }}
       />
     </div>
   );
@@ -670,6 +658,8 @@ var TABS = [
 ];
 
 export default function PKBattleManager() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   var [activeTab, setActiveTab] = useState('invitations');
   var [selectedBattle, setSelectedBattle] = useState(null);
   var [showWinner, setShowWinner] = useState(false);
@@ -709,7 +699,7 @@ export default function PKBattleManager() {
       winner_name: winnerName,
       ended_at: new Date().toISOString(),
     }).then(function() {
-      qc.invalidateQueries(['pk-battles']);
+      qc.invalidateQueries({ queryKey: ['pk-battles'] });
       setPendingWinner(Object.assign({}, currentBattle, { winner_id: winnerId, winner_name: winnerName, status: 'ended' }));
       setShowWinner(true);
     }).catch(function() { toast.error('Failed to end battle. Please try again.'); });
@@ -837,16 +827,7 @@ export default function PKBattleManager() {
               <InvitationsTab user={user} battles={battles} onBattleSelect={handleBattleSelect} />
             )}
             {activeTab === 'scoreboard' && (
-              <ScoreboardTab battle={currentBattle} user={user} onBattleUpdate={function() { qc.invalidateQueries(['pk-battles']); }} />
-            )}
-            {activeTab === 'matchmaking' && (
-              <MatchmakingQueue user={user} />
-            )}
-            {activeTab === 'tournament' && (
-              <TournamentBracket />
-            )}
-            {activeTab === 'analytics' && (
-              <PKAnalyticsDashboard battles={battles} user={user} />
+              <ScoreboardTab battle={currentBattle} user={user} onBattleUpdate={function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); }} />
             )}
             {activeTab === 'history' && (
               <HistoryTab battles={battles} user={user} />
@@ -854,21 +835,14 @@ export default function PKBattleManager() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
+        <TipAlert roomId={roomId} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

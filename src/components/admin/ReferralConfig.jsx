@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Gift, Users, TrendingUp, Award, DollarSign } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
@@ -61,7 +60,7 @@ export default function ReferralConfig({ communityId }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Referrals" value={totalReferrals} icon={Users} sub="All time" />
         <StatCard label="Completed" value={completedReferrals} color="#6DBF7E" icon={Award} sub="Successful" />
-        <StatCard label="Pending" value={pendingReferrals} color="#fb923c" icon={TrendingUp} sub="In progress" />
+        <StatCard label="Pending" value={pendingReferrals} color="#D4854A" icon={TrendingUp} sub="In progress" />
         <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon={DollarSign} sub="Success rate" />
       </div>
 
@@ -79,8 +78,12 @@ export default function ReferralConfig({ communityId }) {
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
               <div>
                 <label style={LABEL_STYLE}>Reward Type</label>
-                <NativeSelect style={SELECT_STYLE} value={rewardType} onChange={val => setRewardType(val)}
-                  options={[{value:'points',label:'Points'},{value:'badge',label:'Badge'},{value:'subscription',label:'Subscription'},{value:'virtual_good',label:'Virtual Good'}]} />
+                <select style={SELECT_STYLE} value={rewardType} onChange={e => setRewardType(e.target.value)}>
+                  <option value="points">Points</option>
+                  <option value="badge">Badge</option>
+                  <option value="subscription">Subscription</option>
+                  <option value="virtual_good">Virtual Good</option>
+                </select>
               </div>
 
               <div>
@@ -126,7 +129,7 @@ export default function ReferralConfig({ communityId }) {
               {sortedReferrers.map((referrer, idx) => (
                 <div key={referrer.userId} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, background:'rgba(255,255,255,0.03)', borderRadius:8 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#7B5DA6,#db2777)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
+                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#800020,#C0392B)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
                       #{idx + 1}
                     </div>
                     <div>

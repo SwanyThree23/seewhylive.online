@@ -19,17 +19,14 @@ import { isSafeUrl } from '@/lib/security';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CreatorBridge from '../components/social/CreatorBridge';
-const BG = '#0d0618';
+
+const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -340,15 +337,8 @@ export default function CreatorChannel() {
           </div>
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="channel" viewerCount={0} />
-      <MilestoneAlerts userId={currentUser?.id} roomId={null} />
-      {currentUser?.id && <AlertConfig creatorId={currentUser.id} />}
-      {currentUser?.id && <ShopDashboard creatorId={currentUser.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <BackgroundCustomizer />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

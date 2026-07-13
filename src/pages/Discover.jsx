@@ -36,7 +36,14 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -70,7 +77,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -117,7 +124,6 @@ function FanbaseRoomCard({ room }) {
 }
 
 export default function DiscoverPage() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [genre, setGenre] = useState('All');
@@ -440,13 +446,13 @@ export default function DiscoverPage() {
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#D4854A'];
+  const rankColors = ['#D4AF37', '#D4AF37', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
+        className="relative rounded-xl overflow-hidden border border-[#0D1022] hover:border-[#C0392B]/30 transition-all cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #0D1022 100%)' }}
       >
         {room.thumbnail_url && (
           <img src={room.thumbnail_url} alt="" className="w-full h-28 object-cover opacity-60" />
@@ -535,7 +541,6 @@ function CreatorCard({ creator }) {
 }
 
 function EmptyState({ icon: Icon, title, desc }) {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   return (
     <div className="text-center py-20">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
@@ -543,21 +548,6 @@ function EmptyState({ icon: Icon, title, desc }) {
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
-      <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

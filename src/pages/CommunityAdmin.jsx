@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, ChevronDown } from 'lucide-react';
+import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, UserX, ChevronDown } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
@@ -18,20 +20,7 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -167,7 +156,7 @@ function MembersTab({ communityId, currentUserId }) {
         {[
           { label: 'Total', value: members.length, color: GOLD },
           { label: 'Admins', value: adminCount, color: '#D4854A' },
-          { label: 'Members', value: memberCount, color: '#6DBF7E' },
+          { label: 'Members', value: memberCount, color: GREEN },
         ].map(s => (
           <div key={s.label} className="p-3 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: s.color }}>{s.value}</p>
@@ -222,8 +211,8 @@ function MembersTab({ communityId, currentUserId }) {
 
 export default function CommunityAdminPage() {
   const [activeTab, setActiveTab] = useState('analytics');
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get('id');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: community } = useQuery({
@@ -318,22 +307,6 @@ export default function CommunityAdminPage() {
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

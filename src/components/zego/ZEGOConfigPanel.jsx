@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { Eye, EyeOff, Copy, Save, Download, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -62,7 +61,9 @@ export default function ZEGOConfigPanel({ user }) {
   });
 
   const isConfigured = zegoStream && Number(zegoStream.app_id) > 0;
-  const obsUrl = `rtmp://YOUR_VPS_IP:1935/live/${zegoStream?.zego_room_id || 'seewhy_room_XXXXX'}`;
+  const obsUrl = zegoStream?.zego_room_id
+    ? `rtmp://<your-relay-server>:1935/live/${zegoStream.zego_room_id}`
+    : 'rtmp://<your-relay-server>:1935/live/<room-id>';
 
   return (
     <div className="rounded-xl p-5 space-y-5" style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.18)' }}>
@@ -80,7 +81,7 @@ export default function ZEGOConfigPanel({ user }) {
         <span className="text-[11px] font-black uppercase px-2 py-1 rounded-full"
           style={{
             background: isConfigured ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)',
-            color: isConfigured ? '#6DBF7E' : '#C0392B',
+            color: isConfigured ? '#6DBF7E' : '#FF4444',
             border: `1px solid ${isConfigured ? 'rgba(109,191,126,0.3)' : 'rgba(255,68,68,0.3)'}`,
           }}>
           {isConfigured ? '● CONFIGURED' : '● NOT CONFIGURED'}
@@ -126,21 +127,27 @@ export default function ZEGOConfigPanel({ user }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Latency Mode</label>
-          <NativeSelect
+          <select
             value={form.latency_mode}
-            onChange={val => setForm(f => ({ ...f, latency_mode: val }))}
+            onChange={e => setForm(f => ({ ...f, latency_mode: e.target.value }))}
             className="w-full px-2 py-2 rounded-lg text-[10px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-            options={[{value:'ultra_low',label:'Ultra-Low (<500ms)'},{value:'low',label:'Low (<1s)'},{value:'standard',label:'Standard'}]} />
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+            <option value="ultra_low">Ultra-Low (&lt;500ms)</option>
+            <option value="low">Low (&lt;1s)</option>
+            <option value="standard">Standard</option>
+          </select>
         </div>
         <div>
           <label className="text-[11px] uppercase font-black block mb-1.5" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>UIKit Type</label>
-          <NativeSelect
+          <select
             value={form.kit_type}
-            onChange={val => setForm(f => ({ ...f, kit_type: val }))}
+            onChange={e => setForm(f => ({ ...f, kit_type: e.target.value }))}
             className="w-full px-2 py-2 rounded-lg text-[10px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-            options={[{value:'live_streaming',label:'Live Streaming'},{value:'video_call',label:'Video Call'},{value:'voice_call',label:'Voice Call'}]} />
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+            <option value="live_streaming">Live Streaming</option>
+            <option value="video_call">Video Call</option>
+            <option value="voice_call">Voice Call</option>
+          </select>
         </div>
       </div>
 

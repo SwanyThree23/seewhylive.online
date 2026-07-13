@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, MessageSquare, Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { Users, MessageSquare, Settings, TrendingUp, UserPlus, UserCheck, Shield, Radio, CheckCircle, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -21,24 +21,19 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const G = '#D4AF37';
 const BG = '#080B18';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = [
+  { id: 'feed', label: 'Feed', icon: MessageSquare },
+  { id: 'spotlight', label: 'Spotlight', icon: TrendingUp },
+  { id: 'rooms', label: 'Live', icon: Radio },
+];
 
 export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState('feed');
@@ -52,11 +47,9 @@ export default function CommunityPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
-  const qc = useQueryClient();
-  const communityIdParam = new URLSearchParams(window.location.search).get('community');
 
   const { data: community, isLoading } = useQuery({
-    queryKey: ['userCommunity', user?.id],
+    queryKey: ['community-page', communityIdParam, user?.id],
     queryFn: async () => {
       if (communityIdParam) {
         const list = await base44.entities.Community.filter({ id: communityIdParam });
@@ -330,22 +323,6 @@ export default function CommunityPage() {
         <CollaborationMatcher currentUserId={user?.id} />
         <ShareToSocial url={window.location.href} title={community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!'} />
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={isAdmin} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

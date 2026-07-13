@@ -24,17 +24,19 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const GOLD = '#D4AF37';
-const PINK = '#C0392B';
+const PINK    = '#C0392B';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
@@ -87,7 +89,7 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       toast.success('All marked as read');
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -236,21 +238,6 @@ export default function NotificationsPage() {
         <CollaborationMatcher />
         <ChallengeLeaderboard challengeId={null} />
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

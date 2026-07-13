@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
+
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
@@ -22,19 +27,12 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
   { name: 'Streamlabs', logo: '🎮', url: 'https://streamlabs.com', port: 1935, protocol: 'RTMP' },
@@ -80,10 +78,7 @@ export default function RTMPServer() {
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    if (stored) return stored;
-    const arr = new Uint8Array(18);
-    crypto.getRandomValues(arr);
-    return `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
+    return stored || `sk_live_${cryptoHex(24)}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
 
@@ -94,9 +89,7 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const arr = new Uint8Array(18);
-      crypto.getRandomValues(arr);
-      const newKey = `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
+      const newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);
@@ -204,7 +197,7 @@ export default function RTMPServer() {
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Tv2 className="w-4 h-4 text-[#7B5DA6]" />
+                    <Tv2 className="w-4 h-4 text-[#D4854A]" />
                     <h2 className="font-bold text-sm">HLS Playback</h2>
                   </div>
                   <CopyField label="HLS URL" value={PLAYBACK_URL} />
@@ -341,21 +334,6 @@ export default function RTMPServer() {
           <ContentRecommendations />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="rtmp" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

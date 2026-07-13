@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Megaphone, Calendar, Send, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
@@ -16,9 +15,9 @@ const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom
 
 const priorityBadgeColors = {
   low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
-  normal: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
-  high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
-  urgent: { background:'rgba(192,57,43,0.15)',   color:'#C0392B' },
+  normal: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
+  high:   { background:'rgba(212,133,74,0.15)',  color:'#D4854A' },
+  urgent: { background:'rgba(192,57,43,0.15)',   color:'#FF4444' },
 };
 
 function Badge({ label, style }) {
@@ -50,7 +49,7 @@ export default function AnnouncementScheduler({ communityId, userId }) {
     },
     onSuccess: (announcement) => {
       toast.success('Announcement created!');
-      queryClient.invalidateQueries(['communityAnnouncements']);
+      queryClient.invalidateQueries({ queryKey: ['communityAnnouncements'] });
       resetForm();
       if (userId) {
         base44.entities.Activity.create({
@@ -145,14 +144,23 @@ export default function AnnouncementScheduler({ communityId, userId }) {
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
                 <div>
                   <label style={LABEL_STYLE}>Priority</label>
-                  <NativeSelect style={SELECT_STYLE} value={priority} onChange={val => setPriority(val)}
-                    options={[{value:'low',label:'Low'},{value:'normal',label:'Normal'},{value:'high',label:'High'},{value:'urgent',label:'Urgent'}]} />
+                  <select style={SELECT_STYLE} value={priority} onChange={e => setPriority(e.target.value)}>
+                    <option value="low">Low</option>
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
                 </div>
 
                 <div>
                   <label style={LABEL_STYLE}>Target Audience</label>
-                  <NativeSelect style={SELECT_STYLE} value={targetAudience} onChange={val => setTargetAudience(val)}
-                    options={[{value:'all',label:'All Members'},{value:'admins',label:'Admins'},{value:'moderators',label:'Moderators'},{value:'subscribers',label:'Subscribers'},{value:'new_members',label:'New Members'}]} />
+                  <select style={SELECT_STYLE} value={targetAudience} onChange={e => setTargetAudience(e.target.value)}>
+                    <option value="all">All Members</option>
+                    <option value="admins">Admins</option>
+                    <option value="moderators">Moderators</option>
+                    <option value="subscribers">Subscribers</option>
+                    <option value="new_members">New Members</option>
+                  </select>
                 </div>
               </div>
 

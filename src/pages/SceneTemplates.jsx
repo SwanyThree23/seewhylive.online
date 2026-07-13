@@ -19,23 +19,9 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -307,7 +293,7 @@ function CreateForm({ userId, onSuccess }) {
       }),
     onSuccess: (template) => {
       toast.success('Template saved!');
-      qc.invalidateQueries(['scene-templates', userId]);
+      qc.invalidateQueries({ queryKey: ['scene-templates', userId] });
       setName('');
       setDesc('');
       setBase('single');
@@ -544,7 +530,7 @@ export default function SceneTemplates() {
     mutationFn: (tpl) => base44.entities.SceneTemplate.delete(tpl.id),
     onSuccess: () => {
       toast.success('Template deleted');
-      qc.invalidateQueries(['scene-templates', user?.id]);
+      qc.invalidateQueries({ queryKey: ['scene-templates', user?.id] });
     },
     onError: () => toast.error('Failed to delete template'),
   });
@@ -786,21 +772,45 @@ export default function SceneTemplates() {
           </AnimatePresence>
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="overlay" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <SceneSwitcher activeScene={activeTemplate} onSceneChange={setActiveTemplate} />
+        {user?.id && <OverlayThemeBuilder creatorId={user.id} />}
+        <ChatOverlay roomId={roomId} isVisible={true} />
+        <EvmuxWebSource isActive={false} onClose={() => {}} />
+        <AuraPanelDrawer roomId={roomId} hostId={user?.id} onClose={() => {}} />
+        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedClipGenerator streamSession={null} isLive={false} />
+        <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
+        <CompositorOverlay layout="panel" slots={[]} overlayConfig={{}} userId={user?.id} onScreenCapture={() => {}} isHost={false} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎬 Studio
+          </button>
+        </Link>
+        <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎚️ Overlays
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

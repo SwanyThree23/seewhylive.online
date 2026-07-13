@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -15,7 +16,7 @@ function RaidCountdownBanner({ raid, onJoin }) {
   useEffect(() => {
     if (count <= 0) {
       base44.entities.RaidEvent.update(raid.id, { status: 'active' }).catch(() => {});
-      qc.invalidateQueries(['raid-incoming', raid.to_room_id]);
+      qc.invalidateQueries({ queryKey: ['raid-incoming', raid.to_room_id] });
       return;
     }
     const t = setTimeout(() => setCount(c => c - 1), 1000);
@@ -174,6 +175,7 @@ function RaidLauncher({ room, currentUser, onClose }) {
 }
 
 export default function RaidPanelButton({ room, currentUser, isHost }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [activateRaid, setActiveRaid] = useState(null);
   const [incomingRaid, setIncomingRaid] = useState(null);
@@ -216,7 +218,7 @@ export default function RaidPanelButton({ room, currentUser, isHost }) {
   };
 
   const joinRaid = (raid) => {
-    window.location.href = `/Room?id=${raid.to_room_id}`;
+    navigate(`/Room?id=${raid.to_room_id}`);
   };
 
   return (

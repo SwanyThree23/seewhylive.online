@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
 } from 'lucide-react';
@@ -13,7 +12,7 @@ const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍'
 const MSG_STYLES = {
   regular: '',
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
-  subscription: 'border-l-2 border-[#7B5DA6] bg-[#7B5DA6]/20',
+  subscription: 'border-l-2 border-[#D4AF37] bg-[#800020]/15',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
   qa: 'border-l-2 border-[#D4AF37]/40 bg-[#0F1428]/15',
   poll: 'border-l-2 border-[#6DBF7E]/40 bg-[#0F1428]/15',
@@ -23,7 +22,7 @@ const MSG_STYLES = {
 function MessageBadge({ type }) {
   const badges = {
     tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
-    subscription: <span className="text-[11px] bg-[#7B5DA6] text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
+    subscription: <span className="text-[11px] bg-[#800020] text-[#D4AF37] px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
     qa: <span className="text-[11px] bg-[#800020] text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
     poll: <span className="text-[11px] bg-[#4A9B5E] text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
@@ -134,9 +133,10 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-white/50">Slow Mode</span>
                     {slowMode && (
-                      <NativeSelect value={slowInterval} onChange={val => setSlowInterval(Number(val))}
-                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5"
-                        options={[3,5,10,30].map(s => ({value: s, label: `${s}s`}))} />
+                      <select value={slowInterval} onChange={(e) => setSlowInterval(Number(e.target.value))}
+                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5">
+                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#080B18]">{s}s</option>)}
+                      </select>
                     )}
                   </div>
                   <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
@@ -145,7 +145,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7B5DA6' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#D4AF37' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>

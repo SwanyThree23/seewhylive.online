@@ -11,7 +11,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
@@ -31,12 +31,8 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import GridLines from '../components/home/GridLines';
-import NebulaBg from '../components/home/NebulaBg';
-import StarField from '../components/home/StarField';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
@@ -121,7 +117,7 @@ function FanbaseRoomCard({ room }) {
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
   var categoryColor = {
-    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#00d4ff',
+    Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
     Lifestyle: '#D4854A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
@@ -230,14 +226,41 @@ function FanbaseRoomCard({ room }) {
 
 // ── Platform Spotlight Strip ──────────────────────────────────────────────
 var SPOTLIGHT_ITEMS = [
-  { emoji: '⚔️', label: 'State vs State', sub: 'Domino Tournaments', color: '#5B7FA6', page: 'StateVsState' },
-  { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',       color: '#7B5EA7', page: 'TributeWall' },
-  { emoji: '🤖', label: 'Joyce AI',        sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI' },
-  { emoji: '🛡️', label: 'Guardian AI',    sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI' },
-  { emoji: '🎙️', label: 'AI Podcast',     sub: 'Create Episodes',     color: '#00d4ff', page: 'PodcastStudio' },
-  { emoji: '🎵', label: 'Music Studio',   sub: 'AI Music Creation',   color: '#a78bfa', page: 'AIMusic' },
-  { emoji: '⚡', label: 'INS Forge',      sub: 'AI Graphics',         color: '#F59E0B', page: 'INSForge' },
-  { emoji: '📡', label: 'Multi-Platform', sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform' },
+  { emoji: '⚔️', label: 'State vs State',   sub: 'Domino Tournaments',  color: '#C0392B', page: 'StateVsState'          },
+  { emoji: '👑', label: 'Elite League',      sub: 'Creator Rankings',    color: '#D4AF37', page: 'Leaderboard'           },
+  { emoji: '🥊', label: 'PK Battle',         sub: 'Head-to-Head',        color: '#C0392B', page: 'PKBattleManager'       },
+  { emoji: '🏟️', label: 'PK Arena',          sub: 'Live Vote Battles',   color: '#C0392B', page: 'PKBattleArena'         },
+  { emoji: '🏆', label: 'Live Battles',      sub: 'Active Matchups',     color: '#D4854A', page: 'LiveBattles'           },
+  { emoji: '🎬', label: 'VOD Library',       sub: 'Past Streams',        color: '#D4854A', page: 'VODLibrary'            },
+  { emoji: '🎞️', label: 'Clips Library',    sub: 'Viral Moments',       color: '#CC7755', page: 'ClipsLibrary'          },
+  { emoji: '🎟️', label: 'PPV Events',        sub: 'Pay-Per-View',        color: '#8B6F00', page: 'PayPerViewEvents'      },
+  { emoji: '📅', label: 'Scheduler',         sub: 'Plan Your Shows',     color: '#6B7C4A', page: 'StreamScheduler'       },
+  { emoji: '📊', label: 'Analytics',         sub: 'AI-Powered Insights', color: '#D4AF37', page: 'AdvancedAnalytics'     },
+  { emoji: '🤝', label: 'Watch Party',        sub: 'Sync Together',       color: '#CC7755', page: 'WatchParty'            },
+  { emoji: '🎛️', label: 'Control Room',      sub: 'Production HQ',       color: '#D4AF37', page: 'ControlRoom'           },
+  { emoji: '🎤', label: 'Audio Room',        sub: 'Live Audio Stage',    color: '#6DBF7E', page: 'AudioRoom'             },
+  { emoji: '🔐', label: 'Vault Pro',         sub: 'Secure Creator Tools',color: '#800020', page: 'VaultPro'              },
+  { emoji: '🎙️', label: 'AI Podcast',       sub: 'Create Episodes',     color: '#D4AF37', page: 'PodcastStudio'         },
+  { emoji: '✨', label: 'Aura AI',           sub: 'Premium Co-Host',     color: '#D4AF37', page: 'AuraAI'                },
+  { emoji: '🤖', label: 'Joyce AI',          sub: 'Co-Host Assistant',   color: '#D4AF37', page: 'JoyceAI'               },
+  { emoji: '🛡️', label: 'Guardian AI',      sub: 'Live Moderation',     color: '#C0392B', page: 'GuardianAI'            },
+  { emoji: '📝', label: 'Transcription',     sub: 'Live Captions & SRT', color: '#6B7C4A', page: 'TranscriptionStudio'   },
+  { emoji: '🎨', label: 'Scene Templates',  sub: '8 Layout Presets',    color: '#8B6F47', page: 'SceneTemplates'         },
+  { emoji: '🔔', label: 'Stream Alerts',    sub: 'Custom Overlays',     color: '#D4854A', page: 'StreamAlerts'           },
+  { emoji: '🎵', label: 'Music Studio',      sub: 'AI Music Creation',   color: '#6B7C4A', page: 'AIMusic'               },
+  { emoji: '⚡', label: 'INS Forge',         sub: 'AI Graphics',         color: '#D4854A', page: 'INSForge'              },
+  { emoji: '📡', label: 'Multi-Platform',    sub: 'Stream Everywhere',   color: '#6DBF7E', page: 'MultiPlatform'         },
+  { emoji: '🕊️', label: 'Tribute Wall',      sub: 'Honor Legends',       color: '#8B6F47', page: 'TributeWall'           },
+  { emoji: '🤖', label: 'SwanyBot',          sub: 'Domino Culture AI',   color: '#D4AF37', page: 'SwanyBotPage'          },
+  { emoji: '🗳️', label: 'Poll Manager',      sub: 'Live Audience Polls', color: '#6B7C4A', page: 'PollManager'           },
+  { emoji: '🎚️', label: 'Overlay Editor',   sub: 'Custom Overlays',     color: '#D4AF37', page: 'OverlayEditor'         },
+  { emoji: '🌐', label: 'Hybrid Room',     sub: 'WebRTC + Guest Mix',  color: '#D4854A', page: 'HybridStreamRoom'       },
+  { emoji: '🌟', label: 'Enhancement',     sub: 'Creator Power Tools', color: '#D4AF37', page: 'EnhancementSuite'       },
+  { emoji: '🏅', label: 'Challenges',      sub: 'Earn Rewards',        color: '#D4AF37', page: 'ChallengesHub'          },
+  { emoji: '💎', label: 'Loyalty Hub',     sub: 'Points & Rewards',    color: '#C9A84C', page: 'LoyaltyHub'             },
+  { emoji: '👥', label: 'Communities',     sub: 'Join & Grow',         color: '#6DBF7E', page: 'Communities'            },
+  { emoji: '📺', label: 'Social Expo',     sub: 'Featured Creators',   color: '#CC7755', page: 'SocialExpo'             },
+  { emoji: '🔀', label: 'Multi-Stream',    sub: 'Manage All Streams',  color: '#D4854A', page: 'MultiStreamManager'     },
 ];
 
 function SpotlightStrip() {
@@ -526,6 +549,7 @@ function applyFilter(rooms, filter) {
 
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
+  const navigate = useNavigate();
   var [activeFilter, setActiveFilter] = useState('All');
   var [activityOpen, setActivityOpen] = useState(false);
   var [quickActionsOpen, setQuickActionsOpen] = useState(false);
@@ -801,26 +825,6 @@ export default function Home() {
         </AnimatePresence>
       </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="home" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <GridLines />
-      <NebulaBg />
-      <StarField count={80} />
-      <QuickActionPanel isOpen={false} onClose={() => {}} />
-      <OnboardingFlow isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

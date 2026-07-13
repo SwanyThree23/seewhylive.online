@@ -20,31 +20,19 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
 const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
 const GREEN = '#6DBF7E';
-const WARN  = '#F59E0B';
-const ORANGE= '#F97316';
+const WARN  = '#D4AF37';
+const ORANGE= '#D4854A';
 const RED   = '#E74C3C';
 const PILL  = 999;
 
@@ -97,7 +85,6 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 }
 
 export default function GuardianAI() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -180,22 +167,32 @@ export default function GuardianAI() {
 
       setScanStep('Logging results…');
       const scanResults = result?.results || [];
-      await Promise.all(scanResults.map(r =>
-        base44.entities.ContentModeration.create({
-          content_type:    'message',
-          content_id:      r.id,
-          violation_type:  r.violation_type,
-          ai_confidence:   r.ai_confidence,
-          ai_explanation:  r.ai_explanation || null,
-          action_taken:    r.violation_type !== 'safe'
-            ? (r.ai_confidence >= banT / 100 ? 'banned' : r.ai_confidence >= muteT / 100 ? 'muted' : 'flagged')
-            : 'none',
-        })
-      ));
+      await Promise.all(scanResults.map(r => {
+        const action = r.violation_type !== 'safe'
+          ? (r.ai_confidence >= banT / 100 ? 'banned' : r.ai_confidence >= muteT / 100 ? 'muted' : 'flagged')
+          : 'none';
+        return Promise.all([
+          base44.entities.ContentModeration.create({
+            content_type:    'message',
+            content_id:      r.id,
+            violation_type:  r.violation_type,
+            ai_confidence:   r.ai_confidence,
+            ai_explanation:  r.ai_explanation || null,
+            action_taken:    action,
+          }),
+          base44.entities.GuardianLog?.create({
+            user_id:       r.user_id || null,
+            message:       r.content || r.text || '',
+            toxicity_score: Math.round((r.ai_confidence || 0) * 100),
+            action,
+            created_at:    new Date().toISOString(),
+          }).catch(() => {}),
+        ]);
+      }));
 
       const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
       toast.success(`Scanned ${scanResults.length} messages — ${violations} flagged`);
-      queryClient.invalidateQueries(['guardian-moderations']);
+      queryClient.invalidateQueries({ queryKey: ['guardian-moderations'] });
     } catch {
       toast.error('Guardian scan failed — try again');
     }
@@ -414,21 +411,42 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIModeration roomId={roomId} isHost={false} />
+        <ModerationActionModal isOpen={false} onClose={() => {}} userId={user?.id} action={null} />
+        <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+        <ReportsManager communityId={userCommunityId} userId={user?.id} />
+        <ChallengeAnalytics communityId={userCommunityId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 AI Hub
+          </button>
+        </Link>
+        <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 Joyce AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            ✨ Aura AI
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

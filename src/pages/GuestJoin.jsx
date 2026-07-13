@@ -4,12 +4,20 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, Wifi, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamGoals from '../components/live/StreamGoals';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
+import GuestConnector from '../components/live/GuestConnector';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -41,6 +49,11 @@ export default function GuestJoin() {
   const [participantId, setParticipantId] = useState(null);
   const [status, setStatus] = useState('idle');
   const [readyState, setReadyState] = useState(false);
+  const [waitingTooLong, setWaitingTooLong] = useState(false);
+
+  // Real local camera via singleton cache — permission granted here carries
+  // forward into LiveRoom without a second getUserMedia prompt.
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } = useLocalMedia({ audio: true, video: true });
 
   const { data: room } = useQuery({
     queryKey: ['guestRoom', roomId],
@@ -66,7 +79,8 @@ export default function GuestJoin() {
       if (newStatus === 'admitted') { setStatus('admitted'); toast.success("🎙️ You've been admitted to the stage!"); }
       else if (newStatus === 'rejected') { setStatus('rejected'); toast.error('You were removed from the queue'); }
     });
-    return unsub;
+    const waitTimeout = setTimeout(() => setWaitingTooLong(true), 5 * 60 * 1000);
+    return () => { unsub(); clearTimeout(waitTimeout); };
   }, [participantId]);
 
   const joinMutation = useMutation({
@@ -80,7 +94,7 @@ export default function GuestJoin() {
         role: 'guest',
         status: 'waiting',
         is_audio_enabled: true,
-        is_video_enabled: false,
+        is_video_enabled: true,
         is_streaming: false,
       });
     },
@@ -137,13 +151,13 @@ export default function GuestJoin() {
           <div style={{ ...card, padding: 14 }}>
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 rounded-full"
-                style={{ background: room.status === 'live' ? '#C0392B' : '#ffc800', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
+                style={{ background: room.status === 'live' ? '#C0392B' : '#D4AF37', animation: room.status === 'live' ? 'pulse 1.5s infinite' : 'none' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
                 <p className="text-[10px] capitalize" style={{ color: 'rgba(255,255,255,0.35)' }}>{room.status}</p>
               </div>
               <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(255,200,0,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(255,200,0,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#ffc800' }}>
+                style={{ ...T, background: room.status === 'live' ? 'rgba(192,57,43,0.15)' : 'rgba(212,175,55,0.12)', border: `1px solid ${room.status === 'live' ? 'rgba(192,57,43,0.4)' : 'rgba(212,175,55,0.3)'}`, color: room.status === 'live' ? '#C0392B' : '#D4AF37' }}>
                 {room.status === 'live' ? '● LIVE' : 'Scheduled'}
               </span>
             </div>
@@ -192,6 +206,11 @@ export default function GuestJoin() {
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
                     {readyState ? 'The director will admit you shortly' : "Mark yourself as ready when you're set up"}
                   </p>
+                  {waitingTooLong && (
+                    <p className="text-[10px] mt-1 px-2 py-1.5 rounded-lg" style={{ color: '#D4854A', background: 'rgba(212,133,74,0.08)', border: '1px solid rgba(212,133,74,0.2)' }}>
+                      Still waiting after 5 min — the host may not be monitoring the queue right now. Try messaging them directly.
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -285,10 +304,6 @@ export default function GuestJoin() {
           SeeWhy LIVE by Domino Entertainment / SwanyThree AI
         </p>
       </div>
-      {roomId && <ZEGOGuestJoin roomId={roomId} userId={null} userName={''} onJoined={() => {}} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
-      <GuestDestinationsPanel participantUserId={null} guestName={''} />
-      <SwanyBotWidget />
     </div>
   );
 }

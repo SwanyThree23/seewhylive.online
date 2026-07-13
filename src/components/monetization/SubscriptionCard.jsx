@@ -12,8 +12,8 @@ const tierConfig = {
   },
   premium: {
     icon: Star,
-    color: '#a855f7',
-    gradient: 'linear-gradient(135deg, #a855f7, #7B5DA6)',
+    color: '#D4854A',
+    gradient: 'linear-gradient(135deg, #D4854A, #800020)',
   },
   elite: {
     icon: Crown,

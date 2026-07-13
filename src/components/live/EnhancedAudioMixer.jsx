@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music, Radio, Zap, Headphones } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const BG_MUSIC = [
   { id: 'none', label: 'No Music' },
@@ -61,7 +60,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   }, [gain, noiseSuppression, echoCancellation, bgMusic, mono]);
 
   const avgLevel = vuLevels.reduce((a, b) => a + b) / vuLevels.length;
-  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#f59e0b' : '#6DBF7E';
+  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#D4AF37' : '#6DBF7E';
 
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
@@ -79,7 +78,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               style={{ background: levelColor }}
             />
           </div>
-          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#C0392B', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
+          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#FF4444', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -96,7 +95,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#f59e0b' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#D4AF37' : '#6DBF7E' }}
                 />
               ))}
             </div>
@@ -176,12 +175,13 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
           {/* BG Music */}
           <div className="space-y-1">
             <p className="text-[10px] text-white/40 flex items-center gap-1"><Music className="w-3 h-3" /> Background Music</p>
-            <NativeSelect
+            <select
               value={bgMusic}
-              onChange={(val) => setBgMusic(val)}
+              onChange={(e) => setBgMusic(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
-              options={BG_MUSIC.map(m => ({value: m.id, label: m.label}))}
-            />
+            >
+              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#080B18]">{m.label}</option>)}
+            </select>
           </div>
         </motion.div>
       )}

@@ -18,30 +18,23 @@ import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
 const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#C0392B';
-const CYAN   = '#00d4ff';
-const PURPLE = '#a78bfa';
+const PINK    = '#C0392B';
+const CYAN   = '#D4AF37';
+const PURPLE = '#D4AF37';
+const AMBER  = '#D4854A';
 const GREEN  = '#6DBF7E';
-const AMBER  = '#f59e0b';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -149,6 +142,19 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -173,7 +179,7 @@ export default function AIHub() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = sessionStorage.getItem('seewhy_dj_track');
+        const raw = localStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);
@@ -252,7 +258,7 @@ export default function AIHub() {
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#C0392B';
-    if (status === 'warning') return '#f59e0b';
+    if (status === 'warning') return '#D4AF37';
     return GREEN;
   }
 
@@ -828,7 +834,7 @@ export default function AIHub() {
           <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              background: `linear-gradient(90deg, ${AMBER}, #CC7755)`,
               color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -838,7 +844,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#5B7FA6">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -852,7 +858,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #5B7FA6, #C62828)',
+              background: 'linear-gradient(90deg, #800020, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -1029,21 +1035,13 @@ export default function AIHub() {
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+      </div>
     </div>
   );
 }

@@ -25,15 +25,6 @@ function Toggle({ checked, onChange }) {
 }
 
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -52,6 +43,7 @@ const TAG_OPTIONS = [
 ];
 
 export default function CreateCommunityPage() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
@@ -64,6 +56,12 @@ export default function CreateCommunityPage() {
   const [avatarUrl, setAvatarUrl] = useState('');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -77,7 +75,7 @@ export default function CreateCommunityPage() {
       }).catch(() => {});
       return community;
     },
-    onSuccess: (c) => { toast.success('Community created!'); window.location.href = `/Community?id=${c.id}`; },
+    onSuccess: (c) => { toast.success('Community created!'); navigate(`/Community?id=${c.id}`); },
     onError: () => toast.error('Failed to create community'),
   });
 
@@ -278,15 +276,8 @@ export default function CreateCommunityPage() {
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <BackgroundCustomizer />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function MySubscriptions({ userId }) {
     mutationFn: (id) => base44.entities.Subscription.update(id, { status: 'cancelled', auto_renew: false }),
     onSuccess: () => {
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['allUserSubs', userId]);
+      qc.invalidateQueries({ queryKey: ['allUserSubs', userId] });
     },
     onError: () => toast.error('Action failed.'),
   });

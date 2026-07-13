@@ -7,13 +7,13 @@ import { toast } from 'sonner';
 const tierConfig = {
   basic: {
     icon: Star,
-    gradient: 'linear-gradient(135deg, #2563eb, #5B7FA6)',
-    badgeColor: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
+    badgeColor: '#D4AF37',
   },
   premium: {
     icon: Zap,
-    gradient: 'linear-gradient(135deg, #7B5DA6, #C0392B)',
-    badgeColor: '#a855f7',
+    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
+    badgeColor: '#D4854A',
   },
   elite: {
     icon: Crown,

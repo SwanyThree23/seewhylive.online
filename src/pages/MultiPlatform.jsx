@@ -2,28 +2,33 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
-
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import OBSBridge from '../components/obs/OBSBridge';
+import WebhookHooks from '../components/live/WebhookHooks';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import BitratePresets from '../components/streaming/BitratePresets';
+import DestinationsManager from '../components/streaming/DestinationsManager';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#C0392B';
+const PINK    = '#C0392B';
 const CYAN   = '#D4854A';
 const PURPLE = '#D4854A';
 const GREEN  = '#4A9B5E';
@@ -105,7 +110,8 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [tab, setTab] = useState('platforms');
 
   const { data: recentActivities = [] } = useQuery({
@@ -614,21 +620,39 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <EnhancedIngestPanel roomId={roomId} isHost={true} />
+        <StreamingPresets onApply={() => {}} />
+        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
+        <AdvancedEncoderSettings onApply={() => {}} />
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>
+        {[
+          { label: '🔴 Go Live',               href: 'GoLive'                   },
+          { label: '🎬 Broadcast Studio',      href: 'BroadcastStudio'          },
+          { label: '🌐 Multi-Platform+',       href: 'MultiPlatformIntegration' },
+          { label: '📊 Stream Analytics',     href: 'StreamAnalytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <RTMPFanoutPanel roomId={activeRoomId} isHost={true} />
+        <GuestInviteGenerator roomId={activeRoomId} isHost={true} />
+        <StreamGoals isHost={true} />
+        <CollaborationMatcher />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE Multi-Stream', url: window.location.href }} />
+      </div>
     </div>
   );
 }

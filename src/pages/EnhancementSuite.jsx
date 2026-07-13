@@ -1,23 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
-
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {
   bg:       "#0D0508",
@@ -480,6 +477,14 @@ function fmtAgo(dateStr) {
 
 export default function EnhancementSuite() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const [activeTab, setActiveTab] = useState("emoji");
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
@@ -909,21 +914,21 @@ export default function EnhancementSuite() {
           </div>
         </div>
       )}
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <CoStreamPanel roomId={roomId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <OverlayThemeBuilder creatorId={user?.id} />
+        <SoundboardWidget roomId={roomId} isHost={true} />
+        <RoomBrandingEditor roomId={roomId} isHost={true} />
+        <CollaborationMatcher />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <AutomatedHighlightReels streamSession={null} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <StreamGoals isHost={false} />
+      </div>
     </div>
   );
 }

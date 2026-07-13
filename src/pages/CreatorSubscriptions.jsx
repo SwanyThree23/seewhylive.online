@@ -21,22 +21,10 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
-const PINK  = '#C0392B';
+const PINK    = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT  = 'Barlow Condensed, sans-serif';
 
@@ -245,7 +233,7 @@ function CreatorView({ user }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         {[
           { label: 'Active Subscribers', value: subs.length, color: GOLD, emoji: '👥' },
-          { label: 'Monthly Revenue', value: `$${(revenue * 0.9).toFixed(0)}`, color: GREEN, emoji: '💰' },
+          { label: 'Monthly Revenue', value: `$${(Math.floor(revenue * 90) / 100).toFixed(0)}`, color: GREEN, emoji: '💰' },
         ].map(stat => (
           <div key={stat.label} style={{
             borderRadius: 14, padding: '14px 16px',
@@ -396,7 +384,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
     try {
       await base44.entities.Subscription.update(sub.id, { status: 'cancelled', auto_renew: false });
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
     } catch {
       toast.error('Failed to cancel');
     }
@@ -555,8 +543,8 @@ function MySubscriptionsView({ user }) {
 }
 
 export default function CreatorSubscriptionsPage() {
-  const urlParams  = new URLSearchParams(window.location.search);
-  const creatorParam = urlParams.get('creator');
+  const [searchParams] = useSearchParams();
+  const creatorParam = searchParams.get('creator');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const isCreator = !creatorParam && (user?.role === 'admin' || user?.role === 'creator' || true);
@@ -661,21 +649,6 @@ export default function CreatorSubscriptionsPage() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

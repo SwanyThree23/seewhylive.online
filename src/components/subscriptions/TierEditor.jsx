@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Trash2, X } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const ICON_OPTIONS = ['star', 'crown', 'flame', 'heart', 'zap', 'bronze', 'silver', 'gold', 'diamond'];
 const PRESET_COLORS = ['#cd7f32', '#aaa9ad', '#d4af37', '#D4854A', '#C9A84C', '#C0392B', '#6DBF7E', '#D4AF37'];
@@ -84,7 +83,7 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
     },
     onSuccess: (tier) => {
       toast.success(existing ? 'Tier updated!' : 'Tier created!');
-      qc.invalidateQueries(['creatorTiers', creatorId]);
+      qc.invalidateQueries({ queryKey: ['creatorTiers', creatorId] });
       onClose();
       if (!existing && creatorId) {
         base44.entities.Activity.create({
@@ -140,8 +139,9 @@ export default function TierEditor({ open, onClose, creatorId, existing }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Icon</label>
-              <NativeSelect value={form.icon} onChange={val => set('icon', val)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
-                options={ICON_OPTIONS.map(o => ({value: o, label: o}))} />
+              <select value={form.icon} onChange={e => set('icon', e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}>
+                {ICON_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
             </div>
             <div>
               <label style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', display: 'block', marginBottom: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>Badge Color</label>

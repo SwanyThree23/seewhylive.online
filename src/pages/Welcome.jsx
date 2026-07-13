@@ -20,6 +20,7 @@ const G = '#D4AF37';
 const BG = '#080B18';
 
 export default function WelcomePage() {
+  const navigate = useNavigate();
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -49,7 +50,7 @@ export default function WelcomePage() {
   // Redirect logged-in users to home
   React.useEffect(() => {
     if (user?.id) {
-      window.location.href = '/Home';
+      navigate('/Home');
     }
   }, [user]);
 

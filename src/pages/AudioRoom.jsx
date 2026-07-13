@@ -14,146 +14,54 @@ import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
 import LoveTap from '../components/live/LoveTap';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
-import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-
-import ClipCreator from '../components/live/ClipCreator';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
-import LiveTranscription from '../components/live/LiveTranscription';
-import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
-import GoldenWall from '../components/live/GoldenWall';
-import QuickPollLauncher from '../components/live/QuickPollLauncher';
-import GiftTray from '../components/live/GiftTray';
-import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import LivePoll from '../components/live/LivePoll';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
-import ViewerCount from '../components/live/ViewerCount';
-import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import AIStreamSummary from '../components/live/AIStreamSummary';
-import ChatModeration from '../components/live/ChatModeration';
-import BrandChyron from '../components/live/BrandChyron';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
-import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import NotificationHub from '../components/live/NotificationHub';
+import AudioPanel from '../components/live/AudioPanel';
+import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
-import RaidPanelButton from '../components/live/RaidPanel';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import QuickTip from '../components/rooms/QuickTip';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
-import ShareToSocial from '../components/social/ShareToSocial';
-import VideoShortRecorder from '../components/vod/VideoShortRecorder';
-import RecordingManager from '../components/content/RecordingManager';
-import OBSBridge from '../components/obs/OBSBridge';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
-import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
-import GreenroomQueue from '../components/streaming/GreenroomQueue';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import EmbedPlayer from '../components/streaming/EmbedPlayer';
-import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
-import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
-import RedemptionQueue from '../components/loyalty/RedemptionQueue';
-import RewardShop from '../components/loyalty/RewardShop';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
-import PKBattleInterface from '../components/pk/PKBattleInterface';
-import CoStreamPanel from '../components/collaboration/CoStreamPanel';
-import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
-import TipAlert from '../components/monetization/TipAlert';
-import TippingModal from '../components/monetization/TippingModal';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import MerchWidget from '../components/merch/MerchWidget';
-import NotificationBell from '../components/shared/NotificationBell';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import PayPerViewManager from '../components/monetization/PayPerViewManager';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import GiftShopTray from '../components/live/GiftShopTray';
-import { GiftLeaderboard } from '../components/live/GiftSystem';
-import SubscriptionManager from '../components/monetization/SubscriptionManager';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import BattleMode from '../components/streaming/BattleMode';
-import BitratePresets from '../components/streaming/BitratePresets';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import BattleScoreboard from '../components/live/BattleScoreboard';
-import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
-import GlobalChatWidget from '../components/live/GlobalChatWidget';
-import GuestConnector from '../components/live/GuestConnector';
-import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import PointsNotification from '../components/live/PointsNotification';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import ChatOverlay from '../components/live/ChatOverlay';
-import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
-import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
-import PollLaunchBar from '../components/live/PollLaunchBar';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
-import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
-import StreamEventBus from '../components/live/StreamEventBus';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import GiftShopTray from '../components/live/GiftShopTray';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import LiveTranscription from '../components/live/LiveTranscription';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import ReportModal from '../components/moderation/ReportModal';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GiftTray from '../components/live/GiftTray';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import TippingModal from '../components/monetization/TippingModal';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import TippingOverlay from '../components/live/TippingOverlay';
-import UnifiedChat from '../components/live/UnifiedChat';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import AudioMixer from '../components/live/AudioMixer';
-import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
-import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import TipNowModal from '../components/live/TipNowModal';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
-import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
-import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
-import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import WebhookHooks from '../components/live/WebhookHooks';
-import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
-import TierBadge from '../components/subscriptions/TierBadge';
-import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
-import GuestGrid from '../components/live/GuestGrid';
-import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
-import CollabPlaylist from '../components/watchparty/CollabPlaylist';
-import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import GlobalSearch from '../components/shared/GlobalSearch';
-import AudioPanel from '../components/live/AudioPanel';
-import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import LivePollOverlay from '../components/live/LivePollOverlay';
-import StripeConnectButton from '../components/monetization/StripeConnectButton';
-import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
-import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
-import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
-import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
-import LocalVideoTile from '../components/live/LocalVideoTile';
-import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
-import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import TipWidget from '../components/live/TipWidget';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import SuperChatRail from '../components/live/SuperChatRail';
+
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -216,10 +124,8 @@ function SpeakerTile({ member, size = 80 }) {
           </div>
         )}
         {isMuted && (
-          <div
-            className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: '#C0392B', border: `2px solid ${BG}` }}
-          >
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
         )}
@@ -254,8 +160,8 @@ function AudienceTile({ member }) {
 }
 
 export default function AudioRoom() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId    = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
@@ -275,7 +181,7 @@ export default function AudioRoom() {
   });
   const { data: loves = [] } = useQuery({
     queryKey: ['audio-room-loves', roomId],
-    queryFn:  () => base44.entities.Tip.filter({ room_id: roomId, currency: 'love' }),
+    queryFn:  () => base44.entities.Reaction.filter({ room_id: roomId, emoji: '❤️', target_type: 'room' }),
     enabled:  !!roomId,
     refetchInterval: 5000,
   });
@@ -322,7 +228,7 @@ export default function AudioRoom() {
       return;
     }
     try {
-      await base44.entities.Tip.create({ room_id: roomId, user_id: user.id, currency: 'love', amount: 1 });
+      await base44.entities.Reaction.create({ room_id: roomId, user_id: user.id, emoji: '❤️', target_type: 'room', target_id: roomId });
       setLoveCount(c => c + 1);
     } catch {
       setLoveCount(c => c + 1);
@@ -351,7 +257,7 @@ export default function AudioRoom() {
         status:      'active',
         updated_at_ms: Date.now(),
       });
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      setSearchParams({ id: p.id });
     } catch {
       toast.error('Failed to create room');
       setCreating(false);
@@ -505,7 +411,7 @@ export default function AudioRoom() {
         <button
           onClick={leaveRoom}
           className="text-[14px] font-black uppercase"
-          style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}
+          style={{ color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif' }}
         >
           Leave
         </button>
@@ -532,7 +438,7 @@ export default function AudioRoom() {
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)' }}
             >
-              <Heart className="w-4 h-4 text-red-400" fill="#C0392B" />
+              <Heart className="w-4 h-4 text-red-400" fill="#EF4444" />
             </div>
             <span className="text-[11px] font-bold" style={{ color: GOLD }}>{loveCount}</span>
           </button>
@@ -613,145 +519,314 @@ export default function AudioRoom() {
           creatorName={hostName}
         />
       )}
-      <SwanAIRecommendations roomId={roomId} currentLayout="audio" viewerCount={0} />
+
+      {/* Live Poll (host can launch polls) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LivePoll roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Interactive poll widget (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <InteractivePollWidget roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Live translation (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+        </div>
+      )}
+
+      {/* Stream goals (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamGoals roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Live audience pulse + Aura emotion (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={memberCount} />
+          <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="hype" />
+        </div>
+      )}
+
+      {/* AI Copilot (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={memberCount} />
+        </div>
+      )}
+
+      {/* Points earn widget (host awards points) */}
+      {roomId && isHost && user?.id && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PointsEarnWidget userId={user.id} creatorId={party.host_id} roomId={roomId} isHost={isHost} />
+        </div>
+      )}
+
+      {/* Live transcription (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LiveTranscription isLive={true} roomId={roomId} />
+        </div>
+      )}
+
+      {/* SuperChat bar (viewers) */}
+      {roomId && party?.host_id && !isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SuperChatBar roomId={roomId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+        </div>
+      )}
+
+      {/* Enhanced room controls (audio + branding, host only) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EnhancedRoomControls
+            isHost={isHost}
+            roomData={party}
+            micMuted={!audioEnabled}
+            onMicToggle={toggleAudio}
+            onAudioSettingsChange={() => {}}
+            onBrandingChange={() => {}}
+          />
+        </div>
+      )}
+
+      {/* Audio mixer panel (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />
+        </div>
+      )}
+
+      {/* Music player panel (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PanelMusicPlayer />
+        </div>
+      )}
+
+      {/* Scene switcher (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />
+        </div>
+      )}
+
+      {/* Poll launch bar (host) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={true} />
+        </div>
+      )}
+
+      {/* Stream metrics bar (host) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamMetricsBar startTime={null} memberCount={memberCount} tipTotal={0} peakViewers={memberCount} />
+        </div>
+      )}
+
+      {/* Leaderboard panel (all users) */}
+      {roomId && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LeaderboardPanel roomId={roomId} />
+        </div>
+      )}
+
+      {/* Soundboard (host only) */}
+      {isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <SoundboardWidget />
+        </div>
+      )}
+
+      {/* AI stream chatbot (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <StreamChatbot roomId={roomId} isHost={isHost} hostName={party?.host_name || ''} room={party} elapsedSeconds={0} />
+        </div>
+      )}
+
+      {/* Chat moderation (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <ChatModerationPanel roomId={roomId} />
+        </div>
+      )}
+
+      {/* AI stream summary (host only) */}
+      {roomId && isHost && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title} viewerCount={memberCount} />
+        </div>
+      )}
+
+      {/* Gift shop tray (viewers can send gifts) */}
+      {roomId && !isHost && (
+        <GiftShopTray roomId={roomId} currentUser={user} />
+      )}
+
+      {/* Gift tray + animated gift shop (viewers) */}
+      {roomId && !isHost && user && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />
+        </div>
+      )}
+      {roomId && !isHost && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <AnimatedGiftShop roomId={roomId} recipientId={party.host_id} onClose={() => {}} />
+        </div>
+      )}
+
+      {/* Loyalty badge (viewers see their loyalty status) */}
+      {roomId && !isHost && user?.id && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <LoyaltyBadge userId={user.id} creatorId={party.host_id} />
+        </div>
+      )}
+
+      {/* Enhanced stream chat (viewers) */}
+      {roomId && !isHost && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
+        </div>
+      )}
+
+      {/* Virtual currency tips (viewers) */}
+      {roomId && !isHost && party?.host_id && user && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <VirtualCurrencyTips roomId={roomId} creatorId={party.host_id} currentUser={user} isHost={false} />
+        </div>
+      )}
+
+      {/* ZEGO guest join (for non-host joining via ZEGO) */}
+      {roomId && !isHost && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user.full_name || ''} onJoined={() => {}} />
+        </div>
+      )}
+
+      {/* Tipping overlay (viewers) */}
+      {roomId && !isHost && party?.host_id && (
+        <TippingOverlay roomId={roomId} creatorId={party.host_id} isVisible={true} />
+      )}
+
+      {/* Mobile stream controls */}
+      {roomId && !isHost && (
+        <MobileStreamControls
+          micMuted={!audioEnabled}
+          onMicToggle={toggleAudio}
+          onReact={() => sendLove()}
+          onQuickTip={() => setTipNowOpen(true)}
+          roomId={roomId}
+        />
+      )}
+
+      {/* Moderation appeal panel */}
+      {roomId && (
+        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
+      )}
+
+      {/* Tip now modal */}
+      {tipNowOpen && (
+        <TipNowModal
+          roomId={roomId}
+          currentUser={user}
+          hostId={party?.host_id}
+          onClose={() => setTipNowOpen(false)}
+        />
+      )}
+
+      {/* Tipping modal */}
+      <TippingModal
+        isOpen={tipModalOpen}
+        onClose={() => setTipModalOpen(false)}
+        recipient={party?.host_name || ''}
+        roomId={roomId}
+        communityId={party?.community_id || null}
+      />
+
+      {/* Merch strip */}
+      {roomId && party?.host_id && (
+        <MerchStrip roomId={roomId} currentUser={user} hostId={party.host_id} />
+      )}
+
+      {/* Report modal */}
+      <ReportModal isOpen={reportOpen} onClose={() => setReportOpen(false)} reportedUser={null} roomId={roomId} communityId={party?.community_id || null} messageId={null} />
+
+      {/* Moderation action modal (host) */}
+      {isHost && (
+        <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={roomId} communityId={party?.community_id || null} moderatorId={user?.id} />
+      )}
+
+      {/* Access gates (render for non-hosts on exclusive rooms) */}
+      {roomId && !isHost && party?.host_id && (
+        <>
+          <SubscriptionGate creatorId={party.host_id} roomId={roomId} />
+          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
+          <PaywallGate isHost={false} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
+        </>
+      )}
+
+      {/* Milestone alerts + AI recommendations */}
       <MilestoneAlerts userId={user?.id} roomId={roomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {party?.host_id && <ShopDashboard creatorId={party.host_id} />}
-      {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
-      {roomId && <ZEGOStreamHealthCard roomId={roomId} />}
-      {user && <ZEGOConfigPanel user={user} />}
-      {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={party?.host_id || user?.id} />}
-      {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
-      {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
-      {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
-      {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
-      {isHost && roomId && <StreamerGoalsWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
-      {isHost && roomId && <PayPerViewManager roomId={roomId} />}
-      {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
-      {roomId && <GiftShopTray roomId={roomId} currentUser={user} />}
-      {roomId && <GiftLeaderboard roomId={roomId} />}
-      {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
-      {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
-      {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
-      <MerchWidget />
-      <NotificationBell />
-      {roomId && <PKBattleInterface roomId={roomId} />}
-      {roomId && <CoStreamPanel roomId={roomId} />}
-      {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
-      {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={roomId} isHost={isHost} />}
-      {isHost && roomId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={roomId} />}
-      {roomId && <RewardShop creatorId={party?.host_id || user?.id} roomId={roomId} currentUser={user} />}
-      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
-      {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={() => {}} />}
-      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={'Live Audio'} viewerCount={0} />}
-      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
-      {isHost && user?.id && <RecordingManager userId={user.id} />}
-      {isHost && <OBSBridge />}
-      <ZEGOMobileAppBanner />
-      {isHost && roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
-      {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamMetadataEditor initialTitle={'Live Audio'} initialCategory={'entertainment'} />}
-      {isHost && <StreamerMonetizationCenter />}
-      {!isHost && roomId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={roomId} onClose={() => {}} />}
-      {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
-      {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
-      <ShareToSocial content={{text: ''}} />
-      {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
-      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
-      {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
-      {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
-      <StreamHealthDashboard isLive={roomId != null} />
-      {!isHost && roomId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={() => {}} />}
-      {isHost && <LowerThirdsBanner onBannerChange={() => {}} />}
-      {isHost && <SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
-      <NotificationHub />
-      {isHost && <SoundboardWidget isVisible={true} />}
-      {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
-      {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={0} />}
-      {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
-      {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={''} viewerCount={0} elapsedSeconds={0} />}
-      {isHost && <ChatModeration collapsed={true} />}
-      <BrandChyron />
-      {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
-      <HostAlertCenter />
-      {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
-      {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={party?.host_id || user?.id} isHost={isHost} />}
-      {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
-      {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />}
-      {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />}
-      {isHost && <AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
-      {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
-      {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
-      {isHost && <StripeConnectButton creatorId={party?.host_id || user?.id} />}
-      {!isHost && user?.id && <StripeSubscribeButton creatorId={party?.host_id || user?.id} creatorName={''} currentUserId={user.id} />}
-      {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {party && <WatchPartyAnalytics party={party} members={[]} pollCount={0} reactionCount={0} />}
-      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
-      {roomId && <PaymentMethodSelector creatorId={party?.host_id || user?.id} roomId={roomId} onPaymentComplete={() => {}} />}
-      {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
-      {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
-      {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {roomId && <GuestGrid participants={[]} isHost={isHost} onInvite={() => {}} hostId={user?.id} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
-      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={() => {}} />
-      <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
-      <GlobalSearch onClose={() => {}} />
-      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
-      <PaywallGate isHost={isHost} streamTitle={''} onUnlock={() => {}} isUnlocked={true} />
-      {roomId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={roomId} />}
-      {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
-      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
-      {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
-      {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
-      {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
-      {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
-      <PanelMusicPlayer />
-      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
-      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => {}} />}
-      <PrivatePanel isHost={isHost} currentUser={user} />
-      {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={0} hostName={user?.full_name || ''} room={party} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
-      {roomId && <TippingOverlay roomId={roomId} creatorId={party?.host_id || user?.id} isVisible={true} />}
-      {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
-      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
-      {isHost && <AudioMixer micMuted={false} onMicToggle={() => {}} />}
-      {isHost && <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
-      {isHost && <ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
-      {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
-      {roomId && <BattleScoreboard roomId={roomId} />}
-      {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}
-      <GlobalChatWidget />
-      {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
-      {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
-      {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />}
-      {user?.id && <PointsNotification userId={user.id} />}
-      {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
-      {roomId && <BattleMode roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={'auto'} onChange={() => {}} />}
-      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
-      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
-      <ViewerCount count={0} peakViewers={0} />
-      {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={''} elapsedSeconds={0} currentUser={user} />}
-      {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}
-      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
-      {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
-      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={() => {}} isHost={isHost} />}
-      <BackgroundCustomizer />
+      <SwanAIRecommendations roomId={roomId} currentLayout="audio" viewerCount={members.length} />
+
+      {/* Engagement badges */}
+      {roomId && user?.id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id} />
+        </div>
+      )}
+
+      {/* Super chat rail (all users) */}
+      {roomId && <SuperChatRail roomId={roomId} currentUser={user} />}
+
+      {/* Tip widget (viewers only) */}
+      {roomId && !isHost && party?.host_id && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <TipWidget roomId={roomId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
+        </div>
+      )}
+
+      {/* Presence + discovery */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title={party?.title ? `Join "${party.title}" on SeeWhy LIVE!` : 'Join my audio room on SeeWhy LIVE!'} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.97)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('GoLive')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            📡 Go Live
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('PodcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎤 Podcast
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

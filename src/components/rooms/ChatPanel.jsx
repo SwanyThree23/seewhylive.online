@@ -251,7 +251,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
 
         <div className={`rounded-2xl px-4 py-2 relative ${
           isOwn 
-            ? 'bg-[#7B5DA6] text-white' 
+            ? 'bg-[#800020] text-white' 
             : 'bg-muted'
         }`}>
           <p className="text-sm break-words">{message.content}</p>

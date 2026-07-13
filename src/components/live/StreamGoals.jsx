@@ -29,7 +29,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
       const pct = current / goal.target;
       if (pct >= 1 && !goal.completed) {
         setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, completed: true } : g));
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#00d4ff'] });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#D4AF37'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
     });
@@ -143,7 +143,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                   className="h-full rounded-full relative"
-                  style={{ background: goal.completed ? '#6DBF7E' : 'linear-gradient(90deg, #16a34a, #6DBF7E, #6DBF7E)' }}
+                  style={{ background: goal.completed ? '#6DBF7E' : 'linear-gradient(90deg, #4A9B5E, #6DBF7E, #6DBF7E)' }}
                 >
                   {pct > 10 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />

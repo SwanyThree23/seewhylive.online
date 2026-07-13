@@ -20,8 +20,9 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
 
   const { data: roomMessages } = useQuery({
     queryKey: ['roomMessages', roomId],
-    queryFn: () => base44.entities.Message?.filter({ room_id: roomId }, '-created_date', 50) || [],
-    refetchInterval: 1000,
+    queryFn: () => base44.entities.Message.filter({ room_id: roomId }, '-created_date', 50),
+    refetchInterval: 3000,
+    enabled: !!roomId,
   });
 
   useEffect(() => {
@@ -106,7 +107,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
                 <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ background: msg.is_moderator ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.1)' }}>
                   {msg.is_moderator ? (
-                    <Shield className="w-3 h-3 text-[#7B5DA6]" />
+                    <Shield className="w-3 h-3" style={{ color: '#D4AF37' }} />
                   ) : (
                     <User className="w-3 h-3 text-white/40" />
                   )}

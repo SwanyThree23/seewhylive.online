@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -30,24 +30,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import BattleMode from '../components/streaming/BattleMode';
-import BitratePresets from '../components/streaming/BitratePresets';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -64,7 +47,7 @@ const GIFTS = [
 
 function OctCamTile({ stream, label, isLocal }) {
   const ref = useRef(null);
-  useEffect(() => { if (ref.current && stream) ref.current.srcObject = stream; }, [stream]);
+  useEffect(() => { if (ref.current) ref.current.srcObject = stream || null; }, [stream]);
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />
@@ -133,7 +116,7 @@ function FlyingGift({ emoji, side }) {
 
 function ComboBadge({ combo }) {
   if (!combo || combo < 2) return null;
-  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#D4854A' : '#D4AF37';
+  var color = combo >= 10 ? '#C0392B' : combo >= 5 ? '#D4854A' : combo >= 3 ? '#CC7755' : '#D4AF37';
   var glow = combo >= 10 ? '0 0 12px rgba(192,57,43,0.8)' : 'none';
   return (
     <motion.div
@@ -277,8 +260,8 @@ function WinnerOverlay({ winner, onClose }) {
 }
 
 export default function PKBattlePage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const battleId = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const battleId = searchParams.get('id');
   const qc = useQueryClient();
 
   const [leftName, setLeftName] = useState('');
@@ -373,7 +356,7 @@ export default function PKBattlePage() {
     }),
     onSuccess: (b) => {
       battleDurationRef.current = duration;
-      window.location.href = `${window.location.pathname}?id=${b.id}`;
+      setSearchParams({ id: b.id });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -462,16 +445,15 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
-  const roomId = null;
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
-
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
+  React.useEffect(() => {
+    return () => {
+      if (leftCaptureStream) leftCaptureStream.getTracks().forEach(t => t.stop());
+      if (rightCaptureStream) rightCaptureStream.getTracks().forEach(t => t.stop());
+    };
   }, [leftCaptureStream, rightCaptureStream]);
 
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
@@ -572,6 +554,8 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
+  const isHost = !!(user?.id && battle?.creator_id === user?.id);
+
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
@@ -582,10 +566,14 @@ export default function PKBattlePage() {
   };
 
   const handleBattleScreenCapture = async () => {
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-    if (!leftCaptureStream) setLeftCaptureStream(stream);
-    else setRightCaptureStream(stream);
-    return stream;
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+      if (!leftCaptureStream) setLeftCaptureStream(stream);
+      else setRightCaptureStream(stream);
+      return stream;
+    } catch {
+      // User cancelled or permission denied — leave existing streams unchanged
+    }
   };
 
   var giftsDisabled = countdown !== null;
@@ -641,7 +629,7 @@ export default function PKBattlePage() {
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="font-bold text-sm text-white truncate">{battle?.title || 'PK Battle'}</span>
           {battle?.status === 'active' && (
-            <span style={{ background: '#dc2626', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
+            <span style={{ background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }} className="animate-pulse">LIVE</span>
           )}
           {battle?.status === 'ended' && (
             <span style={{ background: '#4b5563', color: '#fff', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>ENDED</span>
@@ -726,7 +714,7 @@ export default function PKBattlePage() {
                   {bRightName?.charAt(0)?.toUpperCase()}
                 </div>
                 <p className="text-2xl font-black text-white">{bRightName}</p>
-                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(220,38,38,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
+                <span style={{ background: 'rgba(185,28,28,0.5)', color: '#fecaca', border: '1px solid rgba(192,57,43,0.4)', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>Right Creator</span>
               </div>
             )}
             <div className="absolute top-3 right-3 bg-black/70 rounded-xl px-4 py-2 flex flex-col items-center relative">
@@ -820,26 +808,19 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
-      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
-      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
+        {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
+        {user?.id && <PointsNotification userId={user.id} />}
+        {battleId && <SuperChatRail roomId={battleId} currentUser={user} />}
+        {battleId && <LivePoll roomId={battleId} isHost={isHost} />}
+        <OnlineUsersGrid roomId={battleId} remoteStreams={battleRemoteStreams} peerUserIds={battlePeerUserIds} localStream={localCamStream} currentUser={user} compact maxVisible={8} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+      </div>
     </div>
   );
 }

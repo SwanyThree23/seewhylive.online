@@ -6,15 +6,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", burgundy: "#800020", gold: "#D4AF37",
   volt: "#D4AF37", white: "#FFF", gray: "#888", dim: "#444",
-  purple: "#BF5FFF", cyan: "#4A8A7A", green: "#6DBF7E",
+  purple: "#800020", cyan: "#6DBF7E", green: "#6DBF7E",
   fOrb: "'Orbitron',sans-serif", fRaj: "'Rajdhani',sans-serif",
   fMon: "'Share Tech Mono',monospace", fBeb: "'Bebas Neue',cursive",
 };
 
 var RARITY_STYLES = {
   common: { color: C.gray, border: "#555", label: "COMMON" },
-  rare: { color: C.cyan, border: "#4A8A7A44", label: "RARE" },
-  epic: { color: C.purple, border: "#BF5FFF44", label: "EPIC" },
+  rare: { color: C.gold, border: "#D4AF3744", label: "RARE" },
+  epic: { color: C.burgundy, border: "#80002044", label: "EPIC" },
   legendary: { color: C.gold, border: "#D4AF3766", label: "LEGENDARY", shimmer: true },
 };
 
@@ -103,7 +103,7 @@ export function GiftLeaderboard({ roomId }) {
   var leaders = Object.values(
     transactions.reduce((acc, t) => {
       if (!acc[t.sender_id]) acc[t.sender_id] = { name: t.sender_name || t.sender_id, gems: 0 };
-      acc[t.sender_id].gems += t.amount || 0;
+      acc[t.sender_id].gems += (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b.gems - a.gems).slice(0, 5);
@@ -157,7 +157,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
     ]),
     onSuccess: (_, gift) => {
       onSend && onSend({ ...gift, sender_name: currentUser?.full_name || "You" });
-      qc.invalidateQueries(["gift-lb", roomId]);
+      qc.invalidateQueries({ queryKey: ["gift-lb", roomId] });
       setOpen(false);
       if (currentUser?.id) {
         Promise.allSettled([

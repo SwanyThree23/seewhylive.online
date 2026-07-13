@@ -24,20 +24,18 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-const G = '#D4AF37';
-const BG = '#0A0710';
+
+const BG = '#080B18';
+const GOLD = '#D4AF37';
+const CRIMSON = '#800020';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const TABS = [
+  { id: 'theme', label: 'Theme & Overlays', icon: Palette, color: GOLD },
+  { id: 'alerts', label: 'Stream Alerts', icon: Bell, color: '#D4854A' },
+  { id: 'goals', label: 'Streamer Goals', icon: Target, color: '#6DBF7E' },
+  { id: 'soundboard', label: 'Soundboard', icon: Bell, color: GOLD },
+];
 
 export default function OverlayEditorPage() {
   const [activeTab, setActiveTab] = useState('theme');
@@ -45,6 +43,13 @@ export default function OverlayEditorPage() {
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+  });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+
+  const { data: liveRoom } = useQuery({
+    queryKey: ['my-live-room-overlay', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }, '-created_date', 1).then(r => r?.[0]),
+    enabled: !!user?.id,
   });
 
   const { data: liveRoom } = useQuery({
@@ -218,21 +223,6 @@ export default function OverlayEditorPage() {
           <ShareToSocial content={{ title: 'Overlay Editor', url: window.location.href }} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="overlay" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

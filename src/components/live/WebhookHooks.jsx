@@ -10,9 +10,9 @@ const EVENTS = [
   { id: 'viewer.join', label: 'Viewer Joined', color: 'text-[#D4AF37]' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
-  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#7B5DA6]' },
+  { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#D4854A]' },
   { id: 'goal.reached', label: 'Goal Reached', color: 'text-[#6DBF7E]' },
-  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-orange-400' },
+  { id: 'raid.incoming', label: 'Incoming Raid', color: 'text-[#D4854A]' },
 ];
 
 export default function WebhookHooks({ roomId, isHost }) {

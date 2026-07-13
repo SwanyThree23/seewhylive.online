@@ -38,7 +38,30 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
   var [myQueueId, setMyQueueId] = useState(null);
   var intervalRef = React.useRef(null);
   var [myQueueId, setMyQueueId] = useState(null);
-  var qc = useQueryClient();
+  var intervalRef = React.useRef(null);
+
+  // Fetch real queue from backend
+  var { data: liveQueue = [], isLoading: queueLoading, refetch: refetchQueue } = useQuery({
+    queryKey: ['pk-queue'],
+    queryFn: function() { return base44.entities.PKBattle.filter({ status: 'seeking' }); },
+    refetchInterval: 10000,
+  });
+
+  // Real-time subscription: detect when someone challenges us
+  useEffect(function() {
+    if (!inQueue || !myQueueId) return;
+    var unsub = base44.entities.PKBattle.subscribe(function(event) {
+      if (event.type === 'update' && event.id === myQueueId && event.data.status === 'active') {
+        clearInterval(intervalRef.current);
+        var match = { id: event.data.id, name: event.data.challenger_name || 'Challenger' };
+        setMatchedWith(match);
+        setInQueue(false);
+        toast.success('Match found! ' + match.name + ' accepted your challenge!');
+        if (onMatchFound) { onMatchFound(event.data); }
+      }
+    });
+    return unsub;
+  }, [inQueue, myQueueId, onMatchFound]);
 
   // Fetch real queue from backend
   var { data: liveQueue = [], isLoading: queueLoading, refetch: refetchQueue } = useQuery({
@@ -154,6 +177,8 @@ export default function MatchmakingQueue({ user, onMatchFound }) {
     },
     onError: function(err) { toast.error('Challenge failed: ' + err.message); },
   });
+
+  function joinQueue() { joinMutation.mutate(); }
 
   function leaveQueue() { leaveMutation.mutate(); }
 

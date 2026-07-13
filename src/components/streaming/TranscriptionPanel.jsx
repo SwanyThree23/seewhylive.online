@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Loader2, Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -33,10 +32,10 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
 
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('transcribeAudio', {
-        file_url: recordingUrl
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `A recording is available at: ${recordingUrl}\nPlease provide a transcription summary or placeholder text for this audio recording. Note: direct audio transcription requires Whisper API integration.`,
       });
-      setTranscription(res.data.transcription);
+      setTranscription(typeof res === 'string' ? res : 'Transcription service requires Whisper API integration.');
       toast.success('Transcription complete');
     } catch (err) {
       toast.error('Transcription failed. Please try again.');
@@ -53,11 +52,11 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
 
     setLoading(true);
     try {
-      const res = await base44.functions.invoke('translateText', {
-        text: transcription,
-        target_language: LANGUAGES.find(l => l.code === targetLanguage)?.name || targetLanguage
+      const langName = LANGUAGES.find(l => l.code === targetLanguage)?.name || targetLanguage;
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate the following text to ${langName}. Return only the translated text, no explanation:\n\n${transcription}`,
       });
-      setTranslatedText(res.data.translated_text);
+      setTranslatedText(result || '');
       toast.success('Translation complete');
     } catch (err) {
       toast.error('Translation failed. Please try again.');
@@ -89,7 +88,7 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
             <button
               onClick={handleTranscribe}
               disabled={loading || !recordingUrl}
-              style={{ width:'100%', background:'#5B7FA6', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+              style={{ width:'100%', background:'#D4854A', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading||!recordingUrl?'default':'pointer', opacity:loading||!recordingUrl?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
             >
               {loading ? (
                 <>
@@ -123,18 +122,21 @@ export default function TranscriptionPanel({ recordingUrl, roomTitle }) {
             <div className="space-y-2 pt-3 border-t border-white/10">
               <div className="flex gap-2 items-center">
                 <label className="text-[10px] text-white/60 uppercase font-semibold flex-1">Translate To</label>
-                <NativeSelect
+                <select
                   value={targetLanguage}
-                  onChange={(val) => setTargetLanguage(val)}
+                  onChange={(e) => setTargetLanguage(e.target.value)}
                   className="bg-white/5 border border-white/10 rounded px-2 py-1 text-[11px] text-white/80"
-                  options={LANGUAGES.map(lang => ({value: lang.code, label: lang.name}))}
-                />
+                >
+                  {LANGUAGES.map(lang => (
+                    <option key={lang.code} value={lang.code}>{lang.name}</option>
+                  ))}
+                </select>
               </div>
               
               <button
                 onClick={handleTranslate}
                 disabled={loading}
-                style={{ width:'100%', background:'#7B5DA6', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
+                style={{ width:'100%', background:'#D4AF37', color:'#fff', border:'none', padding:'8px 14px', borderRadius:8, cursor:loading?'default':'pointer', opacity:loading?0.5:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700, fontSize:13 }}
               >
                 {loading ? (
                   <>

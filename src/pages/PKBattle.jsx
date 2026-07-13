@@ -20,25 +20,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import BattleMode from '../components/streaming/BattleMode';
-import BitratePresets from '../components/streaming/BitratePresets';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-function Button({children,onClick,disabled,className='',style={},size,variant,type='button'}){return <button type={type} onClick={onClick} disabled={disabled} className={className} style={style}>{children}</button>}
 
 function BattleListItem({ battle, isSelected, onClick }) {
   const creatorScore = (battle.creator_tips || 0) + (battle.creator_subs || 0) * 10;
@@ -77,11 +58,7 @@ export default function PKBattlePage() {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [tab, setTab] = useState('active');
 
-  const { data: user } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
-  });
-  const roomId = null;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const { data: activeBattles = [] } = useQuery({
     queryKey: ['activePKBattles'],
@@ -110,13 +87,13 @@ export default function PKBattlePage() {
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
       {/* Header */}
-      <div className="px-4 md:px-8 py-8 max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-2">
-            <Swords className="w-6 h-6" style={{ color: '#C0392B' }} />
-            <h1 className="text-4xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              PK Battles
-            </h1>
+      <div className="sticky top-0 z-20 px-4 py-4 md:px-8 border-b flex items-center justify-between flex-wrap gap-3"
+        style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center gap-3">
+          <Swords className="w-5 h-5" style={{ color: SCARLET }} />
+          <div>
+            <h1 className="text-xl font-black text-white leading-none" style={T}>PK Battles</h1>
+            <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Streamer vs. Streamer — viewers vote with tips &amp; subs</p>
           </div>
         </div>
         {user && (
@@ -271,26 +248,55 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
-      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
-      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* Battle Mode + Scoreboard for active battle */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 space-y-4">
+          <BattleMode roomId={displayBattle.id} isHost={user?.id === displayBattle.challenger_id} hostName={user?.full_name || ''} participants={[]} />
+          <BattleScoreboard roomId={displayBattle.id} />
+          <BattleOverlay battle={displayBattle} onBattleUpdate={() => {}} />
+        </div>
+      )}
+
+      {/* PK Battle soundboard */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleSoundboard battleId={displayBattle.id} isBattleActive={displayBattle.status === 'active'} />
+        </div>
+      )}
+
+      {/* Matchmaking queue */}
+      {user && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <MatchmakingQueue user={user} onMatchFound={() => {}} />
+        </div>
+      )}
+
+      {/* Tournament Bracket */}
+      <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+        <TournamentBracket />
+      </div>
+
+      {/* PK Analytics Dashboard */}
+      {battles && battles.length > 0 && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKAnalyticsDashboard battles={battles} user={user} />
+        </div>
+      )}
+
+      {/* PK Battle Interface */}
+      {displayBattle?.id && (
+        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
+          <PKBattleInterface roomId={displayBattle.id} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={null} />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      </div>
     </div>
   );
 }

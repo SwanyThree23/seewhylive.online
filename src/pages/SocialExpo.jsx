@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -37,23 +35,34 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ShareToSocial from '../components/social/ShareToSocial';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamGoals from '../components/live/StreamGoals';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#4A8A7A';
+const TEAL    = '#D4854A';
 const BG      = '#080B18';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Platform integrations ─────────────────────────────────────────────── */
 const PLATFORMS = [
-  { name: 'Fanbase',   color: '#FF3C78', icon: Heart,   desc: 'Fan economy & creator tipping' },
-  { name: 'Clubhouse', color: '#F4C542', icon: Mic,     desc: 'Live audio rooms & stages' },
-  { name: 'Discord',   color: '#5865F2', icon: Users,   desc: 'Community servers & events' },
-  { name: 'GoBrunch',  color: '#00B4D8', icon: Globe,   desc: 'Virtual events & networking' },
-  { name: 'Poldit',    color: '#D4854A', icon: Star,    desc: 'Debate rooms & live polls' },
-  { name: 'Calibones', color: '#7B5DA6', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
+  { name: 'Fanbase',   color: '#C0392B', icon: Heart,   desc: 'Fan economy & creator tipping' },
+  { name: 'Clubhouse', color: '#D4AF37', icon: Mic,     desc: 'Live audio rooms & stages' },
+  { name: 'Discord',   color: '#D4854A', icon: Users,   desc: 'Community servers & events' },
+  { name: 'GoBrunch',  color: '#6DBF7E', icon: Globe,   desc: 'Virtual events & networking' },
+  { name: 'Poldit',    color: '#CC7755', icon: Star,    desc: 'Debate rooms & live polls' },
+  { name: 'Calibones', color: '#D4854A', icon: Trophy,  desc: 'Gaming tournaments & leagues' },
 ];
 
 /* ─── Sponsorship tiers ──────────────────────────────────────────────────── */
@@ -108,7 +117,7 @@ const SOCIAL_LIGHTS = [
   { role: 'Host', name: 'Domino Entertainment', color: PINK,    icon: Radio },
   { role: 'Co-Host', name: 'SeeWhy LIVE',        color: G,      icon: Tv2 },
   { role: 'Guest Spotlight', name: 'A.I. Verse Podcast', color: TEAL, icon: Mic },
-  { role: 'Community Pick', name: 'Open Nomination',     color: '#7B5DA6', icon: Users },
+  { role: 'Community Pick', name: 'Open Nomination',     color: '#D4854A', icon: Users },
 ];
 
 /* ─── Ticket tiers ───────────────────────────────────────────────────────── */
@@ -123,6 +132,25 @@ const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoenterta
 
 export default function SocialExpo() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const { data: activeChallenge } = useQuery({
+    queryKey: ['activeChallenge'],
+    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
+    enabled: true,
+  });
+  const activeChallengeId = activeChallenge?.id || null;
+  const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
 
@@ -219,7 +247,7 @@ export default function SocialExpo() {
               { label: '6 Platforms', icon: Globe, color: TEAL },
               { label: 'Weekly Shows', icon: Radio, color: G },
               { label: '$0.99–$4.99 Tickets', icon: Ticket, color: PINK },
-              { label: '10% Affiliate', icon: Percent, color: '#7B5DA6' },
+              { label: '10% Affiliate', icon: Percent, color: '#D4854A' },
               { label: '90% Creator Split', icon: DollarSign, color: '#6DBF7E' },
             ].map((s, i) => {
               const Icon = s.icon;
@@ -327,9 +355,9 @@ export default function SocialExpo() {
                       const wpUrl = `${createPageUrl('WatchParty')}?videoUrl=${encodeURIComponent(ytUrl)}&title=${encodeURIComponent(video.title + ' — Watch Party')}`;
                       return (
                         <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
-                          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(13,6,24,0.9)',
+                          <div style={{ borderRadius: 14, overflow: 'hidden', background: 'rgba(8,11,24,0.9)',
                             border: '1px solid rgba(192,57,43,0.15)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                            <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0d0620)' }}>
+                            <div style={{ position: 'relative', aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0010, #0D1022)' }}>
                               <img src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`} alt={video.title}
                                 onError={e => { e.target.style.display = 'none'; }}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -351,7 +379,7 @@ export default function SocialExpo() {
                                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                                     padding: '6px', borderRadius: 8, textDecoration: 'none',
                                     background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)',
-                                    color: '#C0392B', fontSize: 11, fontWeight: 700, ...T }}>
+                                    color: '#ff4444', fontSize: 11, fontWeight: 700, ...T }}>
                                   <Play style={{ width: 10, height: 10 }} /> Watch
                                 </a>
                                 <Link to={wpUrl}
@@ -533,9 +561,9 @@ export default function SocialExpo() {
               </div>
 
               {/* Tournament section */}
-              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(123,93,166,0.06)', border: '1px solid rgba(123,93,166,0.18)' }}>
+              <div style={{ padding: 24, borderRadius: 16, background: 'rgba(128,0,32,0.06)', border: '1px solid rgba(128,0,32,0.18)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                  <Trophy style={{ width: 20, height: 20, color: '#7B5DA6' }} />
+                  <Trophy style={{ width: 20, height: 20, color: '#D4854A' }} />
                   <span style={{ fontSize: 16, fontWeight: 900, color: '#fff', ...T }}>Domino Entertainment Tournaments</span>
                 </div>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: '0 0 16px', lineHeight: 1.6 }}>
@@ -546,8 +574,8 @@ export default function SocialExpo() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
                   {['Weekly Brackets', 'Sponsored Prize Pools', 'Community Wagers', 'Live Commentary', 'Cross-Platform Chat', 'Replay Archive'].map((f, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 12px', borderRadius: 8,
-                      background: 'rgba(123,93,166,0.08)', border: '1px solid rgba(123,93,166,0.15)' }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#7B5DA6', flexShrink: 0 }} />
+                      background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.15)' }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D4854A', flexShrink: 0 }} />
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', ...T }}>{f}</span>
                     </div>
                   ))}
@@ -636,7 +664,7 @@ export default function SocialExpo() {
 
               {/* Headline */}
               <div style={{ padding: 28, borderRadius: 18, marginBottom: 28,
-                background: `linear-gradient(135deg, rgba(109,191,126,0.12), rgba(74,138,122,0.08))`,
+                background: `linear-gradient(135deg, rgba(109,191,126,0.12), rgba(212,175,55,0.08))`,
                 border: '1px solid rgba(109,191,126,0.22)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(109,191,126,0.18)',
@@ -679,7 +707,7 @@ export default function SocialExpo() {
                   { label: 'Sponsorship Deals',  range: '$100–$500/event',        color: G,          pct: '10% of deal value' },
                   { label: 'Virtual Gifts',       range: 'Variable per gift',     color: '#D4854A',  pct: '10% of gift value' },
                   { label: 'Subscriptions',       range: '$1–$50/month',          color: TEAL,       pct: '10% of sub price' },
-                  { label: 'Live Tips',           range: 'Any amount',            color: '#7B5DA6',  pct: '10% of tip amount' },
+                  { label: 'Live Tips',           range: 'Any amount',            color: '#D4854A',  pct: '10% of tip amount' },
                 ].map((stream, i) => (
                   <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
                     style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px',
@@ -736,21 +764,6 @@ export default function SocialExpo() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

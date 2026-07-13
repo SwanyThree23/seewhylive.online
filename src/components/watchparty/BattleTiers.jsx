@@ -44,7 +44,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
     if (!partyId) return;
     const unsub = base44.entities.Message.subscribe((event) => {
       if (event.data?.room_id !== partyId || event.data?.message_type !== 'battle_tier') return;
-      qc.invalidateQueries(['battle-tiers', partyId]);
+      qc.invalidateQueries({ queryKey: ['battle-tiers', partyId] });
     });
     return unsub;
   }, [partyId, qc]);
@@ -87,7 +87,7 @@ export default function BattleTiers({ partyId, currentUser, members = [], hostId
         message_type: 'battle_tier',
         content: JSON.stringify({ userId: currentUser.id, pts: tier.pts, tierId: tier.id }),
       });
-      qc.invalidateQueries(['battle-tiers', partyId]);
+      qc.invalidateQueries({ queryKey: ['battle-tiers', partyId] });
       // Clear optimistic delta once DB query refreshes
       setOptimisticPts(prev => { const n = { ...prev }; delete n[currentUser.id]; return n; });
     } catch {

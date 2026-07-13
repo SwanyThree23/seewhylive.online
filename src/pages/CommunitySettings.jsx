@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings } from 'lucide-react';
+import { Settings, Users, Copy, Check, Image, Tag, Lock, Globe, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import ReferralProgram from '../components/community/ReferralProgram';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import PollCard from '../components/community/PollCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -13,22 +28,6 @@ function Toggle({ checked, onChange }) {
 }
 
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -74,8 +73,7 @@ export default function CommunitySettingsPage() {
   const [bannerUrl, setBannerUrl] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [copiedInvite, setCopiedInvite] = useState(false);
-  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const user = currentUser;
+  const [showDanger, setShowDanger] = useState(false);
 
   const { data: community, isLoading } = useQuery({
     queryKey: ['community-settings', communityId],
@@ -309,22 +307,6 @@ export default function CommunitySettingsPage() {
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

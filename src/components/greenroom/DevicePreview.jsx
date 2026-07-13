@@ -12,7 +12,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#C0392B';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#D4AF37' : '#FF4444';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (
@@ -93,7 +93,7 @@ export default function DevicePreview({ user, onDeviceState }) {
         const dl = navigator.connection.downlink;
         setNetworkQuality(dl > 10 ? 4 : dl > 5 ? 3 : dl > 1 ? 2 : 1);
       } else {
-        setNetworkQuality(q => (Math.random() > 0.85 ? Math.max(2, q - 1) : Math.min(4, q + 1)));
+        setNetworkQuality(3);
       }
     }, 4000);
     return () => clearInterval(iv);

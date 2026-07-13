@@ -47,25 +47,33 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import RewardShopEditor from '../components/loyalty/RewardShopEditor';
-import SubscriptionCard from '../components/monetization/SubscriptionCard';
-import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
-import TierEditor from '../components/subscriptions/TierEditor';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import RecordingManager from '../components/content/RecordingManager';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import QuickActionPanel from '../components/shared/QuickActionPanel';
-import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NotificationBell from '../components/shared/NotificationBell';
+import SubscriptionManager from '@/components/monetization/SubscriptionManager';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import DirectPayments from '../components/live/DirectPayments';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PollCard from '../components/community/PollCard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import { toast } from 'sonner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -125,7 +133,7 @@ function OverviewTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useQuery({
@@ -141,7 +149,7 @@ function OverviewTab({ user }) {
     const total = txns.filter(t => {
       const td = new Date(t.created_date);
       return td.toDateString() === d.toDateString();
-    }).reduce((s, t) => s + (t.creator_amount || 0), 0);
+    }).reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
     return { label, total };
   });
 
@@ -208,7 +216,7 @@ function OverviewTab({ user }) {
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
           { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
-          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
+          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(212,175,55,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
             <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
@@ -469,7 +477,7 @@ function ContentTab({ user }) {
                   </button>
                   <button onClick={() => deleteMut.mutate(v.id)}
                     className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B' }}>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
                 </div>
@@ -678,7 +686,7 @@ function CommunityTab({ user }) {
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
                   <button onClick={() => endPollMut.mutate(poll.id)}
                     className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>End</button>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
                 </div>
                 <div className="space-y-1.5">
                   {opts.map((o, i) => {
@@ -784,7 +792,7 @@ function MonetizationTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: goals = [] } = useQuery({
@@ -799,12 +807,12 @@ function MonetizationTab({ user }) {
     onError: () => toast.error('Action failed.'),
   });
 
-  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
   const total = tipTotal + subTotal + giftTotal;
-  const creatorShare = total * 0.9;
-  const platformShare = total * 0.1;
+  const creatorShare = Math.floor(total * 90) / 100;
+  const platformShare = total - creatorShare;
 
   const pieData = [
     { name: 'Tips', value: tipTotal, color: GOLD },
@@ -861,7 +869,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#C0392B', ...T }}>
+              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
@@ -1294,27 +1302,18 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="dashboard" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
-      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
-      <TierEditor open={false} onClose={() => {}} creatorId={user?.id} existing={null} />
-      <RewardShopEditor creatorId={user?.id} />
-      <QuickActionPanel isOpen={false} onClose={() => {}} />
-      <OnboardingFlow isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+
+      <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamGoals isHost={true} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title="Check out my dashboard on SeeWhy LIVE!" />
+      </div>
     </div>
   );
 }

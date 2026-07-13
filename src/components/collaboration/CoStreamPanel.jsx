@@ -63,6 +63,11 @@ export default function CoStreamPanel({ roomId }) {
     onError: () => toast.error('Action failed.'),
   });
 
+  // Assign srcObject once video element mounts (after isStreaming flips true)
+  useEffect(() => {
+    if (videoRef.current && mediaStream) videoRef.current.srcObject = mediaStream;
+  }, [mediaStream, isStreaming]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -91,10 +96,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
       setMediaStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
       setIsStreaming(true);
       setStreamType('camera');
 
@@ -141,10 +142,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
       setMediaStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
       setIsStreaming(true);
       setStreamType('screen');
 

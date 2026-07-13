@@ -11,7 +11,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 function exportCSV(transactions, subscriptions) {
   const rows = [
     ['Type', 'Amount', 'Date', 'Description'],
-    ...transactions.map(t => [t.type || 'transaction', `$${t.amount || 0}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
+    ...transactions.map(t => [t.transaction_type || 'transaction', `$${(t.creator_payout || 0) + (t.platform_cut || 0)}`, new Date(t.created_date).toLocaleDateString(), t.description || '']),
     ...subscriptions.map(s => ['subscription', `$${s.price || 0}/mo`, new Date(s.created_date).toLocaleDateString(), s.tier_name || '']),
   ];
   const csv = rows.map(r => r.map(v => JSON.stringify(v)).join(',')).join('\n');
@@ -25,7 +25,7 @@ function exportCSV(transactions, subscriptions) {
 export default function RevenueDashboard({ userId }) {
   const { data: transactions = [] } = useQuery({
     queryKey: ['userEarnings', userId],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: userId }),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: userId }),
   });
 
   const { data: subscriptions = [] } = useQuery({
@@ -34,7 +34,7 @@ export default function RevenueDashboard({ userId }) {
   });
 
   // Calculate earnings with 90/10 split
-  const grossEarnings = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const grossEarnings = transactions.reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const platformFee = grossEarnings * 0.10;
   const processingFee = transactions.length * 0.30 + (grossEarnings * 0.029);
   const netEarnings = grossEarnings - platformFee - processingFee;
@@ -143,7 +143,7 @@ export default function RevenueDashboard({ userId }) {
                 <span style={{ fontSize: 13, color: '#9ca3af' }}>subscribers</span>
               </div>
               <div style={{ fontSize: 13, color: '#F5E6D3', marginTop: 12, paddingTop: 12, borderTop: `1px solid ${CRIMSON}4D`, ...T }}>
-                Monthly Revenue: <span style={{ fontWeight: 700, color: GOLD }}>${(tier.price * tier.count * 0.9).toFixed(2)}</span>
+                Monthly Revenue: <span style={{ fontWeight: 700, color: GOLD }}>${(Math.floor(tier.price * tier.count * 90) / 100).toFixed(2)}</span>
               </div>
             </div>
           ))}

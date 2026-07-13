@@ -19,23 +19,9 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
   { id: 'education', label: '📚 Education' }, { id: 'talk', label: '🎙 Talk' },
@@ -48,8 +34,8 @@ const DURATIONS = [
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
 ];
 const CAT_COLORS = {
-  gaming: '#a78bfa', music: '#f472b6', education: '#60a5fa', talk: '#34d399',
-  fitness: '#fb923c', cooking: '#fbbf24', art: '#C0392B', tech: '#00d4ff',
+  gaming: '#C0392B', music: '#D4854A', education: '#D4AF37', talk: '#6DBF7E',
+  fitness: '#D4854A', cooking: '#D4AF37', art: '#FF4444', tech: '#C9A84C',
   irl: '#6DBF7E', other: '#d4af37',
 };
 
@@ -517,21 +503,33 @@ export default function StreamScheduler() {
           </>
         )}
       </AnimatePresence>
-      <SwanAIRecommendations roomId={null} currentLayout="schedule" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <ShareToSocial />
+
+      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamGoals isHost={true} />
+        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+        <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
+        <MultiStreamConfig roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
+      </div>
+
+      {/* Quick navigation to related stream tools */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 16px 32px', justifyContent: 'center' }}>
+        {[
+          { label: '🔴 Go Live',           href: 'GoLive'            },
+          { label: '📡 Multi-Platform',    href: 'MultiPlatform'     },
+          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'   },
+          { label: '📊 Stream Analytics', href: 'StreamAnalytics'    },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }
