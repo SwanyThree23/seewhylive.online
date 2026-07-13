@@ -353,6 +353,7 @@ export default function ControlRoomPage() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const [lastChatMsg, setLastChatMsg] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
@@ -608,7 +609,7 @@ export default function ControlRoomPage() {
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={viewerCount} />}
-      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
@@ -679,7 +680,7 @@ export default function ControlRoomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => setLastChatMsg(msg?.content || null)} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={true} />}
       {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}

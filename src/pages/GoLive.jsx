@@ -964,7 +964,7 @@ export default function GoLive() {
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
-      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
