@@ -540,7 +540,17 @@ export default function PKBattlePage() {
   const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamPK, audioDeviceId: prefMicPK });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId, localCamStream);
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle } = useWebRTCPeers(battleId, localCamStream);
+  const announceJoinBattleRef = useRef(announceJoinBattle);
+  const leaveRoomBattleRef = useRef(leaveRoomBattle);
+  useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
+  useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
+  useEffect(() => {
+    if (!user?.id || !battleId) return;
+    announceJoinBattleRef.current?.(user.id);
+  }, [user?.id, battleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => leaveRoomBattleRef.current?.(), []);
+
   const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
 
