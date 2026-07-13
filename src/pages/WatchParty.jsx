@@ -27,6 +27,7 @@ import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useVODRecording } from '../hooks/useVODRecording';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -547,6 +548,9 @@ export default function WatchPartyPage() {
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(partyId, localStream);
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
+
+  // VOD recording — runs while host has local stream and party is loaded
+  useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: isHost ? localStream : null });
 
   // Per-peer connection quality — Map<userId, {bars, rtt}>
   const [peerQuality, setPeerQuality] = useState(() => new Map());

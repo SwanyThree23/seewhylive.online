@@ -33,6 +33,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useVODRecording } from '../hooks/useVODRecording';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -217,6 +218,9 @@ export default function RoomPage() {
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+
+  // VOD recording — activated once host has a local stream and room is loaded
+  useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
 
   // Elapsed-seconds counter (starts when component mounts)
   const [elapsed, setElapsed] = useState(0);
