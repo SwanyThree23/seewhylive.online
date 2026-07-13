@@ -14,6 +14,8 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -540,7 +542,7 @@ export default function PKBattlePage() {
   const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamPK, audioDeviceId: prefMicPK });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle } = useWebRTCPeers(battleId, localCamStream);
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
   const announceJoinBattleRef = useRef(announceJoinBattle);
   const leaveRoomBattleRef = useRef(leaveRoomBattle);
   useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
@@ -550,6 +552,17 @@ export default function PKBattlePage() {
     announceJoinBattleRef.current?.(user.id);
   }, [user?.id, battleId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => () => leaveRoomBattleRef.current?.(), []);
+
+  const [activeBattlePc, setActiveBattlePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(battlePeersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActiveBattlePc(connected ? connected[1].pc : null);
+  }, [battleRemoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
+
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
 
   const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
@@ -808,7 +821,8 @@ export default function PKBattlePage() {
       <NotificationBell />
       <RewardShop creatorId={user?.id} roomId={battleId} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={battleRemoteStreams.size} peakViewers={0} />
+      <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       <BackgroundCustomizer />
       <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
     </div>

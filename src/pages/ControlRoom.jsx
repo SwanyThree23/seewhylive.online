@@ -133,6 +133,8 @@ import GuestStreamingPermissions from '../components/live/GuestStreamingPermissi
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -344,7 +346,9 @@ export default function ControlRoomPage() {
   const [uptime, setUptime] = useState(0);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
 
@@ -382,6 +386,7 @@ export default function ControlRoomPage() {
     }, 1000);
     return () => clearInterval(iv);
   }, [session?.started_at]);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
@@ -664,6 +669,7 @@ export default function ControlRoomPage() {
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
@@ -699,7 +705,7 @@ export default function ControlRoomPage() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
+      <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}

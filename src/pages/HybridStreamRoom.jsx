@@ -150,6 +150,8 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -160,7 +162,9 @@ export default function HybridStreamRoom() {
   const [participants, setParticipants] = useState([]);
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -190,6 +194,7 @@ export default function HybridStreamRoom() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, []);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   // Real-time participant sync
   useEffect(() => {
@@ -442,6 +447,7 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
@@ -477,7 +483,7 @@ export default function HybridStreamRoom() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
+      <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}

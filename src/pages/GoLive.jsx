@@ -88,6 +88,8 @@ import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import { useCameraDevices } from '../hooks/useCameraDevices';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -283,7 +285,7 @@ function FormatCard({ fmt, onSelect }) {
   );
 }
 
-function CameraPreview({ onStreamReady, onMicChange }) {
+function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   const videoRef = useRef(null);
   const [stream,     setStream]     = useState(null);
   const [camOn,      setCamOn]      = useState(false);
@@ -315,6 +317,7 @@ function CameraPreview({ onStreamReady, onMicChange }) {
   }, [onStreamReady, videoId, audioId, resolution, micOn, stream]);
 
   useEffect(() => { start(); return () => stream?.getTracks().forEach(t => t.stop()); }, []);
+  useEffect(() => { if (startRef) startRef.current = start; }, [startRef, start]);
 
   function toggleMic() {
     const next = !micOn;
@@ -499,10 +502,14 @@ export default function GoLive() {
   const [micOn,       setMicOn]       = useState(true);
   const [videoOn,     setVideoOn]     = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
+  const cameraRetryRef = useRef(null);
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   // Elapsed counter — only runs while live (partyId set)
   useEffect(() => {
@@ -685,7 +692,7 @@ export default function GoLive() {
             exit={{ opacity: 0, x: 30 }}
             style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px 120px', display: 'flex', flexDirection: 'column', gap: 16 }}
           >
-            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} />
+            <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} startRef={cameraRetryRef} />
 
             <div>
               <div style={{ ...SL, justifyContent: 'space-between' }}>
@@ -1003,7 +1010,8 @@ export default function GoLive() {
       {<GuestStreamingPermissions participant={null} isHost={true} onUpdate={() => {}} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => cameraRetryRef.current?.()} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {partyId && <WebhookHooks roomId={partyId} isHost={true} />}
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
@@ -1039,7 +1047,7 @@ export default function GoLive() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={viewerCount} />
-      <ViewerCount count={viewerCount} peakViewers={viewerCount} />
+      <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} />}
