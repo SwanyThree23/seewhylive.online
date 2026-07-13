@@ -139,7 +139,10 @@
     border: 1px solid rgba(212,175,55,0.12);
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior: contain; }
+
+  /* Prevent rubber-band propagation from any inner scroll container */
+  .overscroll-contain { overscroll-behavior: contain; }
 
   /* Safe-area inset helpers (notch / home bar support) */
   .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
@@ -190,5 +193,13 @@
   .glow-terracotta { box-shadow: 0 0 20px rgba(204,119,85,0.25); }
   .gradient-earth {
     background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
+  }
+
+  /* Mobile: boost sub-12px text to readable minimums */
+  @media (max-width: 640px) {
+    .text-\[10px\] { font-size: 12px; }
+    .text-\[11px\] { font-size: 12px; }
+    .text-\[12px\] { font-size: 13px; }
+    .text-\[9px\]  { font-size: 11px; }
   }
 }
