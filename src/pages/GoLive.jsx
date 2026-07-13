@@ -88,9 +88,12 @@ import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import { useCameraDevices } from '../hooks/useCameraDevices';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -509,8 +512,12 @@ export default function GoLive() {
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const cameraRetryRef = useRef(null);
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   // Elapsed counter — only runs while live (partyId set)
@@ -1052,7 +1059,8 @@ export default function GoLive() {
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={null} goal={100} current={0} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
-      {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} />}
+      {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
+      {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
       {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => {}} />}

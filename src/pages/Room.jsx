@@ -191,6 +191,8 @@ import GreenRoomPreflight from '../components/live/GreenRoomPreflight';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -229,6 +231,10 @@ export default function RoomPage() {
   // VOD recording — activated once host has a local stream and room is loaded
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
   const subCount = useSubscriptionCount(room?.host_id || user?.id);
+  const [busViewerCount, setBusViewerCount] = useState(0);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   // Stream start time — set once on mount
   const streamStartRef = useRef(Date.now());
@@ -932,7 +938,7 @@ export default function RoomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
@@ -959,8 +965,9 @@ export default function RoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={participants.length} />
-      <ViewerCount count={participants.length} peakViewers={peakViewers} />
+      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={Math.max(busViewerCount, participants.length)} />
+      <ViewerCount count={Math.max(busViewerCount, participants.length)} peakViewers={peakViewers} />
+      {roomId && <PartyHypeMeter partyId={roomId} memberCount={Math.max(busViewerCount, participants.length)} onHypeChange={setHypeLevel} />}
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
@@ -975,7 +982,7 @@ export default function RoomPage() {
         onRemoveGuest={(id) => updateParticipantMutation.mutate({ id, updates: { is_active: false } })}
       />}
       {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={room?.status === 'live'} />}
-      {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={() => {}} />}
+      {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}
       {roomId && <LoveHearts roomId={roomId} currentUser={user} creatorId={room?.host_id || user?.id} />}
       {isHost && roomId && user && <ClipMarker roomId={roomId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />}
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}

@@ -831,7 +831,7 @@ export default function PKBattlePage() {
       <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       <BackgroundCustomizer />
-      <BattleArenaManager roomId={null} isHost={true} onBattleEnd={() => {}} />
+      <BattleArenaManager roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} onBattleEnd={() => {}} />
     </div>
   );
 }

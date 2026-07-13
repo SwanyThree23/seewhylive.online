@@ -346,6 +346,7 @@ export default function GreenroomPage() {
   }, []);
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
+  const [deviceRetryKey, setDeviceRetryKey] = useState(0);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -515,7 +516,7 @@ export default function GreenroomPage() {
 
         {/* ── LEFT: Device Preview ── */}
         <div className="w-full md:w-[60%] space-y-4">
-          <DevicePreview user={user} onDeviceState={setDeviceState} onStreamReady={setPreviewStream} />
+          <DevicePreview key={deviceRetryKey} user={user} onDeviceState={setDeviceState} onStreamReady={setPreviewStream} />
         </div>
 
         {/* ── RIGHT: Controls ── */}
@@ -848,12 +849,12 @@ export default function GreenroomPage() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onUpdate={() => {}} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} onRetry={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={deviceState.micOn} videoEnabled={deviceState.cameraOn} onRetry={() => setDeviceRetryKey(k => k + 1)} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
-      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
+      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && hostReadyMut.mutate()} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
       {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
