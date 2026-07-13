@@ -40,8 +40,6 @@ export default function AdvancedAnalyticsPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeTab, setActiveTab] = useState('revenue');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-
   const { data: metrics = [] } = useQuery({
     queryKey: ['performanceMetrics'],
     queryFn: () => base44.entities.PerformanceMetric.list('-timestamp', 1000),

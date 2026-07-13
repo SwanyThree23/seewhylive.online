@@ -10,6 +10,11 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import panelService from '../services/panelService';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import TipWidget from '../components/live/TipWidget';
 import ShareModal from '../components/live/ShareModal';
@@ -342,7 +347,7 @@ export default function LiveRoom() {
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo } = useLocalMedia({ audio: true, video: true });
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, applyAudioConstraints } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
 
   // Fetch real room members if roomId provided
@@ -358,6 +363,10 @@ export default function LiveRoom() {
     queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Room', stream: localStream });
+  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const { speakers } = useCameraDevices();
+  const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   const isExclusiveStream = party?.is_exclusive === true;
   const isHost = user?.id && party?.host_id && user.id === party.host_id;
@@ -408,6 +417,8 @@ export default function LiveRoom() {
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [pttActive, setPttActive] = useState(false);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
   // Elapsed-seconds counter (starts on mount)
   const [elapsed, setElapsed] = useState(0);
@@ -558,6 +569,10 @@ export default function LiveRoom() {
   function denyRequest(req) {
     panelService.resolveJoinRequest(roomId, req.id, false, user?.id);
     setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+  }
+
+  function handleToggleAudio() {
+    toggleAudio();
   }
 
   function openChat()  { setChatOpen(true); setUnread(0); }

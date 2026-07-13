@@ -44,7 +44,6 @@ export default function AIModerationPage() {
   const [scanProgress, setScanProgress] = useState(0);
   const [activeTab, setActiveTab] = useState('pending');
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', user?.id],
     queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),

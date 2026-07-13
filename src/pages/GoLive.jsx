@@ -209,30 +209,17 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)' }}>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontFamily: FONT, textAlign: 'center', padding: '0 16px' }}>{error}</span>
         </div>
-
-        <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
-          <button onClick={toggleMic} style={{ width: 32, height: 32, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
-            {micOn ? <Mic style={{ width: 14, height: 14, color: GOLD }} /> : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
-          </button>
-          {cameras.length > 1 && (
-            <button onClick={handleSwitchCamera} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
-              <Camera style={{ width: 14, height: 14, color: GOLD }} />
-            </button>
-          )}
-        </div>
-      </div>
+      )}
 
       <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 6 }}>
-        <button onClick={toggleMic} style={{
-          width: 32, height: 32, borderRadius: '50%',
-          background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)',
-          border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        }}>
-          {micOn
-            ? <Mic style={{ width: 14, height: 14, color: GOLD }} />
-            : <MicOff style={{ width: 14, height: 14, color: '#EF4444' }} />}
+        <button onClick={toggleMic} style={{ width: 32, height: 32, borderRadius: '50%', background: micOn ? 'rgba(212,175,55,0.2)' : 'rgba(192,57,43,0.2)', border: `1px solid ${micOn ? 'rgba(212,175,55,0.4)' : 'rgba(192,57,43,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+          {micOn ? <Mic style={{ width: 14, height: 14, color: GOLD }} /> : <MicOff style={{ width: 14, height: 14, color: '#C0392B' }} />}
         </button>
+        {cameras.length > 1 && (
+          <button onClick={handleSwitchCamera} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+            <Camera style={{ width: 14, height: 14, color: GOLD }} />
+          </button>
+        )}
       </div>
     </div>
   );

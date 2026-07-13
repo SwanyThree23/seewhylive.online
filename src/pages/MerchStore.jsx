@@ -6,6 +6,11 @@ import { ShoppingBag, Package, Plus, X, Check, Tag, BarChart2, Truck } from 'luc
 import ShopDashboard from '../components/merch/ShopDashboard';
 import { toast } from 'sonner';
 import NativeSelect from '@/components/shared/NativeSelect';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';

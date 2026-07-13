@@ -121,7 +121,6 @@ function BattleCard({ battle, index }) {
 
 export default function LiveBattles() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [filter, setFilter] = useState('active');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
 
@@ -133,7 +132,6 @@ export default function LiveBattles() {
     refetchInterval: 10000,
   });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const activeBattle = battles.find(b => b.status === 'active') || null;
   const roomId = activeBattle?.id || null;
 

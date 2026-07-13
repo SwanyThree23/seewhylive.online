@@ -151,7 +151,6 @@ export default function HybridStreamRoom() {
     return unsubscribe;
   }, [roomId]);
 
-  const { localStream } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom } = useWebRTCPeers(roomId, localStream);
 
   useEffect(() => {

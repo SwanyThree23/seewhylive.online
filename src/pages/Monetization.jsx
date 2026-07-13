@@ -496,6 +496,8 @@ export default function MonetizationPage() {
   const [tab, setTab]               = useState('overview');
   const [flywheelStage, setStage]   = useState('attract');
   const [tierEditorOpen, setTierEditorOpen] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
+  const [showTierEditor, setShowTierEditor] = useState(false);
   const queryClient                 = useQueryClient();
 
   const { data: user } = useQuery({

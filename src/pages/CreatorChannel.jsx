@@ -24,6 +24,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -331,6 +332,7 @@ export default function CreatorChannel() {
           <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
           <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <OnlineUsersGrid compact maxVisible={10} />
+
             <ContentRecommendations />
             <CollaborationMatcher />
             <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />

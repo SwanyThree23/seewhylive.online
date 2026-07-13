@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import PKBattleProgress from '../components/pk/PKBattleProgress';
@@ -177,8 +177,8 @@ function BattleCard({ battle, onVote, myVote }) {
 }
 
 export default function PKBattleArena() {
-  const roomId = new URLSearchParams(window.location.search).get('id') || null;
   const navigate = useNavigate();
+  const roomId = new URLSearchParams(window.location.search).get('id') || null;
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [votes, setVotes] = useState({});
   const [tab, setTab] = useState('live');

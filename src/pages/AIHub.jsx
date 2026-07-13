@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
 import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';

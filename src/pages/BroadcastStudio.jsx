@@ -464,7 +464,6 @@ export default function BroadcastStudio() {
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
-  const [activeScene, setActiveScene] = useState('main');
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
@@ -477,7 +476,6 @@ export default function BroadcastStudio() {
   const streamStartRef = useRef(Date.now());
   const [bitratePreset, setBitratePreset] = useState(3000);
   const [tipTotal, setTipTotal] = useState(0);
-  const [peakViewers, setPeakViewers] = useState(0);
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [superchats, setSuperchats] = useState([]);
   const [raisedHands, setRaisedHands] = useState(new Set());

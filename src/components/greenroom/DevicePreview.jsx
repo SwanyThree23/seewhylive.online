@@ -74,19 +74,7 @@ export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
 
   // Real connection quality via navigator.connection / RTCPeerConnection stats
   const { bars: networkQuality, label: netLabel, rtt } = useConnectionQuality(null, 4000);
-
-  // Network quality simulation
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (navigator.connection) {
-        const dl = navigator.connection.downlink;
-        setNetworkQuality(dl > 10 ? 4 : dl > 5 ? 3 : dl > 1 ? 2 : 1);
-      } else {
-        setNetworkQuality(3);
-      }
-    }, 4000);
-    return () => clearInterval(iv);
-  }, []);
+  const { cameras } = useCameraDevices();
 
   // Simulated mic level when isSim or micOn without real analyser
   useEffect(() => {

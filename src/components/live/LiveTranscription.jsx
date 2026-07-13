@@ -151,19 +151,6 @@ export default function LiveTranscription({
         mediaRecorderRef.current = mr;
         chunksBufferRef.current = [];
 
-          // Upload audio and transcribe
-          try {
-            const uploadRes = await base44.integrations.Core.UploadFile({ file: audioBlob });
-            const transcribeRes = await base44.integrations.Core.InvokeLLM({
-              prompt: `Transcribe the following audio content. The audio is available at: ${uploadRes.file_url || 'uploaded audio'}. Provide a brief transcription or caption.`,
-            }).catch(() => null);
-
-            if (transcribeRes && typeof transcribeRes === 'string') {
-              addCaption(transcribeRes);
-            }
-          } catch {}
-        };
-
         // Start with 1s timeslices — ondataavailable fires every second, no stop/start
         mr.start(1000);
         setIsTranscribing(true);

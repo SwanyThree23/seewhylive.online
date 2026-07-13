@@ -120,7 +120,6 @@ export default function DiscoverPage() {
   const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),

@@ -174,7 +174,7 @@ export default function AudioRoom() {
   const [searchParams, setSearchParams] = useSearchParams();
   const roomId = searchParams.get('id');
 
-  const { localStream, audioEnabled, toggleAudio } = useLocalMedia({ audio: true, video: false });
+  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints } = useLocalMedia({ audio: true, video: false });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leavePeerRoom } = useWebRTCPeers(roomId, localStream);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
@@ -205,6 +205,15 @@ export default function AudioRoom() {
   const [tipModalOpen, setTipModalOpen] = useState(false);
   const [tipNowOpen,   setTipNowOpen]   = useState(false);
   const [activeScene,  setActiveScene]  = useState('main');
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
+  const [autoGain, setAutoGain] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(null, 5000);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
