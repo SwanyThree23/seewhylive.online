@@ -496,6 +496,7 @@ export default function GoLive() {
   const [suggestingTitles, setSuggestingTitles] = useState(false);
   const [localStream,  setLocalStream]  = useState(null);
   const [micOn,       setMicOn]       = useState(true);
+  const [videoOn,     setVideoOn]     = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
@@ -971,8 +972,8 @@ export default function GoLive() {
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
       {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={false} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => {}} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
@@ -999,7 +1000,7 @@ export default function GoLive() {
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => {}} />
       {partyId && <WebhookHooks roomId={partyId} isHost={true} />}
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />

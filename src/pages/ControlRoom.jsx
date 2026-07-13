@@ -341,6 +341,7 @@ export default function ControlRoomPage() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
   const [micOn, setMicOn] = useState(true);
+  const [videoOn, setVideoOn] = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
 
@@ -631,8 +632,8 @@ export default function ControlRoomPage() {
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={null} audioEnabled={micOn} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={false} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => {}} />}
+      {<LocalVideoTile stream={null} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
@@ -659,7 +660,7 @@ export default function ControlRoomPage() {
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => {}} />
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />

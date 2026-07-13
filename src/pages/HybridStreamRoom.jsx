@@ -157,6 +157,7 @@ export default function HybridStreamRoom() {
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
   const [micOn, setMicOn] = useState(true);
+  const [videoOn, setVideoOn] = useState(true);
   const [viewerCount, setViewerCount] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -409,8 +410,8 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={null} audioEnabled={micOn} videoEnabled={true} userName={user?.full_name || ''} isHost={isHost} />}
-      {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={false} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => {}} />}
+      {isHost && <LocalVideoTile stream={null} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={isHost} />}
+      {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {isHost && <AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={participants} />}
       {isHost && <EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
@@ -437,7 +438,7 @@ export default function HybridStreamRoom() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => {}} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
