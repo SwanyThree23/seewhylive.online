@@ -81,6 +81,18 @@ function registerPanelHandlers(io, socket) {
       ack?.({ ok: false, error: err.message });
     }
   });
+  socket.on('panel:react', function (payload) {
+    try {
+      var roomId = payload && payload.roomId;
+      var guestId = payload && payload.guestId;
+      var emoji = payload && payload.emoji;
+      if (!roomId || !guestId || !emoji) return;
+      io.to('room:' + roomId).emit('panel:reaction', { roomId: roomId, guestId: guestId, emoji: emoji });
+    } catch (err) {
+      console.error('[panelHandlers] panel:react error:', err);
+    }
+  });
+
 }
 
 module.exports = { registerPanelHandlers };

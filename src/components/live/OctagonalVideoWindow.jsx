@@ -1,17 +1,21 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Mic, MicOff, Video, VideoOff, Share2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, MicOff, Video, VideoOff, Share2, Crown, Pin } from 'lucide-react';
 
-export default function OctagonalVideoWindow({ 
-  title, 
-  isMuted, 
-  isVideoOff, 
-  onMicToggle, 
+export default function OctagonalVideoWindow({
+  title,
+  isMuted,
+  isVideoOff,
+  onMicToggle,
   onVideoToggle,
   onShareScreen,
   streamUrl,
   points = 0,
-  label = 'Participant'
+  label = 'Participant',
+  isHost = false,
+  isPinned = false,
+  onPinToggle,
+  reactions = []
 }) {
   const clipPath = 'polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)';
 
@@ -19,7 +23,7 @@ export default function OctagonalVideoWindow({
     <motion.div
       className="relative w-full aspect-square"
       initial={{ scale: 0.9, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      animate={{ scale: isPinned ? 1.05 : 1, opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
       {/* Octagonal border glow */}
@@ -27,10 +31,12 @@ export default function OctagonalVideoWindow({
         className="absolute inset-0 rounded-lg"
         style={{
           clipPath,
-          background: 'linear-gradient(135deg, #d4af37, #C0392B)',
+          background: isPinned
+            ? 'linear-gradient(135deg, #C8F030, #d4af37)'
+            : 'linear-gradient(135deg, #d4af37, #C0392B)',
           padding: '3px',
-          opacity: 0.5,
-          filter: 'blur(8px)',
+          opacity: isPinned ? 0.9 : 0.5,
+          filter: isPinned ? 'blur(4px)' : 'blur(8px)',
         }}
       />
 
@@ -60,15 +66,42 @@ export default function OctagonalVideoWindow({
           </div>
         )}
 
-        {/* Points badge - top right */}
-        {points > 0 && (
-          <div className="absolute top-3 right-3 bg-[#d4af37]/20 border border-[#d4af37] rounded-lg px-2 py-1">
-            <p className="text-xs font-bold text-[#d4af37]">{points}</p>
-            <p className="text-[11px] text-[#d4af37]/70">POINTS</p>
+        {/* Floating reactions */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <AnimatePresence>
+            {reactions.map(function(r) {
+              return (
+                <motion.span
+                  key={r.id}
+                  className="absolute text-2xl"
+                  style={{ left: (10 + Math.random() * 80) + '%', bottom: '20%' }}
+                  initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                  animate={{ opacity: [0, 1, 1, 0], y: -80, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.8 }}
+                >
+                  {r.emoji}
+                </motion.span>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+
+        {/* Host crown badge - top left */}
+        {isHost && (
+          <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#d4af37] flex items-center justify-center shadow-lg">
+            <Crown className="w-3.5 h-3.5 text-black" />
           </div>
         )}
 
-        {/* Label - bottom center */}
+        {/* Points badge - top right */}
+        {points > 0 && (
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 border border-[#d4af37]/50 flex items-center gap-1">
+            <span className="text-[10px] font-bold text-[#d4af37]">{points}</span>
+          </div>
+        )}
+
+        {/* Title/label footer */}
         <div className="absolute bottom-3 left-0 right-0 text-center">
           <p className="text-xs font-bold text-white truncate px-2">{title}</p>
           <p className="text-[10px] text-white/60">{label}</p>
@@ -107,6 +140,20 @@ export default function OctagonalVideoWindow({
           >
             <Share2 className="w-3.5 h-3.5" />
           </motion.button>
+
+          {onPinToggle && (
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              onClick={onPinToggle}
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                isPinned
+                  ? 'bg-[#C8F030]/50 border border-[#C8F030] text-[#C8F030]'
+                  : 'bg-white/10 border border-white/20 text-white/60'
+              }`}
+            >
+              <Pin className="w-3.5 h-3.5" />
+            </motion.button>
+          )}
         </div>
       </div>
     </motion.div>

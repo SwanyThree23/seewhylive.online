@@ -1,59 +1,89 @@
 // frontend/src/services/panelService.js
-import { apiFetch } from './apiClient';
-import { socket } from './socketClient';
+// Panel seat/join-request feature. No apiClient/socketClient helpers exist
+// in this codebase, so socket is passed in by the caller (same instance
+// LiveRoomPage already holds), and REST calls use plain fetch + credentials,
+// matching rewardsService.js's convention.
 
-export function joinPanel({ roomId, inviteCode }) {
-  return new Promise((resolve, reject) => {
-    socket.emit('panel:join', { roomId, inviteCode }, (res) =>
-      res.ok ? resolve(res.slot) : reject(Object.assign(new Error(res.error || res.reason), { reason: res.reason }))
-    );
+var ROOMS_BASE = '/api/rooms';
+
+function joinPanel(socket, roomId, inviteCode) {
+  return new Promise(function (resolve, reject) {
+    socket.emit('panel:join', { roomId: roomId, inviteCode: inviteCode }, function (res) {
+      if (res.ok) { resolve(res.slot); } else { reject(new Error(res.reason || res.error)); }
+    });
   });
 }
 
-export function requestJoin(roomId) {
-  return new Promise((resolve, reject) => {
-    socket.emit('panel:request_join', { roomId }, (res) => (res.ok ? resolve(res) : reject(new Error(res.error))));
+function requestJoin(socket, roomId) {
+  return new Promise(function (resolve, reject) {
+    socket.emit('panel:request_join', { roomId: roomId }, function (res) {
+      if (res.ok) { resolve(res); } else { reject(new Error(res.error)); }
+    });
   });
 }
 
-export function resolveJoinRequest({ roomId, userId, approve }) {
-  return new Promise((resolve, reject) => {
-    socket.emit('panel:resolve_join_request', { roomId, userId, approve }, (res) =>
-      res.ok ? resolve() : reject(new Error(res.error))
-    );
+function resolveJoinRequest(socket, roomId, userId, approve) {
+  return new Promise(function (resolve, reject) {
+    socket.emit('panel:resolve_join_request', { roomId: roomId, userId: userId, approve: approve }, function (res) {
+      if (res.ok) { resolve(); } else { reject(new Error(res.error)); }
+    });
   });
 }
 
-export function leavePanel(roomId) {
-  socket.emit('panel:leave', { roomId });
+function leavePanel(socket, roomId) {
+  socket.emit('panel:leave', { roomId: roomId });
 }
 
-export function expandTile({ roomId, slotIndex, expanded }) {
-  socket.emit('panel:expand', { roomId, slotIndex, expanded });
+function expandTile(socket, roomId, slotIndex, expanded) {
+  socket.emit('panel:expand', { roomId: roomId, slotIndex: slotIndex, expanded: expanded });
 }
 
-export function toggleAudioOnly({ roomId, isAudioOnly }) {
-  socket.emit('panel:toggle_audio_only', { roomId, isAudioOnly });
+function toggleAudioOnly(socket, roomId, isAudioOnly) {
+  socket.emit('panel:toggle_audio_only', { roomId: roomId, isAudioOnly: isAudioOnly });
 }
 
-export function onSlotAssigned(cb) { socket.on('panel:slot_assigned', cb); return () => socket.off('panel:slot_assigned', cb); }
-export function onSlotReleased(cb) { socket.on('panel:slot_released', cb); return () => socket.off('panel:slot_released', cb); }
-export function onLayoutUpdate(cb) { socket.on('panel:layout_update', cb); return () => socket.off('panel:layout_update', cb); }
-export function onAudioOnlyChanged(cb) { socket.on('panel:audio_only_changed', cb); return () => socket.off('panel:audio_only_changed', cb); }
-export function onJoinRequestReceived(cb) { socket.on('panel:join_request_received', cb); return () => socket.off('panel:join_request_received', cb); }
-export function onJoinRequestResolved(cb) { socket.on('panel:join_request_resolved', cb); return () => socket.off('panel:join_request_resolved', cb); }
+function onSlotAssigned(socket, cb) { socket.on('panel:slot_assigned', cb); return function () { socket.off('panel:slot_assigned', cb); }; }
+function onSlotReleased(socket, cb) { socket.on('panel:slot_released', cb); return function () { socket.off('panel:slot_released', cb); }; }
+function onLayoutUpdate(socket, cb) { socket.on('panel:layout_update', cb); return function () { socket.off('panel:layout_update', cb); }; }
+function onAudioOnlyChanged(socket, cb) { socket.on('panel:audio_only_changed', cb); return function () { socket.off('panel:audio_only_changed', cb); }; }
+function onJoinRequestReceived(socket, cb) { socket.on('panel:join_request_received', cb); return function () { socket.off('panel:join_request_received', cb); }; }
+function onJoinRequestResolved(socket, cb) { socket.on('panel:join_request_resolved', cb); return function () { socket.off('panel:join_request_resolved', cb); }; }
 
-export function fetchPanelState(roomId) {
-  return apiFetch(`/api/rooms/${roomId}/panel`);
+function fetchPanelState(roomId) {
+  return fetch(ROOMS_BASE + '/' + roomId + '/panel', { credentials: 'include' })
+    .then(function (r) { return r.json(); });
 }
 
-export function fetchJoinRequests(roomId) {
-  return apiFetch(`/api/rooms/${roomId}/join-requests`);
+function fetchJoinRequests(roomId) {
+  return fetch(ROOMS_BASE + '/' + roomId + '/join-requests', { credentials: 'include' })
+    .then(function (r) { return r.json(); });
 }
 
-export function setRoomPrivacy({ roomId, isPrivate, gatingMode }) {
-  return apiFetch(`/api/rooms/${roomId}/privacy`, {
+function setRoomPrivacy(roomId, isPrivate, gatingMode) {
+  return fetch(ROOMS_BASE + '/' + roomId + '/privacy', {
     method: 'POST',
-    body: JSON.stringify({ isPrivate, gatingMode }),
-  });
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isPrivate: isPrivate, gatingMode: gatingMode })
+  }).then(function (r) { return r.json(); });
 }
+
+var panelService = {
+  joinPanel: joinPanel,
+  requestJoin: requestJoin,
+  resolveJoinRequest: resolveJoinRequest,
+  leavePanel: leavePanel,
+  expandTile: expandTile,
+  toggleAudioOnly: toggleAudioOnly,
+  onSlotAssigned: onSlotAssigned,
+  onSlotReleased: onSlotReleased,
+  onLayoutUpdate: onLayoutUpdate,
+  onAudioOnlyChanged: onAudioOnlyChanged,
+  onJoinRequestReceived: onJoinRequestReceived,
+  onJoinRequestResolved: onJoinRequestResolved,
+  fetchPanelState: fetchPanelState,
+  fetchJoinRequests: fetchJoinRequests,
+  setRoomPrivacy: setRoomPrivacy
+};
+
+export default panelService;

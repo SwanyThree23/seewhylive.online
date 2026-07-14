@@ -2,6 +2,7 @@ const battleRoutes = require('./routes/battles');
 const rewardsRoutes = require('./routes/rewards');
 const publicPreviewRoutes = require('./routes/publicPreview');
 const panelRoomsRoutes = require('./routes/panelRooms');
+const vodRoutes = require('./routes/vod');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 'use strict';
@@ -288,6 +289,7 @@ app.use('/api/rooms', panelRoomsRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
+app.use('/api/vod', vodRoutes);
 var n8nRouter = require('./n8nWebhooks');
 app.use('/api/n8n', n8nRouter);
 app.use(xssClean());
@@ -2209,6 +2211,11 @@ io.on('connection', function(socket) {
     if (!data || !data.roomId) return;
     pkVotes.delete(data.roomId);
     io.to(data.roomId).emit('pk-end', data);
+  });
+
+  socket.on('pk-sudden-death', function(data) {
+    if (!data || !data.roomId) return;
+    io.to(data.roomId).emit('pk-sudden-death', { roomId: data.roomId });
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────

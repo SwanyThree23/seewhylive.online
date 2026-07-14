@@ -7,6 +7,7 @@ import { creatorCents, platformCents, getPlatformHandles } from '../platformConf
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';
+import panelService from '../services/panelService.js';
 
 var MAX_STAGE = 20;
 
@@ -278,6 +279,8 @@ export default function LiveRoomPage({
   var [audioOnly,      setAudioOnly]      = useState(false);
   var [privateMode,    setPrivateMode]    = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
+  var [approvalMode,  setApprovalMode]  = useState(false);
+  var [pendingRequests, setPendingRequests] = useState([]);
   var [showPrivateSet, setShowPrivateSet] = useState(false);
   var [paywallOn,      setPaywallOn]      = useState(false);
   var [paywallPrice,   setPaywallPrice]   = useState('');
