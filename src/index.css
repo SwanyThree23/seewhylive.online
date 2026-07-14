@@ -77,6 +77,18 @@
     color: rgba(255,255,255,0.85);
     overscroll-behavior: none;
     touch-action: pan-y;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  /* Hide all scrollbars globally for native app feel */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
@@ -213,9 +225,23 @@
       justify-content: center;
     }
   }
-  /* Minimum font sizes: 14px content, 12px labels */
-  p, li, td, th { font-size: max(14px, 0.875em); }
-  label, small, .text-label { font-size: max(12px, 0.75em); }
+  /* Minimum font sizes: 14px for all text content on mobile */
+  p, li, td, th, span, button, a, div { font-size: max(14px, 0.875em); }
+  label, small, .text-label { font-size: max(14px, 0.75em); }
+  /* Override Tailwind arbitrary small-text utility classes */
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\] {
+    font-size: 14px !important;
+  }
+  .text-xs { font-size: 14px !important; }
+  /* Override inline styles with small font sizes */
+  [style*="font-size:8px"], [style*="font-size: 8px"],
+  [style*="font-size:9px"], [style*="font-size: 9px"],
+  [style*="font-size:10px"], [style*="font-size: 10px"],
+  [style*="font-size:11px"], [style*="font-size: 11px"],
+  [style*="font-size:12px"], [style*="font-size: 12px"],
+  [style*="font-size:13px"], [style*="font-size: 13px"] {
+    font-size: 14px !important;
+  }
 }
 
 /* BrandChyron positioning — sit above the 60px mobile bottom nav */

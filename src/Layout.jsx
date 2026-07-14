@@ -21,6 +21,7 @@ import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
+import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [
@@ -152,6 +153,7 @@ export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
+  var { canGoBack, goBack } = useMobileNavigation();
 
   // Android hardware back button: push state when drawer opens so back dismisses it
   useEffect(function() {
@@ -308,7 +310,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -337,7 +339,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </Link>
           ) : (
-            <button onClick={function() { navigate(-1); }}
+            <button onClick={function() { if (canGoBack) { goBack(); } else { navigate(createPageUrl('Home')); } }}
               className="flex items-center gap-2 shrink-0 active:opacity-70 transition-all active:scale-95"
               style={{ userSelect: 'none', WebkitUserSelect: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '6px 12px 6px 8px' }}>
               <ArrowLeft className="w-4 h-4" style={{ color: '#d4af37' }} />
@@ -477,10 +479,10 @@ export default function Layout({ children, currentPageName }) {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.key}
-              initial={{ opacity: 0, x: 18 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
             >
               {children}
             </motion.div>
