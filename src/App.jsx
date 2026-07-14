@@ -13,6 +13,7 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import UnifiedRoom from '@/pages/UnifiedRoom';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -28,7 +29,7 @@ const NO_LAYOUT_PAGES = new Set([
   'AudioRoom', 'ControlRoom', 'Greenroom', 'GreenroomEnhanced',
   'GoLive', 'Room', 'Welcome', 'CoverPage', 'BackPage',
   'SeeWhyLIVEv17', 'SeeWhyLIVEv36', 'SeeWhyLIVEv37',
-  'Onboarding', 'GuestJoin', 'PKBattlePage',
+  'Onboarding', 'GuestJoin', 'PKBattlePage', 'UnifiedRoom',
 ]);
 
 // Auth pages handled as explicit public routes — excluded from the pagesConfig loop
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
         <Route path="/onboarding"  element={<Pages.Onboarding />} />
         <Route path="/clips"       element={<LayoutWrapper currentPageName="ClipsLibrary"><Pages.ClipsLibrary /></LayoutWrapper>} />
         <Route path="/newsletter"  element={<LayoutWrapper currentPageName="NewsletterHub"><Pages.NewsletterHub /></LayoutWrapper>} />
+        <Route path="/unified-room" element={<UnifiedRoom />} />
         <Route path="*"            element={<PageNotFound />} />
       </Route>
     </Routes>
