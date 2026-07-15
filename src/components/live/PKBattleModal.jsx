@@ -28,6 +28,8 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
   const [challengerHandle, setChallengerHandle] = useState('');
   const [duration, setDuration] = useState(180);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [isOvertime, setIsOvertime] = useState(false);
+  const OVERTIME_SECONDS = 30;
   const [hostScore, setHostScore] = useState(0);
   const [challengerScore, setChallengerScore] = useState(0);
   const [surrendered, setSurrendered] = useState(false);
@@ -113,6 +115,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
     setChallengerScore(0);
     setTimeLeft(duration);
     setSurrendered(false);
+    setIsOvertime(false);
   };
 
   const totalScore = hostScore + challengerScore;
@@ -358,7 +361,11 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                         {[{ label: '$1', pts: 10 }, { label: '$5', pts: 50 }, { label: '$10', pts: 100 }].map((tip) => (
                           <button
                             key={tip.label}
-                            onClick={() => setHostScore((s) => s + tip.pts)}
+                            onClick={() => {
+                          var boost = tip.pts >= 100 ? 1.5 : tip.pts >= 50 ? 1.2 : 1;
+                          var boosted = Math.floor(tip.pts * boost);
+                          setHostScore((s) => s + boosted);
+                        }}
                             className="flex-1 py-2.5 rounded-xl font-black text-base uppercase tracking-wide transition-opacity active:opacity-70"
                             style={{
                               fontFamily: 'Barlow Condensed, sans-serif',
