@@ -118,6 +118,23 @@ export default function CompositorOverlay({
       });
       pcRef.current = pc;
 
+    pc.oniceconnectionstatechange = () => {
+      const state = pc.iceConnectionState;
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        console.warn('WHIP connection lost:', state);
+        setStatus('idle');
+        toast.error('Stream connection lost');
+        if (pcRef.current === pc) {
+          pcRef.current = null;
+        }
+        if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+          recorderRef.current.stop();
+          recorderRef.current = null;
+        }
+        stopCompositor();
+      }
+    };
+
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
       const offer = await pc.createOffer();
