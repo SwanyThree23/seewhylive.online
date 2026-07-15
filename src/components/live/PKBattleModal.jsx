@@ -262,11 +262,18 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                   <div className="flex flex-col gap-5">
                     {/* Timer */}
                     <div className="text-center">
+                      {isOvertime && (
+                        <p className="text-xs font-black uppercase tracking-widest mb-2 animate-pulse"
+                          style={{ color: '#FF3366', fontFamily: 'Barlow Condensed, sans-serif' }}
+                        >
+                          Sudden Death Overtime
+                        </p>
+                      )}
                       <div
                         className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
-                        style={{ background: '#161929', border: `1px solid ${GOLD}44` }}
+                        style={{ background: '#161929', border: `1px solid ${isOvertime ? '#FF3366' : GOLD}44` }}
                       >
-                        <Timer size={16} color={GOLD} />
+                        <Timer size={16} color={isOvertime ? '#FF3366' : GOLD} />
                         <span
                           className="text-3xl font-black tracking-widest"
                           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: timeLeft <= 10 ? PINK : GOLD }}
