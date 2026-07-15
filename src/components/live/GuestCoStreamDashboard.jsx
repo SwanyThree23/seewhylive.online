@@ -23,10 +23,10 @@ const PINK    = '#C0392B';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const QUALITY = {
-  excellent: { label: 'Excellent', color: '#22c55e', bg: 'rgba(34,197,94,0.1)' },
+  excellent: { label: 'Excellent', color: '#6DBF7E', bg: 'rgba(34,197,94,0.1)' },
   good:      { label: 'Good',      color: G,         bg: `rgba(212,175,55,0.1)` },
-  warning:   { label: 'Weak',      color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  critical:  { label: 'Critical',  color: '#ef4444', bg: 'rgba(239,68,68,0.1)'  },
+  warning:   { label: 'Weak',      color: '#C9A84C', bg: 'rgba(245,158,11,0.1)' },
+  critical:  { label: 'Critical',  color: '#C0392B', bg: 'rgba(239,68,68,0.1)'  },
   offline:   { label: 'Offline',   color: '#555',    bg: 'rgba(80,80,80,0.1)'   },
 };
 
@@ -60,7 +60,7 @@ function useStageTimer(joinedAt) {
     return () => clearInterval(id);
   }, [joinedAt]);
   const m = Math.floor(secs / 60), s = secs % 60;
-  const color = secs > 600 ? '#ef4444' : secs > 300 ? '#f59e0b' : 'rgba(255,255,255,0.3)';
+  const color = secs > 600 ? '#C0392B' : secs > 300 ? '#C9A84C' : 'rgba(255,255,255,0.3)';
   return { label: `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`, color };
 }
 
@@ -217,9 +217,9 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-          <CBtn icon={muted ? MicOff : Mic} color={muted ? '#ef4444' : 'rgba(255,255,255,0.4)'}
+          <CBtn icon={muted ? MicOff : Mic} color={muted ? '#C0392B' : 'rgba(255,255,255,0.4)'}
             active={muted} onClick={() => muteToggle.mutate()} />
-          <CBtn icon={vidOff ? VideoOff : Video} color={vidOff ? '#ef4444' : 'rgba(255,255,255,0.4)'}
+          <CBtn icon={vidOff ? VideoOff : Video} color={vidOff ? '#C0392B' : 'rgba(255,255,255,0.4)'}
             active={vidOff} onClick={() => setVidOff(v => !v)} />
           <CBtn icon={Pin} color={isSpotlit ? G : 'rgba(255,255,255,0.35)'} active={isSpotlit}
             onClick={() => onSpotlight?.(isSpotlit ? null : participant.id)} />
@@ -240,7 +240,7 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
               active={isCoHost} onClick={() => promote.mutate()} />
           )}
           {!isHostP && isHost && (
-            <CBtn icon={X} color="#ef4444" onClick={() => kick.mutate()} />
+            <CBtn icon={X} color="#C0392B" onClick={() => kick.mutate()} />
           )}
         </div>
       </div>
@@ -561,7 +561,7 @@ export default function GuestCoStreamDashboard({
               ...T, display: 'flex', alignItems: 'center', gap: 4,
               background: locked ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)',
               border: `1px solid ${locked ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.1)'}`,
-              color: locked ? '#ef4444' : 'rgba(255,255,255,0.5)',
+              color: locked ? '#C0392B' : 'rgba(255,255,255,0.5)',
               borderRadius: 6, padding: '5px 10px', fontSize: 10, fontWeight: 900, cursor: 'pointer',
             }}>
               {locked ? <Lock style={{ width: 9, height: 9 }} /> : <Unlock style={{ width: 9, height: 9 }} />}
@@ -581,10 +581,10 @@ export default function GuestCoStreamDashboard({
 
       {isHost && guests.length > 0 && (
         <div style={{ display: 'flex', gap: 5, padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
-          <BulkBtn icon={MicOff} label="Mute All" color="#ef4444" onClick={muteAll} />
-          <BulkBtn icon={Mic} label="Unmute All" color="#22c55e"
+          <BulkBtn icon={MicOff} label="Mute All" color="#C0392B" onClick={muteAll} />
+          <BulkBtn icon={Mic} label="Unmute All" color="#6DBF7E"
             onClick={() => { guests.forEach(p => base44.entities.Participant.update(p.id, { is_muted: false }).catch(() => {})); toast.success('All unmuted'); }} />
-          <BulkBtn icon={X} label="Remove Guests" color="#ef4444"
+          <BulkBtn icon={X} label="Remove Guests" color="#C0392B"
             onClick={removeAllGuests} confirm="Remove all guests?" />
           <BulkBtn icon={BarChart2} label={showHealth ? 'Hide Stats' : 'Show Stats'} color={G}
             onClick={() => setShowHealth(v => !v)} />

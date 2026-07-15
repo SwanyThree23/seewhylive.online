@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 import AudioMixer from '../components/live/AudioMixer';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import GuestConnector from '../components/live/GuestConnector';
 import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
-import NativeSelect from '@/components/shared/NativeSelect';
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -21,26 +20,19 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
 import { isSafeUrl } from '@/lib/security';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
-
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const CYAN   = '#D4854A';
-const PURPLE = '#8B44B0';
-const GREEN  = '#5A7A4A';
+const PURPLE = '#D4854A';
+const GREEN  = '#4A9B5E';
 const NLM    = '#4285F4'; // Google NotebookLM blue
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -61,7 +53,7 @@ const NLM_LIB = [
   { id:'p12', title:'TikTok Trending Creators & Viral Content Feed',          nbId:'nlm-tiktok',          artId:null, icon:'📱', cat:'social'     },
 ];
 const CATS   = ['all','platform','ai','music','production','monetize','domino','social'];
-const CAT_C  = { platform:'#D4854A', ai:'#8B44B0', music:'#8B44B0', production:'#D4AF37', monetize:'#5A7A4A', domino:'#C62828', social:'#D4854A' };
+const CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D4AF37', monetize:'#4A9B5E', domino:'#C62828', social:'#D4854A' };
 
 // ── Generation steps ──────────────────────────────────────────────────────────
 const GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
@@ -641,7 +633,15 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -869,12 +869,15 @@ export default function PodcastStudio() {
               {/* Add source form */}
               {addingSource && (
                 <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 14 }}>
-                  <NativeSelect
+                  <select
                     value={sourceType}
-                    onChange={val => setSourceType(val)}
+                    onChange={e => setSourceType(e.target.value)}
                     style={{ ...selectStyle, marginBottom: 8 }}
-                    options={[{value:'text',label:'📄 Text'},{value:'url',label:'🔗 URL'},{value:'note',label:'📝 Note'}]}
-                  />
+                  >
+                    <option value="text">📄 Text</option>
+                    <option value="url">🔗 URL</option>
+                    <option value="note">📝 Note</option>
+                  </select>
                   <textarea
                     value={sourceInput}
                     onChange={e => setSourceInput(e.target.value)}
@@ -984,15 +987,23 @@ export default function PodcastStudio() {
                   <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Duration
                   </label>
-                  <NativeSelect value={duration} onChange={val => setDuration(val)} style={{ ...selectStyle, marginTop: 6 }}
-                    options={[{value:'5min',label:'5 min'},{value:'15min',label:'15 min'},{value:'30min',label:'30 min'},{value:'60min',label:'60 min'}]} />
+                  <select value={duration} onChange={e => setDuration(e.target.value)} style={{ ...selectStyle, marginTop: 6 }}>
+                    <option value="5min">5 min</option>
+                    <option value="15min">15 min</option>
+                    <option value="30min">30 min</option>
+                    <option value="60min">60 min</option>
+                  </select>
                 </div>
                 <div>
                   <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Tone
                   </label>
-                  <NativeSelect value={tone} onChange={val => setTone(val)} style={{ ...selectStyle, marginTop: 6 }}
-                    options={[{value:'Casual',label:'Casual'},{value:'Professional',label:'Professional'},{value:'Educational',label:'Educational'},{value:'Entertaining',label:'Entertaining'}]} />
+                  <select value={tone} onChange={e => setTone(e.target.value)} style={{ ...selectStyle, marginTop: 6 }}>
+                    <option value="Casual">Casual</option>
+                    <option value="Professional">Professional</option>
+                    <option value="Educational">Educational</option>
+                    <option value="Entertaining">Entertaining</option>
+                  </select>
                 </div>
               </div>
 
@@ -1214,6 +1225,15 @@ export default function PodcastStudio() {
         {/* ── Tab: Panel Record ── */}
         {tab === 'record' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+            {/* Audio Mixer */}
+            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+
+            {/* Enhanced Audio Mixer */}
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+
+            {/* Soundboard */}
+            <SoundboardWidget />
 
             {/* Panel slots */}
             <div style={{
@@ -1451,22 +1471,30 @@ export default function PodcastStudio() {
         )}
       </div>
 
+      {tab === 'library' && library.length > 0 && (
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
+          <TranscriptionPanel recordingUrl={library[0]?.audio_url} roomTitle={library[0]?.title || 'Podcast Episode'} />
+        </div>
+      )}
+
       <Toast message={toast} />
-      <SwanAIRecommendations roomId={null} currentLayout="podcast" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="podcast" viewerCount={0} />
+        <StreamGoals isHost={true} />
+        <CollaborationMatcher />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />
+        <AutomatedHighlightReels roomId={roomId} sessionId={roomId} isHost={true} />
+        <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
+        <RTMPFanoutPanel roomId={roomId} isHost={true} />
+        <GuestInviteGenerator roomId={roomId} isHost={true} />
+        <GuestConnector roomId={roomId} />
+        <RTMPIngestPanel roomId={roomId} />
+        <AdvancedEncoderSettings onApply={() => {}} />
+      </div>
     </div>
   );
 }

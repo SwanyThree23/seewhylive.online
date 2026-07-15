@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const TABS = [
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
   { id: 'device',  label: 'Device',  icon: Upload,   color: '#d4af37' },
-  { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#00d4ff' },
+  { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#D4AF37' },
   { id: 'stream',  label: 'Stream',  icon: Radio,     color: '#6DBF7E' },
   { id: 'playlist',label: 'Playlist',icon: List,      color: '#D4AF37' },
 ];
@@ -130,7 +130,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className="absolute top-full mt-2 left-0 z-50 w-80 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}
+            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -214,9 +214,9 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                     value={directUrl}
                     onChange={e => setDirectUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitDirect()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(0,212,255,0.15)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)', borderRadius: 8, cursor: 'pointer' }}>
+                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, cursor: 'pointer' }}>
                     <LinkIcon className="w-3.5 h-3.5" /> Play URL
                   </button>
                 </>
@@ -269,7 +269,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                           <button onClick={() => playFromPlaylist(item)} className="flex-1 text-left text-xs text-white/70 hover:text-white truncate transition-colors">
                             {item.title || item.url}
                           </button>
-                          <button onClick={() => removeFromPlaylist(i)} className="opacity-0 group-hover:opacity-100 transition-opacity text-red-400/60 hover:text-red-400">
+                          <button onClick={() => removeFromPlaylist(i)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#C0392B]/60 hover:text-[#C0392B]">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         </div>

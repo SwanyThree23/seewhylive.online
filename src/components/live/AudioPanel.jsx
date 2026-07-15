@@ -24,7 +24,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
   );
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-all"
@@ -33,7 +33,7 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
         <div className="flex items-center gap-2">
           <Headphones className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Audio Panel</span>
-          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(88,28,135,0.5)', color: '#d8b4fe', border: '1px solid rgba(126,34,206,0.3)' }}>♪ Music</span>}
+          {bgMusic && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(128,0,32,0.5)', color: '#C9A84C', border: '1px solid rgba(128,0,32,0.3)' }}>♪ Music</span>}
         </div>
         <span className="text-white/30 text-[10px]">{expanded ? '▲' : '▼'}</span>
       </button>
@@ -56,8 +56,9 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
                     className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
                       micMuted
                         ? 'bg-red-900/50 border-red-600 text-red-400'
-                        : 'bg-green-900/30 border-green-600/50 text-green-400'
+                        : 'bg-[#0F1428]/30 border-[#6DBF7E]/35/50 text-[#6DBF7E]'
                     }`}
+                    style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                   >
                     {micMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                   </button>
@@ -117,12 +118,12 @@ export default function AudioPanel({ micMuted, onMicToggle, participants = [] })
               {/* Background music toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Music className="w-3.5 h-3.5 text-[#7B5DA6]" />
+                  <Music className="w-3.5 h-3.5 text-[#D4854A]" />
                   <span className="text-xs text-white">Background Music</span>
                 </div>
                 <button
                   onClick={() => setBgMusic(!bgMusic)}
-                  className={`w-9 h-5 rounded-full transition-all relative ${bgMusic ? 'bg-[#7B5DA6]' : 'bg-white/10'}`}
+                  className={`w-9 h-5 rounded-full transition-all relative ${bgMusic ? 'bg-[#D4AF37]' : 'bg-white/10'}`}
                 >
                   <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${bgMusic ? 'left-4' : 'left-0.5'}`} />
                 </button>

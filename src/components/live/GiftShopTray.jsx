@@ -12,8 +12,8 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RARITY = {
   common:    { color: 'rgba(255,255,255,0.5)', label: 'COMMON',    glow: '' },
-  rare:      { color: '#60A5FA',               label: 'RARE',      glow: '0 0 12px rgba(96,165,250,0.3)' },
-  epic:      { color: '#A78BFA',               label: 'EPIC',      glow: '0 0 12px rgba(167,139,250,0.3)' },
+  rare:      { color: '#D4AF37',               label: 'RARE',      glow: '0 0 12px rgba(212,175,55,0.3)' },
+  epic:      { color: '#D4AF37',               label: 'EPIC',      glow: '0 0 12px rgba(212,175,55,0.3)' },
   legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(212,175,55,0.4)` },
 };
 
@@ -73,7 +73,7 @@ function GiftCard({ gift, onSend, sending }) {
 function GiftLeaderboard({ roomId }) {
   const { data: txns = [] } = useQuery({
     queryKey: ['gift-lb', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'virtual_good' }, '-created_date', 50),
+    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, transaction_type: 'direct_support' }, '-created_date', 50),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
@@ -81,7 +81,7 @@ function GiftLeaderboard({ roomId }) {
   const senders = Object.entries(
     txns.reduce((acc, t) => {
       const k = t.sender_name || t.sender_id || 'Anonymous';
-      acc[k] = (acc[k] || 0) + (t.amount || 0);
+      acc[k] = (acc[k] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
       return acc;
     }, {})
   ).sort((a, b) => b[1] - a[1]).slice(0, 5);
@@ -109,6 +109,14 @@ export default function GiftShopTray({ roomId, currentUser }) {
   const [anim, setAnim] = useState(null);
   const qc = useQueryClient();
 
+  const { data: room } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.Room.get(roomId),
+    enabled: !!roomId,
+    staleTime: 60000,
+  });
+  const recipientId = room?.host_id;
+
   const { data: gifts = [] } = useQuery({
     queryKey: ['gifts-active'],
     queryFn: () => base44.entities.AnimatedGift.filter({ is_active: true }, 'price', 30),
@@ -123,19 +131,27 @@ export default function GiftShopTray({ roomId, currentUser }) {
         sender_name: currentUser?.full_name || currentUser?.email,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: gift.price * 0.85,
-        platform_fee: gift.price * 0.15,
+        creator_amount: Math.floor(gift.price * 0.90),
+        platform_fee: gift.price - Math.floor(gift.price * 0.90),
         status: 'completed',
-        metadata: { gift_id: gift.id, gift_name: gift.name },
+        processed_at: new Date().toISOString(),
       });
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: (gift.times_sent || 0) + 1,
       }).catch(() => {});
     },
     onSuccess: (_, gift) => {
-      qc.invalidateQueries(['gift-lb', roomId]);
+      qc.invalidateQueries({ queryKey: ['gift-lb', roomId] });
       setAnim({ gift, sender: currentUser?.full_name || 'Someone' });
       setOpen(false);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Could not send gift'),
   });

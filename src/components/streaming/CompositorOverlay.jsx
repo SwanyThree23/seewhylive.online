@@ -4,26 +4,25 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useCanvasCompositor } from '@/hooks/useCanvasCompositor';
-import { hapticMedium } from '@/utils/haptics';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
-  connecting: { label: 'Connecting…', color: '#F59E0B' },
+  connecting: { label: 'Connecting…', color: '#D4AF37' },
   live: { label: 'LIVE', color: '#C0392B' },
   recording: { label: 'Recording', color: '#6DBF7E' },
-  error: { label: 'Error', color: '#C0392B' },
+  error: { label: 'Error', color: '#EF4444' },
 };
 
 /**
  * CompositorOverlay — Go Live / Record control panel.
  *
  * Props:
- *   layout: 'panel' | 'battle' | 'watchparty'
- *   slots: Array<{ stream: MediaStream|null, label: string }>
- *   overlayConfig: { title, subtitle, showLive, battleData, chatLines }
+ *   layout: 'panel' | 'spotlight' | 'battle' | 'watchparty'
+ *   slots: Array<{ stream: MediaStream|null, label: string, speaking?: boolean }>
+ *   overlayConfig: { title, subtitle, showLive, battleData, chatLines, spotlightIndex? }
  *   userId: string  (current user ID — used to load/save WHIP destinations)
  *   onScreenCapture: () => Promise<MediaStream>  (for watchparty)
  *   isHost: boolean
@@ -232,7 +231,7 @@ export default function CompositorOverlay({
         style={{
           background: open ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.1)',
           border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : 'rgba(192,57,43,0.3)'}`,
-          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#C0392B',
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#FF8899',
           ...T,
         }}
       >
@@ -248,7 +247,7 @@ export default function CompositorOverlay({
           className="absolute right-0 top-full mt-2 z-50 rounded-2xl p-4 shadow-2xl space-y-3"
           style={{
             width: 360,
-            background: '#0D0618',
+            background: '#080B18',
             border: '1px solid rgba(212,175,55,0.2)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           }}
@@ -330,7 +329,7 @@ export default function CompositorOverlay({
           {/* Action buttons */}
           {status === 'idle' && (
             <button
-              onClick={() => { hapticMedium(); useRecord ? startRecord() : goLive(); }}
+              onClick={useRecord ? startRecord : goLive}
               className="w-full py-2.5 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-2 transition-all"
               style={{ background: 'linear-gradient(135deg, #800020, #A0003A)', border: '1px solid rgba(212,175,55,0.4)', color: GOLD, ...T }}
             >
@@ -355,8 +354,8 @@ export default function CompositorOverlay({
 
           {status === 'error' && (
             <div className="flex items-start gap-2 p-2 rounded-lg" style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)' }}>
-              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-red-400" />
-              <p className="text-[11px] text-red-400">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#C0392B]" />
+              <p className="text-[11px] text-[#C0392B]">Stream failed. Check your WHIP URL and try again, or switch to Record mode.</p>
             </div>
           )}
         </div>

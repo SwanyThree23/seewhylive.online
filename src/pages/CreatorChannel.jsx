@@ -7,7 +7,12 @@ import {
   Twitter, Instagram, Youtube, ExternalLink, Calendar, Crown
 } from 'lucide-react';
 import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierBadge from '../components/subscriptions/TierBadge';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
 import VideoLibrary from '../components/vod/VideoLibrary';
+import RewardShop from '../components/loyalty/RewardShop';
+import FollowButton from '../components/shared/FollowButton';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { isSafeUrl } from '@/lib/security';
@@ -19,12 +24,9 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CreatorBridge from '../components/social/CreatorBridge';
-const BG = '#0d0618';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+
+const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -39,6 +41,14 @@ export default function CreatorChannel() {
   const qc = useQueryClient();
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', currentUser?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: currentUser?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['creator-profile', userId],
@@ -97,9 +107,9 @@ export default function CreatorChannel() {
   return (
     <div className="min-h-screen text-white" style={{ background: BG }}>
       {/* Hero Banner */}
-      <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 100%)` }}>
+      <div className="relative h-56 md:h-72 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 100%)` }}>
         {bannerUrl && <img src={bannerUrl} alt="banner" className="w-full h-full object-cover absolute inset-0" />}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(13,6,24,0.95) 100%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,11,24,0.95) 100%)' }} />
         {liveRoom && (
           <div className="absolute top-4 right-4">
             <span className="px-3 py-1.5 rounded-full text-xs font-black animate-pulse flex items-center gap-1.5"
@@ -117,7 +127,7 @@ export default function CreatorChannel() {
           <div className="relative shrink-0" style={{ width: 112, height: 112 }}>
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
             <div className="absolute inset-[3px] flex items-center justify-center overflow-hidden"
-              style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+              style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={displayName} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{displayName.charAt(0)}</span>
@@ -128,7 +138,7 @@ export default function CreatorChannel() {
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#00d4ff' }} />}
+              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                 {category}
@@ -156,6 +166,7 @@ export default function CreatorChannel() {
                 <Bell className="w-4 h-4" /> Notify Me
               </button>
             )}
+            <FollowButton targetUserId={userId} targetUserName={displayName} size="sm" />
             <button className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
               <Share2 className="w-4 h-4" />
@@ -196,11 +207,11 @@ export default function CreatorChannel() {
         {activeTab === 'live' && (
           <div className="pb-16">
             {liveRoom ? (
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
-                <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #0d0618)` }}>
+              <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
+                <div className="relative h-48 flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${CRIMSON}44, #080B18)` }}>
                   <div className="text-center">
                     <div className="flex items-center gap-2 justify-center mb-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#C0392B] animate-pulse" />
                       <span className="font-black text-sm uppercase" style={{ color: '#C0392B', ...T }}>LIVE NOW</span>
                     </div>
                     <h3 className="text-xl font-black text-white" style={T}>{liveRoom.title}</h3>
@@ -234,7 +245,7 @@ export default function CreatorChannel() {
         {activeTab === 'schedule' && (
           <div className="pb-16 space-y-3">
             {(profile?.stream_schedule || []).map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+              <div key={i} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
                   <Calendar className="w-5 h-5" style={{ color: GOLD }} />
                 </div>
@@ -249,15 +260,15 @@ export default function CreatorChannel() {
               </div>
             ))}
             {scheduledRooms.map(r => (
-              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)' }}>
-                  <Clock className="w-5 h-5" style={{ color: '#00d4ff' }} />
+              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                  <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
                 </div>
                 <div className="flex-1">
                   <p className="font-black text-sm text-white" style={T}>{r.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.2)', color: '#00d4ff', ...T }}>Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
               </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (
@@ -273,16 +284,30 @@ export default function CreatorChannel() {
               <Crown className="w-5 h-5" style={{ color: GOLD }} />
               <h3 className="text-lg font-black text-white" style={T}>Support {displayName}</h3>
             </div>
-            <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.5)' }}>
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.5)' }}>
               <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
             </div>
+            <TierSubscribeCard
+              tier={null}
+              currentSub={null}
+              userId={currentUser?.id}
+              creatorId={userId}
+              isHighlighted={false}
+            />
+            {currentUser?.id && (
+              <StripeSubscribeButton creatorId={userId} creatorName={displayName} currentUserId={currentUser.id} />
+            )}
+            <TierBadge tier="bronze" size="sm" showName />
+            {currentUser?.id && (
+              <RewardShop creatorId={userId} roomId={activeRoomId} currentUser={currentUser} />
+            )}
           </div>
         )}
 
         {/* About */}
         {activeTab === 'about' && (
           <div className="pb-16">
-            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+            <div className="rounded-2xl p-6 space-y-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
               <div>
                 <p className="text-xs font-black uppercase mb-2" style={{ color: GOLD, ...T }}>About</p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>{bio}</p>
@@ -300,16 +325,22 @@ export default function CreatorChannel() {
             </div>
           </div>
         )}
+
+        <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <PaywallGate roomId={activeRoomId} creatorId={userId} price={0} />
+          <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
+          <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
+          <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <OnlineUsersGrid compact maxVisible={10} />
+
+            <ContentRecommendations />
+            <CollaborationMatcher />
+            <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
+          </div>
+        </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="channel" viewerCount={0} />
-      <MilestoneAlerts userId={currentUser?.id} roomId={null} />
-      {currentUser?.id && <AlertConfig creatorId={currentUser.id} />}
-      {currentUser?.id && <ShopDashboard creatorId={currentUser.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <BackgroundCustomizer />
+        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

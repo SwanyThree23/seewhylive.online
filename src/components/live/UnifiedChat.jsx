@@ -3,30 +3,33 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
 } from 'lucide-react';
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
 
+const MSG_BG = {
+  poll: { background: 'rgba(109,191,126,0.15)' },
+};
+
 const MSG_STYLES = {
   regular: '',
   tip: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
-  subscription: 'border-l-2 border-[#7B5DA6] bg-[#7B5DA6]/20',
+  subscription: 'border-l-2 border-[#D4AF37] bg-[#800020]/15',
   moderation: 'border-l-2 border-red-600 bg-red-900/15',
-  qa: 'border-l-2 border-blue-500 bg-blue-900/15',
-  poll: 'border-l-2 border-green-500 bg-green-900/15',
+  qa: 'border-l-2 border-[#D4AF37]/40 bg-[#0F1428]/15',
+  poll: 'border-l-2 border-[#6DBF7E]/40 bg-[#0F1428]/15',
   cohost: 'border-l-2 border-[#d4af37] bg-[#d4af37]/8',
 };
 
 function MessageBadge({ type }) {
   const badges = {
     tip: <span className="text-[11px] bg-[#d4af37] text-black px-1 py-0.5 rounded font-black">💰 TIP</span>,
-    subscription: <span className="text-[11px] bg-[#7B5DA6] text-white px-1 py-0.5 rounded font-black">⭐ SUB</span>,
+    subscription: <span className="text-[11px] bg-[#800020] text-[#D4AF37] px-1 py-0.5 rounded font-black">⭐ SUB</span>,
     moderation: <span className="text-[11px] bg-red-700 text-white px-1 py-0.5 rounded font-black">🚫 SYS</span>,
-    qa: <span className="text-[11px] bg-blue-700 text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
-    poll: <span className="text-[11px] bg-green-700 text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
+    qa: <span className="text-[11px] bg-[#800020] text-white px-1 py-0.5 rounded font-black">❓ Q&A</span>,
+    poll: <span className="text-[11px] bg-[#4A9B5E] text-white px-1 py-0.5 rounded font-black">📊 POLL</span>,
     cohost: <span className="text-[11px] bg-[#d4af37]/80 text-black px-1 py-0.5 rounded font-black">🤖 AI</span>,
   };
   return badges[type] || null;
@@ -115,7 +118,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'rgba(13,6,24,0.97)' }}>
+    <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
 
       {/* Host controls toggle */}
       {isHost && (
@@ -134,9 +137,10 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-white/50">Slow Mode</span>
                     {slowMode && (
-                      <NativeSelect value={slowInterval} onChange={val => setSlowInterval(Number(val))}
-                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5"
-                        options={[3,5,10,30].map(s => ({value: s, label: `${s}s`}))} />
+                      <select value={slowInterval} onChange={(e) => setSlowInterval(Number(e.target.value))}
+                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5">
+                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#080B18]">{s}s</option>)}
+                      </select>
                     )}
                   </div>
                   <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
@@ -145,11 +149,11 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-white/50">Subs Only</span>
-                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#7B5DA6' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
+                  <div onClick={() => setSubOnly(!subOnly)} style={{ width:40, height:22, borderRadius:99, background: subOnly ? '#D4AF37' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
                     <div style={{ position:'absolute', top:3, left: subOnly ? 21 : 3, width:16, height:16, borderRadius:'50%', background:'#fff', transition:'left 0.2s' }} />
                   </div>
                 </div>
-                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-red-400 flex items-center justify-center gap-1"
+                <button onClick={clearChat} className="w-full text-[10px] py-1.5 rounded-lg text-[#C0392B] flex items-center justify-center gap-1"
                   style={{ border: '1px solid rgba(192,57,43,0.2)', background: 'rgba(192,57,43,0.05)' }}>
                   <Trash2 className="w-3 h-3" /> Clear Chat
                 </button>
@@ -188,7 +192,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <motion.div key={msg.id}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.12 }}
-              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}>
+              className={`group px-2 py-1.5 rounded-lg ${MSG_STYLES[msg.message_type || 'regular']}`}
+              style={MSG_BG[msg.message_type] || undefined}>
               <div className="flex items-start gap-2">
                 {/* Avatar dot */}
                 <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black mt-0.5"
@@ -243,7 +248,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
         {showEmojiPicker && (
           <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10 }}
             className="mx-3 mb-1 rounded-2xl p-3 grid grid-cols-5 gap-2 z-20"
-            style={{ background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)' }}>
+            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)' }}>
             {EMOJIS.map(e => (
               <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); }}
                 className="text-xl text-center py-1 rounded-lg active:scale-90 transition-transform hover:bg-white/5">

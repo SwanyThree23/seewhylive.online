@@ -52,6 +52,13 @@ export default function DestinationsManager({ userId }) {
       setShowForm(false);
       toast.success('Destination added!');
       qc.invalidateQueries({ queryKey: ['destinations', userId] });
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'milestone',
+          title: `Added streaming destination: ${label || selectedPlatform || 'Destination'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -210,7 +217,7 @@ export default function DestinationsManager({ userId }) {
                   <button onClick={() => deleteDest.mutate(dest.id)}
                     className="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
                     style={{ background: 'rgba(255,50,50,0.08)', border: '1px solid rgba(255,50,50,0.2)' }}>
-                    <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    <Trash2 className="w-3.5 h-3.5 text-[#C0392B]" />
                   </button>
                 </div>
               </div>

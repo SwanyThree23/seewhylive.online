@@ -20,11 +20,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     queryKey: ['polls', roomId],
     queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }, '-created_at', 1),
     refetchInterval: 2000,
+    enabled: !!roomId,
   });
 
   const { data: pollTemplates } = useQuery({
     queryKey: ['pollTemplates', hostId],
     queryFn: () => base44.entities.PollTemplate.filter({ creator_id: hostId }, '-created_at'),
+    enabled: !!hostId,
   });
 
   const { data: pollVotes } = useQuery({
@@ -76,6 +78,13 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
     onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls', roomId] });
       setShowCreate(false);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -217,7 +226,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
             className="p-1.5 rounded-lg hover:opacity-70 transition-opacity"
             style={{ background: 'rgba(192,57,43,0.15)' }}
           >
-            <X className="w-4 h-4 text-red-400" />
+            <X className="w-4 h-4 text-[#C0392B]" />
           </button>
         )}
       </div>
@@ -229,7 +238,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
           <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} height={40} />
           <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.5)' }} />
           <Tooltip
-            contentStyle={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
+            contentStyle={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
             labelStyle={{ color: '#fff' }}
           />
           <Bar dataKey="value" fill="#d4af37" radius={[4, 4, 0, 0]}>
@@ -272,7 +281,7 @@ export default function EnhancedPollingSystem({ roomId, hostId, isHost }) {
 
       {/* Re-vote notice */}
       {activePoll.allow_re_vote && userVotes[activePoll.id] !== undefined && (
-        <div className="flex items-center gap-2 text-xs text-[#4A8A7A]" style={{ color: '#C9A84C' }}>
+        <div className="flex items-center gap-2 text-xs text-[#C9A84C]" style={{ color: '#C9A84C' }}>
           <RotateCcw className="w-3 h-3" />
           You can change your vote anytime
         </div>

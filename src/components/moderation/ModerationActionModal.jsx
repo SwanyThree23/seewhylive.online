@@ -3,11 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Shield } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const OVERLAY = { position:'fixed', inset:0, zIndex:1000, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', padding:16 };
-const MODAL = { background:'#0d0618', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:480, boxShadow:'0 24px 64px rgba(0,0,0,0.8)' };
-const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const MODAL = { background:'#080B18', border:'1px solid rgba(255,255,255,0.1)', borderRadius:16, padding:24, width:'100%', maxWidth:480, boxShadow:'0 24px 64px rgba(0,0,0,0.8)' };
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 const TEXTAREA_STYLE = { ...INPUT_STYLE, resize:'none', minHeight:80 };
 const SELECT_STYLE = { ...INPUT_STYLE };
 const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
@@ -26,8 +25,8 @@ export default function ModerationActionModal({ isOpen, onClose, targetUser, roo
     },
     onSuccess: () => {
       toast.success('Moderation action applied');
-      queryClient.invalidateQueries(['moderationActions']);
-      queryClient.invalidateQueries(['participants']);
+      queryClient.invalidateQueries({ queryKey: ['moderationActions'] });
+      queryClient.invalidateQueries({ queryKey: ['participants'] });
       onClose();
       resetForm();
     },
@@ -88,8 +87,13 @@ export default function ModerationActionModal({ isOpen, onClose, targetUser, roo
         <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
           <div>
             <label style={LABEL_STYLE}>Action Type</label>
-            <NativeSelect style={SELECT_STYLE} value={actionType} onChange={val => setActionType(val)}
-              options={[{value:'',label:'Select action'},{value:'warning',label:'Warning'},{value:'mute',label:'Mute'},{value:'kick',label:'Kick from Room'},{value:'ban',label:'Ban'}]} />
+            <select style={SELECT_STYLE} value={actionType} onChange={e => setActionType(e.target.value)}>
+              <option value="">Select action</option>
+              <option value="warning">Warning</option>
+              <option value="mute">Mute</option>
+              <option value="kick">Kick from Room</option>
+              <option value="ban">Ban</option>
+            </select>
           </div>
 
           <div>

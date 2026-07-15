@@ -7,18 +7,18 @@ import { toast } from 'sonner';
 const tierConfig = {
   basic: {
     icon: Star,
-    gradient: 'linear-gradient(135deg, #2563eb, #5B7FA6)',
-    badgeColor: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
+    badgeColor: '#D4AF37',
   },
   premium: {
     icon: Zap,
-    gradient: 'linear-gradient(135deg, #7B5DA6, #C0392B)',
-    badgeColor: '#a855f7',
+    gradient: 'linear-gradient(135deg, #800020, #D4854A)',
+    badgeColor: '#D4854A',
   },
   elite: {
     icon: Crown,
-    gradient: 'linear-gradient(135deg, #d97706, #ea580c)',
-    badgeColor: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #D4854A, #C0392B)',
+    badgeColor: '#D4AF37',
   },
 };
 
@@ -52,9 +52,17 @@ export default function SubscriptionTiers({ communityId, userId }) {
         auto_renew: true,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, { tierId, price }) => {
       toast.success('Subscription activated! 🎉');
       queryClient.invalidateQueries(['userSubscription']);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'subscription',
+          title: `Subscribed to ${tierId} tier`,
+          amount: price,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Subscription failed');
@@ -75,7 +83,7 @@ export default function SubscriptionTiers({ communityId, userId }) {
           const isCurrentTier = currentSubscription?.tier === tier.name.toLowerCase();
 
           return (
-            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(13,6,24,0.95)', overflow: 'hidden' }}>
+            <div key={tier.id} style={{ border: isCurrentTier ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)', borderRadius: 12, background: 'rgba(8,11,24,0.95)', overflow: 'hidden' }}>
               <div style={{ padding: 20 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: config.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                   <Icon style={{ width: 24, height: 24, color: '#fff' }} />

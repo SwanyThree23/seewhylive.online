@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin } from 'lucide-react';
+import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 
-var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B7C', '#7C4A6B', '#6B4A4A'];
+var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B3A', '#7C4A3A', '#6B4A4A'];
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 function getColor(name) {
@@ -11,11 +11,14 @@ function getColor(name) {
   return COLORS[idx];
 }
 
+var AUDIO_HOLD_MS = 400; // keep speaking indicator on after last peak to avoid flicker
+
 function useAudioLevel(stream) {
   var [isSpeaking, setIsSpeaking] = useState(false);
   var ctxRef = useRef(null);
-  var analyserRef = useRef(null);
   var rafRef = useRef(null);
+  var holdTimerRef = useRef(null);
+  var speakingRef = useRef(false);
 
   useEffect(() => {
     if (!stream) { setIsSpeaking(false); return; }
@@ -27,7 +30,6 @@ function useAudioLevel(stream) {
       ctxRef.current = ctx;
       var analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
-      analyserRef.current = analyser;
       var source = ctx.createMediaStreamSource(stream);
       source.connect(analyser);
       var data = new Uint8Array(analyser.frequencyBinCount);
@@ -40,7 +42,16 @@ function useAudioLevel(stream) {
           sum += v * v;
         }
         var rms = Math.sqrt(sum / data.length);
-        setIsSpeaking(rms > 0.01);
+        if (rms > 0.01) {
+          clearTimeout(holdTimerRef.current);
+          if (!speakingRef.current) { speakingRef.current = true; setIsSpeaking(true); }
+        } else if (speakingRef.current) {
+          clearTimeout(holdTimerRef.current);
+          holdTimerRef.current = setTimeout(function() {
+            speakingRef.current = false;
+            setIsSpeaking(false);
+          }, AUDIO_HOLD_MS);
+        }
         rafRef.current = requestAnimationFrame(check);
       };
       check();
@@ -50,6 +61,8 @@ function useAudioLevel(stream) {
 
     return function() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdTimerRef.current);
+      speakingRef.current = false;
       if (ctxRef.current) { try { ctxRef.current.close(); } catch (e) {} }
     };
   }, [stream]);
@@ -57,20 +70,39 @@ function useAudioLevel(stream) {
   return isSpeaking;
 }
 
-function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands }) {
+function SignalBars({ bars }) {
+  if (bars == null) return null;
+  var color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+      {[1, 2, 3, 4].map(function(b) {
+        return <div key={b} style={{ width: 2, height: b * 2 + 1, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />;
+      })}
+    </div>
+  );
+}
+
+function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canManage, stream, isLocal, raisedHands, quality }) {
   var [menuOpen, setMenuOpen] = useState(false);
-  var localSpeaking = useAudioLevel(isLocal ? stream : null);
-  var speaking = isLocal ? localSpeaking : (member.is_audio_enabled !== false);
+  var [volume, setVolume] = useState(1);
+  var [showVolume, setShowVolume] = useState(false);
+  var audioSpeaking = useAudioLevel(stream);
+  var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
   var videoRef = useRef(null);
   var isRaised = raisedHands && member.user_id && raisedHands.has(member.user_id);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
+
+  // Apply volume to remote stream video element
+  useEffect(() => {
+    if (videoRef.current && !isLocal) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume, isLocal]);
 
   var borderColor = speaking
     ? 'rgba(212,175,55,0.7)'
@@ -78,7 +110,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
     ? 'rgba(212,175,55,0.35)'
     : 'rgba(255,255,255,0.12)';
 
-  var connDotColor = stream && stream.active ? '#6DBF7E' : member ? '#FFD700' : 'rgba(255,255,255,0.25)';
+  var connDotColor = stream && stream.active ? '#6DBF7E' : member ? '#D4AF37' : 'rgba(255,255,255,0.25)';
 
   var roleBadge = null;
   if (member.role === 'host') {
@@ -116,18 +148,18 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
         className="absolute inset-[2px] overflow-hidden"
         style={{
           clipPath: OCT,
-          background: 'linear-gradient(135deg, #1A0F0A, #0d0618)',
+          background: 'linear-gradient(135deg, #1A0F0A, #080B18)',
         }}
       >
-        {stream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted={isLocal}
-            className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={isLocal}
+          className={'absolute inset-0 w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+          style={{ display: stream ? 'block' : 'none' }}
+        />
+        {!stream && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
             <div style={{ width: 32, height: 32, borderRadius: '50%', border: `1px solid ${color}60`, background: color + '40', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
               {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
@@ -162,7 +194,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
                 {roleBadge.label}
               </span>
             )}
-            {speaking ? <Mic className="w-2 h-2 text-green-400 shrink-0" /> : <MicOff className="w-2 h-2 text-white/30 shrink-0" />}
+            {speaking ? <Mic className="w-2 h-2 text-[#6DBF7E] shrink-0" /> : <MicOff className="w-2 h-2 text-white/30 shrink-0" />}
           </div>
         </div>
 
@@ -176,7 +208,11 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           <div className="absolute top-1 right-1 z-10 text-[14px] leading-none">✋</div>
         )}
 
-        <div className="absolute bottom-1 right-1 z-10" style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+        <div className="absolute bottom-1 right-1 z-10">
+          {quality ? <SignalBars bars={quality.bars} /> : (
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: connDotColor }} />
+          )}
+        </div>
 
         <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5" style={{ top: isRaised ? 18 : 4 }}>
           <button
@@ -186,6 +222,16 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
           >
             <Maximize2 className="w-2 h-2 text-white" />
           </button>
+          {!isLocal && stream && (
+            <button
+              onClick={() => setShowVolume(v => !v)}
+              className="w-4 h-4 rounded flex items-center justify-center"
+              style={{ background: showVolume ? 'rgba(212,175,55,0.4)' : 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+              title="Adjust volume"
+            >
+              <Volume2 className="w-2 h-2" style={{ color: showVolume ? '#D4AF37' : 'rgba(255,255,255,0.7)' }} />
+            </button>
+          )}
           {canManage && member.user_id !== hostId && (
             <div style={{ position: 'relative' }}>
               <button
@@ -198,7 +244,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
               {menuOpen && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, background: '#1A0F0A', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, minWidth: 100, overflow: 'hidden' }}
                   onMouseLeave={() => setMenuOpen(false)}>
-                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#C0392B' }].map(item => (
+                  {[{ icon: Pin, label: 'Pin', color: '#fff' }, { icon: MicOff, label: 'Mute', color: '#fff' }, { label: 'Remove', color: '#FF4444' }].map(item => (
                     <button key={item.label} onClick={() => setMenuOpen(false)}
                       style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', background: 'transparent', border: 'none', color: item.color, fontSize: 11, cursor: 'pointer' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
@@ -211,6 +257,23 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
             </div>
           )}
         </div>
+
+        {/* Per-stream volume slider — shown when volume button is active */}
+        {showVolume && !isLocal && (
+          <div className="absolute left-0 right-0 bottom-7 px-2 z-20"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', borderRadius: 4, padding: '4px 6px' }}>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={volume}
+              onChange={e => setVolume(parseFloat(e.target.value))}
+              style={{ width: '100%', accentColor: '#D4AF37', cursor: 'pointer' }}
+              title={`Volume: ${Math.round(volume * 100)}%`}
+            />
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -219,11 +282,11 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
 function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
   var videoRef = useRef(null);
   useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
 
   return (
-    <div className="flex-1 rounded-xl overflow-hidden relative" style={{ border: '2px solid rgba(212,175,55,0.4)', background: '#0d0618' }}>
+    <div className="flex-1 rounded-xl overflow-hidden relative" style={{ border: '2px solid rgba(212,175,55,0.4)', background: '#080B18' }}>
       {stream ? (
         <video
           ref={videoRef}
@@ -275,10 +338,12 @@ function EmptyTile({ onClick, canInvite }) {
   );
 }
 
-function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
+function CompactTile({ member, hostId, stream, isLocal, isSpeaking: isSpeakingFallback }) {
   var videoRef = useRef(null);
+  var audioSpeaking = useAudioLevel(stream);
+  var isSpeaking = stream ? audioSpeaking : isSpeakingFallback;
   useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
   var isHostMember = member.user_id === hostId;
   var color = getColor(member.user_name);
@@ -296,10 +361,10 @@ function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
       >
         <div className="absolute inset-0" style={{ clipPath: OCT, background: isHostMember ? 'rgba(212,175,55,0.6)' : 'rgba(255,255,255,0.15)' }} />
         <div className="absolute inset-[2px] overflow-hidden" style={{ clipPath: OCT, background: color + '30' }}>
-          {stream ? (
-            <video ref={videoRef} autoPlay playsInline muted={isLocal}
-              className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')} />
-          ) : (
+          <video ref={videoRef} autoPlay playsInline muted={isLocal}
+            className={'w-full h-full object-cover' + (isLocal ? ' scale-x-[-1]' : '')}
+            style={{ display: stream ? 'block' : 'none' }} />
+          {!stream && (
             <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
               {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
             </div>
@@ -319,7 +384,7 @@ function CompactTile({ member, hostId, stream, isLocal, isSpeaking }) {
 function ScreenShareTile({ screenStream }) {
   var videoRef = useRef(null);
   useEffect(() => {
-    if (videoRef.current && screenStream) videoRef.current.srcObject = screenStream;
+    if (videoRef.current) videoRef.current.srcObject = screenStream || null;
   }, [screenStream]);
 
   return (
@@ -340,7 +405,7 @@ function resolveStream(member, currentUser, localStream, remoteStreams, peerUser
   return { stream: peerId ? remoteStreams?.get(peerId) || null : null, isLocal: false };
 }
 
-export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands }) {
+export default function PanelGrid({ members = [], currentUser, hostId, maxSlots = 20, onInvite, isHost, remoteStreams, peerUserIds, localStream, compact, screenStream, raisedHands, peerQuality }) {
   var [spotlitId, setSpotlitId] = useState(null);
   var [slots, setSlots] = useState(maxSlots);
 
@@ -353,7 +418,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
 
   if (compact) {
     return (
-      <div className="flex overflow-x-auto gap-2 px-2 py-1" style={{ background: '#0d0618' }}>
+      <div className="flex overflow-x-auto gap-2 px-2 py-1" style={{ background: '#080B18' }}>
         {members.slice(0, 20).map(function(m) {
           var { stream, isLocal } = resolveStream(m, currentUser, localStream, remoteStreams, peerUserIds);
           var isSpeaking = m.is_audio_enabled !== false;
@@ -366,7 +431,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#0d0618' }}>
+    <div className="flex flex-col h-full" style={{ background: '#080B18' }}>
       <div className="flex items-center gap-2 px-2 py-1.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <span style={{ fontSize: 11, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 99, padding: '2px 8px' }}>
           {members.length}/{maxSlots} panelists
@@ -419,6 +484,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                     onSpotlight={setSpotlitId} canManage={isHost}
                     stream={stream} isLocal={isLocal}
                     raisedHands={raisedHands}
+                    quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                   />
                 </div>
               );
@@ -437,6 +503,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
                   onSpotlight={setSpotlitId} canManage={isHost}
                   stream={stream} isLocal={isLocal}
                   raisedHands={raisedHands}
+                  quality={peerQuality ? peerQuality.get(m.user_id) : undefined}
                 />
               );
             })}

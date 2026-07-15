@@ -1,33 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleMode from '../components/streaming/BattleMode';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG   = '#080B18';
 const BG2  = '#0D1022';
 const BG3  = '#13182C';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const BLUE  = '#5B7FA6';
+const BLUE  = '#D4854A';
 const RED2  = '#C62828';
-const TEAL  = '#4A8A7A';
-const CYAN  = '#00d4ff';
+const TEAL  = '#6DBF7E';
+const CYAN  = '#D4AF37';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATES_DATA = [
@@ -37,7 +35,7 @@ const STATES_DATA = [
     players: ['K. Daniels', 'T. Brooks', 'M. Evans', 'J. Carter', 'L. Hayes'],
   },
   {
-    id: 'ca', name: 'California', abbr: 'CA', color: '#1B5E20',
+    id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E',
     record: { w: 3, l: 2 }, pts: 1650,
     players: ['D. Reyes', 'A. Nguyen', 'C. Moore', 'R. Torres', 'P. Green'],
   },
@@ -47,17 +45,17 @@ const STATES_DATA = [
     players: ['B. Williams', 'S. Johnson', 'H. Davis', 'N. Wilson', 'F. Martinez'],
   },
   {
-    id: 'fl', name: 'Florida', abbr: 'FL', color: '#E65100',
+    id: 'fl', name: 'Florida', abbr: 'FL', color: '#C0392B',
     record: { w: 3, l: 1 }, pts: 1740,
     players: ['O. Smith', 'V. Brown', 'Q. Jones', 'I. Garcia', 'E. Miller'],
   },
   {
-    id: 'ny', name: 'New York', abbr: 'NY', color: '#4A148C',
+    id: 'ny', name: 'New York', abbr: 'NY', color: '#D4AF37',
     record: { w: 2, l: 3 }, pts: 1380,
     players: ['Z. Anderson', 'W. Thomas', 'U. Jackson', 'Y. White', 'X. Harris'],
   },
   {
-    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#BF360C',
+    id: 'ga', name: 'Georgia', abbr: 'GA', color: '#CC7755',
     record: { w: 1, l: 4 }, pts: 1120,
     players: ['G. Lewis', 'J. Robinson', 'P. Walker', 'K. Hall', 'T. Allen'],
   },
@@ -323,7 +321,7 @@ function LiveMatchView() {
 
   function addPlay() {
     const newPlay = {
-      time: `${Math.floor(Math.random() * 12)}:${String(Math.floor(Math.random() * 59)).padStart(2, '0')}`,
+      time: new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
       player: plays.length % 2 === 0 ? 'K. Daniels' : 'O. Smith',
       action: 'Manual log play',
       pts: 1,
@@ -760,12 +758,19 @@ export default function StateVsState() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: svsBattles = [] } = useQuery({
+    queryKey: ['svsActiveBattles'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 5),
+    refetchInterval: 15000,
+  });
+  const activeBattle = svsBattles[0] || null;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, padding: '16px 16px 96px', fontFamily: 'Barlow Condensed, sans-serif' }}>
       <a href="/Leaderboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.35)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em', marginBottom: 12 }} aria-label="Back to Leaderboard">← Leaderboard</a>
       <div style={{
-        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #5B7FA6 200%)`,
+        background: `linear-gradient(160deg, #0D1022 0%, #080B18 60%, #1A0010 200%)`,
         borderRadius: 16,
         padding: '20px 16px',
         marginBottom: 18,
@@ -775,7 +780,7 @@ export default function StateVsState() {
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(135deg, rgba(21,101,192,0.12) 0%, rgba(198,40,40,0.12) 100%)',
+          background: 'linear-gradient(135deg, rgba(128,0,32,0.12) 0%, rgba(198,40,40,0.12) 100%)',
           pointerEvents: 'none',
         }} />
         <div style={{ position: 'relative' }}>
@@ -842,21 +847,46 @@ export default function StateVsState() {
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        <PKBattleProgress battleId={activeBattle?.id || null} />
+      </div>
+
+      {/* Cross-navigation footer */}
+      <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {[
+          { to: '/SwanyBotPage',    label: '🤖 SwanyBot AI',  bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/Leaderboard',     label: '👑 Elite League', bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/PKBattleManager', label: '🥊 PK Battle',    bg: 'rgba(192,57,43,0.1)',    border: 'rgba(192,57,43,0.25)', color: '#C0392B' },
+          { to: '/PKBattleArena',   label: '⚔️ Battle Arena', bg: 'rgba(192,57,43,0.08)',   border: 'rgba(192,57,43,0.2)',  color: '#C0392B' },
+          { to: '/TributeWall',     label: '🕊️ Tribute Wall', bg: 'rgba(139,111,71,0.1)',   border: 'rgba(139,111,71,0.25)',color: '#8B6F47' },
+        ].map(function(item) {
+          return (
+            <Link key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
+              <button style={{
+                padding: '8px 16px', borderRadius: 999, border: `1px solid ${item.border}`,
+                background: item.bg, color: item.color, cursor: 'pointer',
+                fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
+              }}>{item.label}</button>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
+        <GiftShopTray roomId={roomId} currentUser={user} />
+        <BattleScoreboard roomId={roomId} />
+        <TournamentBracket />
+        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      </div>
     </div>
   );
 }

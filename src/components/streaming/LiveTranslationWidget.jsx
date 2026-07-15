@@ -13,14 +13,13 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
   const handleTranslate = async (language) => {
     setTranslating(true);
     try {
-      const res = await base44.functions.invoke('translateText', {
-        text: chatMessage,
-        target_language: language
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `Translate the following text to ${language}. Return only the translated text, no explanation:\n\n${chatMessage}`,
       });
-      onTranslation(res.data.translated_text);
+      onTranslation(res || chatMessage);
       setShowLanguages(false);
       toast.success(`Translated to ${language}`);
-    } catch (err) {
+    } catch {
       toast.error('Translation failed');
     } finally {
       setTranslating(false);
@@ -45,7 +44,7 @@ export default function LiveTranslationWidget({ chatMessage, onTranslation }) {
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-full mt-2 right-0 bg-[#1a0a2e] border border-white/20 rounded-lg p-2 z-50 min-w-max"
+          className="absolute top-full mt-2 right-0 bg-[#0F1428] border border-white/20 rounded-lg p-2 z-50 min-w-max"
         >
           {QUICK_LANGUAGES.map(lang => (
             <button

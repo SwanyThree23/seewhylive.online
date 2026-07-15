@@ -3,24 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Zap, Trophy, Clock, Users, Check, ChevronRight, Star, Target } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
+import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -67,8 +68,8 @@ function LeaderboardDrawer({ challengeId, title, open, onClose }) {
           <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[60vh] overflow-y-auto"
-            style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(212,175,55,0.2)` }}>
-            <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: 'rgba(13,6,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid rgba(212,175,55,0.2)` }}>
+            <div className="px-4 py-3 sticky top-0 flex items-center justify-between" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <span className="font-black uppercase text-[11px]" style={{ color: GOLD, ...T }}>🏆 {title}</span>
               <button onClick={onClose} className="text-[11px]" style={{ color: CREAM + '40' }}>Close</button>
             </div>
@@ -99,7 +100,7 @@ function ChallengeCard({ challenge, onJoin, userId, myParticipation, showLeaderb
   const hasJoined = !!myParticipation;
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid ${tc.color}20` }}>
+    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
       <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
@@ -175,6 +176,19 @@ export default function ChallengesHubPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: activeChallenges = [] } = useQuery({
     queryKey: ['ch-active'],
@@ -275,7 +289,7 @@ export default function ChallengesHubPage() {
                     const progress = Math.min(100, Math.round(((p.progress || 0) / goalValue) * 100));
                     return (
                       <div key={p.id} className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(13,6,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
+                        style={{ background: 'rgba(8,11,24,0.97)', border: p.completed ? `1px solid rgba(109,191,126,0.25)` : '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="flex items-center justify-between">
                           <p className="font-bold text-[11px] text-white">{challenge?.title || `Challenge ${p.challenge_id?.slice(0,8)}`}</p>
                           <div className="flex items-center gap-1.5">
@@ -316,7 +330,7 @@ export default function ChallengesHubPage() {
                     const h = Math.floor((diff % 86400000) / 3600000);
                     return (
                       <div key={c.id} className="rounded-xl p-4 space-y-2"
-                        style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid ${tc.color}20` }}>
+                        style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid ${tc.color}20` }}>
                         <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
                           style={{ background: `${tc.color}15`, color: tc.color, ...T }}>{tc.label}</span>
                         <p className="font-bold text-[11px] text-white">{c.title}</p>
@@ -336,7 +350,7 @@ export default function ChallengesHubPage() {
                   ? <p className="text-center py-10 text-[11px]" style={{ color: CREAM + '25' }}>No completed challenges yet</p>
                   : myCompleted.map(p => (
                     <div key={p.id} className="rounded-xl p-4 flex items-center gap-3"
-                      style={{ background: 'rgba(13,6,24,0.97)', border: `1px solid rgba(109,191,126,0.2)` }}>
+                      style={{ background: 'rgba(8,11,24,0.97)', border: `1px solid rgba(109,191,126,0.2)` }}>
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                         style={{ background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)' }}>
                         <Check className="w-4 h-4" style={{ color: '#6DBF7E' }} />
@@ -354,22 +368,40 @@ export default function ChallengesHubPage() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        <div className="mt-4 space-y-4">
+          <LeaderboardPanel roomId={activeRoomId} />
+          {user?.id && <LoyaltyBadge userId={user.id} creatorId={user.id} />}
+          <ChallengeLeaderboard challengeId={null} />
+          <ChallengeAnalytics communityId={userCommunityId} />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
+          <SocialLeaderboard roomId={activeRoomId} />
+          <PointsEarnWidget userId={user?.id} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 24px' }}>
+          {[
+            { label: '🏆 Leaderboard',       href: 'Leaderboard'    },
+            { label: '⚔️ PK Battles',        href: 'PKBattle'       },
+            { label: '🗺 State vs State',    href: 'StateVsState'   },
+            { label: '👥 Communities',       href: 'Communities'    },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <TournamentBracket />
+          <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+        </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

@@ -1,23 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Camera, MessageSquare, Heart, DollarSign, MoreHorizontal, X, RotateCcw } from 'lucide-react';
 
-export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, roomId }) {
+export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, roomId }) {
   const [showChat, setShowChat] = useState(true);
   const [showMore, setShowMore] = useState(false);
   const [facing, setFacing] = useState('user');
   const [hypeCount, setHypeCount] = useState(0);
+  const [floatEmojis, setFloatEmojis] = useState([]);
+  const floatId = useRef(0);
 
   const handleFlipCamera = () => {
     setFacing(f => f === 'user' ? 'environment' : 'user');
   };
 
+  const addFloat = (emoji) => {
+    const id = ++floatId.current;
+    const x = (Math.random() * 120) - 60;
+    setFloatEmojis(prev => [...prev.slice(-14), { id, emoji, x }]);
+    setTimeout(() => setFloatEmojis(prev => prev.filter(r => r.id !== id)), 2400);
+    onReact?.(emoji);
+  };
+
   const handleHype = () => {
-    onReact?.('🔥');
-    onReact?.('🔥');
-    onReact?.('🔥');
-    onReact?.('🔥');
-    onReact?.('🔥');
+    for (let i = 0; i < 5; i++) setTimeout(() => addFloat('🔥'), i * 80);
     setHypeCount(c => c + 5);
     setTimeout(() => setHypeCount(0), 2000);
   };
@@ -69,7 +75,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
             {/* Quick React */}
             <motion.button
               whileTap={{ scale: 0.8 }}
-              onClick={() => onReact?.('❤️')}
+              onClick={() => addFloat('❤️')}
               className="w-12 h-12 rounded-full bg-red-900/40 border border-red-700/40 flex flex-col items-center justify-center gap-0.5"
             >
               <span className="text-xl">❤️</span>
@@ -108,7 +114,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
             <motion.div
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#0d0618] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
+              className="fixed bottom-0 left-0 right-0 bg-[#080B18] border-t border-[rgba(212,175,55,0.2)] rounded-t-2xl z-50 md:hidden p-4"
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <p className="text-sm font-semibold text-white/60 mb-3">Quick Actions</p>
@@ -119,7 +125,7 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
                   { icon: '🚀', label: 'Raid', action: () => {} },
                   { icon: '📊', label: 'Poll', action: () => {} },
                   { icon: '❓', label: 'Q&A', action: () => {} },
-                  { icon: '⚙️', label: 'Settings', action: () => {} },
+                  { icon: '🌐', label: 'Web Source', action: () => onWebSource?.() },
                 ].map(item => (
                   <button key={item.label} onClick={() => { item.action(); setShowMore(false); }}
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5">
@@ -146,6 +152,24 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating emoji reactions */}
+      <div className="fixed bottom-24 right-4 w-32 h-48 pointer-events-none z-40 md:hidden overflow-hidden">
+        <AnimatePresence>
+          {floatEmojis.map(r => (
+            <motion.div
+              key={r.id}
+              initial={{ y: 0, opacity: 1, scale: 0.8, x: r.x }}
+              animate={{ y: -160, opacity: 0, scale: 1.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 2.2, ease: 'easeOut' }}
+              className="absolute bottom-0 text-3xl select-none"
+            >
+              {r.emoji}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </>
   );
 }

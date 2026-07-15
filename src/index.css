@@ -8,7 +8,7 @@
   :root {
     /* SeeWhy LIVE v16 Broadcast Maximalism Design Tokens */
     --ab: #0B0B18;          /* abyss - deepest bg */
-    --bu: #07070F;          /* bunker - card bg */
+    --bu: #0D1022;          /* bunker - card bg */
     --go: #d4af37;          /* gold - primary accent */
     --bl: #C0392B;          /* blood - live/alert red */
     --cy: #4A8A7A;          /* cyan - data/info */
@@ -16,7 +16,7 @@
     --pu: #7B5DA6;          /* purple - AI/AURA */
     --or: #D4854A;          /* orange - warning/fire */
     --bg-card: rgba(11,11,24,0.95);
-    --bg-panel: rgba(7,7,15,0.98);
+    --bg-panel: rgba(8,11,24,0.98);
     --border-gold: rgba(212,175,55,0.2);
     --border-subtle: rgba(255,255,255,0.06);
 
@@ -67,13 +67,28 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
     background-color: #0B0B18;
     color: rgba(255,255,255,0.85);
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
     touch-action: pan-y;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  /* Hide all scrollbars globally for native app feel */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-heading);
@@ -132,11 +147,14 @@
     background: linear-gradient(90deg, #d4af37, #f5e6a3, #d4af37);
   }
   .panel-bg {
-    background: rgba(7,7,15,0.95);
+    background: rgba(8,11,24,0.95);
     border: 1px solid rgba(212,175,55,0.12);
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
-  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior: contain; }
+
+  /* Prevent rubber-band propagation from any inner scroll container */
+  .overscroll-contain { overscroll-behavior: contain; }
 
   /* Safe-area inset helpers (notch / home bar support) */
   .pt-safe  { padding-top:    env(safe-area-inset-top, 0px); }
@@ -144,6 +162,9 @@
   .mt-safe  { margin-top:     env(safe-area-inset-top, 0px); }
   .mb-safe  { margin-bottom:  env(safe-area-inset-bottom, 0px); }
   .top-safe { top: env(safe-area-inset-top, 0px); }
+
+  /* Main content clears the fixed bottom nav including safe-area on Android */
+  .pb-main-mobile { padding-bottom: calc(76px + env(safe-area-inset-bottom, 16px)); }
 
   button, [role="button"], nav a, .bottom-nav-item {
     -webkit-user-select: none;
@@ -184,5 +205,51 @@
   .glow-terracotta { box-shadow: 0 0 20px rgba(204,119,85,0.25); }
   .gradient-earth {
     background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
+  }
+
+  /* ── Mobile touch accuracy: min 44px for form controls, manipulation for all ── */
+  @media (pointer: coarse) {
+    button, a, [role="button"], [role="tab"] {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input, select, textarea {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+    /* Bottom nav and primary tabs get explicit 44px minimum */
+    nav a, nav button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  /* Minimum font sizes: 14px for all text content on mobile */
+  p, li, td, th, span, button, a, div { font-size: max(14px, 0.875em); }
+  label, small, .text-label { font-size: max(14px, 0.75em); }
+  /* Override Tailwind arbitrary small-text utility classes */
+  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\] {
+    font-size: 14px !important;
+  }
+  .text-xs { font-size: 14px !important; }
+  /* Override inline styles with small font sizes */
+  [style*="font-size:8px"], [style*="font-size: 8px"],
+  [style*="font-size:9px"], [style*="font-size: 9px"],
+  [style*="font-size:10px"], [style*="font-size: 10px"],
+  [style*="font-size:11px"], [style*="font-size: 11px"],
+  [style*="font-size:12px"], [style*="font-size: 12px"],
+  [style*="font-size:13px"], [style*="font-size: 13px"] {
+    font-size: 14px !important;
+  }
+}
+
+/* BrandChyron positioning — sit above the 60px mobile bottom nav */
+.brand-chyron {
+  bottom: 0;
+}
+@media (max-width: 767px) {
+  .brand-chyron {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   }
 }

@@ -48,7 +48,7 @@ export default function BattleScoreboard({ roomId }) {
     : null;
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(204,119,85,0.3)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(204,119,85,0.3)' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2" style={{ background: 'rgba(204,119,85,0.1)', borderBottom: '1px solid rgba(204,119,85,0.2)' }}>
         <div className="flex items-center gap-1.5">
@@ -56,7 +56,7 @@ export default function BattleScoreboard({ roomId }) {
           <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: '#CC7755', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Live Battle
           </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse ml-1" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse ml-1" />
         </div>
         {timeLeft !== null && (
           <span className="text-[11px] font-mono" style={{ color: '#d4af37' }}>

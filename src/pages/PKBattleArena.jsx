@@ -1,88 +1,208 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import BattleOverlay from '../components/pk/BattleOverlay';
+import MatchmakingQueue from '../components/pk/MatchmakingQueue';
+import BattleMode from '../components/streaming/BattleMode';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
+import GiftLeaderboard from '../components/live/GiftLeaderboard';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import BattleArenaManager from '../components/live/BattleArenaManager';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import GuestControls from '../components/live/GuestControls';
+import LivePoll from '../components/live/LivePoll';
 
 const BG    = '#080B18';
-const BG2   = 'rgba(13,6,24,0.95)';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
-const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const CRIMSON = '#800020';
-const RED   = '#ef4444';
-const GREEN = '#22c55e';
-const CYAN  = '#D4AF37';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
-
-const OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
-
-const OPPONENTS = [
-  { id: 'swanythree',   name: 'SwanyThree',    state: 'WA', wins: 47, losses: 8,  avatar: '🦁' },
-  { id: 'bigbone',      name: 'BigBoneEarl',   state: 'WA', wins: 38, losses: 14, avatar: '🏆' },
-  { id: 'fasthandsr',   name: 'FastHandsR',    state: 'TX', wins: 52, losses: 11, avatar: '⚡' },
-  { id: 'domqueen',     name: 'DomQueen',      state: 'GA', wins: 29, losses: 9,  avatar: '👑' },
-  { id: 'stonewall',    name: 'StoneWall',     state: 'CA', wins: 33, losses: 19, avatar: '🪨' },
-];
+const CRIM  = '#800020';
+const SCARL = '#C0392B';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
+const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const GLOBAL_CSS = `
-@keyframes pulse-vote{0%,100%{opacity:1;}50%{opacity:.6;}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-@keyframes countdown{from{opacity:1;}to{opacity:.2;}}
-@keyframes bar-fill{from{width:0;}to{width:var(--w);}}
-.card-in{animation:fadeUp .3s ease forwards;}
+@keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}
+@keyframes voteShake{0%,100%{transform:scale(1);}25%{transform:scale(1.08);}75%{transform:scale(0.96);}}
+@keyframes pk-in{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.pk-in{animation:pk-in .35s ease forwards;}
 `;
 
-function OctAvatar({ emoji, size = 72, color, glow }) {
+function battleToUI(b) {
+  const creatorScore  = (b.creator_tips || 0) + (b.creator_subs || 0) * 10;
+  const challengerScore = (b.challenger_tips || 0) + (b.challenger_subs || 0) * 10;
+  return {
+    id: b.id,
+    raw: b,
+    a: { name: b.creator_name   || 'Creator',    score: creatorScore,    color: SCARL },
+    b: { name: b.challenger_name || 'Challenger', score: challengerScore, color: '#D4854A' },
+    status: b.status === 'active' ? 'live' : b.status === 'pending' ? 'upcoming' : b.status,
+    timeLeft: null,
+    category: b.battle_type || 'Exhibition',
+  };
+}
+
+function ScoreBar({ battle }) {
+  const total = battle.a.score + battle.b.score;
+  const pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
   return (
-    <div style={{ width: size, height: size, flexShrink: 0, position: 'relative' }}>
-      <div style={{
-        width: '100%', height: '100%',
-        clipPath: OCT,
-        background: color || `linear-gradient(135deg, ${CRIMSON}, #a0002a)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: size * 0.42,
-        boxShadow: glow ? `0 0 20px ${GOLD}66` : undefined,
-      }}>
-        {emoji}
-      </div>
+    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(212,133,74,0.2)', margin: '8px 0' }}>
+      <motion.div
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        style={{ height: '100%', background: `linear-gradient(90deg, ${SCARL}, ${SCARL}cc)`, borderRadius: 3 }}
+      />
     </div>
   );
 }
 
-function VoteBar({ leftPct }) {
-  const rightPct = 100 - leftPct;
+function BattleCard({ battle, onVote, myVote }) {
+  const isLive = battle.status === 'live';
+  const total  = battle.a.score + battle.b.score;
+  const pctA   = total > 0 ? Math.round((battle.a.score / total) * 100) : 50;
+
   return (
-    <div style={{ width: '100%' }}>
-      <div style={{ display: 'flex', height: 24, borderRadius: 12, overflow: 'hidden', border: `1px solid rgba(255,255,255,0.1)` }}>
-        <div style={{ width: `${leftPct}%`, background: `linear-gradient(90deg, ${CRIMSON}, #a0002a)`, transition: 'width 0.4s ease', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: 10 }}>
-          {leftPct > 12 && <span style={{ ...MONO, fontSize: 10, color: '#fff', fontWeight: 700 }}>{leftPct}%</span>}
+    <motion.div
+      className="pk-in"
+      style={{
+        background: BG2,
+        border: `1px solid ${isLive ? `${SCARL}44` : 'rgba(255,255,255,0.07)'}`,
+        borderRadius: 18,
+        overflow: 'hidden',
+        boxShadow: isLive ? `0 0 0 1px ${SCARL}22` : 'none',
+      }}
+    >
+      {/* Status bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 6px' }}>
+        <span style={{ ...T, fontSize: 10, fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase',
+          color: isLive ? SCARL : TEXTM,
+          background: isLive ? `${SCARL}18` : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${isLive ? SCARL + '44' : 'rgba(255,255,255,0.08)'}`,
+          borderRadius: 99, padding: '2px 8px',
+        }}>
+          {isLive ? '⚔️ LIVE' : '⏳ UPCOMING'}
+        </span>
+        <span style={{ ...T, fontSize: 10, fontWeight: 700, color: TEXTM, letterSpacing: '0.06em' }}>
+          {battle.category}
+        </span>
+        {isLive && battle.timeLeft != null && (
+          <span style={{ ...MONO, fontSize: 10, color: GOLD }}>
+            {Math.floor(battle.timeLeft / 60)}:{String(battle.timeLeft % 60).padStart(2, '0')}
+          </span>
+        )}
+      </div>
+
+      {/* VS row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '6px 14px 0' }}>
+        {/* Side A */}
+        <div style={{ flex: 1 }}>
+          <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.a.name}</div>
+          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: SCARL, marginTop: 2 }}>
+            {battle.a.score.toLocaleString()}
+          </div>
+          <div style={{ ...T, fontSize: 10, color: TEXTM }}>{pctA}%</div>
         </div>
-        <div style={{ flex: 1, background: 'linear-gradient(90deg, #1a1530, #2a2040)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 10 }}>
-          {rightPct > 12 && <span style={{ ...MONO, fontSize: 10, color: '#fff', fontWeight: 700 }}>{rightPct}%</span>}
+
+        {/* VS badge */}
+        <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${CRIM}55`, border: `1.5px solid ${SCARL}66`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          animation: isLive ? 'pkPulse 2s ease infinite' : 'none' }}>
+          <span style={{ ...T, fontSize: 13, fontWeight: 900, color: TEXT }}>VS</span>
+        </div>
+
+        {/* Side B */}
+        <div style={{ flex: 1, textAlign: 'right' }}>
+          <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.b.name}</div>
+          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#D4854A', marginTop: 2 }}>
+            {battle.b.score.toLocaleString()}
+          </div>
+          <div style={{ ...T, fontSize: 10, color: TEXTM }}>{100 - pctA}%</div>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-        <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>HOST</span>
-        <span style={{ ...MONO, fontSize: 9, color: TEXTM }}>OPPONENT</span>
+
+      {/* Score bar */}
+      <div style={{ padding: '0 14px' }}>
+        <ScoreBar battle={battle} />
       </div>
-    </div>
+
+      {/* Vote buttons */}
+      {isLive && (
+        <div style={{ display: 'flex', gap: 8, padding: '8px 14px 14px' }}>
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => onVote(battle.id, 'a')}
+            style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+              background: myVote === 'a' ? `linear-gradient(135deg, ${SCARL}, ${CRIM})` : `${SCARL}22`,
+              color: myVote === 'a' ? '#fff' : SCARL,
+              ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer',
+              border: `1px solid ${SCARL}55`,
+            }}
+          >
+            {myVote === 'a' ? '✓ VOTED' : '⚡ VOTE'}
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => onVote(battle.id, 'b')}
+            style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: 'none',
+              background: myVote === 'b' ? 'linear-gradient(135deg, #D4854A, #CC7755)' : 'rgba(128,0,32,0.15)',
+              color: myVote === 'b' ? '#fff' : '#D4854A',
+              ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer',
+              border: '1px solid rgba(128,0,32,0.3)',
+            }}
+          >
+            {myVote === 'b' ? '✓ VOTED' : '⚡ VOTE'}
+          </motion.button>
+        </div>
+      )}
+      {!isLive && (
+        <div style={{ padding: '8px 14px 14px' }}>
+          <div style={{ ...T, fontSize: 12, color: TEXTM, textAlign: 'center', letterSpacing: '0.06em' }}>
+            Battle starts soon — check back
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
 export default function PKBattleArena() {
-  const [selectedOpponent, setSelectedOpponent] = useState(null);
-  const [battleActive, setBattleActive]         = useState(false);
-  const [battleSecs, setBattleSecs]             = useState(0);
-  const [hostVotes, setHostVotes]               = useState(50);
-  const [oppVotes, setOppVotes]                 = useState(50);
-  const [battleHistory, setBattleHistory]       = useState([]);
-  const [totalVotes, setTotalVotes]             = useState(0);
-  const [phase, setPhase]                       = useState('select'); // select | countdown | live | result
-  const [countdown, setCountdown]               = useState(3);
-  const timerRef = useRef(null);
-  const voteRef  = useRef(null);
-  const cdRef    = useRef(null);
+  const navigate = useNavigate();
+  const roomId = new URLSearchParams(window.location.search).get('id') || null;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [votes, setVotes] = useState({});
+  const [tab, setTab] = useState('live');
+
+  const { data: rawBattles = [] } = useQuery({
+    queryKey: ['pk-battles-arena'],
+    queryFn: () => base44.entities.PKBattle.filter({ status: ['active', 'pending'] }, '-created_date', 20),
+    refetchInterval: 5000,
+  });
+
+  const battles = rawBattles.map(battleToUI);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -91,246 +211,114 @@ export default function PKBattleArena() {
     return () => document.head.removeChild(style);
   }, []);
 
-  function startBattle() {
-    if (!selectedOpponent) return;
-    if (navigator.vibrate) navigator.vibrate(10);
-    setPhase('countdown');
-    setCountdown(3);
-    setHostVotes(50);
-    setOppVotes(50);
-    setTotalVotes(0);
-    setBattleSecs(0);
-    let cd = 3;
-    cdRef.current = setInterval(() => {
-      cd--;
-      setCountdown(cd);
-      if (cd <= 0) {
-        clearInterval(cdRef.current);
-        setPhase('live');
-        setBattleActive(true);
-        startTimerAndVotes();
-      }
-    }, 1000);
+  async function vote(battleId, side) {
+    if (votes[battleId] || !user) return;
+    setVotes(v => ({ ...v, [battleId]: side }));
+    const battle = rawBattles.find(b => b.id === battleId);
+    if (!battle) return;
+    const field = side === 'a' ? 'creator_tips' : 'challenger_tips';
+    await base44.entities.PKBattle.update(battleId, { [field]: (battle[field] || 0) + 1 }).catch(() => {});
+    await base44.entities.Activity.create({ type: 'pk_vote', user_id: user.id, entity_id: battleId, metadata: { side } }).catch(() => {});
   }
 
-  function startTimerAndVotes() {
-    timerRef.current = setInterval(() => setBattleSecs(s => s + 1), 1000);
-    // Simulate incoming votes
-    voteRef.current = setInterval(() => {
-      const inc = Math.floor(Math.random() * 50) + 10;
-      const forHost = Math.random() > 0.48;
-      setTotalVotes(t => t + inc);
-      if (forHost) {
-        setHostVotes(h => Math.min(95, h + Math.random() * 3));
-        setOppVotes(o => Math.max(5, o - Math.random() * 3));
-      } else {
-        setOppVotes(o => Math.min(95, o + Math.random() * 3));
-        setHostVotes(h => Math.max(5, h - Math.random() * 3));
-      }
-    }, 800);
-  }
-
-  function endBattle() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    clearInterval(timerRef.current);
-    clearInterval(voteRef.current);
-    setPhase('result');
-    setBattleActive(false);
-    const hostWins = hostVotes >= oppVotes;
-    setBattleHistory(prev => [{
-      id: Date.now(),
-      opponent: selectedOpponent.name,
-      opponentState: selectedOpponent.state,
-      hostPct: Math.round(hostVotes),
-      oppPct: Math.round(oppVotes),
-      totalVotes,
-      duration: formatTime(battleSecs),
-      winner: hostWins ? 'HOST' : selectedOpponent.name,
-      date: new Date().toLocaleDateString(),
-    }, ...prev]);
-  }
-
-  function resetBattle() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    clearInterval(timerRef.current);
-    clearInterval(voteRef.current);
-    clearInterval(cdRef.current);
-    setBattleActive(false);
-    setPhase('select');
-    setSelectedOpponent(null);
-    setBattleSecs(0);
-    setHostVotes(50);
-    setOppVotes(50);
-    setTotalVotes(0);
-  }
-
-  useEffect(() => {
-    return () => {
-      clearInterval(timerRef.current);
-      clearInterval(voteRef.current);
-      clearInterval(cdRef.current);
-    };
-  }, []);
-
-  function formatTime(s) {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  }
-
-  const hostPct = Math.round(hostVotes);
-  const oppPct  = 100 - hostPct;
+  const liveBattles     = battles.filter(b => b.status === 'live');
+  const upcomingBattles = battles.filter(b => b.status === 'upcoming' || b.status === 'pending');
+  const displayed       = tab === 'live' ? liveBattles : upcomingBattles;
+  const totalVotes = battles.length;
+  const battleActive = liveBattles.length > 0;
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{ padding: '14px 20px', background: BG2, borderBottom: `1px solid ${SLATE}`, display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-        <div style={{ width: 44, height: 44, borderRadius: 10, background: `linear-gradient(135deg, ${CRIMSON}, #a0002a)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>⚔️</div>
-        <div>
-          <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>PK BATTLE ARENA</div>
-          <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>LIVE 1V1 · VIEWER VOTES · SEEWHY LIVE</div>
+      <div style={{ padding: '14px 16px', background: BG2, borderBottom: `1px solid rgba(192,57,43,0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Link to={createPageUrl('LiveBattles')} style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textDecoration: 'none', letterSpacing: '0.06em', marginRight: 4 }}>← Battles</Link>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, ${SCARL}, ${CRIM})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>⚔️</div>
+          <div>
+            <div style={{ ...T, fontSize: 20, fontWeight: 900, color: TEXT, letterSpacing: '0.06em', lineHeight: 1 }}>PK BATTLE ARENA</div>
+            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>LIVE VOTE BATTLES · SEEWHYLIVE</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <Link to={createPageUrl('PKBattleManager')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: 99, border: `1px solid ${SCARL}44`, background: `${SCARL}18`, color: SCARL, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚙️ Manage
+            </button>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.3)' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pkPulse 1.5s ease infinite' }} />
+            <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>{liveBattles.length} LIVE</span>
+          </div>
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Tab strip */}
+      <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid rgba(255,255,255,0.07)`, background: BG2 }}>
+        {[['live', `⚔️ Live (${liveBattles.length})`], ['upcoming', `⏳ Upcoming (${upcomingBattles.length})`]].map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)} style={{
+            flex: 1, padding: '10px 0', border: 'none', background: 'none', cursor: 'pointer',
+            ...T, fontSize: 13, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: tab === key ? SCARL : TEXTM,
+            borderBottom: tab === key ? `2px solid ${SCARL}` : '2px solid transparent',
+            transition: 'all .2s',
+          }}>{label}</button>
+        ))}
+      </div>
 
-        {/* COUNTDOWN phase */}
-        {phase === 'countdown' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 20 }}>
-            <div style={{ ...T, fontSize: 14, fontWeight: 700, color: TEXTM, letterSpacing: '0.1em' }}>BATTLE STARTING IN</div>
-            <div style={{ ...T, fontSize: 120, fontWeight: 900, color: GOLD, lineHeight: 1, animation: 'countdown 0.9s ease' }}>{countdown}</div>
-            <div style={{ ...T, fontSize: 18, fontWeight: 700, color: TEXT }}>YOU vs {selectedOpponent?.name} ({selectedOpponent?.state})</div>
-          </div>
-        )}
-
-        {/* LIVE / RESULT phase */}
-        {(phase === 'live' || phase === 'result') && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {/* Live header */}
-            <div style={{ background: BG2, border: `1px solid ${phase === 'live' ? 'rgba(239,68,68,0.4)' : 'rgba(212,175,55,0.3)'}`, borderRadius: 14, padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {phase === 'live' && <span style={{ width: 10, height: 10, borderRadius: '50%', background: RED, animation: 'pulse-vote 1s ease infinite', display: 'inline-block' }} />}
-                  <span style={{ ...T, fontSize: 20, fontWeight: 900, color: phase === 'live' ? RED : GOLD, letterSpacing: '0.1em' }}>
-                    {phase === 'live' ? 'PK BATTLE LIVE' : 'BATTLE COMPLETE'}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ ...MONO, fontSize: 12, color: TEXTD }}>{formatTime(battleSecs)}</span>
-                  <span style={{ ...MONO, fontSize: 10, color: TEXTM }}>{totalVotes.toLocaleString()} votes</span>
-                </div>
-              </div>
-
-              {/* Competitors */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <OctAvatar emoji="🎙️" size={72} color={`linear-gradient(135deg, ${CRIMSON}, #a0002a)`} glow={hostPct > oppPct} />
-                  <div style={{ ...T, fontSize: 14, fontWeight: 800, color: TEXT }}>YOU (HOST)</div>
-                  <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: hostPct >= oppPct ? GOLD : TEXTM }}>{hostPct}%</div>
-                </div>
-                <div style={{ ...T, fontSize: 28, fontWeight: 900, color: CRIMSON }}>VS</div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <OctAvatar emoji={selectedOpponent?.avatar} size={72} glow={oppPct > hostPct} />
-                  <div style={{ ...T, fontSize: 14, fontWeight: 800, color: TEXT }}>{selectedOpponent?.name}</div>
-                  <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: oppPct > hostPct ? GOLD : TEXTM }}>{oppPct}%</div>
-                </div>
-              </div>
-
-              <VoteBar leftPct={hostPct} />
-
-              {phase === 'result' && (
-                <div className="card-in" style={{ marginTop: 16, textAlign: 'center' }}>
-                  <div style={{ ...T, fontSize: 22, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>
-                    {hostPct >= oppPct ? '🏆 YOU WIN!' : `${selectedOpponent?.name} WINS`}
-                  </div>
-                  <div style={{ ...MONO, fontSize: 11, color: TEXTM, marginTop: 4 }}>
-                    Final: {hostPct}% / {oppPct}% · {totalVotes.toLocaleString()} total votes
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Controls */}
-            <div style={{ display: 'flex', gap: 10 }}>
-              {phase === 'live' && (
-                <button onClick={endBattle} style={{ flex: 1, ...T, fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', background: 'rgba(239,68,68,0.15)', border: `1px solid ${RED}`, borderRadius: 10, padding: '12px 0', color: RED, cursor: 'pointer' }}>
-                  END BATTLE
-                </button>
-              )}
-              {phase === 'result' && (
-                <button onClick={resetBattle} style={{ flex: 1, ...T, fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', background: 'rgba(212,175,55,0.15)', border: `1px solid ${GOLD}`, borderRadius: 10, padding: '12px 0', color: GOLD, cursor: 'pointer' }}>
-                  NEW BATTLE
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* OPPONENT SELECTION */}
-        {phase === 'select' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.1em' }}>SELECT OPPONENT</div>
-            {OPPONENTS.map(opp => (
-              <div key={opp.id} className="card-in" onClick={() => { if (navigator.vibrate) navigator.vibrate(10); setSelectedOpponent(opp); }} style={{
-                background: BG2,
-                border: `1px solid ${selectedOpponent?.id === opp.id ? GOLD : 'rgba(212,175,55,0.1)'}`,
-                borderRadius: 12, padding: '12px 14px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 12, transition: 'border-color 0.15s',
-              }}>
-                <OctAvatar emoji={opp.avatar} size={52} color={selectedOpponent?.id === opp.id ? `linear-gradient(135deg, ${GOLD}, ${GOLDD})` : `linear-gradient(135deg, ${CRIMSON}, #a0002a)`} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ ...T, fontSize: 18, fontWeight: 800, color: TEXT, letterSpacing: '0.04em' }}>{opp.name}</div>
-                  <div style={{ ...MONO, fontSize: 10, color: TEXTM }}>{opp.state} · {opp.wins}W / {opp.losses}L</div>
-                </div>
-                {selectedOpponent?.id === opp.id && (
-                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontSize: 14, fontWeight: 900 }}>✓</div>
-                )}
-              </div>
-            ))}
-            <button
-              onClick={startBattle}
-              disabled={!selectedOpponent}
-              style={{
-                ...T, fontSize: 18, fontWeight: 900, letterSpacing: '0.08em',
-                background: !selectedOpponent ? 'rgba(128,0,32,0.1)' : `linear-gradient(135deg, ${CRIMSON}, #a0002a)`,
-                border: `2px solid ${!selectedOpponent ? 'rgba(128,0,32,0.2)' : CRIMSON}`,
-                borderRadius: 12, padding: '14px 0',
-                color: !selectedOpponent ? TEXTM : '#fff',
-                cursor: !selectedOpponent ? 'not-allowed' : 'pointer',
-                marginTop: 6, transition: 'all 0.15s',
-              }}
-            >
-              ⚔️ START PK BATTLE
-            </button>
-          </div>
-        )}
-
-        {/* Battle History */}
-        {battleHistory.length > 0 && phase !== 'live' && phase !== 'countdown' && (
-          <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)', borderRadius: 14, padding: '14px 16px' }}>
-            <div style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, letterSpacing: '0.1em', marginBottom: 12 }}>BATTLE HISTORY</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {battleHistory.map(b => (
-                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ ...T, fontSize: 15, fontWeight: 700, color: TEXT }}>vs {b.opponent} ({b.opponentState})</div>
-                    <div style={{ ...MONO, fontSize: 9, color: TEXTM }}>{b.hostPct}% / {b.oppPct}% · {b.totalVotes.toLocaleString()} votes · {b.duration} · {b.date}</div>
-                  </div>
-                  <div style={{
-                    ...MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-                    color: b.winner === 'HOST' ? GREEN : RED,
-                    background: b.winner === 'HOST' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-                    border: `1px solid ${b.winner === 'HOST' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-                    borderRadius: 999, padding: '3px 10px',
-                  }}>
-                    {b.winner === 'HOST' ? 'WIN' : 'LOSS'}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Battle list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {displayed.length > 0 ? displayed.map(b => (
+          <BattleCard key={b.id} battle={b} onVote={vote} myVote={votes[b.id]} />
+        )) : (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: TEXTM, ...T, fontSize: 14 }}>
+            No {tab} battles right now
           </div>
         )}
       </div>
+
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PKBattleProgress battleId={null} />
+        <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
+        <PKBattleSoundboard battleId={null} isBattleActive={false} />
+        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
+        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
+        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
+        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName="" participants={[]} />
+        <TournamentBracket />
+        <MatchmakingQueue user={null} onMatchFound={() => {}} />
+        <BattleOverlay battle={null} onBattleUpdate={() => {}} />
+        <PKAnalyticsDashboard battles={[]} user={null} />
+      </div>
+
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <OnlineUsersGrid compact maxVisible={8} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+      </div>
+
+      {/* Footer nav */}
+      <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        {[['LiveBattles', '🏆 Battles'], ['PKBattleManager', '⚙️ Manage'], ['StateVsState', '⚔️ SVS'], ['Leaderboard', '👑 Elite']].map(([page, label]) => (
+          <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: `1px solid rgba(255,255,255,0.1)`, background: 'rgba(255,255,255,0.04)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {label}
+            </button>
+          </Link>
+        ))}
+      </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GiftSystem roomId={roomId} currentUser={user} hostId={user?.id} />
+      <GiftLeaderboard roomId={roomId} />
+      <ViewerCount count={totalVotes} peakViewers={totalVotes} />
+      <SwanAIRecommendations roomId={roomId} currentLayout='pkbattle' viewerCount={totalVotes} />
+      <HostAlertCenter />
+      <StreamHealthMonitor isStreaming={battleActive} />
+      <BattleArenaManager roomId={roomId} isHost={true} onBattleEnd={() => { setTimeout(() => navigate('/'), 2000); }} />
+      <PKBattleInterface roomId={roomId} />
+      <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={battleActive} />
+      <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+      <LivePoll roomId={roomId} isHost={true} />
     </div>
   );
 }

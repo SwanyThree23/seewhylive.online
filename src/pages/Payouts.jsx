@@ -1,6 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import DirectPayments from '../components/live/DirectPayments';
+import StreamGoals from '../components/live/StreamGoals';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import {
   DollarSign, CreditCard, Zap, Clock, CheckCircle, AlertCircle,
   ArrowDownToLine, Link as LinkIcon, Banknote, TrendingUp, TrendingDown,
@@ -19,7 +31,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── tiny helpers ─────────────────────────────────────────────────────── */
 const card = {
-  background: 'rgba(13,6,24,0.9)',
+  background: 'rgba(8,11,24,0.9)',
   border: `1px solid rgba(212,175,55,0.1)`,
   borderRadius: 16,
   padding: '20px 20px',
@@ -54,7 +66,7 @@ function CustomTooltip({ active, payload, label }) {
   return (
     <div style={{
       ...T,
-      background: '#0d0618',
+      background: '#080B18',
       border: `1px solid ${GOLD}44`,
       borderRadius: 8,
       padding: '8px 14px',
@@ -67,27 +79,12 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-
 export default function PayoutsPage() {
   const qc = useQueryClient();
   const [stripeId, setStripeId]     = useState('');
   const [bank4, setBank4]           = useState('');
   const [connecting, setConnecting] = useState(false);
+  const [directPayOpen, setDirectPayOpen] = useState(false);
 
   /* ─── queries ──────────────────────────────────────────────────────── */
   const { data: user } = useQuery({
@@ -109,8 +106,8 @@ export default function PayoutsPage() {
 
   /* ─── derived ──────────────────────────────────────────────────────── */
   const pendingTips = transactions
-    .filter(t => t.type === 'tip' && t.status !== 'paid_out')
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+    .filter(t => t.transaction_type === 'tip' && t.status !== 'paid_out')
+    .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
 
   const balance     = payoutRecord?.pending_balance ?? pendingTips;
   const isConnected = payoutRecord?.stripe_connected;
@@ -129,7 +126,7 @@ export default function PayoutsPage() {
           const d = new Date(t.created_date).getTime();
           return d >= dayStart && d < dayEnd;
         })
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
       result.push({ label, earned });
     }
     return result;
@@ -158,7 +155,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account connected!');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
       setConnecting(false);
       setStripeId('');
       setBank4('');
@@ -176,7 +173,7 @@ export default function PayoutsPage() {
     },
     onSuccess: () => {
       toast.success('Stripe account disconnected');
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
     onError: () => toast.error('Failed to disconnect Stripe account.'),
   });
@@ -195,7 +192,7 @@ export default function PayoutsPage() {
     },
     onSuccess: (amount) => {
       toast.success(`$${amount.toFixed(2)} payout initiated! Arrives in 2-5 business days.`);
-      qc.invalidateQueries(['payout-record', user?.id]);
+      qc.invalidateQueries({ queryKey: ['payout-record', user?.id] });
     },
     onError: (e) => toast.error(e?.message === 'No balance to pay out' ? 'No balance to pay out.' : 'Payout request failed. Please try again.'),
   });
@@ -279,9 +276,9 @@ export default function PayoutsPage() {
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 13, fontWeight: 700,
-              color: isConnected ? GREEN : '#FF9900',
-              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.1)',
-              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.25)' : 'rgba(255,153,0,0.25)'}`,
+              color: isConnected ? GREEN : '#D4854A',
+              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(212,133,74,0.1)',
+              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.25)' : 'rgba(212,133,74,0.25)'}`,
               borderRadius: 20, padding: '3px 10px',
             }}>
               {isConnected
@@ -368,9 +365,9 @@ export default function PayoutsPage() {
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 5,
               fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: isConnected ? GREEN : '#FF9900',
-              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(255,153,0,0.08)',
-              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.3)' : 'rgba(255,153,0,0.3)'}`,
+              color: isConnected ? GREEN : '#D4854A',
+              background: isConnected ? 'rgba(109,191,126,0.1)' : 'rgba(212,133,74,0.08)',
+              border: `1px solid ${isConnected ? 'rgba(109,191,126,0.3)' : 'rgba(212,133,74,0.3)'}`,
               borderRadius: 20, padding: '3px 10px',
             }}>
               {isConnected ? <><CheckCircle size={10} /> Connected</> : <><AlertCircle size={10} /> Not Connected</>}
@@ -486,10 +483,10 @@ export default function PayoutsPage() {
           {!isConnected ? (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
-              background: 'rgba(255,153,0,0.08)',
-              border: '1px solid rgba(255,153,0,0.25)',
+              background: 'rgba(212,133,74,0.08)',
+              border: '1px solid rgba(212,133,74,0.25)',
               borderRadius: 10, padding: '12px 14px',
-              fontSize: 13, color: '#FF9900',
+              fontSize: 13, color: '#D4854A',
             }}>
               <AlertCircle size={16} style={{ flexShrink: 0 }} />
               Connect Stripe account first before requesting a payout.
@@ -578,7 +575,7 @@ export default function PayoutsPage() {
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: GREEN, marginBottom: 4 }}>
-                      +${(t.amount || 0).toFixed(2)}
+                      +${((t.creator_payout || 0) + (t.platform_cut || 0)).toFixed(2)}
                     </div>
                     <span style={{
                       display: 'inline-block',
@@ -598,22 +595,44 @@ export default function PayoutsPage() {
           </div>
         )}
 
+        {user?.id && (
+          <div style={{ marginBottom: 16 }}>
+            <button onClick={() => setDirectPayOpen(true)}
+              style={{ padding: '10px 20px', borderRadius: 12, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              💳 Manage Direct Payment Links
+            </button>
+            <DirectPayments isOpen={directPayOpen} onClose={() => setDirectPayOpen(false)} creatorName={user.full_name || 'Creator'} />
+          </div>
+        )}
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={true} />
+          <ShareToSocial />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
+          {[
+            { label: '💰 Monetization',      href: 'Monetization'  },
+            { label: '📊 Analytics',         href: 'Analytics'     },
+            { label: '📤 Export Data',       href: 'DataExport'    },
+            { label: '📈 Adv. Analytics',   href: 'AdvancedAnalytics' },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <StripeConnectButton userId={user?.id} accountId={null} />
+          <MonetizationDashboard userId={user?.id} />
+          <PaymentMethodSelector onSelect={() => {}} selectedMethod={null} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <EarningsBreakdown userId={user?.id} />
+          <CollaborationMatcher />
+        </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

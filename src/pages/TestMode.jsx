@@ -1,7 +1,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import LocalVideoTile from '../components/live/LocalVideoTile';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -9,17 +21,18 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const BG     = '#080B18';
-const BG2    = '#0D0620';
+const BG2    = '#0D1022';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
-const PINK   = '#C0392B';
+const PINK    = '#C0392B';
 const GREEN  = '#6DBF7E';
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#EC4899'];
+const PALETTE = ['#D4AF37','#C0392B','#6DBF7E','#D4854A','#D4AF37','#D4854A','#6DBF7E','#C0392B'];
 const avatarColor = n => PALETTE[(n?.charCodeAt(0) ?? 0) % PALETTE.length];
 
 const ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
@@ -110,7 +123,7 @@ function OctTile({ p, size = 80 }) {
         </div>
         {p.muted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[11px]"
-            style={{ background:'#C0392B', border:`2px solid ${BG}` }}>🔇</div>
+            style={{ background:'#EF4444', border:`2px solid ${BG}` }}>🔇</div>
         )}
         {(isHost||isCohost) && (
           <div className="absolute -top-1 left-0 right-0 flex justify-center text-[10px]">👑</div>
@@ -253,7 +266,7 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
   const [msg, setMsg] = useState('');
   const stats = [
     { label:'Viewers', value: data.viewerCount.toLocaleString(), color:GOLD },
-    { label:'On Stage', value: data.participants.length, color:'#00C8C8' },
+    { label:'On Stage', value: data.participants.length, color:'#6DBF7E' },
     { label:'Revenue', value:'$0.00', color:GREEN },
     { label:'Duration', value:'00:12:34', color:PINK },
   ];
@@ -325,6 +338,9 @@ function CreatorPanel({ data, chatMessages, onSendChat }) {
 
 // ── Main TestMode page ─────────────────────────────────────────────────────────
 export default function TestMode() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
+  const activeRoomId = roomId;
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
@@ -543,11 +559,11 @@ export default function TestMode() {
           <div className="flex gap-2 ml-auto flex-wrap">
             {[
               { label:'+ Participant', fn: addParticipant, color:GREEN },
-              { label:'- Participant', fn: removeParticipant, color:'#C0392B' },
+              { label:'- Participant', fn: removeParticipant, color:'#EF4444' },
               { label:'💸 Gift Burst', fn: sendGift, color:GOLD },
               { label:'💬 Chat Burst', fn: () => Array.from({length:5}).forEach((_,i) =>
                 setTimeout(() => addChat(ALL_NAMES[Math.floor(Math.random()*ALL_NAMES.length)], CHAT_POOL[Math.floor(Math.random()*CHAT_POOL.length)]), i*200)
-              ), color:'#A855F7' },
+              ), color:'#D4854A' },
             ].map(({ label, fn, color }) => (
               <button key={label} onClick={fn}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold"
@@ -651,17 +667,36 @@ export default function TestMode() {
             ))}
           </div>
         </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>
+          {[
+            { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
+            { label: '🔴 Go Live',          href: 'GoLive'          },
+            { label: '🎧 Audio Room',       href: 'AudioRoom'       },
+            { label: '⚔️ PK Battle',        href: 'PKBattle'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ padding: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LocalVideoTile stream={null} label="Test Camera" isHost={true} isMuted={false} />
+          <OctagonalVideoWindow stream={null} label="Test Participant" isHost={false} isMuted={true} />
+          <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+          <DevicePreview />
+          <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
+          <ZEGOStreamHealthCard roomId={activeRoomId} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
+        </div>
       </div>
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <StreamGoals isHost={false} />
+        <StreamHealthDashboard roomId={null} isHost={false} />
+      </div>
     </div>
   );
 }

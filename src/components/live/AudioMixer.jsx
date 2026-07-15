@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music } from 'lucide-react';
 import SoundboardWidget from './SoundboardWidget';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const BG_MUSIC = [
   { id: 'none', label: 'No Music' },
@@ -14,33 +13,49 @@ const BG_MUSIC = [
   { id: 'acoustic', label: '🎸 Acoustic' },
 ];
 
-export default function AudioMixer({ micMuted, onMicToggle }) {
+export default function AudioMixer({ micMuted, onMicToggle, stream }) {
   const [collapsed, setCollapsed] = useState(false);
   const [gain, setGain] = useState([100]);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [echoCancellation, setEchoCancellation] = useState(true);
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [bgMusic, setBgMusic] = useState('none');
-  const [vuLevels, setVuLevels] = useState([0.1, 0.2, 0.1, 0.3, 0.2, 0.1, 0.2, 0.3]);
-  const vuRef = useRef(null);
+  const [vuLevels, setVuLevels] = useState(Array(8).fill(0.02));
 
   useEffect(() => {
-    if (micMuted) return;
-    vuRef.current = setInterval(() => {
-      setVuLevels(Array.from({ length: 8 }, () => Math.random() * 0.9 + 0.05));
-    }, 100);
-    return () => clearInterval(vuRef.current);
-  }, [micMuted]);
+    if (!stream || micMuted) { setVuLevels(Array(8).fill(0.02)); return; }
+    let ctx, raf;
+    try {
+      ctx = new AudioContext();
+      const src = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        analyser.getByteFrequencyData(buf);
+        const bands = 8;
+        const size = Math.floor(buf.length / bands);
+        setVuLevels(Array.from({ length: bands }, (_, i) => {
+          const slice = buf.slice(i * size, i * size + size);
+          return slice.reduce((a, b) => a + b, 0) / (size * 255);
+        }));
+        raf = requestAnimationFrame(tick);
+      };
+      tick();
+    } catch {}
+    return () => { cancelAnimationFrame(raf); ctx?.close().catch(() => {}); };
+  }, [stream, micMuted]);
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Audio Mixer</span>
-          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#C0392B', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
+          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#FF4444', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -57,7 +72,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#f59e0b' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#D4AF37' : '#6DBF7E' }}
                 />
               ))}
             </div>
@@ -70,8 +85,9 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
                   ? 'bg-red-900/50 border border-red-600/50 text-red-400'
-                  : 'bg-green-900/30 border border-green-600/40 text-green-400'
+                  : 'bg-[#0F1428]/30 border border-[#6DBF7E]/35/40 text-[#6DBF7E]'
               }`}
+              style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
             >
               {micMuted ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
               {micMuted ? 'Unmute' : 'Live'} (M)
@@ -81,7 +97,7 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 speakerMuted
                   ? 'bg-gray-800 border border-gray-600 text-gray-400'
-                  : 'bg-blue-900/30 border border-blue-600/40 text-blue-400'
+                  : 'bg-[#0F1428]/50 border border-[#D4AF37]/25 text-[#D4AF37]'
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
@@ -113,12 +129,13 @@ export default function AudioMixer({ micMuted, onMicToggle }) {
           {/* BG Music */}
           <div className="space-y-1">
             <p className="text-[10px] text-white/40 flex items-center gap-1"><Music className="w-3 h-3" /> Background Music</p>
-            <NativeSelect
+            <select
               value={bgMusic}
-              onChange={(val) => setBgMusic(val)}
+              onChange={(e) => setBgMusic(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
-              options={BG_MUSIC.map(m => ({value: m.id, label: m.label}))}
-            />
+            >
+              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#080B18]">{m.label}</option>)}
+            </select>
           </div>
 
           {/* Soundboard */}

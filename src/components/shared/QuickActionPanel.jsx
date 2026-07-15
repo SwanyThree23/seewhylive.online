@@ -8,12 +8,12 @@ import { createPageUrl } from '../../utils';
 
 export default function QuickActionPanel({ isOpen, onClose }) {
   const quickActions = [
-    { icon: Plus, label: 'Create Room', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-[#D4AF37] to-[#D4854A]' },
-    { icon: Video, label: 'Go Live', href: createPageUrl('GoLive'), color: 'bg-gradient-to-br from-[#8B0000] to-[#C0392B]' },
-    { icon: Users, label: 'New Community', href: createPageUrl('CreateCommunity'), color: 'bg-gradient-to-br from-[#5B7FA6] to-[#4A8A7A]' },
+    { icon: Plus, label: 'Create Room', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-[#800020] to-[#D4854A]' },
+    { icon: Video, label: 'Go Live', href: createPageUrl('CreateRoom'), color: 'bg-gradient-to-br from-[#800020] to-[#C0392B]' },
+    { icon: Users, label: 'New Community', href: createPageUrl('CreateCommunity'), color: 'bg-gradient-to-br from-[#800020] to-[#D4AF37]' },
     { icon: Calendar, label: 'Schedule', href: createPageUrl('ContentCalendar'), color: 'bg-gradient-to-br from-[#4A9B5E] to-[#6DBF7E]' },
     { icon: DollarSign, label: 'Earnings', href: createPageUrl('Analytics'), color: 'bg-gradient-to-br from-[#C9A84C] to-[#D4AF37]' },
-    { icon: Bell, label: 'Notifications', href: createPageUrl('Notifications'), color: 'bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]' },
+    { icon: Bell, label: 'Notifications', href: createPageUrl('Notifications'), color: 'bg-gradient-to-br from-[#800020] to-[#D4854A]' },
   ];
 
   return (

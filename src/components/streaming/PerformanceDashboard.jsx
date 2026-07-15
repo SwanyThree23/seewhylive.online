@@ -30,7 +30,6 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
           }]);
         }
       } catch (error) {
-        console.error('Performance fetch error:', error);
       }
       setLoading(false);
     };
@@ -48,7 +47,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
   ];
 
   return (
-    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}20` }}>
+    <div className="space-y-4 p-4 rounded-lg" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Eye className="w-5 h-5" style={{ color: G }} />
@@ -86,7 +85,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
               <XAxis dataKey="timestamp" stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <YAxis stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
               <Tooltip
-                contentStyle={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}30` }}
+                contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}30` }}
                 labelStyle={{ color: '#fff' }}
               />
               <Line

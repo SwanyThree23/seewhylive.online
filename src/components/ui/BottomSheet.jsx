@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -26,6 +26,28 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
     }
   }, [isOpen]);
 
+  // Android hardware back button dismisses the sheet instead of navigating away
+  var pushedToHistory = useRef(false);
+  var onCloseRef = useRef(onClose);
+  useEffect(function() { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(function() {
+    if (!isOpen) return;
+    pushedToHistory.current = true;
+    window.history.pushState({ swBottomSheet: true }, '');
+    function onPop() {
+      pushedToHistory.current = false;
+      onCloseRef.current();
+    }
+    window.addEventListener('popstate', onPop);
+    return function() {
+      window.removeEventListener('popstate', onPop);
+      if (pushedToHistory.current) {
+        pushedToHistory.current = false;
+        window.history.back();
+      }
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -49,14 +71,15 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-            className="fixed left-0 right-0 bottom-0 z-[201] pb-safe flex flex-col"
+            className="fixed left-0 right-0 bottom-0 z-[201] flex flex-col"
             style={{
               maxHeight,
-              background: 'rgba(10,7,22,0.99)',
+              background: 'rgba(8,11,24,0.99)',
               border: '1px solid rgba(212,175,55,0.15)',
               borderBottom: 'none',
               borderRadius: '20px 20px 0 0',
               boxShadow: '0 -8px 40px rgba(0,0,0,0.6)',
+              paddingBottom: 'env(safe-area-inset-bottom, 16px)',
             }}
           >
             {/* Drag handle */}
@@ -73,7 +96,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
                   {title}
                 </span>
                 <button onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center rounded-xl"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl"
                   style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
                   <X className="w-4 h-4" />
                 </button>
@@ -102,6 +125,8 @@ export function BottomSheetOption({ label, description, selected, onSelect, icon
       style={{
         background: selected ? 'rgba(212,175,55,0.08)' : 'transparent',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
       {icon && (

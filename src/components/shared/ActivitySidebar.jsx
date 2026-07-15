@@ -42,7 +42,7 @@ export default function ActivitySidebar({ isOpen, onClose }) {
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-amber-600" />
+                  <Sparkles className="w-6 h-6 text-[#D4AF37]" />
                   Activity
                 </h2>
                 <Button variant="ghost" size="icon" onClick={onClose}>
@@ -51,10 +51,10 @@ export default function ActivitySidebar({ isOpen, onClose }) {
               </div>
 
               {/* Trending Rooms */}
-              <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+              <Card className="bg-[rgba(212,175,55,0.06)] border-[rgba(212,175,55,0.2)]">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Radio className="w-5 h-5 text-red-500" />
+                    <Radio className="w-5 h-5 text-[#C0392B]" />
                     Live Now
                   </CardTitle>
                 </CardHeader>
@@ -63,11 +63,11 @@ export default function ActivitySidebar({ isOpen, onClose }) {
                     <motion.div
                       key={room.id}
                       whileHover={{ scale: 1.02 }}
-                      className="p-3 bg-white rounded-lg border border-amber-200 cursor-pointer"
+                      className="p-3 bg-white rounded-lg border border-[rgba(212,175,55,0.2)] cursor-pointer"
                     >
                       <Link to={createPageUrl('Room') + `?id=${room.id}`}>
                         <div className="flex items-center gap-2 mb-2">
-                          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                          <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
                           <p className="font-semibold text-sm line-clamp-1">{room.title}</p>
                         </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -1,40 +1,38 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, ChevronDown } from 'lucide-react';
+import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, UserX, ChevronDown } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
 import ChallengeAnalytics from '../components/admin/ChallengeAnalytics';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
+const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TABS = [
   { id: 'analytics',     label: 'Analytics',     icon: TrendingUp },
+  { id: 'members',       label: 'Members',        icon: Users },
   { id: 'reports',       label: 'Reports',        icon: Flag },
   { id: 'announcements', label: 'Announcements',  icon: Megaphone },
-  { id: 'referrals',     label: 'Referrals',      icon: Users },
+  { id: 'referrals',     label: 'Referrals',      icon: Shield },
 ];
 
 const ROLE_CONFIG = {
@@ -158,7 +156,7 @@ function MembersTab({ communityId, currentUserId }) {
         {[
           { label: 'Total', value: members.length, color: GOLD },
           { label: 'Admins', value: adminCount, color: '#D4854A' },
-          { label: 'Members', value: memberCount, color: '#6DBF7E' },
+          { label: 'Members', value: memberCount, color: GREEN },
         ].map(s => (
           <div key={s.label} className="p-3 rounded-xl text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
             <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: s.color }}>{s.value}</p>
@@ -213,8 +211,8 @@ function MembersTab({ communityId, currentUserId }) {
 
 export default function CommunityAdminPage() {
   const [activeTab, setActiveTab] = useState('analytics');
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get('id');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: community } = useQuery({
@@ -245,22 +243,30 @@ export default function CommunityAdminPage() {
       {/* Sticky header */}
       <div className="sticky top-0 z-20 border-b" style={{ background: 'rgba(8,11,24,0.97)', borderColor: 'rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="flex items-center gap-3 py-4">
-            <Settings className="w-5 h-5" style={{ color: GOLD }} />
-            <div>
-              <h1 className="text-xl font-black text-white leading-none" style={T}>Admin Dashboard</h1>
-              {community?.name && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name} — Community Management</p>}
+          <div className="flex items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <Settings className="w-5 h-5" style={{ color: GOLD }} />
+              <div>
+                <h1 className="text-xl font-black text-white leading-none" style={T}>Community Admin</h1>
+                {community?.name && <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{community.name}</p>}
+              </div>
             </div>
+            <Link to={createPageUrl('CommunitySettings') + `?id=${communityId}`}>
+              <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-[10px]"
+                style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>
+                <Settings className="w-3.5 h-3.5" /> Settings
+              </button>
+            </Link>
           </div>
           {/* Tab bar */}
-          <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex overflow-x-auto scrollbar-hide border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
             {TABS.map(tab => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
               return (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-                  style={{ ...T, color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
+                  style={{ ...T, color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: 'transparent' }}>
                   <Icon className="w-3.5 h-3.5" />{tab.label}
                 </button>
               );
@@ -271,26 +277,36 @@ export default function CommunityAdminPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
         {activeTab === 'analytics' && <ChallengeAnalytics communityId={communityId} />}
+        {activeTab === 'members' && <MembersTab communityId={communityId} currentUserId={user?.id} />}
         {activeTab === 'reports' && <ReportsManager communityId={communityId} userId={user?.id} />}
         {activeTab === 'announcements' && <AnnouncementScheduler communityId={communityId} userId={user?.id} />}
         {activeTab === 'referrals' && <ReferralConfig communityId={communityId} />}
+
+        <div style={{ marginTop: 16, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <SpotlightBanner communityId={communityId} isAdmin={true} />
+          <AnnouncementFeed communityId={communityId} />
+          <DiscussionFeed communityId={communityId} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityGrowth')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(109,191,126,0.07)', border: '1px solid rgba(109,191,126,0.2)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>📈 Growth Tools</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Settings</span>
+          </Link>
+        </div>
+
+        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <StreamHealthDashboard roomId={communityId} isHost={false} />
+          <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
+        </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

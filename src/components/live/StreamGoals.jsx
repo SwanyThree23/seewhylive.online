@@ -29,7 +29,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
       const pct = current / goal.target;
       if (pct >= 1 && !goal.completed) {
         setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, completed: true } : g));
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#00d4ff'] });
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#D4AF37'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
     });
@@ -77,16 +77,16 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
               </div>
               <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 placeholder="Goal title (e.g. New Mic Fund!)"
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
                 <input type="number" value={form.target} onChange={e => setForm(f => ({ ...f, target: Number(e.target.value) }))}
                   placeholder="Target"
-                  style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                  style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
                 <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.type)?.unit}</span>
               </div>
               <input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
                 placeholder="Reward: I'll dance at goal! 🎉"
-                style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
+                style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
                 <button onClick={addGoal} style={{ flex:1, padding:'6px 14px', borderRadius:8, border:'none', background:'#6DBF7E', color:'#000', fontWeight:700, cursor:'pointer', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
                   <Check className="w-3.5 h-3.5" /> Add Goal
@@ -123,7 +123,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                 {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
                   <button onClick={() => setGoals(prev => prev.filter(g => g.id !== goal.id))}
-                    className="text-white/20 hover:text-red-400">
+                    className="text-white/20 hover:text-[#C0392B]">
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -143,7 +143,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                   className="h-full rounded-full relative"
-                  style={{ background: goal.completed ? '#6DBF7E' : 'linear-gradient(90deg, #16a34a, #6DBF7E, #6DBF7E)' }}
+                  style={{ background: goal.completed ? '#6DBF7E' : 'linear-gradient(90deg, #4A9B5E, #6DBF7E, #6DBF7E)' }}
                 >
                   {pct > 10 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />

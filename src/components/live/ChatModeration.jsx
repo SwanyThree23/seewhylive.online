@@ -28,15 +28,15 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
   };
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
       >
         <div className="flex items-center gap-2">
-          <Shield className="w-3 h-3 text-[#00d4ff]" />
+          <Shield className="w-3 h-3 text-[#D4AF37]" />
           <span className="text-xs font-semibold text-[#d4af37] uppercase tracking-wider">Auto-Moderation</span>
-          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(0,212,255,0.1)', color: '#00d4ff', border: '1px solid rgba(0,212,255,0.3)' }}>
+          <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.1)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
             {stats.blocks + stats.timeouts + stats.deletes} today
           </span>
         </div>
@@ -53,11 +53,11 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Timeouts</p>
-              <p className="text-sm font-bold text-orange-400">{stats.timeouts}</p>
+              <p className="text-sm font-bold text-[#D4854A]">{stats.timeouts}</p>
             </div>
             <div className="bg-white/5 rounded p-1.5 text-center">
               <p className="text-[10px] text-white/40">Deleted</p>
-              <p className="text-sm font-bold text-red-400">{stats.deletes}</p>
+              <p className="text-sm font-bold text-[#C0392B]">{stats.deletes}</p>
             </div>
           </div>
 
@@ -69,7 +69,7 @@ export default function ChatModeration({ collapsed: initCollapsed = true }) {
                 value={wordInput} onChange={(e) => setWordInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && addWord()}
                 placeholder="Add word..."
-                style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
+                style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 10, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 24, flex: 1 }}
               />
               <button onClick={addWord} className="w-6 h-6 rounded bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center hover:bg-[#d4af37]/20">
                 <Plus className="w-3 h-3 text-[#d4af37]" />

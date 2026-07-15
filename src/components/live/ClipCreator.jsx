@@ -20,9 +20,17 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
 
   const createClipMutation = useMutation({
     mutationFn: (data) => base44.entities.StreamClip.create(data),
-    onSuccess: () => {
+    onSuccess: (clip) => {
       toast.success('Clip saved! View on your channel →');
       setOpen(false);
+      const userId = currentUser?.id || creatorId;
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Clipped: ${clip?.title || title || 'Stream clip'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to save clip.'),
   });
@@ -72,7 +80,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
     <>
       <button
         onClick={() => { setTitle(`${streamTitle} Clip`); setOpen(true); }}
-        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#a78bfa]/10 border border-[#a78bfa]/30 text-[#a78bfa] hover:bg-[#a78bfa]/20 text-xs font-semibold transition-all"
+        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/20 text-xs font-semibold transition-all"
       >
         <Scissors className="w-3.5 h-3.5" /> Clip
       </button>
@@ -83,13 +91,13 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#0d0618] border border-[#a78bfa]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 w-80 bg-[#080B18] border border-[#D4AF37]/30 rounded-2xl shadow-2xl z-30 overflow-hidden"
             style={{ backdropFilter: 'blur(16px)' }}
           >
             <div className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Scissors className="w-4 h-4 text-[#a78bfa]" />
+                  <Scissors className="w-4 h-4 text-[#D4AF37]" />
                   <span className="font-semibold text-white text-sm">Create Clip</span>
                 </div>
                 <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white">
@@ -100,13 +108,13 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
               {/* Clip title */}
               <input value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="Clip title..."
-                style={{ width: '100%', padding: '6px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
+                style={{ width: '100%', padding: '6px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', height: 32 }} />
 
               {/* Timeline scrubber */}
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] text-white/40">
                   <span>Last {maxWindow}s</span>
-                  <span className="text-[#a78bfa] font-semibold">{duration}s clip</span>
+                  <span className="text-[#D4AF37] font-semibold">{duration}s clip</span>
                 </div>
                 <div
                   ref={trackRef}
@@ -119,12 +127,12 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   ))}
                   {/* Selected region */}
                   <div
-                    className="absolute top-0 bottom-0 bg-[#a78bfa]/25 border-x-2 border-[#a78bfa]"
+                    className="absolute top-0 bottom-0 bg-[#D4AF37]/25 border-x-2 border-[#D4AF37]"
                     style={{ left: `${startPct * 100}%`, width: `${(endPct - startPct) * 100}%` }}
                   />
                   {/* Start handle */}
                   <div
-                    className="absolute top-0 bottom-0 w-4 bg-[#a78bfa] cursor-ew-resize flex items-center justify-center"
+                    className="absolute top-0 bottom-0 w-4 bg-[#D4AF37] cursor-ew-resize flex items-center justify-center"
                     style={{ left: `${startPct * 100 - 8}px` }}
                     onMouseDown={handleTrackMouseDown('start')}
                   >
@@ -132,7 +140,7 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   </div>
                   {/* End handle */}
                   <div
-                    className="absolute top-0 bottom-0 w-4 bg-[#a78bfa] cursor-ew-resize flex items-center justify-center"
+                    className="absolute top-0 bottom-0 w-4 bg-[#D4AF37] cursor-ew-resize flex items-center justify-center"
                     style={{ right: `${(1 - endPct) * 100}%`, transform: 'translateX(100%)' }}
                     onMouseDown={handleTrackMouseDown('end')}
                   >
@@ -140,13 +148,13 @@ export default function ClipCreator({ roomId, creatorId, streamTitle, elapsedSec
                   </div>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-[#a78bfa]">{formatSec(elapsedSeconds - maxWindow + startSec)}</span>
-                  <span className="text-[#a78bfa]">{formatSec(elapsedSeconds)}</span>
+                  <span className="text-[#D4AF37]">{formatSec(elapsedSeconds - maxWindow + startSec)}</span>
+                  <span className="text-[#D4AF37]">{formatSec(elapsedSeconds)}</span>
                 </div>
               </div>
 
               <button onClick={handleSave} disabled={createClipMutation.isPending || duration < 3}
-                style={{ width: '100%', background: '#a78bfa', color: '#fff', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, opacity: (createClipMutation.isPending || duration < 3) ? 0.5 : 1 }}>
+                style={{ width: '100%', background: '#D4AF37', color: '#fff', fontWeight: 700, border: 'none', borderRadius: 8, padding: '8px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, opacity: (createClipMutation.isPending || duration < 3) ? 0.5 : 1 }}>
                 <Check className="w-4 h-4" /> Create {duration}s Clip
               </button>
             </div>

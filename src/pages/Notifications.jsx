@@ -5,25 +5,25 @@ import { Bell, Check, Trash2, Gift, Users, Radio, Trophy, Megaphone } from 'luci
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
-
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import PointsNotification from '../components/live/PointsNotification';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const GOLD = '#D4AF37';
-const PINK = '#C0392B';
+const PINK    = '#C0392B';
 const T    = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const TYPE_CONFIG = {
@@ -43,6 +43,19 @@ export default function NotificationsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications', user?.id],
@@ -63,7 +76,7 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       toast.success('All marked as read');
-      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -132,7 +145,7 @@ export default function NotificationsPage() {
                   key={notif.id}
                   className="rounded-2xl flex items-start gap-3 p-4 transition-all cursor-pointer hover:brightness-110"
                   style={{
-                    background: notif.is_read ? 'rgba(13,6,24,0.6)' : 'rgba(13,6,24,0.95)',
+                    background: notif.is_read ? 'rgba(8,11,24,0.6)' : 'rgba(8,11,24,0.95)',
                     border: `1px solid ${notif.is_read ? 'rgba(255,255,255,0.06)' : `${cfg.color}35`}`,
                   }}
                   onClick={() => handleNotifClick(notif)}
@@ -174,7 +187,7 @@ export default function NotificationsPage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(notif.id); }}
                       className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:brightness-125"
-                      style={{ background: 'rgba(255,30,80,0.12)', color: 'rgba(255,80,80,0.6)', border: '1px solid rgba(255,30,80,0.2)' }}
+                      style={{ background: 'rgba(192,57,43,0.15)', color: 'rgba(212,133,74,0.8)', border: '1px solid rgba(192,57,43,0.3)' }}
                       title="Delete notification">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -193,22 +206,25 @@ export default function NotificationsPage() {
             })}
           </div>
         )}
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StreamGoals isHost={true} />
+            <LeaderboardPanel roomId={activeRoomId} />
+            <MilestoneAlerts creatorId={user.id} />
+            <AnnouncementFeed communityId={userCommunityId} />
+            <PointsNotification userId={user.id} />
+            <EngagementBadgesDisplay roomId={activeRoomId} userId={user.id} creatorId={user?.id} />
+            <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          </div>
+        )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <ChallengeLeaderboard challengeId={null} />
+      </div>
     </div>
   );
 }

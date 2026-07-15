@@ -21,21 +21,25 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
   const handlePayment = async () => {
     setProcessing(true);
     try {
-      const result = await base44.functions.invoke('processPaymentWithPlatformCut', {
+      const creatorPayout = Math.floor(amount * 90) / 100;
+      const tx = await base44.entities.Transaction.create({
         recipient_id: creatorId,
         amount,
+        creator_payout: creatorPayout,
+        platform_fee: amount - creatorPayout,
         payment_method: selectedMethod,
         room_id: roomId,
         transaction_type: 'direct_support',
+        status: 'pending',
+        created_at: new Date().toISOString(),
       });
 
-      if (result?.data?.status === 'success') {
-        onPaymentComplete?.(result.data);
+      if (tx?.id) {
+        onPaymentComplete?.(tx);
         setAmount(5);
         setSelectedMethod(null);
       }
     } catch (error) {
-      console.error('Payment error:', error);
     }
     setProcessing(false);
   };
@@ -45,7 +49,7 @@ export default function PaymentMethodSelector({ creatorId, roomId, onPaymentComp
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="p-4 rounded-lg space-y-3"
-      style={{ background: 'rgba(7,7,15,0.95)', border: `1px solid ${G}30` }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}30` }}
     >
       <div className="flex items-center gap-2">
         <Heart className="w-4 h-4" style={{ color: G }} />

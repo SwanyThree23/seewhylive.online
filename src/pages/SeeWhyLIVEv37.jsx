@@ -7,20 +7,23 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isSafeUrl } from '@/lib/security';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import NativeSelect from '@/components/shared/NativeSelect';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import ReactionOverlay from '../components/watchparty/ReactionOverlay';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
-import ViewerCount from '../components/live/ViewerCount';
-import NotificationHub from '../components/live/NotificationHub';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import ShareToSocial from '../components/social/ShareToSocial';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import ActivitySidebar from '../components/shared/ActivitySidebar';
-import GlobalSearch from '../components/shared/GlobalSearch';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -40,16 +43,16 @@ const C = {
   textM:   '#8A7A62',
   green:   '#6DBF7E',
   red:     '#C0392B',
-  blue:    '#5B7FA6',
-  purple:  '#7B5DA6',
+  blue:    '#D4AF37',
+  purple:  '#D4854A',
   amber:   '#D4854A',
   orange:  '#D4854A',
-  teal:    '#4A8A7A',
-  warn:    '#C9A84C',
-  tribute: '#7B5DA6',
-  tribL:   '#9B7DC4',
-  state1:  '#5B7FA6',
-  state2:  '#C0392B',
+  teal:    '#6DBF7E',
+  warn:    '#D4854A',
+  tribute: '#800020',
+  tribL:   '#C9A84C',
+  state1:  '#D4854A',
+  state2:  '#C62828',
 };
 
 // ── Small reusable components ──────────────────────────────────────────────
@@ -183,11 +186,7 @@ function StagePanel() {
     if (!roomName.trim()) { toast('Enter a room name', setToastMsg); return; }
     setLive(true);
     setHealth({ bitrate: 4200, fps: 30, latency: 42, dropped: 0 });
-    setViewers(Math.floor(Math.random() * 80) + 5);
-    timerRef.current = setInterval(() => {
-      setViewers(v => Math.max(0, v + Math.floor(Math.random() * 11) - 4));
-      setHealth(h => h ? { ...h, bitrate: 3800 + Math.floor(Math.random() * 800), latency: 35 + Math.floor(Math.random() * 30) } : h);
-    }, 4000);
+    setViewers(0);
     toast('Stream started!', setToastMsg);
   }
 
@@ -268,6 +267,7 @@ function SVSPanel() {
   const [s2, setS2] = useState('TX');
   const [scores, setScores] = useState({ s1: 0, s2: 0 });
   const [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
+  const [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
   const [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
@@ -286,11 +286,13 @@ function SVSPanel() {
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>Set Up Battle</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center' }}>
-          <NativeSelect value={s1} onChange={val => setS1(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}
-            options={STATES.map(s => ({value: s, label: s}))} />
+          <select value={s1} onChange={e => setS1(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
+            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
           <span style={{ color: C.gold, fontWeight: 900, fontSize: 18 }}>VS</span>
-          <NativeSelect value={s2} onChange={val => setS2(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}
-            options={STATES.map(s => ({value: s, label: s}))} />
+          <select value={s2} onChange={e => setS2(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '8px 10px', fontSize: 14 }}>
+            {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
         </div>
       </Card>
 
@@ -322,8 +324,8 @@ function SVSPanel() {
           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
             <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
             <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={`${s1}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state1} />
-              <Badge label={`${s2}: ${Math.floor(Math.random() * 5 + 6)}`} color={C.state2} />
+              <Badge label={`${s1}: ${judgeScores[i]?.s1 ?? 0}`} color={C.state1} />
+              <Badge label={`${s2}: ${judgeScores[i]?.s2 ?? 0}`} color={C.state2} />
             </div>
           </div>
         ))}
@@ -612,8 +614,9 @@ function MusicPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Genre</p>
-            <NativeSelect value={genre} onChange={val => setGenre(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}
-              options={GENRES.map(g => ({value: g, label: g}))} />
+            <select value={genre} onChange={e => setGenre(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
+              {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>BPM</p>
@@ -621,8 +624,9 @@ function MusicPanel() {
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Key</p>
-            <NativeSelect value={keyV} onChange={val => setKeyV(val)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}
-              options={KEYS.map(k => ({value: k, label: k}))} />
+            <select value={keyV} onChange={e => setKeyV(e.target.value)} style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, padding: '6px 8px', fontSize: 12, width: '100%' }}>
+              {KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
           </div>
         </div>
         <Btn onClick={gen} disabled={loading} color={C.ruby}>{loading ? '⏳ Composing…' : '🎵 Generate Track'}</Btn>
@@ -747,7 +751,8 @@ function WatchPartyPanel() {
 
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
-    setPartyId(`PARTY-${Math.random().toString(36).slice(2,8).toUpperCase()}`);
+    const arr = crypto.getRandomValues(new Uint8Array(4));
+    setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);
@@ -1262,7 +1267,24 @@ const TABS = [
 ];
 
 export default function SeeWhyLIVEv37() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('stage');
+  const { localStream } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
 
   const panelMap = {
     stage:     <StagePanel />,
@@ -1330,17 +1352,25 @@ export default function SeeWhyLIVEv37() {
         </div>
         {panelMap[activeTab]}
       </div>
-      <SwanAIRecommendations roomId={null} currentUser={null} isHost={true} />
-      <SwanyBotWidget />
-      <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
-      <StreamGoals hostId={null} roomId={null} isHost={true} />
-      <ViewerCount roomId={null} />
-      <NotificationHub userId={null} roomId={null} />
-      <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
-      <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
-      <StreamHealthDashboard roomId={null} isHost={true} />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
-      <GlobalSearch onClose={() => {}} />
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <ReactionOverlay partyId={null} currentUser={user} />
+        <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
+        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={false} currentUser={user} />
+        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={false} />
+        <GreenroomQueue roomId={roomId} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        {/* new components here */}
+        <OnlineUsersGrid compact maxVisible={10} roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
+      </div>
     </div>
   );
 }

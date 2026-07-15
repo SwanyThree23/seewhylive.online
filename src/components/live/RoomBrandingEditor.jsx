@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Type, Image as ImageIcon, Settings2, Eye } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost }) {
   const [open, setOpen] = useState(false);
@@ -43,7 +42,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
       {open && (
         <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', background:'rgba(0,0,0,0.7)', padding:16 }}
           onClick={e => e.target === e.currentTarget && setOpen(false)}>
-          <div style={{ background:'#0A0710', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
+          <div style={{ background:'#080B18', border:'1px solid rgba(212,175,55,0.2)', borderRadius:16, padding:24, width:'100%', maxWidth:640, maxHeight:'80vh', overflowY:'auto' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
               <Palette className="w-5 h-5" style={{ color:'#d4af37' }} />
@@ -52,7 +51,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
           <div className="space-y-4">
             {/* Color Customization */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <Palette className="w-4 h-4 text-[#d4af37]" />
                 Color Scheme
@@ -114,7 +113,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
             </div>
 
             {/* Typography */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <Type className="w-4 h-4 text-[#d4af37]" />
                 Typography & Text
@@ -123,12 +122,16 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
               <div className="space-y-3">
                 <div>
                   <label className="text-[10px] text-white/60 mb-1 block">Font Family</label>
-                  <NativeSelect
+                  <select
                     value={branding.fontFamily}
-                    onChange={(val) => handleChange('fontFamily', val)}
+                    onChange={(e) => handleChange('fontFamily', e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none"
-                    options={[{value:'Barlow Condensed',label:'Barlow Condensed'},{value:'Orbitron',label:'Orbitron'},{value:'Rajdhani',label:'Rajdhani'},{value:'Share Tech Mono',label:'Share Tech Mono'}]}
-                  />
+                  >
+                    <option value="Barlow Condensed">Barlow Condensed</option>
+                    <option value="Orbitron">Orbitron</option>
+                    <option value="Rajdhani">Rajdhani</option>
+                    <option value="Share Tech Mono">Share Tech Mono</option>
+                  </select>
                 </div>
 
                 <div>
@@ -137,7 +140,7 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customTitle}
                     onChange={(e) => handleChange('customTitle', e.target.value)}
                     placeholder="Stream title override"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
@@ -147,14 +150,14 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.customSubtitle}
                     onChange={(e) => handleChange('customSubtitle', e.target.value)}
                     placeholder="Tagline or description"
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
               </div>
             </div>
 
             {/* Visual Elements */}
-            <div className="bg-[#1a0a2e]/50 border border-[#d4af37]/15 rounded-lg p-4">
+            <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-4">
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                 <ImageIcon className="w-4 h-4 text-[#d4af37]" />
                 Visual Elements
@@ -167,18 +170,22 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
                     value={branding.backgroundUrl}
                     onChange={(e) => handleChange('backgroundUrl', e.target.value)}
                     placeholder="https://..."
-                    style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+                    style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
                   />
                 </div>
 
                 <div>
                   <label className="text-[10px] text-white/60 mb-1 block">Lower-Thirds Template</label>
-                  <NativeSelect
+                  <select
                     value={branding.lowerthirdsTemplate}
-                    onChange={(val) => handleChange('lowerthirdsTemplate', val)}
+                    onChange={(e) => handleChange('lowerthirdsTemplate', e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none"
-                    options={[{value:'default',label:'Default'},{value:'minimal',label:'Minimal'},{value:'elegant',label:'Elegant'},{value:'neon',label:'Neon'}]}
-                  />
+                  >
+                    <option value="default">Default</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="elegant">Elegant</option>
+                    <option value="neon">Neon</option>
+                  </select>
                 </div>
 
                 <div className="flex gap-3">

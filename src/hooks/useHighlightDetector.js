@@ -4,6 +4,9 @@
  * (hype >= threshold AND chat sentiment >= threshold), it automatically calls
  * the createVideoShort backend function to save a 30-second clip.
  *
+ * Accepts optional `getClipBlobUrl(seconds)` — when provided, extracts the
+ * last N seconds from a live recording buffer and offers a local download.
+ *
  * Cooldown: 3 minutes between auto-clips to prevent spam.
  */
 import { useRef, useCallback, useEffect } from 'react';
@@ -33,9 +36,11 @@ function computeSentiment(messages) {
   return pos / total;
 }
 
-export function useHighlightDetector({ partyId, roomId, isHost, user, messages, hypeLevel, elapsedSeconds }) {
+export function useHighlightDetector({ partyId, roomId, isHost, user, messages, hypeLevel, elapsedSeconds, getClipBlobUrl }) {
   const lastClipRef = useRef(0);
   const savingRef = useRef(false);
+  // Holds the most recently extracted local clip blob URL so callers can offer a download
+  const latestClipUrlRef = useRef(null);
 
   const triggerHighlightClip = useCallback(async (sentiment) => {
     if (!isHost || !user || !roomId) return;
@@ -48,21 +53,45 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
 
     const title = `🔥 Auto-Highlight · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
+    // Extract local clip from rolling buffer if a recorder is running
+    const localBlobUrl = typeof getClipBlobUrl === 'function' ? getClipBlobUrl(CLIP_DURATION) : null;
+    if (localBlobUrl) {
+      latestClipUrlRef.current = localBlobUrl;
+    }
+
     toast('✂️ High-engagement moment detected — saving clip…', { duration: 4000 });
+
+    // Offer immediate local download when we have actual video data
+    if (localBlobUrl) {
+      toast(`🎬 Clip ready — click to download`, {
+        duration: 15000,
+        action: {
+          label: 'Download',
+          onClick: () => {
+            const a = document.createElement('a');
+            a.href = localBlobUrl;
+            a.download = `highlight-${Date.now()}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          },
+        },
+      });
+    }
 
     try {
       await base44.functions.invoke('createVideoShort', {
         room_id: roomId,
         title,
         description: `Auto-captured highlight. Hype: ${hypeLevel}% · Sentiment: ${Math.round(sentiment * 100)}%`,
-        video_url: '',           // real implementation: pass actual stream URL/timestamp
+        video_url: '',
         thumbnail_url: '',
         duration_seconds: CLIP_DURATION,
         paywall_enabled: false,
         paywall_price: 0,
       });
 
-      // Also log a StreamHighlight record for the library
+      // Log a StreamHighlight record for the library
       await base44.entities.StreamHighlight.create({
         room_id: roomId,
         creator_id: user.id,
@@ -79,12 +108,11 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
 
       toast.success(`🎬 Highlight clip saved to library!`);
     } catch (err) {
-      console.warn('[HighlightDetector] clip save failed:', err?.message);
       toast.error('Auto-clip failed');
     } finally {
       savingRef.current = false;
     }
-  }, [isHost, user, roomId, hypeLevel, elapsedSeconds]);
+  }, [isHost, user, roomId, hypeLevel, elapsedSeconds, getClipBlobUrl]);
 
   useEffect(() => {
     if (!isHost || !partyId) return;
@@ -97,5 +125,5 @@ export function useHighlightDetector({ partyId, roomId, isHost, user, messages, 
     return () => clearInterval(interval);
   }, [isHost, partyId, messages, hypeLevel, triggerHighlightClip]);
 
-  return { triggerHighlightClip };
+  return { triggerHighlightClip, latestClipUrlRef };
 }

@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellRing, Volume2, Play, Zap, Gift, Star, Heart, Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AlertConfig from '@/components/live/AlertConfig';
-
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import StreamGoals from '../components/live/StreamGoals';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import GiftAnimation from '../components/live/GiftAnimation';
+import TippingModal from '../components/monetization/TippingModal';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK = '#C0392B';
+const PINK    = '#C0392B';
 const FONT = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const OVERLAY_TYPES = [
@@ -73,8 +74,20 @@ export default function StreamAlerts() {
     () => new Set(OVERLAY_TYPES.map((o) => o.type))
   );
 
-  // Attempt to read current user from base44 if available
-  const user = base44?.auth?.currentUser?.() ?? null;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],
@@ -228,7 +241,7 @@ export default function StreamAlerts() {
               <div
                 style={{
                   borderRadius: 16,
-                  background: 'rgba(13,6,24,0.9)',
+                  background: 'rgba(8,11,24,0.9)',
                   border: '1px solid rgba(212,175,55,0.1)',
                   padding: 24,
                 }}
@@ -258,7 +271,7 @@ export default function StreamAlerts() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 16,
-                        background: 'rgba(13,6,24,0.85)',
+                        background: 'rgba(8,11,24,0.85)',
                         border: '1px solid rgba(212,175,55,0.08)',
                         borderRadius: 14,
                         padding: '14px 18px',
@@ -323,6 +336,13 @@ export default function StreamAlerts() {
           )}
         </AnimatePresence>
 
+        {/* ── Sound Alerts Manager ── */}
+        {user?.id && (
+          <div style={{ marginTop: 16 }}>
+            <SoundAlertsManager creatorId={user.id} />
+          </div>
+        )}
+
         {/* ── Footer note ── */}
         <p
           style={{
@@ -336,21 +356,43 @@ export default function StreamAlerts() {
           Alerts require an active broadcast. Sound alerts play through browser audio.
         </p>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="alerts" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <StreamGoals isHost={true} />
+        <PollLaunchBar roomId={activeRoomId} hostId={user?.id} activePoll={null} isHost={true} />
+        {user?.id && <MilestoneAlerts creatorId={user.id} />}
+        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <GiftAnimation event={null} onDone={() => {}} />
+        <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={true} />
+        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={userCommunityId} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      </div>
+
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎚️ Overlays
+          </button>
+        </Link>
+        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Live Room
+          </button>
+        </Link>
+        <Link to={createPageUrl('StreamScheduler')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            📅 Scheduler
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }

@@ -16,7 +16,7 @@ const COLLAB_OPPORTUNITIES = [
     name: 'Memoirs of a Shy Girl',
     type: 'Creator',
     interests: ['Stories', 'Personal', 'Authentic'],
-    color: '#EC4899',
+    color: '#C0392B',
     url: 'https://youtube.com/@memoirsofashygirl',
   },
   {
@@ -24,7 +24,7 @@ const COLLAB_OPPORTUNITIES = [
     name: 'Domino Entertainment',
     type: 'Entertainment',
     interests: ['Comedy', 'Entertainment', 'Creative'],
-    color: '#F59E0B',
+    color: '#D4AF37',
     url: 'https://youtube.com/@dominoentertainment5513',
   },
 ];
@@ -49,7 +49,7 @@ export default function CollaborationMatcher() {
       className="space-y-3"
     >
       <div className="flex items-center gap-2 px-4">
-        <Zap className="w-4 h-4 text-yellow-400" />
+        <Zap className="w-4 h-4 text-[#D4AF37]" />
         <h3 className="text-sm font-bold text-white">Collaboration Opportunities</h3>
       </div>
 
@@ -61,7 +61,7 @@ export default function CollaborationMatcher() {
             className="rounded-lg p-3 transition-all cursor-pointer"
             style={{
               background: interested.has(creator.id)
-                ? `rgba(${creator.color === '#D4AF37' ? '139,92,246' : creator.color === '#EC4899' ? '236,72,153' : '245,158,11'},0.15)`
+                ? `rgba(${creator.color === '#D4AF37' ? '212,175,55' : creator.color === '#C0392B' ? '192,57,43' : '212,133,74'},0.15)`
                 : 'rgba(255,255,255,0.05)',
               border: interested.has(creator.id)
                 ? `2px solid ${creator.color}`
@@ -87,7 +87,7 @@ export default function CollaborationMatcher() {
 
             <div className="flex flex-wrap gap-1 mb-2">
               {creator.interests.map(interest => (
-                <span key={interest} className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: `rgba(${creator.color === '#D4AF37' ? '139,92,246' : creator.color === '#EC4899' ? '236,72,153' : '245,158,11'},0.2)`, color: creator.color }}>
+                <span key={interest} className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: `rgba(${creator.color === '#D4AF37' ? '212,175,55' : creator.color === '#C0392B' ? '192,57,43' : '212,133,74'},0.2)`, color: creator.color }}>
                   {interest}
                 </span>
               ))}
@@ -97,7 +97,7 @@ export default function CollaborationMatcher() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`https://youtube.com${creator.url}`, '_blank', 'noopener,noreferrer');
+                  window.open(creator.url, '_blank', 'noopener,noreferrer');
                 }}
                 style={{
                   width: '100%', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',

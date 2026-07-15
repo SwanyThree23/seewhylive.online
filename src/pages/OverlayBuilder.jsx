@@ -3,25 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Save, Copy, Layers, X, ChevronDown, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
-
-
+import AlertConfig from '../components/live/AlertConfig';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import CompositorOverlay from '../components/streaming/CompositorOverlay';
+import ChatOverlay from '../components/live/ChatOverlay';
+import InteractivePollWidget from '../components/live/InteractivePollingSystem';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import StreamGoals from '../components/live/StreamGoals';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -93,10 +90,11 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
               className="absolute top-0.5 w-3 h-3 rounded-full" style={{ background: cfg[key] ? '#000' : 'rgba(255,255,255,0.4)' }} />
           </button>
         : type === 'select'
-        ? <NativeSelect value={cfg[key] || ''} onChange={val => onChange({ config: { ...cfg, [key]: val } })}
+        ? <select value={cfg[key] || ''} onChange={e => onChange({ config: { ...cfg, [key]: e.target.value } })}
             className="w-full px-2 py-1 rounded text-[11px] outline-none"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}
-            options={opts.map(o => ({value: o, label: o}))} />
+            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }}>
+            {opts.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
         : type === 'number'
         ? <input type="number" value={cfg[key] || 0} onChange={e => onChange({ config: { ...cfg, [key]: Number(e.target.value) } })}
             className="w-full px-2 py-1 rounded text-[11px] outline-none"
@@ -126,7 +124,7 @@ function ConfigPanel({ element, goals, onChange, onRemove }) {
           {ELEMENT_TYPES.find(t => t.id === element.type)?.label}
         </p>
         <button onClick={onRemove} className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-          style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>Remove</button>
+          style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>Remove</button>
       </div>
       <div className="space-y-2">
         {fields.map(([key, label, type = 'text', opts]) => field(key, label, type, opts))}
@@ -153,6 +151,14 @@ export default function OverlayBuilderPage() {
   const qc = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const roomId = activeRoomId;
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
@@ -178,9 +184,16 @@ export default function OverlayBuilderPage() {
       return base44.entities.OverlayLayout.create(data);
     },
     onSuccess: (result) => {
-      qc.invalidateQueries(['overlay-layouts']);
+      qc.invalidateQueries({ queryKey: ['overlay-layouts'] });
       if (!selectedLayout) setSelectedLayout(result.id);
       toast.success('Overlay saved!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Saved overlay layout: ${layoutName || 'Overlay'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -217,24 +230,30 @@ export default function OverlayBuilderPage() {
     <div className="min-h-screen flex flex-col" style={{ background: '#080B18' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
         <div className="flex items-center gap-2">
+          <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>← Studio</Link>
+          <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, letterSpacing: '0.06em' }}>Editor</Link>
           <Layers className="w-4 h-4" style={{ color: GOLD }} />
           <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {/* Preset selector */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <NativeSelect value="" onChange={val => { if (val) applyPreset(val); }}
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
-              options={[{value:'',label:'Load Preset…'},...Object.keys(PRESETS).map(p => ({value: p, label: p}))]} />
+            <select onChange={e => { if (e.target.value) applyPreset(e.target.value); e.target.value = ''; }}
+              style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <option value="">Load Preset…</option>
+              {Object.keys(PRESETS).map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
           </div>
           {/* Load layout */}
           {layouts.length > 0 && (
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <NativeSelect value={selectedLayout || ''} onChange={val => setSelectedLayout(val || null)}
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
-                options={[{value:'',label:'New Layout'},...layouts.map(l => ({value: l.id, label: l.name + (l.is_active ? ' ●' : '')}))]} />
+              <select value={selectedLayout || ''} onChange={e => setSelectedLayout(e.target.value || null)}
+                style={{ appearance: 'none', WebkitAppearance: 'none', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: CREAM, fontSize: 10, padding: '5px 24px 5px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                <option value="">New Layout</option>
+                {layouts.map(l => <option key={l.id} value={l.id}>{l.name}{l.is_active ? ' ●' : ''}</option>)}
+              </select>
             </div>
           )}
           <input value={layoutName} onChange={e => setLayoutName(e.target.value)}
@@ -321,21 +340,18 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="overlay" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {user?.id && (
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid rgba(212,175,55,0.08)' }}>
+          <AlertConfig creatorId={user.id} />
+          <LowerThirdsBanner onBannerChange={() => {}} />
+          <OverlayThemeBuilder creatorId={user.id} />
+          <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
+          <CompositorOverlay stream={null} isHost={true} roomId={roomId} />
+        </div>
+      )}
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

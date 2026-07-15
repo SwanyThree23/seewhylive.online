@@ -7,7 +7,7 @@ import SelectSheet from '@/components/shared/SelectSheet';
 import { toast } from 'sonner';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const SOUND_PRESETS = ['cash_register', 'fanfare', 'chime', 'explosion', 'coin', 'alert', 'level_up'];
@@ -41,10 +41,17 @@ export default function AlertConfig({ creatorId }) {
         ...formData,
       });
     },
-    onSuccess: () => {
+    onSuccess: (alert) => {
       queryClient.invalidateQueries({ queryKey: ['soundAlerts', creatorId] });
       setShowForm(false);
       setFormData({ name: '', trigger_type: 'donation_amount', trigger_value: 5, sound_preset: 'cash_register', volume: 80, color: G });
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created stream alert: ${alert?.name || formData.name}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Failed to create alert.'),
   });
@@ -81,7 +88,7 @@ export default function AlertConfig({ creatorId }) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
+            style={{ background: '#080B18', border: `1px solid ${BORDER}`, color: 'white' }}
           />
 
           <div className="grid grid-cols-2 gap-2">
@@ -101,7 +108,7 @@ export default function AlertConfig({ creatorId }) {
               value={formData.trigger_value}
               onChange={(e) => setFormData({ ...formData, trigger_value: parseFloat(e.target.value) || 0 })}
               className="px-3 py-2 rounded text-sm outline-none"
-              style={{ background: '#0A0710', border: `1px solid ${BORDER}`, color: 'white' }}
+              style={{ background: '#080B18', border: `1px solid ${BORDER}`, color: 'white' }}
             />
           </div>
 
@@ -162,7 +169,7 @@ export default function AlertConfig({ creatorId }) {
               <p className="font-bold text-sm text-white">{alert.name}</p>
               <p className="text-[10px] text-white/60">{alert.trigger_type} • 🔊 {alert.sound_preset}</p>
             </div>
-            <motion.button whileHover={{ scale: 1.1 }} className="p-2 text-red-500">
+            <motion.button whileHover={{ scale: 1.1 }} className="p-2 text-[#C0392B]">
               <Trash2 className="w-4 h-4" />
             </motion.button>
           </motion.div>

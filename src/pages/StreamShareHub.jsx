@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CreatorBridge from '../components/social/CreatorBridge';
+import GlobalSearch from '../components/shared/GlobalSearch';
 
 const BG    = '#080B18';
 const BG2   = 'rgba(13,6,24,0.95)';
@@ -12,7 +19,7 @@ const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const CRIMSON = '#800020';
 const CYAN  = '#D4AF37';
-const GREEN = '#22c55e';
+const GREEN = '#6DBF7E';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
@@ -163,6 +170,7 @@ function QRPreview({ url }) {
 
 export default function StreamShareHub() {
   const [searchParams] = useSearchParams();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = searchParams.get('id');
 
   const [room, setRoom]         = useState(null);
@@ -449,7 +457,12 @@ export default function StreamShareHub() {
           </div>
         )}
       </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <ContentRecommendations />
+      <CollaborationMatcher />
+      <CreatorBridge user={user || null} />
+      <GlobalSearch />
     </div>
   );
 }
-

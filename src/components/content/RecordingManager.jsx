@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Upload, Play, Edit, Trash2, Eye, Sparkles, Video, Loader2 } from 'lucide-react';
-import NativeSelect from '@/components/shared/NativeSelect';
 import { toast } from 'sonner';
 import AIHighlightGenerator from './AIHighlightGenerator';
 
@@ -67,12 +66,19 @@ export default function RecordingManager({ userId }) {
         ai_keywords: aiResult.keywords,
       });
     },
-    onSuccess: () => {
+    onSuccess: (recording) => {
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setUploadDialogOpen(false);
       setUploadFile(null);
       setFormData({ title: '', description: '', tags: [], category: '', is_public: true });
       toast.success('Recording uploaded successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Uploaded recording: ${recording?.title || 'New Recording'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -122,15 +128,22 @@ export default function RecordingManager({ userId }) {
     onSuccess: (results) => {
       const successful = results.filter(r => r.success).length;
       const failed = results.filter(r => !r.success).length;
-      
+
       queryClient.invalidateQueries({ queryKey: ['recordings'] });
       setBatchUploadDialogOpen(false);
       setBatchFiles([]);
-      
+
       if (failed === 0) {
         toast.success(`Successfully uploaded ${successful} recordings!`);
       } else {
         toast.warning(`Uploaded ${successful} recordings, ${failed} failed`);
+      }
+      if (successful > 0 && userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'clip_created',
+          title: `Batch uploaded ${successful} recording${successful !== 1 ? 's' : ''}`,
+        }).catch(() => {});
       }
     },
     onError: () => toast.error('Action failed.'),
@@ -251,12 +264,12 @@ export default function RecordingManager({ userId }) {
                 </div>
 
                 {recording.ai_summary && (
-                  <div className="bg-[#7B5DA6] p-2 rounded text-xs">
+                  <div className="bg-[#D4854A]/10 p-2 rounded text-xs">
                     <div className="flex items-center gap-1 mb-1">
-                      <Sparkles className="w-3 h-3 text-[#7B5DA6]" />
-                      <span className="font-semibold text-[#7B5DA6]">AI Summary</span>
+                      <Sparkles className="w-3 h-3 text-[#D4854A]" />
+                      <span className="font-semibold text-[#D4854A]">AI Summary</span>
                     </div>
-                    <p className="text-[#7B5DA6] line-clamp-2">{recording.ai_summary}</p>
+                    <p className="text-[#D4854A] line-clamp-2">{recording.ai_summary}</p>
                   </div>
                 )}
 
@@ -356,12 +369,16 @@ export default function RecordingManager({ userId }) {
             </div>
             <div>
               <label className="text-sm font-medium">Category</label>
-              <NativeSelect
+              <select
                 className="w-full border rounded-md p-2"
                 value={formData.category}
-                onChange={(val) => setFormData({ ...formData, category: val })}
-                options={[{value:'',label:'Select category'},...categories.filter(c => c !== 'all').map(cat => ({value: cat, label: cat.charAt(0).toUpperCase() + cat.slice(1)}))]}
-              />
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              >
+                <option value="">Select category</option>
+                {categories.filter(c => c !== 'all').map(cat => (
+                  <option key={cat} value={cat} className="capitalize">{cat}</option>
+                ))}
+              </select>
             </div>
             <Button 
               onClick={handleUpload} 
@@ -395,10 +412,10 @@ export default function RecordingManager({ userId }) {
                 </p>
               )}
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-[#D4AF37]/5 p-3 rounded-lg">
               <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-blue-600 mt-0.5" />
-                <div className="text-sm text-blue-700">
+                <Sparkles className="w-4 h-4 text-[#D4AF37] mt-0.5" />
+                <div className="text-sm text-[#D4AF37]">
                   <p className="font-medium">AI-Powered Upload</p>
                   <p>Files will be automatically analyzed to generate titles, descriptions, categories, and keywords.</p>
                 </div>

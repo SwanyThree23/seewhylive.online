@@ -4,7 +4,7 @@ import { useBackground } from '@/lib/BackgroundManager';
 import { Palette } from 'lucide-react';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function BackgroundCustomizer() {
@@ -13,9 +13,9 @@ export default function BackgroundCustomizer() {
   const bgOptions = [
     { id: 'default', label: 'Default', color: '#0B0B18' },
     { id: 'faded_dark', label: 'Faded Dark', color: 'linear-gradient(180deg, #0B0B18, #1a1530)' },
-    { id: 'faded_earth', label: 'Earth Tone', color: 'linear-gradient(135deg, #0A0710, #2C1810)' },
-    { id: 'faded_neon', label: 'Neon Glow', color: 'linear-gradient(135deg, #0A0710, #1a1a3a)' },
-    { id: 'faded_terracotta', label: 'Terracotta', color: 'linear-gradient(135deg, #0A0710, #3D2B1F)' },
+    { id: 'faded_earth', label: 'Earth Tone', color: 'linear-gradient(135deg, #080B18, #2C1810)' },
+    { id: 'faded_neon', label: 'Neon Glow', color: 'linear-gradient(135deg, #080B18, #0D1A2C)' },
+    { id: 'faded_terracotta', label: 'Terracotta', color: 'linear-gradient(135deg, #080B18, #3D2B1F)' },
   ];
 
   return (

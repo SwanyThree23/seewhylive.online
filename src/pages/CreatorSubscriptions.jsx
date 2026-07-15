@@ -5,27 +5,26 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Crown, Users, Settings, Star, Check, ChevronRight, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { createPageUrl } from '../utils';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
-const PINK  = '#C0392B';
+const PINK    = '#C0392B';
 const GREEN = '#6DBF7E';
 const FONT  = 'Barlow Condensed, sans-serif';
 
@@ -34,7 +33,7 @@ const DEFAULT_TIERS = [
     id: 'fan',
     name: 'Fan',
     price: 4.99,
-    color: '#5B6EF5',
+    color: '#D4854A',
     emoji: '⭐',
     description: 'Support your favorite creator',
     perks: ['Subscriber badge in chat', 'Access to subscriber-only rooms', 'Early stream notifications'],
@@ -86,7 +85,7 @@ function TierCard({ tier, isCurrentTier, onSubscribe, onCancel, loading, isDefau
       style={{
         position: 'relative',
         borderRadius: 20,
-        background: 'rgba(13,6,24,0.95)',
+        background: 'rgba(8,11,24,0.95)',
         border: `1px solid ${tier.popular || tier.is_featured ? tier.color + '55' : 'rgba(255,255,255,0.08)'}`,
         overflow: 'hidden',
         display: 'flex',
@@ -234,7 +233,7 @@ function CreatorView({ user }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         {[
           { label: 'Active Subscribers', value: subs.length, color: GOLD, emoji: '👥' },
-          { label: 'Monthly Revenue', value: `$${(revenue * 0.9).toFixed(0)}`, color: GREEN, emoji: '💰' },
+          { label: 'Monthly Revenue', value: `$${(Math.floor(revenue * 90) / 100).toFixed(0)}`, color: GREEN, emoji: '💰' },
         ].map(stat => (
           <div key={stat.label} style={{
             borderRadius: 14, padding: '14px 16px',
@@ -358,6 +357,22 @@ function SubscriberView({ user, creatorId, creatorName }) {
       }
       toast.success(`Welcome to ${tier.name}! 🎉`);
       qc.invalidateQueries(['userSubs']);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'subscription',
+          title: `Subscribed to ${tier.name} tier`,
+          amount: tier.price,
+          recipient_id: creatorId,
+        }),
+        creatorId && base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'tip_received',
+          title: `New ${tier.name} subscriber: ${user.full_name || user.email}`,
+          amount: Math.floor(tier.price * 0.9 * 100) / 100,
+          sender_id: user.id,
+        }),
+      ]);
     } catch {
       toast.error('Subscription failed');
     } finally {
@@ -369,7 +384,7 @@ function SubscriberView({ user, creatorId, creatorName }) {
     try {
       await base44.entities.Subscription.update(sub.id, { status: 'cancelled', auto_renew: false });
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
     } catch {
       toast.error('Failed to cancel');
     }
@@ -528,8 +543,8 @@ function MySubscriptionsView({ user }) {
 }
 
 export default function CreatorSubscriptionsPage() {
-  const urlParams  = new URLSearchParams(window.location.search);
-  const creatorParam = urlParams.get('creator');
+  const [searchParams] = useSearchParams();
+  const creatorParam = searchParams.get('creator');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const isCreator = !creatorParam && (user?.role === 'admin' || user?.role === 'creator' || true);
@@ -617,22 +632,23 @@ export default function CreatorSubscriptionsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {user?.id && (
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+            <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={targetCreatorId} isHighlighted={false} />
+            <CreatorTierManager creatorId={user.id} />
+            <MySubscriptions userId={user.id} />
+            {targetCreatorId && <SubscriberTierView creatorId={targetCreatorId} userId={user.id} />}
+            <SubscriptionCard tier={null} isCurrentTier={false} onSubscribe={() => {}} />
+            <StripeSubscribeButton creatorId={targetCreatorId || null} tierId={null} userId={user.id} />
+            <SubscriptionManager userId={user.id} />
+            <OnlineUsersGrid compact maxVisible={10} />
+            <ContentRecommendations />
+            <CollaborationMatcher />
+          </div>
+        )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

@@ -1,23 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
@@ -165,7 +164,7 @@ const VOCAL_TYPES = [
   { id: 'female-rnb',  label: 'Female R&B',  color: PINK },
   { id: 'male-singer', label: 'Male Singer', color: ROSE },
   { id: 'choir',       label: 'Choir',       color: GREEN },
-  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#00d4ff' },
+  { id: 'auto-tune',   label: 'Auto-Tune',   color: '#D4AF37' },
 ];
 
 const MASTER_PRESETS = [
@@ -462,7 +461,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   exit={{ opacity: 0, scale: 0.9, y: -4 }}
                   style={{
                     position: 'absolute', right: 0, top: 36, zIndex: 30,
-                    background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
+                    background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
                     borderRadius: 12, overflow: 'hidden', minWidth: 150,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                   }}
@@ -546,9 +545,9 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            style={{ overflow: 'hidden', borderTop: '1px solid rgba(167,139,250,0.15)' }}
+            style={{ overflow: 'hidden', borderTop: '1px solid rgba(212,175,55,0.15)' }}
           >
-            <div style={{ padding: '14px 16px', background: 'rgba(167,139,250,0.04)' }}>
+            <div style={{ padding: '14px 16px', background: 'rgba(212,175,55,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics
@@ -671,7 +670,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',
@@ -689,7 +688,14 @@ function Toast({ message, visible }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-// Form state
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  // Form state
   const [description, setDescription] = useState('');
   const [styleInput, setStyleInput] = useState('');
   const [titleInput, setTitleInput] = useState('');
@@ -798,7 +804,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       } catch (_) {
         data = {
           title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
-          emoji: '🎵', tags, duration: `${2 + Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+          emoji: '🎵', tags, duration: '3:00',
           streamReady: true,
           lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
         };
@@ -811,7 +817,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         duration: data.duration || '2:30',
         emoji: data.emoji || '🎵',
         liked: false,
-        likeCount: Math.floor(Math.random() * 20),
+        likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
       }, ...prev]);
@@ -824,9 +830,9 @@ Return ONLY valid JSON (no markdown, no backticks):
         id: `t${Date.now()}`,
         title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
         tags: tags.slice(0, 6),
-        duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+        duration: '3:00',
         emoji: '🎵', liked: false, likeCount: 0,
-        streamReady: isInstrumental || Math.random() > 0.4,
+        streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);
@@ -851,7 +857,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         ...track,
         id: `t${Date.now()}`,
         title: track.title + ' (Continued)',
-        duration: '1:' + (30 + Math.floor(Math.random() * 29)).toString(),
+        duration: '2:00',
         likeCount: 0,
         liked: false,
       };
@@ -1517,21 +1523,49 @@ Return ONLY valid JSON (no markdown, no backticks):
 
       {/* ── Toast ── */}
       <Toast message={toast.message} visible={toast.visible} />
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {/* Social + spotlight */}
+      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <PanelMusicPlayer />
+        <SoundboardWidget />
+        <ClipGeneratorAI sessionId={roomId} roomId={roomId} creatorId={user?.id} />
+        <ShareToSocial />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        <AIStreamSummary roomId={roomId} isHost={false} streamTitle="AI Music Session" viewerCount={0} elapsedSeconds={0} />
+        <ContentRecommendations userId={user?.id} />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      </div>
+
+      {/* Cross-nav footer */}
+      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🤖 AI Hub
+          </button>
+        </Link>
+        <Link to={createPageUrl('PodcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎙️ Podcast
+          </button>
+        </Link>
+        <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎬 Studio
+          </button>
+        </Link>
+        <Link to={createPageUrl('ControlRoom')} style={{ textDecoration: 'none' }}>
+          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            🎛️ Control Room
+          </button>
+        </Link>
+      </div>
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AutomatedHighlightReels streamSession={null} />
+      </div>
     </div>
   );
 }

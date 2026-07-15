@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Tag, Globe, AlertTriangle, X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const CATEGORIES = ['gaming','music','education','talk','fitness','cooking','art','tech','irl','other'];
 const LANGUAGES = ['English','Spanish','French','German','Portuguese','Japanese','Korean','Chinese','Arabic','Hindi','Russian','Italian','Dutch','Polish','Turkish','Vietnamese','Thai','Indonesian','Swedish','Norwegian'];
@@ -32,7 +31,7 @@ export default function StreamMetadata({ room, isHost }) {
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.Room.update(room.id, data),
     onSuccess: () => {
-      qc.invalidateQueries(['room', room.id]);
+      qc.invalidateQueries({ queryKey: ['room', room.id] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     },
@@ -66,8 +65,9 @@ export default function StreamMetadata({ room, isHost }) {
           disabled={updateMutation.isPending}
           animate={{ scale: saved ? [1, 1.2, 1] : 1 }}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-            saved ? 'bg-green-700 text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
+            saved ? 'bg-[#4A9B5E] text-white' : 'bg-[#d4af37] text-black hover:bg-[#f5e6a3]'
           }`}
+          style={saved ? { background: '#6DBF7E' } : undefined}
         >
           <Check className="w-3.5 h-3.5" />
           {saved ? 'Saved!' : 'Save'}
@@ -84,7 +84,7 @@ export default function StreamMetadata({ room, isHost }) {
           value={title}
           onChange={e => setTitle(e.target.value.slice(0, 100))}
           placeholder="Stream title..."
-          style={{ width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+          style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
         />
       </div>
 
@@ -112,7 +112,7 @@ export default function StreamMetadata({ room, isHost }) {
             onChange={e => setTagInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && addTag()}
             placeholder="Add a tag..."
-            style={{ flex:1, padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+            style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
           />
           <button onClick={addTag} className="w-8 h-8 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] hover:bg-[#d4af37]/20">
             <Plus className="w-3.5 h-3.5" />
@@ -150,9 +150,10 @@ export default function StreamMetadata({ room, isHost }) {
       {/* Language */}
       <div className="space-y-1.5">
         <label className="text-xs text-white/50">Stream Language</label>
-        <NativeSelect value={language} onChange={val => setLanguage(val)}
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40"
-          options={LANGUAGES.map(l => ({value: l, label: l}))} />
+        <select value={language} onChange={e => setLanguage(e.target.value)}
+          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40">
+          {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#080B18]">{l}</option>)}
+        </select>
       </div>
     </div>
   );

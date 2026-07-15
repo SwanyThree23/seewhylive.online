@@ -26,7 +26,7 @@ function PollCountdown({ endsAt, onExpire }) {
     <motion.span
       animate={urgent ? { scale: [1, 1.15, 1] } : {}}
       transition={{ duration: 0.5, repeat: urgent ? Infinity : 0 }}
-      style={{ color: rem === 0 ? 'rgba(255,255,255,0.3)' : rem < 30 ? '#C0392B' : G }}
+      style={{ color: rem === 0 ? 'rgba(255,255,255,0.3)' : rem < 30 ? '#FF4444' : G }}
     >
       {rem === 0 ? 'Ended' : `${m}:${String(s).padStart(2, '0')}`}
     </motion.span>
@@ -192,7 +192,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             </span>
             {!ended && (
               <motion.div
-                className="w-1.5 h-1.5 rounded-full bg-green-400"
+                className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E]"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1.2, repeat: Infinity }}
               />
@@ -279,7 +279,7 @@ export default function LivePollOverlay({ roomId, currentUser, isHost, position 
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.25)', ...T }}>Tap to vote</span>
           )}
           {myVote !== null && !ended && (
-            <span className="text-[11px]" style={{ color: '#4ADE80', ...T }}>✓ Voted</span>
+            <span className="text-[11px]" style={{ color: '#6DBF7E', ...T }}>✓ Voted</span>
           )}
           {ended && (
             <span className="text-[11px] font-bold uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Final</span>

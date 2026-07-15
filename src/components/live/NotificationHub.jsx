@@ -7,8 +7,8 @@ import { X, Bell, CheckCircle2, Zap, Users, Target, Trophy, Gift, Heart, Star, R
 import { isSafeUrl } from '@/lib/security';
 
 const G = '#D4AF37';
-const BG = '#0A0710';
-const PANEL = '#0F0B1A';
+const BG = '#080B18';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 const ICON_MAP = {
@@ -221,7 +221,7 @@ export default function NotificationHub() {
                         <p className="text-xs font-bold text-white">{notif.title}</p>
                         <p className="text-[10px] text-white/60 mt-0.5 leading-snug">{notif.message}</p>
                         {notif.metadata?.amount && (
-                          <p className="text-[10px] text-amber-300 mt-1">
+                          <p className="text-[10px] text-[#D4AF37]/80 mt-1">
                             {notif.metadata.amount}
                           </p>
                         )}

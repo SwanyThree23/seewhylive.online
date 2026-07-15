@@ -6,9 +6,20 @@ import {
   Settings, DollarSign, Activity, Clock, Share2, Scissors, Sparkles, Layout,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -22,10 +33,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -37,7 +45,7 @@ const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 function DarkCard({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-2xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>
       {children}
     </div>
   );
@@ -53,7 +61,7 @@ function OctAvatar({ size = 80, src, initials, uploading, onClick }) {
         style={{
           inset: size <= 48 ? '2px' : '3px',
           clipPath: OCT,
-          background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)`,
+          background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)`,
         }}>
         {src
           ? <img src={src} alt="" className="w-full h-full object-cover" />
@@ -97,14 +105,18 @@ const TABS = ['Overview', 'Streams', 'Clips', 'About'];
 /* ── main page ──────────────────────────────────────────────────────── */
 
 export default function ProfilePage() {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
   const queryClient   = useQueryClient();
   const navigate      = useNavigate();
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   const [isEditing, setIsEditing]         = useState(false);
   const [bio, setBio]                     = useState('');
   const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
   const [isOnline]                        = useState(true);
+  const [setupOpen, setSetupOpen]         = useState(false);
   const fileRef = useRef();
 
   /* ── queries ── */
@@ -112,6 +124,13 @@ export default function ProfilePage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['userReferrals', user?.id],
@@ -139,7 +158,7 @@ export default function ProfilePage() {
 
   const { data: myClips = [] } = useQuery({
     queryKey: ['myClips', user?.id],
-    queryFn: () => base44.entities.Clip.filter({ creator_id: user?.id }, '-created_date', 12),
+    queryFn: () => base44.entities.StreamClip.filter({ creator_id: user?.id }, '-created_date', 12),
     enabled: !!user?.id,
   });
 
@@ -148,11 +167,24 @@ export default function ProfilePage() {
     mutationFn: async (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile updated!');
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       setIsEditing(false);
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: 'Updated profile',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   useEffect(() => {
     if (user) {
@@ -407,12 +439,13 @@ export default function ProfilePage() {
                 {[
                   { label: 'Creator Dashboard', href: createPageUrl('CreatorDashboard'), icon: Radio,     color: PINK },
                   { label: 'Monetization',       href: createPageUrl('Monetization'),    icon: DollarSign, color: GOLD },
-                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: '#a78bfa' },
-                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#00d4ff' },
+                  { label: 'AI Hub',             href: createPageUrl('AIHub'),           icon: Sparkles,   color: GOLD },
+                  { label: 'Platform',           href: createPageUrl('PlatformShowcase'), icon: Layout,    color: '#D4854A' },
                   { label: 'Settings',           href: createPageUrl('Settings'),        icon: Settings,   color: '#C9A84C' },
-                ].map(item => (
-                  <Link key={item.href} to={item.href}>
-                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110"
+                  { label: 'Creator Setup',      href: null,                             icon: Star,       color: GOLD, onClick: () => setSetupOpen(true) },
+                ].map(item => {
+                  const inner = (
+                    <div className="flex items-center gap-3 p-3 rounded-xl transition-all hover:brightness-110 cursor-pointer"
                       style={{ background: `${item.color}08`, border: `1px solid ${item.color}18` }}>
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                         style={{ background: `${item.color}18`, border: `1px solid ${item.color}30` }}>
@@ -420,11 +453,18 @@ export default function ProfilePage() {
                       </div>
                       <p className="font-black text-[11px] text-white" style={T}>{item.label}</p>
                     </div>
-                  </Link>
-                ))}
+                  );
+                  return item.href
+                    ? <Link key={item.label} to={item.href}>{inner}</Link>
+                    : <div key={item.label} onClick={item.onClick}>{inner}</div>;
+                })}
               </div>
             </DarkCard>
           </>
+        )}
+
+        {activeTab === 'Overview' && user?.id && (
+          <MySubscriptions userId={user.id} />
         )}
 
         {activeTab === 'Streams' && (
@@ -582,22 +622,23 @@ export default function ProfilePage() {
         )}
 
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <CreatorProfileSetup user={user} isOpen={false} onClose={() => {}} />
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      {user && (
+        <>
+          <CreatorProfileSetup user={user} isOpen={setupOpen} onClose={() => setSetupOpen(false)} />
+          <OnlinePresenceDot isOnline size="sm" />
+        </>
+      )}
+
+      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+        {user?.id && <RevenueDashboard userId={user.id} />}
+        <StreamMetadataEditor initialTitle="My Stream" initialCategory="entertainment" />
+        <PerformanceDashboard roomId={roomId} sessionId={roomId} />
+      </div>
+        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
     </div>
   );
 }

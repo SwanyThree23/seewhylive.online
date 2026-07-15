@@ -1,6 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, CameraOff, Mic, MicOff, RefreshCw, Volume2 } from 'lucide-react';
+import { useCameraDevices } from '../../hooks/useCameraDevices';
+import CameraDeviceSelector from '../live/CameraDeviceSelector';
+import { useConnectionQuality } from '../../hooks/useConnectionQuality';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -12,7 +15,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#C0392B';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#D4AF37' : '#FF4444';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (
@@ -54,7 +57,7 @@ function SimulatedCamera({ user }) {
   );
 }
 
-export default function DevicePreview({ user, onDeviceState }) {
+export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const analyserRef = useRef(null);
@@ -63,41 +66,15 @@ export default function DevicePreview({ user, onDeviceState }) {
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
-  const [networkQuality, setNetworkQuality] = useState(3);
   const [isSim, setIsSim] = useState(false);
   const [permDenied, setPermDenied] = useState(false);
-  const [devices, setDevices] = useState({ video: [], audio: [], output: [] });
-  const [selectedCam, setSelectedCam] = useState('');
-  const [selectedMic, setSelectedMic] = useState('');
+  const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
+  const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
+  const [resolution, setResolution] = useState(() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } });
 
-  // Enumerate devices
-  useEffect(() => {
-    const enumerate = async () => {
-      if (!navigator.mediaDevices?.enumerateDevices) return;
-      try {
-        const list = await navigator.mediaDevices.enumerateDevices();
-        setDevices({
-          video: list.filter(d => d.kind === 'videoinput'),
-          audio: list.filter(d => d.kind === 'audioinput'),
-          output: list.filter(d => d.kind === 'audiooutput'),
-        });
-      } catch {}
-    };
-    enumerate();
-  }, []);
-
-  // Network quality simulation
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (navigator.connection) {
-        const dl = navigator.connection.downlink;
-        setNetworkQuality(dl > 10 ? 4 : dl > 5 ? 3 : dl > 1 ? 2 : 1);
-      } else {
-        setNetworkQuality(q => (Math.random() > 0.85 ? Math.max(2, q - 1) : Math.min(4, q + 1)));
-      }
-    }, 4000);
-    return () => clearInterval(iv);
-  }, []);
+  // Real connection quality via navigator.connection / RTCPeerConnection stats
+  const { bars: networkQuality, label: netLabel, rtt } = useConnectionQuality(null, 4000);
+  const { cameras } = useCameraDevices();
 
   // Simulated mic level when isSim or micOn without real analyser
   useEffect(() => {
@@ -108,17 +85,23 @@ export default function DevicePreview({ user, onDeviceState }) {
     return () => clearInterval(iv);
   }, [micOn, isSim]);
 
-  const startCamera = async () => {
+  const RES = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
+
+  const startCamera = async (opts = {}) => {
     if (!navigator.mediaDevices?.getUserMedia) { setIsSim(true); setCameraOn(true); setMicOn(true); return; }
+    const camId = opts.camId ?? selectedCam;
+    const micId = opts.micId ?? selectedMic;
+    const res = RES[opts.resolution ?? resolution] || RES['720p'];
     try {
-      const constraints = {
-        video: selectedCam ? { deviceId: { exact: selectedCam } } : true,
-        audio: selectedMic ? { deviceId: { exact: selectedMic } } : true,
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { ...res, ...(camId ? { deviceId: { ideal: camId } } : {}) },
+        audio: { echoCancellation: true, noiseSuppression: true, ...(micId ? { deviceId: { ideal: micId } } : {}) },
+      });
       streamRef.current = stream;
       if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
       // Mic analyser
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       const ctx = new AudioContext();
       const source = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
@@ -136,10 +119,23 @@ export default function DevicePreview({ user, onDeviceState }) {
       setCameraOn(true);
       setMicOn(true);
       setPermDenied(false);
+      onStreamReady?.(stream);
     } catch (err) {
       if (err.name === 'NotAllowedError') { setPermDenied(true); }
       else { setIsSim(true); setCameraOn(true); setMicOn(true); }
     }
+  };
+
+  const handleVideoChange = (id) => { setSelectedCam(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {} if (cameraOn) startCamera({ camId: id }); };
+  const handleAudioChange = (id) => { setSelectedMic(id); try { if (id) localStorage.setItem('swl_pref_mic', id); } catch {} if (cameraOn) startCamera({ micId: id }); };
+  const handleResolutionChange = (r) => { setResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraOn) startCamera({ resolution: r }); };
+
+  const flipCamera = () => {
+    if (cameras.length < 2) { startCamera(); return; }
+    const idx = cameras.findIndex(c => c.deviceId === selectedCam);
+    const next = cameras[(idx + 1) % cameras.length];
+    setSelectedCam(next.deviceId);
+    startCamera({ camId: next.deviceId });
   };
 
   const stopCamera = () => {
@@ -150,6 +146,7 @@ export default function DevicePreview({ user, onDeviceState }) {
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
     setMicLevel(0);
+    onStreamReady?.(null);
   };
 
   const toggleCamera = () => { cameraOn ? stopCamera() : startCamera(); };
@@ -172,8 +169,8 @@ export default function DevicePreview({ user, onDeviceState }) {
   };
 
   useEffect(() => {
-    onDeviceState?.({ cameraOn, micOn, networkQuality, isSim });
-  }, [cameraOn, micOn, networkQuality]);
+    onDeviceState?.({ cameraOn, micOn, networkQuality, netLabel, isSim });
+  }, [cameraOn, micOn, networkQuality, netLabel]);
 
   useEffect(() => () => stopCamera(), []);
 
@@ -186,7 +183,7 @@ export default function DevicePreview({ user, onDeviceState }) {
         {/* Real camera feed */}
         <video ref={videoRef} autoPlay playsInline muted
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ display: cameraOn && !isSim ? 'block' : 'none' }} />
+          style={{ opacity: cameraOn && !isSim ? 1 : 0, transition: 'opacity 0.2s', pointerEvents: 'none' }} />
 
         {/* Simulated / camera off state */}
         {(!cameraOn || isSim) && (
@@ -195,7 +192,7 @@ export default function DevicePreview({ user, onDeviceState }) {
             : permDenied
               ? <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4"
                   style={{ background: 'rgba(128,0,32,0.15)' }}>
-                  <CameraOff className="w-8 h-8 text-red-400" />
+                  <CameraOff className="w-8 h-8 text-[#C0392B]" />
                   <p className="text-[11px] text-center font-bold text-red-300">Camera access blocked</p>
                   <p className="text-[11px] text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>Check your browser settings to allow camera access</p>
                 </div>
@@ -217,7 +214,7 @@ export default function DevicePreview({ user, onDeviceState }) {
           title="Estimated connection to SeeWhy LIVE servers">
           <SignalBarsIcon quality={networkQuality} />
           <span className="text-[11px] ml-0.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            {networkQuality >= 3 ? 'GOOD' : networkQuality >= 2 ? 'FAIR' : 'POOR'}
+            {netLabel.toUpperCase()}{rtt ? ` · ${rtt}ms` : ''}
           </span>
         </div>
 
@@ -229,13 +226,26 @@ export default function DevicePreview({ user, onDeviceState }) {
           </div>
         )}
 
-        {/* Flip camera (mobile) */}
-        <button className="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center md:hidden"
-          style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)' }}
-          onClick={startCamera}>
-          <RefreshCw className="w-3.5 h-3.5 text-white/60" />
-        </button>
+        {/* Flip camera (mobile) — actually cycles between cameras */}
+        {cameras.length > 1 && (
+          <button className="absolute bottom-2 right-2 w-9 h-9 rounded-full flex items-center justify-center md:hidden"
+            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', userSelect: 'none' }}
+            onClick={flipCamera}>
+            <RefreshCw className="w-3.5 h-3.5 text-white/60" />
+          </button>
+        )}
       </div>
+
+      {/* Device selector strip */}
+      <CameraDeviceSelector
+        compact
+        currentVideoId={selectedCam}
+        currentAudioId={selectedMic}
+        resolution={resolution}
+        onVideoChange={handleVideoChange}
+        onAudioChange={handleAudioChange}
+        onResolutionChange={handleResolutionChange}
+      />
 
       {/* Camera toggle */}
       <div className="flex justify-center">

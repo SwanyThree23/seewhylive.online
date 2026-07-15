@@ -12,8 +12,8 @@ const CREAM = '#F5E6D3';
 
 const RARITY_STYLE = {
   common:    { color: 'rgba(255,255,255,0.4)', label: 'COMMON',    shimmer: false },
-  rare:      { color: '#4FC3F7',              label: 'RARE',      shimmer: false },
-  epic:      { color: '#CE93D8',              label: 'EPIC',      shimmer: false },
+  rare:      { color: '#D4AF37',              label: 'RARE',      shimmer: false },
+  epic:      { color: '#D4854A',              label: 'EPIC',      shimmer: false },
   legendary: { color: G,                      label: 'LEGENDARY', shimmer: true  },
 };
 
@@ -57,7 +57,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   });
   const { data: topSenders = [] } = useQuery({
     queryKey: ['gift-senders', roomId],
-    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, type: 'virtual_good' }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ room_id: roomId, transaction_type: 'virtual_good' }, '-created_date', 100),
     enabled: !!roomId,
     refetchInterval: 10000,
   });
@@ -67,7 +67,7 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
   // Aggregate senders for leaderboard
   const senderMap = {};
   topSenders.forEach(t => {
-    senderMap[t.sender_name || 'Anon'] = (senderMap[t.sender_name || 'Anon'] || 0) + (t.amount || 0);
+    senderMap[t.sender_name || 'Anon'] = (senderMap[t.sender_name || 'Anon'] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
   });
   const senderRank = Object.entries(senderMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
@@ -77,20 +77,37 @@ export default function GiftTray({ roomId, currentUser, recipientId }) {
         room_id: roomId,
         type: 'virtual_good',
         amount: gift.price,
-        creator_amount: gift.price * 0.85,
-        platform_fee: gift.price * 0.15,
+        creator_amount: Math.floor(gift.price * 0.90),
+        platform_fee: gift.price - Math.floor(gift.price * 0.90),
         sender_id: currentUser.id,
         sender_name: currentUser.full_name || currentUser.email,
-        to_user_id: recipientId,
+        recipient_id: recipientId,
         status: 'completed',
         metadata: { gift_id: gift.id, gift_name: gift.name },
       });
       await base44.entities.AnimatedGift.update(gift.id, { times_sent: (gift.times_sent || 0) + 1 }).catch(() => {});
     },
     onSuccess: (_, gift) => {
+      navigator.vibrate?.([40, 20, 60, 20, 100]);
       setSending(gift);
       setOpen(false);
       qc.invalidateQueries(['gift-senders', roomId]);
+      Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name || 'gift'}`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        recipientId && base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name || 'gift'} from ${currentUser.full_name || 'viewer'}`,
+          amount: gift.price,
+          sender_id: currentUser.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Could not send gift'),
   });

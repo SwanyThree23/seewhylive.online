@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Trophy, Plus, Play, Users, Swords, Crown, ChevronRight, Calendar, Zap } from 'lucide-react';
+import { Trophy, Plus, Play, Users, Swords, Crown, ChevronRight, Calendar, Zap, CheckCircle } from 'lucide-react';
 
 var ET = {
   rust: '#6B4423',
@@ -16,11 +18,8 @@ var ET = {
   lightEarth: '#4A3728',
 };
 
-/* Generate an 8-person single-elimination bracket */
-var INITIAL_PLAYERS = [
-  'StormCaster', 'NeonBeat', 'TalkMaster99', 'PixelQueen',
-  'IRL_Drifter', 'BeatDropKing', 'GameSlayer', 'CraftedByAI'
-];
+/* Default players shown in the setup form (user-editable) */
+var DEFAULT_PLAYERS = ['', '', '', ''];
 
 function generateBracket(players) {
   var rounds = [];
@@ -48,42 +47,40 @@ function generateBracket(players) {
 }
 
 function BracketMatch({ match, roundIdx, matchIdx, onAdvance }) {
-  var isLive = match.status === 'active';
   var isComplete = match.status === 'complete';
-
-  function simulateResult() {
-    var winner = Math.random() > 0.5 ? 'player1' : 'player2';
-    var s1 = Math.floor(Math.random() * 400) + 100;
-    var s2 = Math.floor(Math.random() * 400) + 100;
-    if (winner === 'player1' && s2 >= s1) { s1 = s2 + Math.floor(Math.random() * 100) + 1; }
-    if (winner === 'player2' && s1 >= s2) { s2 = s1 + Math.floor(Math.random() * 100) + 1; }
-    onAdvance(roundIdx, matchIdx, winner, s1, s2);
-    toast.success((winner === 'player1' ? match.player1.name : match.player2.name) + ' advances!');
-  }
+  var [declaring, setDeclaring] = useState(false);
 
   var p1 = match.player1;
   var p2 = match.player2;
-  var winnerName = match.winner === 'player1' ? (p1 && p1.name) : (p2 && p2.name);
+  var bothReady = p1 && p2 && p1.name !== '?' && p2.name !== '?';
+
+  function declareWinner(winner) {
+    setDeclaring(false);
+    onAdvance(roundIdx, matchIdx, winner);
+    var winName = winner === 'player1' ? p1.name : p2.name;
+    toast.success(winName + ' advances!');
+  }
 
   return (
     <div
-      className="rounded-xl overflow-hidden min-w-[140px]"
+      className="rounded-xl overflow-hidden min-w-[150px]"
       style={{
-        background: isLive ? ET.midEarth : ET.darkEarth,
-        border: '1px solid ' + (isComplete ? ET.gold + '40' : isLive ? ET.terracotta + '50' : 'rgba(255,255,255,0.07)'),
+        background: isComplete ? ET.darkEarth : ET.midEarth,
+        border: '1px solid ' + (isComplete ? ET.gold + '40' : declaring ? ET.terracotta + '60' : 'rgba(255,255,255,0.07)'),
       }}
     >
       {[p1, p2].map(function(p, idx) {
         if (!p) { return null; }
         var isW = (idx === 0 && match.winner === 'player1') || (idx === 1 && match.winner === 'player2');
-        var score = idx === 0 ? match.score1 : match.score2;
         return (
           <div
             key={idx}
-            className="flex items-center gap-2 px-3 py-2"
+            className="flex items-center gap-2 px-3 py-2 cursor-pointer transition-all"
+            onClick={function() { if (declaring && bothReady && !isComplete) { declareWinner(idx === 0 ? 'player1' : 'player2'); } }}
             style={{
-              background: isW ? ET.gold + '18' : 'transparent',
+              background: declaring && bothReady && !isComplete ? 'rgba(212,175,55,0.06)' : isW ? ET.gold + '18' : 'transparent',
               borderBottom: idx === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              outline: declaring && bothReady && !isComplete ? '1px dashed ' + ET.gold + '40' : 'none',
             }}
           >
             <div
@@ -95,19 +92,24 @@ function BracketMatch({ match, roundIdx, matchIdx, onAdvance }) {
             <span className="text-[11px] font-bold flex-1 truncate" style={{ color: isW ? ET.gold : p.name === '?' ? 'rgba(255,255,255,0.2)' : ET.cream }}>
               {p.name}
             </span>
-            {isComplete && <span className="text-[10px] font-black font-mono" style={{ color: isW ? ET.gold : ET.sand + '50' }}>{score}</span>}
             {isW && <Crown className="w-3 h-3 shrink-0" style={{ color: ET.gold }} />}
           </div>
         );
       })}
-      {!isComplete && p1 && p2 && p1.name !== '?' && p2.name !== '?' && (
-        <button
-          onClick={simulateResult}
-          className="w-full py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all"
-          style={{ background: isLive ? ET.burgundy + '30' : 'rgba(255,255,255,0.04)', color: isLive ? ET.terracotta : ET.sand + '50' }}
-        >
-          {isLive ? '⚡ Simulate' : '▶ Start'}
-        </button>
+      {!isComplete && bothReady && (
+        declaring ? (
+          <div className="px-2 py-1.5 text-[10px] text-center" style={{ color: ET.sand + '70', background: 'rgba(212,175,55,0.06)' }}>
+            Click a player to declare winner
+          </div>
+        ) : (
+          <button
+            onClick={function() { setDeclaring(true); }}
+            className="w-full py-1.5 text-[11px] font-bold uppercase tracking-wider transition-all"
+            style={{ background: 'rgba(255,255,255,0.04)', color: ET.sand + '60' }}
+          >
+            ▶ Declare Winner
+          </button>
+        )
       )}
     </div>
   );
@@ -115,44 +117,63 @@ function BracketMatch({ match, roundIdx, matchIdx, onAdvance }) {
 
 var ROUND_NAMES = ['Round of 8', 'Semifinals', 'Grand Final'];
 
-export default function TournamentBracket() {
-  var [playerNames, setPlayerNames] = useState(INITIAL_PLAYERS.slice());
+export default function TournamentBracket({ hostId }) {
+  var [playerNames, setPlayerNames] = useState(DEFAULT_PLAYERS.slice());
   var [newPlayer, setNewPlayer] = useState('');
   var [bracket, setBracket] = useState(null);
   var [tournamentName, setTournamentName] = useState('PK Battle Tournament');
   var [started, setStarted] = useState(false);
   var [champion, setChampion] = useState(null);
+  var [saving, setSaving] = useState(false);
+
+  // Fetch real streams/participants from backend for player suggestions
+  var { data: liveStreams = [] } = useQuery({
+    queryKey: ['live-streams-for-tourney'],
+    queryFn: function() { return base44.entities.Room.filter({ is_live: true }); },
+    retry: false,
+  });
+
+  var streamSuggestions = liveStreams.map(function(s) { return s.host_name || s.title || s.id; }).filter(Boolean).slice(0, 8);
 
   function startTournament() {
     var filled = playerNames.filter(function(n) { return n.trim(); });
     if (filled.length < 2) { toast.error('Need at least 2 players'); return; }
-    // Pad to next power of 2
     var size = 2;
     while (size < filled.length) { size *= 2; }
     while (filled.length < size) { filled.push('BYE_' + filled.length); }
-    setBracket(generateBracket(filled));
+    var newBracket = generateBracket(filled);
+    setBracket(newBracket);
     setStarted(true);
     setChampion(null);
+
+    // Persist to backend
+    setSaving(true);
+    var tourneyId = 'tourney_' + Date.now();
+    base44.entities.Tournament?.create({
+      id: tourneyId,
+      name: tournamentName,
+      host_id: hostId,
+      participants: JSON.stringify(filled),
+      bracket: JSON.stringify(newBracket),
+      status: 'active',
+      started_at: new Date().toISOString(),
+    }).catch(function() {}).finally(function() { setSaving(false); });
   }
 
-  function handleAdvance(roundIdx, matchIdx, winner, s1, s2) {
+  function handleAdvance(roundIdx, matchIdx, winner) {
     setBracket(function(prev) {
       var next = prev.map(function(r) { return r.map(function(m) { return Object.assign({}, m); }); });
       var match = next[roundIdx][matchIdx];
       match.winner = winner;
-      match.score1 = s1;
-      match.score2 = s2;
       match.status = 'complete';
 
       var winnerPlayer = winner === 'player1' ? match.player1 : match.player2;
 
-      // Advance to next round
       if (roundIdx + 1 < next.length) {
         var nextMatchIdx = Math.floor(matchIdx / 2);
         var slot = matchIdx % 2 === 0 ? 'player1' : 'player2';
         next[roundIdx + 1][nextMatchIdx][slot] = Object.assign({}, winnerPlayer);
       } else {
-        // Final round complete — champion!
         setChampion(winnerPlayer.name);
         toast.success('🏆 ' + winnerPlayer.name + ' is the CHAMPION!');
       }
@@ -233,7 +254,7 @@ export default function TournamentBracket() {
                       />
                       <button
                         onClick={function() { setPlayerNames(function(prev) { return prev.filter(function(_, j) { return j !== i; }); }); }}
-                        className="text-white/20 hover:text-red-400 text-xs"
+                        className="text-white/20 hover:text-[#C0392B] text-xs"
                       >×</button>
                     </div>
                   );

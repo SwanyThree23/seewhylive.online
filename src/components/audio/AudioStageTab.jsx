@@ -6,16 +6,20 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const BG      = '#080B18';
 const OCT     = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#26A69A','#EF6C00'];
+const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B3A','#7C4A3A','#6B5C3A','#A6263A','#D4854A'];
 
 function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
 
+const AUDIO_HOLD_MS = 400;
+
 function useAudioLevel(stream) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const ctxRef     = useRef(null);
-  const rafRef     = useRef(null);
+  const ctxRef      = useRef(null);
+  const rafRef      = useRef(null);
+  const holdRef     = useRef(null);
+  const speakRef    = useRef(false);
 
   useEffect(() => {
     if (!stream) { setIsSpeaking(false); return; }
@@ -37,7 +41,14 @@ function useAudioLevel(stream) {
           const v = (data[i] - 128) / 128;
           sum += v * v;
         }
-        setIsSpeaking(Math.sqrt(sum / data.length) > 0.01);
+        const rms = Math.sqrt(sum / data.length);
+        if (rms > 0.01) {
+          clearTimeout(holdRef.current);
+          if (!speakRef.current) { speakRef.current = true; setIsSpeaking(true); }
+        } else if (speakRef.current) {
+          clearTimeout(holdRef.current);
+          holdRef.current = setTimeout(() => { speakRef.current = false; setIsSpeaking(false); }, AUDIO_HOLD_MS);
+        }
         rafRef.current = requestAnimationFrame(check);
       };
       check();
@@ -47,6 +58,8 @@ function useAudioLevel(stream) {
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      clearTimeout(holdRef.current);
+      speakRef.current = false;
       if (ctxRef.current) { try { ctxRef.current.close(); } catch {} }
     };
   }, [stream]);
@@ -81,7 +94,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
           clipPath: OCT,
           background: isHost
             ? `linear-gradient(135deg, ${CRIMSON}, #4a0012)`
-            : `rgba(30,10,30,0.9)`,
+            : `rgba(8,11,24,0.9)`,
           border: `2px solid rgba(212,175,55,0.3)`,
           position: 'relative',
           cursor: showControls ? 'pointer' : 'default',
@@ -132,7 +145,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: '#C0392B',
+            background: '#EF4444',
             border: `2px solid ${BG}`,
             display: 'flex',
             alignItems: 'center',
@@ -185,7 +198,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
                 textAlign: 'left',
                 fontSize: 11,
                 fontFamily: 'Barlow Condensed, sans-serif',
-                color: '#C0392B',
+                color: '#EF4444',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -278,6 +291,7 @@ export default function AudioStageTab({
   members,
   localStream,
   remoteStreams,
+  peerUserIds,
   onLeave,
 }) {
   const hostId   = party?.host_id;
@@ -330,9 +344,9 @@ export default function AudioStageTab({
 
   function getStream(userId) {
     if (isSelf(userId)) return localStream || null;
-    if (!remoteStreams) return null;
-    for (const [, stream] of remoteStreams) {
-      if (stream._userId === userId) return stream;
+    if (!remoteStreams || !peerUserIds) return null;
+    for (const [peerId, stream] of remoteStreams) {
+      if (peerUserIds.get(peerId) === userId) return stream;
     }
     return null;
   }
@@ -397,7 +411,7 @@ export default function AudioStageTab({
           }}
         >
           {isMuted
-            ? <MicOff style={{ width: 16, height: 16, color: '#C0392B' }} />
+            ? <MicOff style={{ width: 16, height: 16, color: '#EF4444' }} />
             : <Mic style={{ width: 16, height: 16, color: '#000' }} />}
         </motion.button>
 
@@ -549,7 +563,7 @@ export default function AudioStageTab({
                         borderRadius: 6,
                         background: 'rgba(192,57,43,0.1)',
                         border: '1px solid rgba(192,57,43,0.3)',
-                        color: '#C0392B',
+                        color: '#EF4444',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',
                         fontWeight: 700,

@@ -7,7 +7,7 @@ import { createPageUrl } from '../../utils';
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
-const TEAL    = '#4A8A7A';
+const TEAL    = '#D4854A';
 const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 /* ─── Partner channel definitions ───────────────────────────────────────── */
@@ -51,7 +51,7 @@ export const FEATURED_VIDEOS = [
     channelId: 'aiversepodcast',
     channelColor: TEAL,
     tag: 'Interview',
-    tagColor: '#a855f7',
+    tagColor: '#D4854A',
   },
   {
     id: '7HwU_IDVKuc',
@@ -87,7 +87,7 @@ export const FEATURED_VIDEOS = [
     channelId: 'dominoentertainment',
     channelColor: PINK,
     tag: 'Event',
-    tagColor: '#f97316',
+    tagColor: '#D4854A',
   },
 ];
 
@@ -142,14 +142,14 @@ function FeaturedVideoCard({ video }) {
       whileTap={{ scale: 0.97 }}
       style={{
         width: 220, flexShrink: 0, borderRadius: 14,
-        background: 'rgba(13,6,24,0.92)',
+        background: 'rgba(8,11,24,0.92)',
         border: '1px solid rgba(212,175,55,0.1)',
         overflow: 'hidden',
         boxShadow: '0 4px 20px rgba(0,0,0,0.45)',
       }}
     >
       {/* Thumbnail */}
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #0d0620, #0a1020)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: 'linear-gradient(135deg, #080B18, #0D1022)', overflow: 'hidden' }}>
         {thumb ? (
           <img
             src={thumb}
@@ -162,7 +162,7 @@ function FeaturedVideoCard({ video }) {
             <Play style={{ width: 28, height: 28, color: 'rgba(212,175,55,0.25)' }} />
           </div>
         )}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 55%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 55%)' }} />
 
         {/* Tag badge */}
         <span style={{
@@ -202,7 +202,7 @@ function FeaturedVideoCard({ video }) {
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
             padding: '5px 0', borderRadius: 8, textDecoration: 'none',
             background: 'rgba(255,0,0,0.15)', border: '1px solid rgba(255,0,0,0.3)',
-            color: '#C0392B', fontSize: 10, fontWeight: 700, ...T,
+            color: '#ff4444', fontSize: 10, fontWeight: 700, ...T,
           }}
         >
           <Play style={{ width: 10, height: 10 }} />

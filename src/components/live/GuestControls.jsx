@@ -16,7 +16,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
   };
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -25,7 +25,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-semibold text-white">Guest Controls</span>
-          <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#7B5DA6]/30 text-[#7B5DA6]">
+          <span className="text-[11px] px-1.5 py-0.5 rounded-full bg-[#800020]/20 text-[#C9A84C]">
             {participants.length}
           </span>
         </div>
@@ -70,7 +70,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
                           onClick={() => handleMute(guest.id)}
                           className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
                             mutedGuests[guest.id]
-                              ? 'bg-red-900/60 text-red-400 border border-red-600'
+                              ? 'bg-red-900/60 text-[#C0392B] border border-red-600'
                               : 'bg-white/5 text-white/50 border border-white/10 hover:bg-white/10'
                           }`}
                           title={mutedGuests[guest.id] ? 'Unmute' : 'Mute'}
@@ -95,7 +95,7 @@ export default function GuestControls({ participants = [], onMuteGuest, onRemove
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           onClick={() => handleRemove(guest.id)}
-                          className="w-6 h-6 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-600/30 transition-all"
+                          className="w-6 h-6 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-[#C0392B] border border-red-600/30 transition-all"
                           title="Remove guest"
                         >
                           <Trash2 className="w-3 h-3" />

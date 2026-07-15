@@ -2,28 +2,23 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Gift, Megaphone, TrendingUp } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import ReferralProgram from '../components/community/ReferralProgram';
 import ChallengeCard from '../components/community/ChallengeCard';
 import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import AnnouncementFeed from '../components/community/AnnouncementFeed';
+import SpotlightSection from '../components/community/SpotlightSection';
+import CreatePollModal from '../components/community/CreatePollModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -36,8 +31,8 @@ const TABS = [
 ];
 
 export default function CommunityGrowthPage() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityId = urlParams.get('id');
+  const [searchParams] = useSearchParams();
+  const communityId = searchParams.get('id');
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [activeTab, setActiveTab] = useState('challenges');
 
@@ -131,7 +126,7 @@ export default function CommunityGrowthPage() {
                 ))}
                 {challenges.filter(c => c.status === 'active').length === 0 && (
                   <div className="text-center py-12 rounded-2xl"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                     <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                     <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No active challenges</p>
                   </div>
@@ -155,7 +150,7 @@ export default function CommunityGrowthPage() {
                 <ChallengeLeaderboard challengeId={selectedChallenge} />
               ) : (
                 <div className="text-center py-12 rounded-2xl"
-                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                   <TrendingUp className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
                   <p className="text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>Select a challenge to view leaderboard</p>
                 </div>
@@ -188,22 +183,27 @@ export default function CommunityGrowthPage() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <SpotlightSection communityId={communityId || null} />
+          <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <Link to={createPageUrl('Communities')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>← Communities</span>
+          </Link>
+          <Link to={createPageUrl('CommunityAdmin')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.25)', color: '#ff6666', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚙️ Admin</span>
+          </Link>
+          <Link to={createPageUrl('CommunitySettings')} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>⚡ Settings</span>
+          </Link>
+        </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

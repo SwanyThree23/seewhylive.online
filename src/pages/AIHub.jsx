@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
+import AIStreamSummary from '../components/live/AIStreamSummary';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
-const BG2    = 'rgba(13,6,24,0.9)';
+const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK   = '#C0392B';
-const CYAN   = '#00d4ff';
-const PURPLE = '#a78bfa';
+const PINK    = '#C0392B';
+const CYAN   = '#D4AF37';
+const PURPLE = '#D4AF37';
+const AMBER  = '#D4854A';
 const GREEN  = '#6DBF7E';
-const AMBER  = '#f59e0b';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -67,7 +64,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, ...T,
             fontWeight: 700, letterSpacing: '0.04em',
@@ -138,6 +135,19 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -162,7 +172,7 @@ export default function AIHub() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = sessionStorage.getItem('seewhy_dj_track');
+        const raw = localStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);
@@ -241,13 +251,13 @@ export default function AIHub() {
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#C0392B';
-    if (status === 'warning') return '#f59e0b';
+    if (status === 'warning') return '#D4AF37';
     return GREEN;
   }
 
   // Real status bar values
   const statusItems = [
-    { dot: guardianOn ? '#00ff88' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
+    { dot: guardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.2)', label: guardianOn ? 'Guardian Active' : 'Guardian Off' },
     { dot: ariaOn ? GOLD : 'rgba(255,255,255,0.2)',           label: ariaOn ? 'ARIA Online' : 'ARIA Offline' },
     { dot: djTrack ? CYAN : 'rgba(255,255,255,0.2)',          label: djTrack ? `DJ: ${djTrack.title}` : 'No DJ Track' },
     { dot: PINK,                                              label: '0 panel members' },
@@ -358,7 +368,7 @@ export default function AIHub() {
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(0,212,255,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(212,175,55,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -472,7 +482,7 @@ export default function AIHub() {
         <Card accentColor={PINK}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
             <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>🛡️ Guardian AI Moderation</p>
-            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#00ff88" />
+            <Toggle value={guardianOn} onChange={setGuardianOn} activeColor="#6DBF7E" />
           </div>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Real-time chat moderation. Auto-removes hate speech, spam, and toxic content.
@@ -698,7 +708,7 @@ export default function AIHub() {
             ].map(item => (
               <div key={item.title} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.15)',
+                background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)',
               }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.icon}</div>
                 <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{item.title}</p>
@@ -709,7 +719,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 6: AI Analytics ── */}
-        <Card accentColor="#00ff88">
+        <Card accentColor="#6DBF7E">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📊 AI Insights</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 16, lineHeight: 1.5 }}>
             AI-powered stream analytics and growth recommendations.
@@ -718,7 +728,7 @@ export default function AIHub() {
           {/* Metric cards */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
             {[
-              { label: 'Avg Session',   value: '23min',        color: '#00ff88' },
+              { label: 'Avg Session',   value: '23min',        color: '#6DBF7E' },
               { label: 'Retention',     value: '68%',          color: CYAN },
               { label: 'Peak Viewers',  value: 'calculating…', color: GOLD },
               { label: 'Best Time',     value: '7–9pm',        color: PURPLE },
@@ -739,7 +749,7 @@ export default function AIHub() {
               style={{
                 ...T, padding: '11px 0', borderRadius: 12, textAlign: 'center',
                 background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.25)',
-                color: '#00ff88', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+                color: '#6DBF7E', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
                 textTransform: 'uppercase', cursor: 'pointer',
               }}
             >
@@ -817,7 +827,7 @@ export default function AIHub() {
           <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              background: `linear-gradient(90deg, ${AMBER}, #CC7755)`,
               color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -827,7 +837,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#5B7FA6">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -841,7 +851,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #5B7FA6, #C62828)',
+              background: 'linear-gradient(90deg, #800020, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -851,7 +861,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: Tribute Wall ── */}
-        <Card accentColor="#7B5EA7">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🕊️ Tribute Wall</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Honor the legends who built domino culture. Read bios, leave tributes, and register for the memorial gaming event.
@@ -866,7 +876,7 @@ export default function AIHub() {
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
               background: 'rgba(123,94,167,0.2)', border: '1px solid rgba(123,94,167,0.5)',
-              color: '#A07BC4', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              color: '#C9A84C', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
               Visit Tribute Wall →
@@ -938,6 +948,68 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Aura AI + SwanyBot + Voice Settings row ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
+            <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.15)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 14px' }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>✨</div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>AURA AI</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Premium co-host · Brand & content</div>
+            </div>
+          </Link>
+          <Link to={createPageUrl('SwanyBotPage')} style={{ textDecoration: 'none' }}>
+            <div style={{ background: BG2, border: '1px solid rgba(204,119,85,0.2)', borderRadius: 16, borderLeft: `3px solid #CC7755`, padding: '14px 14px' }}>
+              <div style={{ fontSize: 22, marginBottom: 6 }}>🎮</div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#CC7755', letterSpacing: '0.06em' }}>SWANYBOT</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Domino culture · SVS expert</div>
+            </div>
+          </Link>
+        </div>
+        <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+          <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🔊</div>
+              <div>
+                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>VOICE AI SETTINGS</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>TTS · Voice selector · Volume · Speed</div>
+              </div>
+            </div>
+            <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900, letterSpacing: '0.06em' }}>Configure →</span>
+          </div>
+        </Link>
+        <Link to={createPageUrl('TranscriptionStudio')} style={{ textDecoration: 'none' }}>
+          <div style={{ background: BG2, border: '1px solid rgba(74,124,89,0.2)', borderRadius: 16, borderLeft: `3px solid #4A7C59`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4A7C59, #2A5C39)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📝</div>
+              <div>
+                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#6DBF7E', letterSpacing: '0.06em' }}>TRANSCRIPTION STUDIO</div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>Live captions · SRT export · Multi-language</div>
+              </div>
+            </div>
+            <span style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.06em' }}>Open →</span>
+          </div>
+        </Link>
+
+        {/* ── AI Persona Customizer ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
+        </div>
+
+        {/* ── AI Stream Summary ── */}
+        <div style={{ marginTop: 8 }}>
+          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
+        </div>
+
+        {/* ── Content Recommendations ── */}
+        <div style={{ marginTop: 8 }}>
+          <ContentRecommendations userId={user?.id} />
+        </div>
+
+        {/* ── SwanyBot Context Enhancer ── */}
+        <div style={{ marginTop: 8 }}>
+          <SwanyBotContextEnhancer userId={user?.id} conversationId={null} onContextReady={() => {}} />
+        </div>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,
@@ -949,22 +1021,20 @@ export default function AIHub() {
 
       </div>
 
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
+      </div>
+
       <Toast message={toast.message} visible={toast.visible} />
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <CollaborationMatcher />
+        <StreamGoals isHost={false} />
+        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+      </div>
     </div>
   );
 }

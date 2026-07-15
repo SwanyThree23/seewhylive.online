@@ -37,6 +37,13 @@ export default function CoStreamPanel({ roomId }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['costream-sessions'] });
       toast.success('Co-stream started!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_joined',
+          title: 'Started a co-stream session',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -56,6 +63,11 @@ export default function CoStreamPanel({ roomId }) {
     onError: () => toast.error('Action failed.'),
   });
 
+  // Assign srcObject once video element mounts (after isStreaming flips true)
+  useEffect(() => {
+    if (videoRef.current && mediaStream) videoRef.current.srcObject = mediaStream;
+  }, [mediaStream, isStreaming]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -67,27 +79,28 @@ export default function CoStreamPanel({ roomId }) {
 
   const startCameraStream = async () => {
     setError(null);
-    
+
     // Check if browser supports getUserMedia
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setError('Your browser does not support camera access');
       return;
     }
 
+    // Use device preferences saved by RoomEntryGate if available
+    const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+    const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           width: { ideal: 1280 },
-          height: { ideal: 720 }
+          height: { ideal: 720 },
+          ...(prefCam ? { deviceId: { ideal: prefCam } } : {}),
         },
-        audio: true
+        audio: prefMic ? { deviceId: { ideal: prefMic } } : true,
       });
 
       setMediaStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
       setIsStreaming(true);
       setStreamType('camera');
 
@@ -102,8 +115,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
     } catch (err) {
-      console.error('Camera access error:', err);
-      
       if (err.name === 'NotAllowedError') {
         setError('Permission denied. Please enable camera/microphone in browser settings.');
       } else if (err.name === 'NotFoundError') {
@@ -136,10 +147,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
       setMediaStream(stream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
       setIsStreaming(true);
       setStreamType('screen');
 
@@ -159,8 +166,6 @@ export default function CoStreamPanel({ roomId }) {
       });
 
     } catch (err) {
-      console.error('Screen share error:', err);
-      
       if (err.name === 'NotAllowedError') {
         setError('Screen sharing permission denied.');
       } else {
@@ -266,7 +271,7 @@ export default function CoStreamPanel({ roomId }) {
                     <VideoOff className="w-12 h-12 text-gray-500" />
                   </div>
                 )}
-                <Badge className="absolute top-2 left-2 bg-red-500">
+                <Badge className="absolute top-2 left-2 bg-[#C0392B]">
                   LIVE
                 </Badge>
                 <Badge className="absolute top-2 right-2" variant="secondary">
@@ -333,7 +338,7 @@ export default function CoStreamPanel({ roomId }) {
                       </Badge>
                     </div>
                   </div>
-                  <Badge className="bg-red-500">LIVE</Badge>
+                  <Badge className="bg-[#C0392B]">LIVE</Badge>
                 </div>
               </CardContent>
             </Card>

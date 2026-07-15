@@ -10,9 +10,9 @@ var TABS = [
 ];
 
 var QUALITY_OPTIONS = [
-  { id: '720p',  label: '720p',  constraints: { width: 1280,  height: 720  } },
-  { id: '1080p', label: '1080p', constraints: { width: 1920,  height: 1080 } },
-  { id: '4k',    label: '4K',    constraints: { width: 3840,  height: 2160 } },
+  { id: '720p',  label: '720p',  constraints: { width: { ideal: 1280  }, height: { ideal: 720  }, frameRate: { ideal: 30 } } },
+  { id: '1080p', label: '1080p', constraints: { width: { ideal: 1920  }, height: { ideal: 1080 }, frameRate: { ideal: 30 } } },
+  { id: '4k',    label: '4K',    constraints: { width: { ideal: 3840  }, height: { ideal: 2160 }, frameRate: { ideal: 30 } } },
 ];
 
 function isYouTubeUrl(url) {
@@ -143,9 +143,7 @@ function ScreenShareMode({ user, party }) {
   var videoRef = useRef(null);
 
   useEffect(function() {
-    if (videoRef.current && screenStream) {
-      videoRef.current.srcObject = screenStream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = screenStream || null;
   }, [screenStream]);
 
   var refreshSettings = useCallback(function(stream) {
@@ -167,7 +165,7 @@ function ScreenShareMode({ user, party }) {
     setError(null);
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: 3840, height: 2160, frameRate: 30 },
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { max: 30 } },
         audio: true,
       });
       stream.getVideoTracks()[0].onended = function() { setScreenStream(null); setStreamSettings(null); };
@@ -200,15 +198,14 @@ function ScreenShareMode({ user, party }) {
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-        {screenStream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: '100%', aspectRatio: '16/9', background: '#000', display: 'block', objectFit: 'contain' }}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: '100%', aspectRatio: '16/9', background: '#000', objectFit: 'contain', display: screenStream ? 'block' : 'none' }}
+        />
+        {!screenStream && (
           <VideoPlaceholder
             icon={<Monitor style={{ width: 48, height: 48 }} />}
             text="Share Your Screen"
@@ -412,7 +409,7 @@ function WatchTogetherMode({ user, party, members, onSyncEvent, syncEvent }) {
             style={{
               flex: 1,
               padding: '8px 12px',
-              background: 'rgba(17,8,34,0.85)',
+              background: 'rgba(8,11,24,0.85)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 8,
               color: '#fff',
@@ -538,12 +535,11 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   var [localStream, setLocalStream] = useState(null);
   var [error, setError] = useState(null);
   var [streamSettings, setStreamSettings] = useState(null);
+  var [mirrored, setMirrored] = useState(true);
   var videoRef = useRef(null);
 
   useEffect(function() {
-    if (videoRef.current && localStream) {
-      videoRef.current.srcObject = localStream;
-    }
+    if (videoRef.current) videoRef.current.srcObject = localStream || null;
   }, [localStream]);
 
   var refreshSettings = useCallback(function(stream) {
@@ -553,10 +549,15 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
 
   var startCamera = async function() {
     setError(null);
+    var prefCam = null, prefMic = null;
+    try { prefCam = localStorage.getItem('swl_pref_cam'); prefMic = localStorage.getItem('swl_pref_mic'); } catch {}
     try {
       var stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 3840, height: 2160, frameRate: 30 },
-        audio: true,
+        video: {
+          width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 },
+          ...(prefCam ? { deviceId: { ideal: prefCam } } : {}),
+        },
+        audio: prefMic ? { echoCancellation: true, noiseSuppression: true, deviceId: { ideal: prefMic } } : { echoCancellation: true, noiseSuppression: true },
       });
       stream.getVideoTracks()[0].onended = function() { setLocalStream(null); setStreamSettings(null); };
       setLocalStream(stream);
@@ -579,7 +580,7 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
     var track = localStream.getVideoTracks && localStream.getVideoTracks()[0];
     if (!track) return;
     try {
-      await track.applyConstraints({ width: 3840, height: 2160, frameRate: 30 });
+      await track.applyConstraints({ width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } });
       refreshSettings(localStream);
     } catch (e) {}
   };
@@ -598,15 +599,14 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-        {localStream ? (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)' }}
-          />
-        ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          style={{ width: '100%', aspectRatio: '16/9', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)', display: localStream ? 'block' : 'none' }}
+        />
+        {!localStream && (
           <VideoPlaceholder
             icon={<Camera style={{ width: 48, height: 48 }} />}
             text="Enable Camera for 4K Room"
@@ -652,6 +652,12 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
             >
               Apply 4K
             </ActionButton>
+            <ActionButton
+              onClick={function() { setMirrored(function(v) { return !v; }); }}
+              style={{ background: mirrored ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', border: mirrored ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)', color: mirrored ? '#D4AF37' : 'rgba(255,255,255,0.5)' }}
+            >
+              Mirror {mirrored ? 'On' : 'Off'}
+            </ActionButton>
           </>
         )}
         {streamSettings && (
@@ -689,7 +695,7 @@ function RemoteTile({ peerId, stream, members }) {
   var member = members && members.find(function(m) { return String(m.user_id) === String(peerId); });
 
   useEffect(function() {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream;
+    if (videoRef.current) videoRef.current.srcObject = stream || null;
   }, [stream]);
 
   return (
@@ -706,17 +712,16 @@ function RemoteTile({ peerId, stream, members }) {
           position: 'absolute',
           inset: 2,
           clipPath: OCT,
-          background: '#0d0618',
+          background: '#080B18',
           overflow: 'hidden',
         }}>
-          {stream ? (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: stream ? 'block' : 'none' }}
+          />
+          {!stream && (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 20 }}>
               {member ? member.user_name?.charAt(0)?.toUpperCase() || '?' : '?'}
             </div>

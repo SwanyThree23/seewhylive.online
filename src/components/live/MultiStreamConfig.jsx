@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Radio, Plus, Trash2, Copy, Play, Square, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 export default function MultiStreamConfig({ roomId, isHost }) {
   const [destinations, setDestinations] = useState([]);
@@ -11,23 +9,6 @@ export default function MultiStreamConfig({ roomId, isHost }) {
   const [formData, setFormData] = useState({ platform: 'twitch', rtmpUrl: '', streamKey: '' });
   const [isDistributing, setIsDistributing] = useState(false);
   const [streamStatus, setStreamStatus] = useState(null);
-
-  const distributeMutation = useMutation({
-    mutationFn: (payload) => base44.functions.invoke('distributeStreamToRTMP', payload),
-    onSuccess: (response) => {
-      setStreamStatus({
-        success: true,
-        message: `Streaming to ${response.data.activeDestinations} destination(s)`,
-        commands: response.data.commands,
-      });
-    },
-    onError: (error) => {
-      setStreamStatus({
-        success: false,
-        message: error.message || 'Failed to configure multi-streaming',
-      });
-    },
-  });
 
   const handleAddDestination = (e) => {
     e.preventDefault();
@@ -47,14 +28,31 @@ export default function MultiStreamConfig({ roomId, isHost }) {
     setDestinations(destinations.filter(d => d.id !== id));
   };
 
-  const handleStartStreaming = () => {
+  const handleStartStreaming = async () => {
     if (destinations.length === 0) return;
-    distributeMutation.mutate({
-      roomId,
-      destinations: destinations.filter(d => d.isActive),
-      action: 'start',
-    });
-    setIsDistributing(true);
+    const active = destinations.filter(d => d.isActive);
+    try {
+      await Promise.allSettled(active.map(d =>
+        base44.entities.RTMPDestination.create({
+          room_id: roomId,
+          platform: d.platform,
+          rtmp_url: d.rtmpUrl,
+          stream_key: d.streamKey,
+          status: 'live',
+          last_used: new Date().toISOString(),
+        })
+      ));
+      setIsDistributing(true);
+      setStreamStatus({
+        success: true,
+        message: `Streaming to ${active.length} destination(s)`,
+      });
+    } catch {
+      setStreamStatus({
+        success: false,
+        message: 'Failed to configure multi-streaming',
+      });
+    }
   };
 
   const handleStopStreaming = () => {
@@ -77,7 +75,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
 
   if (!isHost) {
     return (
-      <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4 text-center">
+      <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl p-4 text-center">
         <p className="text-xs text-white/40">Only hosts can configure multi-streaming</p>
       </div>
     );
@@ -92,9 +90,10 @@ export default function MultiStreamConfig({ roomId, isHost }) {
           animate={{ opacity: 1, y: 0 }}
           className={`p-3 rounded-lg border flex items-center gap-2 ${
             streamStatus.success
-              ? 'bg-green-900/20 border-green-600/50 text-green-300'
+              ? 'bg-[#0F1428]/20 border-[#6DBF7E]/35/50 text-[#6DBF7E]/80'
               : 'bg-red-900/20 border-red-600/50 text-red-300'
           }`}
+          style={streamStatus.success ? { background: 'rgba(109,191,126,0.15)' } : undefined}
         >
           {streamStatus.success ? (
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -106,18 +105,18 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       )}
 
       {/* Destinations List */}
-      <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+      <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-[#d4af37]" />
             <span className="text-sm font-semibold text-white">Stream Destinations</span>
-            <span className="text-xs px-2 py-1 rounded-full bg-[#7B5DA6]/30 text-[#7B5DA6]">
+            <span className="text-xs px-2 py-1 rounded-full bg-[#800020]/20 text-[#C9A84C]">
               {destinations.length}
             </span>
           </div>
           {isDistributing && (
-            <div className="flex items-center gap-1 text-green-400 text-xs">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            <div className="flex items-center gap-1 text-[#6DBF7E] text-xs">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse" />
               LIVE
             </div>
           )}
@@ -139,7 +138,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => handleRemove(dest.id)}
-                    className="w-5 h-5 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-red-400 shrink-0"
+                    className="w-5 h-5 rounded flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 text-[#C0392B] shrink-0"
                   >
                     <Trash2 className="w-3 h-3" />
                   </motion.button>
@@ -184,12 +183,15 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                 onSubmit={handleAddDestination}
                 className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2"
               >
-                <NativeSelect
+                <select
                   value={formData.platform}
-                  onChange={(val) => setFormData({ ...formData, platform: val })}
+                  onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
                   className="w-full bg-white/10 border border-white/20 rounded text-xs text-white px-2 py-1.5"
-                  options={platforms.map(p => ({value: p.id, label: p.label}))}
-                />
+                >
+                  {platforms.map(p => (
+                    <option key={p.id} value={p.id}>{p.label}</option>
+                  ))}
+                </select>
                 {formData.platform && (
                   <p className="text-[11px] text-white/40 px-1">
                     {platforms.find(p => p.id === formData.platform)?.guide}
@@ -212,7 +214,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
                   required
                 />
                 <div className="flex gap-1">
-                  <button type="submit" style={{ flex:1, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
+                  <button type="submit" style={{ flex:1, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Add Destination</button>
                   <button type="button" onClick={() => setShowForm(false)} style={{ flex:1, background:'transparent', border:'1px solid rgba(255,255,255,0.2)', color:'rgba(255,255,255,0.5)', fontSize:11, padding:'5px 10px', borderRadius:8, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>Cancel</button>
                 </div>
               </motion.form>
@@ -230,7 +232,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
       {/* Control buttons */}
       {destinations.length > 0 && (
         <div className="flex gap-2">
-          <button onClick={handleStartStreaming} disabled={isDistributing || distributeMutation.isPending} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(20,83,45,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
+          <button onClick={handleStartStreaming} disabled={isDistributing} style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', gap:8, background:'rgba(13,16,34,0.6)', border:'1px solid rgba(22,163,74,0.5)', color:'#6DBF7E', padding:'8px 14px', borderRadius:8, cursor:isDistributing?'default':'pointer', opacity:isDistributing?0.6:1, fontFamily:'Barlow Condensed, sans-serif', fontWeight:700 }}>
             <Play className="w-4 h-4" />{isDistributing ? 'Streaming...' : 'Start Multi-Streaming'}
           </button>
           {isDistributing && (

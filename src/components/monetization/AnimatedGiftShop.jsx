@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Gift, Sparkles, Heart, PartyPopper, Laugh, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { hapticMedium } from '@/utils/haptics';
 
 export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
   const [selectedGift, setSelectedGift] = useState(null);
@@ -33,10 +32,11 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
-        amount: gift.price,
-        from_user_id: user.id,
-        to_user_id: recipientId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
+        sender_id: user.id,
+        recipient_id: recipientId,
         room_id: roomId,
         virtual_good_id: gift.id,
         message: `Sent ${gift.name}`,
@@ -46,6 +46,24 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: gift.times_sent + 1,
       });
+
+      // Log activity for both parties
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name} gift`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name} gift`,
+          amount: gift.price,
+          sender_id: user.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {
@@ -66,9 +84,13 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
   const rarityColors = {
     common: 'bg-gray-100 text-gray-800',
-    rare: 'bg-blue-100 text-blue-800',
-    epic: 'bg-[#7B5DA6] text-[#7B5DA6]',
-    legendary: 'bg-yellow-100 text-yellow-800',
+    rare: 'bg-[#D4AF37]/12 text-[#800020]',
+    epic: 'bg-[#800020]/20 text-[#C9A84C]',
+    legendary: 'bg-[#D4AF37]/15 text-[#C9A84C]',
+  };
+
+  const rarityStyles = {
+    rare: { color: '#5B7FA6' },
   };
 
   return (
@@ -126,7 +148,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                 </div>
                 <h3 className="font-semibold text-sm mb-1">{gift.name}</h3>
                 <div className="flex items-center justify-between gap-2">
-                  <Badge className={rarityColors[gift.rarity]} variant="secondary">
+                  <Badge className={rarityColors[gift.rarity]} style={rarityStyles[gift.rarity]} variant="secondary">
                     {gift.rarity}
                   </Badge>
                   <p className="font-bold text-primary">${gift.price}</p>
@@ -151,7 +173,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]">
+        <Card className="bg-gradient-to-br from-[#0D1022] to-[#0F1428]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -163,7 +185,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Gift className="w-8 h-8 text-[#7B5DA6]" />
+                    <Gift className="w-8 h-8 text-[#800020]" />
                   )}
                 </div>
                 <div>
@@ -181,7 +203,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                   ${selectedGift.price}
                 </p>
                 <Button
-                  onClick={() => { hapticMedium(); sendGiftMutation.mutate(selectedGift); }}
+                  onClick={() => sendGiftMutation.mutate(selectedGift)}
                   disabled={sendGiftMutation.isPending}
                   className="mt-2"
                 >

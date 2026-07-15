@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
@@ -28,7 +28,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
 
   const { data: tips = [] } = useQuery({
     queryKey: ['creatorTips', creatorId, timeRange],
-    queryFn: () => base44.entities.Tip.filter({ creator_id: creatorId }, '-created_date', 50),
+    queryFn: () => base44.entities.TipAlert.filter({ creator_id: creatorId }, '-created_date', 50),
     enabled: !!creatorId,
   });
 
@@ -41,7 +41,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
   const stats = {
     totalViewers: analytics?.reduce((sum, a) => sum + (a.total_viewers || 0), 0) || 0,
     avgViewers: analytics?.length ? Math.round(analytics.reduce((sum, a) => sum + (a.viewer_count || 0), 0) / analytics.length) : 0,
-    totalRevenue: (tips.reduce((s, t) => s + (t.amount || 0), 0) + subs.reduce((s, sub) => s + (sub.amount || 0), 0)).toFixed(2),
+    totalRevenue: (tips.reduce((s, t) => s + (t.amount_usd || 0), 0) + subs.reduce((s, sub) => s + (sub.amount || 0), 0)).toFixed(2),
     avgEngagement: analytics?.length ? Math.round(analytics.reduce((sum, a) => sum + (a.engagement_rate || 0), 0) / analytics.length) : 0,
   };
 
@@ -60,7 +60,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
   const earningsData = buckets.map(date => {
     const dayTips = tips.filter(t => new Date(t.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
     const daySubs = subs.filter(s => new Date(s.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) === date);
-    const tipTotal = dayTips.reduce((s, t) => s + (t.amount || 0), 0);
+    const tipTotal = dayTips.reduce((s, t) => s + (t.amount_usd || 0), 0);
     const subTotal = daySubs.reduce((s, sub) => s + (sub.amount || 0), 0);
     return { date, tips: +tipTotal.toFixed(2), subs: +subTotal.toFixed(2), total: +(tipTotal + subTotal).toFixed(2) };
   });
@@ -112,7 +112,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(212,175,55,0.1)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v.toLocaleString(), 'Viewers']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v.toLocaleString(), 'Viewers']} />
             <Line type="monotone" dataKey="viewers" stroke={G} strokeWidth={2} dot={{ fill: G, r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -139,7 +139,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" tickFormatter={v => `$${v}`} />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v, name) => [`$${v}`, name === 'tips' ? 'Tips' : 'Subscriptions']} />
             <Area type="monotone" dataKey="tips" stroke={G} fill="url(#gradTips)" strokeWidth={2} />
             <Area type="monotone" dataKey="subs" stroke="#6DBF7E" fill="url(#gradSubs)" strokeWidth={2} />
           </AreaChart>
@@ -165,7 +165,7 @@ export default function AnalyticsOverview({ creatorId, timeRange = '7d' }) {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
             <YAxis tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.3)' }} stroke="rgba(255,255,255,0.1)" />
-            <Tooltip contentStyle={{ background: '#0A0710', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
+            <Tooltip contentStyle={{ background: '#080B18', border: `1px solid ${BORDER}`, borderRadius: 8 }} formatter={(v) => [v, 'Subscribers']} />
             <Bar dataKey="subscribers" fill="rgba(201,168,76,0.7)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

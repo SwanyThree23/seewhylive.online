@@ -8,15 +8,11 @@ import { toast } from 'sonner';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-/**
- * Host-only panel: manage pending guest requests to co-host.
- * Approve → guest moves to "active" participants
- * Reject → participant record deleted
- */
 export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const qc = useQueryClient();
 
-  // Fetch pending participants
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   const { data: pendingGuests = [] } = useQuery({
     queryKey: ['pending-guests', roomId],
     queryFn: () => base44.entities.Participant.filter({ room_id: roomId, status: 'pending' }),
@@ -27,9 +23,16 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const approveMut = useMutation({
     mutationFn: (participantId) =>
       base44.entities.Participant.update(participantId, { status: 'active', approved_at: new Date().toISOString() }),
-    onSuccess: () => {
+    onSuccess: (_, participantId) => {
       qc.invalidateQueries(['pending-guests']);
       toast.success('Guest approved');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_joined',
+          title: 'Approved a co-host guest request',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -37,7 +40,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
   const rejectMut = useMutation({
     mutationFn: (participantId) => base44.entities.Participant.delete(participantId),
     onSuccess: () => {
-      qc.invalidateQueries(['pending-guests']);
+      qc.invalidateQueries({ queryKey: ['pending-guests'] });
       toast.success('Guest request declined');
     },
     onError: () => toast.error('Action failed.'),
@@ -88,7 +91,7 @@ export default function ZEGOGuestApprovalPanel({ roomId, isHost }) {
                 onClick={() => rejectMut.mutate(guest.id)}
                 disabled={rejectMut.isPending}
                 className="flex items-center justify-center w-7 h-7 rounded transition-all"
-                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#C0392B' }}>
+                style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444' }}>
                 <X className="w-3.5 h-3.5" />
               </motion.button>
             </div>

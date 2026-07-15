@@ -28,7 +28,7 @@ const DURATION_OPTIONS = [
 ];
 
 const ROUND_OPTIONS = [1, 3, 5];
-const TEAM_COLORS   = [CRIMSON, '#3b82f6', '#a78bfa'];
+const TEAM_COLORS   = [CRIMSON, '#3b82f6', '#7B5DA6'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmt(s) {
@@ -624,9 +624,9 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
           <div style={{ textAlign: 'center', marginBottom: 12 }}>
             <span style={{
               fontSize: 36, fontWeight: 900, ...T,
-              color: timeLeft < 30 ? '#ef4444' : G,
+              color: timeLeft < 30 ? '#C0392B' : G,
               letterSpacing: 2,
-              textShadow: timeLeft < 30 ? '0 0 20px #ef4444' : 'none',
+              textShadow: timeLeft < 30 ? '0 0 20px #C0392B' : 'none',
             }}>
               {fmt(timeLeft)}
             </span>

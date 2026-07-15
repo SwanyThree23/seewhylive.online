@@ -4,8 +4,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "start:legacy": "node index.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",

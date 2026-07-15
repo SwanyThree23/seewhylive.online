@@ -49,12 +49,28 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
         message: `${me.full_name || me.email} just subscribed to your ${tier.name} tier for $${tier.price}/month.`,
         sender_id: userId,
       });
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'subscription',
+          title: `Subscribed to ${tier.name} tier`,
+          creator_id: creatorId,
+          amount: tier.price,
+        }),
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'subscription',
+          title: `New ${tier.name} subscriber`,
+          amount: tier.price,
+          sender_id: userId,
+        }),
+      ]);
       return sub;
     },
     onSuccess: () => {
       toast.success(`Subscribed to ${tier.name}! 🎉`);
-      qc.invalidateQueries(['userSubs']);
-      qc.invalidateQueries(['creatorSubscriptions']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
+      qc.invalidateQueries({ queryKey: ['creatorSubscriptions'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -63,7 +79,7 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
     mutationFn: () => base44.entities.Subscription.update(currentSub.id, { status: 'cancelled', auto_renew: false }),
     onSuccess: () => {
       toast.info('Subscription cancelled');
-      qc.invalidateQueries(['userSubs']);
+      qc.invalidateQueries({ queryKey: ['userSubs'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -76,16 +92,16 @@ export default function TierSubscribeCard({ tier, currentSub, userId, creatorId,
       <div
         style={{
           position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%',
-          background: 'rgba(13,6,24,0.95)',
-          border: isHighlighted ? '2px solid #f59e0b' : '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(8,11,24,0.95)',
+          border: isHighlighted ? '2px solid #D4AF37' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: 12,
-          boxShadow: isHighlighted ? '0 4px 20px rgba(245,158,11,0.2)' : 'none',
+          boxShadow: isHighlighted ? '0 4px 20px rgba(212,175,55,0.2)' : 'none',
           opacity: (isFull && !isCurrentTier) ? 0.6 : 1,
           fontFamily: 'Barlow Condensed, sans-serif',
         }}
       >
         {isHighlighted && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#f59e0b', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#D4AF37', color: '#000', fontSize: 11, fontWeight: 700, textAlign: 'center', padding: '2px 0', letterSpacing: '0.08em' }}>
             MOST POPULAR
           </div>
         )}

@@ -3,21 +3,21 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { X, Swords } from 'lucide-react';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
 const inputStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box',
   fontFamily: 'Barlow Condensed, sans-serif',
 };
 
 const selectStyle = {
-  width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)',
+  width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff',
   fontSize: 13, outline: 'none', boxSizing: 'border-box',
 };
@@ -110,15 +110,26 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
                 <motion.button
                   key={creator.id}
                   onClick={() => setSelectedChallenger(creator.id)}
-                  className="w-full p-2 rounded text-left text-xs transition-all"
+                  className="w-full p-2 rounded text-left text-xs transition-all flex items-center gap-3"
                   style={{
                     background: selectedChallenger === creator.id ? `${G}20` : 'rgba(255,255,255,0.03)',
                     border: selectedChallenger === creator.id ? `1px solid ${G}` : `1px solid ${BORDER}`,
                     color: selectedChallenger === creator.id ? G : '#fff',
                   }}
                 >
-                  <p className="font-bold">{creator.name}</p>
-                  <p className="text-[10px] opacity-50">{creator.follower_count || 0} followers</p>
+                  {/* Octagonal avatar */}
+                  <div style={{ position: 'relative', width: 36, height: 36, flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: selectedChallenger === creator.id ? G : 'rgba(212,175,55,0.25)' }} />
+                    <div style={{ position: 'absolute', inset: 2, clipPath: OCT, background: '#0D1022', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      {creator.avatar_url
+                        ? <img src={creator.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 14, fontWeight: 900, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>{(creator.name || '?').charAt(0).toUpperCase()}</span>}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-bold">{creator.name}</p>
+                    <p className="text-[10px] opacity-50">{creator.follower_count || 0} followers</p>
+                  </div>
                 </motion.button>
               ))}
             </div>
@@ -127,12 +138,16 @@ export default function PKInviteModal({ isOpen, onClose, creators }) {
           {/* Duration */}
           <div>
             <label className="text-xs font-bold text-white/60 block mb-1">Duration</label>
-            <NativeSelect
+            <select
               value={duration}
-              onChange={(val) => setDuration(val)}
+              onChange={(e) => setDuration(e.target.value)}
               style={selectStyle}
-              options={[{value:'60',label:'1 minute'},{value:'180',label:'3 minutes'},{value:'300',label:'5 minutes'},{value:'600',label:'10 minutes'}]}
-            />
+            >
+              <option value="60">1 minute</option>
+              <option value="180">3 minutes</option>
+              <option value="300">5 minutes</option>
+              <option value="600">10 minutes</option>
+            </select>
           </div>
 
           {/* Action buttons */}

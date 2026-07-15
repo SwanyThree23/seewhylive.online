@@ -64,10 +64,11 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       if (event.type !== 'create') return;
       const t = event.data;
       if (t?.room_id !== roomId) return;
-      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(t.amount * 10));
+      const tGross = (t.creator_payout || 0) + (t.platform_cut || 0);
+      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(tGross * 10));
       const floatTip = {
         id: Date.now(),
-        coins: Math.round(t.amount * 10),
+        coins: Math.round(tGross * 10),
         emoji: tipDef?.emoji || '🪙',
         color: tipDef?.color || '#d4af37',
         senderName: t.sender_name || 'Viewer',
@@ -150,7 +151,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (

@@ -8,7 +8,7 @@ import { Crown, Edit2, Trash2, Eye } from 'lucide-react';
 const G = '#D4AF37';
 const TIERS = ['Bronze', 'Silver', 'Gold', 'Diamond'];
 const TIER_ICONS = ['bronze', 'silver', 'gold', 'diamond'];
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#ffd700', '#5B7FA6'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#D4AF37', '#D4854A'];
 
 export default function SubscriptionManager({ creatorId }) {
   const [showForm, setShowForm] = useState(false);
@@ -34,9 +34,17 @@ export default function SubscriptionManager({ creatorId }) {
         sort_order: (tiers?.length || 0) + 1,
       });
     },
-    onSuccess: () => {
+    onSuccess: (tier) => {
       queryClient.invalidateQueries({ queryKey: ['subscriptionTiers', creatorId] });
       setShowForm(false);
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: `Created subscription tier: ${tier?.name || 'New Tier'}`,
+          amount: tier?.price,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -73,7 +81,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0F0B1A', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
           />
           <input
             type="number"
@@ -83,7 +91,7 @@ export default function SubscriptionManager({ creatorId }) {
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
             className="w-full px-3 py-2 rounded text-sm outline-none"
-            style={{ background: '#0F0B1A', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
+            style={{ background: '#0D1022', border: `1px solid rgba(212,175,55,0.18)`, color: 'white' }}
           />
           <div className="flex gap-2">
             <motion.button
@@ -133,7 +141,7 @@ export default function SubscriptionManager({ creatorId }) {
               <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: `${TIER_COLORS[idx % 4]}20`, color: TIER_COLORS[idx % 4] }}>
                 <Edit2 className="w-3 h-3 mx-auto" />
               </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: 'rgba(255,0,0,0.1)', color: '#C0392B' }}>
+              <motion.button whileHover={{ scale: 1.05 }} className="flex-1 py-1.5 rounded text-xs font-bold" style={{ background: 'rgba(255,0,0,0.1)', color: '#FF4444' }}>
                 <Trash2 className="w-3 h-3 mx-auto" />
               </motion.button>
             </div>

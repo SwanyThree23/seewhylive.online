@@ -2,11 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const GOLD = '#D4AF37';
-const BG2 = 'rgba(13,6,24,0.9)';
+const BG2 = 'rgba(8,11,24,0.9)';
 
-export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }) {
+/**
+ * CameraSourcePicker
+ * Accepts two calling patterns:
+ *  1. Inline button mode: <CameraSourcePicker onSourceSelected={fn} currentDeviceId={id} />
+ *  2. Modal mode (BroadcastStudio): <CameraSourcePicker onSelect={fn} onClose={fn} /> — starts open
+ */
+export default function CameraSourcePicker({ onSourceSelected, onSelect, onClose, currentDeviceId, currentStream }) {
+  // In modal mode (onClose provided) start open immediately
   const [devices, setDevices] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!onClose);
   const [preview, setPreview] = useState(null);
   const [selectedId, setSelectedId] = useState(currentDeviceId || '');
   const [quality, setQuality] = useState('720p');
@@ -43,7 +50,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
           else if (videoDevices[0]) setSelectedId(videoDevices[0].deviceId);
         }
       } catch (e) {
-        console.error('Camera enum error', e);
       }
     }
     loadDevices();
@@ -62,7 +68,6 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
       setPreview(stream);
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch(e) {
-      console.error('Preview error', e);
     }
   }
 
@@ -80,10 +85,12 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
         audio: false,
       });
       if (preview) preview.getTracks().forEach(t => t.stop());
-      onSourceSelected(stream, { deviceId: selectedId, quality, label: devices.find(d => d.deviceId === selectedId)?.label });
+      const meta = { deviceId: selectedId, quality, label: devices.find(d => d.deviceId === selectedId)?.label };
+      if (onSourceSelected) onSourceSelected(stream, meta);
+      if (onSelect) onSelect(stream, meta);
       setOpen(false);
+      if (onClose) onClose();
     } catch(e) {
-      console.error('Source select error', e);
     }
   }
 
@@ -95,26 +102,28 @@ export default function CameraSourcePicker({ onSourceSelected, currentDeviceId }
 
   return (
     <>
-      <button onClick={() => { setOpen(true); if (selectedId) previewDevice(selectedId); }}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-        style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
-        📹 {selectedDevice?.isOBS ? '🟢 OBS Camera' : selectedDevice?.label?.split('(')[0]?.trim() || 'Select Camera'}
-      </button>
+      {!onClose && (
+        <button onClick={() => { setOpen(true); if (selectedId) previewDevice(selectedId); }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+          style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+          📹 {selectedDevice?.isOBS ? '🟢 OBS Camera' : selectedDevice?.label?.split('(')[0]?.trim() || 'Select Camera'}
+        </button>
+      )}
 
       <AnimatePresence>
         {open && (
           <>
             <motion.div className="fixed inset-0 z-[200]" style={{ background: 'rgba(0,0,0,0.7)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => { setOpen(false); if (preview) preview.getTracks().forEach(t => t.stop()); }} />
+              onClick={() => { setOpen(false); if (preview) preview.getTracks().forEach(t => t.stop()); if (onClose) onClose(); }} />
             <motion.div className="fixed inset-x-4 top-[10%] z-[201] rounded-2xl overflow-hidden"
-              style={{ background: '#0D0618', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
+              style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', maxWidth: 480, margin: '0 auto' }}
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
 
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-sm font-black" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>📹 Camera Source</span>
-                <button onClick={() => setOpen(false)} className="text-white/40 text-lg leading-none">×</button>
+                <button onClick={() => { setOpen(false); if (onClose) onClose(); }} className="text-white/40 text-lg leading-none" style={{ userSelect: 'none' }}>×</button>
               </div>
 
               <div className="p-4 space-y-4">

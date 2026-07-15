@@ -98,7 +98,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
           <Bot className={`w-4 h-4 ${enabled ? 'text-[#d4af37]' : 'text-white/40'}`} />
           <span className="text-xs font-semibold text-white/70">Stream Chatbot</span>
           {enabled && (
-            <span className="text-[11px] bg-green-600/30 text-green-400 border border-green-600/30 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
+            <span className="text-[11px] bg-[#4A9B5E]/30 text-[#6DBF7E] border border-[#6DBF7E]/35/30 px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>
           )}
         </div>
         <ChevronDown className={`w-3 h-3 text-white/30 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -163,7 +163,7 @@ export default function StreamChatbot({ roomId, isHost, elapsedSeconds, hostName
                   <div key={i} className="flex items-center gap-2 mt-1 text-[10px]">
                     <code className="bg-white/10 rounded px-1.5 py-0.5 text-[#d4af37] font-mono">{c.trigger}</code>
                     <span className="text-white/40 flex-1 truncate">{c.reply}</span>
-                    <button onClick={() => setCustomCmds(p => p.filter((_, j) => j !== i))} className="text-red-400/60 hover:text-red-400">✕</button>
+                    <button onClick={() => setCustomCmds(p => p.filter((_, j) => j !== i))} className="text-[#C0392B]/60 hover:text-[#C0392B]">✕</button>
                   </div>
                 ))}
               </div>

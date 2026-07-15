@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter
+  Zap, Eye, Clock, ChevronRight, Filter, Youtube, Handshake
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -12,23 +12,27 @@ import RoomCard from '../components/rooms/RoomCard';
 import CommunityCard from '../components/communities/CommunityCard';
 import SignalBars from '../components/live/SignalBars';
 import { formatDistanceToNow } from 'date-fns';
-
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamGoals from '../components/live/StreamGoals';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -42,7 +46,10 @@ function usePullToRefresh(onRefresh) {
   function onTouchMove(e) {
     if (window.scrollY > 0) return;
     var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    }
   }
   async function onTouchEnd() {
     if (pullY >= THRESHOLD && !refreshing) {
@@ -59,7 +66,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#00d4ff', Education: '#6B7C4A', Tech: '#00d4ff', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -67,7 +74,7 @@ function FanbaseRoomCard({ room }) {
   var viewers = room.viewer_count || room.participant_count || 0;
   return (
     <motion.div whileTap={{ scale: 0.98 }} className="rounded-2xl overflow-hidden cursor-pointer"
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
       <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
         <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full"
           style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44`, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -78,11 +85,11 @@ function FanbaseRoomCard({ room }) {
           Join
         </span>
       </div>
-      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+      <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
         {room.thumbnail_url
           ? <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} /></div>}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
           style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />LIVE
@@ -113,6 +120,12 @@ export default function DiscoverPage() {
   const [tab, setTab] = useState('live'); // live | scheduled | communities | creators
   const debounceRef = useRef(null);
   const queryClient = useQueryClient();
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() { await queryClient.invalidateQueries(); });
 
   // 300ms debounce
@@ -163,7 +176,7 @@ export default function DiscoverPage() {
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
   return (
-    <div className="min-h-screen bg-[#03030A] text-white" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+    <div className="min-h-screen bg-[#080B18] text-white" style={{ overscrollBehavior: 'contain' }} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -177,7 +190,7 @@ export default function DiscoverPage() {
         )}
       </motion.div>
       {/* Dark header */}
-      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #0d0618 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #080B18 0%, #080B18 60%, #080B18 100%)', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 opacity-[0.025]" style={{
           backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
@@ -241,16 +254,44 @@ export default function DiscoverPage() {
         </div>
       </div>
 
+      {/* Tournament & Battle Feature Strip */}
+      <div style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.08)', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: 8, padding: '10px 16px', width: 'max-content' }}>
+          {[
+            { emoji: '⚔️', label: 'SVS Tournaments', sub: 'State vs State', page: 'StateVsState',    color: '#C0392B' },
+            { emoji: '🏟️', label: 'Battle Arena',    sub: 'Vote Live Battles', page: 'PKBattleArena',  color: '#C0392B' },
+            { emoji: '🏆', label: 'Live Battles',    sub: 'PK Showdowns',   page: 'LiveBattles',     color: '#D4854A' },
+            { emoji: '👑', label: 'Elite League',    sub: 'Creator Rankings', page: 'Leaderboard',    color: '#D4AF37' },
+            { emoji: '🕊️', label: 'Tribute Wall',   sub: 'Honor Legends',  page: 'TributeWall',     color: '#8B6F47' },
+            { emoji: '🎬', label: 'VOD Library',     sub: 'Past Streams',   page: 'VODLibrary',      color: '#D4854A' },
+            { emoji: '🎟️', label: 'PPV Events',      sub: 'Pay-Per-View',   page: 'PayPerViewEvents',color: '#8B6F00' },
+          ].map(item => (
+            <Link key={item.page} to={createPageUrl(item.page)} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{ width: 96, padding: '8px 6px', background: item.color + '12', border: `1px solid ${item.color}28`, borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 18 }}>{item.emoji}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10, color: '#fff', textAlign: 'center', letterSpacing: '0.02em', lineHeight: 1.2 }}>{item.label}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 8, color: item.color, textAlign: 'center', opacity: 0.9 }}>{item.sub}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Who's Online */}
+        <OnlineUsersGrid compact maxVisible={16} />
+
         {/* Tab bar + genre filter */}
         {/* Tabs — scrollable on mobile */}
         <div className="overflow-x-auto scrollbar-hide -mx-6 px-6">
-          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(7,7,15,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
+          <div className="flex gap-1 p-1 rounded-xl w-max min-w-full sm:w-auto" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(22,22,42,1)' }}>
             {[
               { id: 'live', label: 'Live', icon: Radio },
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'youtube', label: 'YouTube', icon: Youtube },
+              { id: 'collab', label: 'Collab', icon: Handshake },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -292,7 +333,7 @@ export default function DiscoverPage() {
               {loadingLive ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#16162A]" />
+                    <div key={i} className="h-52 bg-[#0B0B18] rounded-xl animate-pulse border border-[#0D1022]" />
                   ))}
                 </div>
               ) : filtered.length === 0 ? (
@@ -361,20 +402,46 @@ export default function DiscoverPage() {
               </div>
             </motion.div>
           )}
+
+          {tab === 'youtube' && (
+            <motion.div key="youtube" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <YouTubeDiscovery />
+            </motion.div>
+          )}
+
+          {tab === 'collab' && (
+            <motion.div key="collab" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
+              <CollaborationMatcher />
+            </motion.div>
+          )}
         </AnimatePresence>
+
+        {/* AI-powered content recommendations */}
+        <ContentRecommendations />
+
+        {/* YouTube partner content discovery */}
+        <div className="mt-8">
+          <YouTubeDiscovery />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
+          <StreamGoals isHost={false} />
+          <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
+          <ChallengeLeaderboard challengeId={null} />
+        </div>
       </div>
     </div>
   );
 }
 
 function TrendingCard({ room, rank }) {
-  const rankColors = ['#FFB800', '#5A5A7A', '#D4854A'];
+  const rankColors = ['#D4AF37', '#D4AF37', '#D4854A'];
   return (
     <Link to={`${createPageUrl('LiveRoom')}?id=${room.id}`}>
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="relative rounded-xl overflow-hidden border border-[#16162A] hover:border-[#C0392B]/30 transition-all cursor-pointer"
-        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #07070F 100%)' }}
+        className="relative rounded-xl overflow-hidden border border-[#0D1022] hover:border-[#C0392B]/30 transition-all cursor-pointer"
+        style={{ background: 'linear-gradient(135deg, #0B0B18 0%, #0D1022 100%)' }}
       >
         {room.thumbnail_url && (
           <img src={room.thumbnail_url} alt="" className="w-full h-28 object-cover opacity-60" />
@@ -407,10 +474,10 @@ function ScheduledRow({ room }) {
     <Link to={`${createPageUrl('Room')}?id=${room.id}`}>
       <motion.div
         whileHover={{ x: 4 }}
-        className="flex items-center gap-4 p-4 rounded-xl border border-[#16162A] hover:border-[#FFB800]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
+        className="flex items-center gap-4 p-4 rounded-xl border border-[#0D1022] hover:border-[#D4AF37]/30 bg-[#0B0B18] hover:bg-[#10101E] transition-all cursor-pointer"
       >
-        <div className="w-12 h-12 rounded-lg bg-[#07070F] border border-[#16162A] flex items-center justify-center shrink-0">
-          <Calendar className="w-5 h-5 text-[#FFB800]" />
+        <div className="w-12 h-12 rounded-lg bg-[#0D1022] border border-[#0D1022] flex items-center justify-center shrink-0">
+          <Calendar className="w-5 h-5 text-[#D4AF37]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{room.title}</p>
@@ -433,7 +500,7 @@ function CreatorCard({ creator }) {
     <Link to={`${createPageUrl('PublicProfile')}?id=${creator.user_id}`}>
       <motion.div whileTap={{ scale: 0.97 }}
         className="relative p-4 rounded-2xl cursor-pointer text-center"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}>
         {isLive && (
           <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-black"
             style={{ background: 'rgba(192,57,43,0.85)', color: 'white', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -463,7 +530,6 @@ function CreatorCard({ creator }) {
 }
 
 function EmptyState({ icon: Icon, title, desc }) {
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   return (
     <div className="text-center py-20">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>
@@ -471,21 +537,6 @@ function EmptyState({ icon: Icon, title, desc }) {
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
-      <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={null} roomId={null} currentUser={null} />
-      <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
-      <BackgroundCustomizer />
     </div>
   );
 }

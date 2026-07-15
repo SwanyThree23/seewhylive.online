@@ -36,6 +36,13 @@ export default function CreatePollModal({ isOpen, onClose, communityId }) {
     onSuccess: (poll) => {
       queryClient.invalidateQueries({ queryKey: ['polls'] });
       toast.success('Poll created!');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Created poll: ${poll?.question || 'Community Poll'}`,
+        }).catch(() => {});
+      }
       handleClose();
     },
   });
