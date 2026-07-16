@@ -11,6 +11,8 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
+import AgeGate from '../components/AgeGate';
+import { getStoredAge } from '@/lib/ageVerification';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -21,6 +23,7 @@ export default function GuestJoin() {
   const roomId = urlParams.get('room') || urlParams.get('id');
   const inviteToken = urlParams.get('token');
 
+  const [ageVerified, setAgeVerified] = useState(() => { const a = getStoredAge(); return a !== null && a >= 18; });
   const [name, setName] = useState('');
   const [participantId, setParticipantId] = useState(null);
   const [status, setStatus] = useState('idle');
@@ -82,6 +85,19 @@ export default function GuestJoin() {
   });
 
   const card = { background: 'rgba(26,13,46,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
+
+  // Age gate — required for all entry paths
+  if (!ageVerified) {
+    return (
+      <AgeGate
+        minAge={18}
+        feature="join a live room"
+        onPass={() => setAgeVerified(true)}
+        onSkip={() => setAgeVerified(true)}
+        overlay={true}
+      />
+    );
+  }
 
   // Token-based invite: show richer pre-join panel
   if (inviteToken) {

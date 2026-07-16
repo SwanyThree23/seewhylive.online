@@ -165,6 +165,7 @@ import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
 import WebSourceOverlay from '../components/live/WebSourceOverlay';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
+import StreamMetadata from '../components/live/StreamMetadata';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -684,6 +685,7 @@ export default function ControlRoomPage() {
       {roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
       {roomId && <InteractivePollWidget roomId={roomId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={room?.title || 'Control Room'} initialCategory={'entertainment'} />}
+      {room && <StreamMetadata room={room} isHost={true} />}
       {<StreamerMonetizationCenter />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
