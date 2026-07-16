@@ -51,3 +51,4 @@ data/*.db-wal
 *.tar.gz
 *.tar.gz.b64
 base44/.app.jsonc
+repo-latest/
