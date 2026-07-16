@@ -469,6 +469,24 @@ export default function LiveRoomPage({
       setScreenShareHost(null);
     });
 
+    socket.on('room-audio-only', function(data) {
+      if (!data) return;
+      setAudioOnly(Boolean(data.enabled));
+      if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
+    });
+
+    socket.on('subscriber-only-changed', function(data) {
+      if (!data) return;
+      if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
+    });
+
+    socket.on('user-banned', function(data) {
+      if (!data) return;
+      if (data.userId === userId) {
+        if (addToast) addToast('🚫 You have been removed from this room', 'error');
+      }
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -489,6 +507,9 @@ export default function LiveRoomPage({
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
+      socket.off('room-audio-only');
+      socket.off('subscriber-only-changed');
+      socket.off('user-banned');
     };
   }, [socket]);
 
