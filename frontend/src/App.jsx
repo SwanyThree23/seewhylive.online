@@ -61,6 +61,7 @@ var LiveStreamHubTab    = React.lazy(function() { return import('./components/Li
 var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
 var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
 var TriviaTab           = React.lazy(function() { return import('./components/TriviaTab.jsx'); });
+var PanelGrid           = React.lazy(function() { return import('./components/panel/PanelGrid.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -1529,6 +1530,13 @@ export default function App() {
             isLive={isLive}
             socket={socketRef.current}
             roomId={APP_ID}
+          />
+        )}
+        {activeTab === 'panel' && (
+          <PanelGrid
+            socket={socketRef.current}
+            roomId={APP_ID}
+            isHost={role === 'host' || role === 'cohost'}
           />
         )}
       </div>
