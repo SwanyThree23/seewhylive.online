@@ -158,6 +158,7 @@ import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import InviteGuestsModal from '../components/live/InviteGuestsModal';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
+import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -535,6 +536,7 @@ export default function HybridStreamRoom() {
       <InviteGuestsModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />
       {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
       {isHost && <StreamWebSourceManager isStreamActive={room?.status === 'live'} />}
+      <GlobalMicButtonV49 audioEnabled={audioEnabled} toggleAudio={toggleAudio} isSpeaking={isSpeaking} micLevel={0} visible={true} />
     </div>
   );
 }

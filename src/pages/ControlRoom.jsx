@@ -163,6 +163,8 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import LiveStageGrid from '../components/live/LiveStageGrid';
 import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
 import WebSourceOverlay from '../components/live/WebSourceOverlay';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -592,6 +594,11 @@ export default function ControlRoomPage() {
         </div>
       )}
 
+      {/* Advanced Encoder Settings */}
+      <div className="px-4 md:px-8 pt-4">
+        <AdvancedEncoderSettings onApply={(p) => { if (p?.resolution) reacquireMedia({ resolution: p.resolution }); }} />
+      </div>
+
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
@@ -774,6 +781,7 @@ export default function ControlRoomPage() {
       {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
       <BackgroundCustomizer />
       <WebSourceOverlay isStreamActive={isLive} />
+      {roomId && <GuestInviteGeneratorV49 roomId={roomId} isHost={true} />}
     </div>
   );
 }

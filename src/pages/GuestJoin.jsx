@@ -10,6 +10,7 @@ import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
+import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -18,6 +19,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 export default function GuestJoin() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('room') || urlParams.get('id');
+  const inviteToken = urlParams.get('token');
 
   const [name, setName] = useState('');
   const [participantId, setParticipantId] = useState(null);
@@ -80,6 +82,24 @@ export default function GuestJoin() {
   });
 
   const card = { background: 'rgba(26,13,46,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
+
+  // Token-based invite: show richer pre-join panel
+  if (inviteToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0d0618', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="w-full max-w-sm">
+          <GuestLandingPanel
+            token={inviteToken}
+            roomId={roomId}
+            onJoin={() => {
+              if (roomId) window.location.href = createPageUrl('LiveRoom') + '?id=' + roomId;
+            }}
+          />
+        </div>
+        <SwanyBotWidget />
+      </div>
+    );
+  }
 
   if (!roomId) {
     return (
