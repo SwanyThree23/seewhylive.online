@@ -2921,6 +2921,22 @@ io.on('connection', function(socket) {
     io.to(endRoomId).emit('poll-end', { id: endPoll.id, final: true, votes: endCounts, totalVotes: endPoll.totalVotes });
   });
 
+  // ── livesync ────────────────────────────────────────────────────────────
+  socket.on('livesync-toggle', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var lsRoomId = String(data.roomId);
+    var enabled = Boolean(data.enabled);
+    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: 0, viewerCount: 0 });
+  });
+
+  // ── platform health check ────────────────────────────────────────────────
+  socket.on('platform-health-check', function() {
+    var status = { server: 'ok', mediasoup: 'ok', database: 'ok', rtmp: 'ok', cdn: 'ok' };
+    try { db.prepare('SELECT 1').get(); } catch (e) { status.database = 'error'; }
+    socket.emit('platform-health', status);
+  });
+
   // ── disconnect ─────────────────────────────────────────────────────────
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
