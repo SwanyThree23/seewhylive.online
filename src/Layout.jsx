@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useMobileNavigation } from '@/hooks/useMobileNavigation';
+import { injectFocusRing } from '@/hooks/useMobileUtils';
 import { createPageUrl } from './utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -83,6 +85,8 @@ export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
   var location = useLocation();
+  var { canGoBack, goBack } = useMobileNavigation();
+  useEffect(function() { injectFocusRing(); }, []);
 
   // Android hardware back button: push state when drawer opens so back dismisses it
   useEffect(function() {
@@ -213,7 +217,7 @@ export default function Layout({ children, currentPageName }) {
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
-          {isMainPage ? (
+          {isMainPage || !canGoBack ? (
             <Link to={createPageUrl('Home')} className="flex items-center gap-2 shrink-0 active:opacity-70 transition-opacity" style={{ userSelect: 'none' }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center"
                 style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>
@@ -238,7 +242,7 @@ export default function Layout({ children, currentPageName }) {
               </div>
             </Link>
           ) : (
-            <button onClick={function() { navigate(-1); }}
+            <button onClick={function() { goBack(); }}
               className="flex items-center gap-2 shrink-0 active:opacity-70 transition-all active:scale-95"
               style={{ userSelect: 'none', WebkitUserSelect: 'none', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '6px 12px 6px 8px' }}>
               <ArrowLeft className="w-4 h-4" style={{ color: '#d4af37' }} />
