@@ -8,6 +8,8 @@ import {
   Tag, Image, AlignLeft, Layers, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
+import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';

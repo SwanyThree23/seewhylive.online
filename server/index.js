@@ -3092,4 +3092,3 @@ app.post('/api/zego/token', function(req, res) {
   var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
   res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
 });
->>>>>>> origin/main

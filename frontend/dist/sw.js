@@ -1,143 +1,63 @@
-'use strict';
-
-var CACHE_NAME = 'seewhy-v33-shell-v3';
-var ASSET_CACHE = 'seewhy-v33-assets-v3';
-
-var SHELL_URLS = [
+const CACHE_NAME = 'seewhy-live-v1';
+const STATIC_ASSETS = [
   '/',
+  '/index.html',
   '/manifest.json',
-  '/favicon.svg',
 ];
 
-// Install — cache the shell
-self.addEventListener('install', function(event) {
+// Install: cache static shell
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(SHELL_URLS);
-    }).then(function() {
-      return self.skipWaiting();
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
+  self.skipWaiting();
 });
 
-// Activate — delete old caches
-self.addEventListener('activate', function(event) {
+// Activate: remove old caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(function(keys) {
-      return Promise.all(
-        keys.filter(function(key) {
-          return key !== CACHE_NAME && key !== ASSET_CACHE;
-        }).map(function(key) {
-          return caches.delete(key);
-        })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
   );
+  self.clients.claim();
 });
 
-// Fetch — route-specific strategies
-self.addEventListener('fetch', function(event) {
-  var url = new URL(event.request.url);
+// Fetch: network-first for API/auth, cache-first for static assets
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
 
-  // Skip non-GET and cross-origin requests
-  if (event.request.method !== 'GET') return;
-  if (url.origin !== self.location.origin) {
-    // Stale-while-revalidate for Google Fonts
-    if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-      event.respondWith(networkFirstWithCache(event.request, ASSET_CACHE));
-    }
-    return;
+  // Always go network for API calls
+  if (url.pathname.startsWith('/api') || url.hostname !== self.location.hostname) {
+    return; // let browser handle natively
   }
 
-  // API calls — network only, no caching
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io')) {
-    return;
-  }
-
-  // JS/CSS/images/fonts — cache first, background revalidate
-  var ext = url.pathname.split('.').pop().toLowerCase();
-  var isCacheableAsset = (
-    ext === 'js' || ext === 'css' || ext === 'svg' ||
-    ext === 'png' || ext === 'jpg' || ext === 'jpeg' ||
-    ext === 'woff' || ext === 'woff2' || ext === 'ttf'
-  );
-
-  if (isCacheableAsset) {
-    event.respondWith(cacheFirstWithRevalidate(event.request, ASSET_CACHE));
-    return;
-  }
-
-  // Navigation (HTML) — network first, fall back to shell
-  if (event.request.mode === 'navigate') {
+  // For navigation requests: serve index.html (SPA fallback)
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(function() {
-        return caches.match('/');
+      fetch(request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Cache-first for hashed assets
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        });
       })
     );
     return;
   }
 
-  // Everything else — network first
-  event.respondWith(networkFirstWithCache(event.request, CACHE_NAME));
-});
-
-function cacheFirstWithRevalidate(request, cacheName) {
-  return caches.open(cacheName).then(function(cache) {
-    return cache.match(request).then(function(cached) {
-      var fetchPromise = fetch(request).then(function(response) {
-        if (response && response.status === 200) {
-          cache.put(request, response.clone());
-        }
-        return response;
-      }).catch(function() {
-        return cached;
-      });
-      return cached || fetchPromise;
-    });
-  });
-}
-
-function networkFirstWithCache(request, cacheName) {
-  return fetch(request).then(function(response) {
-    if (response && response.status === 200) {
-      caches.open(cacheName).then(function(cache) {
-        cache.put(request, response.clone());
-      });
-    }
-    return response;
-  }).catch(function() {
-    return caches.match(request);
-  });
-}
-
-// Push notifications
-self.addEventListener('push', function(event) {
-  var data = {};
-  try { data = event.data ? event.data.json() : {}; } catch(e) {}
-  var title = data.title || 'SeeWhy LIVE';
-  var options = {
-    body: data.body || 'A stream just went live!',
-    icon: '/favicon.svg',
-    badge: '/favicon.svg',
-    tag: data.tag || 'seewhy-live',
-    data: { url: data.url || '/' },
-    requireInteraction: false,
-    vibrate: [200, 100, 200],
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', function(event) {
-  event.notification.close();
-  var url = (event.notification.data && event.notification.data.url) || '/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(cls) {
-      for (var i = 0; i < cls.length; i++) {
-        if (cls[i].url === url && 'focus' in cls[i]) return cls[i].focus();
-      }
-      if (clients.openWindow) return clients.openWindow(url);
-    })
+  // Network-first for everything else
+  event.respondWith(
+    fetch(request).catch(() => caches.match(request))
   );
 });

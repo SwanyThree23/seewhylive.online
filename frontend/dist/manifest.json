@@ -1,21 +1,25 @@
 {
   "name": "SeeWhy LIVE",
   "short_name": "SeeWhy",
-  "description": "Washington Classic × Domino Entertainment × VibeN'Bones — Live streaming platform with 90% creator payout",
+  "description": "Live streaming and creator platform — real-time rooms, subscriptions, watch parties and more",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F0C14",
-  "theme_color": "#800020",
+  "background_color": "#080B18",
+  "theme_color": "#D4AF37",
   "orientation": "portrait-primary",
   "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+    { "src": "/icons/icon-72x72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-96x96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-128x128.png","sizes": "128x128", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-144x144.png","sizes": "144x144", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-152x152.png","sizes": "152x152", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-192x192.png","sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-384x384.png","sizes": "384x384", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon-512x512.png","sizes": "512x512", "type": "image/png", "purpose": "maskable any" },
+    { "src": "/icons/icon.svg",        "sizes": "any",     "type": "image/svg+xml", "purpose": "any" }
   ],
-  "categories": ["entertainment", "social"],
+  "categories": ["entertainment", "social", "multimedia"],
   "screenshots": [],
-  "related_applications": []
+  "related_applications": [],
+  "prefer_related_applications": false
 }
