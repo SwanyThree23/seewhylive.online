@@ -9,6 +9,7 @@ import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';
 import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
 import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
+import GiftLayer from './GiftLayer.jsx';
 
 var MAX_STAGE = 20;
 
@@ -1382,7 +1383,7 @@ export default function LiveRoomPage({
       {floatReacts.map(function(r) {
         return (
           <div key={r.fid} style={{
-            position: 'absolute', left: (30 + Math.random() * 30) + '%', bottom: 90,
+            position: 'absolute', left: '38%', bottom: 90,
             fontSize: 28, pointerEvents: 'none', zIndex: 55,
             animation: 'fadeSlideIn .4s ease',
           }}>
@@ -1390,6 +1391,8 @@ export default function LiveRoomPage({
           </div>
         );
       })}
+
+      <GiftLayer giftFloats={tipFeed} />
 
       {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
       {audioOnly && (
@@ -1758,6 +1761,15 @@ export default function LiveRoomPage({
       )}
 
       {/* ════════════════ TIP LEADERBOARD PANEL ════════════════ */}
+      {(role === 'host' || role === 'cohost') && tipFeed.length > 0 && (
+        <div style={{ position: 'absolute', left: 8, top: 80, zIndex: 60, width: 200 }}>
+          <GoldenWallPanel
+            items={tipFeed.map(function(t) { return { id: t.id, type: t.emoji ? 'GIFT' : 'TIP', amountCents: t.amount, username: t.from, ts: t.ts }; })}
+            maxVisible={5}
+          />
+        </div>
+      )}
+
       {showLeader && tipLeader.length > 0 && (
         <div style={{
           position: 'absolute', right: 8, top: 80, zIndex: 60,
