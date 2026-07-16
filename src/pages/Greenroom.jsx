@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
 import SelectSheet from '../components/shared/SelectSheet';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -336,6 +337,7 @@ export default function GreenroomPage() {
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
 
@@ -502,7 +504,9 @@ export default function GreenroomPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={room?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
       <NetworkQualityBanner quality={['offline','poor','fair','good','excellent'][deviceState.networkQuality] || 'good'} />
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={room?.host_id || user?.id} onOpenPanel={() => setShowSwanPanel(true)} />}
       {/* ── FANBASE-STYLE HEADER ── */}
       <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 px-3 h-12">

@@ -258,7 +258,7 @@ function CreatorView({ user }) {
             {tiers.length > 0 ? `${tiers.length} tier${tiers.length > 1 ? 's' : ''} active` : 'No tiers set up yet'}
           </div>
         </div>
-        <Link to={createPageUrl('Monetize')} style={{
+        <Link to={createPageUrl('Monetization')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '8px 14px', borderRadius: 10,
           background: `${GOLD}15`, border: `1px solid ${GOLD}35`,
