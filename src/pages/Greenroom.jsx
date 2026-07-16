@@ -206,6 +206,11 @@ export default function GreenroomPage() {
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -230,6 +235,8 @@ export default function GreenroomPage() {
   useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
   const [deviceRetryKey, setDeviceRetryKey] = useState(0);
   const [busViewerCount, setBusViewerCount] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
+  const [lastChatMsg, setLastChatMsg] = useState(null);
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);

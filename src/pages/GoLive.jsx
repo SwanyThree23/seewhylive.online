@@ -19,7 +19,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import LiveTranscription from '../components/live/LiveTranscription';
-import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -861,7 +861,6 @@ export default function GoLive() {
       {partyId && <GiftLeaderboard roomId={partyId} />}
       {<SubscriptionManager creatorId={user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={user?.id} />}
-      {!true && partyId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={partyId} />}
       {partyId && <LiveAuctionWidget creatorId={user?.id} roomId={partyId} isCreator={true} currentUser={user} />}
       <MerchStrip roomId={partyId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
@@ -871,7 +870,6 @@ export default function GoLive() {
       {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={partyId} isHost={true} />}
       {partyId && <RedemptionQueue creatorId={user?.id} roomId={partyId} />}
       {partyId && <RewardShop creatorId={user?.id} roomId={partyId} currentUser={user} />}
-      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={'Live Stream'} viewerCount={0} />}
@@ -883,7 +881,6 @@ export default function GoLive() {
       {partyId && <InteractivePollWidget roomId={partyId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={'Live Stream'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
-      {!true && partyId && <AnimatedGiftShop recipientId={user?.id} roomId={partyId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -903,9 +900,8 @@ export default function GoLive() {
       {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={0} elapsedSeconds={0} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!true && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={user?.id} />}
-      {partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={0} currentUser={user} />}
@@ -923,11 +919,9 @@ export default function GoLive() {
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
-      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {null && <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />}
-      {partyId && user?.id && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
-      {partyId && <PaymentMethodSelector creatorId={user?.id} roomId={partyId} onPaymentComplete={() => {}} />}
+      {partyId && user?.id && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={user?.full_name || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
+      {partyId && <PaymentMethodSelector creatorId={user?.id} roomId={partyId} onPaymentComplete={() => toast.success('Payment complete!')} />}
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
@@ -940,7 +934,7 @@ export default function GoLive() {
       {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={true} streamTitle={''} onUnlock={() => {}} isUnlocked={true} />
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
-      {partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => {}} />}
+      {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
@@ -950,7 +944,6 @@ export default function GoLive() {
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
       {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={true} />}
-      {null && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || ''} room={null} />}
       {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}

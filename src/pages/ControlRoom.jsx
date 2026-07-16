@@ -32,7 +32,7 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
@@ -366,6 +366,12 @@ export default function ControlRoomPage() {
     enabled: !!roomId,
     refetchInterval: 5000,
   });
+  const { data: participants = [] } = useQuery({
+    queryKey: ['cr-participants', roomId],
+    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
 
   // Uptime counter
   useEffect(() => {
@@ -568,10 +574,10 @@ export default function ControlRoomPage() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={user?.id} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
-      {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={user?.id} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => setShowSwanPanel(true)} />}
       {roomId && <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={true} embedded={true} />}
       {roomId && <PayPerViewManager roomId={roomId} />}
       {roomId && <MonetizationDashboard roomId={roomId} />}
@@ -579,7 +585,6 @@ export default function ControlRoomPage() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {<SubscriptionManager creatorId={user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={user?.id} />}
-      {!true && roomId && <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />}
       <MerchStrip roomId={roomId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
@@ -589,7 +594,6 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={roomId} isHost={true} />}
       {roomId && <RedemptionQueue creatorId={user?.id} roomId={roomId} />}
       {roomId && <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />}
-      {!true && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={user?.id} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
       {<StreamingPresets onApply={() => {}} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={0} />}
@@ -601,7 +605,6 @@ export default function ControlRoomPage() {
       {roomId && <InteractivePollWidget roomId={roomId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={room?.title || 'Control Room'} initialCategory={'entertainment'} />}
       {<StreamerMonetizationCenter />}
-      {!true && roomId && <AnimatedGiftShop recipientId={user?.id} roomId={roomId} onClose={() => {}} />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -621,7 +624,6 @@ export default function ControlRoomPage() {
       {roomId && <AIStreamSummary roomId={roomId} isHost={true} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!true && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} onClose={() => {}} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
@@ -633,11 +635,10 @@ export default function ControlRoomPage() {
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
-      {!true && user?.id && <StripeSubscribeButton creatorId={user?.id} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {room && <WatchPartyAnalytics party={room} members={[]} pollCount={0} reactionCount={0} />}
-      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => {}} />}
-      {roomId && <PaymentMethodSelector creatorId={user?.id} roomId={roomId} onPaymentComplete={() => {}} />}
+      {room && <WatchPartyAnalytics party={room} members={participants} pollCount={0} reactionCount={0} />}
+      {roomId && user?.id && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={user?.full_name || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
+      {roomId && <PaymentMethodSelector creatorId={user?.id} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
@@ -650,7 +651,7 @@ export default function ControlRoomPage() {
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={true} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
-      {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
+      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}

@@ -463,6 +463,14 @@ export default function BroadcastStudio() {
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftEvent, setGiftEvent] = useState(null);

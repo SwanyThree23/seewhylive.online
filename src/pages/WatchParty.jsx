@@ -421,6 +421,12 @@ export default function WatchPartyPage() {
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [wpAriaOn, setWpAriaOn] = useState(false);
   const [wpGuardianOn, setWpGuardianOn] = useState(true);
   const [wpAriaMessage, setWpAriaMessage] = useState('');
@@ -1162,7 +1168,7 @@ export default function WatchPartyPage() {
                   <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
-                  <HostControls isHost={isHost} party={party} onUpdate={() => {}} />
+                  <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if (party?.id) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
                 {party?.host_id && (

@@ -50,7 +50,7 @@ import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
@@ -745,7 +745,7 @@ export default function RoomPage() {
       {roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => {}} />}
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => {}} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={user?.id} onOpenPanel={() => setShowSwanPanel(true)} />}
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
       {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
@@ -764,7 +764,7 @@ export default function RoomPage() {
       {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
       {isHost && <StreamMetadataEditor initialTitle={room?.title || 'Live Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => {}} />}
+      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={room?.host_id || user?.id} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
       {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={room?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
@@ -784,7 +784,7 @@ export default function RoomPage() {
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => {}} />}
+      {!isHost && showWhisperPanel && roomId && user?.id && <WhisperPanel roomId={roomId} currentUser={user} recipientId={room?.host_id || user?.id} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={0} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={room?.host_id || user?.id} isHost={isHost} />}
@@ -813,7 +813,7 @@ export default function RoomPage() {
       {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
       <PaywallGate isHost={isHost} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={room?.host_id || user?.id} roomId={roomId} />}
-      {roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />}
+      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
       {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => {}} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
