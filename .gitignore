@@ -39,3 +39,9 @@ dist-ssr
 server/database.sqlite
 frontend/src/App.jsx.bak
 data/
+
+# Backup and junk files
+*.bak-*
+*.superseded-*
+server/test.mp4
+0.02}
