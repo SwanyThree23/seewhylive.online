@@ -62,6 +62,8 @@ var AudioStageTab       = React.lazy(function() { return import('./components/Au
 var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
 var TriviaTab           = React.lazy(function() { return import('./components/TriviaTab.jsx'); });
 var PanelGrid           = React.lazy(function() { return import('./components/panel/PanelGrid.jsx'); });
+var LiveSyncTab         = React.lazy(function() { return import('./components/LiveSyncTab.jsx'); });
+var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -1537,6 +1539,40 @@ export default function App() {
             socket={socketRef.current}
             roomId={APP_ID}
             isHost={role === 'host' || role === 'cohost'}
+          />
+        )}
+        {activeTab === 'watchparty' && (
+          <WatchPartyTab
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            guests={guests}
+          />
+        )}
+        {activeTab === 'vsbattle' && (
+          <PKBattleTab
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            username={username}
+            viewerCount={viewerCount}
+          />
+        )}
+        {activeTab === 'livesync' && (
+          <LiveSyncTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            isLive={isLive}
+            addToast={addToast}
+          />
+        )}
+        {activeTab === 'health' && (
+          <PlatformHealthTab
+            socket={socketRef.current}
+            addToast={addToast}
           />
         )}
       </div>
