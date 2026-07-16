@@ -156,6 +156,8 @@ import { useVODRecording } from '../hooks/useVODRecording';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import InviteGuestsModal from '../components/live/InviteGuestsModal';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -193,6 +195,13 @@ export default function HybridStreamRoom() {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showCamSettings, setShowCamSettings] = useState(false);
+  const [cameraDevices, setCameraDevices] = useState([]);
+  useEffect(function() {
+    navigator.mediaDevices.enumerateDevices().then(function(devs) {
+      setCameraDevices(devs.filter(function(d) { return d.kind === 'videoinput'; }));
+    }).catch(function() {});
+  }, []);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
@@ -313,7 +322,7 @@ export default function HybridStreamRoom() {
             <Share2 className="w-4 h-4" />
           </button>
           {isHost && (
-            <button className="w-8 h-8 rounded-xl flex items-center justify-center"
+            <button onClick={() => setShowCamSettings(true)} className="w-8 h-8 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
               <Settings className="w-4 h-4" />
             </button>
@@ -524,6 +533,8 @@ export default function HybridStreamRoom() {
       <BackgroundCustomizer />
       <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
       <InviteGuestsModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />
+      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHost && <StreamWebSourceManager isStreamActive={room?.status === 'live'} />}
     </div>
   );
 }

@@ -161,6 +161,8 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import LiveStageGrid from '../components/live/LiveStageGrid';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import WebSourceOverlay from '../components/live/WebSourceOverlay';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -583,6 +585,13 @@ export default function ControlRoomPage() {
         </div>
       )}
 
+      {/* RTMP Ingest — push external cameras or secondary OBS into this room */}
+      {roomId && (
+        <div className="px-4 md:px-8 pt-4">
+          <RTMPIngestPanel roomId={roomId} streamKey={session?.stream_key} />
+        </div>
+      )}
+
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
@@ -764,6 +773,7 @@ export default function ControlRoomPage() {
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}
       {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
       <BackgroundCustomizer />
+      <WebSourceOverlay isStreamActive={isLive} />
     </div>
   );
 }
