@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import panelService from '../../services/panelService';
 import PanelTile from './PanelTile';
+import PrivateRoomGate from './PrivateRoomGate';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 /**
@@ -12,6 +13,7 @@ import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
  */
 export default function PanelGrid({ socket, roomId, userId, isHost }) {
   const [slots, setSlots] = useState([]);
+  const [gatingMode, setGatingMode] = useState(null);
   const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
   const [localStream, setLocalStream] = useState(null);
   const localStreamRef = useRef(null);
@@ -45,7 +47,10 @@ export default function PanelGrid({ socket, roomId, userId, isHost }) {
     (async () => {
       try {
         const initial = await panelService.fetchPanelState(roomId);
-        setSlots(initial || []);
+        // Server returns { slots, gatingMode } or legacy array
+        const slotArr = Array.isArray(initial) ? initial : (initial.slots || []);
+        setSlots(slotArr);
+        if (!Array.isArray(initial) && initial.gatingMode) setGatingMode(initial.gatingMode);
       } catch (e) { /* non-fatal — sockets will sync */ }
 
       unsubs.push(panelService.onSlotAssigned(socket, function({ roomId: rid, slot }) {
@@ -78,6 +83,19 @@ export default function PanelGrid({ socket, roomId, userId, isHost }) {
 
     return function() { unsubs.forEach(function(u) { u(); }); };
   }, [socket, roomId]);
+
+  // Show gate to non-hosts who haven't claimed a slot in a private room
+  var hasSlot = slots.some(function(s) { return s.user_id === userId; });
+  if (gatingMode && !isHost && !hasSlot) {
+    return (
+      <PrivateRoomGate
+        socket={socket}
+        roomId={roomId}
+        gatingMode={gatingMode}
+        onJoined={function(slot) { setSlots(function(prev) { return prev.concat([slot]); }); setGatingMode(null); }}
+      />
+    );
+  }
 
   var expandedSlot = slots.find(function(s) { return s.is_expanded; });
   var otherSlots = slots.filter(function(s) { return !s.is_expanded; });
