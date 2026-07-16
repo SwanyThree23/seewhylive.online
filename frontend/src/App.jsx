@@ -1270,6 +1270,7 @@ export default function App() {
           <RTMPFanoutTab
             isLive={isLive}
             addToast={addToast}
+            socket={socketRef.current}
           />
         )}
         {activeTab === 'push' && (
@@ -1284,6 +1285,7 @@ export default function App() {
             addToast={addToast}
             streamId={APP_ID}
             creatorId={userId}
+            socket={socketRef.current}
           />
         )}
         {activeTab === 'watch' && (

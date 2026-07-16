@@ -12,7 +12,7 @@ var PLATFORMS = [
   { id: 'rumble',   name: 'Rumble',      color: '#85C742', icon: 'R',  rtmp: 'rtmp://p.contribute.live-video.net/live',                locked: false },
 ];
 
-export default function RTMPFanoutTab({ isLive, addToast }) {
+export default function RTMPFanoutTab({ isLive, addToast, socket }) {
   var [enabled, setEnabled]         = useState({ seewhy: true });
   var [keys, setKeys]               = useState({});
   var [revealed, setRevealed]       = useState({});
@@ -31,6 +31,23 @@ export default function RTMPFanoutTab({ isLive, addToast }) {
   var [newCustom,     setNewCustom]     = useState({ name: '', url: '', key: '' });
   var [customRevealed, setCustomRevealed] = useState({});
   var [customEnabled,  setCustomEnabled]  = useState({});
+
+  useEffect(function() {
+    if (!socket) return;
+    function onFanoutFailed(data) {
+      setFanoutActive(false);
+      if (addToast) addToast('⚠️ Fanout failed' + (data && data.platform ? ': ' + data.platform : ''), 'error');
+    }
+    function onFanoutRestarted(data) {
+      if (addToast) addToast('♻️ Fanout restarted' + (data && data.platform ? ': ' + data.platform : ''), 'success');
+    }
+    socket.on('fanout-failed',    onFanoutFailed);
+    socket.on('fanout-restarted', onFanoutRestarted);
+    return function() {
+      socket.off('fanout-failed',    onFanoutFailed);
+      socket.off('fanout-restarted', onFanoutRestarted);
+    };
+  }, [socket, addToast]);
 
   useEffect(function() {
     if (!fanoutActive) {

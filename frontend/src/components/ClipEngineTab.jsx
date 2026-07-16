@@ -32,7 +32,7 @@ function fmtAgo(ts) {
   return Math.floor(d / 3600) + 'h ago';
 }
 
-export default function ClipEngineTab({ isLive, addToast, streamId, creatorId }) {
+export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, socket }) {
   var [tab, setTab]               = useState('clips');
   var [clips, setClips]           = useState(SEED_CLIPS.map(function(c) { return Object.assign({}, c); }));
   var [recording, setRecording]   = useState(false);
@@ -61,6 +61,26 @@ export default function ClipEngineTab({ isLive, addToast, streamId, creatorId })
     }, 1000);
     return function() { clearInterval(recRef.current); };
   }, [recording]);
+
+  useEffect(function() {
+    if (!socket) return;
+    function onClipMarked(data) {
+      if (!data) return;
+      var marker = {
+        id: data.id || ('m-' + Date.now()),
+        title: 'Clip Marker — ' + (data.label || 'Unmarked'),
+        duration: 0,
+        size: '—',
+        ts: Date.now(),
+        thumbnail: '📍',
+        isMarker: true,
+      };
+      setClips(function(prev) { return [marker].concat(prev); });
+      if (addToast) addToast('📍 Clip marker saved: ' + (data.label || 'Unmarked'), 'success');
+    }
+    socket.on('clip-marked', onClipMarked);
+    return function() { socket.off('clip-marked', onClipMarked); };
+  }, [socket, addToast]);
 
   function startRec() {
     if (!isLive) { addToast('Start your stream before recording a clip', 'error'); return; }
