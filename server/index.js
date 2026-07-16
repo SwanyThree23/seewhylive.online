@@ -1606,6 +1606,11 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
     } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
 
+    // If a PK battle is active, emit gift boost notification to room
+    if (pkVotes.has(roomId)) {
+      io.to(roomId).emit('pk-gift-boost', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
+    }
+
     // Session revenue milestone tracking
     var prevRevenue = sessionRevenue.get(roomId) || 0;
     var newRevenue  = prevRevenue + valueCents;
@@ -2236,6 +2241,12 @@ io.on('connection', function(socket) {
     if (!data || !data.roomId) return;
     pkVotes.delete(data.roomId);
     io.to(data.roomId).emit('pk-end', data);
+  });
+
+  socket.on('pk-sudden-death', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(String(data.roomId)).emit('pk-sudden-death', { roomId: data.roomId, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────
