@@ -7,6 +7,8 @@ import { creatorCents, platformCents, getPlatformHandles } from '../platformConf
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';
+import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
+import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
 
 var MAX_STAGE = 20;
 
@@ -475,6 +477,11 @@ export default function LiveRoomPage({
       if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
     });
 
+    socket.on('panel-audio-only-changed', function(data) {
+      if (!data || data.roomId !== roomId) return;
+      setAudioOnly(Boolean(data.isAudioOnly));
+    });
+
     socket.on('subscriber-only-changed', function(data) {
       if (!data) return;
       if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
@@ -814,6 +821,10 @@ export default function LiveRoomPage({
         isVisible={role === 'host' || role === 'cohost'}
         streamStats={streamStats}
       />
+
+      {(role === 'host' || role === 'cohost') && (
+        <JoinRequestQueue socket={socket} roomId={roomId} />
+      )}
 
       {/* ════════════════ ROOM HEADER ════════════════ */}
       <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '10px 16px 10px', flexShrink: 0 }}>
@@ -2427,6 +2438,17 @@ export default function LiveRoomPage({
                   Make sure your DirectPay handles are set so viewers know where to send money
                 </div>
               )}
+            </div>
+
+            {/* ── Audio-only toggle (panel system) ── */}
+            <div style={{ background: CARD, borderRadius: 12, padding: '14px 16px', marginBottom: 12, border: '1px solid ' + BORDER }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: MUTED, marginBottom: 8, letterSpacing: .5, textTransform: 'uppercase' }}>Media Mode</div>
+              <AudioOnlyToggle
+                socket={socket}
+                roomId={roomId}
+                isAudioOnly={audioOnly}
+                videoProducer={rtcManager && rtcManager.producers ? rtcManager.producers['video'] : null}
+              />
             </div>
 
             <button onClick={function() { setShowPrivateSet(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
