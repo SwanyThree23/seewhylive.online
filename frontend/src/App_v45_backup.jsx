@@ -38,7 +38,7 @@ const GUARDIAN_FLAG = 0.50;
 const CONNECTION_CHECK_INTERVAL = 2000;
 const BASE44_APP_ID = '6990f5f24823b53e21fcdc9d';
 const INGEST_URL = 'rtmp://ingest.seewhylive.online:1935/live';
-const STREAM_KEY_PREFIX = 'sw_6991033b_';
+const STREAM_KEY_PREFIX = 'sw_';
 const SUPABASE_URL = 'https://xlrcibziouffgxciecvc.supabase.co';
 
 // Subscription tiers
@@ -85,7 +85,11 @@ function avatarColor(name) {
 }
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function tsNow() { return Date.now(); }
-function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).slice(2, 10); }
+function genStreamKey() {
+  var arr = new Uint8Array(6);
+  crypto.getRandomValues(arr);
+  return STREAM_KEY_PREFIX + Array.from(arr).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+}
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
