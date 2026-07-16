@@ -2520,7 +2520,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onUpdate={() => {}} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
@@ -2616,8 +2616,8 @@ function PipCameraTile({ localStream, videoEnabled }) {
           </div>}
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
-      <TipGoalBar roomId={null} goal={100} current={0} />
-      <TopTippers roomId={null} />
+      <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
+      <TopTippers roomId={partyId} />
     </div>
   );
 }

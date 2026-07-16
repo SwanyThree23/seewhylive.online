@@ -1366,7 +1366,7 @@ export default function LiveRoom() {
       {roomId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={roomId} />}
       {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
       {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onUpdate={() => {}} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
@@ -1413,8 +1413,8 @@ export default function LiveRoom() {
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if (party?.id) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
       <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
-      <TipGoalBar roomId={null} goal={100} current={0} />
-      <TopTippers roomId={null} />
+      <TipGoalBar roomId={roomId} goal={100} currentTotal={tipTotal} />
+      <TopTippers roomId={roomId} />
 
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
       {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}

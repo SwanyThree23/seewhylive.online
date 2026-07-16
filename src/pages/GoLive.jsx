@@ -516,6 +516,12 @@ export default function GoLive() {
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const { data: members = [] } = useQuery({
+    queryKey: ['golive-members', partyId],
+    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
+    enabled: !!partyId,
+    refetchInterval: 10000,
+  });
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
   useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
@@ -1017,7 +1023,7 @@ export default function GoLive() {
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
-      {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={[]} />}
+      {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={members} />}
       {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
@@ -1027,7 +1033,7 @@ export default function GoLive() {
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
-      {partyId && <GuestGrid participants={[]} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
       {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
@@ -1038,7 +1044,7 @@ export default function GoLive() {
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {<GuestStreamingPermissions participant={null} isHost={true} onUpdate={() => {}} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
       <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => cameraRetryRef.current?.()} />
@@ -1078,7 +1084,7 @@ export default function GoLive() {
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
-      <TipGoalBar roomId={null} goal={100} current={0} />
+      <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
