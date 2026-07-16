@@ -4,7 +4,6 @@ import { creatorCents, platformCents, getPlatformHandles } from './platformConfi
 import rtcManager from './webrtc.js';
 
 /* Always-loaded: default tab + persistent overlays */
-import RoomTab from './components/RoomTab.jsx';
 import LiveRoomPage from './components/LiveRoomPage.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -1236,10 +1235,11 @@ export default function App() {
         )}
         {activeTab === 'data' && (
           <AnalyticsTab
+            socket={socketRef.current}
             roomId={APP_ID}
-            gifts={gifts}
-            viewerCount={viewerCount}
+            role={role}
             isLive={isLive}
+            addToast={addToast}
           />
         )}
         {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
