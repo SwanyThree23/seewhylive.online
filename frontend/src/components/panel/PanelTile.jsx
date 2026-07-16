@@ -1,5 +1,5 @@
 // frontend/src/components/panel/PanelTile.jsx
-import { expandTile } from '../../services/panelService';
+import panelService from '../../services/panelService';
 
 const GOLD = '#D4AF37';
 const CREAM = '#F5F5DC';
@@ -11,11 +11,11 @@ const LIVE_RED = '#dc2626';
 // produces per participant. Swap the placeholder <div> for that component.
 // import RemoteStreamPlayer from '../RemoteStreamPlayer';
 
-export default function PanelTile({ roomId, slot, isAudioOnlyRoom, isHost }) {
+export default function PanelTile({ socket, roomId, slot, isAudioOnlyRoom, isHost }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
 
   function handleTap() {
-    expandTile({ roomId, slotIndex: slot_index, expanded: !is_expanded });
+    if (socket) panelService.expandTile(socket, roomId, slot_index, !is_expanded);
   }
 
   return (
@@ -26,7 +26,7 @@ export default function PanelTile({ roomId, slot, isAudioOnlyRoom, isHost }) {
         background: BG,
         borderRadius: 8,
         overflow: 'hidden',
-        border: slot_index === 0 ? `2px solid ${GOLD}` : '1px solid #333', // host highlighted gold
+        border: slot_index === 0 ? `2px solid ${GOLD}` : '1px solid #333',
         cursor: 'pointer',
         aspectRatio: '9/16',
       }}
@@ -37,9 +37,9 @@ export default function PanelTile({ roomId, slot, isAudioOnlyRoom, isHost }) {
           {/* INTEGRATION: replace with a real audio-level waveform driven by
              the mediasoup audio consumer's AudioContext analyser */}
           <div style={{ display: 'flex', gap: 2, marginTop: 8 }}>
-            {[1, 2, 3, 4].map((i) => (
-              <span key={i} style={{ width: 3, height: 6 + i * 3, background: GOLD, borderRadius: 2 }} />
-            ))}
+            {[1, 2, 3, 4].map(function(i) {
+              return <span key={i} style={{ width: 3, height: 6 + i * 3, background: GOLD, borderRadius: 2 }} />;
+            })}
           </div>
         </div>
       ) : (

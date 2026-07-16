@@ -1,16 +1,12 @@
 // frontend/src/components/panel/PrivateRoomGate.jsx
-//
-// Reuses the same visual pattern as your existing FoundingMemberGate —
-// swap the styling to match that component exactly if it differs from this.
-
 import { useState } from 'react';
-import { joinPanel, requestJoin } from '../../services/panelService';
+import panelService from '../../services/panelService';
 
 const BG = '#0C0806';
 const GOLD = '#D4AF37';
 const CREAM = '#F5F5DC';
 
-export default function PrivateRoomGate({ roomId, gatingMode, onJoined }) {
+export default function PrivateRoomGate({ socket, roomId, gatingMode, onJoined }) {
   const [code, setCode] = useState('');
   const [error, setError] = useState(null);
   const [requested, setRequested] = useState(false);
@@ -20,10 +16,10 @@ export default function PrivateRoomGate({ roomId, gatingMode, onJoined }) {
     setPending(true);
     setError(null);
     try {
-      const slot = await joinPanel({ roomId, inviteCode: code.trim().toUpperCase() });
+      const slot = await panelService.joinPanel(socket, roomId, code.trim().toUpperCase());
       onJoined(slot);
     } catch (err) {
-      setError(err.reason === 'invalid_code' ? 'Invalid invite code' : err.message);
+      setError(err.message === 'invalid_code' ? 'Invalid invite code' : err.message);
     } finally {
       setPending(false);
     }
@@ -33,7 +29,7 @@ export default function PrivateRoomGate({ roomId, gatingMode, onJoined }) {
     setPending(true);
     setError(null);
     try {
-      await requestJoin(roomId);
+      await panelService.requestJoin(socket, roomId);
       setRequested(true);
     } catch (err) {
       setError(err.message);
@@ -53,7 +49,7 @@ export default function PrivateRoomGate({ roomId, gatingMode, onJoined }) {
         <>
           <input
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={function(e) { setCode(e.target.value); }}
             placeholder="Enter invite code"
             style={{
               width: '100%', padding: 10, borderRadius: 8, border: `1px solid ${GOLD}`,

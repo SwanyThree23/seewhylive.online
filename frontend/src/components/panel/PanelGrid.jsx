@@ -1,7 +1,7 @@
 // frontend/src/components/panel/PanelGrid.jsx
 import { useEffect, useState } from 'react';
+import panelService from '../../services/panelService';
 import PanelTile from './PanelTile';
-import { fetchPanelState, onSlotAssigned, onSlotReleased, onLayoutUpdate, onAudioOnlyChanged } from '../../services/panelService';
 
 /**
  * Responsive grid: N tiles in a roughly-square grid when nothing is
@@ -9,78 +9,81 @@ import { fetchPanelState, onSlotAssigned, onSlotReleased, onLayoutUpdate, onAudi
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ roomId, isHost }) {
+export default function PanelGrid({ socket, roomId, isHost }) {
   const [slots, setSlots] = useState([]);
   const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
 
   useEffect(() => {
+    if (!socket || !roomId) return;
     let unsubs = [];
     (async () => {
-      const initial = await fetchPanelState(roomId);
-      setSlots(initial);
+      try {
+        const initial = await panelService.fetchPanelState(roomId);
+        setSlots(initial || []);
+      } catch (e) { /* non-fatal — sockets will sync */ }
 
-      unsubs.push(onSlotAssigned(({ roomId: rid, slot }) => {
+      unsubs.push(panelService.onSlotAssigned(socket, function({ roomId: rid, slot }) {
         if (rid !== roomId) return;
-        setSlots((prev) => {
-          const exists = prev.some((s) => s.slot_index === slot.slot_index);
-          return exists ? prev.map((s) => (s.slot_index === slot.slot_index ? { ...s, ...slot } : s)) : [...prev, slot];
+        setSlots(function(prev) {
+          var exists = prev.some(function(s) { return s.slot_index === slot.slot_index; });
+          return exists ? prev.map(function(s) { return s.slot_index === slot.slot_index ? Object.assign({}, s, slot) : s; }) : prev.concat([slot]);
         });
       }));
 
-      unsubs.push(onSlotReleased(({ roomId: rid, userId }) => {
+      unsubs.push(panelService.onSlotReleased(socket, function({ roomId: rid, userId }) {
         if (rid !== roomId) return;
-        setSlots((prev) => prev.filter((s) => s.user_id !== userId));
+        setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
       }));
 
-      unsubs.push(onLayoutUpdate(({ roomId: rid, slot }) => {
+      unsubs.push(panelService.onLayoutUpdate(socket, function({ roomId: rid, slot }) {
         if (rid !== roomId) return;
-        setSlots((prev) => prev.map((s) => (s.slot_index === slot.slot_index ? { ...s, is_expanded: slot.is_expanded } : { ...s, is_expanded: false })));
+        setSlots(function(prev) {
+          return prev.map(function(s) {
+            return s.slot_index === slot.slot_index ? Object.assign({}, s, { is_expanded: slot.is_expanded }) : Object.assign({}, s, { is_expanded: false });
+          });
+        });
       }));
 
-      unsubs.push(onAudioOnlyChanged(({ roomId: rid, isAudioOnly }) => {
+      unsubs.push(panelService.onAudioOnlyChanged(socket, function({ roomId: rid, isAudioOnly }) {
         if (rid !== roomId) return;
         setIsAudioOnlyRoom(isAudioOnly);
       }));
     })();
 
-    return () => unsubs.forEach((u) => u());
-  }, [roomId]);
+    return function() { unsubs.forEach(function(u) { u(); }); };
+  }, [socket, roomId]);
 
-  const expandedSlot = slots.find((s) => s.is_expanded);
-  const otherSlots = slots.filter((s) => !s.is_expanded);
+  var expandedSlot = slots.find(function(s) { return s.is_expanded; });
+  var otherSlots = slots.filter(function(s) { return !s.is_expanded; });
 
   if (expandedSlot) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 8 }}>
         <div style={{ width: '100%' }}>
-          <PanelTile roomId={roomId} slot={expandedSlot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+          <PanelTile socket={socket} roomId={roomId} slot={expandedSlot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
         </div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
-          {otherSlots.map((slot) => (
-            <div key={slot.slot_index} style={{ minWidth: 70, width: 70 }}>
-              <PanelTile roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
-            </div>
-          ))}
+          {otherSlots.map(function(slot) {
+            return (
+              <div key={slot.slot_index} style={{ minWidth: 70, width: 70 }}>
+                <PanelTile socket={socket} roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  // No tile expanded — even grid. Column count scales with guest count.
-  const cols = slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5;
+  var cols = slots.length <= 4 ? 2 : slots.length <= 9 ? 3 : slots.length <= 16 ? 4 : 5;
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gap: 6,
-        padding: 8,
-      }}
-    >
-      {slots.map((slot) => (
-        <PanelTile key={slot.slot_index} roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
-      ))}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: 6, padding: 8 }}>
+      {slots.map(function(slot) {
+        return (
+          <PanelTile key={slot.slot_index} socket={socket} roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+        );
+      })}
     </div>
   );
 }
