@@ -1287,6 +1287,8 @@ export default function App() {
           <ClipEngineTab
             isLive={isLive}
             addToast={addToast}
+            streamId={APP_ID}
+            creatorId={userId}
           />
         )}
         {activeTab === 'watch' && (
