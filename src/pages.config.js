@@ -116,6 +116,21 @@ const EmbedPage                = lazy(() => import('./pages/EmbedPage'));
 const MerchStore               = lazy(() => import('./pages/MerchStore'));
 const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
 const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
+const CreatorAnalytics         = lazy(() => import('./pages/CreatorAnalytics'));
+const FallenLegendsPage        = lazy(() => import('./pages/FallenLegendsPage'));
+const ForgotPassword           = lazy(() => import('./pages/ForgotPassword'));
+const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
+const GoLiveStudio             = lazy(() => import('./pages/GoLiveStudio'));
+const INSForgeStudio           = lazy(() => import('./pages/INSForgeStudio'));
+const PayoutCenter             = lazy(() => import('./pages/PayoutCenter'));
+const Register                 = lazy(() => import('./pages/Register'));
+const ResetPassword            = lazy(() => import('./pages/ResetPassword'));
+const SVSArena                 = lazy(() => import('./pages/SVSArena'));
+const StudioHub                = lazy(() => import('./pages/StudioHub'));
+const UnifiedRoom              = lazy(() => import('./pages/UnifiedRoom'));
+const VoiceAISettings          = lazy(() => import('./pages/VoiceAISettings'));
+const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
+const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -225,6 +240,21 @@ export const PAGES = {
     "MerchStore": MerchStore,
     "StreamShareHub": StreamShareHub,
     "SeeWhyLIVEv41": SeeWhyLIVEv41,
+    "CreatorAnalytics": CreatorAnalytics,
+    "FallenLegendsPage": FallenLegendsPage,
+    "ForgotPassword": ForgotPassword,
+    "GreenRoomPreFlight": GreenRoomPreFlight,
+    "GoLiveStudio": GoLiveStudio,
+    "INSForgeStudio": INSForgeStudio,
+    "PayoutCenter": PayoutCenter,
+    "Register": Register,
+    "ResetPassword": ResetPassword,
+    "SVSArena": SVSArena,
+    "StudioHub": StudioHub,
+    "UnifiedRoom": UnifiedRoom,
+    "VoiceAISettings": VoiceAISettings,
+    "WashingtonClassic": WashingtonClassic,
+    "WisperFlo": WisperFlo,
 }
 
 export const pagesConfig = {
