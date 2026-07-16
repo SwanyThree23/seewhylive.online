@@ -20,6 +20,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
 const BG    = '#080B18';
 const BG2   = '#0D0A14';
 const BG3   = '#13101C';
@@ -102,6 +103,7 @@ export default function GuardianAI() {
   const [scanStep, setScanStep]  = useState('');
   const [activeTab, setActiveTab] = useState('log');
   const logEndRef = useRef(null);
+  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
 
   const { data: moderations = [], isLoading } = useQuery({
     queryKey: ['guardian-moderations'],
@@ -178,6 +180,14 @@ export default function GuardianAI() {
       ));
 
       const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
+      scanResults.forEach(function(r) {
+        if (r.violation_type !== 'safe') {
+          var msg = messages.find(function(m) { return m.id === r.id; });
+          var target = msg?.user_name || 'User';
+          var actionType = r.ai_confidence >= banT / 100 ? 'ban' : r.ai_confidence >= muteT / 100 ? 'mute' : 'flag';
+          pushModToast({ type: actionType, target: target, message: r.ai_explanation });
+        }
+      });
       toast.success(`Scanned ${scanResults.length} messages — ${violations} flagged`);
       queryClient.invalidateQueries(['guardian-moderations']);
     } catch {
@@ -409,6 +419,7 @@ export default function GuardianAI() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
+      <ModerationToast toasts={modToasts} />
     </div>
   );
 }

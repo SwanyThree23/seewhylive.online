@@ -23,6 +23,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
 const PINK  = '#C0392B';
@@ -613,7 +614,7 @@ export default function CreatorSubscriptionsPage() {
           )}
           {tab === 'my' && user && (
             <motion.div key="my" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <MySubscriptionsView user={user} />
+              <MySubscriptions userId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>
