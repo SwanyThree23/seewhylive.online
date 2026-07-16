@@ -524,7 +524,7 @@ export default function LiveRoomPage({
     var fid = Date.now() + Math.random();
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
-    if (socket) socket.emit('react', { roomId: roomId, userId: userId, emoji: emoji });
+    if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
     setReactsOpen(false);
   }
 

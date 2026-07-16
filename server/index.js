@@ -1768,6 +1768,29 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('watch-party-seek', { position: data.position });
   });
 
+  // Host pushes a full sync to all room viewers
+  socket.on('watch-party-sync', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room = getRoom(roomId);
+    if (!room.watchParty) room.watchParty = {};
+    if (data.videoId !== undefined) room.watchParty.videoId = data.videoId;
+    if (data.url !== undefined)     room.watchParty.url     = data.url;
+    if (data.type !== undefined)    room.watchParty.type    = data.type;
+    room.watchParty.playing  = !!data.playing;
+    room.watchParty.position = typeof data.position === 'number' ? data.position : 0;
+    room.watchParty.ts       = Date.now();
+    io.to(roomId).emit('watch-party-sync', {
+      videoId:  room.watchParty.videoId,
+      url:      room.watchParty.url || '',
+      type:     room.watchParty.type || 'youtube',
+      playing:  room.watchParty.playing,
+      position: room.watchParty.position,
+      ts:       room.watchParty.ts
+    });
+  });
+
   // Request current watch party state (for late-joining guests/viewers)
   socket.on('watch-party-sync-request', function(data) {
     var roomId = data.roomId || socket.data.roomId;

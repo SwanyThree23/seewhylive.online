@@ -145,7 +145,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     setBattleState('active');
 
     if (socket && roomId) {
-      socket.emit('pk-battle-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
+      socket.emit('pk-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
     }
 
     clearAllIntervals();
@@ -196,7 +196,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
         });
         if (socket && roomId) {
-          socket.emit('pk-battle-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
+          socket.emit('pk-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
         }
         addToast(w + ' wins the battle!', 'success');
         return dScore;
