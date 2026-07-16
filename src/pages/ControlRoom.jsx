@@ -160,6 +160,7 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import LiveStageGrid from '../components/live/LiveStageGrid';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -601,6 +602,31 @@ export default function ControlRoomPage() {
               />
             ))}
           </div>
+        </div>
+      )}
+      {/* Live Stage Grid — active participants */}
+      {participants.length > 0 && (
+        <div className="px-4 md:px-8 pb-6">
+          <p className="text-[10px] font-black uppercase mb-2"
+            style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+            Stage · {participants.length} on air
+          </p>
+          <LiveStageGrid
+            participants={participants.map(function(p) {
+              return {
+                id: p.id,
+                name: p.display_name || p.full_name || 'Guest',
+                audioLevel: 0,
+                isHost: p.role === 'host',
+                isCoHost: p.role === 'cohost',
+                videoStream: null,
+                muted: !!p.muted,
+                isLocal: p.user_id === user?.id,
+              };
+            })}
+            maxSeats={participants.length}
+            onTapSeat={function(id) { toast.info('Tap: ' + id); }}
+          />
         </div>
       )}
       <SwanAIRecommendations roomId={roomId} currentLayout="control" viewerCount={viewerCount} />

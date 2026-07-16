@@ -155,6 +155,7 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import InviteGuestsModal from '../components/live/InviteGuestsModal';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -191,6 +192,7 @@ export default function HybridStreamRoom() {
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
@@ -306,7 +308,7 @@ export default function HybridStreamRoom() {
             style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.35)', color: '#D4AF37' }}>
             Hybrid
           </span>
-          <button className="w-8 h-8 rounded-xl flex items-center justify-center"
+          <button onClick={() => setShowInviteModal(true)} className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
             <Share2 className="w-4 h-4" />
           </button>
@@ -521,6 +523,7 @@ export default function HybridStreamRoom() {
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
       <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
+      <InviteGuestsModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />
     </div>
   );
 }
