@@ -495,6 +495,13 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('user-unbanned', function(data) {
+      if (!data) return;
+      if (data.username && username && data.username === username) {
+        if (addToast) addToast('✅ Your ban has been lifted — welcome back!', 'success');
+      }
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -518,6 +525,7 @@ export default function LiveRoomPage({
       socket.off('room-audio-only');
       socket.off('subscriber-only-changed');
       socket.off('user-banned');
+      socket.off('user-unbanned');
     };
   }, [socket]);
 
