@@ -26,16 +26,16 @@ git -C "$REPO_DIR" reset --hard "origin/$BRANCH"
 echo "  ✓ Code updated"
 
 # ── 2. Build frontend ────────────────────────────────────────────────────────
-echo "▶ Building frontend..."
-cd "$REPO_DIR/frontend"
+echo "▶ Building frontend (root src/)..."
+cd "$REPO_DIR"
 npm install
 npm run build
-echo "  ✓ Frontend built → frontend/dist/"
+echo "  ✓ Frontend built → dist/"
 
 # ── 3. Deploy frontend dist ──────────────────────────────────────────────────
 echo "▶ Deploying frontend to $PROD_FRONTEND/dist..."
 mkdir -p "$PROD_FRONTEND/dist"
-rsync -a --delete "$REPO_DIR/frontend/dist/" "$PROD_FRONTEND/dist/"
+rsync -a --delete "$REPO_DIR/dist/" "$PROD_FRONTEND/dist/"
 echo "  ✓ Frontend deployed"
 
 # ── 4. Deploy server files ───────────────────────────────────────────────────
