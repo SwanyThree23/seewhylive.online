@@ -1627,7 +1627,9 @@ export default function App() {
           roomId={APP_ID}
         />
       )}
+      {activeTab !== 'room' && (
       <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+      )}
       <WelcomeAudio socket={socketRef.current} />
     </div>
   );
