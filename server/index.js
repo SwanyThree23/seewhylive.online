@@ -6,6 +6,7 @@ const inviteRoutes = require('./routes/invites');
 const panelRoomRoutes = require('./routes/panelRooms');
 const challengeRoutes = require('./routes/challenges');
 const vodRoutes = require('./routes/vod');
+const leaderboardRoutes = require('./routes/leaderboard');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 'use strict';
@@ -293,6 +294,7 @@ app.use('/api/invites', inviteRoutes);
 app.use('/api/rooms', panelRoomRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/vod', vodRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));

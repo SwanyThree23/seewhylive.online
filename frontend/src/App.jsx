@@ -64,6 +64,7 @@ var TriviaTab           = React.lazy(function() { return import('./components/Tr
 var PanelGrid           = React.lazy(function() { return import('./components/panel/PanelGrid.jsx'); });
 var LiveSyncTab         = React.lazy(function() { return import('./components/LiveSyncTab.jsx'); });
 var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
+var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -1254,13 +1255,7 @@ export default function App() {
           />
         )}
         {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
-          <AnalyticsTab
-            socket={socketRef.current}
-            roomId={APP_ID}
-            role={role}
-            isLive={isLive}
-            addToast={addToast}
-          />
+          <CreatorDashboard />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab
