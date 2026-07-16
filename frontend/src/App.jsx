@@ -814,6 +814,13 @@ export default function App() {
       addToast('Guardian muted a user: ' + (data.reason || 'violation'), 'info');
     });
 
+    socket.on('creator-followed', function(data) {
+      if (!data || !data.follower) return;
+      if (role === 'host' || role === 'cohost') {
+        addToast('❤️ ' + data.follower + ' followed you!', 'success');
+      }
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -841,6 +848,7 @@ export default function App() {
       socket.off('watch-party-started');
       socket.off('aura-message');
       socket.off('user-muted');
+      socket.off('creator-followed');
       socket.off('username-updated');
       socket.off('super-chat');
       socket.off('earnings-update');
