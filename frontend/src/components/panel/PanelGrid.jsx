@@ -1,7 +1,8 @@
 // frontend/src/components/panel/PanelGrid.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import panelService from '../../services/panelService';
 import PanelTile from './PanelTile';
+import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 /**
  * Responsive grid: N tiles in a roughly-square grid when nothing is
@@ -9,9 +10,34 @@ import PanelTile from './PanelTile';
  * and the rest collapse into a scrollable strip. Works for any count up to
  * the platform's MAX_PANEL_GUESTS=20 ceiling.
  */
-export default function PanelGrid({ socket, roomId, isHost }) {
+export default function PanelGrid({ socket, roomId, userId, isHost }) {
   const [slots, setSlots] = useState([]);
   const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
+  const [localStream, setLocalStream] = useState(null);
+  const localStreamRef = useRef(null);
+
+  // Acquire local mic stream for speaking-level visualization on local tile
+  useEffect(function() {
+    if (!isAudioOnlyRoom || !userId) return;
+    var active = true;
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(function(stream) {
+        if (!active) { stream.getTracks().forEach(function(t) { t.stop(); }); return; }
+        localStreamRef.current = stream;
+        setLocalStream(stream);
+      })
+      .catch(function() {});
+    return function() {
+      active = false;
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(function(t) { t.stop(); });
+        localStreamRef.current = null;
+        setLocalStream(null);
+      }
+    };
+  }, [isAudioOnlyRoom, userId]);
+
+  var gate = useAutoSpeakGate({ stream: localStream });
 
   useEffect(() => {
     if (!socket || !roomId) return;
@@ -30,9 +56,9 @@ export default function PanelGrid({ socket, roomId, isHost }) {
         });
       }));
 
-      unsubs.push(panelService.onSlotReleased(socket, function({ roomId: rid, userId }) {
+      unsubs.push(panelService.onSlotReleased(socket, function({ roomId: rid, userId: releasedUserId }) {
         if (rid !== roomId) return;
-        setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
+        setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== releasedUserId; }); });
       }));
 
       unsubs.push(panelService.onLayoutUpdate(socket, function({ roomId: rid, slot }) {
@@ -56,17 +82,30 @@ export default function PanelGrid({ socket, roomId, isHost }) {
   var expandedSlot = slots.find(function(s) { return s.is_expanded; });
   var otherSlots = slots.filter(function(s) { return !s.is_expanded; });
 
+  function tileProps(slot) {
+    var isLocal = userId && slot.user_id === userId;
+    return {
+      socket: socket,
+      roomId: roomId,
+      slot: slot,
+      isAudioOnlyRoom: isAudioOnlyRoom,
+      isHost: isHost,
+      micLevel: isLocal ? gate.micLevel : 0,
+      isSpeaking: isLocal ? gate.isSpeaking : false,
+    };
+  }
+
   if (expandedSlot) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 8 }}>
         <div style={{ width: '100%' }}>
-          <PanelTile socket={socket} roomId={roomId} slot={expandedSlot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+          <PanelTile {...tileProps(expandedSlot)} />
         </div>
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto' }}>
           {otherSlots.map(function(slot) {
             return (
               <div key={slot.slot_index} style={{ minWidth: 70, width: 70 }}>
-                <PanelTile socket={socket} roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+                <PanelTile {...tileProps(slot)} />
               </div>
             );
           })}
@@ -81,7 +120,7 @@ export default function PanelGrid({ socket, roomId, isHost }) {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: 6, padding: 8 }}>
       {slots.map(function(slot) {
         return (
-          <PanelTile key={slot.slot_index} socket={socket} roomId={roomId} slot={slot} isAudioOnlyRoom={isAudioOnlyRoom} isHost={isHost} />
+          <PanelTile key={slot.slot_index} {...tileProps(slot)} />
         );
       })}
     </div>

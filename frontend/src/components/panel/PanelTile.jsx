@@ -11,7 +11,7 @@ const LIVE_RED = '#dc2626';
 // produces per participant. Swap the placeholder <div> for that component.
 // import RemoteStreamPlayer from '../RemoteStreamPlayer';
 
-export default function PanelTile({ socket, roomId, slot, isAudioOnlyRoom, isHost }) {
+export default function PanelTile({ socket, roomId, slot, isAudioOnlyRoom, isHost, micLevel, isSpeaking }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
 
   function handleTap() {
@@ -26,19 +26,40 @@ export default function PanelTile({ socket, roomId, slot, isAudioOnlyRoom, isHos
         background: BG,
         borderRadius: 8,
         overflow: 'hidden',
-        border: slot_index === 0 ? `2px solid ${GOLD}` : '1px solid #333',
+        border: isSpeaking ? `2px solid ${GOLD}` : slot_index === 0 ? `2px solid ${GOLD}` : '1px solid #333',
+        boxShadow: isSpeaking ? ('0 0 12px ' + GOLD + '55') : 'none',
+        transition: 'box-shadow 0.15s',
         cursor: 'pointer',
         aspectRatio: '9/16',
       }}
     >
       {isAudioOnlyRoom ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-          <img src={avatar_url} alt={display_name} style={{ width: 56, height: 56, borderRadius: '50%' }} />
-          {/* INTEGRATION: replace with a real audio-level waveform driven by
-             the mediasoup audio consumer's AudioContext analyser */}
-          <div style={{ display: 'flex', gap: 2, marginTop: 8 }}>
-            {[1, 2, 3, 4].map(function(i) {
-              return <span key={i} style={{ width: 3, height: 6 + i * 3, background: GOLD, borderRadius: 2 }} />;
+          <img
+            src={avatar_url}
+            alt={display_name}
+            style={{
+              width: 56, height: 56, borderRadius: '50%',
+              boxShadow: isSpeaking ? ('0 0 0 3px ' + GOLD + ', 0 0 12px ' + GOLD + '66') : 'none',
+              transition: 'box-shadow 0.15s',
+            }}
+          />
+          <div style={{ display: 'flex', gap: 2, marginTop: 8, alignItems: 'flex-end' }}>
+            {[0.25, 0.5, 1, 0.6, 0.35].map(function(scale, i) {
+              var level = micLevel || 0;
+              var barH = 4 + Math.min(24, Math.round(level * scale * 0.32));
+              return (
+                <span
+                  key={i}
+                  style={{
+                    width: 3,
+                    height: barH + 'px',
+                    background: isSpeaking ? GOLD : 'rgba(212,175,55,0.35)',
+                    borderRadius: 2,
+                    transition: 'height 0.08s, background 0.15s',
+                  }}
+                />
+              );
             })}
           </div>
         </div>

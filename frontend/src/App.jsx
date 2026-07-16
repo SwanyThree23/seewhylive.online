@@ -1535,6 +1535,7 @@ export default function App() {
           <PanelGrid
             socket={socketRef.current}
             roomId={APP_ID}
+            userId={userId}
             isHost={role === 'host' || role === 'cohost'}
           />
         )}

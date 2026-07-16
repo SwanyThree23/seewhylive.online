@@ -110,6 +110,18 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
     });
 
+    socket.on('pk-gift-boost', function(data) {
+      if (!data) return;
+      var boostMsg = (data.from || 'Viewer') + ' gifted ' + (data.name || data.emoji || 'a gift') + ' — BOOST! 🚀';
+      setBattleLog(function(prev) { return [{ text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 20); });
+      if (addToast) addToast('🎁 Gift boost from ' + (data.from || 'viewer') + '!', 'success');
+    });
+
+    socket.on('pk-sudden-death', function() {
+      setBattleLog(function(prev) { return [{ text: '⚡ SUDDEN DEATH — next point wins!', ts: Date.now() }].concat(prev).slice(0, 20); });
+      if (addToast) addToast('⚡ SUDDEN DEATH round!', 'error');
+    });
+
     return function() {
       socket.off('pk-update');
       socket.off('pk-start');
@@ -117,8 +129,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       socket.off('pk-end');
       socket.off('pk-vote-update');
       socket.off('pk-cheer-update');
+      socket.off('pk-gift-boost');
+      socket.off('pk-sudden-death');
     };
-  }, [socket]);
+  }, [socket, addToast]);
 
   function startBattle() {
     var cName = challengerInput.trim();
