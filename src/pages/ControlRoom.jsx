@@ -340,6 +340,9 @@ export default function ControlRoomPage() {
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
   const [uptime, setUptime] = useState(0);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
@@ -630,7 +633,7 @@ export default function ControlRoomPage() {
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
       {<LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} isHost={isHost} isPinned={false} onPinToggle={() => {}} points={0} label={'Host'} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} isHost={true} isPinned={false} onPinToggle={() => {}} points={0} label={'Host'} />}
       {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
       {<EvmuxWebSource isActive={false} onClose={() => {}} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}

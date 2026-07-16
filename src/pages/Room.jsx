@@ -173,6 +173,10 @@ export default function RoomPage() {
   const [pinnedId, setPinnedId] = useState(null);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
 

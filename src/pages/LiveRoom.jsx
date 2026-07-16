@@ -445,6 +445,10 @@ export default function LiveRoom() {
   const [giftOpen, setGiftOpen]     = useState(false);
   const [battleOpen, setBattleOpen] = useState(false);
   const [giftEvent, setGiftEvent]   = useState(null);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const lastGiftTsRef               = useRef(0);
 
   // Sync stage when real data arrives

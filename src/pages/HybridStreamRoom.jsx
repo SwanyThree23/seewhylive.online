@@ -155,6 +155,11 @@ export default function HybridStreamRoom() {
   const [spotlightId, setSpotlightId] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const [participants, setParticipants] = useState([]);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],

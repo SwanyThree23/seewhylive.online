@@ -452,6 +452,8 @@ export default function GoLive() {
   const [partyId,     setPartyId]     = useState(null);
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
+  const [showViewerControls, setShowViewerControls] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
