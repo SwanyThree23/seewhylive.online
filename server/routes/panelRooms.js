@@ -27,7 +27,7 @@ router.get('/:id/join-requests', async (req, res) => {
     const result = await db.query(
       `SELECT r.id, r.user_id, r.requested_at, u.display_name, u.avatar_url
        FROM room_join_requests r JOIN users u ON u.id = r.user_id
-       WHERE r.room_id = $1 AND r.status = 'pending' ORDER BY r.requested_at`,
+       WHERE r.stream_id = $1 AND r.status = 'pending' ORDER BY r.requested_at`,
       [req.params.id]
     );
     res.json(result.rows);

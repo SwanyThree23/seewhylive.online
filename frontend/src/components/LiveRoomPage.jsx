@@ -477,7 +477,7 @@ export default function LiveRoomPage({
       if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
     });
 
-    socket.on('panel-audio-only-changed', function(data) {
+    socket.on('panel:audio_only_changed', function(data) {
       if (!data || data.roomId !== roomId) return;
       setAudioOnly(Boolean(data.isAudioOnly));
     });
