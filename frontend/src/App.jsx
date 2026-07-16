@@ -1540,10 +1540,7 @@ export default function App() {
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}
-      {activeTab === "panel" && React.createElement(PanelStudio, {streamId:"6991033b"})}
-      {activeTab === "watchparty" && React.createElement(WatchParty, {streamId:"6991033b"})}
-      {activeTab === "vsbattle" && React.createElement(VSBattleStudio, {streamId:"6991033b"})}</div>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
@@ -1605,7 +1602,9 @@ export default function App() {
           roomId={APP_ID}
         />
       )}
-      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+      {activeTab !== 'room' && (
+        <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+      )}
       <WelcomeAudio socket={socketRef.current} />
     </div>
   );
