@@ -97,6 +97,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import OctagonalVideoGrid from '../components/streaming/OctagonalVideoGrid';
 import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
@@ -673,6 +674,15 @@ export default function ControlRoomPage() {
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
+      {roomId && participants.length > 0 && (
+        <OctagonalVideoGrid
+          roomId={roomId}
+          participants={participants}
+          currentUser={user}
+          isHost={true}
+          compactMode={true}
+        />
+      )}
       {roomId && <CollaborativeWhiteboard roomId={roomId} />}
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={roomId} isHost={true} />}
       {roomId && <RedemptionQueue creatorId={user?.id} roomId={roomId} />}

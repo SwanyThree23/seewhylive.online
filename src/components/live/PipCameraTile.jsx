@@ -6,7 +6,7 @@ import TopTippers from '@/components/monetization/TopTippers';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-export default function PipCameraTile({ localStream, videoEnabled }) {
+export default function PipCameraTile({ localStream, videoEnabled, roomId = null, tipTotal = 0, tipGoal = 100 }) {
   const ref = useRef(null);
   useEffect(() => { if (ref.current && localStream) ref.current.srcObject = localStream; }, [localStream]);
   const showVideo = !!(localStream && videoEnabled);
@@ -21,8 +21,8 @@ export default function PipCameraTile({ localStream, videoEnabled }) {
       </div>
       <div className="absolute bottom-1 left-1 text-[7px] px-1 rounded"
         style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>YOU</div>
-      <TipGoalBar roomId={null} goal={100} current={0} />
-      <TopTippers roomId={null} />
+      <TipGoalBar roomId={roomId} goal={tipGoal} currentTotal={tipTotal} />
+      <TopTippers roomId={roomId} />
     </div>
   );
 }

@@ -115,6 +115,17 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
+  socket.on('panel:raise_hand', function(payload) {
+    try {
+      var roomId = payload && payload.roomId;
+      var raised  = !!(payload && payload.raised);
+      if (!roomId) return;
+      io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
+    } catch (err) {
+      console.error('[panelHandlers] panel:raise_hand error:', err);
+    }
+  });
+
   socket.on('panel:react', function(payload) {
     try {
       var roomId  = payload && payload.roomId;

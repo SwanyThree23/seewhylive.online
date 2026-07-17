@@ -31,21 +31,27 @@ const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
+function cryptoRandB36(len) {
+  const arr = new Uint8Array(len * 2);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => (b % 36).toString(36)).join('').slice(0, len);
+}
+
 function genToken() {
-  const rand = () => Math.random().toString(36).slice(2, 10);
+  const rand = () => cryptoRandB36(8);
   const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
   const session = Date.now();
   return `${user}?session=${session}`;
 }
 
 function genVDOLink() {
-  const push = Math.random().toString(36).slice(2, 14);
+  const push = cryptoRandB36(12);
   return `https://vdo.ninja/?push=${push}&quality=4k`;
 }
 
 function genStreamKey(userId) {
-  const id = userId || 'sw_' + Math.random().toString(36).slice(2, 18);
-  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+  const id = userId || 'sw_' + cryptoRandB36(16);
+  return `SW_${id.toUpperCase().replace(/[^A-Z0-9]/g, 'X').slice(0, 8)}_${cryptoRandB36(8).toUpperCase()}`;
 }
 
 function StatusBadge({ status }) {
@@ -189,7 +195,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
       <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
-      <DevicePreview user={null} onDeviceState={() => {}} />
+      <DevicePreview user={user} onDeviceState={() => {}} />
 
       {/* Session Token */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 10, padding: '10px 14px' }}>

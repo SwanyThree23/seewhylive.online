@@ -26,6 +26,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   const [isAudioOnlyRoom, setIsAudioOnlyRoom] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [localStream, setLocalStream] = useState(null);
+  const [raisedHands, setRaisedHands] = useState({});
   const localStreamRef = useRef(null);
 
   // Acquire local mic stream for speaking-level visualization on local tile
@@ -115,6 +116,18 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       }
       socket.on('panel:kicked', onKicked);
       unsubs.push(function() { socket.off('panel:kicked', onKicked); });
+
+      function onHandUpdate(payload) {
+        if (payload.roomId !== roomId) return;
+        setRaisedHands(function(prev) {
+          var next = Object.assign({}, prev);
+          if (payload.raised) next[payload.userId] = true;
+          else delete next[payload.userId];
+          return next;
+        });
+      }
+      socket.on('panel:hand_update', onHandUpdate);
+      unsubs.push(function() { socket.off('panel:hand_update', onHandUpdate); });
     })();
 
     return function() { unsubs.forEach(function(u) { u(); }); };
@@ -168,6 +181,10 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       producerId: guest ? (guest.producerId || null) : null,
       audioProducerId: guest ? (guest.audioProducerId || null) : null,
       isLocal: isLocal,
+      isRaisedHand: !!(raisedHands[slot.user_id]),
+      onRaiseHand: isLocal
+        ? function(raised) { socket.emit('panel:raise_hand', { roomId: roomId, raised: raised }); }
+        : null,
       onKick: (!isLocal && isHost)
         ? function() { panelService.kickPanelist(socket, roomId, slot.user_id).catch(function() {}); }
         : null,

@@ -11,6 +11,7 @@ export default function PanelTile({
   socket, roomId, slot,
   isAudioOnlyRoom, isHost, micLevel, isSpeaking,
   rtcManager, producerId, audioProducerId, isLocal,
+  isRaisedHand, onRaiseHand,
   onKick, onMuteToggle,
 }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
@@ -18,6 +19,7 @@ export default function PanelTile({
   const [camActive, setCamActive] = useState(false);
   const [localCamOn, setLocalCamOn] = useState(true);
   const [localMicOn, setLocalMicOn] = useState(true);
+  const [localHandRaised, setLocalHandRaised] = useState(false);
   const [showControls, setShowControls] = useState(false);
 
   // Subscribe to remote stream or wire up local producer track
@@ -101,8 +103,14 @@ export default function PanelTile({
     if (socket) panelService.mutePanelist(socket, roomId, user_id, !next);
   }
 
+  function toggleRaiseHand() {
+    var next = !localHandRaised;
+    setLocalHandRaised(next);
+    if (onRaiseHand) onRaiseHand(next);
+  }
+
   function renderLocalControls() {
-    if (!isLocal || isAudioOnlyRoom) return null;
+    if (!isLocal) return null;
     return (
       <div
         data-panel-ctrl="1"
@@ -114,18 +122,20 @@ export default function PanelTile({
           pointerEvents: showControls ? 'auto' : 'none',
         }}
       >
-        <button
-          onClick={toggleLocalCam}
-          style={{
-            background: localCamOn ? 'rgba(0,0,0,0.7)' : LIVE_RED,
-            border: 'none', borderRadius: 20, width: 32, height: 32,
-            color: CREAM, fontSize: 14, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-          title={localCamOn ? 'Turn camera off' : 'Turn camera on'}
-        >
-          {localCamOn ? '📷' : '🚫'}
-        </button>
+        {!isAudioOnlyRoom && (
+          <button
+            onClick={toggleLocalCam}
+            style={{
+              background: localCamOn ? 'rgba(0,0,0,0.7)' : LIVE_RED,
+              border: 'none', borderRadius: 20, width: 32, height: 32,
+              color: CREAM, fontSize: 14, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+            title={localCamOn ? 'Turn camera off' : 'Turn camera on'}
+          >
+            {localCamOn ? '📷' : '🚫'}
+          </button>
+        )}
         <button
           onClick={toggleLocalMic}
           style={{
@@ -137,6 +147,18 @@ export default function PanelTile({
           title={localMicOn ? 'Mute mic' : 'Unmute mic'}
         >
           {localMicOn ? '🎤' : '🔇'}
+        </button>
+        <button
+          onClick={toggleRaiseHand}
+          style={{
+            background: localHandRaised ? GOLD : 'rgba(0,0,0,0.7)',
+            border: 'none', borderRadius: 20, width: 32, height: 32,
+            color: localHandRaised ? '#111' : CREAM, fontSize: 14, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          title={localHandRaised ? 'Lower hand' : 'Raise hand'}
+        >
+          ✋
         </button>
       </div>
     );
@@ -278,6 +300,13 @@ export default function PanelTile({
       {is_muted && (
         <span style={{ position: 'absolute', top: 4, right: 4, background: LIVE_RED, borderRadius: 4, padding: '2px 4px', fontSize: 10, color: CREAM }}>
           MUTED
+        </span>
+      )}
+
+      {/* Raised-hand badge */}
+      {isRaisedHand && (
+        <span style={{ position: 'absolute', top: 4, right: is_muted ? 48 : 4, fontSize: 18, filter: 'drop-shadow(0 0 4px rgba(212,175,55,0.8))' }}>
+          ✋
         </span>
       )}
 
