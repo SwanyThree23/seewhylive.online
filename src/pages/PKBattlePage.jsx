@@ -13,11 +13,15 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import { useIsMobile } from '../hooks/use-mobile';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -570,7 +574,12 @@ export default function PKBattlePage() {
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
 
   const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
-  useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
+  const [pkChatMessages, setPkChatMessages] = useState([]);
+  const [pkHypeLevel, setPkHypeLevel] = useState(0);
+  const [showPKCamSettings, setShowPKCamSettings] = useState(false);
+  const isHostBattle = !!(user?.id && battle?.creator_id === user?.id);
+  useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
 
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
@@ -835,7 +844,10 @@ export default function PKBattlePage() {
       <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       <BackgroundCustomizer />
-      <BattleArenaManager roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} onBattleEnd={() => { qc.invalidateQueries({ queryKey: ['pk-battle', battleId] }); setTimeout(() => navigate('/'), 2000); }} />
+      <BattleArenaManager roomId={battleId} isHost={isHostBattle} onBattleEnd={() => { qc.invalidateQueries({ queryKey: ['pk-battle', battleId] }); setTimeout(() => navigate('/'), 2000); }} />
+      {battleId && isHostBattle && <GuestInviteGenerator roomId={battleId} isHost={isHostBattle} />}
+      {battleId && isHostBattle && <PipCameraTile localStream={localCamStream} videoEnabled={true} roomId={battleId} tipTotal={0} />}
+      {isHostBattle && <PreJoinSettingsModal open={showPKCamSettings} onClose={() => setShowPKCamSettings(false)} stream={localCamStream} devices={{ cameras: [] }} onCameraChange={(id) => { try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
     </div>
   );
 }
