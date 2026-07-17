@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Swords, Trophy, MapPin, Users, Plus, Clock } from 'lucide-react';
@@ -66,9 +66,10 @@ const initState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'SET_TAB': return { ...state, tab: action.payload };
-    case 'SET_ACTIVE': return { ...state, activeMatch: action.payload };
-    case 'SET_STATE': return { ...state, selectedState: action.payload };
+    case 'SET_TAB':     return { ...state, tab: action.payload };
+    case 'SET_ACTIVE':  return { ...state, activeMatch: action.payload };
+    case 'SET_STATE':   return { ...state, selectedState: action.payload };
+    case 'SET_BRACKET': return { ...state, bracket: action.payload };
     case 'SCORE': {
       var rounds = ['quarterfinals', 'semifinals', 'finals'];
       var newBracket = JSON.parse(JSON.stringify(state.bracket));
@@ -149,10 +150,92 @@ function findActiveMatch(bracket, id) {
   return null;
 }
 
+// SVS_BRACKET_ID — a stable pseudo-room-id used to store the bracket in PKBattle
+const SVS_BRACKET_ID = 'svs_arena_bracket_v1';
+
 export default function SVSArena() {
+  const qc = useQueryClient();
   const [state, dispatch] = useReducer(reducer, initState);
   var activeMatch = findActiveMatch(state.bracket, state.activeMatch);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  // ── Fetch persisted bracket from DB ──────────────────────────────────────
+  // We store each match as a PKBattle record whose creator_name = stateA,
+  // challenger_name = stateB, and creator_tips/challenger_tips hold the score.
+  const { data: dbMatches = [] } = useQuery({
+    queryKey: ['svsBracket'],
+    queryFn:  () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
+    refetchInterval: 8000,
+  });
+
+  // Merge DB scores into local bracket on first load and on refetch
+  useEffect(() => {
+    if (!dbMatches.length) return;
+    // Build a map: "stateA:stateB" → { scoreA, scoreB, winner, dbId }
+    const map = {};
+    dbMatches.forEach(m => {
+      const key = `${m.creator_name}:${m.challenger_name}`;
+      map[key] = {
+        scoreA: m.creator_tips    || 0,
+        scoreB: m.challenger_tips || 0,
+        winner: m.status === 'ended' ? (m.creator_tips >= m.challenger_tips ? 'A' : 'B') : null,
+        dbId:   m.id,
+      };
+    });
+
+    const hydrated = JSON.parse(JSON.stringify(INIT_BRACKET));
+    ['quarterfinals', 'semifinals', 'finals'].forEach(round => {
+      hydrated[round].forEach(match => {
+        const hit = map[`${match.stateA}:${match.stateB}`];
+        if (hit) {
+          match.scoreA  = hit.scoreA;
+          match.scoreB  = hit.scoreB;
+          match.winner  = hit.winner;
+          match._dbId   = hit.dbId;
+        }
+      });
+    });
+    dispatch({ type: 'SET_BRACKET', payload: hydrated });
+  }, [dbMatches]);
+
+  // ── Persist score to DB when SCORE action fires ───────────────────────────
+  const scoreMutation = useMutation({
+    mutationFn: async ({ match, newScoreA, newScoreB, hasWinner }) => {
+      const existing = dbMatches.find(
+        m => m.creator_name === match.stateA && m.challenger_name === match.stateB
+      );
+      const payload = {
+        creator_tips:    newScoreA,
+        challenger_tips: newScoreB,
+        status: hasWinner ? 'ended' : 'active',
+      };
+      if (existing) {
+        return base44.entities.PKBattle.update(existing.id, payload);
+      }
+      return base44.entities.PKBattle.create({
+        room_id:          SVS_BRACKET_ID,
+        creator_name:     match.stateA,
+        challenger_name:  match.stateB,
+        ...payload,
+      });
+    },
+    onSuccess: () => qc.invalidateQueries(['svsBracket']),
+  });
+
+  // Wrap dispatch to intercept SCORE actions
+  const dispatchWithSync = useCallback((action) => {
+    dispatch(action);
+    if (action.type !== 'SCORE') return;
+
+    // Find current match to compute new scores
+    const match = findActiveMatch(state.bracket, action.matchId);
+    if (!match) return;
+    const newScoreA = match.scoreA + (action.side === 'A' ? 1 : 0);
+    const newScoreB = match.scoreB + (action.side === 'B' ? 1 : 0);
+    const hasWinner = newScoreA >= 7 || newScoreB >= 7;
+    scoreMutation.mutate({ match, newScoreA, newScoreB, hasWinner });
+  }, [state.bracket, scoreMutation]);
+
   const { data: rawBattles = [] } = useQuery({
     queryKey: ['svsLiveBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 10),
@@ -238,7 +321,7 @@ export default function SVSArena() {
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 8 }}>{activeMatch.stateA}</div>
                       <div style={{ fontSize: 72, fontWeight: 900, color: '#4A90D9', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{activeMatch.scoreA}</div>
-                      <button onClick={() => dispatch({ type: 'SCORE', matchId: activeMatch.id, side: 'A' })}
+                      <button onClick={() => dispatchWithSync({ type: 'SCORE', matchId: activeMatch.id, side: 'A' })}
                         style={{ marginTop: 12, padding: '10px 24px', background: 'rgba(74,144,217,0.2)', border: '1px solid rgba(74,144,217,0.4)', borderRadius: 8, color: '#4A90D9', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Plus size={14} /> +1 POINT
                       </button>
@@ -250,7 +333,7 @@ export default function SVSArena() {
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 8 }}>{activeMatch.stateB}</div>
                       <div style={{ fontSize: 72, fontWeight: 900, color: '#C4170C', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{activeMatch.scoreB}</div>
-                      <button onClick={() => dispatch({ type: 'SCORE', matchId: activeMatch.id, side: 'B' })}
+                      <button onClick={() => dispatchWithSync({ type: 'SCORE', matchId: activeMatch.id, side: 'B' })}
                         style={{ marginTop: 12, padding: '10px 24px', background: 'rgba(196,23,12,0.2)', border: '1px solid rgba(196,23,12,0.4)', borderRadius: 8, color: '#ef4444', fontWeight: 900, fontSize: 15, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Plus size={14} /> +1 POINT
                       </button>
