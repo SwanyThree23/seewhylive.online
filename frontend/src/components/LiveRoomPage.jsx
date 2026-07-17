@@ -12,6 +12,7 @@ import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
 import GiftLayer from './GiftLayer.jsx';
 import GoldenWallPanel from './GoldenWallPanel.jsx';
 import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
+import ShareSheet from './share/ShareSheet.jsx';
 
 var MAX_STAGE = 20;
 
@@ -263,6 +264,7 @@ export default function LiveRoomPage({
   var [qaInput,        setQaInput]        = useState('');
   var [showQa,         setShowQa]         = useState(false);
   var [qaMyVotes,      setQaMyVotes]      = useState({});
+  var [showShareSheet, setShowShareSheet] = useState(false);
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
   var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
   var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
@@ -2633,6 +2635,39 @@ export default function LiveRoomPage({
           isSpeaking={!!(speakingIds && speakingIds[userId])}
           micLevel={micLevel}
           visible={true}
+        />
+      )}
+
+      {/* ════════════════ FLOATING SHARE BUTTON ════════════════ */}
+      <button
+        onClick={function() { setShowShareSheet(true); }}
+        title="Share room"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(env(safe-area-inset-bottom,0px) + 88px)',
+          left: 20,
+          zIndex: 9999,
+          width: 48, height: 48,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.07)',
+          border: '1.5px solid rgba(201,168,76,0.25)',
+          color: '#C9A84C',
+          fontSize: 20,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        }}>
+        📤
+      </button>
+
+      {/* ════════════════ SHARE SHEET ════════════════ */}
+      {showShareSheet && (
+        <ShareSheet
+          shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          title={'Join ' + ((streamInfo && streamInfo.title) || username + ' on SeeWhy LIVE')}
+          onClose={function() { setShowShareSheet(false); }}
         />
       )}
     </div>

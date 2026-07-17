@@ -38,6 +38,8 @@ var SwanAITab           = React.lazy(function() { return import('./components/Sw
 var AvatarHubTab        = React.lazy(function() { return import('./components/AvatarHubTab.jsx'); });
 var MusicStudioTab      = React.lazy(function() { return import('./components/MusicStudioTab.jsx'); });
 var CreatorDiscoveryTab = React.lazy(function() { return import('./components/CreatorDiscoveryTab.jsx'); });
+var LeaderboardPage     = React.lazy(function() { return import('./pages/Leaderboard.jsx'); });
+var PKBattleArenaPage   = React.lazy(function() { return import('./pages/PKBattleArena.jsx'); });
 var StateRankingsTab    = React.lazy(function() { return import('./components/StateRankingsTab.jsx'); });
 var ShowcaseTab         = React.lazy(function() { return import('./components/ShowcaseTab.jsx'); });
 var UploadTab           = React.lazy(function() { return import('./components/UploadTab.jsx'); });
@@ -94,6 +96,9 @@ var TABS = [
   { id: 'avatar',    label: '🎭 AVATAR' },
   { id: 'music',     label: '🎵 STUDIO' },
   { id: 'discover',  label: '🔭 DISCOVER' },
+  { id: 'creators',  label: '🔭 CREATORS' },
+  { id: 'leaderboard', label: '🏅 LEADERBOARD' },
+  { id: 'pkbattle-arena', label: '⚔️ PK ARENA' },
   { id: 'rankings',  label: '🏅 RANKS' },
   { id: 'showcase',  label: '🏆 SHOWCASE' },
   { id: 'upload',    label: '📤 UPLOAD' },
@@ -1578,6 +1583,15 @@ export default function App() {
           <PlatformHealthTab
             socket={socketRef.current}
             addToast={addToast}
+          />
+        )}
+        {activeTab === 'leaderboard' && (
+          <LeaderboardPage currentUserId={userId} />
+        )}
+        {activeTab === 'pkbattle-arena' && (
+          <PKBattleArenaPage
+            battleId={APP_ID}
+            socket={socketRef.current}
           />
         )}
       </div>
