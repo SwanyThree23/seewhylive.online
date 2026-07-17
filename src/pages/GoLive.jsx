@@ -522,6 +522,12 @@ export default function GoLive() {
   const [elapsed,     setElapsed]     = useState(0);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const cameraRetryRef = useRef(null);
+  // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them
+  const { cameras } = useCameraDevices();
+  const handleVideoChange = useCallback((id) => {
+    try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
+    cameraRetryRef.current?.({ videoId: id });
+  }, []);
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
