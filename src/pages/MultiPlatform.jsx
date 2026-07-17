@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -115,6 +115,11 @@ export default function MultiPlatform() {
   const activeRoomId = roomId;
   const [tab, setTab] = useState('platforms');
 
+  // Sync platform connections from user profile
+  useEffect(() => {
+    if (user?.platform_connections) setConnections(user.platform_connections);
+  }, [user]);
+
   const { data: recentActivities = [] } = useQuery({
     queryKey: ['multiplatform-events'],
     queryFn: () => base44.entities.Activity.list('-created_date', 20),
@@ -127,9 +132,7 @@ export default function MultiPlatform() {
     ago:   a.created_date ? formatAgo(a.created_date) : '',
     color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
   }));
-  const [connections, setConnections] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
-  });
+  const [connections, setConnections] = useState({});
   const [connecting, setConnecting] = useState(null);
   const [webhooks, setWebhooks] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem('webhooks') || '[]'); } catch { return []; }
@@ -159,16 +162,16 @@ export default function MultiPlatform() {
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
-  function saveConnections(updated) {
+  async function saveConnections(updated) {
     setConnections(updated);
-    sessionStorage.setItem('platform_connections', JSON.stringify(updated));
+    try { await base44.auth.updateMe({ platform_connections: updated }); } catch {}
   }
 
   async function handleConnect(id) {
     setConnecting(id);
     await new Promise(r => setTimeout(r, 1200));
     const updated = { ...connections, [id]: !connections[id] };
-    saveConnections(updated);
+    await saveConnections(updated);
     setConnecting(null);
     showToast(updated[id] ? `✓ ${PLATFORMS.find(p=>p.id===id)?.name} connected!` : 'Platform disconnected');
   }

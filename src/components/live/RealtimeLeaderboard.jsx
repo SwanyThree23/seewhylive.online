@@ -14,11 +14,8 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const entries = await base44.entities.ViewerPoints.filter(
-          { room_id: roomId },
-          '-points',
-          10
-        );
+        const sortField = timeRange === 'all-time' ? '-lifetime_points' : '-points';
+        const entries = await base44.entities.ViewerPoints.filter({}, sortField, 10);
         setLeaderboard(entries || []);
       } catch (error) {
       }
@@ -28,7 +25,7 @@ export default function RealtimeLeaderboard({ roomId, creatorId }) {
     fetchLeaderboard();
     const interval = setInterval(fetchLeaderboard, 5000);
     return () => clearInterval(interval);
-  }, [roomId]);
+  }, [roomId, timeRange]);
 
   return (
     <div className="p-3 rounded-lg space-y-2" style={{ background: 'rgba(8,11,24,0.95)', border: `1px solid ${G}20` }}>

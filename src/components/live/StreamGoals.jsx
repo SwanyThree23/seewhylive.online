@@ -11,10 +11,26 @@ const GOAL_TYPES = [
   { id: 'custom', label: '🎯 Custom Goal', unit: 'total', prefix: '' },
 ];
 
-export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, currentViewers = 0 }) {
+export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSubs = 0, currentViewers = 0 }) {
   const [goals, setGoals] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ type: 'tip', title: '', target: 100, reward_text: '' });
+
+  const storageKey = roomId ? `stream_goals_${roomId}` : null;
+
+  // Load persisted goals on mount
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (saved.length) setGoals(saved);
+    } catch {}
+  }, [storageKey]);
+
+  const persistGoals = (newGoals) => {
+    if (!storageKey) return;
+    try { localStorage.setItem(storageKey, JSON.stringify(newGoals)); } catch {}
+  };
 
   const getCurrentValue = (type) => {
     if (type === 'tip') return currentTips;
@@ -37,7 +53,11 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
 
   const addGoal = () => {
     if (!form.title.trim() || form.target <= 0) return;
-    setGoals(prev => [...prev, { ...form, id: Date.now().toString(), completed: false }]);
+    setGoals(prev => {
+      const next = [...prev, { ...form, id: Date.now().toString(), completed: false }];
+      persistGoals(next);
+      return next;
+    });
     setForm({ type: 'tip', title: '', target: 100, reward_text: '' });
     setShowForm(false);
   };
@@ -122,7 +142,7 @@ export default function StreamGoals({ isHost, currentTips = 0, currentSubs = 0, 
               <div className="flex items-center gap-2">
                 {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
-                  <button onClick={() => setGoals(prev => prev.filter(g => g.id !== goal.id))}
+                  <button onClick={() => setGoals(prev => { const next = prev.filter(g => g.id !== goal.id); persistGoals(next); return next; })}
                     className="text-white/20 hover:text-[#C0392B]">
                     <X className="w-3.5 h-3.5" />
                   </button>

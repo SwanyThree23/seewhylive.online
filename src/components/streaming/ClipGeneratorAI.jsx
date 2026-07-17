@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, Download, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { safeSrc } from '@/lib/security';
 
 const G = '#d4af37';
 
@@ -35,7 +34,29 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
         },
       });
       if (result?.clips?.length) {
-        setClips(result.clips.map(c => ({ ...c, url: null })));
+        const persisted = await Promise.all(
+          result.clips.map(c =>
+            base44.entities.StreamClip.create({
+              stream_session_id: sessionId || null,
+              room_id: roomId || null,
+              creator_id: creatorId || null,
+              title: c.title,
+              clip_type: 'highlight',
+              trigger_type: 'auto',
+              duration_seconds: c.duration,
+              status: 'ready',
+              view_count: 0,
+              like_count: 0,
+            }).catch(() => null)
+          )
+        );
+        setClips(
+          result.clips.map((c, i) => ({
+            ...c,
+            id: persisted[i]?.id || null,
+            shareUrl: persisted[i]?.id ? `${window.location.origin}/clips/${persisted[i].id}` : null,
+          }))
+        );
         toast.success(`Generated ${result.clips.length} clip suggestions!`);
       }
     } catch (error) {
@@ -87,10 +108,19 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
                 <p className="text-[10px] text-white/40">{clip.duration}s • {clip.views} views</p>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
-                <a href={safeSrc(clip.url) || '#'} target="_blank" rel="noopener noreferrer">
-                  <Download className="w-3.5 h-3.5 text-white/40 hover:text-white transition-colors" />
-                </a>
-                <button>
+                {clip.shareUrl && (
+                  <a href={clip.shareUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="w-3.5 h-3.5 text-white/40 hover:text-white transition-colors" />
+                  </a>
+                )}
+                <button
+                  onClick={() => {
+                    if (!clip.shareUrl) { toast.error('No share link yet'); return; }
+                    navigator.clipboard.writeText(clip.shareUrl)
+                      .then(() => toast.success('Share link copied!'))
+                      .catch(() => toast.error('Copy failed'));
+                  }}
+                >
                   <Share2 className="w-3.5 h-3.5 text-white/40 hover:text-white transition-colors" />
                 </button>
               </div>
