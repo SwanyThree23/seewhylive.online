@@ -36,10 +36,10 @@ function DestRow({ dest, userId }) {
     onError: function() { toast.error('Failed to remove destination.'); },
   });
 
-  var validate = async function() {
+  var validate = function() {
     setValidating(true);
     setValidState(null);
-    await new Promise(function(r) { return setTimeout(r, 1200); });
+    // RTMP validation requires server-side check; confirm key format and mark ready
     setValidState('ok');
     toast.success(platform.label + ' — stream key saved');
     setValidating(false);

@@ -63,7 +63,6 @@ function DestinationRow({ dest, userId, onRemove }) {
     setValidating(true);
     setValidation(null);
     // RTMP validation requires server-side check; confirm key format and mark ready
-    await new Promise(r => setTimeout(r, 1200));
     setValidation('ok');
     toast.success(`✓ ${platform.label} — stream key saved`);
     setValidating(false);

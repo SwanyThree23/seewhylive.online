@@ -169,7 +169,6 @@ export default function MultiPlatform() {
 
   async function handleConnect(id) {
     setConnecting(id);
-    await new Promise(r => setTimeout(r, 1200));
     const updated = { ...connections, [id]: !connections[id] };
     await saveConnections(updated);
     setConnecting(null);

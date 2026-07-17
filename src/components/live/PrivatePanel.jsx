@@ -107,7 +107,8 @@ export default function PrivatePanel({ isHost, currentUser }) {
 
   const createPanel = () => {
     if (!selectedType || !panelName.trim()) return;
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const bytes = crypto.getRandomValues(new Uint8Array(4));
+    const code = Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').slice(0, 6).toUpperCase();
     const newPanel = {
       id: Date.now(),
       type: selectedType,

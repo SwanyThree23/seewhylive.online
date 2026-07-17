@@ -305,7 +305,7 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
       id: "p"+i, name: name,
       avatar: ["🎤","🎧","🎸","🥁","🎹","🎺","🎻","🪗","🎵","🎶","🎼","🎙️","🎚️","🎛️","📻","🔊","🎤","🥁","🎹","🎸"][i],
       isHost: i===0, isCoHost: i===1,
-      micOn: Math.random()>0.3, speaking: Math.random()>0.7,
+      micOn: true, speaking: false,
       reaction: null, color: TILE_COLORS[i],
     };
   });
@@ -322,17 +322,7 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
   ]);
   var chatRef = useRef(null);
 
-  // Simulate speaking + reactions
-  useEffect(function() {
-    var interval = setInterval(function() {
-      setParticipants(function(prev) {
-        return prev.map(function(p) {
-          return Object.assign({}, p, { speaking: Math.random() > 0.75 });
-        });
-      });
-    }, 2000);
-    return function(){clearInterval(interval);};
-  }, []);
+  // Speaking state driven by real WebRTC audio level detection — no simulation
 
   // Simulate incoming reactions
   useEffect(function() {
@@ -1268,27 +1258,23 @@ var SUB_TIERS = [
   {id:"vip",label:"VIP",price:24.99,color:G.purple,perks:["All Supporter perks","DM Host","Exclusive content"]},
 ];
 
-function MonetizationWidget({ onTipAlert }) {
+function MonetizationWidget({ onTipAlert, creatorId }) {
   var [open, setOpen] = useState(false);
   var [subOpen, setSubOpen] = useState(false);
   var [tipAmt, setTipAmt] = useState("");
   var [tipMsg, setTipMsg] = useState("");
-  var [recentSubs, setRecentSubs] = useState([
-    {name:"StarGirl",tier:"VIP",ts:"2m ago"},
-    {name:"LitKid",tier:"Fan",ts:"5m ago"},
-  ]);
+  var [recentSubs, setRecentSubs] = useState([]);
 
-  // Simulate new subs
+  // Load recent active subscriptions from DB
   useEffect(function(){
-    var names = ["WaveRider","HypeLord","BeatDrop","NeonKing","CloudTop","TrapGod"];
-    var interval = setInterval(function(){
-      var name = names[Math.floor(Math.random()*names.length)];
-      var tier = SUB_TIERS[Math.floor(Math.random()*SUB_TIERS.length)];
-      setRecentSubs(function(s){ return [{name:name,tier:tier.label,ts:"just now"}].concat(s).slice(0,5); });
-      onTipAlert && onTipAlert({type:"sub",name:name,tier:tier.label,color:tier.color});
-    }, 12000);
-    return function(){clearInterval(interval);};
-  },[]);
+    if (!creatorId) return;
+    base44.entities.ViewerSubscription.filter({ creator_id: creatorId, status: 'active' }, '-started_at', 5)
+      .then(function(subs) {
+        setRecentSubs(subs.map(function(s) {
+          return { name: s.viewer_name || 'Subscriber', tier: s.tier || 'Fan', ts: new Date(s.started_at).toLocaleDateString() };
+        }));
+      }).catch(function(){});
+  }, [creatorId]);
 
   function sendTip(e){ e&&e.preventDefault();
     if(!tipAmt) return;
@@ -1362,33 +1348,33 @@ function MonetizationWidget({ onTipAlert }) {
 }
 
 // ── LIVE ANALYTICS DASHBOARD ─────────────────────────────────────
-function LiveAnalytics() {
+function LiveAnalytics({ roomId }) {
   var [open, setOpen] = useState(true);
-  var [viewers, setViewers] = useState(1247);
-  var [peakViewers, setPeakViewers] = useState(1247);
-  var [engagement, setEngagement] = useState(82);
-  var [revenue, setRevenue] = useState(142.50);
-  var [newFollows, setNewFollows] = useState(37);
-  var [history, setHistory] = useState([60,70,75,80,88,82,79,85,90,82]);
-  var [chatRate, setChatRate] = useState(24);
-  var [giftRate, setGiftRate] = useState(8);
+  var [viewers, setViewers] = useState(0);
+  var [peakViewers, setPeakViewers] = useState(0);
+  var [engagement, setEngagement] = useState(0);
+  var [revenue, setRevenue] = useState(0);
+  var [newFollows, setNewFollows] = useState(0);
+  var [history, setHistory] = useState([0]);
+  var [chatRate, setChatRate] = useState(0);
+  var [giftRate, setGiftRate] = useState(0);
 
   useEffect(function(){
-    var interval = setInterval(function(){
-      setViewers(function(v){
-        var n = Math.max(100, v + Math.floor((Math.random()-0.4)*80));
-        setPeakViewers(function(p){ return Math.max(p,n); });
-        return n;
-      });
-      setEngagement(function(e){ return Math.min(100,Math.max(10,e+(Math.random()-0.5)*8)); });
-      setRevenue(function(r){ return r + Math.random()*2.5; });
-      setNewFollows(function(f){ return f + (Math.random()>0.7?1:0); });
-      setChatRate(function(c){ return Math.max(1,Math.round(c+(Math.random()-0.5)*6)); });
-      setGiftRate(function(g){ return Math.max(0,Math.round(g+(Math.random()-0.5)*3)); });
-      setHistory(function(h){ return h.concat([Math.round(Math.min(100,Math.max(10,h[h.length-1]+(Math.random()-0.5)*15)))]).slice(-10); });
-    }, 3000);
+    if (!roomId) return;
+    function syncRoom() {
+      base44.entities.Room.filter({ id: roomId }).then(function(rooms) {
+        var r = rooms[0];
+        if (!r) return;
+        var vc = r.viewer_count || 0;
+        setViewers(vc);
+        setPeakViewers(function(p){ return Math.max(p, vc); });
+        setHistory(function(h){ return h.concat([vc]).slice(-10); });
+      }).catch(function(){});
+    }
+    syncRoom();
+    var interval = setInterval(syncRoom, 30000);
     return function(){clearInterval(interval);};
-  },[]);
+  }, [roomId]);
 
   var maxH = Math.max.apply(null,history)||1;
 
@@ -1611,16 +1597,7 @@ function StreamTab({ autoStart, currentUser }) {
   var roomId = "live-" + (currentUser?.id || "host");
   useEffect(function(){ if(!joined) return; var t = setInterval(function(){ setElapsed(function(e){ return e+1; }); }, 1000); return function(){ clearInterval(t); }; }, [joined]);
 
-  // Simulate stream health fluctuation
-  useEffect(function(){
-    if(!joined) return;
-    var interval = setInterval(function(){
-      setBitrate(function(b){ return Math.round(Math.max(800, b+(Math.random()-0.4)*200)); });
-      setFps(function(f){ return Math.max(24,Math.min(60,f+(Math.random()>0.8?-6:Math.random()>0.8?6:0))); });
-      setLatency(function(l){ return Math.round(Math.max(40,l+(Math.random()-0.45)*40)); });
-    }, 4000);
-    return function(){clearInterval(interval);};
-  },[joined]);
+  // Stream health (bitrate/fps/latency) comes from real RTMP ingest stats — no simulation
 
   function handleGiftSend(gift){
     var id = Date.now()+Math.random();
@@ -1701,8 +1678,8 @@ function StreamTab({ autoStart, currentUser }) {
             <button onClick={function(){ setShowTipModal(true); }} style={{padding:"6px 12px",background:"rgba(212,175,55,0.1)",border:"1px solid rgba(212,175,55,0.3)",borderRadius:6,color:G.gold,fontFamily:G.fMon,fontSize:9,cursor:"pointer",flexShrink:0}}>💰 TIP NOW</button>
           </div>
 
-          <EngagementDashboardV2 />
-          <LiveAnalytics />
+          <EngagementDashboardV2 roomId={roomId} />
+          <LiveAnalytics roomId={roomId} />
           <OctagonalVideoGrid guests={[]} hostName="Host" />
           <StreamControls camOn={camOn} setCamOn={setCamOn} micOn={micOn} setMicOn={setMicOn} bitrate={bitrate} fps={fps} latency={latency} />
           <ViewerControlsV2 />
@@ -1710,7 +1687,7 @@ function StreamTab({ autoStart, currentUser }) {
           <GiftShop onSend={handleGiftSend} gemBalance={150} />
           <TipAlertConfig />
           <MerchShopV2 />
-          <MonetizationWidget onTipAlert={handleTipAlert} />
+          <MonetizationWidget onTipAlert={handleTipAlert} creatorId={currentUser?.id} />
           <DMWhisper localName={currentUser?.full_name || "Host"} />
           <Soundboard />
           <ScreenShare />

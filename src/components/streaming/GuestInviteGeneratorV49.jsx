@@ -22,7 +22,8 @@ export default function GuestInviteGeneratorV49({ roomId, isHost }) {
 
   const inviteMutation = useMutation({
     mutationFn: async () => {
-      const token = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      const bytes = crypto.getRandomValues(new Uint8Array(8));
+      const token = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('') + Date.now().toString(36);
       await base44.entities.GuestInvite.create({
         room_id: roomId,
         guest_name: guestName.trim() || 'Guest',
