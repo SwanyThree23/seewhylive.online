@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import PipCameraTile from '../components/live/PipCameraTile';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BitratePresets from '../components/streaming/BitratePresets';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -520,6 +521,7 @@ export default function GoLiveStudio() {
       </div>
       {activeRoomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={activeRoomId} tipTotal={0} />}
       <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      {state.phase === 'live' && <LiveCaptionOverlay stream={localStream} />}
     </div>
   );
 }

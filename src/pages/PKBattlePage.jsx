@@ -22,6 +22,7 @@ import { useIsMobile } from '../hooks/use-mobile';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import PipCameraTile from '../components/live/PipCameraTile';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 
 
@@ -850,6 +851,7 @@ export default function PKBattlePage() {
       {battleId && isHostBattle && <GuestInviteGenerator roomId={battleId} isHost={isHostBattle} />}
       {battleId && isHostBattle && <PipCameraTile localStream={localCamStream} videoEnabled={true} roomId={battleId} tipTotal={0} />}
       {isHostBattle && <PreJoinSettingsModal open={showPKCamSettings} onClose={() => setShowPKCamSettings(false)} stream={localCamStream} devices={{ cameras: [] }} onCameraChange={(id) => { try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHostBattle && <LiveCaptionOverlay stream={localCamStream} />}
     </div>
   );
 }
