@@ -146,6 +146,14 @@ export default function DiscoverPage() {
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 20),
   });
 
+  const { data: followingList = [] } = useQuery({
+    queryKey: ['following', user?.id],
+    queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
+
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
   const filterRooms = (rooms) => {
@@ -382,7 +390,7 @@ export default function DiscoverPage() {
 
           {tab === 'moments' && (
             <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <MomentsFeed currentUserId={user?.id} followingIds={[]} />
+              <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
             </motion.div>
           )}
         </AnimatePresence>

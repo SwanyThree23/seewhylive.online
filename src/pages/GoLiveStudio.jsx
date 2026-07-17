@@ -1,6 +1,9 @@
-import React, { useReducer, useEffect, useRef } from 'react';
+import React, { useReducer, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BitratePresets from '../components/streaming/BitratePresets';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -22,7 +25,7 @@ import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
   Users, Clock, Activity, Zap, Youtube, Twitch, Facebook,
-  ToggleLeft, ToggleRight, Eye, TrendingUp
+  ToggleLeft, ToggleRight, Eye, TrendingUp, Settings
 } from 'lucide-react';
 
 const RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';
@@ -141,6 +144,7 @@ export default function GoLiveStudio() {
   const uptimeRef = useRef(null);
   const healthRef = useRef(null);
   const countdownRef = useRef(null);
+  const [showCamSettings, setShowCamSettings] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -150,6 +154,15 @@ export default function GoLiveStudio() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+
+  const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || undefined; } catch { return undefined; } })();
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || undefined; } catch { return undefined; } })();
+  const { localStream, videoEnabled, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+
+  function handleCamChange(deviceId) {
+    try { if (deviceId) localStorage.setItem('swl_pref_cam', deviceId); } catch {}
+    reacquireMedia({ videoDeviceId: deviceId });
+  }
 
   var allChecked = Object.values(state.checklist).every(Boolean);
 
@@ -235,6 +248,13 @@ export default function GoLiveStudio() {
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>viewers</span>
           </div>
         )}
+        <button
+          onClick={() => setShowCamSettings(true)}
+          style={{ marginLeft: 'auto', width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title="Camera & mic settings"
+        >
+          <Settings size={15} />
+        </button>
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 16px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
@@ -498,6 +518,8 @@ export default function GoLiveStudio() {
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
         </div>
       </div>
+      {activeRoomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={activeRoomId} tipTotal={0} />}
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
     </div>
   );
 }
