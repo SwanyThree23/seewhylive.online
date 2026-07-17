@@ -155,10 +155,12 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import InviteGuestsModal from '../components/live/InviteGuestsModal';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import PipCameraTile from '../components/live/PipCameraTile';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
 import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49';
 export default function HybridStreamRoom() {
@@ -179,6 +181,8 @@ export default function HybridStreamRoom() {
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const [hybridChatMessages, setHybridChatMessages] = useState([]);
+  const [hybridHypeLevel, setHybridHypeLevel] = useState(0);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const [viewerCount, setViewerCount] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
@@ -299,6 +303,7 @@ export default function HybridStreamRoom() {
   }
 
   const isHost = room.host_id === user?.id;
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: hybridChatMessages, hypeLevel: hybridHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
 
   return (
     <div className="h-screen overflow-hidden" style={{ background: '#080B18', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -539,6 +544,7 @@ export default function HybridStreamRoom() {
       <BackgroundCustomizer />
       <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
       <InviteGuestsModal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)} roomId={roomId} roomTitle={room?.title || ''} currentUser={user} />
+      {isHost && roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={0} />}
       {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
       {isHost && <StreamWebSourceManager isStreamActive={room?.status === 'live'} />}
       <GlobalMicButtonV49 audioEnabled={audioEnabled} toggleAudio={toggleAudio} isSpeaking={isSpeaking} micLevel={0} visible={true} />
