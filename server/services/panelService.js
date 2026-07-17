@@ -131,6 +131,13 @@ async function setPrivacy({ roomId, isPrivate, gatingMode = null }) {
   return result.rows[0];
 }
 
+async function setMuted({ roomId, userId, isMuted }) {
+  await db.query(
+    'UPDATE room_panel_slots SET is_muted = $3 WHERE stream_id = $1 AND user_id = $2',
+    [roomId, userId, isMuted]
+  );
+}
+
 async function getPanelState(roomId) {
   const slots = await db.query(
     `SELECT s.*, u.display_name, u.avatar_url
@@ -143,5 +150,5 @@ async function getPanelState(roomId) {
 
 module.exports = {
   assignSlot, releaseSlot, checkJoinGate, requestJoin, resolveJoinRequest,
-  generateInviteCode, setExpandedSlot, setAudioOnly, setPrivacy, getPanelState,
+  generateInviteCode, setExpandedSlot, setAudioOnly, setPrivacy, getPanelState, setMuted,
 };

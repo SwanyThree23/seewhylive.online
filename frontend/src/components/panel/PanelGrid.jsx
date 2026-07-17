@@ -93,6 +93,24 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
         if (rid !== roomId) return;
         setIsAudioOnlyRoom(isAudioOnly);
       }));
+
+      function onSlotMuted(payload) {
+        var rid = payload.roomId, uid = payload.userId, isMuted = payload.isMuted;
+        if (rid !== roomId) return;
+        setSlots(function(prev) {
+          return prev.map(function(s) { return s.user_id === uid ? Object.assign({}, s, { is_muted: isMuted }) : s; });
+        });
+      }
+      socket.on('panel:slot_muted', onSlotMuted);
+      unsubs.push(function() { socket.off('panel:slot_muted', onSlotMuted); });
+
+      function onKicked(payload) {
+        if (payload.roomId !== roomId) return;
+        // If this client was kicked, remove their slot from local state
+        setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== userId; }); });
+      }
+      socket.on('panel:kicked', onKicked);
+      unsubs.push(function() { socket.off('panel:kicked', onKicked); });
     })();
 
     return function() { unsubs.forEach(function(u) { u(); }); };
@@ -146,6 +164,12 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       producerId: guest ? (guest.producerId || null) : null,
       audioProducerId: guest ? (guest.audioProducerId || null) : null,
       isLocal: isLocal,
+      onKick: (!isLocal && isHost)
+        ? function() { panelService.kickPanelist(socket, roomId, slot.user_id).catch(function() {}); }
+        : null,
+      onMuteToggle: (!isLocal && isHost)
+        ? function(isMuted) { panelService.mutePanelist(socket, roomId, slot.user_id, isMuted); }
+        : null,
     };
   }
 

@@ -85,6 +85,34 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
+  socket.on('panel:kick', async ({ roomId, targetUserId }, ack) => {
+    try {
+      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+        ack?.({ ok: false, error: 'forbidden' });
+        return;
+      }
+      await panelService.releaseSlot({ roomId, userId: targetUserId });
+      io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
+      // Notify the kicked user's socket directly if possible
+      const kickedSocket = Array.from(io.sockets.sockets.values())
+        .find(s => s.data && s.data.userId === targetUserId);
+      if (kickedSocket) kickedSocket.emit('panel:kicked', { roomId });
+      ack?.({ ok: true });
+    } catch (err) {
+      ack?.({ ok: false, error: err.message });
+    }
+  });
+
+  socket.on('panel:mute', async ({ roomId, targetUserId, isMuted }) => {
+    try {
+      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+      await panelService.setMuted({ roomId, userId: targetUserId, isMuted });
+      io.to(roomId).emit('panel:slot_muted', { roomId, userId: targetUserId, isMuted });
+    } catch (err) {
+      console.error('[panelHandlers] panel:mute error:', err);
+    }
+  });
+
   socket.on('panel:react', function(payload) {
     try {
       var roomId  = payload && payload.roomId;
