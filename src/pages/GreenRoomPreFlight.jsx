@@ -31,11 +31,11 @@ const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
-function genToken() {
+function genToken(userId) {
   const rand = () => Math.random().toString(36).slice(2, 10);
-  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
+  const uid = userId || 'sw_' + rand();
   const session = Date.now();
-  return `${user}?session=${session}`;
+  return `${uid}?session=${session}`;
 }
 
 function genVDOLink() {
@@ -97,7 +97,11 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());
-  const [token]      = useState(() => genToken());
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    setToken(genToken(user?.id));
+  }, [user?.id]);
   const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKey, setShowKey] = useState(false);
   const streamRef = useRef(null);

@@ -115,9 +115,11 @@ export default function MultiPlatform() {
   const activeRoomId = roomId;
   const [tab, setTab] = useState('platforms');
 
-  // Sync platform connections from user profile
+  // Sync platform connections and webhooks from user profile
   useEffect(() => {
-    if (user?.platform_connections) setConnections(user.platform_connections);
+    if (!user) return;
+    if (user.platform_connections) setConnections(user.platform_connections);
+    if (user.webhooks?.length) setWebhooks(user.webhooks);
   }, [user]);
 
   const { data: recentActivities = [] } = useQuery({
@@ -134,9 +136,7 @@ export default function MultiPlatform() {
   }));
   const [connections, setConnections] = useState({});
   const [connecting, setConnecting] = useState(null);
-  const [webhooks, setWebhooks] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('webhooks') || '[]'); } catch { return []; }
-  });
+  const [webhooks, setWebhooks] = useState([]);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [outboundUrl, setOutboundUrl] = useState('');
   const [selectedEvents, setSelectedEvents] = useState(['New Follower','Stream Go Live']);
@@ -178,7 +178,10 @@ export default function MultiPlatform() {
 
   function connectedCount() { return Object.values(connections).filter(Boolean).length; }
 
-  function saveWebhooks(list) { setWebhooks(list); sessionStorage.setItem('webhooks', JSON.stringify(list)); }
+  function saveWebhooks(list) {
+    setWebhooks(list);
+    base44.auth.updateMe({ webhooks: list }).catch(() => {});
+  }
 
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;
