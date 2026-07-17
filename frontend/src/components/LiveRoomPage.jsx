@@ -11,6 +11,7 @@ import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
 import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
 import GiftLayer from './GiftLayer.jsx';
 import GoldenWallPanel from './GoldenWallPanel.jsx';
+import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
 
 var MAX_STAGE = 20;
 
@@ -236,6 +237,7 @@ export default function LiveRoomPage({
 }) {
   var [rtcReady,      setRtcReady]      = useState(false);
   var [isMuted,       setIsMuted]       = useState(false);
+  var [micLevel,      setMicLevel]      = useState(0);
   var [isCamOff,      setIsCamOff]      = useState(false);
   var [chatOpen,      setChatOpen]      = useState(false);
   var [chatInput,     setChatInput]     = useState('');
@@ -539,6 +541,34 @@ export default function LiveRoomPage({
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
+
+  // ── Local mic level analyzer (for GlobalMicButtonV49) ──
+  useEffect(function() {
+    if (!rtcReady || isMuted) { setMicLevel(0); return; }
+    var producer = rtcManager && rtcManager.producers && rtcManager.producers['audio'];
+    if (!producer || !producer.track) return;
+    var ctx, source, analyser, buf, id;
+    try {
+      var stream = new MediaStream([producer.track]);
+      ctx      = new (window.AudioContext || window.webkitAudioContext)();
+      source   = ctx.createMediaStreamSource(stream);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      buf = new Uint8Array(analyser.frequencyBinCount);
+      id  = setInterval(function() {
+        analyser.getByteFrequencyData(buf);
+        var sum = 0;
+        for (var i = 0; i < buf.length; i++) sum += buf[i];
+        var avg = sum / buf.length;
+        setMicLevel(Math.min(100, Math.round((avg / 128) * 100)));
+      }, 80);
+    } catch(e) {}
+    return function() {
+      clearInterval(id);
+      try { if (ctx) ctx.close(); } catch(e2) {}
+    };
+  }, [rtcReady, isMuted]);
 
   function toggleMute() { setIsMuted(function(v) { return !v; }); }
   function toggleCam()  { setIsCamOff(function(v) { return !v; }); }
@@ -2593,6 +2623,18 @@ export default function LiveRoomPage({
         isLive={isLive}
         addToast={addToast}
       />
+
+      {/* ════════════════ FLOATING MIC BUTTON ════════════════ */}
+      {/* Visible for non-host/cohost panel participants with RTC active */}
+      {rtcReady && role !== 'host' && role !== 'cohost' && (
+        <GlobalMicButtonV49
+          audioEnabled={!isMuted}
+          toggleAudio={toggleMute}
+          isSpeaking={!!(speakingIds && speakingIds[userId])}
+          micLevel={micLevel}
+          visible={true}
+        />
+      )}
     </div>
   );
 }
