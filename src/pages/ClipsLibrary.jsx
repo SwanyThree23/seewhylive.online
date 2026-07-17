@@ -21,6 +21,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MomentsFeed from '../components/live/MomentsFeed';
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#FFB800'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
@@ -59,6 +60,7 @@ function ClipCard({ clip, onDelete, onShare }) {
 }
 
 export default function ClipsLibraryPage() {
+  const [tab, setTab] = useState('library'); // 'library' | 'moments'
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
@@ -103,9 +105,15 @@ export default function ClipsLibraryPage() {
       <div style={{ padding:'24px 20px', borderBottom:'1px solid rgba(212,175,55,0.12)', background:'rgba(128,0,32,0.06)' }}>
         <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
         <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+        {/* Page tabs: Library | Moments */}
+        <div style={{ display:'flex', gap:6, marginTop:14 }}>
+          {[['library','Library'],['moments','Moments']].map(([key,label]) => (
+            <button key={key} onClick={()=>setTab(key)} style={{ padding:'5px 16px', borderRadius:8, border:`1px solid ${tab===key?C.gold:'rgba(255,255,255,0.1)'}`, background:tab===key?'rgba(212,175,55,0.12)':'transparent', color:tab===key?C.gold:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:12, fontWeight:700, letterSpacing:1 }}>{label.toUpperCase()}</button>
+          ))}
+        </div>
       </div>
-      {/* Filters */}
-      <div style={{ padding:'12px 20px', display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+      {/* Filters — shown only on library tab */}
+      <div style={{ padding:'12px 20px', display:tab==='library'?'flex':'none', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
         {['all','mine','public'].map(f => (
           <button key={f} onClick={()=>setFilter(f)} style={{ padding:'5px 12px', borderRadius:20, border:`1px solid ${filter===f?C.gold:'#333'}`, background:filter===f?'rgba(212,175,55,0.1)':'transparent', color:filter===f?C.gold:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1 }}>{f.toUpperCase()}</button>
         ))}
@@ -115,7 +123,13 @@ export default function ClipsLibraryPage() {
           ))}
         </div>
       </div>
-      <div style={{ maxWidth:900, margin:'0 auto', padding:'20px' }}>
+      {/* Moments tab */}
+      {tab === 'moments' && (
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'20px' }}>
+          <MomentsFeed currentUserId={user?.id} followingIds={[]} />
+        </div>
+      )}
+      <div style={{ maxWidth:900, margin:'0 auto', padding:'20px', display:tab==='library'?'block':'none' }}>
         {isLoading ? (
           <div style={{ textAlign:'center', padding:40, color:C.gray, fontFamily:'Barlow Condensed', fontSize:14 }}>Loading clips…</div>
         ) : sorted.length === 0 ? (
