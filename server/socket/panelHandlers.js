@@ -4,6 +4,7 @@
 // battleHandlers/join-room handlers are registered, inside io.on('connection').
 
 const panelService = require('../services/panelService');
+const loyaltyService = require('../services/loyaltyService');
 
 function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
@@ -17,6 +18,7 @@ function registerPanelHandlers(io, socket) {
       const slot = await panelService.assignSlot({ roomId, userId });
       socket.join(roomId);
       io.to(roomId).emit('panel:slot_assigned', { roomId, slot });
+      loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(() => {});
       ack?.({ ok: true, slot });
     } catch (err) {
       ack?.({ ok: false, error: err.message });

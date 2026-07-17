@@ -6,6 +6,7 @@ import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
 import JoinRequestQueue from './JoinRequestQueue';
 import AudioOnlyToggle from './AudioOnlyToggle';
+import PanelReactionBar from './PanelReactionBar';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 const GOLD = '#D4AF37';
@@ -272,6 +273,13 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
           {slots.map(function(slot) {
             return <PanelTile key={slot.slot_index} {...tileProps(slot)} />;
           })}
+        </div>
+      )}
+
+      {/* Reaction bar + floating emojis (relative container for floats) */}
+      {slots.length > 0 && (
+        <div style={{ position: 'relative', padding: '6px 8px 4px', display: 'flex', justifyContent: 'center' }}>
+          <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
         </div>
       )}
 

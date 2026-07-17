@@ -3,6 +3,7 @@
 // io.on('connection', socket => { ... }) block in index.js / your socket setup file.
 
 const battleService = require('../services/battleService');
+const loyaltyService = require('../services/loyaltyService');
 
 // Reuse your existing tick constants if you have them defined elsewhere —
 // import them instead of redefining if e.g. HEARTBEAT_MS already exists globally.
@@ -95,6 +96,17 @@ function startCountdown(io, battle) {
       try {
         const ended = await battleService.endBattle(battle.id);
         io.to(room).emit('battle:end', ended);
+        // Award loyalty points: 150 for winner, 50 for participant
+        if (ended.winner_id) {
+          const loserId = ended.winner_id === ended.challenger_id ? ended.defender_id : ended.challenger_id;
+          loyaltyService.awardPoints({ userId: ended.winner_id, points: 150, source: 'battle_win', sourceId: ended.id }).catch(() => {});
+          if (loserId) loyaltyService.awardPoints({ userId: loserId, points: 50, source: 'battle_participate', sourceId: ended.id }).catch(() => {});
+        } else {
+          // Tie — both get participation points
+          [ended.challenger_id, ended.defender_id].filter(Boolean).forEach(uid => {
+            loyaltyService.awardPoints({ userId: uid, points: 75, source: 'battle_tie', sourceId: ended.id }).catch(() => {});
+          });
+        }
       } catch (err) {
         io.to(room).emit('battle:error', { message: err.message });
       }
