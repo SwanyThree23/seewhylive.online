@@ -179,6 +179,7 @@ import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import PipCameraTile from '../components/live/PipCameraTile';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import WatchPartyCoStreamPanel from '../components/live/WatchPartyCoStreamPanel';
 import VideoQueue from '../components/watchparty/VideoQueue';
@@ -1627,6 +1628,7 @@ export default function WatchPartyPage() {
       {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {isHost && partyId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={partyId} tipTotal={tipTotal} />}
+      {isHost && <LiveCaptionOverlay stream={localStream} />}
     </div>
   );
 }

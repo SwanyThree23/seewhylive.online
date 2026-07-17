@@ -148,6 +148,7 @@ import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
 import StreamEventBus from '../components/live/StreamEventBus';
@@ -2427,6 +2428,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       </div>
 
       <PreJoinSettingsModal open={showPreflight} onClose={() => setShowPreflight(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={(id) => { replaceVideoDevice(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}; }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <LiveCaptionOverlay stream={localStream} />
       {showCameraPicker && (
         <CameraSourcePicker
           currentStream={localStream}

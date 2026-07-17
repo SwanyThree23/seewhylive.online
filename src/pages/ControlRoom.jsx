@@ -174,6 +174,7 @@ import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSett
 import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
 import PipCameraTile from '../components/live/PipCameraTile';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import StreamMetadata from '../components/live/StreamMetadata';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -828,6 +829,7 @@ export default function ControlRoomPage() {
       {roomId && <GuestInviteGeneratorV49 roomId={roomId} isHost={true} />}
       {roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={tipTotal} />}
       <PreJoinSettingsModal open={showCRCamSettings} onClose={() => setShowCRCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <LiveCaptionOverlay stream={localStream} />
     </div>
   );
 }
