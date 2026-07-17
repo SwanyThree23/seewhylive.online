@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -27,6 +27,7 @@ import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 import TierEditor from '../components/subscriptions/TierEditor';
 import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
+import ApiKeyManager from '../components/settings/ApiKeyManager';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -233,6 +234,11 @@ export default function SettingsPage() {
               </Link>
             ))}
           </div>
+        </Section>
+
+        {/* API Keys */}
+        <Section icon={Key} title="API Keys" description="Third-party service keys stored locally — never sent to our servers">
+          <ApiKeyManager />
         </Section>
 
         {/* Data Export */}
