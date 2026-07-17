@@ -1224,20 +1224,21 @@ function SettingsPanel() {
   const [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
   const [saved, setSaved] = useState(false);
 
-  function save() {
-    localStorage.setItem('v41_settings', JSON.stringify({ handle, bio, email, notifs }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function save() {
+    try {
+      await base44.auth.updateMe({ creator_handle: handle, contact_email: email, bio, notification_prefs: notifs });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
   }
 
   useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('v41_settings') || '{}');
-      if (s.handle) setHandle(s.handle);
-      if (s.bio) setBio(s.bio);
-      if (s.email) setEmail(s.email);
-      if (s.notifs) setNotifs(s.notifs);
-    } catch {}
+    base44.auth.me().then(user => {
+      if (user.creator_handle) setHandle(user.creator_handle);
+      if (user.contact_email || user.email) setEmail(user.contact_email || user.email || '');
+      if (user.bio) setBio(user.bio);
+      if (user.notification_prefs) setNotifs(prev => ({ ...prev, ...user.notification_prefs }));
+    }).catch(() => {});
   }, []);
 
   return (

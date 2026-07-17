@@ -281,7 +281,25 @@ function Step2({ onboarding, onDone, setStep }) {
 // ── STEP 3: Streaming Setup ───────────────────────────────────────────────────
 function Step3({ onboarding, onDone, setStep }) {
   const RTMP = 'rtmp://ingest.seewhylive.online/live';
-  const [streamKey] = useState('sk_' + Math.random().toString(36).slice(2, 10).toUpperCase());
+  const [streamKey, setStreamKey] = useState('');
+
+  useEffect(() => {
+    base44.auth.me().then(user => {
+      if (user.stream_key) {
+        setStreamKey(user.stream_key);
+      } else {
+        const bytes = crypto.getRandomValues(new Uint8Array(8));
+        const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        const newKey = `SK_${hex}`;
+        setStreamKey(newKey);
+        base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
+      }
+    }).catch(() => {
+      const bytes = crypto.getRandomValues(new Uint8Array(8));
+      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+      setStreamKey(`SK_${hex}`);
+    });
+  }, []);
   const [showKey, setShowKey] = useState(false);
   const [zegoId, setZegoId] = useState('');
   const [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
