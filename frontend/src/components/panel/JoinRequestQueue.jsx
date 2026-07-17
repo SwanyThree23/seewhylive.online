@@ -12,9 +12,9 @@ export default function JoinRequestQueue({ socket, roomId }) {
   useEffect(function() {
     if (!socket || !roomId) return;
     panelService.fetchJoinRequests(roomId).then(setRequests).catch(function() {});
-    var unsub = panelService.onJoinRequestReceived(socket, function({ roomId: rid, userId, requestId }) {
+    var unsub = panelService.onJoinRequestReceived(socket, function({ roomId: rid, userId, requestId, displayName, avatarUrl }) {
       if (rid !== roomId) return;
-      setRequests(function(prev) { return prev.concat([{ id: requestId, user_id: userId }]); });
+      setRequests(function(prev) { return prev.concat([{ id: requestId, user_id: userId, display_name: displayName, avatar_url: avatarUrl }]); });
     });
     return unsub;
   }, [socket, roomId]);

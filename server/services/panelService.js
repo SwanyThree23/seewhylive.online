@@ -83,7 +83,14 @@ async function requestJoin({ roomId, userId }) {
      RETURNING *`,
     [roomId, userId]
   );
-  return result.rows[0];
+  const row = result.rows[0];
+  // Enrich with display info for the host's approval queue
+  const userRow = await db.query('SELECT display_name, avatar_url FROM users WHERE id = $1', [userId]);
+  if (userRow.rows[0]) {
+    row.display_name = userRow.rows[0].display_name;
+    row.avatar_url   = userRow.rows[0].avatar_url;
+  }
+  return row;
 }
 
 async function resolveJoinRequest({ roomId, userId, approve }) {

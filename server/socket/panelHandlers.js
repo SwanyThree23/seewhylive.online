@@ -29,7 +29,13 @@ function registerPanelHandlers(io, socket) {
     try {
       const userId = socket.data.userId;
       const request = await panelService.requestJoin({ roomId, userId });
-      io.to(roomId).emit('panel:join_request_received', { roomId, userId, requestId: request.id });
+      io.to(roomId).emit('panel:join_request_received', {
+        roomId,
+        userId,
+        requestId: request.id,
+        displayName: request.display_name || null,
+        avatarUrl: request.avatar_url || null,
+      });
       ack?.({ ok: true, status: 'pending' });
     } catch (err) {
       ack?.({ ok: false, error: err.message });
