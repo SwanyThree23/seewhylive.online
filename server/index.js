@@ -504,6 +504,29 @@ function getRoom(roomId) {
   return rooms.get(roomId);
 }
 
+// ─── Live Home trending push — broadcast ranked room list every 30 s ─────
+// Simple in-process rank: viewer count × 2 + guest count × 3 (no Redis required)
+setInterval(function() {
+  var ranked = [];
+  rooms.forEach(function(room, roomId) {
+    var viewers = room.viewers.size;
+    var guests  = room.guests.size;
+    if (viewers + guests === 0) return;
+    ranked.push({
+      roomId:    roomId,
+      viewers:   viewers,
+      guests:    guests,
+      score:     viewers * 2 + guests * 3,
+      hostId:    room.hostUserId || null,
+    });
+  });
+  ranked.sort(function(a, b) { return b.score - a.score; });
+  var top = ranked.slice(0, 20);
+  if (top.length > 0) {
+    io.emit('livehome:trending', { rooms: top, ts: Date.now() });
+  }
+}, 30000);
+
 // ─── Presence cleanup — evict sockets unseen for >90s ─────────────────────
 setInterval(function() {
   var now = Date.now();

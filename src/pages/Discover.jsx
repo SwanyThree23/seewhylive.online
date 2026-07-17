@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLiveHomeRanking } from '../hooks/useLiveHomeRanking';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
@@ -156,9 +157,14 @@ export default function DiscoverPage() {
     });
   };
 
-  const trending = [...liveRooms]
-    .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
-    .slice(0, 3);
+  // Live Home: real-time ranked discovery via socket push, falls back to DB sort
+  const { trending: liveHomeTrending, connectedViaSocket: liveHomeSocketOn } = useLiveHomeRanking({ fallbackRooms: liveRooms });
+
+  // Merge socket scores into DB room objects for the trending cards
+  const trending = liveHomeTrending
+    .slice(0, 3)
+    .map(t => t.dbRoom || liveRooms.find(r => r.id === t.roomId))
+    .filter(Boolean);
 
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
@@ -216,12 +222,22 @@ export default function DiscoverPage() {
             </div>
           </div>
 
-          {/* Hero trending */}
+          {/* Hero trending — Live Home ranked discovery */}
           {trending.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {trending.map((room, i) => (
-                <TrendingCard key={room.id} room={room} rank={i + 1} />
-              ))}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4" style={{ color: '#C9A84C' }} />
+                <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: '#C9A84C', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
+                <span className="flex items-center gap-1 ml-2">
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: liveHomeSocketOn ? '#6DBF7E' : '#FFB000' }} />
+                  <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>{liveHomeSocketOn ? 'Live' : 'Polling'}</span>
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {trending.map((room, i) => (
+                  <TrendingCard key={room.id} room={room} rank={i + 1} />
+                ))}
+              </div>
             </div>
           )}
 
