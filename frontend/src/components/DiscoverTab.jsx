@@ -175,6 +175,37 @@ export default function DiscoverTab(props) {
       .catch(function() {});
   }, []);
 
+  // ── Socket: real-time trending rooms from server ──
+  useEffect(function() {
+    if (!socket) return;
+    function onTrending(data) {
+      if (!data || !Array.isArray(data.rooms) || data.rooms.length === 0) return;
+      var ranked = data.rooms.map(function(r) {
+        return {
+          id:           r.roomId,
+          title:        r.title || 'SeeWhy LIVE Stream',
+          hostName:     r.hostId ? r.hostId.slice(0, 8) : 'Host',
+          viewerCount:  (r.viewers || 0) + (r.guests || 0),
+          genre:        'Live',
+          isLive:       true,
+          durationMins: 0,
+          tier:         'free',
+          category:     'GENERAL',
+          score:        r.score || 0,
+          fromApi:      true,
+          fromSocket:   true
+        };
+      });
+      setStreams(function(prev) {
+        var mockFallback = prev.filter(function(s) { return !s.fromSocket && !s.fromApi; });
+        return ranked.concat(mockFallback);
+      });
+      setTotalLive(ranked.length);
+    }
+    socket.on('livehome:trending', onTrending);
+    return function() { socket.off('livehome:trending', onTrending); };
+  }, [socket]);
+
   // ── Socket: listen for notification events ──
   useEffect(function() {
     if (!socket) return;
