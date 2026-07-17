@@ -28,6 +28,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
+import { useWatchPartySocket } from '../hooks/useWatchPartySocket';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
@@ -740,7 +741,102 @@ export default function WatchPartyPage() {
     setSyncData(data);
     setShowSyncWarn(false);
   }, []);
-  const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
+  const { pushState: pushStateDB } = useSyncEngine({ party, isHost, onTimeSync });
+
+  // Socket-based real-time sync — faster than DB polling
+  const { connected: wpSocketConnected, emitPlay, emitPause, emitSeek, emitUrl, emitSync } = useWatchPartySocket({
+    partyId,
+    userId: user?.id,
+    userName: user?.full_name || user?.email || 'Guest',
+    isHost,
+    onPlay: useCallback(({ position, lag = 0 }) => {
+      if (isHost) return;
+      setSyncData(prev => ({
+        ...(prev || {}),
+        playback_state: 'playing',
+        current_time: position + lag,
+        updated_at_ms: Date.now(),
+      }));
+      setShowSyncWarn(false);
+    }, [isHost]),
+    onPause: useCallback(({ position }) => {
+      if (isHost) return;
+      setSyncData(prev => ({
+        ...(prev || {}),
+        playback_state: 'paused',
+        current_time: position,
+        updated_at_ms: Date.now(),
+      }));
+      setShowSyncWarn(false);
+    }, [isHost]),
+    onSeek: useCallback(({ position }) => {
+      if (isHost) return;
+      setSyncData(prev => ({
+        ...(prev || {}),
+        current_time: position,
+        updated_at_ms: Date.now(),
+      }));
+      setShowSyncWarn(false);
+    }, [isHost]),
+    onUrl: useCallback(({ videoId, url, type }) => {
+      if (isHost) return;
+      // Mirrors the DB update that changeVideo() does so the player re-renders
+      qc.setQueryData(['watchparty', partyId], (old) => old ? {
+        ...old,
+        video_url: url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : old.video_url),
+        video_type: type || 'youtube',
+        current_time: 0,
+        playback_state: 'paused',
+      } : old);
+    }, [isHost, partyId, qc]),
+    onSync: useCallback((state) => {
+      if (isHost) return;
+      // Full catch-up: update query cache with video source
+      qc.setQueryData(['watchparty', partyId], (old) => old ? {
+        ...old,
+        video_url: state.url || (state.videoId ? `https://www.youtube.com/watch?v=${state.videoId}` : old.video_url),
+        video_type: state.type || 'youtube',
+        current_time: state.position || 0,
+        playback_state: state.playing ? 'playing' : 'paused',
+        updated_at_ms: state.ts || Date.now(),
+      } : old);
+      setSyncData({
+        playback_state: state.playing ? 'playing' : 'paused',
+        current_time: state.position || 0,
+        updated_at_ms: state.ts || Date.now(),
+      });
+      setShowSyncWarn(false);
+    }, [isHost, partyId, qc]),
+  });
+
+  // Host: intercept pushState to also fire socket events for instant sync
+  const pushState = useCallback((playerState) => {
+    pushStateDB(playerState); // keep DB as durable fallback
+    if (!isHost) return;
+    if (playerState.playing) {
+      emitPlay(playerState.currentTime || 0);
+    } else {
+      emitPause(playerState.currentTime || 0);
+    }
+  }, [pushStateDB, isHost, emitPlay, emitPause]);
+
+  // Host: broadcast full sync heartbeat every 10 s so late-joiners catch up quickly
+  useEffect(() => {
+    if (!isHost || !partyId) return;
+    const iv = setInterval(() => {
+      const vid = party?.video_url;
+      if (!vid) return;
+      const ytId = vid.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
+      emitSync({
+        videoId: ytId,
+        url: vid,
+        type: ytId ? 'youtube' : 'direct',
+        playing: (syncData?.playback_state || party?.playback_state) === 'playing',
+        position: syncData?.current_time ?? party?.current_time ?? 0,
+      });
+    }, 10000);
+    return () => clearInterval(iv);
+  }, [isHost, partyId, party, syncData, emitSync]);
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -801,6 +897,9 @@ export default function WatchPartyPage() {
         updated_at_ms: Date.now(),
       });
       qc.invalidateQueries({ queryKey: ['watchparty', partyId] });
+      // Also push instantly over socket so viewers don't wait for DB poll
+      const ytId = source.url?.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
+      emitUrl({ videoId: ytId, url: source.url, type: source.type });
       toast.success('Video changed!');
     } catch { toast.error('Failed to change video.'); }
   };
@@ -978,13 +1077,13 @@ export default function WatchPartyPage() {
           )}
           {isHost ? (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>±0ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: wpSocketConnected ? '#6DBF7E' : '#FFB000' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>{wpSocketConnected ? 'Socket ●' : 'DB Sync'}</span>
             </span>
           ) : (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: wpSocketConnected ? '#6DBF7E' : '#FFB000' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>{wpSocketConnected ? `Live Sync ±${Math.abs(syncDrift)}ms` : `DB Sync ±${Math.abs(syncDrift)}ms`}</span>
             </span>
           )}
         </div>
