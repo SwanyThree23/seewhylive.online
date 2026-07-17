@@ -5,7 +5,7 @@ import { useLiveHomeRanking } from '../hooks/useLiveHomeRanking';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter
+  Zap, Eye, Clock, ChevronRight, Filter, Clapperboard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -30,6 +30,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import MomentsFeed from '../components/live/MomentsFeed';
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -267,6 +268,7 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
+              { id: 'moments', label: 'Moments', icon: Clapperboard },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -375,6 +377,12 @@ export default function DiscoverPage() {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {tab === 'moments' && (
+            <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <MomentsFeed currentUserId={user?.id} followingIds={[]} />
             </motion.div>
           )}
         </AnimatePresence>
