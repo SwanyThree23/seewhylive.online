@@ -369,7 +369,8 @@ export default function ControlRoomPage() {
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
-  const [speakingIds, setSpeakingIds] = useState({});
+  const [remoteSpeakingIds, setRemoteSpeakingIds] = useState({});
+  const speakingIds = isSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [viewerCount, setViewerCount] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
@@ -602,7 +603,7 @@ export default function ControlRoomPage() {
             userName={user?.full_name || user?.email || ''}
             isHost={true}
             onStreamHealth={() => {}}
-            onSpeakingChange={setSpeakingIds}
+            onSpeakingChange={setRemoteSpeakingIds}
           />
         </div>
       )}

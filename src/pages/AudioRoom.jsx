@@ -12,6 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
@@ -276,6 +277,8 @@ export default function AudioRoom() {
   const { speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
+  const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
@@ -914,7 +917,7 @@ export default function AudioRoom() {
       {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {roomId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {roomId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />

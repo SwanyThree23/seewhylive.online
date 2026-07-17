@@ -31,6 +31,7 @@ import LivePollWidget from '../components/live/LivePollWidget';
 import { Link } from 'react-router-dom';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
@@ -242,6 +243,8 @@ export default function RoomPage() {
 
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
+  const speakingIds = isSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [activePc, setActivePc] = useState(null);
   useEffect(() => {
     const entries = Array.from(peersRef?.current?.entries() || []);
@@ -947,7 +950,7 @@ export default function RoomPage() {
       {isHost && <CreatorTierManager creatorId={room?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
-      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />

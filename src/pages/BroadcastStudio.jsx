@@ -14,6 +14,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useVODRecording, formatDuration } from '../hooks/useVODRecording';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import PanelGrid from '../components/watchparty/PanelGrid';
@@ -646,6 +647,8 @@ export default function BroadcastStudio() {
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel,isClipping=speakGate.isClipping;
+  var remoteSpeakingIds=useRemoteSpeakingMap(remoteStreams,peerUserIds);
+  var speakingIds=isSpeaking&&user&&user.id?Object.assign({},remoteSpeakingIds,{[user.id]:true}):remoteSpeakingIds;
 
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
@@ -2542,7 +2545,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
       {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />

@@ -26,6 +26,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
@@ -586,6 +587,8 @@ export default function WatchPartyPage() {
 
   const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
+  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
+  const gridSpeakingIds = localSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
 
   // VOD recording — runs while host has local stream and party is loaded
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: isHost ? localStream : null });
@@ -1455,7 +1458,7 @@ export default function WatchPartyPage() {
       {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={gridSpeakingIds} />}
       {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { setVideoUrl(url); if (isHost && party?.id) base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
