@@ -98,6 +98,7 @@ import UnifiedChat from '../components/live/UnifiedChat';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import PrivatePanel from '../components/live/PrivatePanel';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
@@ -107,6 +108,8 @@ import EvmuxWebSource from '../components/live/EvmuxWebSource';
 import GuestConnector from '../components/live/GuestConnector';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamWebSourceManager from '../components/streaming/StreamWebSourceManager';
+import DualStreamManager from '../components/streaming/DualStreamManager';
+import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
 import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import LivePollOverlay from '../components/live/LivePollOverlay';
 import LocalVideoTile from '../components/live/LocalVideoTile';
@@ -476,6 +479,7 @@ export default function BroadcastStudio() {
   const [giftEvent, setGiftEvent] = useState(null);
   const [guardianWords, setGuardianWords] = useState([]);
   const [liveViewers, setLiveViewers] = useState(0);
+  const [overlayLayers, setOverlayLayers] = useState([]);
   const [peakViewers, setPeakViewers] = useState(0);
   const [guardianWordInput, setGuardianWordInput] = useState('');
   const [ariaSuggestions] = useState(['What do you think about this topic?', 'Drop a ❤️ if you agree!', 'Questions? Type them below!']);
@@ -1317,6 +1321,13 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 Live Sync
               </div>
             )}
+
+            {/* News Block overlay — rendered on top of video */}
+            {overlayLayers.length > 0 && (
+              <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
+                <NewsBlockOverlay.Overlay layers={overlayLayers} />
+              </div>
+            )}
           </div>
 
           {/* Super chat rail */}
@@ -1794,12 +1805,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   </div>
                 )}
 
-                {/* Lower thirds banner */}
+                {/* News Block overlay control panel */}
                 {isHost && (
-                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>📺 Lower Thirds</p>
-                    <LowerThirdsBanner onBannerChange={() => {}} />
-                  </div>
+                  <NewsBlockOverlay onLayersChange={setOverlayLayers} />
                 )}
 
                 {/* WebRTC setup banner */}
@@ -1823,6 +1831,16 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {localStream && (
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
                     <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || 'You'} isHost={isHost} />
+                  </div>
+                )}
+
+                {/* Dual Stream — 16:9 + 9:16 simultaneous outputs */}
+                {isHost && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <DualStreamManager
+                      localStream={localStream}
+                      isActive={party?.status === 'live'}
+                    />
                   </div>
                 )}
 
@@ -1987,9 +2005,11 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {user?.id && (
                   <GuestInviteGenerator userId={user.id} roomId={partyId} streamId={partyId} />
                 )}
-                {user?.id && (
-                  <RTMPFanoutPanel userId={user.id} streamId={partyId} isStreaming={party?.status === 'live'} />
-                )}
+                <LiveDestinationEditor
+                  roomId={partyId}
+                  isHost={isHost}
+                  isLive={party?.status === 'live'}
+                />
                 <WebSourceOverlay />
               </div>
             )}

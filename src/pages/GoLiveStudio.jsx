@@ -1,6 +1,9 @@
-import React, { useReducer, useEffect, useRef } from 'react';
+import React, { useReducer, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
+import DualStreamManager from '../components/streaming/DualStreamManager';
+import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BitratePresets from '../components/streaming/BitratePresets';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -139,6 +142,7 @@ function StatBox({ label, value, unit, color, warn }) {
 
 export default function GoLiveStudio() {
   const [state, dispatch] = useReducer(reducer, initState);
+  const [overlayLayers, setOverlayLayers] = useState([]);
   const uptimeRef = useRef(null);
   const healthRef = useRef(null);
   const countdownRef = useRef(null);
@@ -256,6 +260,13 @@ export default function GoLiveStudio() {
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{state.lowerThirdText}</div>
               </div>
             )}
+
+            {/* News Block overlay — live lower thirds on the preview */}
+            {overlayLayers.length > 0 && (
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
+                <NewsBlockOverlay.Overlay layers={overlayLayers} />
+              </div>
+            )}
           </div>
 
           {/* Scene Switcher */}
@@ -280,21 +291,12 @@ export default function GoLiveStudio() {
             </div>
           </div>
 
-          {/* Lower Third */}
+          {/* News Block overlay — multi-layer lower thirds */}
+          <NewsBlockOverlay onLayersChange={setOverlayLayers} />
+
+          {/* Dual Stream — 16:9 landscape + 9:16 portrait simultaneously */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', fontFamily: 'Barlow Condensed, sans-serif' }}>LOWER THIRD BANNER</div>
-              <button onClick={() => dispatch({ type: 'TOGGLE_LOWER_THIRD' })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: state.showLowerThird ? '#d4af37' : 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
-                {state.showLowerThird ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                {state.showLowerThird ? 'ON' : 'OFF'}
-              </button>
-            </div>
-            <input
-              value={state.lowerThirdText}
-              onChange={e => dispatch({ type: 'SET_LOWER_THIRD_TEXT', payload: e.target.value })}
-              placeholder="Banner text..."
-              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-            />
+            <DualStreamManager localStream={null} isActive={isLive} />
           </div>
 
           {/* Audio Controls */}
@@ -405,25 +407,13 @@ export default function GoLiveStudio() {
             </button>
           </div>
 
-          {/* Multi-Destination */}
+          {/* Live Destination Editor — add/start/stop platforms mid-stream */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>MULTI-DESTINATION</div>
-            {DESTINATIONS.map(dest => (
-              <div key={dest.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: dest.color }} />
-                  <span style={{ fontSize: 13, color: state.destinations[dest.id] ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{dest.label}</span>
-                  {dest.required && <span style={{ fontSize: 9, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>PRIMARY</span>}
-                </div>
-                <button
-                  onClick={() => dispatch({ type: 'TOGGLE_DESTINATION', payload: dest.id })}
-                  disabled={dest.required}
-                  style={{ width: 36, height: 20, borderRadius: 10, border: 'none', background: state.destinations[dest.id] ? dest.color : 'rgba(255,255,255,0.15)', cursor: dest.required ? 'default' : 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}
-                >
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: state.destinations[dest.id] ? 19 : 3, transition: 'left 0.2s' }} />
-                </button>
-              </div>
-            ))}
+            <LiveDestinationEditor
+              roomId={activeRoomId}
+              isHost={true}
+              isLive={isLive}
+            />
           </div>
 
           {/* Guardian Status */}
