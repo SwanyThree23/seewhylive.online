@@ -32,6 +32,7 @@ import { useWatchPartySocket } from '../hooks/useWatchPartySocket';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
@@ -177,6 +178,7 @@ import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import PipCameraTile from '../components/live/PipCameraTile';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import WatchPartyCoStreamPanel from '../components/live/WatchPartyCoStreamPanel';
 import VideoQueue from '../components/watchparty/VideoQueue';
@@ -632,6 +634,7 @@ export default function WatchPartyPage() {
   }, [peerUserIds]);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -1623,6 +1626,7 @@ export default function WatchPartyPage() {
       <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={videoUrl} onPlayVideo={(url) => { setVideoUrl(url); if (isHost && party?.id) base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
+      {isHost && partyId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={partyId} tipTotal={tipTotal} />}
     </div>
   );
 }

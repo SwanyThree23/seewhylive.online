@@ -29,6 +29,7 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import HostControls from '../components/watchparty/HostControls';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
@@ -882,6 +883,7 @@ export default function BroadcastStudio() {
     elapsedSeconds: elapsed,
     getClipBlobUrl: extractClipBlobUrl,
   });
+  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   const onTimeSync = useCallback((data) => setSyncData(data), []);
   const { pushState } = useSyncEngine({ party, isController: canManage, onTimeSync });

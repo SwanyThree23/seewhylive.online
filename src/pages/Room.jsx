@@ -198,6 +198,7 @@ import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 export default function RoomPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -272,6 +273,7 @@ export default function RoomPage() {
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   // Stream start time — set once on mount
   const streamStartRef = useRef(Date.now());

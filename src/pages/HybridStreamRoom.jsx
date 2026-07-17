@@ -156,6 +156,7 @@ import GuestCoStreamDashboard from '../components/live/GuestCoStreamDashboard';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import InviteGuestsModal from '../components/live/InviteGuestsModal';
@@ -304,6 +305,7 @@ export default function HybridStreamRoom() {
 
   const isHost = room.host_id === user?.id;
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: hybridChatMessages, hypeLevel: hybridHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: hybridChatMessages[hybridChatMessages.length - 1] || null });
 
   return (
     <div className="h-screen overflow-hidden" style={{ background: '#080B18', fontFamily: 'Barlow Condensed, sans-serif' }}>

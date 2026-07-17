@@ -141,6 +141,7 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
@@ -375,6 +376,7 @@ export default function ControlRoomPage() {
   const [crHypeLevel, setCrHypeLevel] = useState(0);
   const [showCRCamSettings, setShowCRCamSettings] = useState(false);
   useHighlightDetector({ partyId: roomId, roomId, isHost: true, user, messages: crChatMessages, hypeLevel: crHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: crChatMessages[crChatMessages.length - 1] || null });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
   const [remoteSpeakingIds, setRemoteSpeakingIds] = useState({});

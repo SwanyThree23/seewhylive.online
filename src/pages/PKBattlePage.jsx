@@ -14,6 +14,7 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
@@ -580,6 +581,7 @@ export default function PKBattlePage() {
   const [showPKCamSettings, setShowPKCamSettings] = useState(false);
   const isHostBattle = !!(user?.id && battle?.creator_id === user?.id);
   useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: pkChatMessages[pkChatMessages.length - 1] || null });
 
   const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
   const [rightCaptureStream, setRightCaptureStream] = React.useState(null);

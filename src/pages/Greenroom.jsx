@@ -114,6 +114,7 @@ import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
 import StreamEventBus from '../components/live/StreamEventBus';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import TippingOverlay from '../components/live/TippingOverlay';
 import UnifiedChat from '../components/live/UnifiedChat';
 import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
@@ -368,6 +369,8 @@ export default function GreenroomPage() {
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [lastChatMsgObj, setLastChatMsgObj] = useState(null);
+  useVoiceAgentRuntime({ chatMessage: lastChatMsgObj });
 
   useEffect(() => {
     if (user?.full_name) setDisplayName(user.full_name);
@@ -882,7 +885,7 @@ export default function GreenroomPage() {
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && hostReadyMut.mutate()} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) setLastChatMsg(msg.content); }} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) { setLastChatMsg(msg.content); setLastChatMsgObj(msg); } }} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={room?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
