@@ -204,6 +204,9 @@ import PKBattleModal from '../components/live/PKBattleModal';
 import LoveTap from '../components/live/LoveTap';
 import ShareModal from '../components/live/ShareModal';
 import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
+import RoomEntryGate from '../components/RoomEntryGate';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -517,6 +520,7 @@ export default function BroadcastStudio() {
   const partyId = params.get('id');
   const qc = useQueryClient();
 
+  const [entryPassed, setEntryPassed] = useState(false);
   const [studioMode, setStudioMode] = useState('hybrid');
   const [activeTab, setActiveTab] = useState('chat');
   const [leftOpen, setLeftOpen] = useState(true);
@@ -1110,6 +1114,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
         <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: GOLD }} />
       </div>
+    );
+  }
+
+  // ── Room entry gate ─────────────────────────────────────────────────────────
+  const entryRole = isHost ? 'host' : isCoHost ? 'co-host' : isSpeaker ? 'speaker' : 'viewer';
+  if (!entryPassed) {
+    return (
+      <RoomEntryGate
+        role={entryRole}
+        user={user}
+        onPass={() => setEntryPassed(true)}
+        onRoleDowngrade={() => setEntryPassed(true)}
+        onExit={() => window.history.back()}
+      />
     );
   }
 
@@ -2266,6 +2284,20 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     Copy Embed
                   </button>
                 </div>
+
+                {/* Guest invite links with QR codes (host/co-host only) */}
+                {canManage && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.15)' }}>
+                    <GuestInviteGenerator roomId={partyId} isHost={canManage} />
+                  </div>
+                )}
+
+                {/* Multi-platform RTMP fanout (host/co-host only) */}
+                {canManage && partyId && (
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(212,175,55,0.12)' }}>
+                    <RTMPFanoutPanel roomId={partyId} isHost={isHost} />
+                  </div>
+                )}
               </div>
             )}
           </div>

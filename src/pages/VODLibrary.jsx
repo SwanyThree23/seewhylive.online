@@ -9,6 +9,7 @@ import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import ClipCreatorVOD from '../components/vod/ClipCreator';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -46,6 +47,7 @@ export default function VODLibraryPage() {
   const [selectedForChapters, setSelectedForChapters] = useState(null);
   const [selectedForTrim, setSelectedForTrim] = useState(null);
   const [selectedForHighlights, setSelectedForHighlights] = useState(null);
+  const [selectedForClips, setSelectedForClips] = useState(null);
   const [selectedForEdit, setSelectedForEdit] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDesc, setEditDesc] = useState('');
@@ -80,6 +82,7 @@ export default function VODLibraryPage() {
     { id: 'recordings', icon: <Archive className="w-3.5 h-3.5" />,  label: 'Recordings' },
     { id: 'chapters',   icon: <BookOpen className="w-3.5 h-3.5" />, label: 'Chapters' },
     { id: 'trim',       icon: <Scissors className="w-3.5 h-3.5" />, label: 'Trim' },
+    { id: 'clips',      icon: <Scissors className="w-3.5 h-3.5" />, label: 'Clip' },
     { id: 'highlights', icon: <Sparkles className="w-3.5 h-3.5" />, label: 'AI Clips' },
   ];
 
@@ -205,6 +208,21 @@ export default function VODLibraryPage() {
             {selectedForTrim
               ? <VODTrimEditor video={selectedForTrim} onSave={() => setSelectedForTrim(null)} onCancel={() => setSelectedForTrim(null)} />
               : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video above to trim it</p>
+            }
+          </div>
+        )}
+
+        {activeTab === 'clips' && user?.id && (
+          <div>
+            <VODPicker vods={myVODs} selected={selectedForClips} onSelect={setSelectedForClips} placeholder="Pick a recording to clip…" />
+            {selectedForClips
+              ? <ClipCreatorVOD
+                  streamSessionId={selectedForClips.id}
+                  roomId={selectedForClips.room_id || selectedForClips.id}
+                  creatorId={user.id}
+                  onClipCreated={() => {}}
+                />
+              : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a recording above to create a clip</p>
             }
           </div>
         )}

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
 import { Languages, ShieldAlert, Send, Rocket, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import BottomSheet from '../ui/BottomSheet';
 
 const LANG_OPTIONS = [
   { value: 'en', label: 'English',    flag: '🇺🇸' },
@@ -416,44 +417,31 @@ Return JSON: { "status": "safe" | "spam" | "harassment" | "hate_speech" | "inapp
         </button>
       </div>
 
-      {/* Language picker modal */}
-      {langSheetOpen && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}
-          onClick={() => setLangSheetOpen(false)}
-        >
-          <div
-            style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Translate to…</p>
-            </div>
-            <div style={{ padding: '8px 0' }}>
-              {LANG_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    setTargetLang(opt.value);
-                    setLangSheetOpen(false);
-                    if (translateEnabled) setTimeout(translateAll, 100);
-                  }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
-                    background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
-                    border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
-                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
-                  }}
-                >
-                  <span style={{ fontSize: 18 }}>{opt.flag}</span>
-                  <span>{opt.label}</span>
-                  {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Language picker sheet */}
+      <BottomSheet isOpen={langSheetOpen} onClose={() => setLangSheetOpen(false)} title="Translate to…" maxHeight="60vh">
+        <div style={{ padding: '8px 0' }}>
+          {LANG_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setTargetLang(opt.value);
+                setLangSheetOpen(false);
+                if (translateEnabled) setTimeout(translateAll, 100);
+              }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
+                background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
+                fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>{opt.flag}</span>
+              <span>{opt.label}</span>
+              {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
+            </button>
+          ))}
         </div>
-      )}
+      </BottomSheet>
     </div>
   );
 }

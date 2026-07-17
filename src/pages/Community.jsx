@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import ReferralProgram from '@/components/community/ReferralProgram';
+import CreatePollModal from '../components/community/CreatePollModal';
+import PollCard from '../components/community/PollCard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -99,6 +101,15 @@ export default function CommunityPage() {
   const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
   const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
 
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
+
+  const { data: polls = [] } = useQuery({
+    queryKey: ['community-polls', community?.id],
+    queryFn: () => base44.entities.Poll.filter({ community_id: community.id }, '-created_date', 10),
+    enabled: !!community?.id,
+    refetchInterval: 30000,
+  });
+
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
       <div className="w-10 h-10 rounded-full animate-spin" style={{ border: `3px solid ${G}`, borderTopColor: 'transparent' }} />
@@ -158,6 +169,34 @@ export default function CommunityPage() {
             >
               <SpotlightSection communityId={community.id} />
               <ReferralProgram communityId={community.id} />
+
+              {/* Community Polls */}
+              <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.12)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-black uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    📊 Community Polls
+                  </h3>
+                  {(isAdmin || isOwner) && (
+                    <button
+                      onClick={() => setShowCreatePoll(true)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all"
+                      style={{ background: 'rgba(212,175,55,0.12)', color: G, border: '1px solid rgba(212,175,55,0.25)' }}>
+                      <Plus className="w-3 h-3" /> New Poll
+                    </button>
+                  )}
+                </div>
+                {polls.length === 0 ? (
+                  <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    No active polls yet
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {polls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         ) : (
@@ -183,6 +222,12 @@ export default function CommunityPage() {
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
       <OnlinePresence userId={null} />
+
+      <CreatePollModal
+        isOpen={showCreatePoll}
+        onClose={() => setShowCreatePoll(false)}
+        communityId={community?.id}
+      />
     </div>
   );
 }
