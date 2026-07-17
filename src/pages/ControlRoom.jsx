@@ -67,6 +67,8 @@ import RecordingManager from '../components/content/RecordingManager';
 import OBSBridge from '../components/obs/OBSBridge';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
+import WebSourceOverlayV49 from '../components/streaming/WebSourceOverlayV49';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
@@ -737,6 +739,8 @@ export default function ControlRoomPage() {
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
+      {roomId && <RTMPFanoutPanelV49 roomId={roomId} isHost={true} />}
+      {roomId && <WebSourceOverlayV49 roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
       {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => setShowSwanPanel(false)} />}

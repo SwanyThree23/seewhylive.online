@@ -11,6 +11,7 @@ import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
+import GuestLandingPageV49 from '../components/streaming/GuestLandingPageV49';
 import AgeGate from '../components/AgeGate';
 import { getStoredAge } from '@/lib/ageVerification';
 
@@ -179,19 +180,29 @@ export default function GuestJoin() {
                   placeholder="Your display name"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && name.trim() && joinMutation.mutate()}
+                  onKeyDown={e => e.key === 'Enter' && name.trim() && setStatus('device-check')}
                   style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 12 }}
                 />
                 <button
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-black uppercase text-xs"
-                  onClick={() => joinMutation.mutate()}
-                  disabled={!name.trim() || joinMutation.isPending}
-                  style={{ ...T, background: !name.trim() || joinMutation.isPending ? 'rgba(212,175,55,0.2)' : GOLD, border: 'none', color: !name.trim() || joinMutation.isPending ? 'rgba(255,255,255,0.3)' : '#000', cursor: !name.trim() || joinMutation.isPending ? 'default' : 'pointer' }}>
+                  onClick={() => name.trim() && setStatus('device-check')}
+                  disabled={!name.trim()}
+                  style={{ ...T, background: !name.trim() ? 'rgba(212,175,55,0.2)' : GOLD, border: 'none', color: !name.trim() ? 'rgba(255,255,255,0.3)' : '#000', cursor: !name.trim() ? 'default' : 'pointer' }}>
                   <Radio className="w-4 h-4" />
-                  {joinMutation.isPending ? 'Joining…' : 'Join Greenroom'}
+                  Check Camera &amp; Join
                 </button>
               </div>
             </motion.div>
+          )}
+
+          {status === 'device-check' && (
+            <GuestLandingPageV49
+              key="device-check"
+              guestName={name}
+              roomId={roomId}
+              onProceed={() => joinMutation.mutate()}
+              onBack={() => setStatus('idle')}
+            />
           )}
 
           {status === 'waiting' && (

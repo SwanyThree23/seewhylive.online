@@ -4,6 +4,8 @@ import panelService from '../../services/panelService';
 import PanelTile from './PanelTile';
 import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
+import JoinRequestQueue from './JoinRequestQueue';
+import AudioOnlyToggle from './AudioOnlyToggle';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 const GOLD = '#D4AF37';
@@ -176,38 +178,53 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   var expandedSlot = slots.find(function(s) { return s.is_expanded; });
   var otherSlots = slots.filter(function(s) { return !s.is_expanded; });
 
+  var videoProducer = rtcManager && rtcManager.producers && rtcManager.producers['video'];
+
   function renderControls() {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 8px 0' }}>
-        <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600 }}>
-          PANEL  {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length} live</span>}
-        </span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {!hasSlot && userId && (
-            <button
-              onClick={function() { setShowJoinModal(true); }}
-              style={{
-                background: GOLD, color: '#111', border: 'none',
-                borderRadius: 6, padding: '5px 12px', fontSize: 12,
-                fontWeight: 700, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-              }}
-            >
-              + Join Panel
-            </button>
-          )}
-          {hasSlot && (
-            <button
-              onClick={handleLeave}
-              style={{
-                background: 'transparent', color: RED, border: '1px solid ' + RED,
-                borderRadius: 6, padding: '5px 10px', fontSize: 12,
-                fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
-              }}
-            >
-              Leave Panel
-            </button>
-          )}
+      <div style={{ padding: '6px 8px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ color: GOLD, fontSize: 11, fontFamily: '"DM Sans", sans-serif', fontWeight: 600 }}>
+            PANEL {slots.length > 0 && <span style={{ color: '#888' }}>· {slots.length} live</span>}
+          </span>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {isHost && (
+              <AudioOnlyToggle
+                socket={socket}
+                roomId={roomId}
+                isAudioOnly={isAudioOnlyRoom}
+                videoProducer={videoProducer || null}
+              />
+            )}
+            {!hasSlot && userId && (
+              <button
+                onClick={function() { setShowJoinModal(true); }}
+                style={{
+                  background: GOLD, color: '#111', border: 'none',
+                  borderRadius: 6, padding: '5px 12px', fontSize: 12,
+                  fontWeight: 700, fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                }}
+              >
+                + Join Panel
+              </button>
+            )}
+            {hasSlot && (
+              <button
+                onClick={handleLeave}
+                style={{
+                  background: 'transparent', color: RED, border: '1px solid ' + RED,
+                  borderRadius: 6, padding: '5px 10px', fontSize: 12,
+                  fontFamily: '"DM Sans", sans-serif', cursor: 'pointer',
+                }}
+              >
+                Leave Panel
+              </button>
+            )}
+          </div>
         </div>
+        {isHost && (
+          <JoinRequestQueue socket={socket} roomId={roomId} />
+        )}
       </div>
     );
   }
