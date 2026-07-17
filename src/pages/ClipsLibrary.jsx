@@ -79,6 +79,13 @@ export default function ClipsLibraryPage() {
     queryKey: ['highlights'],
     queryFn: () => base44.entities.StreamHighlight.list('-created_date', 10),
   });
+  const { data: followingList=[] } = useQuery({
+    queryKey: ['following', user?.id],
+    queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
 
   const deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
@@ -126,7 +133,7 @@ export default function ClipsLibraryPage() {
       {/* Moments tab */}
       {tab === 'moments' && (
         <div style={{ maxWidth:1100, margin:'0 auto', padding:'20px' }}>
-          <MomentsFeed currentUserId={user?.id} followingIds={[]} />
+          <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
         </div>
       )}
       <div style={{ maxWidth:900, margin:'0 auto', padding:'20px', display:tab==='library'?'block':'none' }}>

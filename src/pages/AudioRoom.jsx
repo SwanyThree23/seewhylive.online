@@ -16,6 +16,7 @@ import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import AggregatedChat from '../components/live/AggregatedChat';
 import AudioStageTab from '../components/audio/AudioStageTab';
@@ -289,6 +290,8 @@ export default function AudioRoom() {
   const [peakViewers, setPeakViewers] = useState(0);
   useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [hypeLevel, setHypeLevel] = useState(0);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
@@ -385,6 +388,7 @@ export default function AudioRoom() {
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
   function handleToggleAudio() {
@@ -951,7 +955,17 @@ export default function AudioRoom() {
       {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={party} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => setLastChatMsg(msg?.content || null)} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => {
+        const content = msg?.content || null;
+        setLastChatMsg(content);
+        if (content) {
+          setChatMessages(prev => {
+            const next = [...prev, { content }];
+            return next.length > 100 ? next.slice(-100) : next;
+          });
+          setHypeLevel(prev => Math.min(100, prev + 2));
+        }
+      }} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={party?.host_id || user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
