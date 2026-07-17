@@ -27,7 +27,7 @@ function getGridClass(count, maxSlots) {
   return 'grid-cols-5 md:grid-cols-5';
 }
 
-export default React.memo(function GuestGrid({ participants = [], isHost, onInvite, hostId, maxGuests = 20 }) {
+export default React.memo(function GuestGrid({ participants = [], isHost, onInvite, hostId, maxGuests = 20, speakingIds = {} }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);
   const [audioStates, setAudioStates] = useState({});
@@ -82,11 +82,12 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
             isHost={spotlightGuest.user_id === hostId}
             isHostUser={isHost}
             onSpotlight={handleSpotlight}
+            externalSpeaking={speakingIds[spotlightGuest.id] ?? speakingIds[spotlightGuest.user_id]}
           />
           <div className="flex gap-2 h-20 shrink-0 overflow-x-auto">
             {speakers.filter(s => s.id !== spotlightId).map(p => (
               <div key={p.id} className="w-28 shrink-0 h-full">
-                <GuestTile participant={p} compact isHost={p.user_id === hostId} isHostUser={isHost} onSpotlight={handleSpotlight} />
+                <GuestTile participant={p} compact isHost={p.user_id === hostId} isHostUser={isHost} onSpotlight={handleSpotlight} externalSpeaking={speakingIds[p.id] ?? speakingIds[p.user_id]} />
               </div>
             ))}
           </div>
@@ -95,7 +96,7 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
         <div className={`flex-1 p-2 grid ${getGridClass(speakers.length, layoutSlots)} gap-2 content-start overflow-auto`}>
           <AnimatePresence>
             {speakers.map(p => (
-              <GuestTile key={p.id} participant={p} isHost={p.user_id === hostId} isHostUser={isHost} onSpotlight={handleSpotlight} />
+              <GuestTile key={p.id} participant={p} isHost={p.user_id === hostId} isHostUser={isHost} onSpotlight={handleSpotlight} externalSpeaking={speakingIds[p.id] ?? speakingIds[p.user_id]} />
             ))}
             {Array.from({ length: Math.min(empty, 4) }).map((_, i) => (
               <EmptySlot key={`empty-${i}`} onInvite={onInvite} isHost={isHost} />
@@ -107,14 +108,18 @@ export default React.memo(function GuestGrid({ participants = [], isHost, onInvi
   );
 });
 
-function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSpotlight, isHostUser: hostCtrl }) {
-  const [speaking, setSpeaking] = useState(false);
+function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSpotlight, isHostUser: hostCtrl, externalSpeaking }) {
+  const [simSpeaking, setSimSpeaking] = useState(false);
+
+  // Use real speaking data when available; fall back to simulation
+  const hasRealData = externalSpeaking !== undefined && externalSpeaking !== null;
+  const speaking = hasRealData ? externalSpeaking : simSpeaking;
 
   useEffect(() => {
-    if (compact) return;
-    const interval = setInterval(() => setSpeaking(Math.random() > 0.6), 800);
+    if (compact || hasRealData) return;
+    const interval = setInterval(() => setSimSpeaking(Math.random() > 0.6), 800);
     return () => clearInterval(interval);
-  }, [compact]);
+  }, [compact, hasRealData]);
 
   const connDots = Math.floor(Math.random() * 2) + 2;
   const gradient = `from-[${['#1a0030', '#001a2c', '#1a1a00', '#001a00'][Math.abs(participant.user_name?.charCodeAt(0) || 0) % 4]}] to-[#0d0618]`;
