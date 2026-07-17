@@ -124,6 +124,13 @@ const TOOLS = [
     color: '#C9A84C',
     page: 'WebsiteGenerator',
   },
+  {
+    label: 'Voice Agent Builder',
+    desc: 'Create AI voice agents for streams',
+    icon: Mic,
+    color: '#6DBF7E',
+    page: 'VoiceAgentBuilder',
+  },
 ];
 
 export default function StudioHub() {

@@ -129,6 +129,7 @@ const SVSArena                 = lazy(() => import('./pages/SVSArena'));
 const StudioHub                = lazy(() => import('./pages/StudioHub'));
 const UnifiedRoom              = lazy(() => import('./pages/UnifiedRoom'));
 const WebsiteGenerator         = lazy(() => import('./pages/WebsiteGenerator'));
+const VoiceAgentBuilder        = lazy(() => import('./pages/VoiceAgentBuilder'));
 const VoiceAISettings          = lazy(() => import('./pages/VoiceAISettings'));
 const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
 const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
@@ -255,6 +256,7 @@ export const PAGES = {
     "StudioHub": StudioHub,
     "UnifiedRoom": UnifiedRoom,
     "WebsiteGenerator": WebsiteGenerator,
+    "VoiceAgentBuilder": VoiceAgentBuilder,
     "VoiceAISettings": VoiceAISettings,
     "WashingtonClassic": WashingtonClassic,
     "WisperFlo": WisperFlo,
