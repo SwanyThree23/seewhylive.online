@@ -1455,6 +1455,9 @@ export default function App() {
         {activeTab === 'collab' && (
           <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} socket={socketRef.current} roomId={APP_ID} />
         )}
+        {activeTab === 'creators' && (
+          <CreatorDiscoveryTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} username={username} />
+        )}
         {activeTab === 'n8n' && (
           <N8nTab addToast={addToast} isLive={isLive} />
         )}

@@ -35,6 +35,7 @@ var MORE_TABS = [
   { id: 'battles',   icon: '⚔️', label: 'BATTLES'    },
   { id: 'classic',   icon: '🎲', label: 'DC'         },
   { id: 'collab',    icon: '🤝', label: 'COLLAB'     },
+  { id: 'creators',  icon: '🔍', label: 'CREATORS'   },
   { id: 'green',     icon: '🟢', label: 'GREEN RM'   },
   { id: 'schedule',  icon: '📅', label: 'SCHEDULE'   },
   { id: 'rankings',  icon: '🏅', label: 'RANKINGS'   },
