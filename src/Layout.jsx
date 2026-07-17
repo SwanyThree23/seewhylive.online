@@ -9,7 +9,8 @@ import {
   Home, Radio, Search as SearchIcon,
   LayoutDashboard, Layers, Shield, Server,
   Trophy, Eye, Menu, X, User, ChevronRight,
-  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv
+  MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
+  Users, Calendar, Bell, FileText, Settings2, Activity
 } from 'lucide-react';
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
@@ -48,6 +49,12 @@ var DRAWER_WATCH = [
   { name: 'Washington Classic',icon: Swords, href: createPageUrl('WashingtonClassic') },
   { name: 'WisperFlo',        icon: MessageSquare, href: createPageUrl('WisperFlo') },
   { name: 'Leaderboard',      icon: Trophy,  href: createPageUrl('Leaderboard') },
+  { name: 'Communities',      icon: Users,   href: createPageUrl('Communities') },
+  { name: 'Live Battles',     icon: Swords,  href: createPageUrl('LiveBattles') },
+  { name: 'Loyalty Hub',      icon: Trophy,  href: createPageUrl('LoyaltyHub') },
+  { name: 'Search',           icon: SearchIcon, href: createPageUrl('Search') },
+  { name: 'PKBattle Arena',   icon: Swords,  href: createPageUrl('PKBattleArena') },
+  { name: 'SVS Arena',        icon: Swords,  href: createPageUrl('SVSArena') },
 ];
 
 var DRAWER_CREATE = [
@@ -75,6 +82,16 @@ var DRAWER_CREATE = [
   { name: 'Creator Profile',   icon: User,            href: createPageUrl('CreatorPublicProfile') },
   { name: 'Joyce AI',          icon: Bot,             href: createPageUrl('JoyceAI') },
   { name: 'Messages',          icon: MessageSquare,   href: createPageUrl('Messages') },
+  { name: 'Swany Bot',         icon: Bot,             href: createPageUrl('SwanyBotPage') },
+  { name: 'Overlay Builder',   icon: Layers,          href: createPageUrl('OverlayBuilder') },
+  { name: 'Scene Templates',   icon: Tv,              href: createPageUrl('SceneTemplates') },
+  { name: 'Content Calendar',  icon: Calendar,        href: createPageUrl('ContentCalendar') },
+  { name: 'Stream Alerts',     icon: Bell,            href: createPageUrl('StreamAlerts') },
+  { name: 'Stream Analytics',  icon: LayoutDashboard, href: createPageUrl('StreamAnalytics') },
+  { name: 'Transcription',     icon: FileText,        href: createPageUrl('TranscriptionStudio') },
+  { name: 'Voice AI Settings', icon: Settings2,       href: createPageUrl('VoiceAISettings') },
+  { name: 'Hybrid Stream',     icon: Globe,           href: createPageUrl('HybridStreamRoom') },
+  { name: 'Poll Manager',      icon: LayoutDashboard, href: createPageUrl('PollManager') },
 ];
 
 var DRAWER_ACCOUNT = [
@@ -83,7 +100,11 @@ var DRAWER_ACCOUNT = [
   { name: 'VaultPro', icon: Lock,       href: createPageUrl('VaultPro') },
   { name: 'Terms',    icon: Video,      href: createPageUrl('TermsOfService') },
   { name: 'Privacy',  icon: Video,      href: createPageUrl('PrivacyPolicy') },
-  { name: 'BetaStatus', icon: Radio,   href: createPageUrl('BetaStatus') },
+  { name: 'BetaStatus',        icon: Radio,     href: createPageUrl('BetaStatus') },
+  { name: 'Notifications',    icon: Bell,      href: createPageUrl('Notifications') },
+  { name: 'Activity',         icon: Activity,  href: createPageUrl('Activity') },
+  { name: 'Viewer Dashboard', icon: LayoutDashboard, href: createPageUrl('ViewerDashboard') },
+  { name: 'Loyalty Program',  icon: Trophy,    href: createPageUrl('LoyaltyProgram') },
 ];
 
 var DRAWER_ADMIN = [
@@ -92,7 +113,11 @@ var DRAWER_ADMIN = [
   { name: 'Rooms Manager',   icon: Layers, href: createPageUrl('RoomsManager') },
   { name: 'StageCleanup',    icon: Layers, href: createPageUrl('StageCleanup') },
   { name: 'RTMPServer',      icon: Server, href: createPageUrl('RTMPServer') },
-  { name: 'Infra Reference', icon: Server, href: createPageUrl('StreamInfraRef') },
+  { name: 'Infra Reference',   icon: Server,          href: createPageUrl('StreamInfraRef') },
+  { name: 'Moderation',       icon: Shield,          href: createPageUrl('ModerationDashboard') },
+  { name: 'Community Admin',  icon: Users,           href: createPageUrl('CommunityAdmin') },
+  { name: 'Advanced Analytics', icon: LayoutDashboard, href: createPageUrl('AdvancedAnalytics') },
+  { name: 'Stream Infra',     icon: Server,          href: createPageUrl('StreamInfra') },
 ];
 
 export default function Layout({ children, currentPageName }) {
