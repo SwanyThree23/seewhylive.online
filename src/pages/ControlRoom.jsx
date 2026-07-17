@@ -140,6 +140,7 @@ import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
@@ -170,6 +171,8 @@ import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
 import WebSourceOverlay from '../components/live/WebSourceOverlay';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import StreamMetadata from '../components/live/StreamMetadata';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
@@ -368,6 +371,10 @@ export default function ControlRoomPage() {
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const [crChatMessages, setCrChatMessages] = useState([]);
+  const [crHypeLevel, setCrHypeLevel] = useState(0);
+  const [showCRCamSettings, setShowCRCamSettings] = useState(false);
+  useHighlightDetector({ partyId: roomId, roomId, isHost: true, user, messages: crChatMessages, hypeLevel: crHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
   const [remoteSpeakingIds, setRemoteSpeakingIds] = useState({});
@@ -817,6 +824,8 @@ export default function ControlRoomPage() {
       <BackgroundCustomizer />
       <WebSourceOverlay isStreamActive={isLive} />
       {roomId && <GuestInviteGeneratorV49 roomId={roomId} isHost={true} />}
+      {roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={tipTotal} />}
+      <PreJoinSettingsModal open={showCRCamSettings} onClose={() => setShowCRCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
     </div>
   );
 }
