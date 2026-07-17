@@ -1539,6 +1539,8 @@ export default function App() {
             roomId={APP_ID}
             userId={userId}
             isHost={role === 'host' || role === 'cohost'}
+            rtcManager={rtcManager}
+            guests={guests}
           />
         )}
         {activeTab === 'watchparty' && (
