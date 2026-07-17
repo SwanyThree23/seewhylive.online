@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Sparkles, Play, Download, Share2, Trash2, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -10,27 +12,29 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
     whileHover={{ y: -4 }}
     className="bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:border-[#d4af37]/30 transition-all"
   >
-    <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center group">
-      <img
-        src={highlight.thumbnail}
-        alt={highlight.title}
-        className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity"
-      />
+    <div className="relative aspect-video bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center group overflow-hidden">
+      {highlight.thumbnail ? (
+        <img src={highlight.thumbnail} alt={highlight.title} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+      ) : (
+        <Sparkles className="w-8 h-8 text-[#d4af37]/40" />
+      )}
       <motion.div
         whileHover={{ scale: 1.1 }}
         className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <Play className="w-10 h-10 text-white fill-white" />
       </motion.div>
-      <div className="absolute top-2 right-2 bg-black/80 text-[#d4af37] px-2 py-1 rounded text-[11px] font-bold">
-        AI Generated
+      <div className="absolute top-2 right-2 bg-black/80 text-[#d4af37] px-2 py-1 rounded text-[11px] font-bold capitalize">
+        {highlight.status === 'generating' ? (
+          <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Processing</span>
+        ) : 'Highlight'}
       </div>
     </div>
 
     <div className="p-3 space-y-2">
       <div>
         <h3 className="text-[10px] font-bold text-white truncate">{highlight.title}</h3>
-        <p className="text-[11px] text-white/50">{highlight.duration}s • {highlight.views} views</p>
+        <p className="text-[11px] text-white/50">{highlight.duration_seconds ?? '—'}s • {highlight.view_count ?? 0} views</p>
       </div>
 
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -62,72 +66,60 @@ const HighlightCard = ({ highlight, onDelete, onShare }) => (
 );
 
 export default function AutomatedHighlightReels({ streamSession }) {
-  const [highlights, setHighlights] = useState([
-    {
-      id: 1,
-      title: 'Comeback Victory - 2K Viewers',
-      duration: 45,
-      views: 2840,
-      thumbnail: 'https://images.unsplash.com/photo-1535905557558-afc4877a26fc?w=400&h=225&fit=crop',
-      tags: ['clutch', 'gaming', 'win'],
-      quality: '1080p',
-      confidence: 94
-    },
-    {
-      id: 2,
-      title: 'Epic Fail Moment - Chat Loved It',
-      duration: 30,
-      views: 1650,
-      thumbnail: 'https://images.unsplash.com/photo-1538495519336-17edc6776d87?w=400&h=225&fit=crop',
-      tags: ['funny', 'fail', 'trending'],
-      quality: '1080p',
-      confidence: 87
-    },
-    {
-      id: 3,
-      title: 'Subscriber Goal Achieved!',
-      duration: 60,
-      views: 3200,
-      thumbnail: 'https://images.unsplash.com/photo-1499209974267-326f2fd7bdd8?w=400&h=225&fit=crop',
-      tags: ['milestone', 'celebration', 'thanks'],
-      quality: '1080p',
-      confidence: 91
-    }
-  ]);
-
+  const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Load highlights from DB (filtered by clip_type or just all clips for this session)
+  const { data: highlights = [], isLoading } = useQuery({
+    queryKey: ['stream-highlights', streamSession?.id],
+    queryFn: () => base44.entities.StreamClip.filter({ stream_session_id: streamSession.id }),
+    enabled: !!streamSession?.id,
+    refetchInterval: 15_000,
+  });
+
   const handleGenerateHighlights = async () => {
+    if (!streamSession?.id) { toast.error('No active stream session'); return; }
     setGenerating(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const newHighlight = {
-        id: highlights.length + 1,
-        title: 'New Highlight - Peak Engagement',
-        duration: null,
-        views: 0,
+      await base44.entities.StreamClip.create({
+        stream_session_id: streamSession.id,
+        room_id: streamSession.room_id || null,
+        creator_id: streamSession.creator_id || null,
+        title: `Highlight — ${new Date().toLocaleTimeString()}`,
+        clip_type: 'highlight',
+        trigger_type: 'auto',
+        duration_seconds: null,
         thumbnail: null,
+        clip_url: null,
+        status: 'generating',
+        view_count: 0,
+        like_count: 0,
         tags: ['auto', 'peak', 'engagement'],
         quality: '1080p',
-        confidence: 95
-      };
-      setHighlights([newHighlight, ...highlights]);
-      toast.success('Highlight generated!');
-    } catch (err) {
-      toast.error('Failed to generate highlight');
+        confidence_score: 95,
+      });
+      qc.invalidateQueries({ queryKey: ['stream-highlights', streamSession.id] });
+      toast.success('Highlight queued — processing now');
+    } catch {
+      toast.error('Failed to create highlight');
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleDelete = (id) => {
-    setHighlights(highlights.filter(h => h.id !== id));
-    toast.success('Highlight deleted');
+  const handleDelete = async (id) => {
+    try {
+      await base44.entities.StreamClip.delete(id);
+      qc.invalidateQueries({ queryKey: ['stream-highlights', streamSession?.id] });
+      toast.success('Highlight deleted');
+    } catch {
+      toast.error('Delete failed');
+    }
   };
 
   const handleShare = (highlight) => {
-    const url = `https://seewhy.live/highlights/${highlight.id}`;
+    const url = highlight.clip_url || `${window.location.origin}/clips/${highlight.id}`;
     navigator.clipboard.writeText(url).then(() => toast.success('Share link copied!')).catch(() => toast.error('Copy failed.'));
   };
 
@@ -210,11 +202,13 @@ export default function AutomatedHighlightReels({ streamSession }) {
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
           <p className="text-[11px] text-white/60">TOTAL VIEWS</p>
-          <p className="text-base font-bold text-[#d4af37]">{highlights.reduce((sum, h) => sum + h.views, 0).toLocaleString()}</p>
+          <p className="text-base font-bold text-[#d4af37]">{highlights.reduce((sum, h) => sum + (h.view_count || 0), 0).toLocaleString()}</p>
         </div>
         <div className="bg-white/5 rounded px-2 py-1.5">
-          <p className="text-[11px] text-white/60">AVG QUALITY</p>
-          <p className="text-base font-bold text-white">89%</p>
+          <p className="text-[11px] text-white/60">AVG CONF.</p>
+          <p className="text-base font-bold text-white">
+            {highlights.length ? Math.round(highlights.reduce((s, h) => s + (h.confidence_score || 0), 0) / highlights.length) + '%' : '—'}
+          </p>
         </div>
       </div>
 
@@ -232,10 +226,17 @@ export default function AutomatedHighlightReels({ streamSession }) {
         </AnimatePresence>
       </div>
 
-      {highlights.length === 0 && (
+      {highlights.length === 0 && !isLoading && (
         <div className="text-center py-8">
           <Sparkles className="w-8 h-8 text-white/30 mx-auto mb-2" />
-          <p className="text-[11px] text-white/50">No highlights yet. Generate some to get started!</p>
+          <p className="text-[11px] text-white/50">
+            {streamSession?.id ? 'No highlights yet — generate some to get started!' : 'Start a stream to generate highlights'}
+          </p>
+        </div>
+      )}
+      {isLoading && (
+        <div className="text-center py-6">
+          <Loader2 className="w-5 h-5 animate-spin text-[#d4af37]/40 mx-auto" />
         </div>
       )}
     </motion.div>

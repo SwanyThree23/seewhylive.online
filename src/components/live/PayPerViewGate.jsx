@@ -1,20 +1,42 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Unlock } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { toast } from 'sonner';
 
 const G = '#d4af37';
 
-export default function PayPerViewGate({ roomId, ppvPrice = 4.99, onPurchase }) {
+export default function PayPerViewGate({ roomId, ppvPrice = 4.99, currentUserId, onPurchase }) {
   const [purchased, setPurchased] = useState(false);
   const [processing, setProcessing] = useState(false);
 
   const handlePurchase = async () => {
     setProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate payment
+      // Record the PPV transaction (status 'pending' until payment confirmed)
+      await base44.entities.Transaction.create({
+        room_id: roomId,
+        sender_id: currentUserId || null,
+        transaction_type: 'ppv',
+        payment_method: 'card',
+        amount_usd: ppvPrice,
+        creator_payout: +(ppvPrice * 0.9).toFixed(2),
+        platform_cut: +(ppvPrice * 0.1).toFixed(2),
+        status: 'pending',
+        processed_at: new Date().toISOString(),
+      });
+      // Mark participant as PPV-unlocked so the room can verify access
+      if (currentUserId && roomId) {
+        const participants = await base44.entities.Participant.filter({ room_id: roomId, user_id: currentUserId });
+        if (participants[0]) {
+          await base44.entities.Participant.update(participants[0].id, { ppv_unlocked: true });
+        }
+      }
       setPurchased(true);
       onPurchase?.();
-    } catch (error) {
+      toast.success('Access unlocked!');
+    } catch {
+      toast.error('Purchase failed — please try again.');
     }
     setProcessing(false);
   };

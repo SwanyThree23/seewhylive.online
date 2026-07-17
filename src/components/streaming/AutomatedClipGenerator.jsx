@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Scissors, Loader2, Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,56 +14,53 @@ const CLIP_TRIGGERS = [
 ];
 
 export default function AutomatedClipGenerator({ streamSession, isLive }) {
-  const [clips, setClips] = useState([]);
+  const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
   const [selectedTriggers, setSelectedTriggers] = useState(['peak']);
   const [copied, setCopied] = useState(null);
 
+  // Load persisted clips from DB
+  const { data: clips = [] } = useQuery({
+    queryKey: ['stream-clips', streamSession?.id],
+    queryFn: () => base44.entities.StreamClip.filter({ stream_session_id: streamSession.id }),
+    enabled: !!streamSession?.id,
+    refetchInterval: isLive ? 8000 : false,
+  });
+
   const handleGenerateClip = async () => {
+    if (!streamSession?.id) { toast.error('No active stream session'); return; }
     setGenerating(true);
     try {
-      const clipData = {
-        stream_session_id: streamSession?.id,
-        title: `Highlight Clip - ${new Date().toLocaleTimeString()}`,
+      await base44.entities.StreamClip.create({
+        stream_session_id: streamSession.id,
+        room_id: streamSession.room_id || null,
+        creator_id: streamSession.creator_id || null,
+        title: `Highlight — ${new Date().toLocaleTimeString()}`,
+        trigger_type: selectedTriggers[0] || 'manual',
+        duration_seconds: 60,
         start_timestamp_seconds: null,
         end_timestamp_seconds: null,
-        duration_seconds: 60,
-        is_featured: false
-      };
-
-      const newClip = {
-        id: `clip_${Date.now()}`,
-        ...clipData,
-        clip_url: `https://clips.seewhy.live/${Date.now()}`,
-        status: 'generating'
-      };
-
-      setClips(prev => [newClip, ...prev]);
-      toast.success('Clip generation started');
-
-      // Simulate clip processing
-      setTimeout(() => {
-        setClips(prev =>
-          prev.map(c =>
-            c.id === newClip.id
-              ? { ...c, status: 'ready', view_count: 0, like_count: 0 }
-              : c
-          )
-        );
-        toast.success('Clip ready!');
-      }, 3000);
-    } catch (err) {
-      toast.error('Clip generation failed');
+        clip_url: null,
+        status: 'generating',
+        is_featured: false,
+        view_count: 0,
+        like_count: 0,
+      });
+      qc.invalidateQueries({ queryKey: ['stream-clips', streamSession.id] });
+      toast.success('Clip queued — will be ready once processed');
+    } catch {
+      toast.error('Clip creation failed');
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleCopyUrl = (url) => {
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(url);
+  const handleCopyUrl = (clip) => {
+    const shareUrl = clip.clip_url || `${window.location.origin}/clips/${clip.id}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(clip.id);
       setTimeout(() => setCopied(null), 2000);
-    }).catch(() => {});
+    }).catch(() => toast.error('Copy failed'));
   };
 
   return (
@@ -146,28 +144,26 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                     {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />}
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1.5">
-                    <span>{clip.duration_seconds}s</span>
+                    <span>{clip.duration_seconds ?? '—'}s</span>
                     <span>•</span>
-                    <span>{clip.view_count} views</span>
+                    <span>{clip.view_count ?? 0} views</span>
                   </div>
-                  {clip.status === 'ready' && (
-                    <button
-                      onClick={() => handleCopyUrl(clip.clip_url)}
-                      className="w-full flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
-                    >
-                      {copied === clip.clip_url ? (
-                        <>
-                          <Check className="w-2.5 h-2.5 text-[#6DBF7E]" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-2.5 h-2.5" />
-                          Copy URL
-                        </>
-                      )}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleCopyUrl(clip)}
+                    className="w-full flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
+                  >
+                    {copied === clip.id ? (
+                      <>
+                        <Check className="w-2.5 h-2.5 text-[#6DBF7E]" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-2.5 h-2.5" />
+                        Share Link
+                      </>
+                    )}
+                  </button>
                 </motion.div>
               ))}
             </div>

@@ -118,18 +118,30 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   };
 
   const buyCoins = async (pack) => {
-    // Simulate purchase — in production this would go through Stripe
-    toast.info(`💳 In production, this opens Stripe checkout for $${pack.price}`);
+    if (!currentUser?.id) { toast.error('Sign in to purchase coins.'); return; }
     try {
-      // For demo: grant coins directly
+      // Log the purchase as a pending transaction (Stripe webhook confirms it in production)
+      await base44.entities.Transaction.create({
+        sender_id: currentUser.id,
+        sender_name: currentUser.full_name || 'Viewer',
+        transaction_type: 'coin_purchase',
+        payment_method: 'card',
+        amount_usd: pack.price,
+        platform_cut: pack.price,
+        creator_payout: 0,
+        status: 'pending',
+        processed_at: new Date().toISOString(),
+        room_id: roomId || null,
+      });
+      // Grant coins immediately (in production this happens in the Stripe webhook after payment clears)
       if (pointsData?.id) {
         await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
-      } else if (currentUser?.id) {
+      } else {
         await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
       }
       qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
       toast.success(`+${pack.coins} coins added to your wallet!`);
-    } catch { toast.error('Failed to add coins. Please try again.'); }
+    } catch { toast.error('Purchase failed — please try again.'); }
   };
 
   if (isHost) {
