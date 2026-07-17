@@ -141,7 +141,7 @@ export default function RoomsManager() {
     recBytesRef.current = 0;
     recTimerRef.current = setInterval(() => {
       setRecSecs(s => s + 1);
-      recBytesRef.current += Math.floor(Math.random() * 800000 + 400000); // ~400-1200 KB/s estimate
+      recBytesRef.current += 375000; // fixed 3 Mbps estimate; real size comes from MediaRecorder.ondataavailable
     }, 1000);
   }
 

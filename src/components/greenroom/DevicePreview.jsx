@@ -76,14 +76,10 @@ export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
   const { bars: networkQuality, label: netLabel, rtt } = useConnectionQuality(null, 4000);
   const { cameras } = useCameraDevices();
 
-  // Simulated mic level when isSim or micOn without real analyser
+  // micLevel is driven by the real AnalyserNode below; reset to 0 when mic is off
   useEffect(() => {
-    if (!micOn || analyserRef.current) return;
-    const iv = setInterval(() => {
-      setMicLevel(Math.floor(30 + Math.random() * 60));
-    }, 150);
-    return () => clearInterval(iv);
-  }, [micOn, isSim]);
+    if (!micOn) setMicLevel(0);
+  }, [micOn]);
 
   const RES = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
 

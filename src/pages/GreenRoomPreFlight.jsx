@@ -121,8 +121,14 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
         s.getTracks().forEach(t => t.stop());
         setTests(t => ({ ...t, camera: 'ready' }));
       } else if (type === 'network') {
-        await new Promise(res => setTimeout(res, 800));
-        setTests(t => ({ ...t, network: navigator.onLine ? 'ready' : 'failed' }));
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        try {
+          await fetch('https://www.google.com/generate_204', { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+          setTests(t => ({ ...t, network: 'ready' }));
+        } finally {
+          clearTimeout(timeout);
+        }
       }
     } catch {
       setTests(t => ({ ...t, [type]: 'failed' }));

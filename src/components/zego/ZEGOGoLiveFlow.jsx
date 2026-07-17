@@ -36,9 +36,6 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
       });
       setStreamSessionId(record.id);
 
-      // Simulate ZEGOCLOUD connection (2s)
-      await new Promise(res => setTimeout(res, 2000));
-
       // Set both records to live
       await base44.entities.ZEGOStream.update(record.id, { status: 'live' });
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
