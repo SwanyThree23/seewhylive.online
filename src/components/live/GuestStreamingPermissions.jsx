@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Radio, Eye, EyeOff, Share2, AlertCircle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function GuestStreamingPermissions({ participant, isHost, onPermissionChange }) {
   const [open, setOpen] = useState(false);

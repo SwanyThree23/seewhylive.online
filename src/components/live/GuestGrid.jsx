@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, MoreHorizontal, X, Pin, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
 import GuestStreamingPermissions from './GuestStreamingPermissions';
+import SpeakingIndicator from './SpeakingIndicator';
 
 const LAYOUTS = [
   { label: '1', value: 1 },
@@ -119,6 +120,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
   const gradient = `from-[${['#1a0030', '#001a2c', '#1a1a00', '#001a00'][Math.abs(participant.user_name?.charCodeAt(0) || 0) % 4]}] to-[#0d0618]`;
 
   return (
+    <SpeakingIndicator isSpeaking={speaking && !compact} isHost={isHostUser}>
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.8 }}
@@ -195,6 +197,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
         )}
       </div>
     </motion.div>
+    </SpeakingIndicator>
   );
 }
 
