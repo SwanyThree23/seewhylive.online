@@ -1,6 +1,7 @@
 import React, { useReducer, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Star, Mic, MicOff, Video, VideoOff, X, Maximize2, Plus } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
 const MAX_PANEL_GUESTS = 20;
 const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
@@ -185,9 +186,26 @@ export default function PanelGrid({ guests: propGuests, isHost, onRemoveGuest, c
           <ExpandedModal
             guest={expandedGuest}
             onClose={() => dispatch({ type: 'SET_EXPANDED', id: expandedGuest.id })}
-            onMuteMic={() => dispatch({ type: 'TOGGLE_MIC', id: expandedGuest.id })}
-            onToggleCam={() => dispatch({ type: 'TOGGLE_CAM', id: expandedGuest.id })}
-            onRemove={() => { dispatch({ type: 'REMOVE_GUEST', id: expandedGuest.id }); dispatch({ type: 'SET_EXPANDED', id: null }); if (onRemoveGuest) onRemoveGuest(expandedGuest.id); }}
+            onMuteMic={() => {
+              dispatch({ type: 'TOGGLE_MIC', id: expandedGuest.id });
+              base44.entities.Participant.update(expandedGuest.id, {
+                is_audio_enabled: !!expandedGuest.micMuted,
+              }).catch(() => {});
+            }}
+            onToggleCam={() => {
+              dispatch({ type: 'TOGGLE_CAM', id: expandedGuest.id });
+              base44.entities.Participant.update(expandedGuest.id, {
+                is_video_enabled: !!expandedGuest.camOff,
+              }).catch(() => {});
+            }}
+            onRemove={() => {
+              dispatch({ type: 'REMOVE_GUEST', id: expandedGuest.id });
+              dispatch({ type: 'SET_EXPANDED', id: null });
+              base44.entities.Participant.update(expandedGuest.id, {
+                role: 'viewer', is_streaming: false,
+              }).catch(() => {});
+              if (onRemoveGuest) onRemoveGuest(expandedGuest.id);
+            }}
           />
         )}
       </AnimatePresence>

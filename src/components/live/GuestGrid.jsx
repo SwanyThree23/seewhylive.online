@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
@@ -31,11 +31,37 @@ function getGridClass(slots) {
 
 /* ───── single octagonal tile ───── */
 function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser, onSpotlight }) {
-  const videoRef = useRef(null);
+  const videoRef   = useRef(null);
   const [speaking, setSpeaking] = useState(false);
-  const glow = ROLE_GLOW[participant?.role] || GOLD;
+  const vadRefs    = useRef({});
+  const glow       = ROLE_GLOW[participant?.role] || GOLD;
 
-  // Speaking set by real VAD / audio level detection from remoteStream
+  // Real Web Audio API VAD on the participant's remote (or local) stream
+  useEffect(() => {
+    const stream = participant?.remoteStream;
+    if (!stream || stream.getAudioTracks().length === 0) { setSpeaking(false); return; }
+    let running = true;
+    try {
+      const ctx      = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      ctx.createMediaStreamSource(stream).connect(analyser);
+      const data = new Uint8Array(analyser.frequencyBinCount);
+      const tick = () => {
+        if (!running) return;
+        analyser.getByteFrequencyData(data);
+        setSpeaking(data.reduce((s, v) => s + v, 0) / data.length > 12);
+        vadRefs.current.raf = requestAnimationFrame(tick);
+      };
+      vadRefs.current.raf = requestAnimationFrame(tick);
+      vadRefs.current.ctx = ctx;
+    } catch {}
+    return () => {
+      running = false;
+      cancelAnimationFrame(vadRefs.current.raf);
+      vadRefs.current.ctx?.close();
+    };
+  }, [participant?.remoteStream]);
 
   // Attach stream to video element whenever it changes
   useEffect(() => {
