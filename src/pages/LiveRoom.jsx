@@ -145,6 +145,7 @@ import GuestStreamingPermissions from '../components/live/GuestStreamingPermissi
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -415,14 +416,15 @@ export default function LiveRoom() {
 
   const [entryPassed, setEntryPassed] = useState(false);
 
-  // Read device preferences saved by RoomEntryGate PermissionsStep
-  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  // Device preferences (mic switching supported live)
+  const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({
     audio: true,
     video: false,
-    audioDeviceId: prefMic,
+    audioDeviceId: activeMicId,
   });
   const { speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
@@ -1390,6 +1392,7 @@ export default function LiveRoom() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
+      <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}

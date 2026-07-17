@@ -46,6 +46,7 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -138,6 +139,7 @@ import GuestStreamingPermissions from '../components/live/GuestStreamingPermissi
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -272,14 +274,18 @@ export default function AudioRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId    = urlParams.get('id');
 
-  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: prefMic });
+  const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
   const { speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
   const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [busViewerCount, setBusViewerCount] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [activeScene, setActiveScene] = useState('main');
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
@@ -931,6 +937,7 @@ export default function AudioRoom() {
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
+      <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
@@ -967,6 +974,7 @@ export default function AudioRoom() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={Math.max(busViewerCount, memberCount)} />
+      <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={Math.max(busViewerCount, memberCount)} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={Math.max(busViewerCount, memberCount)} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
