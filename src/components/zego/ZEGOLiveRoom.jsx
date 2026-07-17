@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Monitor, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '@/hooks/useRemoteSpeakingMap';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -16,13 +17,17 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
  * - Viewers watch with real-time participant grid
  * - Uses native WebRTC PeerConnection + database sync for roster
  */
-export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStreamHealth }) {
+export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStreamHealth, onSpeakingChange }) {
   const qc = useQueryClient();
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   // Track stream in state so useWebRTCPeers receives it after async init
   const [localStream, setLocalStream] = useState(null);
   const { addPeer, removePeer, getPeers, remoteStreams, peerStates, peerUserIds, leaveRoom, announceJoin, selfId } = useWebRTCPeers(roomId, localStream);
+
+  // Real per-peer speaking detection via WebAudio RMS analysis
+  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
+  useEffect(() => { onSpeakingChange?.(remoteSpeakingIds); }, [remoteSpeakingIds]);
 
   // Stable refs for cleanup closure (avoids stale state captures)
   const leaveRoomRef = useRef(leaveRoom);

@@ -369,6 +369,7 @@ export default function ControlRoomPage() {
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const [speakingIds, setSpeakingIds] = useState({});
   const [viewerCount, setViewerCount] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
@@ -601,6 +602,7 @@ export default function ControlRoomPage() {
             userName={user?.full_name || user?.email || ''}
             isHost={true}
             onStreamHealth={() => {}}
+            onSpeakingChange={setSpeakingIds}
           />
         </div>
       )}
@@ -750,7 +752,7 @@ export default function ControlRoomPage() {
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
-      {roomId && <GuestGrid participants={participants} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
+      {roomId && <GuestGrid participants={participants} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
       {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
