@@ -16,11 +16,13 @@ export default function PanelTile({
 }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
   const [camActive, setCamActive] = useState(false);
   const [localCamOn, setLocalCamOn] = useState(true);
   const [localMicOn, setLocalMicOn] = useState(true);
   const [localHandRaised, setLocalHandRaised] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [remoteSpeaking, setRemoteSpeaking] = useState(false);
 
   // Subscribe to remote stream or wire up local producer track
   useEffect(function() {
@@ -70,6 +72,66 @@ export default function PanelTile({
       setCamActive(false);
     };
   }, [producerId, rtcManager, isAudioOnlyRoom, isLocal]);
+
+  // Subscribe to remote audio producer for playback and speaking detection
+  useEffect(function() {
+    if (isLocal || !audioProducerId || !rtcManager) return;
+
+    var active = true;
+    var ctx = null;
+    var raf = null;
+    var holdTimer = null;
+    var speaking = false;
+
+    rtcManager.subscribeToProducer(audioProducerId)
+      .then(function(stream) {
+        if (!active) return;
+        if (audioRef.current) {
+          audioRef.current.srcObject = stream;
+          audioRef.current.play().catch(function() {});
+        }
+        var tracks = stream.getAudioTracks();
+        if (!tracks.length) return;
+        try {
+          ctx = new (window.AudioContext || window.webkitAudioContext)();
+          var analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          ctx.createMediaStreamSource(stream).connect(analyser);
+          var data = new Uint8Array(analyser.frequencyBinCount);
+          function loop() {
+            analyser.getByteTimeDomainData(data);
+            var sum = 0;
+            for (var i = 0; i < data.length; i++) {
+              var v = (data[i] - 128) / 128;
+              sum += v * v;
+            }
+            var rms = Math.sqrt(sum / data.length);
+            if (rms > 0.01) {
+              clearTimeout(holdTimer);
+              if (!speaking) { speaking = true; if (active) setRemoteSpeaking(true); }
+            } else if (speaking) {
+              holdTimer = setTimeout(function() {
+                speaking = false;
+                if (active) setRemoteSpeaking(false);
+              }, 400);
+            }
+            raf = requestAnimationFrame(loop);
+          }
+          raf = requestAnimationFrame(loop);
+        } catch (e) {}
+      })
+      .catch(function() {});
+
+    return function() {
+      active = false;
+      if (raf) cancelAnimationFrame(raf);
+      clearTimeout(holdTimer);
+      try { if (ctx) ctx.close(); } catch (e) {}
+      if (audioRef.current) audioRef.current.srcObject = null;
+    };
+  }, [audioProducerId, rtcManager, isLocal]);
+
+  var effectiveSpeaking = isLocal ? isSpeaking : remoteSpeaking;
 
   function handleTileClick(e) {
     // Don't expand if clicking a control button
@@ -215,12 +277,12 @@ export default function PanelTile({
         background: BG,
         borderRadius: 8,
         overflow: 'hidden',
-        border: isSpeaking
+        border: effectiveSpeaking
           ? ('2px solid ' + GOLD)
           : slot_index === 0
             ? ('2px solid ' + GOLD)
             : '1px solid #333',
-        boxShadow: isSpeaking ? ('0 0 12px ' + GOLD + '55') : 'none',
+        boxShadow: effectiveSpeaking ? ('0 0 12px ' + GOLD + '55') : 'none',
         transition: 'box-shadow 0.15s',
         cursor: 'pointer',
         aspectRatio: '9/16',
@@ -233,7 +295,7 @@ export default function PanelTile({
             alt={display_name}
             style={{
               width: 56, height: 56, borderRadius: '50%',
-              boxShadow: isSpeaking ? ('0 0 0 3px ' + GOLD + ', 0 0 12px ' + GOLD + '66') : 'none',
+              boxShadow: effectiveSpeaking ? ('0 0 0 3px ' + GOLD + ', 0 0 12px ' + GOLD + '66') : 'none',
               transition: 'box-shadow 0.15s',
             }}
           />
@@ -246,7 +308,7 @@ export default function PanelTile({
                   key={i}
                   style={{
                     width: 3, height: barH + 'px',
-                    background: isSpeaking ? GOLD : 'rgba(212,175,55,0.35)',
+                    background: effectiveSpeaking ? GOLD : 'rgba(212,175,55,0.35)',
                     borderRadius: 2, transition: 'height 0.08s, background 0.15s',
                   }}
                 />
@@ -292,7 +354,7 @@ export default function PanelTile({
       </div>
 
       {/* Speaking indicator */}
-      {isSpeaking && !isAudioOnlyRoom && (
+      {effectiveSpeaking && !isAudioOnlyRoom && (
         <span style={{ position: 'absolute', bottom: 4, right: 4, width: 8, height: 8, borderRadius: '50%', background: GOLD, boxShadow: '0 0 6px ' + GOLD }} />
       )}
 
@@ -309,6 +371,9 @@ export default function PanelTile({
           ✋
         </span>
       )}
+
+      {/* Hidden audio element for remote panelist audio playback */}
+      <audio ref={audioRef} autoPlay style={{ display: 'none' }} />
 
       {/* Local cam/mic controls (shown on hover) */}
       {renderLocalControls()}

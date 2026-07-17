@@ -15,6 +15,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import LiveTranscription from '../components/live/LiveTranscription';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
@@ -26,6 +27,7 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -996,6 +998,7 @@ export default function GoLive() {
       <MilestoneAlerts userId={user?.id} roomId={partyId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
+      {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
       {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={true} />}
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} stream={localStream} speaker={user?.full_name} />}
@@ -1121,6 +1124,7 @@ export default function GoLive() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
+      <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}

@@ -35,6 +35,7 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -526,6 +527,7 @@ export default function HybridStreamRoom() {
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
       <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
+      <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
