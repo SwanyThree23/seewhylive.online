@@ -10,6 +10,7 @@ import PollOverlay from './PollOverlay.jsx';
 import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
 import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
 import GiftLayer from './GiftLayer.jsx';
+import GoldenWallPanel from './GoldenWallPanel.jsx';
 
 var MAX_STAGE = 20;
 
