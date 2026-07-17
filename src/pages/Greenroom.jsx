@@ -19,6 +19,7 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -778,6 +779,7 @@ export default function GreenroomPage() {
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {roomId && <ZEGOGuestApprovalPanel roomId={roomId} isHost={isHost} />}
       {user && <ZEGOConfigPanel user={user} />}
+      {roomId && isHost && <ZEGOStreamHealthCard roomId={roomId} />}
       <BackgroundCustomizer />
       {isHost && roomId && <StreamerGoalsWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} embedded={true} />}
       {isHost && roomId && <PayPerViewManager roomId={roomId} />}
