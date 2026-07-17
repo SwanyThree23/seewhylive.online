@@ -133,6 +133,7 @@ import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import GuestGrid from '../components/live/GuestGrid';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
@@ -856,6 +857,7 @@ export default function GreenroomPage() {
       {isHost && <CreatorTierManager creatorId={room?.host_id || user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
+      {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
       {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
       {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />

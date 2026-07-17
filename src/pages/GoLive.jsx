@@ -143,6 +143,7 @@ import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
 import GuestGrid from '../components/live/GuestGrid';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
@@ -1074,6 +1075,7 @@ export default function GoLive() {
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
+      {partyId && <GuestInviteGenerator roomId={partyId} isHost={true} />}
       {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
       {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
