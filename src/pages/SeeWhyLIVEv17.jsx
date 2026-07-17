@@ -57,12 +57,9 @@ function fmtTime(s) {
 function pad(n) { return n < 10 ? "0"+n : ""+n; }
 function fmtMoney(n) { return "$"+(Math.floor(n * 100) / 100).toFixed(2); }
 function randomID(len) {
+  var bytes = crypto.getRandomValues(new Uint8Array(len || 8));
   var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  var out = "";
-  for (var i = 0; i < (len || 8); i++) {
-    out += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return out;
+  return Array.from(bytes, function(b) { return chars[b % chars.length]; }).join('');
 }
 function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
 function lsGet(key, def) {
@@ -347,18 +344,7 @@ function OctagonalVideoGrid({ participants: propParticipants, hostName }) {
     return function(){clearInterval(interval);};
   }, [participants.length]);
 
-  // Simulate incoming chat
-  useEffect(function() {
-    var interval = setInterval(function() {
-      var p = participants[Math.floor(Math.random() * participants.length)];
-      var lines = ["Let's go!","🔥🔥🔥","Hype in the chat!","This is LIT","💎💎","Real talk","Bars!","No cap 🧢","W stream","Sending love ❤️"];
-      var text = lines[Math.floor(Math.random() * lines.length)];
-      setChatLog(function(log) {
-        return log.concat([{id:Date.now(),from:p.name,text:text,color:TILE_COLORS[participants.indexOf(p)%TILE_COLORS.length]}]).slice(-40);
-      });
-    }, 1800);
-    return function(){clearInterval(interval);};
-  }, [participants]);
+  // Chat messages come from real DB via ChatOverlay subscription — no simulation
 
   useEffect(function(){
     if(chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -736,15 +722,7 @@ function PKBattleEngine({ myName, onEnd }) {
   var pctThem = 100 - pctMe;
   var meWinning = pctMe > pctThem;
 
-  // simulate opponent gifts during active battle
-  useEffect(function() {
-    if (phase !== "active") return;
-    var interval = setInterval(function() {
-      var gift = PK_GIFTS[Math.floor(Math.random() * (PK_GIFTS.length - 2))];
-      addEvent("them", gift);
-    }, Math.random() * 4000 + 2000);
-    return function() { clearInterval(interval); };
-  }, [phase]);
+  // Opponent gifts arrive via PKBattle subscription events — no simulation
 
   // countdown timer
   useEffect(function() {

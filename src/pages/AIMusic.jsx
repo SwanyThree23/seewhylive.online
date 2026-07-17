@@ -892,13 +892,13 @@ Return ONLY valid JSON (no markdown, no backticks):
   }
 
   function handleAddToStream(track) {
-    try {
-      const existing = JSON.parse(sessionStorage.getItem('seewhy_stream_queue') || '[]');
+    base44.auth.me().then(u => {
+      const existing = u.stream_queue || [];
       if (!existing.some(t => t.id === track.id)) {
-        existing.push({ id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady });
-        sessionStorage.setItem('seewhy_stream_queue', JSON.stringify(existing));
+        const updated = [...existing, { id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady }];
+        base44.auth.updateMe({ stream_queue: updated }).catch(() => {});
       }
-    } catch (_) {}
+    }).catch(() => {});
     showToast(`📡 "${track.title}" added to stream queue!`);
   }
 
