@@ -131,6 +131,7 @@ const UnifiedRoom              = lazy(() => import('./pages/UnifiedRoom'));
 const VoiceAISettings          = lazy(() => import('./pages/VoiceAISettings'));
 const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
 const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
+const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -255,6 +256,7 @@ export const PAGES = {
     "VoiceAISettings": VoiceAISettings,
     "WashingtonClassic": WashingtonClassic,
     "WisperFlo": WisperFlo,
+    "EmbedPlayer": EmbedPlayer,
 }
 
 export const pagesConfig = {
