@@ -117,6 +117,13 @@ const TOOLS = [
     color: '#6DBF7E',
     page: 'Greenroom',
   },
+  {
+    label: 'Website Generator',
+    desc: 'AI-powered site builder',
+    icon: Globe,
+    color: '#C9A84C',
+    page: 'WebsiteGenerator',
+  },
 ];
 
 export default function StudioHub() {
