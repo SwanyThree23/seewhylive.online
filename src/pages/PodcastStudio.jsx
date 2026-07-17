@@ -700,10 +700,7 @@ export default function PodcastStudio() {
 
   async function generateScript() {
     setGenerating(true);
-    for (let i = 0; i < GEN_STEPS.length; i++) {
-      setGenStep(GEN_STEPS[i]);
-      await new Promise(r => setTimeout(r, 900));
-    }
+    setGenStep('Generating script…');
     try {
       const srcText = sources.length
         ? sources.map(s => `[${s.label}]: ${s.content}`).join('\n---\n')

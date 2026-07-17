@@ -467,7 +467,7 @@ export default function HybridStreamRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={isHost} roomId={roomId} creatorId={room?.host_id || user?.id} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={0} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}

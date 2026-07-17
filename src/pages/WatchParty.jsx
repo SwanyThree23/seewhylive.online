@@ -1209,7 +1209,7 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'analytics' && (
               <div className="space-y-3">
-                {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
+                {partyId && <StreamGoals roomId={partyId} isHost={isHost} creatorId={party?.host_id || user?.id} />}
                 {partyId && isHost && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && user?.id && party?.host_id && (

@@ -1,50 +1,72 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Target, X, Check, TrendingUp } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { fireAlert } from './HostAlertCenter';
 import confetti from 'canvas-confetti';
 
 const GOAL_TYPES = [
-  { id: 'tip', label: '💰 Tip Goal', unit: '$', prefix: '$' },
-  { id: 'sub', label: '⭐ Sub Goal', unit: 'subs', prefix: '' },
-  { id: 'viewer', label: '👁 Viewer Goal', unit: 'viewers', prefix: '' },
-  { id: 'custom', label: '🎯 Custom Goal', unit: 'total', prefix: '' },
+  { id: 'tips',    label: '💰 Tip Goal',    unit: '$',      prefix: '$' },
+  { id: 'subs',    label: '⭐ Sub Goal',    unit: 'subs',   prefix: '' },
+  { id: 'viewers', label: '👁 Viewer Goal', unit: 'viewers',prefix: '' },
+  { id: 'custom',  label: '🎯 Custom Goal', unit: 'total',  prefix: '' },
 ];
 
-export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSubs = 0, currentViewers = 0 }) {
-  const [goals, setGoals] = useState([]);
+export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0, currentSubs = 0, currentViewers = 0 }) {
+  const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ type: 'tip', title: '', target: 100, reward_text: '' });
+  const [form, setForm] = useState({ goal_type: 'tips', title: '', target_amount: 100, reward_text: '' });
+  const [completed, setCompleted] = useState(new Set());
 
-  const storageKey = roomId ? `stream_goals_${roomId}` : null;
+  const enabled = !!creatorId;
 
-  // Load persisted goals on mount
-  useEffect(() => {
-    if (!storageKey) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      if (saved.length) setGoals(saved);
-    } catch {}
-  }, [storageKey]);
+  const { data: goals = [] } = useQuery({
+    queryKey: ['stream-goals', creatorId, roomId],
+    queryFn: () => base44.entities.StreamerGoal.filter(
+      roomId
+        ? { creator_id: creatorId, room_id: roomId, status: 'active' }
+        : { creator_id: creatorId, status: 'active' },
+      'created_date'
+    ),
+    enabled,
+    refetchInterval: 5000,
+  });
 
-  const persistGoals = (newGoals) => {
-    if (!storageKey) return;
-    try { localStorage.setItem(storageKey, JSON.stringify(newGoals)); } catch {}
-  };
+  const createMut = useMutation({
+    mutationFn: (data) => base44.entities.StreamerGoal.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['stream-goals', creatorId, roomId] });
+      setForm({ goal_type: 'tips', title: '', target_amount: 100, reward_text: '' });
+      setShowForm(false);
+    },
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id) => base44.entities.StreamerGoal.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stream-goals', creatorId, roomId] }),
+  });
+
+  const completeMut = useMutation({
+    mutationFn: (id) => base44.entities.StreamerGoal.update(id, { status: 'completed' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stream-goals', creatorId, roomId] }),
+  });
 
   const getCurrentValue = (type) => {
-    if (type === 'tip') return currentTips;
-    if (type === 'sub') return currentSubs;
-    if (type === 'viewer') return currentViewers;
+    if (type === 'tips') return currentTips;
+    if (type === 'subs') return currentSubs;
+    if (type === 'viewers') return currentViewers;
     return 0;
   };
 
   useEffect(() => {
     goals.forEach(goal => {
-      const current = getCurrentValue(goal.type);
-      const pct = current / goal.target;
-      if (pct >= 1 && !goal.completed) {
-        setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, completed: true } : g));
+      if (completed.has(goal.id)) return;
+      const current = getCurrentValue(goal.goal_type);
+      const target = goal.target_amount;
+      if (target > 0 && current >= target) {
+        setCompleted(prev => new Set([...prev, goal.id]));
+        completeMut.mutate(goal.id);
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#D4AF37'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
@@ -52,14 +74,14 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
   }, [currentTips, currentSubs, currentViewers, goals]);
 
   const addGoal = () => {
-    if (!form.title.trim() || form.target <= 0) return;
-    setGoals(prev => {
-      const next = [...prev, { ...form, id: Date.now().toString(), completed: false }];
-      persistGoals(next);
-      return next;
+    if (!form.title.trim() || form.target_amount <= 0 || !creatorId) return;
+    createMut.mutate({
+      ...form,
+      creator_id: creatorId,
+      room_id: roomId || null,
+      status: 'active',
+      current_amount: 0,
     });
-    setForm({ type: 'tip', title: '', target: 100, reward_text: '' });
-    setShowForm(false);
   };
 
   return (
@@ -69,7 +91,7 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
           <Target className="w-5 h-5 text-[#6DBF7E]" />
           <h3 className="font-semibold text-white">Stream Goals</h3>
         </div>
-        {isHost && (
+        {isHost && creatorId && (
           <button onClick={() => setShowForm(!showForm)}
             className="w-7 h-7 rounded-lg bg-[#6DBF7E]/10 border border-[#6DBF7E]/30 flex items-center justify-center text-[#6DBF7E] hover:bg-[#6DBF7E]/20">
             <Plus className="w-3.5 h-3.5" />
@@ -87,9 +109,9 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
             <div className="bg-white/5 border border-[#6DBF7E]/20 rounded-xl p-4 space-y-3">
               <div className="grid grid-cols-2 gap-1.5">
                 {GOAL_TYPES.map(gt => (
-                  <button key={gt.id} onClick={() => setForm(f => ({ ...f, type: gt.id }))}
+                  <button key={gt.id} onClick={() => setForm(f => ({ ...f, goal_type: gt.id }))}
                     className={`text-xs py-1.5 px-2 rounded-lg border transition-all text-left ${
-                      form.type === gt.id ? 'border-[#6DBF7E] bg-[#6DBF7E]/10 text-white' : 'border-white/10 text-white/40'
+                      form.goal_type === gt.id ? 'border-[#6DBF7E] bg-[#6DBF7E]/10 text-white' : 'border-white/10 text-white/40'
                     }`}>
                     {gt.label}
                   </button>
@@ -99,10 +121,10 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
                 placeholder="Goal title (e.g. New Mic Fund!)"
                 style={{ width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
               <div className="flex gap-2">
-                <input type="number" value={form.target} onChange={e => setForm(f => ({ ...f, target: Number(e.target.value) }))}
+                <input type="number" value={form.target_amount} onChange={e => setForm(f => ({ ...f, target_amount: Number(e.target.value) }))}
                   placeholder="Target"
                   style={{ flex:1, padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }} />
-                <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.type)?.unit}</span>
+                <span className="text-sm text-white/40 flex items-center">{GOAL_TYPES.find(g => g.id === form.goal_type)?.unit}</span>
               </div>
               <input value={form.reward_text} onChange={e => setForm(f => ({ ...f, reward_text: e.target.value }))}
                 placeholder="Reward: I'll dance at goal! 🎉"
@@ -125,14 +147,15 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
           <p className="text-sm">{isHost ? 'Add a goal to motivate viewers' : 'No goals set yet'}</p>
         </div>
       ) : goals.map(goal => {
-        const current = getCurrentValue(goal.type);
-        const target = goal.target;
-        const pct = Math.min(100, (current / target) * 100);
-        const gt = GOAL_TYPES.find(g => g.id === goal.type);
+        const current = getCurrentValue(goal.goal_type);
+        const target = goal.target_amount;
+        const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+        const gt = GOAL_TYPES.find(g => g.id === goal.goal_type);
+        const isCompleted = completed.has(goal.id) || goal.status === 'completed';
 
         return (
           <motion.div key={goal.id} layout
-            className={`p-4 rounded-xl border space-y-3 ${goal.completed ? 'border-[#6DBF7E]/50 bg-[#6DBF7E]/5' : 'border-white/10 bg-white/3'}`}
+            className={`p-4 rounded-xl border space-y-3 ${isCompleted ? 'border-[#6DBF7E]/50 bg-[#6DBF7E]/5' : 'border-white/10 bg-white/3'}`}
           >
             <div className="flex items-start justify-between">
               <div>
@@ -140,9 +163,9 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
                 {goal.reward_text && <p className="text-[10px] text-white/40 mt-0.5">{goal.reward_text}</p>}
               </div>
               <div className="flex items-center gap-2">
-                {goal.completed && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
+                {isCompleted && <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(109,191,126,0.2)', color:'#6DBF7E', border:'1px solid rgba(109,191,126,0.3)' }}>✓ REACHED</span>}
                 {isHost && (
-                  <button onClick={() => setGoals(prev => { const next = prev.filter(g => g.id !== goal.id); persistGoals(next); return next; })}
+                  <button onClick={() => deleteMut.mutate(goal.id)}
                     className="text-white/20 hover:text-[#C0392B]">
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -163,7 +186,7 @@ export default function StreamGoals({ isHost, roomId, currentTips = 0, currentSu
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, ease: 'easeOut' }}
                   className="h-full rounded-full relative"
-                  style={{ background: goal.completed ? '#6DBF7E' : 'linear-gradient(90deg, #4A9B5E, #6DBF7E, #6DBF7E)' }}
+                  style={{ background: isCompleted ? '#6DBF7E' : 'linear-gradient(90deg, #4A9B5E, #6DBF7E, #6DBF7E)' }}
                 >
                   {pct > 10 && (
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
