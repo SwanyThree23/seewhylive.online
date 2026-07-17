@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -588,6 +589,19 @@ export default function ControlRoomPage() {
       {roomId && (
         <div className="px-4 md:px-8 pt-4">
           <ZEGOStreamHealthCard roomId={roomId} />
+        </div>
+      )}
+
+      {/* Live video grid — shown while stream is active */}
+      {isLive && roomId && (
+        <div className="px-4 md:px-8 pt-4" style={{ height: 360 }}>
+          <ZEGOLiveRoom
+            roomId={roomId}
+            userId={user?.id}
+            userName={user?.full_name || user?.email || ''}
+            isHost={true}
+            onStreamHealth={() => {}}
+          />
         </div>
       )}
 
