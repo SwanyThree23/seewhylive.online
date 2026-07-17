@@ -7,6 +7,7 @@ import PanelJoinModal from './PanelJoinModal';
 import JoinRequestQueue from './JoinRequestQueue';
 import AudioOnlyToggle from './AudioOnlyToggle';
 import PanelReactionBar from './PanelReactionBar';
+import PanelPrivacySettings from './PanelPrivacySettings';
 import { useAutoSpeakGate } from '../../hooks/useAutoSpeakGate.js';
 
 const GOLD = '#D4AF37';
@@ -197,6 +198,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
                 videoProducer={videoProducer || null}
               />
             )}
+            {isHost && <PanelPrivacySettings roomId={roomId} />}
             {!hasSlot && userId && (
               <button
                 onClick={function() { setShowJoinModal(true); }}
