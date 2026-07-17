@@ -186,6 +186,7 @@ import AggregatedChat from '../components/live/AggregatedChat';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import PKBattle from '../components/live/PKBattle';
 import PKBattleModal from '../components/live/PKBattleModal';
+import RoomEntryGate from '../components/RoomEntryGate';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const GOLD    = '#D4AF37';
@@ -409,6 +410,8 @@ function ChatPanel({ messages, onClose, onSend }) {
 export default function LiveRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId    = urlParams.get('id');
+
+  const [entryPassed, setEntryPassed] = useState(false);
 
   // Read device preferences saved by RoomEntryGate PermissionsStep
   const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
@@ -722,6 +725,20 @@ export default function LiveRoom() {
   function openChat()  { setChatOpen(true); setUnread(0); }
   function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: user?.full_name || 'You', text: t, host: false }]); }
   function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
+
+  // ── Entry gate ────────────────────────────────────────────────────────────
+  const viewerRole = isHost ? 'host' : 'viewer';
+  if (!entryPassed) {
+    return (
+      <RoomEntryGate
+        role={viewerRole}
+        user={user}
+        onPass={() => setEntryPassed(true)}
+        onRoleDowngrade={() => setEntryPassed(true)}
+        onExit={() => window.history.back()}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden"

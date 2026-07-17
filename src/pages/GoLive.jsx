@@ -173,6 +173,7 @@ import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
 import { WhisperPanel, WhisperToast } from '../components/live/DMWhisperPanel';
+import RoomEntryGate from '../components/RoomEntryGate';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -490,6 +491,7 @@ function Countdown({ onDone }) {
 
 export default function GoLive() {
   const navigate = useNavigate();
+  const [entryPassed, setEntryPassed] = useState(false);
   const [step,        setStep]        = useState('pick');
   const [format,      setFormat]      = useState(null);
   const [title,       setTitle]       = useState('');
@@ -662,6 +664,19 @@ export default function GoLive() {
   function onCountdownDone() {
     const dest = format?.dest || 'BroadcastStudio';
     window.location.href = `${createPageUrl(dest)}?id=${partyId}`;
+  }
+
+  // Room entry gate — age verification, ToS, display name, device permissions
+  if (!entryPassed) {
+    return (
+      <RoomEntryGate
+        role="host"
+        user={user}
+        onPass={() => setEntryPassed(true)}
+        onRoleDowngrade={() => setEntryPassed(true)}
+        onExit={() => navigate(-1)}
+      />
+    );
   }
 
   const SL = { fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 };
