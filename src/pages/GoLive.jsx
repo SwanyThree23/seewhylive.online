@@ -161,6 +161,7 @@ import PaymentMethodSelector from '../components/monetization/PaymentMethodSelec
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import TipGoalBar from '../components/monetization/TipGoalBar';
 import GuestControls from '../components/live/GuestControls';
@@ -543,6 +544,7 @@ export default function GoLive() {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
@@ -1067,6 +1069,7 @@ export default function GoLive() {
       {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
       {partyId && <PipCameraTile localStream={localStream} videoEnabled={videoOn} roomId={partyId} tipTotal={tipTotal} />}
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras }} onCameraChange={handleVideoChange} onResolutionChange={() => {}} />
       {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={members} />}
       {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}

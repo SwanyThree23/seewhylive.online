@@ -140,6 +140,7 @@ import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -334,6 +335,7 @@ export default function AudioRoom() {
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showCamSettings, setShowCamSettings] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -940,6 +942,7 @@ export default function AudioRoom() {
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={() => {}} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
