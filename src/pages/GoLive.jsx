@@ -172,6 +172,7 @@ import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
 import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import { WhisperPanel, WhisperToast } from '../components/live/DMWhisperPanel';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -540,6 +541,8 @@ export default function GoLive() {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [selectedBitrate, setSelectedBitrate] = useState('auto');
+  const [whisperTarget, setWhisperTarget] = useState(null);       // { id, name } | null
+  const [incomingWhisper, setIncomingWhisper] = useState(null);   // latest unread whisper | null
   const screenStreamRef = useRef(null);
   const handleStartShare = async () => {
     try {
@@ -561,6 +564,25 @@ export default function GoLive() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, [partyId]);
+
+  // Poll for incoming whispers addressed to the current user in this room
+  useEffect(() => {
+    if (!partyId || !user?.id) return;
+    var lastSeenId = null;
+    var pollId = setInterval(() => {
+      base44.entities.DirectMessage.filter({ room_id: partyId, recipient_id: user.id, is_whisper: true })
+        .then(msgs => {
+          if (!msgs || msgs.length === 0) return;
+          var latest = msgs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+          if (latest && latest.id !== lastSeenId) {
+            lastSeenId = latest.id;
+            setIncomingWhisper(latest);
+          }
+        })
+        .catch(() => {});
+    }, 5000);
+    return () => clearInterval(pollId);
+  }, [partyId, user?.id]);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -1100,6 +1122,37 @@ export default function GoLive() {
       {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}
       {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={showClipCreator} onClose={() => setShowClipCreator(false)} />}
       {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
+
+      {/* ── DM WHISPER SYSTEM ── */}
+      {/* Incoming whisper toast (auto-dismisses after 4s) */}
+      <WhisperToast whisper={incomingWhisper} onDismiss={() => setIncomingWhisper(null)} />
+      {/* Member whisper selector — click any active member to open DM */}
+      {partyId && user && members.length > 0 && (
+        <div style={{ position: 'fixed', bottom: 80, right: 20, zIndex: 9980, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
+          <button
+            onClick={() => setWhisperTarget(t => t ? null : 'picker')}
+            style={{ background: 'rgba(128,0,32,0.9)', border: '1px solid #D4AF37', borderRadius: 20, padding: '5px 12px', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}
+          >
+            🤫 WHISPER
+          </button>
+          {whisperTarget === 'picker' && (
+            <div style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.6)', maxHeight: 200, overflowY: 'auto', width: 180 }}>
+              {members.filter(m => m.user_id !== user.id).slice(0, 10).map(m => (
+                <button
+                  key={m.user_id || m.id}
+                  onClick={() => setWhisperTarget({ id: m.user_id || m.id, name: m.full_name || m.display_name || 'Guest' })}
+                  style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #2a2a2a', padding: '7px 12px', color: '#f0e8d4', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, cursor: 'pointer' }}
+                >
+                  {m.full_name || m.display_name || 'Guest'}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {whisperTarget && whisperTarget !== 'picker' && (
+        <WhisperPanel roomId={partyId} currentUser={user} recipientId={whisperTarget.id} recipientName={whisperTarget.name} onClose={() => setWhisperTarget(null)} />
+      )}
     </div>
   );
 }
