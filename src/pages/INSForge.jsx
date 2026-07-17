@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useOpenRouter } from '../hooks/useOpenRouter';
 import { AnimatePresence, motion } from 'framer-motion';
 
 
@@ -80,6 +81,7 @@ function Swatch({ hex }) {
 
 export default function INSForge() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { invoke: invokeAI, hasKey: hasOpenRouterKey } = useOpenRouter();
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -117,10 +119,8 @@ export default function INSForge() {
         setGenStep(step);
       }, 480);
 
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are the SeeWhy LIVE INS Forge — an AI creative asset generator for SwanyThree EntTech LLC.
-
-Asset Type: ${selected.label}
+      const rawText = await invokeAI({
+        prompt: `Asset Type: ${selected.label}
 Creative Brief: "${prompt}"
 Brand Context: SeeWhy LIVE — dark backgrounds (#080B18), gold (#D4AF37) accents, crimson (#800020) brand, Barlow Condensed / Bebas Neue display fonts, broadcast & domino culture aesthetic.
 
@@ -136,24 +136,14 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
   "brand_elements": ["element1", "element2", "element3"],
   "dimensions": "recommended dimensions"
 }`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            title: { type: 'string' },
-            headline: { type: 'string' },
-            subline: { type: 'string' },
-            copy_lines: { type: 'array', items: { type: 'string' } },
-            color_palette: { type: 'array', items: { type: 'string' } },
-            layout_notes: { type: 'string' },
-            cta: { type: 'string' },
-            brand_elements: { type: 'array', items: { type: 'string' } },
-            dimensions: { type: 'string' },
-          },
-        },
+        systemPrompt: 'You are the SeeWhy LIVE INS Forge — an AI creative asset generator for SwanyThree EntTech LLC. Always respond with valid JSON only.',
+        jsonMode: true,
+        maxTokens: 1024,
       });
 
       clearInterval(stepInterval);
-      setResult(typeof res === 'string' ? JSON.parse(res) : res);
+      const parsed = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
+      setResult(parsed);
     } catch (e) {
       clearInterval(stepInterval);
       setError('Failed to generate. Try again.');

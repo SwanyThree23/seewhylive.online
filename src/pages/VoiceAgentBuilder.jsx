@@ -3,6 +3,7 @@ import { Mic, Play, Square, Volume2, Save, Plus, Trash2, ChevronDown, ChevronUp,
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useOpenRouter } from '../hooks/useOpenRouter';
 
 const BG   = '#07050A';
 const GOLD = '#C9A84C';
@@ -94,6 +95,7 @@ function TriggerRow({ trigger, onChange, onRemove }) {
 
 export default function VoiceAgentBuilder() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { invoke: invokeAI } = useOpenRouter();
 
   const [agents, setAgents] = useState(loadAgents);
   const [editingId, setEditingId] = useState(null);
@@ -183,14 +185,13 @@ export default function VoiceAgentBuilder() {
   async function generatePersonality() {
     if (!draft?.name?.trim()) { toast.error('Name the agent first.'); return; }
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
+      const text = await invokeAI({
         prompt: `Write a short AI voice agent personality prompt for a SeeWhy LIVE stream assistant named "${draft.name}".
 The assistant helps with live streaming, domino culture, and creator economy.
 Keep it under 100 words, conversational, energetic.
 Output only the personality prompt text, no labels.`,
-        add_context_from_internet: false,
+        maxTokens: 200,
       });
-      const text = typeof res === 'string' ? res : (res?.text || res?.choices?.[0]?.message?.content || '');
       setDraft(d => ({ ...d, personality: text.trim() }));
       toast.success('Personality generated!');
     } catch {

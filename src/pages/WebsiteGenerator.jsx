@@ -3,6 +3,7 @@ import { Globe, Sparkles, Copy, Download, RefreshCw, ChevronDown } from 'lucide-
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useOpenRouter } from '../hooks/useOpenRouter';
 
 const BG   = '#07050A';
 const GOLD = '#C9A84C';
@@ -55,6 +56,7 @@ Output complete self-contained HTML with embedded CSS.`,
 
 export default function WebsiteGenerator() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { invoke: invokeAI } = useOpenRouter();
 
   const [templateId, setTemplateId] = useState('streaming');
   const [creatorName, setCreatorName] = useState(user?.full_name || '');
@@ -76,11 +78,11 @@ export default function WebsiteGenerator() {
         .replace(/\{name\}/g, name)
         .replace(/\{tagline\}/g, tl);
 
-      const result = await base44.integrations.Core.InvokeLLM({
+      const raw = await invokeAI({
         prompt: finalPrompt,
-        add_context_from_internet: false,
+        systemPrompt: 'You are an expert web developer. Output only complete, self-contained HTML with embedded CSS. No explanations.',
+        maxTokens: 4096,
       });
-      const raw = typeof result === 'string' ? result : (result?.choices?.[0]?.message?.content ?? result?.text ?? '');
       // Extract HTML block if wrapped in ```html ... ```
       const match = raw.match(/```(?:html)?\s*([\s\S]*?)```/i);
       setHtml(match ? match[1].trim() : raw.trim());
