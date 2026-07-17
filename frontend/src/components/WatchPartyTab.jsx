@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import VideoPlayerControls from './video/VideoPlayerControls.jsx';
 
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
@@ -625,6 +626,22 @@ export default function WatchPartyTab(props) {
     }
   }
 
+  function handleSkipBack() {
+    if (sourceType === 'youtube' && playerRef.current) {
+      try { playerRef.current.seekTo(Math.max(0, posRef.current - 10), true); } catch(e) {}
+    } else if (videoRef2.current) {
+      videoRef2.current.currentTime = Math.max(0, videoRef2.current.currentTime - 10);
+    }
+  }
+
+  function handleSkipForward() {
+    if (sourceType === 'youtube' && playerRef.current) {
+      try { playerRef.current.seekTo(posRef.current + 10, true); } catch(e) {}
+    } else if (videoRef2.current) {
+      videoRef2.current.currentTime = videoRef2.current.currentTime + 10;
+    }
+  }
+
   function handleSyncAll() {
     var pos = posRef.current;
     if (socket && roomId) {
@@ -1123,7 +1140,7 @@ export default function WatchPartyTab(props) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
           {/* ── VIDEO AREA ── */}
-          <div style={{ flex: 1, background: '#000', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 180 }}>
+          <div data-video-container style={{ flex: 1, background: '#000', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 180 }}>
 
             {/* Floating reactions overlay */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 10 }}>
@@ -1164,6 +1181,18 @@ export default function WatchPartyTab(props) {
             {videoId ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 <div ref={ytDivRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+                <VideoPlayerControls
+                  playerRef={playerRef}
+                  playerType="youtube"
+                  isHost={isHost}
+                  isCoHost={false}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeek={function(t) { if (playerRef.current) { try { playerRef.current.seekTo(t, true); } catch(e) {} } }}
+                  onSkipBack={handleSkipBack}
+                  onSkipForward={handleSkipForward}
+                  syncStatus={synced ? 'synced' : null}
+                />
               </div>
             ) : directUrl ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
@@ -1171,7 +1200,7 @@ export default function WatchPartyTab(props) {
                   ref={videoRef2}
                   src={directUrl}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-                  controls={isHost}
+                  controls={false}
                   onTimeUpdate={function() {
                     if (!videoRef2.current) return;
                     var t = videoRef2.current.currentTime;
@@ -1210,6 +1239,18 @@ export default function WatchPartyTab(props) {
                     📂 LOCAL FILE
                   </div>
                 )}
+                <VideoPlayerControls
+                  playerRef={videoRef2}
+                  playerType="direct"
+                  isHost={isHost}
+                  isCoHost={false}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeek={function(t) { posRef.current = t; setPosition(Math.floor(t)); if (socket && roomId) socket.emit('watch-party-seek', { roomId: roomId, position: t }); }}
+                  onSkipBack={handleSkipBack}
+                  onSkipForward={handleSkipForward}
+                  syncStatus={synced ? 'synced' : null}
+                />
               </div>
             ) : (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 20px' }}>
