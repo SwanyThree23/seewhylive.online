@@ -17,8 +17,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
       setShareType('screen');
       onStartShare(stream);
       setShowOptions(false);
-    } catch (err) {
-    }
+    } catch {}
   };
 
   const handleStartWindowShare = async () => {
@@ -32,8 +31,7 @@ export default function ScreenSharePanel({ isSharing, onStartShare, onStopShare 
       setShareType('window');
       onStartShare(stream);
       setShowOptions(false);
-    } catch (err) {
-    }
+    } catch {}
   };
 
   const handleStopShare = () => {

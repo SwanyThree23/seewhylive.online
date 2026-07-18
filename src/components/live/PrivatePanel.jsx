@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const PANEL_TYPES = [
   { id: 'vip', label: 'VIP Room', icon: '👑', desc: 'Invite-only private chat & stage', color: '#d4af37' },
   { id: 'backstage', label: 'Backstage', icon: '🎭', desc: 'Host + guests only', color: '#800020' },
-  { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#D4AF37' },
+  { id: 'subscriber', label: 'Subscribers', icon: '⭐', desc: 'Paid subscribers only', color: '#7B5DA6' },
   { id: 'custom', label: 'Custom Group', icon: '🔒', desc: 'Manually invite users', color: '#D4AF37' },
 ];
 
@@ -107,9 +107,10 @@ export default function PrivatePanel({ isHost, currentUser }) {
 
   const createPanel = () => {
     if (!selectedType || !panelName.trim()) return;
-    const bytes = crypto.getRandomValues(new Uint8Array(4));
-    const code = Array.from(bytes, b => b.toString(36).padStart(2, '0')).join('').slice(0, 6).toUpperCase();
-    const newPanel = {
+    const arr = new Uint8Array(4);
+    crypto.getRandomValues(arr);
+    const code = Array.from(arr).map(b => b.toString(36)).join('').toUpperCase().slice(0, 6);
+    setActivePanels(prev => [...prev, {
       id: Date.now(),
       type: selectedType,
       name: panelName,

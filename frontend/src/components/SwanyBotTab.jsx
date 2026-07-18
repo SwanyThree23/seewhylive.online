@@ -83,6 +83,36 @@ export default function SwanyBotTab({ socket, botLogs, roomId, addToast, isLive 
     }
   }, [botLogs]);
 
+  // Real-time bot state sync from server broadcasts
+  useEffect(function() {
+    if (!socket) return;
+    function onRuleChanged(data) {
+      if (!data || !data.rule) return;
+      setRules(function(prev) {
+        return prev.map(function(r) { return r.id === data.rule ? Object.assign({}, r, { enabled: data.enabled }) : r; });
+      });
+    }
+    function onTriggerAdded(data) {
+      if (!data || !data.trigger) return;
+      setTriggers(function(prev) {
+        if (prev.some(function(t) { return t.id === data.trigger.id; })) return prev;
+        return prev.concat([data.trigger]);
+      });
+    }
+    function onTriggerRemoved(data) {
+      if (!data || !data.triggerId) return;
+      setTriggers(function(prev) { return prev.filter(function(t) { return t.id !== data.triggerId; }); });
+    }
+    socket.on('bot-rule-changed',    onRuleChanged);
+    socket.on('bot-trigger-added',   onTriggerAdded);
+    socket.on('bot-trigger-removed', onTriggerRemoved);
+    return function() {
+      socket.off('bot-rule-changed',    onRuleChanged);
+      socket.off('bot-trigger-added',   onTriggerAdded);
+      socket.off('bot-trigger-removed', onTriggerRemoved);
+    };
+  }, [socket]);
+
   useEffect(function() {
     if (!isLive) return;
     var id = setInterval(function() {

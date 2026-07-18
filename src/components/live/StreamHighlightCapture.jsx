@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 const MOMENTS = [
   { id: 'fire',    icon: '🔥', label: 'Fire Moment',  color: '#D4854A' },
-  { id: 'epic',    icon: '⚡', label: 'Epic',          color: '#D4AF37' },
+  { id: 'epic',    icon: '⚡', label: 'Epic',          color: '#FFB800' },
   { id: 'funny',   icon: '😂', label: 'LOL Moment',   color: '#6DBF7E' },
   { id: 'tip',     icon: '💰', label: 'Big Tip',       color: '#d4af37' },
   { id: 'peak',    icon: '🏆', label: 'Peak Moment',  color: '#D4AF37' },

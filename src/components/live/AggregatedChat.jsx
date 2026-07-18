@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { clampStr, LIMITS } from '@/lib/security';
 import { Languages, ShieldAlert, Send, Rocket, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
+import BottomSheet from '../ui/BottomSheet';
 
 const LANG_OPTIONS = [
   { value: 'en', label: 'English',    flag: '🇺🇸' },
@@ -31,7 +32,7 @@ function ModBadge({ status, onAppeal, msgId, roomId }) {
   const isFlagged = status === 'flagged';
   return (
     <span
-      className={`ml-1 cursor-pointer ${isFlagged ? 'text-[#D4AF37]' : 'text-red-400'}`}
+      className={`ml-1 cursor-pointer ${isFlagged ? 'text-yellow-400' : 'text-[#C0392B]'}`}
       title={`${isFlagged ? 'Flagged for review' : status} — click to appeal`}
       onClick={() => onAppeal?.(msgId, roomId)}
     >
@@ -304,7 +305,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
           <button
             onClick={() => { setTranslateEnabled(t => !t); if (!translateEnabled) translateAll(); }}
             disabled={isTranslating}
-            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#D4AF37' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ height: 24, padding: '0 8px', fontSize: 10, display: 'flex', alignItems: 'center', gap: 4, background: 'transparent', border: 'none', cursor: 'pointer', color: translateEnabled ? '#4A8A7A' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             <Languages className="w-3 h-3" />
             {isTranslating ? '…' : translateEnabled ? 'On' : 'Translate'}
@@ -369,7 +370,7 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
                   ) : displayText}
                 </span>
                 {translateEnabled && translationMap[msg.id] && translationMap[msg.id] !== msg.content && (
-                  <p className="text-[#D4AF37]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
+                  <p className="text-[#4A8A7A]/40 text-[10px] mt-0.5 italic">original: {msg.content}</p>
                 )}
               </div>
             </div>
@@ -417,44 +418,31 @@ Return JSON: { "appeal_approved": true or false, "reason": "brief explanation" }
         </button>
       </div>
 
-      {/* Language picker modal */}
-      {langSheetOpen && (
-        <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: 0 }}
-          onClick={() => setLangSheetOpen(false)}
-        >
-          <div
-            style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '16px 16px 0 0', overflow: 'hidden' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              <p style={{ fontWeight: 900, fontSize: 14, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>Translate to…</p>
-            </div>
-            <div style={{ padding: '8px 0' }}>
-              {LANG_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    setTargetLang(opt.value);
-                    setLangSheetOpen(false);
-                    if (translateEnabled) setTimeout(translateAll, 100);
-                  }}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
-                    background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
-                    border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
-                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
-                  }}
-                >
-                  <span style={{ fontSize: 18 }}>{opt.flag}</span>
-                  <span>{opt.label}</span>
-                  {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Language picker sheet */}
+      <BottomSheet isOpen={langSheetOpen} onClose={() => setLangSheetOpen(false)} title="Translate to…" maxHeight="60vh">
+        <div style={{ padding: '8px 0' }}>
+          {LANG_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                setTargetLang(opt.value);
+                setLangSheetOpen(false);
+                if (translateEnabled) setTimeout(translateAll, 100);
+              }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px',
+                background: targetLang === opt.value ? 'rgba(212,175,55,0.12)' : 'transparent',
+                border: 'none', cursor: 'pointer', color: targetLang === opt.value ? '#D4AF37' : '#fff',
+                fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: targetLang === opt.value ? 700 : 400,
+              }}
+            >
+              <span style={{ fontSize: 18 }}>{opt.flag}</span>
+              <span>{opt.label}</span>
+              {targetLang === opt.value && <span style={{ marginLeft: 'auto', color: '#D4AF37' }}>✓</span>}
+            </button>
+          ))}
         </div>
-      )}
+      </BottomSheet>
     </div>
   );
 }

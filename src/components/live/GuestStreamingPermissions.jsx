@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, XCircle, Radio, Eye, EyeOff, Share2, AlertCircle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function GuestStreamingPermissions({ participant, isHost, onPermissionChange }) {
   const [open, setOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('canMultistream')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.canMultistream ? 'bg-[#4A9B5E]/30 border border-[#6DBF7E]/40' : 'bg-white/5 border border-white/10'
+                    permissions.canMultistream ? 'border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
                   style={permissions.canMultistream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                 >
@@ -77,7 +78,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
                 <button
                   onClick={() => handlePermissionToggle('canStream')}
                   className={`w-5 h-5 rounded flex items-center justify-center transition-all ${
-                    permissions.canStream ? 'bg-[#4A9B5E]/30 border border-[#6DBF7E]/40' : 'bg-white/5 border border-white/10'
+                    permissions.canStream ? 'border border-green-500' : 'bg-white/5 border border-white/10'
                   }`}
                   style={permissions.canStream ? { background: 'rgba(109,191,126,0.15)' } : undefined}
                 >
@@ -115,7 +116,7 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
             <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#6DBF7E]" /> : <EyeOff className="w-4 h-4 text-red-400" />}
+                  {permissions.visibleToViewers ? <Eye className="w-4 h-4 text-[#4A8A7A]" /> : <EyeOff className="w-4 h-4 text-[#C0392B]" />}
                   <div>
                     <p className="text-xs font-semibold text-white">Visible to Viewers</p>
                     <p className="text-[10px] text-white/40">Show this guest in the public stream?</p>
@@ -147,9 +148,10 @@ export default function GuestStreamingPermissions({ participant, isHost, onPermi
               Done
             </button>
           </div>
+          </div>
         </div>
-      </div>
       )}
+
     </>
   );
 }

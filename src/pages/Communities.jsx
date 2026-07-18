@@ -98,7 +98,26 @@ export default function CommunitiesPage() {
         await base44.entities.Community.update(communityId, { member_count: (community.member_count || 0) + 1 });
       }
     },
-    onSuccess: (_, communityId) => {
+    onMutate: async (communityId) => {
+      await queryClient.cancelQueries({ queryKey: ['myMemberships'] });
+      await queryClient.cancelQueries({ queryKey: ['communities', selectedCategory] });
+      const prevMemberships = queryClient.getQueryData(['myMemberships']);
+      const prevCommunities = queryClient.getQueryData(['communities', selectedCategory]);
+      queryClient.setQueryData(['myMemberships'], (old = []) => [
+        ...old,
+        { community_id: communityId, user_id: user?.id, role: 'member', joined_at: new Date().toISOString() },
+      ]);
+      queryClient.setQueryData(['communities', selectedCategory], (old = []) =>
+        old.map(c => c.id === communityId ? { ...c, member_count: (c.member_count || 0) + 1 } : c)
+      );
+      return { prevMemberships, prevCommunities };
+    },
+    onError: (_err, _communityId, ctx) => {
+      if (ctx?.prevMemberships) queryClient.setQueryData(['myMemberships'], ctx.prevMemberships);
+      if (ctx?.prevCommunities) queryClient.setQueryData(['communities', selectedCategory], ctx.prevCommunities);
+      toast.error('Failed to join community');
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myMemberships'] });
       queryClient.invalidateQueries({ queryKey: ['communities'] });
       toast.success('Joined community!');

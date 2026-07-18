@@ -2,32 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { useCameraDevices } from '../hooks/useCameraDevices';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
-import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
-import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import DevicePreview from '../components/greenroom/DevicePreview';
-import GreenroomQueue from '../components/streaming/GreenroomQueue';
-import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
-import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
-import GuestConnector from '../components/live/GuestConnector';
-import GuestQueue from '../components/live/GuestQueue';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
-import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
-import OBSBridge from '../components/obs/OBSBridge';
-import VideoShortRecorder from '../components/vod/VideoShortRecorder';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
+import { useCameraDevices } from '../hooks/useCameraDevices';
+
+
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
@@ -38,10 +20,13 @@ const GREEN = '#6DBF7E';
 
 export default function GreenroomEnhanced() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const activeRoomId = roomId;
-  const isHost = true;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['greenroomenhanced-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -197,16 +182,29 @@ export default function GreenroomEnhanced() {
               </div>
             )}
           </div>
-          <div className="p-3 flex items-center justify-between gap-3">
-            <CameraSourcePicker onSourceSelected={handleCameraSource} currentDeviceId={null} />
-            {/* Mic level bar */}
-            <div className="flex-1 flex items-center gap-2">
-              <span className="text-sm">🎤</span>
-              <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-                <motion.div className="h-full rounded-full"
-                  style={{ background: audioLevel > 70 ? '#FF4444' : audioLevel > 40 ? GOLD : GREEN }}
-                  animate={{ width: audioLevel + '%' }}
-                  transition={{ duration: 0.1 }} />
+          <div className="p-3 space-y-2">
+            {/* Device selector — camera, mic, resolution */}
+            <CameraDeviceSelector
+              compact
+              currentVideoId={selectedCam}
+              currentAudioId={selectedMic}
+              resolution={camResolution}
+              onVideoChange={handleVideoChange}
+              onAudioChange={handleAudioChange}
+              onResolutionChange={handleResolutionChange}
+            />
+            {/* Legacy CameraSourcePicker for OBS/virtual camera detection */}
+            <div className="flex items-center justify-between gap-3">
+              <CameraSourcePicker onSourceSelected={handleCameraSource} currentDeviceId={selectedCam || null} />
+              {/* Mic level bar */}
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-sm">🎤</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                  <motion.div className="h-full rounded-full"
+                    style={{ background: audioLevel > 70 ? '#C0392B' : audioLevel > 40 ? GOLD : GREEN }}
+                    animate={{ width: audioLevel + '%' }}
+                    transition={{ duration: 0.1 }} />
+                </div>
               </div>
             </div>
           </div>
@@ -344,27 +342,21 @@ export default function GreenroomEnhanced() {
         </div>
 
       </div>
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <MultiGuestPanel roomId={roomId} hostId={user?.id} isHost={true} />
-        <OBSBridge roomId={roomId} isHost={true} />
-        <VideoShortRecorder roomId={roomId} sessionId={roomId} onSave={() => {}} />
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
-        {[
-          { label: '🔴 Go Live',        href: 'GoLive'           },
-          { label: '🎙 Broadcast Studio', href: 'BroadcastStudio' },
-          { label: '🎧 Audio Room',     href: 'AudioRoom'        },
-          { label: '⚙️ Settings',       href: 'Settings'         },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
-          </Link>
-        ))}
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="greenroom" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

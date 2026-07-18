@@ -416,6 +416,25 @@ export default function LoyaltyHubPage() {
           ))}
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <RewardShopEditor creatorId={user?.id} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

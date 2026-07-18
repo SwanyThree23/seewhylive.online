@@ -597,7 +597,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
         })}
 
         <div style={{ background: 'rgba(255,26,60,.05)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 10, padding: '12px 14px', marginTop: 8 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#FF1564', letterSpacing: 2, marginBottom: 6 }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: '#C0392B', letterSpacing: 2, marginBottom: 6 }}>
             &#x26A0; DELETE ACCOUNT
           </div>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', marginBottom: 10 }}>
@@ -617,7 +617,7 @@ export default function SettingsTab({ addToast, username, socket, roomId, isLive
               border: '1px solid rgba(255,26,60,.4)',
               borderRadius: 8,
               padding: '8px 16px',
-              color: deleteConfirm === 'DELETE' ? '#FF1564' : '#8A7A62',
+              color: deleteConfirm === 'DELETE' ? '#C0392B' : '#8A7A62',
               fontFamily: "'Bebas Neue',sans-serif",
               fontSize: 13,
               letterSpacing: 2,

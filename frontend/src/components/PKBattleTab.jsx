@@ -129,6 +129,18 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       if (data.cheerB) setCheerB(data.cheerB.slice(0, 20));
     });
 
+    socket.on('pk-gift-boost', function(data) {
+      if (!data) return;
+      var boostMsg = (data.from || 'Viewer') + ' gifted ' + (data.name || data.emoji || 'a gift') + ' — BOOST! 🚀';
+      setBattleLog(function(prev) { return [{ text: boostMsg, ts: Date.now() }].concat(prev).slice(0, 20); });
+      if (addToast) addToast('🎁 Gift boost from ' + (data.from || 'viewer') + '!', 'success');
+    });
+
+    socket.on('pk-sudden-death', function() {
+      setBattleLog(function(prev) { return [{ text: '⚡ SUDDEN DEATH — next point wins!', ts: Date.now() }].concat(prev).slice(0, 20); });
+      if (addToast) addToast('⚡ SUDDEN DEATH round!', 'error');
+    });
+
     return function() {
       socket.off('pk-update');
       socket.off('pk-start');
@@ -136,8 +148,10 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
       socket.off('pk-end');
       socket.off('pk-vote-update');
       socket.off('pk-cheer-update');
+      socket.off('pk-gift-boost');
+      socket.off('pk-sudden-death');
     };
-  }, [socket]);
+  }, [socket, addToast]);
 
   function startBattle() {
     suddenDeathRef.current = false;
@@ -165,7 +179,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
     setBattleState('active');
 
     if (socket && roomId) {
-      socket.emit('pk-battle-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
+      socket.emit('pk-start', { roomId: roomId, challenger: cName, defender: dName, duration: selectedDuration });
     }
 
     clearAllIntervals();
@@ -222,7 +236,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
           return prev.concat([{ time: fmtTime(), text: '🏆 ' + w + ' wins the PK Battle!' }]);
         });
         if (socket && roomId) {
-          socket.emit('pk-battle-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
+          socket.emit('pk-end', { roomId: roomId, winner: w, challengerScore: cScore, defenderScore: dScore });
         }
         addToast(w + ' wins the battle!', 'success');
         return dScore;
@@ -379,7 +393,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               style={{
                 width: '100%',
                 padding: '14px',
-                background: 'linear-gradient(135deg,#FF1564,#FF4D7D)',
+                background: 'linear-gradient(135deg,#C0392B,#FF4D7D)',
                 border: 'none',
                 borderRadius: 10,
                 color: '#fff',
@@ -422,7 +436,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
                 overflow: 'hidden',
               }}>
                 {r.status === 'LIVE' && (
-                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#FF1564,transparent)' }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,transparent,#C0392B,transparent)' }} />
                 )}
                 <div style={{ position: 'relative' }}>
                   <AvatarPortrait username={r.name} size={52} />
@@ -664,7 +678,7 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
 
         {/* VS divider */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, flexShrink: 0, minWidth: 36 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#800020', letterSpacing: 2, textShadow: '0 0 12px #FF1564' }}>VS</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#800020', letterSpacing: 2, textShadow: '0 0 12px #C0392B' }}>VS</div>
           <div style={{ height: 2, width: 2, borderRadius: '50%', background: '#3D3020' }} />
         </div>
 

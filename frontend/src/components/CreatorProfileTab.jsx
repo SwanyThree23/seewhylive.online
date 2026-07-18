@@ -324,13 +324,13 @@ export default function CreatorProfileTab(props) {
             'div',
             {
               style: {
-                background: 'rgba(255,21,100,.1)',
-                border: '1px solid rgba(255,21,100,.25)',
+                background: 'rgba(192,57,43,.1)',
+                border: '1px solid rgba(192,57,43,.25)',
                 borderRadius: 4,
                 padding: '2px 7px',
                 fontFamily: "'DM Mono',monospace",
                 fontSize: 9,
-                color: '#FF1564',
+                color: '#C0392B',
                 whiteSpace: 'nowrap',
               }
             },
@@ -346,7 +346,7 @@ export default function CreatorProfileTab(props) {
       'div',
       { style: { marginTop: 10 } },
       profile.subscriberTiers.map(function(tier, idx) {
-        var accentColor = idx === 0 ? '#C9A84C' : idx === 1 ? '#C9A84C' : '#FF1564';
+        var accentColor = idx === 0 ? '#C9A84C' : idx === 1 ? '#C9A84C' : '#C0392B';
         return React.createElement(
           'div',
           {
@@ -541,14 +541,14 @@ export default function CreatorProfileTab(props) {
             onClick: handleFollow,
             style: {
               flex: 1,
-              background: following ? 'rgba(255,21,100,.15)' : 'rgba(201,168,76,.12)',
-              border: '1px solid ' + (following ? 'rgba(255,21,100,.4)' : 'rgba(201,168,76,.35)'),
+              background: following ? 'rgba(192,57,43,.15)' : 'rgba(201,168,76,.12)',
+              border: '1px solid ' + (following ? 'rgba(192,57,43,.4)' : 'rgba(201,168,76,.35)'),
               borderRadius: 6,
               padding: '8px 0',
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 13,
-              color: following ? '#FF1564' : '#C9A84C',
+              color: following ? '#C0392B' : '#C9A84C',
               cursor: 'pointer',
               letterSpacing: 1,
             }
@@ -582,8 +582,8 @@ export default function CreatorProfileTab(props) {
           'div',
           {
             style: {
-              background: 'rgba(255,21,100,.06)',
-              border: '1px solid rgba(255,21,100,.35)',
+              background: 'rgba(192,57,43,.06)',
+              border: '1px solid rgba(192,57,43,.35)',
               borderRadius: 10,
               padding: '12px 14px',
               marginBottom: 10,
@@ -601,7 +601,7 @@ export default function CreatorProfileTab(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 10,
-                  color: '#FF1564',
+                  color: '#C0392B',
                   letterSpacing: 1,
                   marginBottom: 2,
                 }
@@ -634,7 +634,7 @@ export default function CreatorProfileTab(props) {
                 style: {
                   fontFamily: "'DM Mono',monospace",
                   fontSize: 10,
-                  color: '#FF1564',
+                  color: '#C0392B',
                 }
               },
               (viewerCount || 0).toLocaleString()

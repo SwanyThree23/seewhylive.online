@@ -311,15 +311,21 @@ export default function CreateRoomPage() {
           </div>
         </form>
       </div>
-
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-        <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

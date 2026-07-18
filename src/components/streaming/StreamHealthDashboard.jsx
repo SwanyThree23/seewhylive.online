@@ -2,12 +2,43 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 
-const STATUS_COLOR = {
-  excellent: '#6DBF7E',
-  good: '#d4af37',
-  warning: '#f59e0b',
-  critical: '#C0392B',
-  offline: '#555',
+const HealthMetric = ({ label, value, unit, status, trend }) => {
+  const statusColor = {
+    excellent: '#6DBF7E',
+    good: '#d4af37',
+    warning: '#FFB800',
+    critical: '#C0392B'
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="bg-white/5 border border-white/10 rounded-lg p-2.5"
+    >
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
+        <div className="flex items-center gap-1">
+          {trend === 'up' ? (
+            <TrendingUp className="w-3 h-3 text-[#6DBF7E]" />
+          ) : trend === 'down' ? (
+            <TrendingDown className="w-3 h-3 text-[#C0392B]" />
+          ) : null}
+        </div>
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-lg font-bold text-white">{value}</span>
+        <span className="text-[11px] text-white/50">{unit}</span>
+      </div>
+      <div className="flex items-center gap-1.5 mt-1.5">
+        <div
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: statusColor[status] }}
+        />
+        <span className="text-[11px] text-white/40 capitalize">{status}</span>
+      </div>
+    </motion.div>
+  );
 };
 
 function bitrateStatus(kbps) {

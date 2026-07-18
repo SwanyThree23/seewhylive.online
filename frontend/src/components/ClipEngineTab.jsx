@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useVODRecording } from '../hooks/useVODRecording.js';
 
 var SEED_CLIPS = [
   { id: 'c1', title: 'Washington Classic Opener',   duration: 47,  size: '12.4 MB', ts: Date.now() - 3600000, thumbnail: '🎲' },
@@ -31,11 +32,13 @@ function fmtAgo(ts) {
   return Math.floor(d / 3600) + 'h ago';
 }
 
-export default function ClipEngineTab({ isLive, addToast }) {
+export default function ClipEngineTab({ isLive, addToast, streamId, creatorId, socket }) {
   var [tab, setTab]               = useState('clips');
   var [clips, setClips]           = useState(SEED_CLIPS.map(function(c) { return Object.assign({}, c); }));
   var [recording, setRecording]   = useState(false);
   var [recSecs, setRecSecs]       = useState(0);
+
+  var vodRec = useVODRecording({ streamId: streamId, creatorId: creatorId, title: 'Live Clip' });
   var [selected, setSelected]     = useState(null);
   var [trimIn, setTrimIn]         = useState(0);
   var [trimOut, setTrimOut]       = useState(60);
@@ -59,10 +62,31 @@ export default function ClipEngineTab({ isLive, addToast }) {
     return function() { clearInterval(recRef.current); };
   }, [recording]);
 
+  useEffect(function() {
+    if (!socket) return;
+    function onClipMarked(data) {
+      if (!data) return;
+      var marker = {
+        id: data.id || ('m-' + Date.now()),
+        title: 'Clip Marker — ' + (data.label || 'Unmarked'),
+        duration: 0,
+        size: '—',
+        ts: Date.now(),
+        thumbnail: '📍',
+        isMarker: true,
+      };
+      setClips(function(prev) { return [marker].concat(prev); });
+      if (addToast) addToast('📍 Clip marker saved: ' + (data.label || 'Unmarked'), 'success');
+    }
+    socket.on('clip-marked', onClipMarked);
+    return function() { socket.off('clip-marked', onClipMarked); };
+  }, [socket, addToast]);
+
   function startRec() {
     if (!isLive) { addToast('Start your stream before recording a clip', 'error'); return; }
     setRecording(true);
     setRecSecs(0);
+    if (streamId && creatorId) vodRec.startRecording();
     addToast('🔴 Recording clip...', 'info');
   }
 
@@ -71,10 +95,11 @@ export default function ClipEngineTab({ isLive, addToast }) {
     var dur = recSecs;
     var sizeKB = Math.floor(dur * 260);
     var sizeMB = (sizeKB / 1024).toFixed(1);
-    var id = 'c' + Date.now();
+    var id = vodRec.vodId || ('c' + Date.now());
     var clip = { id: id, title: 'Live Clip — ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), duration: dur, size: sizeMB + ' MB', ts: Date.now(), thumbnail: '🎬' };
     setClips(function(p) { return [clip].concat(p); });
     setRecSecs(0);
+    if (streamId && creatorId) vodRec.stopRecording();
     addToast('Clip saved: ' + fmtDur(dur), 'success');
   }
 

@@ -1,35 +1,43 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, Download } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
 import AIStreamSummary from '../components/live/AIStreamSummary';
-import RecordingManager from '../components/content/RecordingManager';
-import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
-import LiveTranscription from '../components/live/LiveTranscription';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 
-const BG    = '#080B18';
-const BG2   = '#0D0A08';
-const BG3   = '#13100A';
-const GOLD  = '#D4AF37';
+const BG   = '#080B18';
+const BG2  = 'rgba(13,6,24,0.95)';
+const BG3  = '#0D0A1A';
+const GOLD = '#D4AF37';
+const GOLDD = '#8A6F2E';
+const SLATE = '#1A1530';
+const TEXT  = '#F0EAF8';
+const TEXTD = '#B8AECF';
+const TEXTM = '#7A6E8A';
+const CYAN  = '#D4AF37';
 const GREEN = '#6DBF7E';
-const CYAN  = '#D4854A';
-const SCARL = '#C0392B';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const MONO = { fontFamily: 'Space Mono, monospace' };
+
+const CAPTION_NINJA_URL = 'https://caption.ninja';
+
+const SUPPORTED_LANGS = [
+  { code: 'en', label: 'English',    flag: '🇺🇸', voice: 'en-US' },
+  { code: 'es', label: 'Español',    flag: '🇪🇸', voice: 'es-ES' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷', voice: 'fr-FR' },
+  { code: 'pt', label: 'Português',  flag: '🇧🇷', voice: 'pt-BR' },
+  { code: 'zh', label: '中文',        flag: '🇨🇳', voice: 'zh-CN' },
+  { code: 'ar', label: 'العربية',    flag: '🇸🇦', voice: 'ar-SA' },
+];
+
+const EXPORT_FORMATS = [
+  { key: 'srt',  label: 'SRT',  mime: 'text/plain', ext: 'srt' },
+  { key: 'txt',  label: 'TXT',  mime: 'text/plain', ext: 'txt' },
+  { key: 'json', label: 'JSON', mime: 'application/json', ext: 'json' },
+];
 
 const GLOBAL_CSS = `
 @keyframes caretBlink{0%,100%{opacity:1;}50%{opacity:0;}}
@@ -127,23 +135,94 @@ export default function TranscriptionStudio() {
     }, 3800);
   }
 
-  function stopLive() {
-    setLive(false);
-    clearInterval(tickRef.current);
+  // ── Deepgram live transcription ──────────────────────────────────────────────
+  const [dgMode, setDgMode]         = useState(false);    // true = Deepgram active
+  const [dgLines, setDgLines]       = useState([]);
+  const [dgLive, setDgLive]         = useState(false);
+  const dgWsRef    = useRef(null);
+  const dgRecRef   = useRef(null);
+  const dgChunkRef = useRef(null);
+
+  function getDgKey() { try { return localStorage.getItem('swl_apikey_deepgram') || ''; } catch { return ''; } }
+
+  async function startDeepgram() {
+    const key = getDgKey();
+    if (!key) { alert('Add your Deepgram API key in VaultPro → AI Keys first.'); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?language=${activeLang}&punctuate=true&interim_results=true`, ['token', key]);
+      ws.onopen = () => {
+        setDgLive(true);
+        const rec = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+        rec.ondataavailable = e => { if (ws.readyState === 1 && e.data.size > 0) ws.send(e.data); };
+        rec.start(250);
+        dgRecRef.current = rec;
+        dgChunkRef.current = stream;
+      };
+      ws.onmessage = evt => {
+        try {
+          const d = JSON.parse(evt.data);
+          const alt = d?.channel?.alternatives?.[0];
+          if (!alt?.transcript) return;
+          const isFinal = d.is_final;
+          if (isFinal && alt.transcript.trim()) {
+            const now = Date.now() - startMsRef.current;
+            setDgLines(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
+            setCaptionHistory(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
+            setDemoText(alt.transcript.trim());
+            setTimeout(() => setDemoText(''), 4000);
+          }
+        } catch {}
+      };
+      ws.onerror = () => stopDeepgram();
+      ws.onclose = () => setDgLive(false);
+      dgWsRef.current = ws;
+    } catch (e) {
+      alert(`Microphone access denied: ${e.message}`);
+    }
   }
 
-  useEffect(() => () => clearInterval(tickRef.current), []);
+  function stopDeepgram() {
+    dgRecRef.current?.stop?.();
+    dgChunkRef.current?.getTracks?.()?.forEach?.(t => t.stop());
+    dgWsRef.current?.close?.();
+    dgRecRef.current = null;
+    dgWsRef.current  = null;
+    setDgLive(false);
+  }
 
-  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
-  const srtText  = buildSRT(lines);
+  useEffect(() => () => stopDeepgram(), []);
 
-  function downloadSRT() {
-    const blob = new Blob([srtText], { type: 'text/plain' });
+  // ── Export helpers ────────────────────────────────────────────────────────────
+  function handleExport(fmt) {
+    let content = '';
+    if (fmt.key === 'srt') {
+      content = captionHistory.map((c, i) => {
+        const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+        const toSrtTime = ms => { const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10); return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`; };
+        return `${i+1}\n${toSrtTime(c.startMs)} --> ${toSrtTime(c.endMs)}\n${c.text}\n`;
+      }).join('\n');
+    } else if (fmt.key === 'json') {
+      content = JSON.stringify(captionHistory, null, 2);
+    } else {
+      content = captionHistory.map(c => `[${msToSrt(c.startMs).slice(0,8)}] ${c.text}`).join('\n');
+    }
+    const blob = new Blob([content], { type: fmt.mime });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'transcript.srt';
+    a.download = `transcript.${fmt.ext}`;
     a.click();
+    URL.revokeObjectURL(a.href);
   }
+
+  function clearHistory() {
+    setCaptionHistory([]);
+    setDgLines([]);
+    setDemoText('');
+    startMsRef.current = Date.now();
+  }
+
+  const otherLangs = SUPPORTED_LANGS.filter(l => l.code !== activeLang);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>
@@ -153,8 +232,8 @@ export default function TranscriptionStudio() {
           <Link to={createPageUrl('ControlRoom')} style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textDecoration: 'none', letterSpacing: '0.06em', marginRight: 4 }}>← Control Room</Link>
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: `linear-gradient(135deg, #4A7C59, #2A5C39)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📝</div>
           <div>
-            <div style={{ ...T, fontSize: 20, fontWeight: 900, color: TEXT, letterSpacing: '0.06em', lineHeight: 1 }}>TRANSCRIPTION STUDIO</div>
-            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>LIVE CAPTIONS · SRT EXPORT · AI POWERED</div>
+            <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>TRANSCRIPTION STUDIO</div>
+            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DEEPGRAM NATIVE · CAPTION.NINJA · 6 LANGUAGES · AI TRANSLATION</div>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -262,6 +341,45 @@ export default function TranscriptionStudio() {
         {/* Transcription panel for VOD recordings */}
         <TranscriptionPanel recordingUrl={null} roomTitle="Live Session" />
 
+        {/* Deepgram Native Transcription */}
+        <div style={{ background: 'rgba(0,188,212,0.04)', border: '1px solid rgba(0,188,212,0.15)', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 700, color: '#00bcd4', letterSpacing: '0.05em' }}>Deepgram Live Transcription</div>
+              <div style={{ ...MONO, fontSize: 9, color: TEXTM, marginTop: 3 }}>Real-time AI speech-to-text · No browser plugin needed · Requires Deepgram API key</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {dgLive && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div className="live-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN }} />
+                  <span style={{ ...MONO, fontSize: 9, color: GREEN }}>LIVE</span>
+                </div>
+              )}
+              {!dgLive ? (
+                <button onClick={startDeepgram} style={{ ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', background: 'rgba(0,188,212,0.12)', border: '1px solid rgba(0,188,212,0.35)', borderRadius: 8, padding: '7px 16px', color: '#00bcd4', cursor: 'pointer' }}>
+                  🎙 Start Deepgram
+                </button>
+              ) : (
+                <button onClick={stopDeepgram} style={{ ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.3)', borderRadius: 8, padding: '7px 16px', color: '#ff6b6b', cursor: 'pointer' }}>
+                  ⏹ Stop
+                </button>
+              )}
+            </div>
+          </div>
+          {!getDgKey() && (
+            <div style={{ ...MONO, fontSize: 10, color: 'rgba(255,150,100,0.7)', padding: '8px 10px', borderRadius: 8, background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.15)' }}>
+              No Deepgram key — go to <strong>VaultPro → AI Keys</strong> to add one.
+            </div>
+          )}
+          {dgLines.length > 0 && (
+            <div style={{ marginTop: 10, maxHeight: 120, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {dgLines.slice(-10).reverse().map((l, i) => (
+                <div key={i} style={{ fontSize: 13, color: TEXTD, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>{l.text}</div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Caption.Ninja link */}
         <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -295,19 +413,12 @@ export default function TranscriptionStudio() {
         <AutomatedHighlightReels streamSession={null} />
         <CollaborationMatcher />
       </div>
-
-      {/* Footer nav */}
-      <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {[['ControlRoom', '🎛️ Control Room'], ['StreamAlerts', '🔔 Alerts'], ['OverlayEditor', '🎚️ Overlays'], ['BroadcastStudio', '🎬 Studio']].map(([page, label]) => (
-          <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
-            <button style={{ ...T, fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: `1px solid rgba(255,255,255,0.1)`, background: 'rgba(255,255,255,0.04)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {label}
-            </button>
-          </Link>
-        ))}
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanyBotWidget />
+      <NotificationBell />
+      <AIStreamSummary roomId={null} isHost={true} />
+      <SwanAIRecommendations roomId={null} currentLayout='transcription' viewerCount={0} />
+      <AIHighlightGenerator roomId={null} isHost={true} />
+      <StreamHealthMonitor isStreaming={false} />
     </div>
   );
 }

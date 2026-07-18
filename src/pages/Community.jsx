@@ -2,45 +2,39 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, MessageSquare, Settings, TrendingUp, UserPlus, UserCheck, Shield, Radio, CheckCircle, Plus } from 'lucide-react';
+import { Users, MessageSquare, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import ReferralProgram from '@/components/community/ReferralProgram';
 import CreatePollModal from '../components/community/CreatePollModal';
-import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
-import UnifiedChat from '../components/live/UnifiedChat';
-import ShareModal from '../components/live/ShareModal';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
+import PollCard from '../components/community/PollCard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
-
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import OnlinePresence from '../components/shared/OnlinePresence';
 const G = '#D4AF37';
 const BG = '#080B18';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
-const TABS = [
-  { id: 'feed', label: 'Feed', icon: MessageSquare },
-  { id: 'spotlight', label: 'Spotlight', icon: TrendingUp },
-  { id: 'rooms', label: 'Live', icon: Radio },
-];
-
 export default function CommunityPage() {
-  const [activeTab, setActiveTab] = useState('feed');
-  const [pollModalOpen, setPollModalOpen] = useState(false);
   const qc = useQueryClient();
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const communityIdParam = urlParams.get('id');
+  const communityIdParam = new URLSearchParams(window.location.search).get('id');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -48,7 +42,7 @@ export default function CommunityPage() {
   });
 
   const { data: community, isLoading } = useQuery({
-    queryKey: ['community-page', communityIdParam, user?.id],
+    queryKey: ['userCommunity', user?.id],
     queryFn: async () => {
       if (communityIdParam) {
         const list = await base44.entities.Community.filter({ id: communityIdParam });
@@ -114,6 +108,15 @@ export default function CommunityPage() {
   const isMember = !!membership;
   const isAdmin = membership?.role === 'admin' || membership?.role === 'owner';
   const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
+
+  const [showCreatePoll, setShowCreatePoll] = useState(false);
+
+  const { data: polls = [] } = useQuery({
+    queryKey: ['community-polls', community?.id],
+    queryFn: () => base44.entities.Poll.filter({ community_id: community.id }, '-created_date', 10),
+    enabled: !!community?.id,
+    refetchInterval: 30000,
+  });
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
@@ -257,6 +260,35 @@ export default function CommunityPage() {
             <motion.div key="spotlight" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-16 space-y-6">
               <SpotlightBanner communityId={community.id} isAdmin={isAdmin || isOwner} />
               <SpotlightSection communityId={community.id} />
+              <ReferralProgram communityId={community.id} />
+
+              {/* Community Polls */}
+              <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.12)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-black uppercase" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    📊 Community Polls
+                  </h3>
+                  {(isAdmin || isOwner) && (
+                    <button
+                      onClick={() => setShowCreatePoll(true)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all"
+                      style={{ background: 'rgba(212,175,55,0.12)', color: G, border: '1px solid rgba(212,175,55,0.25)' }}>
+                      <Plus className="w-3 h-3" /> New Poll
+                    </button>
+                  )}
+                </div>
+                {polls.length === 0 ? (
+                  <p className="text-xs text-center py-4" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    No active polls yet
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {polls.map(poll => (
+                      <PollCard key={poll.id} poll={poll} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
 
@@ -307,6 +339,29 @@ export default function CommunityPage() {
         <CollaborationMatcher currentUserId={user?.id} />
         <ShareToSocial url={window.location.href} title={community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!'} />
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={null} isAdmin={isAdmin} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
+      <OnlinePresence userId={null} />
+
+      <CreatePollModal
+        isOpen={showCreatePoll}
+        onClose={() => setShowCreatePoll(false)}
+        communityId={community?.id}
+      />
     </div>
   );
 }

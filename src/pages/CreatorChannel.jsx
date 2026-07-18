@@ -24,9 +24,12 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-
-const BG = '#080B18';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+const BG = '#0d0618';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -138,7 +141,7 @@ export default function CreatorChannel() {
           <div className="flex-1 min-w-0 pb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-black text-white" style={T}>{displayName}</h1>
-              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
+              {profile?.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4A8A7A' }} />}
               <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase capitalize"
                 style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                 {category}
@@ -260,15 +263,15 @@ export default function CreatorChannel() {
               </div>
             ))}
             {scheduledRooms.map(r => (
-              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}>
-                  <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
+              <div key={r.id} className="flex items-center gap-4 p-4 rounded-2xl" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.2)' }}>
+                  <Clock className="w-5 h-5" style={{ color: '#4A8A7A' }} />
                 </div>
                 <div className="flex-1">
                   <p className="font-black text-sm text-white" style={T}>{r.title}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : 'Scheduled'}</p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', ...T }}>Upcoming</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black uppercase" style={{ background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.2)', color: '#4A8A7A', ...T }}>Upcoming</span>
               </div>
             ))}
             {!profile?.stream_schedule?.length && !scheduledRooms.length && (
@@ -339,8 +342,15 @@ export default function CreatorChannel() {
           </div>
         </div>
       </div>
-        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="channel" viewerCount={0} />
+      <MilestoneAlerts userId={currentUser?.id} roomId={null} />
+      {currentUser?.id && <AlertConfig creatorId={currentUser.id} />}
+      {currentUser?.id && <ShopDashboard creatorId={currentUser.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={currentUser || null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

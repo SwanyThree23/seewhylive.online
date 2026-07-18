@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLiveHomeRanking } from '../hooks/useLiveHomeRanking';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio, Search, TrendingUp, Users, Calendar, Star,
-  Zap, Eye, Clock, ChevronRight, Filter, Youtube, Handshake
+  Zap, Eye, Clock, ChevronRight, Filter, Clapperboard
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -32,7 +33,10 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import MomentsFeed from '../components/live/MomentsFeed';
 function usePullToRefresh(onRefresh) {
   var [pullY, setPullY] = useState(0);
   var [refreshing, setRefreshing] = useState(false);
@@ -66,7 +70,7 @@ function usePullToRefresh(onRefresh) {
 const GENRES = ['All', 'Music', 'Gaming', 'Talk', 'Education', 'Tech', 'Art', 'Fitness', 'IRL'];
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
-const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#D4AF37', Education: '#6B7C4A', Tech: '#D4AF37', Art: '#D4854A', Fitness: '#CC7755', IRL: '#D4AF37' };
+const CAT_COLOR = { Music: '#C0392B', Gaming: '#D4AF37', Talk: '#4A8A7A', Education: '#6B7C4A', Tech: '#4A8A7A', Art: '#FF6B8A', Fitness: '#CC7755', IRL: '#D4AF37' };
 
 function FanbaseRoomCard({ room }) {
   var tag = room.tags && room.tags[0];
@@ -157,6 +161,14 @@ export default function DiscoverPage() {
     queryFn: () => base44.entities.CreatorProfile.list('-follower_count', 20),
   });
 
+  const { data: followingList = [] } = useQuery({
+    queryKey: ['following', user?.id],
+    queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
+
   const totalViewers = liveRooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
 
   const filterRooms = (rooms) => {
@@ -169,9 +181,14 @@ export default function DiscoverPage() {
     });
   };
 
-  const trending = [...liveRooms]
-    .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
-    .slice(0, 3);
+  // Live Home: real-time ranked discovery via socket push, falls back to DB sort
+  const { trending: liveHomeTrending, connectedViaSocket: liveHomeSocketOn } = useLiveHomeRanking({ fallbackRooms: liveRooms });
+
+  // Merge socket scores into DB room objects for the trending cards
+  const trending = liveHomeTrending
+    .slice(0, 3)
+    .map(t => t.dbRoom || liveRooms.find(r => r.id === t.roomId))
+    .filter(Boolean);
 
   const filtered = filterRooms(tab === 'live' ? liveRooms : scheduledRooms);
 
@@ -229,12 +246,22 @@ export default function DiscoverPage() {
             </div>
           </div>
 
-          {/* Hero trending */}
+          {/* Hero trending — Live Home ranked discovery */}
           {trending.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {trending.map((room, i) => (
-                <TrendingCard key={room.id} room={room} rank={i + 1} />
-              ))}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4" style={{ color: '#C9A84C' }} />
+                <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: '#C9A84C', fontFamily: 'Barlow Condensed, sans-serif' }}>Trending Now</span>
+                <span className="flex items-center gap-1 ml-2">
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: liveHomeSocketOn ? '#6DBF7E' : '#FFB000' }} />
+                  <span className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.3)' }}>{liveHomeSocketOn ? 'Live' : 'Polling'}</span>
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {trending.map((room, i) => (
+                  <TrendingCard key={room.id} room={room} rank={i + 1} />
+                ))}
+              </div>
             </div>
           )}
 
@@ -290,8 +317,7 @@ export default function DiscoverPage() {
               { id: 'scheduled', label: 'Upcoming', icon: Calendar },
               { id: 'communities', label: 'Communities', icon: Users },
               { id: 'creators', label: 'Creators', icon: Star },
-              { id: 'youtube', label: 'YouTube', icon: Youtube },
-              { id: 'collab', label: 'Collab', icon: Handshake },
+              { id: 'moments', label: 'Moments', icon: Clapperboard },
             ].map(t => {
               const Icon = t.icon;
               return (
@@ -403,15 +429,9 @@ export default function DiscoverPage() {
             </motion.div>
           )}
 
-          {tab === 'youtube' && (
-            <motion.div key="youtube" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-              <YouTubeDiscovery />
-            </motion.div>
-          )}
-
-          {tab === 'collab' && (
-            <motion.div key="collab" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
-              <CollaborationMatcher />
+          {tab === 'moments' && (
+            <motion.div key="moments" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -537,6 +557,21 @@ function EmptyState({ icon: Icon, title, desc }) {
       </div>
       <h3 className="text-lg font-black text-white/60 mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{title}</h3>
       <p className="text-sm text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{desc}</p>
+      <SwanAIRecommendations roomId={null} currentLayout="discover" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

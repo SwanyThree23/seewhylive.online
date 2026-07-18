@@ -1,19 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Youtube, Upload, List, Radio, Link as LinkIcon, X, ChevronDown, Plus, Trash2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { toast } from 'sonner';
 
-const TABS = [
-  { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
-  { id: 'device',  label: 'Device',  icon: Upload,   color: '#d4af37' },
-  { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#D4AF37' },
-  { id: 'stream',  label: 'Stream',  icon: Radio,     color: '#6DBF7E' },
-  { id: 'playlist',label: 'Playlist',icon: List,      color: '#D4AF37' },
+var GOLD  = '#C9A84C';
+var CREAM = '#F0E8D4';
+var MUTED = 'rgba(255,255,255,0.35)';
+var BG    = 'rgba(8,11,24,0.98)';
+var CARD  = 'rgba(255,255,255,0.04)';
+
+var TABS = [
+  { id: 'youtube',  label: 'YouTube', emoji: '▶',  color: '#FF0000' },
+  { id: 'device',   label: 'Device',  emoji: '📂',  color: GOLD },
+  { id: 'url',      label: 'URL',     emoji: '🔗',  color: GOLD },
+  { id: 'stream',   label: 'Stream',  emoji: '📡',  color: '#6DBF7E' },
+  { id: 'playlist', label: 'Queue',   emoji: '📋',  color: GOLD },
 ];
 
 export function getYouTubeId(url) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([^&?/]+)/);
+  var m = (url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/))([^&?/]+)/);
   return m ? m[1] : null;
 }
 
@@ -24,266 +26,257 @@ export function detectVideoType(url) {
 }
 
 /**
- * VideoSourcePicker
+ * VideoSourcePicker — multi-tab video source selector (no external deps)
  * Props:
- *   onSelect(source) — called with { type, url, title, thumbnail }
- *   playlist         — array of { url, title } items
- *   onPlaylistChange — called with updated playlist array
- *   compact          — render as a smaller inline widget
- *   isHost / isCoHost — whether controls are shown
+ *   onSelect(source)     — { type, url, title, ytId? }
+ *   playlist             — array of { url, title }
+ *   onPlaylistChange     — called with updated playlist array
+ *   compact              — smaller trigger button
+ *   isHost / isCoHost
  */
-export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistChange, compact = false, isHost = false, isCoHost = false }) {
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState('youtube');
-  const [ytUrl, setYtUrl] = useState('');
-  const [directUrl, setDirectUrl] = useState('');
-  const [streamUrl, setStreamUrl] = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [newPlaylistUrl, setNewPlaylistUrl] = useState('');
-  const [newPlaylistTitle, setNewPlaylistTitle] = useState('');
-  const fileRef = useRef(null);
+export default function VideoSourcePicker({ onSelect, playlist, onPlaylistChange, compact, isHost, isCoHost }) {
+  playlist = playlist || [];
+  var [open,             setOpen]             = useState(false);
+  var [tab,              setTab]              = useState('youtube');
+  var [ytUrl,            setYtUrl]            = useState('');
+  var [directUrl,        setDirectUrl]        = useState('');
+  var [streamUrl,        setStreamUrl]        = useState('');
+  var [uploading,        setUploading]        = useState(false);
+  var [newPlaylistUrl,   setNewPlaylistUrl]   = useState('');
+  var [newPlaylistTitle, setNewPlaylistTitle] = useState('');
+  var [err,              setErr]              = useState('');
+  var fileRef = useRef(null);
 
-  const canControl = isHost || isCoHost;
+  var canControl = isHost || isCoHost;
   if (!canControl) return null;
 
-  async function handleDeviceUpload(e) {
-    const file = e.target.files?.[0];
+  function showErr(msg) { setErr(msg); setTimeout(function() { setErr(''); }, 3000); }
+
+  function handleDeviceFile(e) {
+    var file = e.target.files && e.target.files[0];
     if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      onSelect({ type: 'direct', url: file_url, title: file.name });
-      setOpen(false);
-      toast.success('Video uploaded!');
-    } catch (err) {
-      toast.error('Upload failed');
-    } finally {
-      setUploading(false);
-    }
+    var blobUrl = URL.createObjectURL(file);
+    if (onSelect) onSelect({ type: 'direct', url: blobUrl, title: file.name });
+    setOpen(false);
   }
 
   function submitYouTube() {
-    const id = getYouTubeId(ytUrl);
-    if (!id) { toast.error('Invalid YouTube URL'); return; }
-    onSelect({ type: 'youtube', url: ytUrl, title: `YouTube: ${id}`, ytId: id });
+    var id = getYouTubeId(ytUrl);
+    if (!id) { showErr('Invalid YouTube URL'); return; }
+    if (onSelect) onSelect({ type: 'youtube', url: ytUrl, title: 'YouTube: ' + id, ytId: id });
     setYtUrl('');
     setOpen(false);
   }
 
   function submitDirect() {
-    if (!directUrl.trim()) { toast.error('Enter a URL'); return; }
-    onSelect({ type: 'direct', url: directUrl.trim(), title: directUrl.trim() });
+    if (!directUrl.trim()) { showErr('Enter a URL'); return; }
+    if (onSelect) onSelect({ type: 'direct', url: directUrl.trim(), title: directUrl.trim() });
     setDirectUrl('');
     setOpen(false);
   }
 
   function submitStream() {
-    if (!streamUrl.trim()) { toast.error('Enter a stream URL'); return; }
-    onSelect({ type: 'stream', url: streamUrl.trim(), title: 'Live Stream' });
+    if (!streamUrl.trim()) { showErr('Enter a stream URL'); return; }
+    if (onSelect) onSelect({ type: 'stream', url: streamUrl.trim(), title: 'Live Stream' });
     setStreamUrl('');
     setOpen(false);
   }
 
   function addToPlaylist() {
     if (!newPlaylistUrl.trim()) return;
-    const updated = [...playlist, { url: newPlaylistUrl.trim(), title: newPlaylistTitle.trim() || newPlaylistUrl.trim() }];
-    onPlaylistChange?.(updated);
+    var updated = playlist.concat([{ url: newPlaylistUrl.trim(), title: newPlaylistTitle.trim() || newPlaylistUrl.trim() }]);
+    if (onPlaylistChange) onPlaylistChange(updated);
     setNewPlaylistUrl('');
     setNewPlaylistTitle('');
-    toast.success('Added to playlist');
   }
 
   function removeFromPlaylist(i) {
-    const updated = playlist.filter((_, idx) => idx !== i);
-    onPlaylistChange?.(updated);
+    var updated = playlist.filter(function(_, idx) { return idx !== i; });
+    if (onPlaylistChange) onPlaylistChange(updated);
   }
 
   function playFromPlaylist(item) {
-    const type = detectVideoType(item.url);
-    const ytId = type === 'youtube' ? getYouTubeId(item.url) : null;
-    onSelect({ type, url: item.url, title: item.title, ytId });
+    var type = detectVideoType(item.url);
+    var ytId = type === 'youtube' ? getYouTubeId(item.url) : null;
+    if (onSelect) onSelect({ type: type, url: item.url, title: item.title, ytId: ytId });
     setOpen(false);
   }
 
+  var ytThumb = ytUrl && getYouTubeId(ytUrl) ? ('https://img.youtube.com/vi/' + getYouTubeId(ytUrl) + '/mqdefault.jpg') : null;
+
   return (
-    <div className="relative">
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      {/* Trigger button */}
       <button
-        onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase transition-all active:scale-95"
+        onClick={function() { setOpen(function(v) { return !v; }); setErr(''); }}
         style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: compact ? '5px 10px' : '7px 14px',
+          borderRadius: 10, cursor: 'pointer',
           background: 'rgba(212,175,55,0.12)',
           border: '1px solid rgba(212,175,55,0.3)',
-          color: '#d4af37',
-          fontFamily: 'Barlow Condensed, sans-serif',
-        }}
-      >
-        <Youtube className="w-3.5 h-3.5" />
-        {compact ? 'Video' : 'Change Video'}
-        <ChevronDown className="w-3 h-3" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          color: GOLD,
+          fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700,
+          fontSize: compact ? 11 : 13, letterSpacing: 1,
+        }}>
+        ▶ {compact ? 'Video' : 'Change Video'}
+        <span style={{ fontSize: 9, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', display: 'inline-block' }}>▼</span>
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.97 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full mt-2 left-0 z-50 w-80 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <span className="text-xs font-black uppercase text-white/70" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
-                Video Source
-              </span>
-              <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+      {/* Dropdown panel */}
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 50,
+          width: 300, borderRadius: 14, overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          background: BG,
+          border: '1px solid rgba(212,175,55,0.18)',
+          animation: 'vspFade 0.15s ease',
+        }}>
+          <style>{'@keyframes vspFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}'}</style>
 
-            {/* Tab bar */}
-            <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              {TABS.map(t => {
-                const Icon = t.icon;
-                const active = tab === t.id;
-                return (
-                  <button key={t.id} onClick={() => setTab(t.id)}
-                    className="flex-1 flex flex-col items-center gap-0.5 py-2 text-[11px] font-black uppercase transition-all"
-                    style={{
-                      fontFamily: 'Barlow Condensed, sans-serif',
-                      color: active ? t.color : 'rgba(255,255,255,0.3)',
-                      borderBottom: active ? `2px solid ${t.color}` : '2px solid transparent',
-                      background: active ? t.color + '10' : 'transparent',
-                    }}>
-                    <Icon className="w-3.5 h-3.5" />
-                    {t.label}
-                  </button>
-                );
-              })}
-            </div>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: 1 }}>VIDEO SOURCE</span>
+            <button onClick={function() { setOpen(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 14, cursor: 'pointer', padding: '0 2px', lineHeight: 1 }}>✕</button>
+          </div>
 
-            {/* Tab content */}
-            <div className="p-4 space-y-3">
-              {tab === 'youtube' && (
-                <>
-                  <p className="text-[10px] text-white/40">Paste a YouTube video, shorts, or live URL</p>
+          {/* Tab bar */}
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            {TABS.map(function(t) {
+              var active = tab === t.id;
+              return (
+                <button key={t.id} onClick={function() { setTab(t.id); setErr(''); }}
+                  style={{
+                    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    padding: '6px 2px', border: 'none', cursor: 'pointer',
+                    background: active ? (t.color + '10') : 'transparent',
+                    borderBottom: '2px solid ' + (active ? t.color : 'transparent'),
+                    transition: 'all 0.15s',
+                    fontFamily: "'DM Mono',monospace", fontSize: 7,
+                    color: active ? t.color : MUTED, letterSpacing: 0.5,
+                  }}>
+                  <span style={{ fontSize: 12 }}>{t.emoji}</span>
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab content */}
+          <div style={{ padding: '12px 14px' }}>
+            {err && (
+              <div style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '5px 10px', marginBottom: 8, fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#FF1A3C' }}>
+                {err}
+              </div>
+            )}
+
+            {tab === 'youtube' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, margin: 0 }}>Paste a YouTube video, shorts, or live URL</p>
+                <input
+                  placeholder="https://youtube.com/watch?v=..."
+                  value={ytUrl}
+                  onChange={function(e) { setYtUrl(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') submitYouTube(); }}
+                  style={{ width: '100%', height: 34, padding: '0 10px', fontSize: 12, background: 'rgba(255,0,0,0.06)', border: '1px solid rgba(255,0,0,0.2)', color: CREAM, borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                />
+                {ytThumb && (
+                  <img src={ytThumb} alt="thumbnail" style={{ width: '100%', borderRadius: 8, maxHeight: 90, objectFit: 'cover' }} />
+                )}
+                <button onClick={submitYouTube} style={{ height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: '#FF0000', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 1 }}>
+                  ▶ Play YouTube Video
+                </button>
+              </div>
+            )}
+
+            {tab === 'device' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, margin: 0 }}>Select a video file from your device (mp4, webm, mov)</p>
+                <input ref={fileRef} type="file" accept="video/*" style={{ display: 'none' }} onChange={handleDeviceFile} />
+                <button
+                  onClick={function() { if (fileRef.current) fileRef.current.click(); }}
+                  disabled={uploading}
+                  style={{ height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(201,168,76,0.15)', color: GOLD, border: '1px solid rgba(201,168,76,0.3)', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.7 : 1, fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 1 }}
+                >
+                  📂 Choose Video File
+                </button>
+              </div>
+            )}
+
+            {tab === 'url' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, margin: 0 }}>Paste a direct video URL (mp4, m3u8, etc.)</p>
+                <input
+                  placeholder="https://example.com/video.mp4"
+                  value={directUrl}
+                  onChange={function(e) { setDirectUrl(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') submitDirect(); }}
+                  style={{ width: '100%', height: 34, padding: '0 10px', fontSize: 12, background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.2)', color: CREAM, borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                />
+                <button onClick={submitDirect} style={{ height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(201,168,76,0.15)', color: GOLD, border: '1px solid rgba(201,168,76,0.3)', borderRadius: 8, cursor: 'pointer', fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 1 }}>
+                  🔗 Play URL
+                </button>
+              </div>
+            )}
+
+            {tab === 'stream' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, margin: 0 }}>Enter an HLS stream URL to embed</p>
+                <input
+                  placeholder="https://stream.example.com/live.m3u8"
+                  value={streamUrl}
+                  onChange={function(e) { setStreamUrl(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') submitStream(); }}
+                  style={{ width: '100%', height: 34, padding: '0 10px', fontSize: 12, background: 'rgba(109,191,126,0.05)', border: '1px solid rgba(109,191,126,0.2)', color: CREAM, borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                />
+                <button onClick={submitStream} style={{ height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 8, cursor: 'pointer', fontFamily: "'Barlow Condensed',sans-serif", letterSpacing: 1 }}>
+                  📡 Play Stream
+                </button>
+              </div>
+            )}
+
+            {tab === 'playlist' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, margin: 0 }}>Build a queue of videos to play in order</p>
+                <input
+                  placeholder="Video URL (YouTube or direct)"
+                  value={newPlaylistUrl}
+                  onChange={function(e) { setNewPlaylistUrl(e.target.value); }}
+                  style={{ width: '100%', height: 30, padding: '0 10px', fontSize: 11, background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', color: CREAM, borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
+                />
+                <div style={{ display: 'flex', gap: 6 }}>
                   <input
-                    placeholder="https://youtube.com/watch?v=..."
-                    value={ytUrl}
-                    onChange={e => setYtUrl(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && submitYouTube()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(255,0,0,0.06)', border: '1px solid rgba(255,0,0,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                    placeholder="Title (optional)"
+                    value={newPlaylistTitle}
+                    onChange={function(e) { setNewPlaylistTitle(e.target.value); }}
+                    style={{ flex: 1, height: 30, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM, borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  {ytUrl && getYouTubeId(ytUrl) && (
-                    <img
-                      src={`https://img.youtube.com/vi/${getYouTubeId(ytUrl)}/mqdefault.jpg`}
-                      className="w-full rounded-lg object-cover" style={{ maxHeight: 100 }}
-                      alt="thumbnail"
-                    />
-                  )}
-                  <button onClick={submitYouTube} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: '#FF0000', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-                    <Youtube className="w-3.5 h-3.5" /> Play YouTube Video
-                  </button>
-                </>
-              )}
+                  <button onClick={addToPlaylist} style={{ height: 30, padding: '0 10px', background: 'rgba(201,168,76,0.2)', color: GOLD, border: '1px solid rgba(201,168,76,0.3)', borderRadius: 6, cursor: 'pointer', flexShrink: 0, fontSize: 14 }}>+</button>
+                </div>
 
-              {tab === 'device' && (
-                <>
-                  <p className="text-[10px] text-white/40">Upload a video file from your device (mp4, webm, mov)</p>
-                  <input ref={fileRef} type="file" accept="video/*" className="hidden" onChange={handleDeviceUpload} />
-                  <button
-                    onClick={() => fileRef.current?.click()}
-                    disabled={uploading}
-                    style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(212,175,55,0.15)', color: '#d4af37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, cursor: uploading ? 'default' : 'pointer', opacity: uploading ? 0.7 : 1 }}
-                  >
-                    {uploading ? (
-                      <><div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />Uploading...</>
-                    ) : (
-                      <><Upload className="w-3.5 h-3.5" />Choose Video File</>
-                    )}
-                  </button>
-                </>
-              )}
-
-              {tab === 'url' && (
-                <>
-                  <p className="text-[10px] text-white/40">Paste a direct video URL (mp4, m3u8, etc.)</p>
-                  <input
-                    placeholder="https://example.com/video.mp4"
-                    value={directUrl}
-                    onChange={e => setDirectUrl(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && submitDirect()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
-                  />
-                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, cursor: 'pointer' }}>
-                    <LinkIcon className="w-3.5 h-3.5" /> Play URL
-                  </button>
-                </>
-              )}
-
-              {tab === 'stream' && (
-                <>
-                  <p className="text-[10px] text-white/40">Enter an RTMP or HLS stream URL to embed</p>
-                  <input
-                    placeholder="https://stream.example.com/live.m3u8"
-                    value={streamUrl}
-                    onChange={e => setStreamUrl(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && submitStream()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(109,191,126,0.05)', border: '1px solid rgba(109,191,126,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
-                  />
-                  <button onClick={submitStream} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', borderRadius: 8, cursor: 'pointer' }}>
-                    <Radio className="w-3.5 h-3.5" /> Play Stream
-                  </button>
-                </>
-              )}
-
-              {tab === 'playlist' && (
-                <>
-                  <p className="text-[10px] text-white/40">Build a queue of videos to play in order</p>
-                  <div className="space-y-1.5">
-                    <input
-                      placeholder="Video URL (YouTube or direct)"
-                      value={newPlaylistUrl}
-                      onChange={e => setNewPlaylistUrl(e.target.value)}
-                      style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.2)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
-                    />
-                    <div className="flex gap-2">
-                      <input
-                        placeholder="Title (optional)"
-                        value={newPlaylistTitle}
-                        onChange={e => setNewPlaylistTitle(e.target.value)}
-                        style={{ flex: 1, height: 32, padding: '0 10px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'white', borderRadius: 6, outline: 'none', boxSizing: 'border-box' }}
-                      />
-                      <button onClick={addToPlaylist} style={{ height: 32, padding: '0 12px', background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 6, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                        <Plus className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  {playlist.length > 0 ? (
-                    <div className="space-y-1 max-h-36 overflow-y-auto">
-                      {playlist.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-lg group"
-                          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span className="text-[10px] text-white/30 w-4 shrink-0">{i + 1}</span>
-                          <button onClick={() => playFromPlaylist(item)} className="flex-1 text-left text-xs text-white/70 hover:text-white truncate transition-colors">
+                {playlist.length > 0 ? (
+                  <div style={{ maxHeight: 130, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {playlist.map(function(item, i) {
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px', borderRadius: 8, background: CARD, border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, width: 14, flexShrink: 0, textAlign: 'right' }}>{i + 1}</span>
+                          <button onClick={function() { playFromPlaylist(item); }} style={{ flex: 1, textAlign: 'left', background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', fontSize: 11, cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.title || item.url}
                           </button>
-                          <button onClick={() => removeFromPlaylist(i)} className="opacity-0 group-hover:opacity-100 transition-opacity text-[#C0392B]/60 hover:text-[#C0392B]">
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          <button onClick={function() { removeFromPlaylist(i); }} style={{ background: 'none', border: 'none', color: 'rgba(192,57,43,0.5)', fontSize: 12, cursor: 'pointer', padding: '0 2px', flexShrink: 0, lineHeight: 1 }}>🗑</button>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-[10px] text-white/20 text-center py-2">No items in playlist yet</p>
-                  )}
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: 'rgba(255,255,255,0.15)', textAlign: 'center', margin: '6px 0' }}>No items in queue yet</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

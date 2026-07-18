@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { Film, Scissors, Sparkles, Eye, Play } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import RecordingManager from '../components/content/RecordingManager';
-import EmbedPlayer from '../components/streaming/EmbedPlayer';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import ShareToSocial from '../components/social/ShareToSocial';
+import ChapterEditor from '../components/vod/ChapterEditor';
+import VODTrimEditor from '../components/vod/VODTrimEditor';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import ClipCreatorVOD from '../components/vod/ClipCreator';
+
+
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
@@ -31,6 +29,15 @@ const TABS = [
 
 export default function VODLibraryPage() {
   const [activeTab, setActiveTab] = useState('library');
+  const [selectedForChapters, setSelectedForChapters] = useState(null);
+  const [selectedForTrim, setSelectedForTrim] = useState(null);
+  const [selectedForHighlights, setSelectedForHighlights] = useState(null);
+  const [selectedForClips, setSelectedForClips] = useState(null);
+  const [selectedForEdit, setSelectedForEdit] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -60,6 +67,21 @@ export default function VODLibraryPage() {
     },
     enabled: !!user?.id,
   });
+
+  const { data: myVODs = [] } = useQuery({
+    queryKey: ['myVODs', user?.id],
+    queryFn: () => base44.entities.VODVideo.filter({ creator_id: user.id }),
+    enabled: !!user?.id,
+  });
+
+  const TABS = [
+    { id: 'library',    icon: <Film className="w-3.5 h-3.5" />,     label: 'Library' },
+    { id: 'recordings', icon: <Archive className="w-3.5 h-3.5" />,  label: 'Recordings' },
+    { id: 'chapters',   icon: <BookOpen className="w-3.5 h-3.5" />, label: 'Chapters' },
+    { id: 'trim',       icon: <Scissors className="w-3.5 h-3.5" />, label: 'Trim' },
+    { id: 'clips',      icon: <Scissors className="w-3.5 h-3.5" />, label: 'Clip' },
+    { id: 'highlights', icon: <Sparkles className="w-3.5 h-3.5" />, label: 'AI Clips' },
+  ];
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -105,103 +127,118 @@ export default function VODLibraryPage() {
         ))}
       </div>
 
-        {/* Tab picker cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-          {TABS.map((tab, i) => {
-            const Icon = tab.icon;
-            return (
-              <motion.button key={tab.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                onClick={() => setActiveTab(tab.id)}
-                className="p-3 rounded-2xl text-left transition-all"
-                style={{ background: activeTab === tab.id ? `${tab.color}10` : 'rgba(8,11,24,0.9)', border: `1px solid ${activeTab === tab.id ? tab.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
-                <Icon className="w-4 h-4 mb-1.5" style={{ color: tab.color }} />
-                <p className="font-black text-xs" style={{ ...T, color: activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.5)' }}>{tab.label}</p>
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex border-b mb-6 overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
-                style={{ ...T, color: active ? tab.color : 'rgba(255,255,255,0.35)', borderBottomColor: active ? tab.color : 'transparent', background: 'transparent' }}>
-                <Icon className="w-3.5 h-3.5" />{tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab content */}
-        {user?.id && (
-          <AnimatePresence mode="wait">
-            {activeTab === 'library' && (
-              <motion.div key="library" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
-                <VODLibraryComponent creatorId={user.id} />
-              </motion.div>
-            )}
-
-            {activeTab === 'highlights' && (
-              <motion.div key="highlights" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5 pb-10">
-                <AutomatedHighlightReels />
-                <AutomatedClipGenerator roomId={roomId} />
-              </motion.div>
-            )}
-
-            {activeTab === 'recordings' && (
-              <motion.div key="recordings" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
-                <RecordingManager userId={user.id} />
-              </motion.div>
-            )}
-
-            {activeTab === 'embed' && (
-              <motion.div key="embed" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-10">
-                <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-                  <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                    <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Embed Player Preview</p>
-                    <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                      PPV-aware embed with code generation for your website or blog
-                    </p>
-                  </div>
-                  <div className="p-5">
-                    <EmbedPlayer
-                      roomId={user.id}
-                      creatorName={user.full_name || user.email || 'Creator'}
-                      streamTitle="VOD Preview"
-                      isLive={false}
-                    />
-                  </div>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {activeTab === 'library' && user?.id && (
+          <div className="space-y-4">
+            <VODLibraryComponent creatorId={user.id} />
+            {myVODs.map(v => (
+              <VODCard
+                key={v.id}
+                vod={v}
+                onEdit={() => { setSelectedForEdit(v); setEditTitle(v.title || ''); setEditDesc(v.description || ''); }}
+                onTrim={() => setSelectedForTrim(v)}
+                onChapters={() => setSelectedForChapters(v)}
+                onPublish={() => {
+                  base44.entities.VODVideo.update(v.id, { status: 'published' })
+                    .then(() => queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }))
+                    .catch(() => {});
+                }}
+              />
+            ))}
+            {selectedForEdit && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: 20, marginTop: 8 }}>
+                <p className="text-sm font-black mb-4" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Edit VOD</p>
+                <input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  placeholder="Title"
+                  className="w-full mb-3 px-3 py-2 rounded-lg text-sm text-white outline-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                />
+                <textarea
+                  value={editDesc}
+                  onChange={e => setEditDesc(e.target.value)}
+                  placeholder="Description"
+                  rows={3}
+                  className="w-full mb-4 px-3 py-2 rounded-lg text-sm text-white outline-none resize-none"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.2)' }}
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setSelectedForEdit(null)} style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+                  <button
+                    disabled={editSaving}
+                    onClick={() => {
+                      setEditSaving(true);
+                      base44.entities.VODVideo.update(selectedForEdit.id, { title: editTitle, description: editDesc })
+                        .then(() => { queryClient.invalidateQueries({ queryKey: ['myVODs', user?.id] }); setSelectedForEdit(null); })
+                        .catch(() => {})
+                        .finally(() => setEditSaving(false));
+                    }}
+                    style={{ padding: '6px 16px', borderRadius: 8, background: G, color: '#000', fontSize: 12, fontWeight: 700, cursor: editSaving ? 'not-allowed' : 'pointer', opacity: editSaving ? 0.6 : 1, border: 'none' }}
+                  >{editSaving ? 'Saving…' : 'Save'}</button>
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
+          </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
-          {[
-            { label: '✂️ Clips Library',    href: 'ClipsLibrary'    },
-            { label: '📤 Post Video',       href: 'VideoPost'       },
-            { label: '🎬 Broadcast Studio', href: 'BroadcastStudio' },
-            { label: '👤 Creator Channel',  href: 'CreatorChannel'  },
-          ].map(item => (
-            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
-            </Link>
-          ))}
-        </div>
+        {activeTab === 'recordings' && user?.id && <RecordingManager userId={user.id} />}
+
+        {activeTab === 'chapters' && user?.id && (
+          <div>
+            <VODPicker vods={myVODs} selected={selectedForChapters} onSelect={setSelectedForChapters} placeholder="Pick a VOD to edit chapters…" />
+            {selectedForChapters
+              ? <ChapterEditor video={selectedForChapters} onSave={() => setSelectedForChapters(null)} onCancel={() => setSelectedForChapters(null)} />
+              : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video above to edit its chapters</p>
+            }
+          </div>
+        )}
+
+        {activeTab === 'trim' && user?.id && (
+          <div>
+            <VODPicker vods={myVODs} selected={selectedForTrim} onSelect={setSelectedForTrim} placeholder="Pick a VOD to trim…" />
+            {selectedForTrim
+              ? <VODTrimEditor video={selectedForTrim} onSave={() => setSelectedForTrim(null)} onCancel={() => setSelectedForTrim(null)} />
+              : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video above to trim it</p>
+            }
+          </div>
+        )}
+
+        {activeTab === 'clips' && user?.id && (
+          <div>
+            <VODPicker vods={myVODs} selected={selectedForClips} onSelect={setSelectedForClips} placeholder="Pick a recording to clip…" />
+            {selectedForClips
+              ? <ClipCreatorVOD
+                  streamSessionId={selectedForClips.id}
+                  roomId={selectedForClips.room_id || selectedForClips.id}
+                  creatorId={user.id}
+                  onClipCreated={() => {}}
+                />
+              : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a recording above to create a clip</p>
+            }
+          </div>
+        )}
+
+        {activeTab === 'highlights' && user?.id && (
+          <div>
+            <VODPicker vods={myVODs} selected={selectedForHighlights} onSelect={setSelectedForHighlights} placeholder="Pick a recording to generate highlights…" />
+            {selectedForHighlights
+              ? <AIHighlightGenerator recording={selectedForHighlights} />
+              : <p className="text-white/40 text-sm text-center py-16" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Select a video to generate AI highlights</p>
+            }
+          </div>
+        )}
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <AutomatedHighlightReels streamSession={null} />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -1,23 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Users, Copy, Check, Image, Tag, Lock, Globe, AlertTriangle, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import DiscussionFeed from '../components/community/DiscussionFeed';
-import ReferralProgram from '../components/community/ReferralProgram';
-import AnnouncementPanel from '../components/community/AnnouncementPanel';
-import AnnouncementFeed from '../components/community/AnnouncementFeed';
-import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
-import PollCard from '../components/community/PollCard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import { Settings } from 'lucide-react';
+import { createPageUrl } from '@/utils';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -308,6 +293,22 @@ export default function CommunitySettingsPage() {
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

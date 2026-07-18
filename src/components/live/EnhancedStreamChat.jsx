@@ -202,7 +202,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
         user_id: userId,
         user_name: userName,
         content: filtered,
-        user_color: `hsl(${userHue(userId)}, 70%, 50%)`,
+        user_color: userColor(userId),
         user_badges: userRole === 'admin' ? ['admin'] : userRole === 'moderator' ? ['moderator'] : []
       });
     },

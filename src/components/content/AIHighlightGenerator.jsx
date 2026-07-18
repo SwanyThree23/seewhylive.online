@@ -166,7 +166,7 @@ Generate highlight segments with:
                     {Math.round(highlight.confidence * 100)}% AI confidence
                   </Badge>
                   {highlight.engagement_score && (
-                    <Badge className="text-xs" style={{ background: '#4A9B5E', color: '#fff' }}>
+                    <Badge className="text-xs" style={{ background: '#6DBF7E' }}>
                       {Math.round(highlight.engagement_score)} engagement
                     </Badge>
                   )}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, FileText, Sliders } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, Globe, Lock, Camera } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -50,6 +50,13 @@ export default function CreatorDashboardPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['creatordashboard-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: recentRooms = [] } = useQuery({
     queryKey: ['creatorRooms', user?.id],
@@ -99,15 +106,15 @@ export default function CreatorDashboardPage() {
       href: createPageUrl('StreamScheduler'),
       gradient: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.06))',
       border: 'rgba(212,175,55,0.45)',
-      iconColor: '#D4AF37',
+      iconColor: '#7B5DA6',
     },
     {
       icon: Send,
       label: 'Newsletter',
       href: createPageUrl('Newsletter'),
-      gradient: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))',
-      border: 'rgba(212,175,55,0.4)',
-      iconColor: '#D4AF37',
+      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.2), rgba(74,138,122,0.05))',
+      border: 'rgba(74,138,122,0.4)',
+      iconColor: '#4A8A7A',
     },
     {
       icon: Scissors,
@@ -137,41 +144,33 @@ export default function CreatorDashboardPage() {
       icon: Mic2,
       label: 'Podcast',
       href: createPageUrl('PodcastStudio'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.04))`,
-      border: 'rgba(212,175,55,0.3)',
-      iconColor: G,
+      gradient: `linear-gradient(135deg, rgba(74,138,122,0.15), rgba(74,138,122,0.04))`,
+      border: 'rgba(74,138,122,0.3)',
+      iconColor: '#4A8A7A',
     },
     {
-      icon: Sliders,
-      label: 'Pre-Flight',
-      href: createPageUrl('GreenRoomPreFlight'),
-      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
-      border: 'rgba(109,191,126,0.3)',
-      iconColor: '#6DBF7E',
+      icon: Globe,
+      label: 'AI Site',
+      href: createPageUrl('WebsiteGenerator'),
+      gradient: 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.04))',
+      border: 'rgba(201,168,76,0.35)',
+      iconColor: '#C9A84C',
     },
     {
-      icon: FileText,
-      label: 'Captions',
-      href: createPageUrl('TranscriptionStudio'),
-      gradient: `linear-gradient(135deg, rgba(109,191,126,0.15), rgba(109,191,126,0.04))`,
-      border: 'rgba(109,191,126,0.3)',
-      iconColor: '#6DBF7E',
+      icon: Camera,
+      label: 'VDO Guests',
+      href: createPageUrl('VDONinjaManager'),
+      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.18), rgba(74,138,122,0.04))',
+      border: 'rgba(74,138,122,0.35)',
+      iconColor: '#4A8A7A',
     },
     {
-      icon: Bot,
-      label: 'Aura AI',
-      href: createPageUrl('AuraAI'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05))`,
-      border: 'rgba(212,175,55,0.35)',
-      iconColor: G,
-    },
-    {
-      icon: BarChart3,
-      label: 'Control',
-      href: createPageUrl('ControlRoom'),
-      gradient: `linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.04))`,
-      border: 'rgba(212,175,55,0.32)',
-      iconColor: G,
+      icon: Lock,
+      label: 'Vault',
+      href: createPageUrl('VaultPro'),
+      gradient: 'linear-gradient(135deg, rgba(128,0,32,0.15), rgba(128,0,32,0.04))',
+      border: 'rgba(128,0,32,0.3)',
+      iconColor: '#C0392B',
     },
   ];
 
@@ -389,6 +388,27 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="creator" viewerCount={activeRoom?.viewer_count || activeSubs.length} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <RewardShopEditor creatorId={user?.id} />
+      <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
+      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={activeRoom?.viewer_count || activeSubs.length} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || activeSubs.length} peakViewers={activeRoom?.peak_viewers || activeSubs.length} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Youtube, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -25,7 +25,23 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
-
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
+import ApiKeyManager from '../components/settings/ApiKeyManager';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -273,64 +289,10 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        {/* My Subscriptions */}
-        {user && (
-          <Section icon={Bell} title="My Subscriptions" description="Creators you're subscribed to">
-            <MySubscriptions userId={user.id} />
-          </Section>
-        )}
-
-        {/* Social Links */}
-        {user && (
-          <Section icon={Youtube} title="Social Links" description="Connect your YouTube and other channels">
-            <CreatorBridge user={user} />
-          </Section>
-        )}
-
-        {/* Creator Profile Setup */}
-        {user && (
-          <Section icon={User} title="Creator Profile Setup" description="Complete your creator profile">
-            <CreatorProfileSetup user={user} isOpen={true} onClose={() => {}} />
-          </Section>
-        )}
-
-        {/* Appearance */}
-        <Section icon={Palette} title="Appearance" description="Customize your stream and app background">
-          <BackgroundCustomizer />
+        {/* API Keys */}
+        <Section icon={Key} title="API Keys" description="Third-party service keys stored locally — never sent to our servers">
+          <ApiKeyManager />
         </Section>
-
-        {/* Payment Methods */}
-        {user && (
-          <Section icon={SettingsIcon} title="Payment Methods" description="Manage your saved payment methods">
-            <PaymentMethodSelector creatorId={user.id} roomId={activeRoomId} onPaymentComplete={() => {}} />
-            <div className="pt-2">
-              <StripeConnectButton creatorId={user.id} />
-            </div>
-          </Section>
-        )}
-
-
-        {/* Subscription Tiers */}
-        {user && (
-          <Section icon={Bell} title="Subscription Tiers" description="Manage your creator subscription tiers">
-            <CreatorTierManager creatorId={user.id} />
-            <TierEditor open={false} onClose={() => {}} creatorId={user.id} existing={null} />
-          </Section>
-        )}
-
-        {/* Sound Alerts */}
-        {user && (
-          <Section icon={Bell} title="Sound Alerts" description="Customize sounds for tips, subs, and events">
-            <SoundAlertsManager creatorId={user.id} />
-          </Section>
-        )}
-
-        {/* ZEGO Settings */}
-        {user && (
-          <Section icon={SettingsIcon} title="Streaming Settings" description="Configure ZEGO stream quality and devices">
-            <ZEGOSettingsDrawer roomId={activeRoomId} streamKey={null} onClose={() => {}} />
-          </Section>
-        )}
 
         {/* Data Export */}
         <Section icon={Download} title="Data Export" description="Download your data as PDF, CSV, or JSON">
@@ -453,16 +415,26 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
-
-      {/* Presence & Discovery */}
-      <div className="max-w-2xl mx-auto px-4 pb-6 space-y-4 mt-4">
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <ShareToSocial url={window.location.href} title="SeeWhy LIVE Settings" />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="settings" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
+      <VoiceAISettings />
     </div>
   );
 }

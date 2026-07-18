@@ -22,9 +22,9 @@ const PLATFORM_PRESETS = [
 export default function EnhancedIngestPanel({ roomId, isHost }) {
   const [activeTab, setActiveTab] = useState('rtmp');
   const [rtmpUrl, setRtmpUrl] = useState('rtmp://ingest.seewhy.live/live');
-  const [rtmpKey, setRtmpKey] = useState('');
+  const [rtmpKey, setRtmpKey] = useState(() => roomId ? `sk-${roomId.slice(0, 8)}-${roomId.slice(-8)}` : 'sk-live-XXXXXXXXXXXX');
   const [whipUrl, setWhipUrl] = useState('https://ingest.seewhy.live/whip');
-  const [whipAuth, setWhipAuth] = useState('');
+  const [whipAuth, setWhipAuth] = useState(() => roomId ? `Bearer swl_${roomId.replace(/-/g, '').slice(0, 20)}` : 'Bearer swl_XXXXXXXXXXXX');
   const [bitrate, setBitrate] = useState(3000);
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(null);
@@ -71,7 +71,7 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
           {activeTab === 'rtmp' && <div className="space-y-3">
             <div className="bg-[#0F1428]/50 border border-[#d4af37]/15 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#800020] to-[#C0392B] flex items-center justify-center text-xs font-bold text-white">⚡</div>
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-[#5B7FA6] to-[#4A8A7A] flex items-center justify-center text-xs font-bold text-white">⚡</div>
                 <h4 className="text-sm font-bold text-white">RTMP Server</h4>
               </div>
               <p className="text-[10px] text-white/50 mb-3">Send any RTMP stream directly into evmux. Perfect for OBS, Streamlabs, etc.</p>
@@ -120,9 +120,9 @@ export default function EnhancedIngestPanel({ roomId, isHost }) {
                   </div>
                 </div>
 
-                <div className="bg-[#0F1428]/20 border border-[#6DBF7E]/35/30 rounded p-2 flex gap-2">
+                <div className="border border-green-600/30 rounded p-2 flex gap-2" style={{ background: 'rgba(109,191,126,0.15)' }}>
                   <CheckCircle2 className="w-4 h-4 text-[#6DBF7E] shrink-0 mt-0.5" />
-                  <div className="text-[10px] text-[#6DBF7E]/80">
+                  <div className="text-[10px] text-green-300">
                     <p className="font-semibold">Ready for OBS / Streamlabs</p>
                     <p className="text-white/60">Copy URL + Key into your streaming software</p>
                   </div>

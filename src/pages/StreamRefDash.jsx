@@ -40,11 +40,11 @@ const TABS = [
 
 const Badge = ({ type, children }) => {
   const styles = {
-    live:     "bg-[#6DBF7E]/15 text-[#6DBF7E] border border-[#6DBF7E]/35",
-    pending:  "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/35",
-    critical: "bg-red-500/20 text-red-300 border border-red-500/40",
-    info:     "bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30",
-    gold:     "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/35",
+    live:     "bg-[#6DBF7E]/20 text-green-300 border border-green-500/40",
+    pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
+    critical: "bg-[#C0392B]/20 text-red-300 border border-red-500/40",
+    info:     "bg-blue-500/20 text-blue-300 border border-blue-500/40",
+    gold:     "bg-yellow-600/20 text-yellow-200 border border-yellow-600/40",
     ruby:     "bg-red-900/30 text-red-200 border border-red-800/50",
   };
   return (
@@ -549,7 +549,7 @@ function EnvTab() {
   return (
     <div>
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-[#6DBF7E]/10 border border-[#6DBF7E]/40/30 rounded p-3 text-center">
+        <div className="bg-[#6DBF7E]/10 border border-green-500/30 rounded p-3 text-center">
           <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
@@ -1046,15 +1046,16 @@ export default function StreamRefDash() {
           CREATOR_SHARE 0.90 · PLATFORM_FEE 0.10 · PREVIEW_SECS 120 · MAX_PANEL_GUESTS 20 · SVS_ROUNDS 5
         </div>
       </div>
-
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        <AutomatedHighlightReels streamSession={null} />
-      </div>
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

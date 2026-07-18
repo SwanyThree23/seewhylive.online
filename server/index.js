@@ -1,8 +1,12 @@
 const battleRoutes = require('./routes/battles');
 const rewardsRoutes = require('./routes/rewards');
 const publicPreviewRoutes = require('./routes/publicPreview');
-const panelRoomsRoutes = require('./routes/panelRooms');
+const guestRoutes = require('./routes/guests');
+const inviteRoutes = require('./routes/invites');
+const panelRoomRoutes = require('./routes/panelRooms');
+const challengeRoutes = require('./routes/challenges');
 const vodRoutes = require('./routes/vod');
+const leaderboardRoutes = require('./routes/leaderboard');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 'use strict';
@@ -288,7 +292,12 @@ var aiRateLimit = rateLimit({
 app.use('/api/ai', aiRateLimit);
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
-app.use('/api/rooms', panelRoomsRoutes);
+app.use('/api/guests', guestRoutes);
+app.use('/api/invites', inviteRoutes);
+app.use('/api/rooms', panelRoomRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/vod', vodRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
@@ -498,6 +507,29 @@ function getRoom(roomId) {
   }
   return rooms.get(roomId);
 }
+
+// ─── Live Home trending push — broadcast ranked room list every 30 s ─────
+// Simple in-process rank: viewer count × 2 + guest count × 3 (no Redis required)
+setInterval(function() {
+  var ranked = [];
+  rooms.forEach(function(room, roomId) {
+    var viewers = room.viewers.size;
+    var guests  = room.guests.size;
+    if (viewers + guests === 0) return;
+    ranked.push({
+      roomId:    roomId,
+      viewers:   viewers,
+      guests:    guests,
+      score:     viewers * 2 + guests * 3,
+      hostId:    room.hostUserId || null,
+    });
+  });
+  ranked.sort(function(a, b) { return b.score - a.score; });
+  var top = ranked.slice(0, 20);
+  if (top.length > 0) {
+    io.emit('livehome:trending', { rooms: top, ts: Date.now() });
+  }
+}, 30000);
 
 // ─── Presence cleanup — evict sockets unseen for >90s ─────────────────────
 setInterval(function() {
@@ -1617,6 +1649,11 @@ io.on('connection', function(socket) {
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
     } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
 
+    // If a PK battle is active, emit gift boost notification to room
+    if (pkVotes.has(roomId)) {
+      io.to(roomId).emit('pk-gift-boost', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
+    }
+
     // Session revenue milestone tracking
     var prevRevenue = sessionRevenue.get(roomId) || 0;
     var newRevenue  = prevRevenue + valueCents;
@@ -1779,6 +1816,29 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('watch-party-seek', { position: data.position });
   });
 
+  // Host pushes a full sync to all room viewers
+  socket.on('watch-party-sync', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room = getRoom(roomId);
+    if (!room.watchParty) room.watchParty = {};
+    if (data.videoId !== undefined) room.watchParty.videoId = data.videoId;
+    if (data.url !== undefined)     room.watchParty.url     = data.url;
+    if (data.type !== undefined)    room.watchParty.type    = data.type;
+    room.watchParty.playing  = !!data.playing;
+    room.watchParty.position = typeof data.position === 'number' ? data.position : 0;
+    room.watchParty.ts       = Date.now();
+    io.to(roomId).emit('watch-party-sync', {
+      videoId:  room.watchParty.videoId,
+      url:      room.watchParty.url || '',
+      type:     room.watchParty.type || 'youtube',
+      playing:  room.watchParty.playing,
+      position: room.watchParty.position,
+      ts:       room.watchParty.ts
+    });
+  });
+
   // Request current watch party state (for late-joining guests/viewers)
   socket.on('watch-party-sync-request', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -1854,6 +1914,14 @@ io.on('connection', function(socket) {
   });
 
   // ── subscribe ──────────────────────────────────────────────────────────
+  socket.on('follow-creator', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    var follower = socket.data.username || data.username || 'Viewer';
+    var creator  = String(data.username || '').slice(0, 80);
+    if (!roomId || !creator) return;
+    io.to(roomId).emit('creator-followed', { follower: follower, creator: creator, ts: Math.floor(Date.now() / 1000) });
+  });
+
   socket.on('subscribe', function(data) {
     var roomId     = data.roomId || socket.data.roomId;
     var fromUser   = data.username || socket.data.username || 'Guest';
@@ -2220,7 +2288,8 @@ io.on('connection', function(socket) {
 
   socket.on('pk-sudden-death', function(data) {
     if (!data || !data.roomId) return;
-    io.to(data.roomId).emit('pk-sudden-death', { roomId: data.roomId });
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(String(data.roomId)).emit('pk-sudden-death', { roomId: data.roomId, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────
@@ -2885,6 +2954,22 @@ io.on('connection', function(socket) {
       endCounts[opt] = (endCounts[opt] || 0) + 1;
     });
     io.to(endRoomId).emit('poll-end', { id: endPoll.id, final: true, votes: endCounts, totalVotes: endPoll.totalVotes });
+  });
+
+  // ── livesync ────────────────────────────────────────────────────────────
+  socket.on('livesync-toggle', function(data) {
+    if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var lsRoomId = String(data.roomId);
+    var enabled = Boolean(data.enabled);
+    io.to(lsRoomId).emit('livesync-state', { roomId: lsRoomId, enabled: enabled, delayMs: 0, viewerCount: 0 });
+  });
+
+  // ── platform health check ────────────────────────────────────────────────
+  socket.on('platform-health-check', function() {
+    var status = { server: 'ok', mediasoup: 'ok', database: 'ok', rtmp: 'ok', cdn: 'ok' };
+    try { db.prepare('SELECT 1').get(); } catch (e) { status.database = 'error'; }
+    socket.emit('platform-health', status);
   });
 
   // ── disconnect ─────────────────────────────────────────────────────────

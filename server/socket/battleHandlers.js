@@ -5,7 +5,6 @@
 // matching the real pre-existing pk_battles schema.
 
 const battleService = require('../services/battleService');
-// Hook into Rewards & Leaderboard on battle end — see bottom of endBattleAndBroadcast().
 const loyaltyService = require('../services/loyaltyService');
 
 const HEARTBEAT_MS = 5000;
@@ -93,7 +92,23 @@ function startCountdown(io, battle) {
     if (remainingMs <= MAX_DRIFT_MS) {
       clearInterval(interval);
       activeTimers.delete(battle.id);
-      await endBattleAndBroadcast(io, room, battle.id);
+      try {
+        const ended = await battleService.endBattle(battle.id);
+        io.to(room).emit('battle:end', ended);
+        // Award loyalty points: 150 for winner, 50 for participant
+        if (ended.winner_id) {
+          const loserId = ended.winner_id === ended.challenger_id ? ended.defender_id : ended.challenger_id;
+          loyaltyService.awardPoints({ userId: ended.winner_id, points: 150, source: 'battle_win', sourceId: ended.id }).catch(() => {});
+          if (loserId) loyaltyService.awardPoints({ userId: loserId, points: 50, source: 'battle_participate', sourceId: ended.id }).catch(() => {});
+        } else {
+          // Tie — both get participation points
+          [ended.challenger_id, ended.defender_id].filter(Boolean).forEach(uid => {
+            loyaltyService.awardPoints({ userId: uid, points: 75, source: 'battle_tie', sourceId: ended.id }).catch(() => {});
+          });
+        }
+      } catch (err) {
+        io.to(room).emit('battle:error', { message: err.message });
+      }
       return;
     }
     io.to(room).emit('battle:tick', {

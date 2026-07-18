@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings, Flag, Megaphone, TrendingUp, Users, Crown, Shield, UserX, ChevronDown } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { Settings, Flag, Megaphone, TrendingUp, Users } from 'lucide-react';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
@@ -307,6 +305,22 @@ export default function CommunityAdminPage() {
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

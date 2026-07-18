@@ -47,7 +47,22 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import StreamGoals from '../components/live/StreamGoals';
-
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import RewardShopEditor from '../components/loyalty/RewardShopEditor';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import OnboardingFlow from '../components/onboarding/OnboardingFlow';
+import OnlinePresence from '../components/shared/OnlinePresence';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 const CREAM = '#F5E6D3';
@@ -1214,9 +1229,18 @@ function SettingsTab({ user }) {
 /* ═══════════════ MAIN PAGE ═══════════════ */
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [activityOpen, setActivityOpen] = useState(false);
-  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [showQuickAction, setShowQuickAction] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['dashboard-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const { data: profile } = useQuery({
     queryKey: ['db-profile', user?.id],
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
@@ -1288,18 +1312,28 @@ export default function DashboardPage() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
-      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
-
-      <div style={{ padding: '0 16px 32px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamGoals isHost={true} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher currentUserId={user?.id} />
-        <ShareToSocial url={window.location.href} title="Check out my dashboard on SeeWhy LIVE!" />
-      </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="dashboard" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <RewardShopEditor creatorId={user?.id} />
+      <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
+      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <BackgroundCustomizer />
+      <OnlinePresence userId={user?.id || null} />
     </div>
   );
 }

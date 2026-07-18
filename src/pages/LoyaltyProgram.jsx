@@ -40,7 +40,7 @@ const REWARD_TYPES = [
   { id: 'custom_emote', label: '😎 Custom Emote', icon: '😎' },
 ];
 
-const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#D4854A', '#C0392B'];
+const TIER_COLORS = ['#cd7f32', '#c0c0c0', '#d4af37', '#4A8A7A', '#7B5DA6'];
 
 export default function LoyaltyProgram() {
   const qc = useQueryClient();
@@ -187,7 +187,7 @@ export default function LoyaltyProgram() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
-                { label: 'Active Viewers', value: leaderboard.length, color: GOLD, icon: Users },
+                { label: 'Active Viewers', value: leaderboard.length, color: '#4A8A7A', icon: Users },
                 { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
               ].map(stat => (
                 <div key={stat.label} className="rounded-2xl p-4"
@@ -385,42 +385,25 @@ export default function LoyaltyProgram() {
           </>
         )}
       </AnimatePresence>
-
-      {/* Reward shop editor and redemption queue for admins */}
-      {isOwnProgram && user?.id && (
-        <div style={{ padding: '0 16px 0', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <RewardShopEditor creatorId={user.id} />
-          <RedemptionQueue creatorId={user.id} />
-        </div>
-      )}
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={roomId} />
-        {user?.id && <LoyaltyBadge userId={user.id} creatorId={creatorId || null} />}
-      </div>
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {user?.id && <MilestoneAlerts creatorId={user.id} />}
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
-        <ChallengeLeaderboard challengeId={activeChallengeId} />
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
-        {[
-          { label: '🏆 Loyalty Hub',  href: 'LoyaltyHub'    },
-          { label: '🛍 Reward Shop',  href: 'RewardShop'    },
-          { label: '🔴 Go Live',      href: 'GoLive'        },
-          { label: '📊 Analytics',    href: 'Analytics'     },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
-          </Link>
-        ))}
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="loyalty" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <RewardShopEditor creatorId={user?.id} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

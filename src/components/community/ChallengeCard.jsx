@@ -73,7 +73,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(212,175,55,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Icon className="w-6 h-6" style={{ color: '#D4AF37' }} />
+              <Icon className="w-6 h-6" style={{ color: '#7B5DA6' }} />
             </div>
             <div>
               <h3 style={{ fontWeight: 700, fontSize: 15, color: '#fff', margin: '0 0 2px', ...T }}>{challenge.title}</h3>
@@ -130,10 +130,10 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
         {/* Reward */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(212,175,55,0.08)', borderRadius: 8, padding: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Trophy className="w-4 h-4" style={{ color: '#D4AF37' }} />
+            <Trophy className="w-4 h-4" style={{ color: '#7B5DA6' }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: '#fff', ...T }}>Reward</span>
           </div>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#D4AF37', ...T }}>{challenge.reward_value}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#7B5DA6', ...T }}>{challenge.reward_value}</span>
         </div>
 
         {/* Action Button */}

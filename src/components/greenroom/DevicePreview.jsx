@@ -74,7 +74,9 @@ export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
 
   // Real connection quality via navigator.connection / RTCPeerConnection stats
   const { bars: networkQuality, label: netLabel, rtt } = useConnectionQuality(null, 4000);
-  const { cameras } = useCameraDevices();
+
+  // Use the shared hook for device enumeration with live hot-plug support
+  const { cameras, mics } = useCameraDevices();
 
   // micLevel is driven by the real AnalyserNode below; reset to 0 when mic is off
   useEffect(() => {

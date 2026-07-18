@@ -313,7 +313,7 @@ export default function VideoPost() {
 
         {step === 'published' && (
           <div className="text-center py-12 space-y-6">
-            <div className="w-20 h-20 rounded-full bg-[#0F1428]/30 flex items-center justify-center mx-auto">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto" style={{ background: 'rgba(109,191,126,0.15)' }}>
               <CheckCircle className="w-10 h-10 text-[#6DBF7E]" />
             </div>
             <div>
@@ -347,22 +347,21 @@ export default function VideoPost() {
         url={publishedUrl}
         title={form.title}
       />
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <VODCard vod={null} onEdit={() => {}} onTrim={() => {}} onChapters={() => {}} onPublish={() => {}} />
-        <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user?.id} elapsedSeconds={0} roomTitle="" onClose={() => {}} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <DiscussionFeed communityId="video-posts" />
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
-        <StreamGoals isHost={false} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

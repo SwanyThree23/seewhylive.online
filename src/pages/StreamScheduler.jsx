@@ -34,8 +34,8 @@ const DURATIONS = [
   { label: '2 hr', value: 120 }, { label: '3 hr', value: 180 }, { label: '4 hr+', value: 240 },
 ];
 const CAT_COLORS = {
-  gaming: '#C0392B', music: '#D4854A', education: '#D4AF37', talk: '#6DBF7E',
-  fitness: '#D4854A', cooking: '#D4AF37', art: '#FF4444', tech: '#C9A84C',
+  gaming: '#7B5DA6', music: '#D4854A', education: '#60a5fa', talk: '#34d399',
+  fitness: '#fb923c', cooking: '#fbbf24', art: '#C0392B', tech: '#4A8A7A',
   irl: '#6DBF7E', other: '#d4af37',
 };
 
@@ -277,7 +277,7 @@ export default function StreamScheduler() {
                         <button onClick={() => openEdit(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
                           <Pencil className="w-3 h-3" />
                         </button>
-                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
+                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
                           <Share2 className="w-3 h-3" />
                         </button>
                       </div>
@@ -315,7 +315,7 @@ export default function StreamScheduler() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-bold text-white truncate">{s.title}</p>
                           {s.is_recurring && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>
+                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)' }}>
                               <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
                             </span>
                           )}
@@ -327,12 +327,12 @@ export default function StreamScheduler() {
                         </div>
                         <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-semibold text-[#D4AF37]">⏱ {getCountdown(s.scheduled_start)}</span>
+                          <span className="text-xs font-semibold text-[#4A8A7A]">⏱ {getCountdown(s.scheduled_start)}</span>
                           <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#D4AF37]/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37]">
+                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
                           <Share2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
@@ -503,33 +503,21 @@ export default function StreamScheduler() {
           </>
         )}
       </AnimatePresence>
-
-      <ShareToSocial />
-
-      <div style={{ padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamGoals isHost={true} />
-        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
-        <LiveGoalWidget memberCount={0} tipTotal={0} subCount={0} />
-        <MultiStreamConfig roomId={new URLSearchParams(window.location.search).get('room_id')} isHost={true} />
-      </div>
-
-      {/* Quick navigation to related stream tools */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '8px 16px 32px', justifyContent: 'center' }}>
-        {[
-          { label: '🔴 Go Live',           href: 'GoLive'            },
-          { label: '📡 Multi-Platform',    href: 'MultiPlatform'     },
-          { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'   },
-          { label: '📊 Stream Analytics', href: 'StreamAnalytics'    },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>
-              {item.label}
-            </span>
-          </Link>
-        ))}
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="schedule" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

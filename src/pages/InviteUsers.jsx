@@ -102,7 +102,7 @@ export default function InviteUsersPage() {
           {[
             { label: 'Invited This Session', value: invitedList.length, color: GOLD },
             { label: 'Slots Available', value: '∞', color: '#6DBF7E' },
-            { label: 'Beta Access', value: 'Free', color: '#D4AF37' },
+            { label: 'Beta Access', value: 'Free', color: '#4A8A7A' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
@@ -166,7 +166,7 @@ export default function InviteUsersPage() {
             <input
               readOnly
               value={referralLink}
-              style={{ ...inp, flex: 1, fontSize: 11, color: '#D4AF37', fontFamily: 'monospace' }}
+              style={{ ...inp, flex: 1, fontSize: 11, color: '#4A8A7A', fontFamily: 'monospace' }}
             />
             <button onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-black uppercase text-xs"
@@ -231,15 +231,21 @@ export default function InviteUsersPage() {
           </div>
         </div>
       </div>
-
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={null} />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

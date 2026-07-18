@@ -76,7 +76,7 @@ export default function CreatorBridge({ user }) {
           <CheckCircle2 className="w-4 h-4 text-[#6DBF7E]" />
           <div>
             <p className="text-xs font-semibold text-[#6DBF7E]">Connected</p>
-            <p className="text-[11px] text-[#6DBF7E]/80/70">Your YouTube content syncs to SeeWhy LIVE</p>
+            <p className="text-[11px] text-green-300/70">Your YouTube content syncs to SeeWhy LIVE</p>
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, PhoneOff, Users, Monitor, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWebRTCPeers } from '@/hooks/useWebRTCPeers';
+import { useRemoteSpeakingMap } from '@/hooks/useRemoteSpeakingMap';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -73,13 +74,17 @@ function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, conne
  * - Viewers watch with real-time participant grid
  * - Uses native WebRTC PeerConnection + database sync for roster
  */
-export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStreamHealth }) {
+export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStreamHealth, onSpeakingChange }) {
   const qc = useQueryClient();
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
   // Track stream in state so useWebRTCPeers receives it after async init
   const [localStream, setLocalStream] = useState(null);
   const { addPeer, removePeer, getPeers, remoteStreams, peerStates, peerUserIds, leaveRoom, announceJoin, selfId } = useWebRTCPeers(roomId, localStream);
+
+  // Real per-peer speaking detection via WebAudio RMS analysis
+  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
+  useEffect(() => { onSpeakingChange?.(remoteSpeakingIds); }, [remoteSpeakingIds]);
 
   // Stable refs for cleanup closure (avoids stale state captures)
   const leaveRoomRef = useRef(leaveRoom);
@@ -293,16 +298,38 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(201,168,76,0.15)' }}>
       {/* Video Grid */}
       <div className={`flex-1 ${gridLayout()} p-2 min-h-0`}>
-        {/* Local Video — octagonal cell */}
-        <OctCell
-          videoRef={localVideoRef}
-          stream={localStream}
-          label={`YOU ${isHost ? '(HOST)' : ''}`}
-          gold
-          paused={localVideoPaused}
-          error={error}
-          connecting={connecting}
-        />
+        {/* Local Video */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative rounded-xl overflow-hidden"
+          style={{ background: '#000', border: '1px solid rgba(201,168,76,0.2)' }}>
+          {error ? (
+            <div className="inset-0 flex items-center justify-center text-center p-4 text-[#C0392B] text-sm">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <>
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 flex items-start justify-between p-2">
+                <span className="text-[10px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: GOLD, ...T }}>
+                  YOU {isHost ? '(HOST)' : '(VIEWER)'}
+                </span>
+                {localVideoPaused && (
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.8)' }}>
+                    <VideoOff className="w-6 h-6 text-white/50" />
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </motion.div>
 
         {/* Peer Videos — real WebRTC streams, octagonal */}
         {participants.map(p => {

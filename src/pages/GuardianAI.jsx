@@ -20,7 +20,20 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
 const BG3   = '#13100A';
@@ -86,6 +99,13 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 
 export default function GuardianAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['guardian-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const queryClient = useQueryClient();
   const { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', user?.id],
@@ -109,34 +129,7 @@ export default function GuardianAI() {
   const [activeTab, setActiveTab] = useState('log');
   const [thresholdSaved, setThresholdSaved] = useState(false);
   const logEndRef = useRef(null);
-  const saveTimerRef = useRef(null);
-
-  // Load persisted thresholds from user profile
-  useEffect(() => {
-    if (!user?.guardian_thresholds) return;
-    const t = user.guardian_thresholds;
-    if (typeof t.flagT === 'number') setFlagT(t.flagT);
-    if (typeof t.muteT === 'number') setMuteT(t.muteT);
-    if (typeof t.banT  === 'number') setBanT(t.banT);
-  }, [user?.id]);
-
-  function handleThresholdChange(key, value) {
-    if (key === 'flagT') setFlagT(value);
-    if (key === 'muteT') setMuteT(value);
-    if (key === 'banT')  setBanT(value);
-    clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      const next = {
-        flagT: key === 'flagT' ? value : flagT,
-        muteT: key === 'muteT' ? value : muteT,
-        banT:  key === 'banT'  ? value : banT,
-      };
-      base44.auth.updateMe({ guardian_thresholds: next }).then(() => {
-        setThresholdSaved(true);
-        setTimeout(() => setThresholdSaved(false), 1500);
-      }).catch(() => {});
-    }, 600);
-  }
+  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
 
   const { data: moderations = [], isLoading } = useQuery({
     queryKey: ['guardian-moderations'],
@@ -221,6 +214,14 @@ export default function GuardianAI() {
       }));
 
       const violations = scanResults.filter(r => r.violation_type !== 'safe').length;
+      scanResults.forEach(function(r) {
+        if (r.violation_type !== 'safe') {
+          var msg = messages.find(function(m) { return m.id === r.id; });
+          var target = msg?.user_name || 'User';
+          var actionType = r.ai_confidence >= banT / 100 ? 'ban' : r.ai_confidence >= muteT / 100 ? 'mute' : 'flag';
+          pushModToast({ type: actionType, target: target, message: r.ai_explanation });
+        }
+      });
       toast.success(`Scanned ${scanResults.length} messages — ${violations} flagged`);
       queryClient.invalidateQueries({ queryKey: ['guardian-moderations'] });
     } catch {
@@ -439,42 +440,22 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIModeration roomId={roomId} isHost={false} />
-        <ModerationActionModal isOpen={false} onClose={() => {}} userId={user?.id} action={null} />
-        <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
-        <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => {}} />
-        <ReportsManager communityId={userCommunityId} userId={user?.id} />
-        <ChallengeAnalytics communityId={userCommunityId} />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-      </div>
-
-      {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🤖 AI Hub
-          </button>
-        </Link>
-        <Link to={createPageUrl('JoyceAI')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🤖 Joyce AI
-          </button>
-        </Link>
-        <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            ✨ Aura AI
-          </button>
-        </Link>
-        <Link to={createPageUrl('LiveRoom')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🎙️ Live Room
-          </button>
-        </Link>
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.viewer_count || 0} />
+      <BackgroundCustomizer />
+      <ModerationToast toasts={modToasts} />
     </div>
   );
 }

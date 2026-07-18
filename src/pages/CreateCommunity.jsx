@@ -278,8 +278,15 @@ export default function CreateCommunityPage() {
           <ChallengeLeaderboard challengeId={null} />
         </div>
       </div>
-        <MilestoneAlerts userId={user?.id} roomId={null} />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <BackgroundCustomizer />
     </div>
   );
 }

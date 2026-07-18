@@ -27,13 +27,13 @@ export default function HostAlertCenter() {
   const dismiss = (id) => setAlerts(prev => prev.filter(a => a.id !== id));
 
   const typeStyle = {
-    tip: { bg: 'from-[#1a1000]/90 to-[#0a0800]/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
-    sub: { bg: 'from-[#800020]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '⭐', iconColor: '#D4AF37' },
-    stage: { bg: 'from-[#080B18]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '🎤', iconColor: '#D4AF37' },
-    health: { bg: 'from-[#800020]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '⚠️', iconColor: '#D4AF37' },
+    tip: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '💰', iconColor: '#d4af37' },
+    sub: { bg: 'from-[#7B5DA6]/90 to-[#7B5DA6]/70', border: 'border-[#7B5DA6]', icon: '⭐', iconColor: '#7B5DA6' },
+    stage: { bg: 'from-blue-900/90 to-[#4A8A7A]/70', border: 'border-[#4A8A7A]', icon: '🎤', iconColor: '#4A8A7A' },
+    health: { bg: 'from-yellow-900/90 to-orange-900/70', border: 'border-yellow-500', icon: '⚠️', iconColor: '#C9A84C' },
     moderation: { bg: 'from-red-900/90 to-rose-900/70', border: 'border-red-500', icon: '🚫', iconColor: '#C0392B' },
-    milestone: { bg: 'from-[#1a1000]/90 to-[#0a0800]/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
-    clip: { bg: 'from-[#0F1428]/90 to-[#0D1022]/70', border: 'border-[#D4AF37]', icon: '✂️', iconColor: '#D4AF37' },
+    milestone: { bg: 'from-yellow-900/90 to-amber-900/70', border: 'border-[#d4af37]', icon: '🎉', iconColor: '#d4af37' },
+    clip: { bg: 'from-[#4A8A7A]/90 to-[#4A8A7A]/70', border: 'border-[#4A8A7A]', icon: '✂️', iconColor: '#4A8A7A' },
   };
 
   return (

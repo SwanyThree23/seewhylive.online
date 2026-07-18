@@ -15,7 +15,7 @@ var CATS = ['Domino', 'Tournament', 'Podcast', 'Music', 'Education', 'Sports', '
 
 var CAT_COLORS = {
   Domino: '#C9A84C', Tournament: '#FF1A3C', Podcast: '#800020',
-  Music: '#C9A84C', Education: '#C9A84C', Sports: '#FF6B35',
+  Music: '#C9A84C', Education: '#C9A84C', Sports: '#D4854A',
   Tech: '#C9A84C', Gaming: '#C9A84C',
 };
 

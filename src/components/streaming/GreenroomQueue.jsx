@@ -164,7 +164,8 @@ export default function GreenroomQueue({ roomId, isHost }) {
                     <button
                       onClick={() => admitMutation.mutate(p)}
                       disabled={admitMutation.isPending}
-                      className="w-6 h-6 rounded flex items-center justify-center bg-[#6DBF7E]/15 hover:bg-[#4A9B5E] border border-[#6DBF7E]/30 transition-all"
+                      className="w-6 h-6 rounded flex items-center justify-center border border-green-500/30 transition-all"
+                      style={{ background: 'rgba(109,191,126,0.15)' }}
                       title="Admit"
                     >
                       <CheckCircle className="w-3.5 h-3.5 text-[#6DBF7E]" />
@@ -190,8 +191,8 @@ export default function GreenroomQueue({ roomId, isHost }) {
 
 function GuestRow({ participant, status }) {
   return (
-    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#0F1428]/20 border border-[#6DBF7E]/40/20 rounded-lg">
-      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+    <div className="flex items-center gap-2 px-2 py-1.5 border border-green-500/20 rounded-lg" style={{ background: 'rgba(109,191,126,0.15)' }}>
+      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#6DBF7E] to-[#6DBF7E] flex items-center justify-center text-[11px] font-bold text-white shrink-0">
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>
@@ -204,10 +205,10 @@ function GuestRow({ participant, status }) {
 
 function StatusDot({ status }) {
   const colors = {
-    waiting: 'bg-[#D4AF37]',
+    waiting: 'bg-yellow-400',
     ready: 'bg-[#6DBF7E] animate-pulse',
-    admitted: 'bg-[#D4AF37]',
-    rejected: 'bg-red-400',
+    admitted: 'bg-blue-400',
+    rejected: 'bg-[#C0392B]',
   };
   return <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-white/20'}`} />;
 }

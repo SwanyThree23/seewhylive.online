@@ -141,29 +141,31 @@ export default function AutomatedClipGenerator({ streamSession, isLive }) {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[11px] font-semibold text-white truncate">{clip.title}</span>
                     {clip.status === 'ready' && <Check className="w-3 h-3 text-[#6DBF7E]" />}
-                    {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-[#D4AF37]" />}
+                    {clip.status === 'generating' && <Loader2 className="w-3 h-3 animate-spin text-blue-400" />}
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-white/50 mb-1.5">
                     <span>{clip.duration_seconds ?? '—'}s</span>
                     <span>•</span>
                     <span>{clip.view_count ?? 0} views</span>
                   </div>
-                  <button
-                    onClick={() => handleCopyUrl(clip)}
-                    className="w-full flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
-                  >
-                    {copied === clip.id ? (
-                      <>
-                        <Check className="w-2.5 h-2.5 text-[#6DBF7E]" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-2.5 h-2.5" />
-                        Share Link
-                      </>
-                    )}
-                  </button>
+                  {clip.status === 'ready' && (
+                    <button
+                      onClick={() => handleCopyUrl(clip.clip_url)}
+                      className="w-full flex items-center justify-center gap-1 text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
+                    >
+                      {copied === clip.clip_url ? (
+                        <>
+                          <Check className="w-2.5 h-2.5 text-[#6DBF7E]" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-2.5 h-2.5" />
+                          Copy URL
+                        </>
+                      )}
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </div>

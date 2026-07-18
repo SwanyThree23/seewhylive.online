@@ -1,6 +1,6 @@
 // frontend/src/components/panel/AudioOnlyToggle.jsx
 import { useState } from 'react';
-import { toggleAudioOnly } from '../../services/panelService';
+import panelService from '../../services/panelService';
 
 const GOLD = '#D4AF37';
 const CREAM = '#F5F5DC';
@@ -10,23 +10,24 @@ const CREAM = '#F5F5DC';
  * (via socket → panelService.setAudioOnly) AND must pause/close the local
  * video producer to actually save bandwidth — see the INTEGRATION note.
  */
-export default function AudioOnlyToggle({ roomId, isAudioOnly, videoProducer }) {
+export default function AudioOnlyToggle({ socket, roomId, isAudioOnly, videoProducer }) {
   const [pending, setPending] = useState(false);
 
   async function handleToggle() {
     setPending(true);
-    const next = !isAudioOnly;
+    var next = !isAudioOnly;
 
     // INTEGRATION: this is the actual bandwidth-saving part. `videoProducer`
     // should be the mediasoup-client Producer for this room's local video
     // track. Pausing it stops sending video frames without renegotiating
     // the whole connection; resuming it turns video back on.
-    if (videoProducer) {
-      if (next) await videoProducer.pause();
-      else await videoProducer.resume();
-    }
-
-    toggleAudioOnly({ roomId, isAudioOnly: next });
+    try {
+      if (videoProducer) {
+        if (next) await videoProducer.pause();
+        else await videoProducer.resume();
+      }
+      panelService.toggleAudioOnly(socket, roomId, next);
+    } catch (e) { /* non-fatal */ }
     setPending(false);
   }
 

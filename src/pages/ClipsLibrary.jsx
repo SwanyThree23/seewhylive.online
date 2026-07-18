@@ -29,7 +29,11 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import MomentsFeed from '../components/live/MomentsFeed';
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
@@ -69,8 +73,7 @@ function ClipCard({ clip, onDelete, onShare, onLike }) {
 }
 
 export default function ClipsLibraryPage() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
+  const [tab, setTab] = useState('library'); // 'library' | 'moments'
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
@@ -105,6 +108,13 @@ export default function ClipsLibraryPage() {
     queryKey: ['highlights'],
     queryFn: () => base44.entities.StreamHighlight.list('-created_date', 10),
   });
+  const { data: followingList=[] } = useQuery({
+    queryKey: ['following', user?.id],
+    queryFn: () => base44.entities.Follow.filter({ follower_id: user.id }, '-created_date', 200),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  const followingIds = followingList.map(f => f.following_id).filter(Boolean);
 
   const deleteMut = useMutation({
     mutationFn: id => base44.entities.StreamClip.delete(id),
@@ -144,18 +154,17 @@ export default function ClipsLibraryPage() {
     <div style={{ minHeight:'100vh', background:C.obs, color:C.white }}>
       {toast && <div style={{ position:'fixed', top:20, right:20, zIndex:999, padding:'10px 18px', background:'rgba(8,11,24,0.97)', border:`1px solid ${C.gold}`, borderRadius:8, fontFamily:'Barlow Condensed', fontSize:13, color:C.gold }}>{toast}</div>}
       <div style={{ padding:'24px 20px', borderBottom:'1px solid rgba(212,175,55,0.12)', background:'rgba(128,0,32,0.06)' }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 }}>
-          <div>
-            <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
-            <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
-          </div>
-          <Link to={createPageUrl('VideoPost')} style={{ padding:'8px 16px', borderRadius:8, background:'rgba(212,175,55,0.12)', border:'1px solid rgba(212,175,55,0.3)', color:C.gold, fontFamily:'Barlow Condensed', fontSize:12, fontWeight:700, letterSpacing:1, textDecoration:'none', textTransform:'uppercase' }}>
-            📤 Post Video
-          </Link>
+        <h1 style={{ fontFamily:'Barlow Condensed', fontSize:28, color:C.gold, letterSpacing:2 }}>✂️ CLIP LIBRARY</h1>
+        <p style={{ color:C.gray, fontSize:12, marginTop:4 }}>{clips.length} clips · Click to view or share</p>
+        {/* Page tabs: Library | Moments */}
+        <div style={{ display:'flex', gap:6, marginTop:14 }}>
+          {[['library','Library'],['moments','Moments']].map(([key,label]) => (
+            <button key={key} onClick={()=>setTab(key)} style={{ padding:'5px 16px', borderRadius:8, border:`1px solid ${tab===key?C.gold:'rgba(255,255,255,0.1)'}`, background:tab===key?'rgba(212,175,55,0.12)':'transparent', color:tab===key?C.gold:'rgba(255,255,255,0.4)', cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:12, fontWeight:700, letterSpacing:1 }}>{label.toUpperCase()}</button>
+          ))}
         </div>
       </div>
-      {/* Filters */}
-      <div style={{ padding:'12px 20px', display:'flex', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+      {/* Filters — shown only on library tab */}
+      <div style={{ padding:'12px 20px', display:tab==='library'?'flex':'none', gap:8, flexWrap:'wrap', borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
         {['all','mine','public'].map(f => (
           <button key={f} onClick={()=>setFilter(f)} style={{ padding:'5px 12px', borderRadius:20, border:`1px solid ${filter===f?C.gold:'#333'}`, background:filter===f?'rgba(212,175,55,0.1)':'transparent', color:filter===f?C.gold:C.gray, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1 }}>{f.toUpperCase()}</button>
         ))}
@@ -165,7 +174,13 @@ export default function ClipsLibraryPage() {
           ))}
         </div>
       </div>
-      <div style={{ maxWidth:900, margin:'0 auto', padding:'20px' }}>
+      {/* Moments tab */}
+      {tab === 'moments' && (
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'20px' }}>
+          <MomentsFeed currentUserId={user?.id} followingIds={followingIds} />
+        </div>
+      )}
+      <div style={{ maxWidth:900, margin:'0 auto', padding:'20px', display:tab==='library'?'block':'none' }}>
         {isLoading ? (
           <div style={{ textAlign:'center', padding:40, color:C.gray, fontFamily:'Barlow Condensed', fontSize:14 }}>Loading clips…</div>
         ) : sorted.length === 0 ? (
@@ -263,44 +278,22 @@ export default function ClipsLibraryPage() {
         )}
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
-
-      {/* VOD Trim Editor */}
-      {trimVod && (
-        <VODTrimEditor
-          video={trimVod}
-          onSave={() => { setTrimVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
-          onCancel={() => setTrimVod(null)}
-        />
-      )}
-
-      {/* VOD Chapter Editor */}
-      {chapterVod && (
-        <ChapterEditor
-          video={chapterVod}
-          onSave={() => { setChapterVod(null); qc.invalidateQueries({ queryKey: ['vod-videos'] }); }}
-          onCancel={() => setChapterVod(null)}
-        />
-      )}
-
-      {/* Clip creator sheet */}
-      {clipSheetOpen && (
-        <ClipCreatorSheet
-          roomId={roomId}
-          sessionId={user?.id}
-          creatorId={user?.id}
-          elapsedSeconds={0}
-          roomTitle="My Stream"
-          onClose={() => setClipSheetOpen(false)}
-        />
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="clips" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

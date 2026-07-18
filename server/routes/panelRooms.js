@@ -36,11 +36,16 @@ router.get('/:id/join-requests', async (req, res) => {
   }
 });
 
-// Current panel seating (used on initial page load before sockets connect).
+// Current panel seating + privacy mode (used on initial page load before sockets connect).
 router.get('/:id/panel', async (req, res) => {
   try {
-    const slots = await panelService.getPanelState(req.params.id);
-    res.json(slots);
+    const [slots, privacyResult] = await Promise.all([
+      panelService.getPanelState(req.params.id),
+      db.query('SELECT privacy, private_gating_mode FROM streams WHERE id = $1', [req.params.id]),
+    ]);
+    const row = privacyResult.rows[0] || {};
+    const gatingMode = row.privacy === 'private' ? (row.private_gating_mode || null) : null;
+    res.json({ slots, gatingMode });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

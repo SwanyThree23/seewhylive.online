@@ -79,7 +79,7 @@ export default function TermsOfService() {
 
           <section>
             <h2 className="text-xl font-semibold mb-2">11. Contact</h2>
-            <p>For questions about these Terms, contact us at <a href="mailto:legal@seewhy.live" className="text-[#D4AF37] underline">legal@seewhy.live</a>.</p>
+            <p>For questions about these Terms, contact us at <a href="mailto:legal@seewhy.live" className="text-[#5B7FA6] underline">legal@seewhy.live</a>.</p>
           </section>
         </div>
 

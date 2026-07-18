@@ -103,21 +103,9 @@ function TrendingChip({ label, onClick }) {
 const TRENDING_TAGS = ['🎵 Music', '🎮 Gaming', '💬 Talk Show', '🏋️ Fitness', '🎨 Art', '🍳 Cooking', '📱 Tech', '⚽ Sports'];
 
 export default function SearchPage() {
-  const [query, setQuery]       = useState('');
-  const [activeTab, setActiveTab] = useState('live');
-  const [recentSearches, setRecentSearches] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('sw_recent_searches') || '[]'); } catch { return []; }
-  });
-  const inputRef = useRef(null);
-  const debouncedQuery = useDebounce(query, 250);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
-
-  const { data: liveRooms = [] } = useQuery({
-    queryKey: ['search-live'],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 30),
-    refetchInterval: 15000,
-  });
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [query, setQuery]     = useState('');
+  const [activeTab, setActiveTab] = useState('rooms');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['search-rooms'],
@@ -363,35 +351,21 @@ export default function SearchPage() {
               </div>
         )}
       </div>
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <ContentRecommendations />
-        <MilestoneAlerts userId={currentUser?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <FollowButton targetUserId={null} targetUserName="" />
-        <ZEGOMobileAppBanner />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
-        {[
-          { label: '🏠 Home',         href: 'Home'        },
-          { label: '🔍 Discover',     href: 'Discover'    },
-          { label: '👥 Communities',  href: 'Communities' },
-          { label: '🏆 Leaderboard', href: 'Leaderboard'  },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
-          </Link>
-        ))}
-      </div>
-
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

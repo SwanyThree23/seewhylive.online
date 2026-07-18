@@ -4,7 +4,6 @@ import { creatorCents, platformCents, getPlatformHandles } from './platformConfi
 import rtcManager from './webrtc.js';
 
 /* Always-loaded: default tab + persistent overlays */
-import RoomTab from './components/RoomTab.jsx';
 import LiveRoomPage from './components/LiveRoomPage.jsx';
 import Toasts from './components/Toasts.jsx';
 import Ticker from './components/Ticker.jsx';
@@ -39,6 +38,8 @@ var SwanAITab           = React.lazy(function() { return import('./components/Sw
 var AvatarHubTab        = React.lazy(function() { return import('./components/AvatarHubTab.jsx'); });
 var MusicStudioTab      = React.lazy(function() { return import('./components/MusicStudioTab.jsx'); });
 var CreatorDiscoveryTab = React.lazy(function() { return import('./components/CreatorDiscoveryTab.jsx'); });
+var LeaderboardPage     = React.lazy(function() { return import('./pages/Leaderboard.jsx'); });
+var PKBattleArenaPage   = React.lazy(function() { return import('./pages/PKBattleArena.jsx'); });
 var StateRankingsTab    = React.lazy(function() { return import('./components/StateRankingsTab.jsx'); });
 var ShowcaseTab         = React.lazy(function() { return import('./components/ShowcaseTab.jsx'); });
 var UploadTab           = React.lazy(function() { return import('./components/UploadTab.jsx'); });
@@ -62,6 +63,10 @@ var LiveStreamHubTab    = React.lazy(function() { return import('./components/Li
 var AudioStageTab       = React.lazy(function() { return import('./components/AudioStageTab.jsx'); });
 var SoundBoardTab       = React.lazy(function() { return import('./components/SoundBoardTab.jsx'); });
 var TriviaTab           = React.lazy(function() { return import('./components/TriviaTab.jsx'); });
+var PanelGrid           = React.lazy(function() { return import('./components/panel/PanelGrid.jsx'); });
+var LiveSyncTab         = React.lazy(function() { return import('./components/LiveSyncTab.jsx'); });
+var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
+var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -91,6 +96,9 @@ var TABS = [
   { id: 'avatar',    label: '🎭 AVATAR' },
   { id: 'music',     label: '🎵 STUDIO' },
   { id: 'discover',  label: '🔭 DISCOVER' },
+  { id: 'creators',  label: '🔭 CREATORS' },
+  { id: 'leaderboard', label: '🏅 LEADERBOARD' },
+  { id: 'pkbattle-arena', label: '⚔️ PK ARENA' },
   { id: 'rankings',  label: '🏅 RANKS' },
   { id: 'showcase',  label: '🏆 SHOWCASE' },
   { id: 'upload',    label: '📤 UPLOAD' },
@@ -826,6 +834,13 @@ export default function App() {
       addToast('Guardian muted a user: ' + (data.reason || 'violation'), 'info');
     });
 
+    socket.on('creator-followed', function(data) {
+      if (!data || !data.follower) return;
+      if (role === 'host' || role === 'cohost') {
+        addToast('❤️ ' + data.follower + ' followed you!', 'success');
+      }
+    });
+
     return function() {
       socket.off('connect');
       socket.off('disconnect');
@@ -853,6 +868,7 @@ export default function App() {
       socket.off('watch-party-started');
       socket.off('aura-message');
       socket.off('user-muted');
+      socket.off('creator-followed');
       socket.off('username-updated');
       socket.off('super-chat');
       socket.off('earnings-update');
@@ -1247,20 +1263,15 @@ export default function App() {
         )}
         {activeTab === 'data' && (
           <AnalyticsTab
-            roomId={APP_ID}
-            gifts={gifts}
-            viewerCount={viewerCount}
-            isLive={isLive}
-          />
-        )}
-        {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
-          <AnalyticsTab
             socket={socketRef.current}
             roomId={APP_ID}
             role={role}
             isLive={isLive}
             addToast={addToast}
           />
+        )}
+        {activeTab === 'analytics' && (role === 'host' || role === 'cohost') && (
+          <CreatorDashboard />
         )}
         {activeTab === 'keys' && (
           <StreamKeysTab
@@ -1275,6 +1286,7 @@ export default function App() {
           <RTMPFanoutTab
             isLive={isLive}
             addToast={addToast}
+            socket={socketRef.current}
           />
         )}
         {activeTab === 'push' && (
@@ -1287,6 +1299,9 @@ export default function App() {
           <ClipEngineTab
             isLive={isLive}
             addToast={addToast}
+            streamId={APP_ID}
+            creatorId={userId}
+            socket={socketRef.current}
           />
         )}
         {activeTab === 'watch' && (
@@ -1456,6 +1471,9 @@ export default function App() {
         {activeTab === 'collab' && (
           <CollabTab addToast={addToast} isLive={isLive} userId={userId} username={username} socket={socketRef.current} roomId={APP_ID} />
         )}
+        {activeTab === 'creators' && (
+          <CreatorDiscoveryTab addToast={addToast} isLive={isLive} socket={socketRef.current} roomId={APP_ID} username={username} />
+        )}
         {activeTab === 'n8n' && (
           <N8nTab addToast={addToast} isLive={isLive} />
         )}
@@ -1534,19 +1552,58 @@ export default function App() {
             roomId={APP_ID}
           />
         )}
+        {activeTab === 'panel' && (
+          <PanelGrid
+            socket={socketRef.current}
+            roomId={APP_ID}
+            userId={userId}
+            isHost={role === 'host' || role === 'cohost'}
+            rtcManager={rtcManager}
+            guests={guests}
+          />
+        )}
+        {activeTab === 'watchparty' && (
+          <WatchPartyTab
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            guests={guests}
+          />
+        )}
+        {activeTab === 'vsbattle' && (
+          <PKBattleTab
+            addToast={addToast}
+            socket={socketRef.current}
+            roomId={APP_ID}
+            role={role}
+            isLive={isLive}
+            username={username}
+            viewerCount={viewerCount}
+          />
+        )}
         {activeTab === 'livesync' && (
-          <LiveSyncDashboard />
+          <LiveSyncTab
+            socket={socketRef.current}
+            roomId={APP_ID}
+            isLive={isLive}
+            addToast={addToast}
+          />
         )}
         {activeTab === 'health' && (
-          <PlatformHealthMonitor />
+          <PlatformHealthTab
+            socket={socketRef.current}
+            addToast={addToast}
+          />
         )}
-        {(activeTab === 'panel' || activeTab === 'watchparty' || activeTab === 'vsbattle') && (
-          <div style={{ padding: 40, textAlign: 'center' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 2, marginBottom: 8 }}>COMING SOON</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>
-              {activeTab === 'panel' ? 'Panel Studio' : activeTab === 'watchparty' ? 'Watch Party' : 'VS Battle'} is in active development.
-            </div>
-          </div>
+        {activeTab === 'leaderboard' && (
+          <LeaderboardPage currentUserId={userId} />
+        )}
+        {activeTab === 'pkbattle-arena' && (
+          <PKBattleArenaPage
+            battleId={APP_ID}
+            socket={socketRef.current}
+          />
         )}
       </div>
       </Suspense>
@@ -1566,7 +1623,7 @@ export default function App() {
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>SESSION EARNED</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
@@ -1628,7 +1685,7 @@ export default function App() {
         />
       )}
       {activeTab !== 'room' && (
-      <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
+        <MobileNavBar activeTab={activeTab} setActiveTab={setActiveTab} isLive={isLive} auraUnread={auraUnread} onAuraClick={function() { setAuraUnread(0); }} onResetTab={function() { setTabResetKey(function(k) { return k + 1; }); }} />
       )}
       <WelcomeAudio socket={socketRef.current} />
     </div>

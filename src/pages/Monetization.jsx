@@ -63,7 +63,7 @@ const REVENUE_STREAMS = [
   { id: 'tips',          label: 'Live Tips',     icon: Heart,      color: PINK,       desc: 'Real-time tip alerts',    split: '90%' },
   { id: 'ppv',           label: 'Pay-Per-View',  icon: PlayCircle, color: TEAL,       desc: 'Gated events & replays',  split: '85%' },
   { id: 'gifts',         label: 'Virtual Gifts', icon: Gift,       color: '#D4854A', desc: 'Animated gift shop',       split: '80%' },
-  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#D4854A', desc: 'Stream your AI tracks',    split: '70%' },
+  { id: 'music',         label: 'AI Music',      icon: Music,      color: '#a855f7', desc: 'Stream your AI tracks',    split: '70%' },
   { id: 'ads',           label: 'Ad Revenue',    icon: BarChart3,  color: '#6DBF7E', desc: 'CPM-based display ads',    split: '65%' },
 ];
 
@@ -495,9 +495,8 @@ const TABS = [
 export default function MonetizationPage() {
   const [tab, setTab]               = useState('overview');
   const [flywheelStage, setStage]   = useState('attract');
-  const [tierEditorOpen, setTierEditorOpen] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
   const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const queryClient                 = useQueryClient();
 
   const { data: user } = useQuery({
@@ -859,14 +858,25 @@ export default function MonetizationPage() {
           )}
         </AnimatePresence>
       </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <OnlineUsersGrid compact maxVisible={8} />
-        <ContentRecommendations />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher currentUserId={user?.id} />
-        {user?.id && <MilestoneAlerts creatorId={user.id} />}
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
+      {user?.id && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={user?.id} isHighlighted={false} />}
+      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={user?.id} existing={editingTier} />
+      <RewardShopEditor creatorId={user?.id} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

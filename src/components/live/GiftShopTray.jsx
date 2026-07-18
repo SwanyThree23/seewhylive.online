@@ -12,8 +12,8 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const RARITY = {
   common:    { color: 'rgba(255,255,255,0.5)', label: 'COMMON',    glow: '' },
-  rare:      { color: '#D4AF37',               label: 'RARE',      glow: '0 0 12px rgba(212,175,55,0.3)' },
-  epic:      { color: '#D4AF37',               label: 'EPIC',      glow: '0 0 12px rgba(212,175,55,0.3)' },
+  rare:      { color: '#60A5FA',               label: 'RARE',      glow: '0 0 12px rgba(96,165,250,0.3)' },
+  epic:      { color: '#7B5DA6',               label: 'EPIC',      glow: '0 0 12px rgba(123,93,166,0.3)' },
   legendary: { color: GOLD,                    label: 'LEGENDARY', glow: `0 0 20px rgba(212,175,55,0.4)` },
 };
 

@@ -65,22 +65,65 @@ export default function CollabTab({ addToast, isLive, userId, username, socket, 
 
   var chatBoxRefs = useRef({});
 
-  /* ── Incoming collab-message from socket ── */
+  /* ── Incoming collab-message / collab-request / collab-accept from socket ── */
   useEffect(function() {
     if (!socket) return;
+
     function onCollabMsg(data) {
       if (!data || !data.collabId) return;
       var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setChatMsgs(function(prev) {
-        var arr = (prev[data.collabId] || []).concat([{ from: data.from, text: data.text, ts: data.ts ? ts : ts }]);
+        var arr = (prev[data.collabId] || []).concat([{ from: data.from, text: data.text, ts: ts }]);
         var next = Object.assign({}, prev);
         next[data.collabId] = arr;
         return next;
       });
     }
+
+    function onCollabRequest(data) {
+      if (!data || !data.from) return;
+      // Ignore echoes of our own requests
+      if (username && data.from === username) return;
+      var ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      var newReq = {
+        id: 'live-' + data.ts,
+        from: data.from,
+        flag: '🌐',
+        color: TEAL_H,
+        type: data.type || 'LIVE COLLAB',
+        msg: data.message || '',
+        time: ts,
+        status: 'pending',
+        split: data.split || '50/50',
+      };
+      setRequests(function(prev) {
+        if (prev.some(function(r) { return r.id === newReq.id; })) return prev;
+        return [newReq].concat(prev);
+      });
+      if (addToast) addToast('📩 Collab request from ' + data.from + '!', 'info');
+    }
+
+    function onCollabAccept(data) {
+      if (!data) return;
+      if (data.collabId) {
+        setRequests(function(prev) {
+          return prev.map(function(r) {
+            return r.id === data.collabId ? Object.assign({}, r, { status: 'accepted' }) : r;
+          });
+        });
+      }
+      if (addToast) addToast('🤝 ' + (data.partner || data.from || 'Creator') + ' accepted collab!', 'success');
+    }
+
     socket.on('collab-message', onCollabMsg);
-    return function() { socket.off('collab-message', onCollabMsg); };
-  }, [socket]);
+    socket.on('collab-request', onCollabRequest);
+    socket.on('collab-accept',  onCollabAccept);
+    return function() {
+      socket.off('collab-message', onCollabMsg);
+      socket.off('collab-request', onCollabRequest);
+      socket.off('collab-accept',  onCollabAccept);
+    };
+  }, [socket, username, addToast]);
 
   /* ── Auto-scroll on new messages ── */
   useEffect(function() {

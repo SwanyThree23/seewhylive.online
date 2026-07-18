@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -110,9 +112,16 @@ function ProgressBar({ value, max, color }) {
 }
 
 export default function MultiPlatform() {
-  const { data: user } = useQuery({ queryKey: ['me'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const activeRoomId = roomId;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  const { data: activeRoom } = useQuery({
+    queryKey: ['multiplatform-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
   const [tab, setTab] = useState('platforms');
 
   // Sync platform connections and webhooks from user profile
@@ -601,7 +610,7 @@ export default function MultiPlatform() {
                   <p style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.4)', marginBottom:10 }}>When someone follows on any platform, ARIA generates a welcome automatically.</p>
                   <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
                     {shoutouts.map((s, i) => (
-                      <div key={i} style={{ padding:'8px 12px', background:'rgba(212,175,55,0.06)', borderRadius:8, border:'1px solid rgba(212,175,55,0.12)' }}>
+                      <div key={i} style={{ padding:'8px 12px', background:'rgba(123,93,166,0.06)', borderRadius:8, border:'1px solid rgba(123,93,166,0.12)' }}>
                         <span style={{ ...T, fontSize:12, color:PURPLE, fontWeight:700 }}>🎙️ ARIA: </span>
                         <span style={{ ...T, fontSize:12, color:'rgba(255,255,255,0.7)' }}>{s}</span>
                       </div>
@@ -626,39 +635,21 @@ export default function MultiPlatform() {
       </div>
 
       <Toast message={toast} />
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <EnhancedIngestPanel roomId={roomId} isHost={true} />
-        <StreamingPresets onApply={() => {}} />
-        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
-        <AdvancedEncoderSettings onApply={() => {}} />
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 24px' }}>
-        {[
-          { label: '🔴 Go Live',               href: 'GoLive'                   },
-          { label: '🎬 Broadcast Studio',      href: 'BroadcastStudio'          },
-          { label: '🌐 Multi-Platform+',       href: 'MultiPlatformIntegration' },
-          { label: '📊 Stream Analytics',     href: 'StreamAnalytics'           },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
-          </Link>
-        ))}
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        <RTMPFanoutPanel roomId={activeRoomId} isHost={true} />
-        <GuestInviteGenerator roomId={activeRoomId} isHost={true} />
-        <StreamGoals isHost={true} />
-        <CollaborationMatcher />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE Multi-Stream', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

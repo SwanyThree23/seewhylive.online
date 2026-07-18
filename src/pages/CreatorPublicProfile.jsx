@@ -174,21 +174,16 @@ function ScheduledCard({ room }) {
 }
 
 export default function CreatorPublicProfile() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  var creatorId = searchParams.get("id");
+  const [showCreatorSetup, setShowCreatorSetup] = useState(false);
+  var urlParams = new URLSearchParams(window.location.search);
+  var creatorId = urlParams.get("id");
   var navigate = useNavigate();
 
   var { data: currentUser } = useQuery({
     queryKey: ["currentUser"],
     queryFn: () => base44.auth.me(),
   });
-  var { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', currentUser?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
-    enabled: !!currentUser?.id,
-  });
-  var userCommunityId = userCommunity?.id || null;
+  var user = currentUser;
 
   var { data: profile } = useQuery({
     queryKey: ["creatorProfile", creatorId],
@@ -545,22 +540,22 @@ export default function CreatorPublicProfile() {
           </div>
         </div>
       )}
-
-      {creatorId && (
-        <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SubscriptionTiers creatorId={creatorId} currentUserId={currentUser?.id || null} />
-          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-          <VirtualCurrencyTips roomId={roomId} creatorId={creatorId} currentUser={currentUser} isHost={false} />
-          <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />
-          <SignalBars count={5} active={true} size="sm" />
-          <ContentRecommendations />
-        <MilestoneAlerts userId={currentUser?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-          <ShareToSocial content={{ title: 'Creator Profile', url: window.location.href }} />
-          <OnlineUsersGrid compact maxVisible={10} />
-          <CollaborationMatcher />
-        </div>
-      )}
+      <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <CreatorProfileSetup user={user} isOpen={showCreatorSetup} onClose={() => setShowCreatorSetup(false)} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={creatorId || null} roomId={null} currentUser={currentUser || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

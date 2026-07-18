@@ -2,16 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import PKBattleProgress from '../components/pk/PKBattleProgress';
-import BattleMode from '../components/streaming/BattleMode';
-import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
-import GiftShopTray from '../components/live/GiftShopTray';
-import BattleScoreboard from '../components/live/BattleScoreboard';
-import TournamentBracket from '../components/pk/TournamentBracket';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -24,8 +14,8 @@ const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const BLUE  = '#D4854A';
 const RED2  = '#C62828';
-const TEAL  = '#6DBF7E';
-const CYAN  = '#D4AF37';
+const TEAL  = '#4A8A7A';
+const CYAN  = '#4A8A7A';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATES_DATA = [
@@ -756,6 +746,15 @@ const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  const { data: activeRoom } = useQuery({
+    queryKey: ['statevsstate-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
   const roomId = new URLSearchParams(window.location.search).get('room_id');
@@ -847,46 +846,21 @@ export default function StateVsState() {
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
-
-      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <LeaderboardPanel roomId={roomId} />
-        <PKBattleProgress battleId={activeBattle?.id || null} />
-      </div>
-
-      {/* Cross-navigation footer */}
-      <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {[
-          { to: '/SwanyBotPage',    label: '🤖 SwanyBot AI',  bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
-          { to: '/Leaderboard',     label: '👑 Elite League', bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
-          { to: '/PKBattleManager', label: '🥊 PK Battle',    bg: 'rgba(192,57,43,0.1)',    border: 'rgba(192,57,43,0.25)', color: '#C0392B' },
-          { to: '/PKBattleArena',   label: '⚔️ Battle Arena', bg: 'rgba(192,57,43,0.08)',   border: 'rgba(192,57,43,0.2)',  color: '#C0392B' },
-          { to: '/TributeWall',     label: '🕊️ Tribute Wall', bg: 'rgba(139,111,71,0.1)',   border: 'rgba(139,111,71,0.25)',color: '#8B6F47' },
-        ].map(function(item) {
-          return (
-            <Link key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
-              <button style={{
-                padding: '8px 16px', borderRadius: 999, border: `1px solid ${item.border}`,
-                background: item.bg, color: item.color, cursor: 'pointer',
-                fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
-                fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
-              }}>{item.label}</button>
-            </Link>
-          );
-        })}
-      </div>
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={roomId} hostId={user?.id} isHost={false} />
-        <SocialLeaderboard roomId={roomId} />
-        <GiftShopTray roomId={roomId} currentUser={user} />
-        <BattleScoreboard roomId={roomId} />
-        <TournamentBracket />
-        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-      </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

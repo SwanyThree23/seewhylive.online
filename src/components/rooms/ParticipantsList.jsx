@@ -174,8 +174,8 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
 
   const getRoleIcon = () => {
     switch(participant.role) {
-      case 'host': return <Crown className="w-4 h-4 text-[#D4AF37]" />;
-      case 'co-host': return <Shield className="w-4 h-4 text-[#D4AF37]" />;
+      case 'host': return <Crown className="w-4 h-4 text-yellow-500" />;
+      case 'co-host': return <Shield className="w-4 h-4 text-[#5B7FA6]" />;
       default: return null;
     }
   };
@@ -204,7 +204,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
             <MicOff className="w-3 h-3 text-muted-foreground" />
           )}
           {participant.is_video_enabled && (
-            <Video className="w-3 h-3 text-[#D4AF37]" />
+            <Video className="w-3 h-3 text-[#5B7FA6]" />
           )}
           {participant.hand_raised && (
             <Hand className="w-3 h-3 text-[#D4AF37]" />

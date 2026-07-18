@@ -62,7 +62,7 @@ function BattleListItem({ battle, isSelected, onClick }) {
 export default function PKBattlePage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedBattle, setSelectedBattle] = useState(null);
-  const [tab, setTab] = useState('active');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -254,55 +254,26 @@ export default function PKBattlePage() {
         onClose={() => setShowInviteModal(false)}
         creators={creators}
       />
-
-      {/* Battle Mode + Scoreboard for active battle */}
-      {displayBattle?.id && (
-        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6 space-y-4">
-          <BattleMode roomId={displayBattle.id} isHost={user?.id === displayBattle.challenger_id} hostName={user?.full_name || ''} participants={[]} />
-          <BattleScoreboard roomId={displayBattle.id} />
-          <BattleOverlay battle={displayBattle} onBattleUpdate={() => {}} />
-        </div>
-      )}
-
-      {/* PK Battle soundboard */}
-      {displayBattle?.id && (
-        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
-          <PKBattleSoundboard battleId={displayBattle.id} isBattleActive={displayBattle.status === 'active'} />
-        </div>
-      )}
-
-      {/* Matchmaking queue */}
-      {user && (
-        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
-          <MatchmakingQueue user={user} onMatchFound={() => {}} />
-        </div>
-      )}
-
-      {/* Tournament Bracket */}
-      <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
-        <TournamentBracket />
-      </div>
-
-      {/* PK Analytics Dashboard */}
-      {battles && battles.length > 0 && (
-        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
-          <PKAnalyticsDashboard battles={battles} user={user} />
-        </div>
-      )}
-
-      {/* PK Battle Interface */}
-      {displayBattle?.id && (
-        <div className="px-4 md:px-8 max-w-7xl mx-auto mt-6">
-          <PKBattleInterface roomId={displayBattle.id} />
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={null} />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      </div>
+      <SwanAIRecommendations roomId={activeBattle?.id || null} currentLayout="battle" viewerCount={battles?.length || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeBattle?.id || null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={false} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={activeBattle?.status === 'active'} />}
+      {activeBattle?.id && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles?.length || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeBattle?.id || null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={battles?.length || 0} peakViewers={battles?.length || 0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

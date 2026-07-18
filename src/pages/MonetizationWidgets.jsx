@@ -26,7 +26,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const TABS = [
   { id: 'goals', label: 'Goals', icon: Target, color: GOLD },
   { id: 'alerts', label: 'Sound Alerts', icon: Bell, color: '#6DBF7E' },
-  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#D4AF37' },
+  { id: 'auctions', label: 'Auctions', icon: Gavel, color: '#7B5DA6' },
 ];
 
 export default function MonetizationWidgets() {
@@ -63,16 +63,16 @@ export default function MonetizationWidgets() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {/* Beta notice */}
         <div className="flex items-start gap-3 p-4 rounded-xl"
-          style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)' }}>
-          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#D4AF37' }} />
+          style={{ background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.2)' }}>
+          <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#4A8A7A' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#D4AF37' }}>Beta Testing</p>
+            <p className="text-sm font-black" style={{ ...T, color: '#4A8A7A' }}>Beta Testing</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions let viewers bid during live sessions.
               {activeRoom ? (
                 <span> Using room: <strong className="text-white">{activeRoom.title}</strong></span>
               ) : (
-                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#D4AF37' }}>Start a live room</Link> to enable auction bidding.</span>
+                <span> <Link to={createPageUrl('CreateRoom')} className="underline" style={{ color: '#4A8A7A' }}>Start a live room</Link> to enable auction bidding.</span>
               )}
             </p>
           </div>
@@ -131,9 +131,9 @@ export default function MonetizationWidgets() {
 
         {/* Auctions */}
         {activeTab === 'auctions' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(123,93,166,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#D4AF37' }}>Live Auctions</p>
+              <p className="font-black text-sm" style={{ ...T, color: '#7B5DA6' }}>Live Auctions</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>
             </div>
             <div className="p-5">
@@ -160,6 +160,21 @@ export default function MonetizationWidgets() {
         <MonetizationDashboard roomId={activeRoom?.id || null} />
         <VirtualGoodsStore userId={user?.id} />
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

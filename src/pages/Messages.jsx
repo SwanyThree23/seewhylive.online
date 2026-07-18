@@ -24,7 +24,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 const GOLD    = "#D4AF37";
 const CRIMSON = "#800020";
 const PINK    = "#C0392B";
-const CYAN    = "#D4AF37";
+const CYAN    = "#4A8A7A";
 const OCT     = "polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)";
 const T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
@@ -527,37 +527,21 @@ export default function Messages() {
           </div>
         </div>
       )}
-
-      {user && (
-        <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <NotificationBell />
-          <UnifiedChat roomId={roomId} currentUser={user} isHost={false} />
-          <WhisperPanel roomId={roomId} currentUser={user} recipientId={null} recipientName="" onClose={() => {}} />
-          <ShareButtons url={window.location.href} title="Messages" />
-          <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user.full_name || ''} userRole="viewer" />
-          <SuperChatRail superchats={[]} />
-          <AnnouncementFeed communityId={userCommunityId} />
-          <OnlineUsersGrid compact maxVisible={12} />
-          <ContentRecommendations />
-        <MilestoneAlerts userId={null} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-          <CollaborationMatcher />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={selectedThread || null} communityId={userCommunityId} />
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>
-        {[
-          { label: '🏠 Home',        href: 'Home'        },
-          { label: '👤 Profile',     href: 'Profile'     },
-          { label: '🔔 Alerts',      href: 'Notifications' },
-          { label: '👥 Communities', href: 'Communities' },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer' }}>{item.label}</span>
-          </Link>
-        ))}
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

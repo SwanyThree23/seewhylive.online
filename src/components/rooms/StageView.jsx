@@ -106,9 +106,9 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
   const getRoleColor = (role) => {
     switch(role) {
       case 'host': return '#d4af37';
-      case 'co-host': return '#D4AF37';
-      case 'speaker': return '#6DBF7E';
-      default: return '#D4AF37';
+      case 'co-host': return '#60a5fa';
+      case 'speaker': return '#34d399';
+      default: return '#7B5DA6';
     }
   };
 
@@ -156,8 +156,8 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
             <Badge variant="outline" className="text-[11px] px-1 py-0 border-white/30 text-white/70">You</Badge>
           </div>
           <div className="flex items-center gap-1">
-            {audioEnabled ? <Mic className="w-3 h-3 text-[#6DBF7E]" /> : <MicOff className="w-3 h-3 text-red-400" />}
-            {videoEnabled ? <Video className="w-3 h-3 text-[#D4AF37]" /> : <VideoOff className="w-3 h-3 text-red-400" />}
+            {audioEnabled ? <Mic className="w-3 h-3 text-[#6DBF7E]" /> : <MicOff className="w-3 h-3 text-[#C0392B]" />}
+            {videoEnabled ? <Video className="w-3 h-3 text-blue-400" /> : <VideoOff className="w-3 h-3 text-[#C0392B]" />}
           </div>
         </div>
 
@@ -166,14 +166,14 @@ function LocalCameraTile({ participant, localStream, audioEnabled, videoEnabled,
           <button
             onClick={() => { onToggleAudio?.(); onUpdateParticipant(participant.id, { is_audio_enabled: !audioEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: audioEnabled ? 'rgba(109,191,126,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${audioEnabled ? '#6DBF7E' : '#C0392B'}` }}>
-            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-red-400" />}
+            style={{ background: audioEnabled ? 'rgba(52,211,153,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${audioEnabled ? '#34d399' : '#C0392B'}` }}>
+            {audioEnabled ? <Mic className="w-3.5 h-3.5 text-[#6DBF7E]" /> : <MicOff className="w-3.5 h-3.5 text-[#C0392B]" />}
           </button>
           <button
             onClick={() => { onToggleVideo?.(); onUpdateParticipant(participant.id, { is_video_enabled: !videoEnabled }); }}
             className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90"
-            style={{ background: videoEnabled ? 'rgba(212,175,55,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${videoEnabled ? '#D4AF37' : '#C0392B'}` }}>
-            {videoEnabled ? <Video className="w-3.5 h-3.5 text-[#D4AF37]" /> : <VideoOff className="w-3.5 h-3.5 text-red-400" />}
+            style={{ background: videoEnabled ? 'rgba(96,165,250,0.3)' : 'rgba(192,57,43,0.3)', border: `1px solid ${videoEnabled ? '#60a5fa' : '#C0392B'}` }}>
+            {videoEnabled ? <Video className="w-3.5 h-3.5 text-blue-400" /> : <VideoOff className="w-3.5 h-3.5 text-[#C0392B]" />}
           </button>
         </div>
       </div>
@@ -196,6 +196,16 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
     if (videoRef.current && remoteStream) videoRef.current.srcObject = remoteStream;
   }, [remoteStream]);
 
+  const getRoleColor = (role) => {
+    switch(role) {
+      case 'host': return 'bg-[#7B5DA6]';
+      case 'co-host': return 'bg-blue-500';
+      case 'speaker': return 'bg-[#6DBF7E]';
+      case 'guest': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -203,24 +213,55 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
       exit={{ opacity: 0, scale: 0.9 }}
       className="flex flex-col items-center gap-1.5"
     >
-      <div className="relative" style={{ width: 128, height: 128 }}>
-        {/* Outer border ring */}
-        <div className="absolute inset-0" style={{
-          clipPath: OCT,
-          background: roleColor,
-          boxShadow: `0 0 20px ${roleColor}66`,
-        }} />
-        {/* Inner shell */}
-        <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: 'linear-gradient(145deg, #1A0828, #080B18)' }}>
-          {hasVideo ? (
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-          ) : participant.user_avatar ? (
-            <img src={participant.user_avatar} alt={participant.user_name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black text-white"
-              style={{ background: 'linear-gradient(135deg, #800020, #D4AF37)' }}>
-              {participant.user_name?.charAt(0)?.toUpperCase()}
+      <Card className={`${speaking ? 'ring-2 ring-green-500' : ''}`}>
+        <CardContent className="p-4">
+          <div className="flex flex-col items-center gap-3">
+            {/* Video/Avatar */}
+            <div className="relative">
+              {participant.is_video_enabled && remoteStream ? (
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-32 h-32 object-cover"
+                  style={{
+                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+                    boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+                  boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+                }}>
+                  <Avatar className="w-32 h-32">
+                    <AvatarImage src={participant.user_avatar} />
+                    <AvatarFallback className="text-2xl">
+                      {participant.user_name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              )}
+
+              {/* Status Indicator */}
+              <div className="absolute top-2 right-2 flex gap-1">
+                {participant.is_streaming && (
+                  <Badge className="bg-[#C0392B] text-white text-xs animate-pulse">
+                    LIVE
+                  </Badge>
+                )}
+              </div>
+
+              {/* Audio Status */}
+              <div className={`absolute bottom-2 right-2 p-2 rounded-full ${
+                participant.is_audio_enabled ? 'bg-[#6DBF7E]' : 'bg-[#C0392B]'
+              }`}>
+                {participant.is_audio_enabled ? (
+                  <Mic className="w-4 h-4 text-white" />
+                ) : (
+                  <MicOff className="w-4 h-4 text-white" />
+                )}
+              </div>
             </div>
           )}
         </div>

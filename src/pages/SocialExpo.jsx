@@ -117,25 +117,6 @@ const DOMINO_VIDEOS = FEATURED_VIDEOS.filter(v => v.channelId === 'dominoenterta
 
 export default function SocialExpo() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const { data: activeChallenge } = useQuery({
-    queryKey: ['activeChallenge'],
-    queryFn: () => base44.entities.Challenge.filter({ status: 'active' }, '-created_date', 1).then(r => r[0] || null),
-    enabled: true,
-  });
-  const activeChallengeId = activeChallenge?.id || null;
-  const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('overview');
   const [sponsorToast, setSponsorToast] = useState('');
 
@@ -150,6 +131,7 @@ export default function SocialExpo() {
 
   const tabs = [
     { id: 'overview',    label: 'Overview',    icon: Globe },
+    { id: 'events',      label: 'Events',      icon: Calendar },
     { id: 'platforms',   label: 'Platforms',   icon: Share2 },
     { id: 'spotlight',   label: 'Social Lights', icon: Radio },
     { id: 'sponsor',     label: 'Sponsor',     icon: DollarSign },
@@ -410,6 +392,102 @@ export default function SocialExpo() {
           )}
 
           {/* PLATFORMS TAB */}
+          {activeTab === 'events' && (
+            <motion.div key="events" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: '0 0 6px', ...T }}>Event Schedule</h2>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 28px' }}>
+                Official Domino Social Expo dates — NDL, UDL &amp; CaliBones Nation partnership events.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  {
+                    id: 'austin-2026',
+                    title: 'Domino Social Expo — Austin Launch',
+                    orgs: ['NDL', 'UDL', 'CaliBones Nation'],
+                    date: 'August 2026',
+                    location: 'Austin, TX',
+                    type: 'Launch Event',
+                    color: TEAL,
+                    note: 'Opening event — live multi-platform broadcast on SeeWhy LIVE.',
+                  },
+                  {
+                    id: 'national-2026',
+                    title: 'National Domino Social Expo',
+                    orgs: ['NDL', 'UDL', 'CaliBones Nation'],
+                    date: 'September 2026',
+                    location: 'Nationwide',
+                    type: 'National Tour',
+                    color: G,
+                    featured: true,
+                    note: 'Multi-city national tour with simultaneous streams across all partner platforms.',
+                  },
+                  {
+                    id: 'chicago-2027',
+                    title: 'Chicago Championship — CaliBones Nation',
+                    orgs: ['CaliBones Nation'],
+                    date: 'May 7–8, 2027',
+                    location: 'Chicago, IL',
+                    type: 'Championship',
+                    color: PINK,
+                    note: 'Two-day domino championship livestreamed in full — spectator tickets + PPV tiers.',
+                  },
+                ].map(ev => (
+                  <div key={ev.id} style={{
+                    padding: 20, borderRadius: 14,
+                    background: 'rgba(13,6,24,0.92)',
+                    border: `1px solid ${ev.featured ? `${ev.color}50` : `${ev.color}28`}`,
+                    boxShadow: ev.featured ? `0 0 24px ${ev.color}18` : 'none',
+                    position: 'relative',
+                  }}>
+                    {ev.featured && (
+                      <div style={{ position: 'absolute', top: 12, right: 14, padding: '2px 10px', borderRadius: 6,
+                        background: `${ev.color}20`, border: `1px solid ${ev.color}44`,
+                        fontSize: 10, fontWeight: 800, color: ev.color, ...T, letterSpacing: 1 }}>
+                        FEATURED
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${ev.color}18`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Calendar style={{ width: 20, height: 20, color: ev.color }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                          <span style={{ fontSize: 15, fontWeight: 900, color: '#fff', ...T }}>{ev.title}</span>
+                          <span style={{ padding: '2px 8px', borderRadius: 5, background: `${ev.color}15`,
+                            border: `1px solid ${ev.color}35`, fontSize: 10, fontWeight: 700, color: ev.color, ...T }}>
+                            {ev.type}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
+                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>📅 {ev.date}</span>
+                          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>📍 {ev.location}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                          {ev.orgs.map(o => (
+                            <span key={o} style={{ padding: '2px 8px', borderRadius: 999, fontSize: 10, fontWeight: 700,
+                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', ...T }}>
+                              {o}
+                            </span>
+                          ))}
+                        </div>
+                        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.5 }}>{ev.note}</p>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                      <a href={`mailto:partnerships@seewhylive.online?subject=Event+Inquiry+${encodeURIComponent(ev.title)}`}
+                        style={{ padding: '8px 16px', borderRadius: 8, background: `${ev.color}18`,
+                          border: `1px solid ${ev.color}35`, color: ev.color, fontSize: 11, fontWeight: 700,
+                          textDecoration: 'none', ...T, display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <Ticket style={{ width: 13, height: 13 }} /> Inquire / Register
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'platforms' && (
             <motion.div key="platforms" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <div style={{ marginBottom: 24 }}>
@@ -749,6 +827,21 @@ export default function SocialExpo() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

@@ -279,36 +279,21 @@ export default function NewsletterHubPage() {
           </div>
         )}
       </div>
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 16px 24px' }}>
-        <ShareToSocial content={{ title: 'SeeWhy LIVE Newsletter', url: window.location.href }} />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-          <AnnouncementScheduler communityId={userCommunityId} userId={user?.id} />
-          <MilestoneAlerts creatorId={user?.id} />
-          <AnnouncementFeed communityId={userCommunityId} />
-          <ContentRecommendations />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-          <EarningsBreakdown creatorId={user?.id} />
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
-          {[
-            { label: '📅 Stream Scheduler', href: 'StreamScheduler' },
-            { label: '📆 Content Calendar', href: 'ContentCalendar' },
-            { label: '👥 Communities',      href: 'Communities'     },
-            { label: '📣 Social Expo',      href: 'SocialExpo'      },
-          ].map(item => (
-            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: C.gold, cursor: 'pointer' }}>{item.label}</span>
-            </Link>
-          ))}
-        </div>
-        <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-          <OnlineUsersGrid compact maxVisible={10} />
-          <CollaborationMatcher />
-          <StreamGoals isHost={false} />
-          <ChallengeLeaderboard challengeId={activeChallengeId} />
-        </div>
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="newsletter" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

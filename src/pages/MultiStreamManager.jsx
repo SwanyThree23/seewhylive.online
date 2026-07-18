@@ -48,21 +48,22 @@ const PLATFORMS = [
   { id: 'linkedin', label: 'LinkedIn', color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
   { id: 'twitter', label: 'X (Twitter)', color: '#000000', server: 'rtmp://ingest.pscp.tv:80/x' },
   { id: 'rumble', label: 'Rumble', color: '#85c742', server: 'rtmp://live.rumble.com/live' },
+  { id: 'evmux',  label: 'EVMux',  color: '#8b5cf6', server: 'rtmp://live.evmux.com/live' },
   { id: 'custom', label: 'Custom RTMP', color: '#d4af37', server: '' },
 ];
 
 function StatusDot({ status }) {
   const styles = {
     live: 'bg-[#6DBF7E] animate-pulse',
-    connecting: 'bg-[#D4AF37] animate-pulse',
-    error: 'bg-red-400',
+    connecting: 'bg-yellow-400 animate-pulse',
+    error: 'bg-[#C0392B]',
     offline: 'bg-white/20',
   };
   const labels = { live: 'LIVE', connecting: '...', error: 'ERR', offline: 'OFF' };
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
-      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-red-400' : 'text-white/30'}`}>
+      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-[#C0392B]' : 'text-white/30'}`}>
         {labels[status] || 'OFF'}
       </span>
     </div>
@@ -80,8 +81,8 @@ export default function MultiStreamManager() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    queryKey: ['multistreammanager-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
     enabled: !!user?.id,
     refetchInterval: 30000,
   });
@@ -206,7 +207,8 @@ export default function MultiStreamManager() {
               <Button
                 onClick={goLiveFanout}
                 disabled={enabledCount === 0}
-                className="bg-[#4A9B5E] hover:bg-[#4A9B5E] text-white font-bold gap-2"
+                className="text-white font-bold gap-2"
+                style={{ background: '#6DBF7E' }}
               >
                 <PlayCircle className="w-4 h-4" /> Go Live ({enabledCount})
               </Button>
@@ -226,7 +228,7 @@ export default function MultiStreamManager() {
             <div className="flex items-center gap-6 flex-wrap">
               <div>
                 <p className="text-[10px] text-white/40 uppercase">Active Destinations</p>
-                <p className="text-2xl font-bold text-[#D4AF37]">{enabledCount}</p>
+                <p className="text-2xl font-bold text-[#4A8A7A]">{enabledCount}</p>
               </div>
               <div className="flex-1 min-w-48">
                 <div className="flex justify-between mb-1">
@@ -405,7 +407,7 @@ export default function MultiStreamManager() {
                             <button
                               onClick={() => testConnection(dest)}
                               disabled={isTesting}
-                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#D4AF37] hover:border-[#D4AF37]/30 disabled:opacity-50"
+                              className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A] hover:border-[#4A8A7A]/30 disabled:opacity-50"
                             >
                               {isTesting
                                 ? <RefreshCw className="w-3 h-3 animate-spin" />
@@ -434,12 +436,12 @@ export default function MultiStreamManager() {
         {/* MediaMTX info banner */}
         {anyLive && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="bg-[#0F1428]/40 border-[#6DBF7E]/40/30">
+            <Card style={{ background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.25)' }}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-[#6DBF7E]">MediaMTX Fanout Active</p>
-                  <p className="text-xs text-[#6DBF7E]/80/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
+                  <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
                 </div>
                 <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">
                   🛑 Stop All
@@ -485,6 +487,21 @@ export default function MultiStreamManager() {
           ))}
         </div>
       </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="multistream" viewerCount={destinations.length} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={destinations.length} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={destinations.length} peakViewers={destinations.length} />
+      <BackgroundCustomizer />
     </div>
   );
 }

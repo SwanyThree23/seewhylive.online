@@ -1,27 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Link, useNavigate } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import PKBattleProgress from '../components/pk/PKBattleProgress';
-import PKBattleVotePanel from '../components/pk/PKBattleVotePanel';
-import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
-import GiftShopTray from '../components/live/GiftShopTray';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import TournamentBracket from '../components/pk/TournamentBracket';
-import BattleOverlay from '../components/pk/BattleOverlay';
-import MatchmakingQueue from '../components/pk/MatchmakingQueue';
-import BattleMode from '../components/streaming/BattleMode';
-import BattleScoreboard from '../components/live/BattleScoreboard';
-import PKAnalyticsDashboard from '../components/pk/PKAnalyticsDashboard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import { useQuery } from '@tanstack/react-query';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import { GiftTray as GiftSystem } from '../components/live/GiftSystem';
-import GiftLeaderboard from '../components/live/GiftLeaderboard';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -36,14 +20,27 @@ const BG    = '#080B18';
 const BG2   = '#0D0A08';
 const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
-const CRIM  = '#800020';
-const SCARL = '#C0392B';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
+const GOLDD = '#8A6F2E';
+const SLATE = '#1A1530';
+const TEXT  = '#F0EAF8';
+const TEXTD = '#B8AECF';
+const TEXTM = '#7A6E8A';
+const CRIMSON = '#800020';
+const RED   = '#C0392B';
 const GREEN = '#6DBF7E';
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+const CYAN  = '#D4AF37';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const MONO = { fontFamily: 'Space Mono, monospace' };
+
+const OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
+
+const OPPONENTS = [
+  { id: 'swanythree',   name: 'SwanyThree',    state: 'WA', wins: 47, losses: 8,  avatar: '🦁' },
+  { id: 'bigbone',      name: 'BigBoneEarl',   state: 'WA', wins: 38, losses: 14, avatar: '🏆' },
+  { id: 'fasthandsr',   name: 'FastHandsR',    state: 'TX', wins: 52, losses: 11, avatar: '⚡' },
+  { id: 'domqueen',     name: 'DomQueen',      state: 'GA', wins: 29, losses: 9,  avatar: '👑' },
+  { id: 'stonewall',    name: 'StoneWall',     state: 'CA', wins: 33, losses: 19, avatar: '🪨' },
+];
 
 const GLOBAL_CSS = `
 @keyframes pkPulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}50%{box-shadow:0 0 0 8px rgba(192,57,43,0.18);}}
@@ -190,19 +187,21 @@ function BattleCard({ battle, onVote, myVote }) {
 }
 
 export default function PKBattleArena() {
-  const navigate = useNavigate();
   const roomId = new URLSearchParams(window.location.search).get('id') || null;
+  const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [votes, setVotes] = useState({});
-  const [tab, setTab] = useState('live');
-
-  const { data: rawBattles = [] } = useQuery({
-    queryKey: ['pk-battles-arena'],
-    queryFn: () => base44.entities.PKBattle.filter({ status: ['active', 'pending'] }, '-created_date', 20),
-    refetchInterval: 5000,
-  });
-
-  const battles = rawBattles.map(battleToUI);
+  const [selectedOpponent, setSelectedOpponent] = useState(null);
+  const [battleActive, setBattleActive]         = useState(false);
+  const [battleSecs, setBattleSecs]             = useState(0);
+  const [hostVotes, setHostVotes]               = useState(50);
+  const [oppVotes, setOppVotes]                 = useState(50);
+  const [battleHistory, setBattleHistory]       = useState([]);
+  const [totalVotes, setTotalVotes]             = useState(0);
+  const [phase, setPhase]                       = useState('select'); // select | countdown | live | result
+  const [countdown, setCountdown]               = useState(3);
+  const timerRef = useRef(null);
+  const voteRef  = useRef(null);
+  const cdRef    = useRef(null);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -275,40 +274,9 @@ export default function PKBattleArena() {
           </div>
         )}
       </div>
-
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <PKBattleProgress battleId={null} />
-        <PKBattleVotePanel battleId={null} creatorId={user?.id} challengerId={null} creatorName="Creator" challengerName="Challenger" />
-        <PKBattleSoundboard battleId={null} isBattleActive={false} />
-        <GiftShopTray roomId={liveBattles[0]?.id || null} currentUser={user} />
-        <EngagementBadgesDisplay roomId={liveBattles[0]?.id || null} userId={user?.id} creatorId={user?.id} />
-        <BattleScoreboard roomId={liveBattles[0]?.id || null} />
-        <BattleMode roomId={liveBattles[0]?.id || null} isHost={false} hostName="" participants={[]} />
-        <TournamentBracket />
-        <MatchmakingQueue user={null} onMatchFound={() => {}} />
-        <BattleOverlay battle={null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={[]} user={null} />
-      </div>
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <OnlineUsersGrid compact maxVisible={8} />
-        <ContentRecommendations />
-        <CollaborationMatcher />
-      </div>
-
-      {/* Footer nav */}
-      <div style={{ padding: '10px 16px', background: BG2, borderTop: `1px solid rgba(255,255,255,0.06)`, display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {[['LiveBattles', '🏆 Battles'], ['PKBattleManager', '⚙️ Manage'], ['StateVsState', '⚔️ SVS'], ['Leaderboard', '👑 Elite']].map(([page, label]) => (
-          <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
-            <button style={{ ...T, fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: `1px solid rgba(255,255,255,0.1)`, background: 'rgba(255,255,255,0.04)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {label}
-            </button>
-          </Link>
-        ))}
-      </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <GiftSystem roomId={roomId} currentUser={user} hostId={user?.id} />
+      <GiftSystem roomId={roomId} userId={user?.id || null} isHost={true} />
       <GiftLeaderboard roomId={roomId} />
       <ViewerCount count={totalVotes} peakViewers={totalVotes} />
       <SwanAIRecommendations roomId={roomId} currentLayout='pkbattle' viewerCount={totalVotes} />

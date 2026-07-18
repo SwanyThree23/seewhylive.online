@@ -6,8 +6,8 @@ import { base44 } from '@/api/base44Client';
 
 const EVENTS = [
   { id: 'stream.start', label: 'Stream Started', color: 'text-[#6DBF7E]' },
-  { id: 'stream.end', label: 'Stream Ended', color: 'text-red-400' },
-  { id: 'viewer.join', label: 'Viewer Joined', color: 'text-[#D4AF37]' },
+  { id: 'stream.end', label: 'Stream Ended', color: 'text-[#C0392B]' },
+  { id: 'viewer.join', label: 'Viewer Joined', color: 'text-blue-400' },
   { id: 'chat.message', label: 'Chat Message', color: 'text-white/60' },
   { id: 'tip.received', label: 'Tip Received', color: 'text-[#d4af37]' },
   { id: 'subscription.new', label: 'New Subscriber', color: 'text-[#D4854A]' },
