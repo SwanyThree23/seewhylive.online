@@ -131,7 +131,6 @@ const StudioHub                = lazy(() => import('./pages/StudioHub'));
 const UnifiedRoom              = lazy(() => import('./pages/UnifiedRoom'));
 const WebsiteGenerator         = lazy(() => import('./pages/WebsiteGenerator'));
 const VoiceAgentBuilder        = lazy(() => import('./pages/VoiceAgentBuilder'));
-const VoiceAISettings          = lazy(() => import('./pages/VoiceAISettings'));
 const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
 const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
 const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));

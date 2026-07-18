@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { useQuery } from '@tanstack/react-query';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -18,10 +17,6 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import StreamGoals from '../components/live/StreamGoals';
 import {
   Link2, Zap, Camera, Radio, Globe, Users, Heart,
   Copy, Check, RefreshCw,

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
 import CameraSourcePicker from '../components/streaming/CameraSourcePicker';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import CameraDeviceSelector from '../components/live/CameraDeviceSelector';

@@ -28,13 +28,8 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
-import QuickActionPanel from '../components/shared/QuickActionPanel';
 import OnboardingFlow from '../components/onboarding/OnboardingFlow';
-import GridLines from '../components/home/GridLines';
-import NebulaBg from '../components/home/NebulaBg';
-import StarField from '../components/home/StarField';
 import OnlinePresence from '../components/shared/OnlinePresence';
 // ── Pull-to-refresh hook ───────────────────────────────────────────────────
 function usePullToRefresh(onRefresh) {

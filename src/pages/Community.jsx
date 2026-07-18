@@ -25,7 +25,6 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
-import SpotlightBanner from '../components/community/SpotlightBanner';
 import OnlinePresence from '../components/shared/OnlinePresence';
 const G = '#D4AF37';
 const BG = '#080B18';

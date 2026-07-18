@@ -29,8 +29,6 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import MomentsFeed from '../components/live/MomentsFeed';
