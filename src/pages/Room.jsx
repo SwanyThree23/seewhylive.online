@@ -56,6 +56,7 @@ import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
+import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -561,6 +562,19 @@ export default function RoomPage() {
 
   const isHost = currentParticipant?.role === 'host';
   const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
+
+  // Moderation toasts for audience
+  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
+  useEffect(() => {
+    if (!roomId) return;
+    const unsub = base44.entities.ChatModeration.subscribe((event) => {
+      if (event.type !== 'create') return;
+      const d = event.data;
+      if (d?.room_id !== roomId || !d?.auto_detected) return;
+      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: d.target_user_name || 'User' });
+    });
+    return unsub;
+  }, [roomId]);
 
   const hostParticipant = participants.find(p => p.user_id === room.host_id);
   const speakerName = participants.find(p => p.is_speaking)?.user_name;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function cryptoHex(len = 16) {
   const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
@@ -72,29 +72,40 @@ export default function RTMPServer() {
   });
   const activeRoomId = activeRoom?.id || null;
   const [regenerating, setRegenerating] = useState(false);
-  const [streamKey, setStreamKey] = useState(() => {
-    const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    return stored || `sk_live_${cryptoHex(24)}`;
-  });
+  const [streamKey, setStreamKey] = useState('');
   const [activeTab, setActiveTab] = useState('setup');
   const [evmuxKey, setEvmuxKey] = useState(() => {
     try { return localStorage.getItem('swl_evmux_key') || ''; } catch { return ''; }
   });
   const [evmuxSaved, setEvmuxSaved] = useState(false);
 
+  // Load stream key from user profile; generate and save if missing
+  useEffect(() => {
+    if (!user) return;
+    if (user.stream_key) {
+      setStreamKey(user.stream_key);
+    } else {
+      const newKey = `sk_live_${cryptoHex(24)}`;
+      setStreamKey(newKey);
+      base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
+    }
+  }, [user?.id]);
+
   const RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
   const SRT_SERVER = 'srt://ingest.seewhy.live:9710';
   const PLAYBACK_URL = `https://cdn.seewhy.live/hls/${streamKey}/index.m3u8`;
 
-  const regenerateKey = () => {
+  const regenerateKey = async () => {
     setRegenerating(true);
-    setTimeout(() => {
-      const newKey = `sk_live_${cryptoHex(24)}`;
-      setStreamKey(newKey);
-      localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
-      setRegenerating(false);
+    const newKey = `sk_live_${cryptoHex(24)}`;
+    setStreamKey(newKey);
+    try {
+      await base44.auth.updateMe({ stream_key: newKey });
       toast.success('Stream key regenerated');
-    }, 800);
+    } catch {
+      toast.error('Failed to save new key');
+    }
+    setRegenerating(false);
   };
 
   return (

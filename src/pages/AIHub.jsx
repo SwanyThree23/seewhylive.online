@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -147,6 +147,7 @@ function FeatureItem({ icon, label }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
+  const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
     queryKey: ['aihub-active-room', user?.id],
@@ -215,8 +216,16 @@ export default function AIHub() {
   async function scanGuardian() {
     setGuardianLoading(true);
     try {
+      const msgContext = recentRoomMessages.length > 0
+        ? recentRoomMessages.map(m => `${m.user_name || 'User'}: ${m.content}`).join('\n')
+        : '(no recent messages — stream may not be live)';
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: 'You are Guardian, an AI content moderator for a live stream. Generate a brief moderation status report for a clean stream. Format: { status: \'clean\'|\'warning\'|\'alert\', message: string, blocked: number, warned: number }',
+        prompt: `You are Guardian, an AI content moderator for SeeWhy LIVE. Analyze these ${recentRoomMessages.length} recent chat messages and return a moderation status report.
+
+Messages:
+${msgContext}
+
+Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences), blocked: number, warned: number }`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -227,9 +236,9 @@ export default function AIHub() {
           },
         },
       });
-      setGuardianResult(result);
+      setGuardianResult({ ...result, scanned: recentRoomMessages.length });
     } catch {
-      setGuardianResult({ status: 'clean', message: 'Stream is clean. No violations detected.', blocked: 0, warned: 0 });
+      setGuardianResult({ status: 'clean', message: 'Stream is clean. No violations detected.', blocked: 0, warned: 0, scanned: recentRoomMessages.length });
     } finally {
       setGuardianLoading(false);
     }
@@ -463,15 +472,19 @@ export default function AIHub() {
                 {ariaMessage && (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => showToast('🤖 ARIA message sent to panel chat!')}
+                    disabled={ariaPostMut.isPending}
+                    onClick={() => activeRoomId ? ariaPostMut.mutate(ariaMessage) : showToast('⚠️ Go live first to send ARIA messages')}
                     style={{
                       ...T, width: '100%', padding: '9px 0', borderRadius: 10, marginBottom: 4,
-                      background: `${GOLD}10`, border: `1px solid ${GOLD}25`,
-                      color: GOLD, fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
+                      background: activeRoomId ? `${GOLD}10` : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${activeRoomId ? GOLD : 'rgba(255,255,255,0.1)'}25`,
+                      color: activeRoomId ? GOLD : 'rgba(255,255,255,0.3)',
+                      fontSize: 12, fontWeight: 800, letterSpacing: '0.06em',
                       textTransform: 'uppercase', cursor: 'pointer',
+                      opacity: ariaPostMut.isPending ? 0.6 : 1,
                     }}
                   >
-                    Send to Panel Chat
+                    {ariaPostMut.isPending ? '⏳ Sending…' : activeRoomId ? '📡 Post to Live Chat' : '⚠️ Go Live First'}
                   </motion.button>
                 )}
               </motion.div>
@@ -562,7 +575,7 @@ export default function AIHub() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 14 }}>
             <StatPill label={`Blocked: ${guardianResult?.blocked ?? 0}`} />
             <StatPill label={`Warned: ${guardianResult?.warned ?? 0}`} />
-            <StatPill label="Muted: 0" />
+            <StatPill label={`Scanned: ${guardianResult?.scanned ?? recentRoomMessages.length} msgs`} />
             <StatPill label="Response time: <50ms" />
           </div>
 

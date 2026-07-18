@@ -32,22 +32,11 @@ const QUALITY = {
 
 const PLATFORM_COLORS = { YT: '#FF0000', TW: '#9147FF', FB: '#1877F2', TK: '#010101' };
 
-function useNetworkHealth(id, streaming) {
-  const [stats, setStats] = useState({ bitrate: 0, latency: 0, fps: 0, quality: 'offline', destinations: 0 });
-  const ref = useRef(null);
-  useEffect(() => {
-    if (!streaming) { setStats(s => ({ ...s, quality: 'offline', bitrate: 0, fps: 0, latency: 0 })); return; }
-    const tick = () => {
-      const latency = 30 + Math.round(Math.random() * 180);
-      const bitrate = 1200 + Math.round(Math.random() * 2400);
-      const quality = latency > 200 ? 'critical' : latency > 120 ? 'warning' : latency > 60 ? 'good' : 'excellent';
-      setStats({ bitrate, latency, fps: bitrate > 1500 ? 30 : 24, quality, destinations: Math.floor(Math.random() * 4) + 1 });
-    };
-    tick();
-    ref.current = setInterval(tick, 5000);
-    return () => clearInterval(ref.current);
-  }, [id, streaming]);
-  return stats;
+function useNetworkHealth(_id, streaming) {
+  // Real network stats require WebRTC getStats() integration — zeroed until wired up
+  return streaming
+    ? { bitrate: 0, latency: 0, fps: 0, quality: 'good', destinations: 0 }
+    : { bitrate: 0, latency: 0, fps: 0, quality: 'offline', destinations: 0 };
 }
 
 function useStageTimer(joinedAt) {
@@ -84,10 +73,7 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
     return all.slice(0, Math.min(health.destinations, 3));
   }, [health.destinations]);
 
-  const viewerCountRef = useRef(participant.is_streaming ? Math.floor(Math.random() * 500) : 0);
-  useEffect(() => {
-    viewerCountRef.current = participant.is_streaming ? Math.floor(Math.random() * 500) : 0;
-  }, [participant.is_streaming]);
+  const viewerCountRef = useRef(0);
 
   const promote = useMutation({
     mutationFn: () => base44.entities.Participant.update(participant.id, {
@@ -501,10 +487,7 @@ export default function GuestCoStreamDashboard({
   const coHostCount = guests.filter(p => p.role === 'co-host').length;
   const raisedCount = raisedHands.size;
 
-  const totalReach = useMemo(() =>
-    liveCount * 150 + Math.floor(liveCount * Math.random() * 100),
-    [liveCount]
-  );
+  const totalReach = liveCount * 150;
 
   const muteAll = () => {
     guests.forEach(p => base44.entities.Participant.update(p.id, { is_muted: true }).catch(() => {}));

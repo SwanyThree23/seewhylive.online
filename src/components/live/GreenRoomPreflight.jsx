@@ -21,7 +21,7 @@ function genToken(userId) {
 export default function GreenRoomPreflight({ isOpen, onClose, onGoLive, party, user }) {
   const [checks, setChecks] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [copied, setCopied]   = useState(null);
-  const [rtmpKey]             = useState(() => (user?.id ? localStorage.getItem(`rtmp_key_${user.id}`) || 'SW_XXXXXXXX_XXXXXXXX' : 'SW_XXXXXXXX_XXXXXXXX'));
+  const rtmpKey = user?.stream_key || 'SW_XXXXXXXX_XXXXXXXX';
   const [sessionToken]        = useState(() => (user?.id ? genToken(user.id) : ''));
 
   const vdoLink = party?.id ? `https://vdo.ninja/?push=${party.id}&label=${encodeURIComponent(user?.full_name || 'Guest')}` : 'https://vdo.ninja/?push=...';

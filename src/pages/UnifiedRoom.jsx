@@ -60,17 +60,7 @@ export default function UnifiedRoom() {
     refetchInterval: 15000,
   });
 
-  // Simulate speaking rotation for visual demo
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const speakers = participants.filter(p => !p.is_muted);
-      if (speakers.length > 0) {
-        const random = speakers[Math.floor(Math.random() * speakers.length)];
-        setSpeakingId(random.user_id);
-      }
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [participants]);
+  // speakingId is set by real WebRTC audio level detection from useWebRTCPeers
 
   const handleToggleMic = () => {
     const next = !isMicOn;

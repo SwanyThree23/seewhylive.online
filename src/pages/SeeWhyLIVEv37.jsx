@@ -340,18 +340,23 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  const [tributes, setTributes] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_tributes') || '[]'); } catch { return []; } });
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [tributes, setTributes] = useState([]);
   const [name, setName] = useState('');
   const [msg, setMsg] = useState('');
   const [era, setEra] = useState('');
   const [toastMsg, setToastMsg] = useState('');
+
+  useEffect(() => {
+    if (user?.v37_tributes) setTributes(user.v37_tributes);
+  }, [user?.id]);
 
   function addTribute() {
     if (!name.trim()) { toast('Enter a name', setToastMsg); return; }
     const t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
     const updated = [t, ...tributes].slice(0, 30);
     setTributes(updated);
-    sessionStorage.setItem('v37_tributes', JSON.stringify(updated));
+    base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
     setName(''); setMsg(''); setEra('');
     toast('Tribute added', setToastMsg);
   }
@@ -359,7 +364,7 @@ function TributePanel() {
   function removeTribute(id) {
     const updated = tributes.filter(t => t.id !== id);
     setTributes(updated);
-    sessionStorage.setItem('v37_tributes', JSON.stringify(updated));
+    base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
   }
 
   return (
@@ -402,9 +407,14 @@ function PodcastPanel() {
   const [ep, setEp] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
+  const { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [nlmUrl, setNlmUrl] = useState('');
   const [nlmLabel, setNlmLabel] = useState('');
-  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('v37_nlm_sources') || '[]'); } catch { return []; } });
+  const [nlmSources, setNlmSources] = useState([]);
+
+  useEffect(() => {
+    if (podUser?.v37_nlm_sources) setNlmSources(podUser.v37_nlm_sources);
+  }, [podUser?.id]);
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
@@ -420,7 +430,7 @@ function PodcastPanel() {
     const src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
     const updated = [src, ...nlmSources].slice(0, 20);
     setNlmSources(updated);
-    sessionStorage.setItem('v37_nlm_sources', JSON.stringify(updated));
+    base44.auth.updateMe({ v37_nlm_sources: updated }).catch(() => {});
     setNlmUrl(''); setNlmLabel('');
     toast('NLM source saved!', setToastMsg);
   }
@@ -514,7 +524,7 @@ function PodcastPanel() {
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); sessionStorage.setItem('v37_nlm_sources', JSON.stringify(u)); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
+                  <button onClick={() => { const u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
                 </div>
               </div>
             </Card>
@@ -1196,20 +1206,21 @@ function SettingsPanel() {
   const [notifs, setNotifs] = useState({ email: true, push: true, subs: true, tips: true });
   const [saved, setSaved] = useState(false);
 
-  function save() {
-    sessionStorage.setItem('v37_settings', JSON.stringify({ handle, bio, email, notifs }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function save() {
+    try {
+      await base44.auth.updateMe({ creator_handle: handle, contact_email: email, bio, notification_prefs: notifs });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {}
   }
 
   useEffect(() => {
-    try {
-      const s = JSON.parse(sessionStorage.getItem('v37_settings') || '{}');
-      if (s.handle) setHandle(s.handle);
-      if (s.bio) setBio(s.bio);
-      if (s.email) setEmail(s.email);
-      if (s.notifs) setNotifs(s.notifs);
-    } catch {}
+    base44.auth.me().then(user => {
+      if (user.creator_handle) setHandle(user.creator_handle);
+      if (user.contact_email || user.email) setEmail(user.contact_email || user.email || '');
+      if (user.bio) setBio(user.bio);
+      if (user.notification_prefs) setNotifs(prev => ({ ...prev, ...user.notification_prefs }));
+    }).catch(() => {});
   }, []);
 
   return (

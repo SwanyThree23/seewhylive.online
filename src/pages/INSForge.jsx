@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -90,6 +90,7 @@ function Swatch({ hex }) {
 }
 
 export default function INSForge() {
+  const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { invoke: invokeAI, hasKey: hasOpenRouterKey } = useOpenRouter();
   const [selected, setSelected] = useState(null);
@@ -99,6 +100,13 @@ export default function INSForge() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [briefSaved, setBriefSaved] = useState(false);
+
+  const { data: recentBriefs = [] } = useQuery({
+    queryKey: ['insforge-briefs', user?.id],
+    queryFn: () => base44.entities.Activity.filter({ user_id: user.id, type: 'brief_generated' }, '-created_at', 5),
+    enabled: !!user?.id,
+  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -373,6 +381,13 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
               </div>
             )}
           </div>
+
+          {/* Saved confirmation */}
+          {briefSaved && (
+            <div style={{ ...T, fontSize: 11, color: '#6DBF7E', textAlign: 'center', padding: '4px 0' }}>
+              ✓ Brief saved to your history
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={copyBrief} style={{

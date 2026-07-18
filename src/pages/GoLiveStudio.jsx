@@ -167,27 +167,26 @@ export default function GoLiveStudio() {
 
   var allChecked = Object.values(state.checklist).every(Boolean);
 
-  // Simulate health metrics while live
+  // Tick uptime while live
   useEffect(() => {
     if (state.phase !== 'live') return;
     uptimeRef.current = setInterval(() => dispatch({ type: 'TICK_UPTIME' }), 1000);
-    healthRef.current = setInterval(() => {
-      dispatch({
-        type: 'UPDATE_HEALTH',
-        payload: {
-          bitrate: 5800 + Math.floor(Math.random() * 400),
-          fps: 59 + Math.round(Math.random()),
-          droppedFrames: Math.floor(Math.random() * 3),
-          latency: 80 + Math.floor(Math.random() * 40),
-          viewerCount: state.viewerCount + Math.floor(Math.random() * 3) - 1,
-        },
-      });
-    }, 2000);
-    return () => {
-      clearInterval(uptimeRef.current);
-      clearInterval(healthRef.current);
-    };
+    return () => clearInterval(uptimeRef.current);
   }, [state.phase]);
+
+  // Sync viewer count from Room entity every 30s
+  useEffect(() => {
+    if (state.phase !== 'live' || !activeRoomId) return;
+    function syncViewers() {
+      base44.entities.Room.filter({ id: activeRoomId }).then(rooms => {
+        const count = rooms[0]?.viewer_count ?? 0;
+        dispatch({ type: 'UPDATE_HEALTH', payload: { viewerCount: count } });
+      }).catch(() => {});
+    }
+    syncViewers();
+    healthRef.current = setInterval(syncViewers, 30000);
+    return () => clearInterval(healthRef.current);
+  }, [state.phase, activeRoomId]);
 
   function startGoLive() {
     if (!allChecked) return;

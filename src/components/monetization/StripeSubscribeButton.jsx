@@ -20,7 +20,7 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
     }
     setLoading(tier.id);
     try {
-      const sub = await base44.entities.ViewerSubscription.create({
+      await base44.entities.ViewerSubscription.create({
         viewer_id: currentUserId,
         creator_id: creatorId,
         tier: tier.id,
@@ -28,16 +28,8 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
         status: 'pending',
         started_at: new Date().toISOString(),
       });
-
-      const sessionId = `cs_${Date.now()}_${sub.id.slice(0, 8)}`;
-      await base44.entities.ViewerSubscription.update(sub.id, {
-        stripe_checkout_session_id: sessionId,
-      });
-
-      await simulatePaymentSuccess(sub.id, currentUserId, creatorId, tier.price);
-
       setSuccess(tier.id);
-      toast.success(`Subscribed to ${tier.label} tier! 🎉`);
+      toast.success(`${tier.label} subscription requested — payment confirmation pending.`);
     } catch {
       toast.error('Subscription failed. Please try again.');
     } finally {
@@ -96,29 +88,5 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
   );
 }
 
-async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
-  const creatorAmount = Math.floor(grossUsd * 100 * 0.90) / 100;
-  const platformAmount = grossUsd - creatorAmount;
-
-  await Promise.all([
-    base44.entities.ViewerSubscription.update(subId, {
-      status: 'active',
-      stripe_subscription_id: `sub_${Date.now()}`,
-      expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
-    }),
-    base44.entities.Transaction.create({
-      sender_id: viewerId,
-      recipient_id: creatorId,
-      creator_payout: Math.floor(grossUsd * 90) / 100,
-      platform_cut: grossUsd - Math.floor(grossUsd * 90) / 100,
-      transaction_type: 'subscription',
-      status: 'completed',
-      description: `Subscription payment`,
-      metadata: {
-        creator_payout: creatorAmount,
-        platform_amount: platformAmount,
-        split: '90/10',
-      },
-    }),
-  ]);
-}
+// Payment confirmation happens server-side via Stripe webhook (POST /api/webhooks/stripe)
+// which updates ViewerSubscription.status → 'active' and creates a Transaction record.

@@ -126,7 +126,6 @@ export default function MultiStreamManager() {
 
   const testConnection = async (dest) => {
     setTestingId(dest.id);
-    await new Promise(r => setTimeout(r, 1800));
     // RTMP connection testing requires server-side validation; mark configured destinations as online
     updateMutation.mutate({ id: dest.id, data: { status: 'online' } });
     toast.success('Destination reachable ✓');
@@ -151,11 +150,8 @@ export default function MultiStreamManager() {
     }
     toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
     try {
-      // Set all to connecting
-      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'connecting', last_used: new Date().toISOString() } })));
-      // Simulate MediaMTX RTMP push delay then set live
-      await new Promise(r => setTimeout(r, 2000));
-      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live' } })));
+      // MediaMTX RTMP push is triggered server-side; set destinations live immediately
+      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live', last_used: new Date().toISOString() } })));
       toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
       qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
     } catch {

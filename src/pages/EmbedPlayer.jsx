@@ -14,6 +14,7 @@
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { createPageUrl } from '../utils';
+import { base44 } from '@/api/base44Client';
 
 const VPS_HLS_BASE = 'https://srv1581658.hstgr.cloud/hls';
 const APP_URL      = 'https://seewhylive.online';
@@ -49,13 +50,26 @@ export default function EmbedPlayer() {
   var appDlUrl = APP_URL + createPageUrl('GoLive');
 
   var [status,        setStatus]        = useState('loading');
-  var [viewers,       setViewers]       = useState(Math.floor(Math.random() * 120) + 40);
+  var [viewers,       setViewers]       = useState(0);
   var [playSeconds,   setPlaySeconds]   = useState(0);   // per-second when playing
   var [paywallActive, setPaywallActive] = useState(false);
   var [dismissed,     setDismissed]     = useState(false); // viewer dismissed via app CTA
   var tickRef   = useRef(0);  // viewer update every 5 ticks
   var videoRef  = useRef(null);
   var tickTimer = useRef(null);
+
+  // ── Real viewer count from Room entity ────────────────────────────────────
+  useEffect(function() {
+    if (!roomId || roomId === 'live') return;
+    function fetchViewers() {
+      base44.entities.Room.filter({ id: roomId })
+        .then(function(rooms) { if (rooms?.[0]?.viewer_count != null) setViewers(rooms[0].viewer_count); })
+        .catch(function() {});
+    }
+    fetchViewers();
+    var iv = setInterval(fetchViewers, 30000);
+    return function() { clearInterval(iv); };
+  }, [roomId]);
 
   // ── Video setup ────────────────────────────────────────────────────────────
   useEffect(function() {
@@ -74,11 +88,7 @@ export default function EmbedPlayer() {
   // ── Per-second tick — viewer count + paywall counter ─────────────────────
   useEffect(function() {
     tickTimer.current = setInterval(function() {
-      // Viewer drift every 5 ticks
       tickRef.current += 1;
-      if (tickRef.current % 5 === 0) {
-        setViewers(function(n) { return Math.max(1, n + Math.floor(Math.random() * 9) - 4); });
-      }
 
       if (status !== 'playing' || noPaywall) return;
 

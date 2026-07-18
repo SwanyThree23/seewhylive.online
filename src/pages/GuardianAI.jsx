@@ -127,6 +127,7 @@ export default function GuardianAI() {
   const [scanning, setScanning] = useState(false);
   const [scanStep, setScanStep]  = useState('');
   const [activeTab, setActiveTab] = useState('log');
+  const [thresholdSaved, setThresholdSaved] = useState(false);
   const logEndRef = useRef(null);
   const { toasts: modToasts, push: pushModToast } = useModerationToasts();
 
@@ -303,14 +304,19 @@ export default function GuardianAI() {
 
         {/* Risk Thresholds */}
         <div style={{ background: BG3, border: `1px solid ${SLATE}`, borderRadius: 14, padding: '16px' }}>
-          <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.08em', marginBottom: 14 }}>
-            RISK THRESHOLDS
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.08em' }}>
+              RISK THRESHOLDS
+            </div>
+            {thresholdSaved && (
+              <span style={{ ...T, fontSize: 10, fontWeight: 700, color: GREEN, letterSpacing: '0.06em' }}>✓ SAVED</span>
+            )}
           </div>
           {[
-            { label: 'FLAG FOR REVIEW', value: flagT, set: setFlagT, color: WARN,   icon: Eye },
-            { label: 'AUTO-MUTE',       value: muteT, set: setMuteT, color: ORANGE, icon: AlertTriangle },
-            { label: 'AUTO-BAN',        value: banT,  set: setBanT,  color: RED,    icon: Ban },
-          ].map(({ label, value, set, color, icon: Icon }) => (
+            { label: 'FLAG FOR REVIEW', key: 'flagT', value: flagT, color: WARN,   icon: Eye },
+            { label: 'AUTO-MUTE',       key: 'muteT', value: muteT, color: ORANGE, icon: AlertTriangle },
+            { label: 'AUTO-BAN',        key: 'banT',  value: banT,  color: RED,    icon: Ban },
+          ].map(({ label, key, value, color, icon: Icon }) => (
             <div key={label} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -319,17 +325,10 @@ export default function GuardianAI() {
                 </div>
                 <span style={{ ...MONO, fontSize: 11, color, fontWeight: 700 }}>{value}%</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <RiskBar value={value} color={color} />
-                <input
-                  type="range" min="0" max="100" value={value}
-                  onChange={e => set(Number(e.target.value))}
-                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
-                />
-              </div>
+              <RiskBar value={value} color={color} />
               <input
                 type="range" min="0" max="100" value={value}
-                onChange={e => set(Number(e.target.value))}
+                onChange={e => handleThresholdChange(key, Number(e.target.value))}
                 style={{ width: '100%', accentColor: color, marginTop: 4, cursor: 'pointer' }}
               />
             </div>

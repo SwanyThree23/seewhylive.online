@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { base44 } from "@/api/base44Client";
 var G = {
   black:"#080808", darkBg:"#0D0D0D", cardBg:"#111111",
   surfaceBg:"#161616", crimson:"#8B0000", crimsonBright:"#C41E3A",
@@ -236,21 +237,24 @@ export function TipAlertConfig() {
 }
 
 // ── ENGAGEMENT DASHBOARD (v16.2) ──────────────────────────────────
-export function EngagementDashboardV2() {
+export function EngagementDashboardV2({ roomId }) {
   var [live, setLive] = useState(true);
-  var [data, setData] = useState({viewers:138,engageScore:84,chatRate:41,tipRate:2.3,peakViewers:203,retentionPct:73,newFollowers:12,breakdown:{superFans:8,regulars:47,casuals:83},heatmap:[60,75,88,92,84,78,95,103,138,124,108]});
+  var [data, setData] = useState({viewers:0,engageScore:0,chatRate:0,tipRate:0,peakViewers:0,retentionPct:0,newFollowers:0,breakdown:{superFans:0,regulars:0,casuals:0},heatmap:[0]});
 
   useEffect(function(){
-    if(!live) return;
-    var iv=setInterval(function(){
-      setData(function(d){
-        var dv=Math.floor(Math.random()*8-4);var nv=Math.max(0,d.viewers+dv);
-        var score=clamp(d.engageScore+Math.floor(Math.random()*4-2),0,100);
-        return Object.assign({},d,{viewers:nv,engageScore:score,chatRate:clamp(d.chatRate+Math.floor(Math.random()*6-3),0,100),tipRate:Math.max(0,Math.round((d.tipRate+(Math.random()-.5)*.3)*10)/10),peakViewers:Math.max(d.peakViewers,nv),heatmap:d.heatmap.concat([nv]).slice(-11)});
-      });
-    },4000);
+    if(!live || !roomId) return;
+    function syncRoom() {
+      base44.entities.Room.filter({ id: roomId }).then(function(rooms) {
+        var r = rooms[0];
+        if (!r) return;
+        var vc = r.viewer_count || 0;
+        setData(function(d){ return Object.assign({},d,{viewers:vc,peakViewers:Math.max(d.peakViewers,vc),heatmap:d.heatmap.concat([vc]).slice(-11)}); });
+      }).catch(function(){});
+    }
+    syncRoom();
+    var iv = setInterval(syncRoom, 30000);
     return function(){clearInterval(iv);};
-  },[live]);
+  },[live, roomId]);
 
   var scoreColor=data.engageScore>=80?G.green:data.engageScore>=60?G.gold:G.red;
   var maxH=Math.max.apply(null,data.heatmap)||1;

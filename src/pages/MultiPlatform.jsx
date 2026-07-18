@@ -124,6 +124,13 @@ export default function MultiPlatform() {
 
   const [tab, setTab] = useState('platforms');
 
+  // Sync platform connections and webhooks from user profile
+  useEffect(() => {
+    if (!user) return;
+    if (user.platform_connections) setConnections(user.platform_connections);
+    if (user.webhooks?.length) setWebhooks(user.webhooks);
+  }, [user]);
+
   const { data: recentActivities = [] } = useQuery({
     queryKey: ['multiplatform-events'],
     queryFn: () => base44.entities.Activity.list('-created_date', 20),
@@ -136,13 +143,9 @@ export default function MultiPlatform() {
     ago:   a.created_date ? formatAgo(a.created_date) : '',
     color: a.type === 'tip_sent' ? GOLD : a.type === 'new_follower' ? GOLD : a.type === 'milestone' ? GREEN : CYAN,
   }));
-  const [connections, setConnections] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('platform_connections') || '{}'); } catch { return {}; }
-  });
+  const [connections, setConnections] = useState({});
   const [connecting, setConnecting] = useState(null);
-  const [webhooks, setWebhooks] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('webhooks') || '[]'); } catch { return []; }
-  });
+  const [webhooks, setWebhooks] = useState([]);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [outboundUrl, setOutboundUrl] = useState('');
   const [selectedEvents, setSelectedEvents] = useState(['New Follower','Stream Go Live']);
@@ -168,23 +171,25 @@ export default function MultiPlatform() {
 
   function showToast(msg) { setToast(msg); setTimeout(() => setToast(''), 3000); }
 
-  function saveConnections(updated) {
+  async function saveConnections(updated) {
     setConnections(updated);
-    sessionStorage.setItem('platform_connections', JSON.stringify(updated));
+    try { await base44.auth.updateMe({ platform_connections: updated }); } catch {}
   }
 
   async function handleConnect(id) {
     setConnecting(id);
-    await new Promise(r => setTimeout(r, 1200));
     const updated = { ...connections, [id]: !connections[id] };
-    saveConnections(updated);
+    await saveConnections(updated);
     setConnecting(null);
     showToast(updated[id] ? `✓ ${PLATFORMS.find(p=>p.id===id)?.name} connected!` : 'Platform disconnected');
   }
 
   function connectedCount() { return Object.values(connections).filter(Boolean).length; }
 
-  function saveWebhooks(list) { setWebhooks(list); sessionStorage.setItem('webhooks', JSON.stringify(list)); }
+  function saveWebhooks(list) {
+    setWebhooks(list);
+    base44.auth.updateMe({ webhooks: list }).catch(() => {});
+  }
 
   function handleAddWebhook() {
     if (!newWHUrl.trim()) return;

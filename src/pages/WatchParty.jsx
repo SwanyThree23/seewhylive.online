@@ -585,14 +585,13 @@ export default function WatchPartyPage() {
     queryKey: ['watchparty', partyId],
     queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0]),
     enabled: !!partyId,
-    refetchInterval: 5000,
+    refetchInterval: 30000,
   });
 
   const { data: members = [] } = useQuery({
     queryKey: ['watchparty-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
     enabled: !!partyId,
-    refetchInterval: 10000,
   });
 
   const isHost = party?.host_id === user?.id;
@@ -734,9 +733,18 @@ export default function WatchPartyPage() {
     return () => {
       if (!party || !user) return;
       base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
-        .then(members => members.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
-        )).catch(() => {});
+        .then(activeMembers => {
+          activeMembers.forEach(m =>
+            base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
+          );
+          if (activeMembers.length > 0) {
+            base44.entities.WatchParty.filter({ id: party.id }).then(([current]) => {
+              if (!current) return;
+              const newCount = Math.max(0, (current.participant_count || 1) - 1);
+              base44.entities.WatchParty.update(party.id, { participant_count: newCount }).catch(() => {});
+            }).catch(() => {});
+          }
+        }).catch(() => {});
     };
   }, [party?.id, user?.id]);
 
@@ -954,14 +962,36 @@ export default function WatchPartyPage() {
     } catch (e) {}
   };
 
+  // ── Active parties for lobby ───────────────────────────────────────────────
+  const { data: activeParties = [], refetch: refetchParties } = useQuery({
+    queryKey: ['watchparties-active'],
+    queryFn: () => base44.entities.WatchParty.filter({ status: 'active' }, '-participant_count', 20),
+    enabled: !partyId,
+    refetchInterval: 15000,
+  });
+
+  // Real-time lobby updates
+  useEffect(() => {
+    if (partyId) return;
+    const unsub = base44.entities.WatchParty.subscribe((event) => {
+      if (event.data?.status === 'active' || event.data?.status === 'ended') {
+        refetchParties();
+      }
+    });
+    return unsub;
+  }, [partyId, refetchParties]);
+
   if (!partyId) {
     return (
-      <div className="max-w-lg mx-auto mt-10 p-6 space-y-6" style={{ background: '#0B0B18', minHeight: '100vh' }}>
-        <div>
-          <h1 className="text-3xl font-black flex items-center gap-2" style={{ color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
-            <Video className="w-8 h-8" /> Watch Party
+      <div style={{ background: '#0B0B18', minHeight: '100vh', paddingBottom: 40 }}>
+        {/* Header */}
+        <div style={{ padding: '20px 16px 12px', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
+          <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#D4AF37', letterSpacing: '0.03em', margin: 0 }}>
+            🎬 Watch Party
           </h1>
-          <p className="text-white/50 mt-1 text-sm">Watch together in sync with real-time chat</p>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>
+            Watch together in sync · real-time reactions · shared chat
+          </p>
         </div>
         <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <Input
@@ -986,10 +1016,19 @@ export default function WatchPartyPage() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Create form */}
+        <div style={{ padding: '16px 16px 0' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', margin: '0 0 10px' }}>
+            ＋ Start a new party
+          </p>
+          <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
             <Input
-              placeholder="YouTube URL or direct video URL"
-              value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
+              placeholder="Party title (e.g. Movie Night)"
+              value={partyTitle}
+              onChange={e => setPartyTitle(e.target.value)}
               className="h-11 text-white placeholder:text-white/30"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
@@ -1006,17 +1045,31 @@ export default function WatchPartyPage() {
                 className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
                 alt="preview"
               />
-            )}
+              {videoUrl && (
+                <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#D4AF37' }}>
+                  {detectType(videoUrl) === 'youtube'
+                    ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
+                    : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
+                </div>
+              )}
+              {videoUrl && getYouTubeId(videoUrl) && (
+                <img
+                  src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
+                  className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
+                  alt="preview"
+                />
+              )}
+            </div>
+            <Button
+              className="w-full h-11 text-sm font-bold"
+              disabled={!videoUrl.trim() || createMutation.isPending}
+              onClick={() => createMutation.mutate()}
+              style={{ background: '#d4af37', color: '#000' }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {!user ? 'Sign In to Create Watch Party' : createMutation.isPending ? 'Creating…' : 'Create Watch Party'}
+            </Button>
           </div>
-          <Button
-            className="w-full h-11 text-sm font-bold"
-            disabled={!videoUrl.trim() || createMutation.isPending}
-            onClick={() => createMutation.mutate()}
-            style={{ background: '#d4af37', color: '#000' }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {!user ? 'Sign In to Create Watch Party' : createMutation.isPending ? 'Creating…' : 'Create Watch Party'}
-          </Button>
         </div>
       </div>
     );
@@ -1466,7 +1519,7 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'analytics' && (
               <div className="space-y-3">
-                {partyId && <StreamGoals roomId={partyId} isHost={isHost} />}
+                {partyId && <StreamGoals roomId={partyId} isHost={isHost} creatorId={party?.host_id || user?.id} />}
                 {partyId && isHost && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
                 {partyId && isHost && user?.id && party?.host_id && (
