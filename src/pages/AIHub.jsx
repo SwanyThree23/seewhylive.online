@@ -948,6 +948,98 @@ export default function AIHub() {
           </Link>
         </Card>
 
+        {/* ── Section 14: OpenRouter Hub ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🧠 OpenRouter Hub</p>
+            <span style={{ ...T, fontSize: 11, color: PURPLE, fontWeight: 700, letterSpacing: '0.05em' }}>MULTI-MODEL</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Compare 16+ AI models side-by-side, run prompt templates, track token usage, and route to the best model for every task.
+          </p>
+          <Link to={createPageUrl('OpenRouterHub')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(123,93,166,0.08)', border: '1px solid rgba(123,93,166,0.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(123,93,166,0.15)', border: '1px solid rgba(123,93,166,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🧠</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: PURPLE, fontWeight: 900 }}>OPEN ROUTER HUB</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>GPT-4 · CLAUDE · GEMINI · LLAMA</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: PURPLE, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Compare →</span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 15: LLM Lingua Studio ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>✂️ LLM Lingua Studio</p>
+            <span style={{ ...T, fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: '0.05em' }}>TOKEN SAVER</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Compress prompts by 20–80% without losing meaning. Cut API costs and fit more context into every model call.
+          </p>
+          <Link to={createPageUrl('LLMLinguaStudio')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: `${GOLD}09`, border: `1px solid ${GOLD}30`, borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${GOLD}15`, border: `1px solid ${GOLD}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✂️</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900 }}>COMPRESS PROMPTS</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>SEMANTIC · EXTRACTIVE · KEYWORDS</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: GOLD, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Launch →</span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 16: VDO Ninja Manager ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📷 VDO.Ninja Manager</p>
+            <span style={{ ...T, fontSize: 11, color: CYAN, fontWeight: 700, letterSpacing: '0.05em' }}>WEBCAM GUESTS</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Invite remote guests with zero install. Generate WebRTC guest links, director controls, and HD camera feeds for your streams.
+          </p>
+          <Link to={createPageUrl('VDONinjaManager')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(74,138,122,0.08)', border: '1px solid rgba(74,138,122,0.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(74,138,122,0.15)', border: '1px solid rgba(74,138,122,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📷</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: CYAN, fontWeight: 900 }}>MANAGE GUESTS</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>WEBRTC · NO INSTALL · HD VIDEO</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: CYAN, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
+            </div>
+          </Link>
+        </Card>
+
+        {/* ── Section 17: Voice Agent Builder ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎙️ Voice Agent Builder</p>
+            <span style={{ ...T, fontSize: 11, color: '#6DBF7E', fontWeight: 700, letterSpacing: '0.05em' }}>AI VOICE</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Build AI voice agents for streaming, healthcare, real estate, e-commerce, and 9 more industries. Simulate dialogue, set triggers, and deploy.
+          </p>
+          <Link to={createPageUrl('VoiceAgentBuilder')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🎙️</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900 }}>BUILD VOICE AGENT</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>ELEVENLABS · 9 INDUSTRIES · SIMULATION</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Build →</span>
+            </div>
+          </Link>
+        </Card>
+
         {/* ── Bottom info strip ── */}
         <p style={{
           textAlign: 'center', ...T, fontSize: 12,

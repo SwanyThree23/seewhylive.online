@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock } from 'lucide-react';
+import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap, Terminal, Globe, Lock, Layers, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -74,6 +74,10 @@ export default function RTMPServer() {
     return `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
+  const [evmuxKey, setEvmuxKey] = useState(() => {
+    try { return localStorage.getItem('swl_evmux_key') || ''; } catch { return ''; }
+  });
+  const [evmuxSaved, setEvmuxSaved] = useState(false);
 
   const RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
   const SRT_SERVER = 'srt://ingest.seewhy.live:9710';
@@ -118,7 +122,7 @@ export default function RTMPServer() {
         </div>
         {/* Tabs */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-0 flex gap-1">
-          {['setup', 'stats', 'software'].map(tab => (
+          {['setup', 'evmux', 'stats', 'software'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -220,6 +224,132 @@ export default function RTMPServer() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* EVMUX TAB */}
+        {activeTab === 'evmux' && (
+          <div className="space-y-6">
+            {/* Intro */}
+            <div className="flex items-start gap-3 bg-purple-900/20 border border-purple-500/30 rounded-xl p-4">
+              <Layers className="w-4 h-4 text-purple-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-purple-300">EVMux Adaptive Streaming</p>
+                <p className="text-xs text-white/50 mt-0.5">EVMux transcodes your RTMP ingest into multiple quality tiers (1080p / 720p / 480p / 360p) and distributes via CDN. Push once — viewers get automatic ABR.</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Push ingest */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Radio className="w-4 h-4 text-purple-400" />
+                  <h2 className="font-bold text-sm">EVMux Push Ingest</h2>
+                  <span style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>PRIMARY</span>
+                </div>
+                <CopyField label="RTMP Server" value="rtmp://live.evmux.com/live" />
+                <div className="space-y-1">
+                  <label className="text-[11px] text-white/40 uppercase tracking-wider font-semibold">Push Stream Key</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={evmuxKey}
+                      onChange={e => setEvmuxKey(e.target.value)}
+                      placeholder="Paste your EVMux push key here…"
+                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono text-white/80 outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        try { localStorage.setItem('swl_evmux_key', evmuxKey); setEvmuxSaved(true); setTimeout(() => setEvmuxSaved(false), 2000); } catch {}
+                        toast.success('EVMux key saved.');
+                      }}
+                      className="px-3 py-2 rounded-lg text-xs font-bold"
+                      style={{ background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', color: '#a78bfa' }}
+                    >
+                      {evmuxSaved ? '✓' : 'Save'}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-white/25">Find this in your EVMux dashboard → Channels → Push Key</p>
+                </div>
+                {evmuxKey && <CopyField label="Full Ingest String (OBS)" value={`rtmp://live.evmux.com/live/${evmuxKey}`} secret />}
+              </div>
+
+              {/* Pull / playback */}
+              <div className="space-y-4">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Tv2 className="w-4 h-4 text-blue-400" />
+                    <h2 className="font-bold text-sm">Playback / Pull URLs</h2>
+                  </div>
+                  {[
+                    { label: 'HLS (ABR)',  value: evmuxKey ? `https://cdn.evmux.com/hls/${evmuxKey}/index.m3u8` : 'Add push key above to generate' },
+                    { label: 'DASH',       value: evmuxKey ? `https://cdn.evmux.com/dash/${evmuxKey}/manifest.mpd` : '—' },
+                    { label: 'RTMP Pull',  value: evmuxKey ? `rtmp://pull.evmux.com/live/${evmuxKey}` : '—' },
+                  ].map(u => (
+                    <CopyField key={u.label} label={u.label} value={u.value} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Multi-bitrate ladder */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+              <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-purple-400" /> Adaptive Bitrate Ladder
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-white/30 border-b border-white/10">
+                      {['Quality', 'Resolution', 'Video Bitrate', 'Audio', 'Frame Rate'].map(h => (
+                        <th key={h} className="text-left py-2 pr-4 font-semibold uppercase tracking-wider">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/70">
+                    {[
+                      { q: '1080p',   res: '1920×1080', vbr: '5500 kbps',  audio: '192 kbps', fps: '60' },
+                      { q: '720p',    res: '1280×720',  vbr: '3000 kbps',  audio: '128 kbps', fps: '60' },
+                      { q: '480p',    res: '854×480',   vbr: '1200 kbps',  audio: '128 kbps', fps: '30' },
+                      { q: '360p',    res: '640×360',   vbr: '600 kbps',   audio: '96 kbps',  fps: '30' },
+                    ].map(r => (
+                      <tr key={r.q} className="border-b border-white/5">
+                        <td className="py-2 pr-4 font-bold" style={{ color: r.q === '1080p' ? '#a78bfa' : undefined }}>{r.q}</td>
+                        <td className="py-2 pr-4 font-mono">{r.res}</td>
+                        <td className="py-2 pr-4">{r.vbr}</td>
+                        <td className="py-2 pr-4">{r.audio}</td>
+                        <td className="py-2 pr-4">{r.fps} fps</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[11px] text-white/30 mt-3">EVMux auto-transcodes from your 1080p source. Push at 6000+ kbps for best results. Ingest must be H.264 + AAC.</p>
+            </div>
+
+            {/* OBS EVMux setup */}
+            <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+              <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
+                <span className="text-xl">🎬</span> OBS → EVMux Quick Setup
+              </h2>
+              <ol className="space-y-2">
+                {[
+                  'Create a Channel in your EVMux dashboard and copy the Push Key',
+                  'Open OBS → Settings → Stream',
+                  'Set Service to "Custom..."',
+                  'Set Server to: rtmp://live.evmux.com/live',
+                  'Paste your EVMux Push Key as the Stream Key',
+                  'Set encoder to x264, bitrate ≥ 5500 kbps, keyframe 2s',
+                  'Click Apply & OK, then Start Streaming',
+                  'Embed the HLS playback URL on your SeeWhy LIVE page',
+                ].map((step, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-white/70">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold" style={{ background: 'rgba(139,92,246,0.2)', color: '#a78bfa' }}>{i + 1}</span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         )}
