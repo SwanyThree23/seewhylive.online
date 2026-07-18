@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2 } from 'lucide-react';
+import { BarChart3, Radio, Calendar, Scissors, Send, ArrowRight, DollarSign, Users, Bot, Zap, Mic2, Globe, Lock, Camera } from 'lucide-react';
 import AnalyticsOverview from '@/components/dashboard/AnalyticsOverview';
 import EarningsBreakdown from '@/components/dashboard/EarningsBreakdown';
 import AudienceInsights from '@/components/dashboard/AudienceInsights';
@@ -143,6 +143,30 @@ export default function CreatorDashboardPage() {
       gradient: `linear-gradient(135deg, rgba(74,138,122,0.15), rgba(74,138,122,0.04))`,
       border: 'rgba(74,138,122,0.3)',
       iconColor: '#4A8A7A',
+    },
+    {
+      icon: Globe,
+      label: 'AI Site',
+      href: createPageUrl('WebsiteGenerator'),
+      gradient: 'linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.04))',
+      border: 'rgba(201,168,76,0.35)',
+      iconColor: '#C9A84C',
+    },
+    {
+      icon: Camera,
+      label: 'VDO Guests',
+      href: createPageUrl('VDONinjaManager'),
+      gradient: 'linear-gradient(135deg, rgba(74,138,122,0.18), rgba(74,138,122,0.04))',
+      border: 'rgba(74,138,122,0.35)',
+      iconColor: '#4A8A7A',
+    },
+    {
+      icon: Lock,
+      label: 'Vault',
+      href: createPageUrl('VaultPro'),
+      gradient: 'linear-gradient(135deg, rgba(128,0,32,0.15), rgba(128,0,32,0.04))',
+      border: 'rgba(128,0,32,0.3)',
+      iconColor: '#C0392B',
     },
   ];
 

@@ -45,6 +45,7 @@ const PLATFORMS = [
   { id: 'linkedin', label: 'LinkedIn', color: '#0a66c2', server: 'rtmps://stream.linkedin.com:443/media' },
   { id: 'twitter', label: 'X (Twitter)', color: '#000000', server: 'rtmp://ingest.pscp.tv:80/x' },
   { id: 'rumble', label: 'Rumble', color: '#85c742', server: 'rtmp://live.rumble.com/live' },
+  { id: 'evmux',  label: 'EVMux',  color: '#8b5cf6', server: 'rtmp://live.evmux.com/live' },
   { id: 'custom', label: 'Custom RTMP', color: '#d4af37', server: '' },
 ];
 
