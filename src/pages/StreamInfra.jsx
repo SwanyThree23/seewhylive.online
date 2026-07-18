@@ -25,9 +25,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
-import StreamGoals from '../components/live/StreamGoals';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,

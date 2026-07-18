@@ -19,9 +19,6 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import StreamGoals from '../components/live/StreamGoals';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {

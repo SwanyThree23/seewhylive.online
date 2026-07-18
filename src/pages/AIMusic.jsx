@@ -24,11 +24,7 @@ import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamGoals from '../components/live/StreamGoals';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,

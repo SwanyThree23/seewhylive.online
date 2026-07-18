@@ -195,7 +195,6 @@ import GuestQueue from '../components/live/GuestQueue';
 import AggregatedChat from '../components/live/AggregatedChat';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
 import PKBattle from '../components/live/PKBattle';
-import PKBattleModal from '../components/live/PKBattleModal';
 import RoomEntryGate from '../components/RoomEntryGate';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────

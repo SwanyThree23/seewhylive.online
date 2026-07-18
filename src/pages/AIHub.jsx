@@ -23,14 +23,10 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamGoals from '../components/live/StreamGoals';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';

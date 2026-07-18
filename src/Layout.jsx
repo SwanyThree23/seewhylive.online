@@ -23,7 +23,6 @@ import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
-import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [

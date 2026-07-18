@@ -61,8 +61,6 @@ import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirec
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
-import SuperChatBar from '../components/live/SuperChatBar';
-import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
