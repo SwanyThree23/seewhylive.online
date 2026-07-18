@@ -75,6 +75,13 @@ export default function MultiStreamManager() {
   const [showAddForm, setShowAddForm] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['multistreammanager-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: destinations = [], isLoading } = useQuery({
     queryKey: ['rtmp-destinations', user?.id],
@@ -443,8 +450,8 @@ export default function MultiStreamManager() {
           </motion.div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="multistream" viewerCount={destinations.length} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="multistream" viewerCount={destinations.length} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
@@ -454,7 +461,7 @@ export default function MultiStreamManager() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={destinations.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={destinations.length} peakViewers={destinations.length} />
       <BackgroundCustomizer />

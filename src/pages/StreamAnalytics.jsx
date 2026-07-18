@@ -96,6 +96,13 @@ export default function StreamAnalytics() {
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['streamanalytics-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id && !roomId,
+    refetchInterval: 30000,
+  });
+  const effectiveRoomId = roomId || activeRoom?.id || null;
 
   const peakViewers  = Math.max(...viewerData.map(d => d.viewers));
   const avgViewers   = Math.round(viewerData.reduce((s, d) => s + d.viewers, 0) / viewerData.length);
@@ -353,8 +360,8 @@ export default function StreamAnalytics() {
           </ChartCard>
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={avgViewers} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={effectiveRoomId} currentLayout="analytics" viewerCount={avgViewers} />
+      <MilestoneAlerts userId={user?.id} roomId={effectiveRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <AIHighlightGenerator recording={null} />
@@ -365,7 +372,7 @@ export default function StreamAnalytics() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={avgViewers} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={user?.id} roomId={effectiveRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={avgViewers} peakViewers={peakViewers} />
       <BackgroundCustomizer />

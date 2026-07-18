@@ -758,6 +758,15 @@ const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  const { data: activeRoom } = useQuery({
+    queryKey: ['statevsstate-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
   const [tab, setTab] = useState('BRACKET');
   const [matches, setMatches] = useState(BRACKET_MATCHES);
 
@@ -842,20 +851,20 @@ export default function StateVsState() {
       {tab === 'LIVE MATCH' && <LiveMatchView />}
       {tab === 'STANDINGS' && <StandingsView />}
       {tab === 'JUDGES' && <JudgesView />}
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
       <BackgroundCustomizer />
     </div>
   );
