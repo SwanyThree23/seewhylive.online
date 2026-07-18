@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -140,23 +140,89 @@ export default function TranscriptionStudio() {
     setTranslating(false);
   }
 
-  useEffect(() => () => { liveRef.current = false; recRef.current?.stop?.(); }, []);
+  // ── Deepgram live transcription ──────────────────────────────────────────────
+  const [dgMode, setDgMode]         = useState(false);    // true = Deepgram active
+  const [dgLines, setDgLines]       = useState([]);
+  const [dgLive, setDgLive]         = useState(false);
+  const dgWsRef    = useRef(null);
+  const dgRecRef   = useRef(null);
+  const dgChunkRef = useRef(null);
 
-  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
-  const srtText  = buildSRT(lines);
+  function getDgKey() { try { return localStorage.getItem('swl_apikey_deepgram') || ''; } catch { return ''; } }
 
-  function downloadSRT() {
-    const blob = new Blob([srtText], { type: 'text/plain' });
+  async function startDeepgram() {
+    const key = getDgKey();
+    if (!key) { alert('Add your Deepgram API key in VaultPro → AI Keys first.'); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const ws = new WebSocket(`wss://api.deepgram.com/v1/listen?language=${activeLang}&punctuate=true&interim_results=true`, ['token', key]);
+      ws.onopen = () => {
+        setDgLive(true);
+        const rec = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+        rec.ondataavailable = e => { if (ws.readyState === 1 && e.data.size > 0) ws.send(e.data); };
+        rec.start(250);
+        dgRecRef.current = rec;
+        dgChunkRef.current = stream;
+      };
+      ws.onmessage = evt => {
+        try {
+          const d = JSON.parse(evt.data);
+          const alt = d?.channel?.alternatives?.[0];
+          if (!alt?.transcript) return;
+          const isFinal = d.is_final;
+          if (isFinal && alt.transcript.trim()) {
+            const now = Date.now() - startMsRef.current;
+            setDgLines(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
+            setCaptionHistory(prev => [...prev, { text: alt.transcript.trim(), startMs: now, endMs: now + 3000, lang: activeLang }]);
+            setDemoText(alt.transcript.trim());
+            setTimeout(() => setDemoText(''), 4000);
+          }
+        } catch {}
+      };
+      ws.onerror = () => stopDeepgram();
+      ws.onclose = () => setDgLive(false);
+      dgWsRef.current = ws;
+    } catch (e) {
+      alert(`Microphone access denied: ${e.message}`);
+    }
+  }
+
+  function stopDeepgram() {
+    dgRecRef.current?.stop?.();
+    dgChunkRef.current?.getTracks?.()?.forEach?.(t => t.stop());
+    dgWsRef.current?.close?.();
+    dgRecRef.current = null;
+    dgWsRef.current  = null;
+    setDgLive(false);
+  }
+
+  useEffect(() => () => stopDeepgram(), []);
+
+  // ── Export helpers ────────────────────────────────────────────────────────────
+  function handleExport(fmt) {
+    let content = '';
+    if (fmt.key === 'srt') {
+      content = captionHistory.map((c, i) => {
+        const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+        const toSrtTime = ms => { const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10); return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`; };
+        return `${i+1}\n${toSrtTime(c.startMs)} --> ${toSrtTime(c.endMs)}\n${c.text}\n`;
+      }).join('\n');
+    } else if (fmt.key === 'json') {
+      content = JSON.stringify(captionHistory, null, 2);
+    } else {
+      content = captionHistory.map(c => `[${msToSrt(c.startMs).slice(0,8)}] ${c.text}`).join('\n');
+    }
+    const blob = new Blob([content], { type: fmt.mime });
     const a = document.createElement('a');
-    const srtUrl = URL.createObjectURL(blob);
-    a.href = srtUrl;
-    a.download = 'transcript.srt';
+    a.href = URL.createObjectURL(blob);
+    a.download = `transcript.${fmt.ext}`;
     a.click();
-    URL.revokeObjectURL(srtUrl);
+    URL.revokeObjectURL(a.href);
   }
 
   function clearHistory() {
     setCaptionHistory([]);
+    setDgLines([]);
     setDemoText('');
     startMsRef.current = Date.now();
   }
@@ -178,7 +244,7 @@ export default function TranscriptionStudio() {
           }}>🎙️</div>
           <div>
             <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>TRANSCRIPTION STUDIO</div>
-            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>CAPTION.NINJA INTEGRATION · 6 LANGUAGES · AI TRANSLATION</div>
+            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DEEPGRAM NATIVE · CAPTION.NINJA · 6 LANGUAGES · AI TRANSLATION</div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -380,6 +446,45 @@ export default function TranscriptionStudio() {
 
         {/* Transcription panel for VOD recordings */}
         <TranscriptionPanel recordingUrl={null} roomTitle="Live Session" />
+
+        {/* Deepgram Native Transcription */}
+        <div style={{ background: 'rgba(0,188,212,0.04)', border: '1px solid rgba(0,188,212,0.15)', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+            <div>
+              <div style={{ ...T, fontSize: 14, fontWeight: 700, color: '#00bcd4', letterSpacing: '0.05em' }}>Deepgram Live Transcription</div>
+              <div style={{ ...MONO, fontSize: 9, color: TEXTM, marginTop: 3 }}>Real-time AI speech-to-text · No browser plugin needed · Requires Deepgram API key</div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {dgLive && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <div className="live-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN }} />
+                  <span style={{ ...MONO, fontSize: 9, color: GREEN }}>LIVE</span>
+                </div>
+              )}
+              {!dgLive ? (
+                <button onClick={startDeepgram} style={{ ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', background: 'rgba(0,188,212,0.12)', border: '1px solid rgba(0,188,212,0.35)', borderRadius: 8, padding: '7px 16px', color: '#00bcd4', cursor: 'pointer' }}>
+                  🎙 Start Deepgram
+                </button>
+              ) : (
+                <button onClick={stopDeepgram} style={{ ...T, fontSize: 13, fontWeight: 700, letterSpacing: '0.06em', background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.3)', borderRadius: 8, padding: '7px 16px', color: '#ff6b6b', cursor: 'pointer' }}>
+                  ⏹ Stop
+                </button>
+              )}
+            </div>
+          </div>
+          {!getDgKey() && (
+            <div style={{ ...MONO, fontSize: 10, color: 'rgba(255,150,100,0.7)', padding: '8px 10px', borderRadius: 8, background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.15)' }}>
+              No Deepgram key — go to <strong>VaultPro → AI Keys</strong> to add one.
+            </div>
+          )}
+          {dgLines.length > 0 && (
+            <div style={{ marginTop: 10, maxHeight: 120, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {dgLines.slice(-10).reverse().map((l, i) => (
+                <div key={i} style={{ fontSize: 13, color: TEXTD, padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', lineHeight: 1.4 }}>{l.text}</div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Caption.Ninja link */}
         <div style={{ background: 'rgba(212,175,55,0.05)', border: `1px solid rgba(212,175,55,0.15)`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
