@@ -1709,7 +1709,7 @@ export default function LiveRoomPage({
               </div>
             </div>
             {/* Exit + controls bar (always visible at top) */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(rgba(0,0,0,.7),transparent)', zIndex: 10 }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 16px', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(rgba(0,0,0,.7),transparent)', zIndex: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isLive && <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, borderRadius: 999, padding: '3px 9px' }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'livePulse 1.2s infinite' }} />
