@@ -242,7 +242,13 @@ var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
 app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
-app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
+app.get('*', function(req, res) {
+  var indexPath = require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html');
+  if (!require('fs').existsSync(indexPath)) {
+    return res.status(503).send('<html><body style="font-family:sans-serif;text-align:center;padding:60px"><h2>Deploying update, back in a moment...</h2></body></html>');
+  }
+  res.sendFile(indexPath);
+});
 
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
@@ -3104,7 +3110,7 @@ app.post('/api/webhooks/deploy', function(req, res) {
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');
-    exec(cmd, { timeout: 150000 }, function(err, stdout, stderr) {
+    exec(cmd, { timeout: 300000 }, function(err, stdout, stderr) {
       if (err) { logger.error('[deploy-webhook] ' + err.message + (stderr ? ' | ' + stderr.slice(-200) : '')); return; }
       logger.info('[deploy-webhook] reload ok: ' + stdout.slice(-400));
     });
