@@ -53,14 +53,6 @@ export default function PollManager() {
   });
   const userCommunityId = userCommunity?.id || null;
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['pollmanager-active-room', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-
   const { data: templates } = useQuery({
     queryKey: ['pollTemplates', user?.id],
     queryFn: () => user ? base44.entities.PollTemplate.filter({ creator_id: user.id }) : Promise.resolve([]),

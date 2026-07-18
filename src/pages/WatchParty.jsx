@@ -1043,7 +1043,8 @@ export default function WatchPartyPage() {
                 className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
                 alt="preview"
               />
-              {videoUrl && (
+            )}
+            {videoUrl && (
                 <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#D4AF37' }}>
                   {detectType(videoUrl) === 'youtube'
                     ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
@@ -1704,7 +1705,7 @@ export default function WatchPartyPage() {
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />}
       {isHost && partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
       {isHost && <ScreenSharePanel isSharing={!!screenCaptureStream} onStartShare={handleScreenCapture} onStopShare={() => { screenCaptureStream?.getTracks().forEach(t => t.stop()); setScreenCaptureStream(null); }} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}

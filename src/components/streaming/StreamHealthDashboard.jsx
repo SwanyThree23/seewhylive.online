@@ -66,7 +66,6 @@ function lossStatus(pct) {
   return 'critical';
 }
 
-/* duplicate HealthMetric removed — using the definition above */
 
 const EMPTY = {
   bitrate:   { value: null, unit: 'kbps', status: 'offline', trend: null, label: 'Bitrate' },

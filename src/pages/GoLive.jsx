@@ -35,7 +35,7 @@ import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboar
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import ChatModeration from '../components/live/ChatModeration';
 import BrandChyron from '../components/live/BrandChyron';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import { WhisperPanel, WhisperToast } from '../components/live/DMWhisperPanel';
 import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
 import SceneSwitcher from '../components/live/SceneSwitcher';
 import NotificationHub from '../components/live/NotificationHub';
@@ -181,7 +181,6 @@ import BreakoutRoomsModal from '../components/live/BreakoutRoomsModal';
 import WebRTCConfigModal from '../components/live/WebRTCConfigModal';
 import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
-import { WhisperPanel, WhisperToast } from '../components/live/DMWhisperPanel';
 import RoomEntryGate from '../components/RoomEntryGate';
 const BG   = '#080B18';
 const GOLD = '#D4AF37';

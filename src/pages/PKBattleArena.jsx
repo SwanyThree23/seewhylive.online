@@ -191,12 +191,10 @@ export default function PKBattleArena() {
   const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [selectedOpponent, setSelectedOpponent] = useState(null);
-  const [battleActive, setBattleActive]         = useState(false);
   const [battleSecs, setBattleSecs]             = useState(0);
   const [hostVotes, setHostVotes]               = useState(50);
   const [oppVotes, setOppVotes]                 = useState(50);
   const [battleHistory, setBattleHistory]       = useState([]);
-  const [totalVotes, setTotalVotes]             = useState(0);
   const [phase, setPhase]                       = useState('select'); // select | countdown | live | result
   const [countdown, setCountdown]               = useState(3);
   const timerRef = useRef(null);

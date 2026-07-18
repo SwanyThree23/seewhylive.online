@@ -562,7 +562,7 @@ function startVoiceCall(){
       .replace(/\{chatbot_inject\}/g, chatbot_inject ? 'Include at the end of body: ' + chatbot_inject.slice(0, 100) + '...' : '')
       .replace(/\{voice_inject\}/g, voice_inject ? 'Include voice button at bottom-right.' : '')
       .replace(/\{seo_inject\}/g, seo_inject ? 'Include in <head>: proper meta tags, OG tags, Google Fonts.' : '')
-      + (themeNote ? `\n\n${themeNote}`)
+      + (themeNote ? `\n\n${themeNote}` : '')
       + (embedChatbot ? '\n\nAppend the following chatbot widget code just before </body>:\n' + chatbot_inject : '')
       + (embedVoice ? '\n\nAppend the following voice button code just before </body>:\n' + buildVoiceSnippet() : '')
       + (embedSEO ? '\n\nInclude in <head> section:\n' + buildSEOSnippet(name, tagline) : '');

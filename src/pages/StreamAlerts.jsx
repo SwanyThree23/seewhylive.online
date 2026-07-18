@@ -89,14 +89,6 @@ export default function StreamAlerts() {
   });
   const userCommunityId = userCommunity?.id || null;
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['streamalerts-active-room', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-
   const { data: alerts = [] } = useQuery({
     queryKey: ['soundAlerts', user?.id],
     queryFn: () =>

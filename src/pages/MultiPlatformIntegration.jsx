@@ -122,14 +122,6 @@ export default function MultiPlatformIntegration() {
   const activeRoomId = activeRoom?.id || null;
   const roomId = activeRoomId;
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['multiplatformint-active-room', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || null;
-
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');

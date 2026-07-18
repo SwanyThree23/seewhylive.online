@@ -213,79 +213,57 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
       exit={{ opacity: 0, scale: 0.9 }}
       className="flex flex-col items-center gap-1.5"
     >
-      <Card className={`${speaking ? 'ring-2 ring-green-500' : ''}`}>
-        <CardContent className="p-4">
-          <div className="flex flex-col items-center gap-3">
-            {/* Video/Avatar */}
-            <div className="relative">
-              {participant.is_video_enabled && remoteStream ? (
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-32 h-32 object-cover"
-                  style={{
-                    clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
-                    boxShadow: '0 0 20px rgba(212,175,55,0.4)'
-                  }}
-                />
-              ) : (
-                <div style={{
-                  clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
-                  boxShadow: '0 0 20px rgba(212,175,55,0.4)'
-                }}>
-                  <Avatar className="w-32 h-32">
-                    <AvatarImage src={participant.user_avatar} />
-                    <AvatarFallback className="text-2xl">
-                      {participant.user_name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-              )}
-
-              {/* Status Indicator */}
-              <div className="absolute top-2 right-2 flex gap-1">
-                {participant.is_streaming && (
-                  <Badge className="bg-[#C0392B] text-white text-xs animate-pulse">
-                    LIVE
-                  </Badge>
-                )}
-              </div>
-
-              {/* Audio Status */}
-              <div className={`absolute bottom-2 right-2 p-2 rounded-full ${
-                participant.is_audio_enabled ? 'bg-[#6DBF7E]' : 'bg-[#C0392B]'
-              }`}>
-                {participant.is_audio_enabled ? (
-                  <Mic className="w-4 h-4 text-white" />
-                ) : (
-                  <MicOff className="w-4 h-4 text-white" />
-                )}
-              </div>
-              {/* Muted badge */}
-              {!participant.is_audio_enabled && (
-                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-                  style={{ background: '#EF4444', border: '2px solid #080B18' }}>
-                  <MicOff className="w-2.5 h-2.5 text-white" />
-                </div>
-              )}
-              {/* LIVE badge */}
-              {participant.is_streaming && (
-                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black text-white animate-pulse"
-                  style={{ background: '#EF4444' }}>
-                  LIVE
-                </div>
-              )}
-              {isCurrentUser && (
-                <div className="absolute -top-1 left-0 right-0 flex justify-center">
-                  <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: '#D4AF37', color: '#000' }}>You</span>
-                </div>
-              )}
-            </div>
+      <div className="relative">
+        {participant.is_video_enabled && remoteStream ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className="w-32 h-32 object-cover"
+            style={{
+              clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+              boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+            }}
+          />
+        ) : (
+          <div style={{
+            clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+            boxShadow: '0 0 20px rgba(212,175,55,0.4)'
+          }}>
+            <Avatar className="w-32 h-32">
+              <AvatarImage src={participant.user_avatar} />
+              <AvatarFallback className="text-2xl">
+                {participant.user_name?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
-        </CardContent>
-      </Card>
+        )}
+        {/* Status Indicator */}
+        <div className="absolute top-2 right-2 flex gap-1">
+          {participant.is_streaming && (
+            <Badge className="bg-[#C0392B] text-white text-xs animate-pulse">
+              LIVE
+            </Badge>
+          )}
+        </div>
+        {/* Audio Status */}
+        <div className={`absolute bottom-2 right-2 p-2 rounded-full ${
+          participant.is_audio_enabled ? 'bg-[#6DBF7E]' : 'bg-[#C0392B]'
+        }`}>
+          {participant.is_audio_enabled ? (
+            <Mic className="w-4 h-4 text-white" />
+          ) : (
+            <MicOff className="w-4 h-4 text-white" />
+          )}
+        </div>
+        {/* Muted badge */}
+        {!participant.is_audio_enabled && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ background: '#EF4444', border: '2px solid #080B18' }}>
+            <MicOff className="w-2.5 h-2.5 text-white" />
+          </div>
+        )}
+      </div>
       {/* Name + role */}
       <div className="text-center">
         <p className="text-[11px] font-bold text-white truncate" style={{ maxWidth: 136, fontFamily: 'Barlow Condensed, sans-serif' }}>

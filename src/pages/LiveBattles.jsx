@@ -132,7 +132,6 @@ export default function LiveBattles() {
     refetchInterval: 10000,
   });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const activeBattle = battles.find(b => b.status === 'active') || null;
   const roomId = activeBattle?.id || null;
 

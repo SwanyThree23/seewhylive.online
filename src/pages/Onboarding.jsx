@@ -457,11 +457,8 @@ function Step6({ user, onDone, setStep }) {
             <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>STREAM LIVE · Auto-ends in {countdown}s</div>
             <button onClick={finishStream} style={{ marginTop: 16, padding: '8px 20px', background: 'transparent', border: `1px solid ${C.burg}`, borderRadius: 8, color: C.burg, cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.06em' }}>End Early</button>
           </div>
-          <div style={{ fontFamily:'Barlow Condensed', fontSize:13, color:C.gray, letterSpacing:1 }}>STREAM LIVE · AUTO-ENDS IN {countdown}s</div>
-          <button onClick={finishStream} style={{ marginTop:16, padding:'8px 20px', background:'transparent', border:`1px solid ${C.burg}`, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:11, letterSpacing:1 }}>END EARLY</button>
-        </div>
-      )}
-      {done && (
+        )}
+        {done && (
         <div>
           <div style={{ fontSize:48, marginBottom:8 }}>✅</div>
           <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.volt }}>TEST STREAM COMPLETE!</div>
@@ -469,6 +466,7 @@ function Step6({ user, onDone, setStep }) {
         </div>
       )}
       <NavButtons step={6} setStep={setStep} onSave={save} saving={saving} canNext={done} onSkip={() => onDone({ step_6_test_stream: true, current_step: 7 })} />
+      </div>
     </div>
   );
 }
