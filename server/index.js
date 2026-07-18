@@ -3099,7 +3099,8 @@ app.post('/api/webhooks/deploy', function(req, res) {
       'cd /opt/seewhy',
       'git fetch origin main',
       'git reset --hard origin/main',
-      'cd server && npm install --omit=dev --silent',
+      'cd /opt/seewhy/server && npm install --omit=dev --silent',
+      'cd /opt/seewhy/frontend && npm install --silent && npm run build',
       'pm2 reload seewhy-server --update-env',
       'pm2 save --force'
     ].join(' && ');
