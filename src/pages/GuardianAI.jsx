@@ -107,7 +107,36 @@ export default function GuardianAI() {
   const [scanning, setScanning] = useState(false);
   const [scanStep, setScanStep]  = useState('');
   const [activeTab, setActiveTab] = useState('log');
+  const [thresholdSaved, setThresholdSaved] = useState(false);
   const logEndRef = useRef(null);
+  const saveTimerRef = useRef(null);
+
+  // Load persisted thresholds from user profile
+  useEffect(() => {
+    if (!user?.guardian_thresholds) return;
+    const t = user.guardian_thresholds;
+    if (typeof t.flagT === 'number') setFlagT(t.flagT);
+    if (typeof t.muteT === 'number') setMuteT(t.muteT);
+    if (typeof t.banT  === 'number') setBanT(t.banT);
+  }, [user?.id]);
+
+  function handleThresholdChange(key, value) {
+    if (key === 'flagT') setFlagT(value);
+    if (key === 'muteT') setMuteT(value);
+    if (key === 'banT')  setBanT(value);
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      const next = {
+        flagT: key === 'flagT' ? value : flagT,
+        muteT: key === 'muteT' ? value : muteT,
+        banT:  key === 'banT'  ? value : banT,
+      };
+      base44.auth.updateMe({ guardian_thresholds: next }).then(() => {
+        setThresholdSaved(true);
+        setTimeout(() => setThresholdSaved(false), 1500);
+      }).catch(() => {});
+    }, 600);
+  }
 
   const { data: moderations = [], isLoading } = useQuery({
     queryKey: ['guardian-moderations'],
@@ -274,14 +303,19 @@ export default function GuardianAI() {
 
         {/* Risk Thresholds */}
         <div style={{ background: BG3, border: `1px solid ${SLATE}`, borderRadius: 14, padding: '16px' }}>
-          <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.08em', marginBottom: 14 }}>
-            RISK THRESHOLDS
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.08em' }}>
+              RISK THRESHOLDS
+            </div>
+            {thresholdSaved && (
+              <span style={{ ...T, fontSize: 10, fontWeight: 700, color: GREEN, letterSpacing: '0.06em' }}>✓ SAVED</span>
+            )}
           </div>
           {[
-            { label: 'FLAG FOR REVIEW', value: flagT, set: setFlagT, color: WARN,   icon: Eye },
-            { label: 'AUTO-MUTE',       value: muteT, set: setMuteT, color: ORANGE, icon: AlertTriangle },
-            { label: 'AUTO-BAN',        value: banT,  set: setBanT,  color: RED,    icon: Ban },
-          ].map(({ label, value, set, color, icon: Icon }) => (
+            { label: 'FLAG FOR REVIEW', key: 'flagT', value: flagT, color: WARN,   icon: Eye },
+            { label: 'AUTO-MUTE',       key: 'muteT', value: muteT, color: ORANGE, icon: AlertTriangle },
+            { label: 'AUTO-BAN',        key: 'banT',  value: banT,  color: RED,    icon: Ban },
+          ].map(({ label, key, value, color, icon: Icon }) => (
             <div key={label} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -290,17 +324,10 @@ export default function GuardianAI() {
                 </div>
                 <span style={{ ...MONO, fontSize: 11, color, fontWeight: 700 }}>{value}%</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <RiskBar value={value} color={color} />
-                <input
-                  type="range" min="0" max="100" value={value}
-                  onChange={e => set(Number(e.target.value))}
-                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
-                />
-              </div>
+              <RiskBar value={value} color={color} />
               <input
                 type="range" min="0" max="100" value={value}
-                onChange={e => set(Number(e.target.value))}
+                onChange={e => handleThresholdChange(key, Number(e.target.value))}
                 style={{ width: '100%', accentColor: color, marginTop: 4, cursor: 'pointer' }}
               />
             </div>

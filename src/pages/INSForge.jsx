@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -88,6 +88,7 @@ function Swatch({ hex }) {
 }
 
 export default function INSForge() {
+  const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -96,6 +97,13 @@ export default function INSForge() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [briefSaved, setBriefSaved] = useState(false);
+
+  const { data: recentBriefs = [] } = useQuery({
+    queryKey: ['insforge-briefs', user?.id],
+    queryFn: () => base44.entities.Activity.filter({ user_id: user.id, type: 'brief_generated' }, '-created_at', 5),
+    enabled: !!user?.id,
+  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -180,7 +188,21 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       });
 
       clearInterval(stepInterval);
-      setResult(typeof res === 'string' ? JSON.parse(res) : res);
+      const parsed = typeof res === 'string' ? JSON.parse(res) : res;
+      setResult(parsed);
+      setBriefSaved(false);
+      // Persist to Activity log
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'brief_generated',
+          title: `${selected.label}: ${parsed.headline || prompt.slice(0, 60)}`,
+          created_at: new Date().toISOString(),
+        }).then(() => {
+          setBriefSaved(true);
+          qc.invalidateQueries({ queryKey: ['insforge-briefs', user?.id] });
+        }).catch(() => {});
+      }
     } catch (e) {
       clearInterval(stepInterval);
       setError('Failed to generate. Try again.');
@@ -383,6 +405,13 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
             )}
           </div>
 
+          {/* Saved confirmation */}
+          {briefSaved && (
+            <div style={{ ...T, fontSize: 11, color: '#6DBF7E', textAlign: 'center', padding: '4px 0' }}>
+              ✓ Brief saved to your history
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={copyBrief} style={{
               flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid ${selected?.color || GOLD}44`,
@@ -409,6 +438,24 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
       {!selected && !result && (
         <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.15)', ...T, fontSize: 14 }}>
           Select an asset type above to begin forging
+        </div>
+      )}
+
+      {/* Recent brief history */}
+      {recentBriefs.length > 0 && (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
+            📂 Recent Briefs
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {recentBriefs.map(b => (
+              <div key={b.id} style={{ background: BG3, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '8px 12px' }}>
+                <div style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {b.title}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -146,20 +146,12 @@ export default function WatchPartyCoStreamPanel({ roomId, isHost: _isHost, parti
     return () => clearInterval(intervalRef.current);
   }, [playing]);
 
-  // ── Sync offsets simulation ──────────────────────────────────────────────────
+  // Initialize all sync offsets to 0; users can adjust manually per participant
   useEffect(() => {
-    function refreshOffsets() {
-      if (!participants.length) return;
-      const map = {};
-      participants.forEach(p => {
-        map[p.id] = Math.round((Math.random() * 16 - 8) * 10) / 10;
-      });
-      setSyncOffsets(map);
-    }
-    refreshOffsets();
-    const id = setInterval(refreshOffsets, 8000);
-    return () => clearInterval(id);
-  }, [participants]);
+    const map = {};
+    participants.forEach(p => { map[p.id] = 0; });
+    setSyncOffsets(map);
+  }, [participants.length]);
 
   // ── Entity mutation ──────────────────────────────────────────────────────────
   const syncMutation = useMutation({

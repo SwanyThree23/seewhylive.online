@@ -2299,7 +2299,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <div className="space-y-3">
                       {/* Real AIModeration component */}
                       <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(107,191,126,0.2)' }}>
-                        <AIModeration roomId={partyId} isHost={canManage} />
+                        <AIModeration
+                          roomId={partyId}
+                          isHost={canManage}
+                          moderatorId={user?.id}
+                          thresholds={user?.guardian_thresholds}
+                        />
                       </div>
 
                       {/* Custom blocked words panel */}

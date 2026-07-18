@@ -65,16 +65,11 @@ export default function AggregatedChat({ roomId, currentUser, isHost, onMessages
     refetchInterval: 5000,
   });
 
-  // ── Merge DB + simulated platform messages ───────────────────────────────────
+  // ── Merge DB messages (cross-platform messages arrive via webhook → DB) ─────
   useEffect(() => {
-    const simulated = [
-      { id: 'sim-1', user_name: 'TwitchUser99', content: 'Great stream! 🔥',      platform: 'twitch',  created_date: new Date(Date.now() - 60000).toISOString() },
-      { id: 'sim-2', user_name: 'YTFan',        content: '¡Hola desde YouTube!', platform: 'youtube', created_date: new Date(Date.now() - 40000).toISOString() },
-    ];
-    const combined = [...simulated, ...dbMessages.map(m => ({ ...m, platform: 'platform' }))]
-      .sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+    const combined = dbMessages.map(m => ({ ...m, platform: m.platform || 'platform' }));
     setMessages(combined);
-    onMessagesChange?.(combined); // expose to parent for highlight detector
+    onMessagesChange?.(combined);
   }, [dbMessages]);
 
   // ── Real-time new messages ───────────────────────────────────────────────────

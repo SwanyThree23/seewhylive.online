@@ -69,14 +69,22 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
     return () => clearInterval(id);
   }, [phase, timeLeft]);
 
-  // Simulate opponent score in active phase
+  // Track the created PKBattle entity so we can subscribe to real score updates
+  const [pkBattleId, setPkBattleId] = useState(null);
+
   useEffect(() => {
-    if (phase !== 'active') return;
-    const id = setInterval(() => {
-      setChallengerScore((s) => s + Math.floor(Math.random() * 80));
-    }, 7000);
-    return () => clearInterval(id);
-  }, [phase]);
+    if (!pkBattleId) return;
+    const unsub = base44.entities.PKBattle.subscribe((event) => {
+      if (event.data?.id !== pkBattleId) return;
+      if (event.type === 'update') {
+        const b = event.data;
+        if (b.host_score != null) setHostScore(b.host_score);
+        if (b.challenger_score != null) setChallengerScore(b.challenger_score);
+        if (b.status === 'ended') setPhase('result');
+      }
+    });
+    return unsub;
+  }, [pkBattleId]);
 
   const handleSendChallenge = async () => {
     if (!challengerHandle.trim()) {
@@ -84,7 +92,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
       return;
     }
     try {
-      await base44.entities.PKBattle.create({
+      const battle = await base44.entities.PKBattle.create({
         room_id: roomId,
         host_id: currentUser?.id,
         host_name: hostName,
@@ -94,6 +102,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
         host_score: 0,
         challenger_score: 0,
       });
+      setPkBattleId(battle?.id || null);
       setTimeLeft(duration);
       setHostScore(0);
       setChallengerScore(0);

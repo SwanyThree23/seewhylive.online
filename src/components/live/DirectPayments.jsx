@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExternalLink, DollarSign, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
@@ -19,6 +19,15 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
   const [links, setLinks] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [saved, setSaved] = useState({});
+
+  useEffect(() => {
+    if (!isOpen) return;
+    base44.auth.me().then(user => {
+      const pl = user?.payment_links || {};
+      setLinks(pl);
+      setSaved(pl);
+    }).catch(() => {});
+  }, [isOpen]);
 
   const handleSave = async () => {
     try {

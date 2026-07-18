@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Check, Copy, ClipboardList } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 /* ─── Brand tokens ─────────────────────────────────────── */
 const GOLD    = '#D4AF37';
@@ -12,25 +14,24 @@ const FONT    = { fontFamily: "'Barlow Condensed', sans-serif" };
 /* ─── OCT clip-path ─────────────────────────────────────── */
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-/* ─── Mock data ─────────────────────────────────────────── */
-const MOCK_RECENT = [
-  { id: 1, name: 'SwanyThree',   handle: '@swanythree',   initials: 'ST', color: '#8B4513' },
-  { id: 2, name: 'Joyce B',      handle: '@joyceb',       initials: 'JB', color: '#6B4A9A' },
-  { id: 3, name: 'Phelo',        handle: '@phelo',        initials: 'PH', color: '#4A7A9B' },
-  { id: 4, name: 'ObiKnowledge', handle: '@obiknowledge', initials: 'OK', color: '#6B8B4A' },
-  { id: 5, name: 'Marvin10',     handle: '@marvin10',     initials: 'M1', color: '#9B6B4A' },
-];
+// Deterministic avatar color from user id
+function avatarColor(str) {
+  let h = 0;
+  for (let i = 0; i < (str || '').length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffffff;
+  return '#' + h.toString(16).padStart(6, '0');
+}
 
-const MOCK_SUGGESTED = [
-  { id: 6,  name: 'Durand',      handle: '@durand13',     initials: 'D',  color: '#4A6B8B', followers: '12.4K' },
-  { id: 7,  name: 'Sim 11',      handle: '@sim11',        initials: 'S',  color: '#8B4A6B', followers: '8.9K'  },
-  { id: 8,  name: 'Yahawadah',   handle: '@yahawadah',    initials: 'Y',  color: '#6B8B4A', followers: '22.1K' },
-  { id: 9,  name: 'TravelQueen', handle: '@travelqueen',  initials: 'TQ', color: '#4A8B6B', followers: '45.2K' },
-  { id: 10, name: 'CoachMike',   handle: '@coachmike',    initials: 'CM', color: '#9B8B4A', followers: '31.7K' },
-  { id: 11, name: 'NatureLens',  handle: '@naturelens',   initials: 'NL', color: '#4A4A8B', followers: '18.3K' },
-  { id: 12, name: 'ChefDave',    handle: '@chefdave',     initials: 'CD', color: '#8B4A4A', followers: '27.5K' },
-  { id: 13, name: 'FitnessGuru', handle: '@fitnessguru',  initials: 'FG', color: '#4A8B8B', followers: '52.1K' },
-];
+function participantToGuest(p) {
+  const name = p.user_name || p.display_name || `User ${(p.user_id || p.id || '').slice(0, 6)}`;
+  return {
+    id: p.id,
+    userId: p.user_id,
+    name,
+    handle: `@${name.toLowerCase().replace(/\s+/g, '')}`,
+    initials: name.slice(0, 2).toUpperCase(),
+    color: avatarColor(p.user_id || p.id),
+  };
+}
 
 /* ─── Octagonal avatar tile ─────────────────────────────── */
 function OctTile({ size = 48, color, initials, fontSize = 14 }) {
@@ -91,6 +92,17 @@ export default function InviteGuestsModal({ isOpen, onClose, roomId, roomTitle, 
   const [invited, setInvited]         = useState(new Set());
   const [linkCopied, setLinkCopied]   = useState(false);
 
+  // Load recent room participants as "Recent Collabs"
+  const { data: participantData = [] } = useQuery({
+    queryKey: ['invite-participants', roomId],
+    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }, '-created_date', 20),
+    enabled: !!roomId && isOpen,
+  });
+
+  const recentGuests = participantData
+    .filter(p => p.user_id && p.user_id !== currentUser?.id)
+    .map(participantToGuest);
+
   function handleInvite(id) {
     setInvited(prev => new Set([...prev, id]));
   }
@@ -106,16 +118,15 @@ export default function InviteGuestsModal({ isOpen, onClose, roomId, roomTitle, 
 
   const filteredRecent = useMemo(
     () => q
-      ? MOCK_RECENT.filter(p => p.name.toLowerCase().includes(q) || p.handle.toLowerCase().includes(q))
-      : MOCK_RECENT,
-    [q],
+      ? recentGuests.filter(p => p.name.toLowerCase().includes(q) || p.handle.toLowerCase().includes(q))
+      : recentGuests,
+    [q, recentGuests],
   );
 
+  // Suggested guests: search within recent if query set, otherwise empty (no hardcoded mocks)
   const filteredSuggested = useMemo(
-    () => q
-      ? MOCK_SUGGESTED.filter(p => p.name.toLowerCase().includes(q) || p.handle.toLowerCase().includes(q))
-      : MOCK_SUGGESTED,
-    [q],
+    () => [], // populated by future follower/contact integration
+    [],
   );
 
   return (

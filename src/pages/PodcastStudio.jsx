@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -656,8 +656,14 @@ export default function PodcastStudio() {
   const [generating, setGenerating] = useState(false);
   const [genStep, setGenStep] = useState('');
   const [script, setScript] = useState(null);
-  const [library, setLibrary] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_library') || '[]'); } catch { return []; } });
-  const [nlmSources, setNlmSources] = useState(() => { try { return JSON.parse(sessionStorage.getItem('podcast_nlm_sources') || '[]'); } catch { return []; } });
+  const [library, setLibrary] = useState([]);
+  const [nlmSources, setNlmSources] = useState([]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.podcast_library) setLibrary(user.podcast_library);
+    if (user.podcast_nlm_sources) setNlmSources(user.podcast_nlm_sources);
+  }, [user?.id]);
   const [editingIdx, setEditingIdx] = useState(null);
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
@@ -670,7 +676,7 @@ export default function PodcastStudio() {
 
   function saveNlmSources(updated) {
     setNlmSources(updated);
-    sessionStorage.setItem('podcast_nlm_sources', JSON.stringify(updated));
+    base44.auth.updateMe({ podcast_nlm_sources: updated }).catch(() => {});
   }
 
   function addSource() {
@@ -694,10 +700,7 @@ export default function PodcastStudio() {
 
   async function generateScript() {
     setGenerating(true);
-    for (let i = 0; i < GEN_STEPS.length; i++) {
-      setGenStep(GEN_STEPS[i]);
-      await new Promise(r => setTimeout(r, 900));
-    }
+    setGenStep('Generating script…');
     try {
       const srcText = sources.length
         ? sources.map(s => `[${s.label}]: ${s.content}`).join('\n---\n')
@@ -734,7 +737,7 @@ export default function PodcastStudio() {
       setScript(ep);
       const newLib = [ep, ...library].slice(0, 20);
       setLibrary(newLib);
-      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
+      base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
       setTab('script');
     } catch (e) {
       const fallback = {
@@ -752,7 +755,7 @@ export default function PodcastStudio() {
       setScript(fallback);
       const newLib = [fallback, ...library].slice(0, 20);
       setLibrary(newLib);
-      sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
+      base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
       setTab('script');
     }
     setGenerating(false);
@@ -781,7 +784,7 @@ export default function PodcastStudio() {
   function deleteEpisode(idx) {
     const newLib = library.filter((_, i) => i !== idx);
     setLibrary(newLib);
-    sessionStorage.setItem('podcast_library', JSON.stringify(newLib));
+    base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
     setDeleteConfirmIdx(null);
     showToast('Episode deleted');
   }

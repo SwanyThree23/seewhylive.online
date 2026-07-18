@@ -35,6 +35,7 @@ import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
 import GoldenWall from '../components/live/GoldenWall';
 import QuickPollLauncher from '../components/live/QuickPollLauncher';
 import GiftTray from '../components/live/GiftTray';
+import ModerationToast, { useModerationToasts } from '../components/shared/ModerationToast';
 import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
 import HostAlertCenter from '../components/live/HostAlertCenter';
@@ -401,6 +402,19 @@ export default function LiveRoom() {
 
   const isExclusiveStream = party?.is_exclusive === true;
   const isHost = user?.id && party?.host_id && user.id === party.host_id;
+
+  // Moderation toasts for audience (show when someone gets muted/banned)
+  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
+  useEffect(() => {
+    if (!roomId) return;
+    const unsub = base44.entities.ChatModeration.subscribe((event) => {
+      if (event.type !== 'create') return;
+      const d = event.data;
+      if (d?.room_id !== roomId || !d?.auto_detected) return;
+      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: d.target_user_name || 'User' });
+    });
+    return unsub;
+  }, [roomId]);
 
   const { data: activeSubs = [] } = useQuery({
     queryKey: ['user-subscriptions', user?.id, party?.host_id],
@@ -813,6 +827,8 @@ export default function LiveRoom() {
           )}
       </AnimatePresence>
 
+      <ModerationToast toasts={modToasts} />
+
       {(roomId || party?.id) && (
         <LoveHearts roomId={roomId || party?.id} currentUser={user} creatorId={party?.host_id} />
       )}
@@ -1044,7 +1060,7 @@ export default function LiveRoom() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={isHost} roomId={roomId} creatorId={party?.host_id || user?.id} currentTips={0} currentSubs={0} currentViewers={0} />
       <ViewerCount count={0} peakViewers={0} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={0} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={isHost} />}

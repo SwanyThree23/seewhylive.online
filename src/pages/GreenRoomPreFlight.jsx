@@ -31,11 +31,11 @@ const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const RTMP_INGEST = 'rtmp://ingest.seewhylive.online:1935/live';
 
-function genToken() {
+function genToken(userId) {
   const rand = () => Math.random().toString(36).slice(2, 10);
-  const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
+  const uid = userId || 'sw_' + rand();
   const session = Date.now();
-  return `${user}?session=${session}`;
+  return `${uid}?session=${session}`;
 }
 
 function genVDOLink() {
@@ -97,7 +97,11 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   const [tests, setTests] = useState({ mic: 'idle', camera: 'idle', network: 'idle' });
   const [streamKey]  = useState(() => genStreamKey());
   const [vdoLink]    = useState(() => genVDOLink());
-  const [token]      = useState(() => genToken());
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    setToken(genToken(user?.id));
+  }, [user?.id]);
   const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKey, setShowKey] = useState(false);
   const streamRef = useRef(null);
@@ -117,8 +121,14 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
         s.getTracks().forEach(t => t.stop());
         setTests(t => ({ ...t, camera: 'ready' }));
       } else if (type === 'network') {
-        await new Promise(res => setTimeout(res, 800));
-        setTests(t => ({ ...t, network: navigator.onLine ? 'ready' : 'failed' }));
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        try {
+          await fetch('https://www.google.com/generate_204', { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+          setTests(t => ({ ...t, network: 'ready' }));
+        } finally {
+          clearTimeout(timeout);
+        }
       }
     } catch {
       setTests(t => ({ ...t, [type]: 'failed' }));

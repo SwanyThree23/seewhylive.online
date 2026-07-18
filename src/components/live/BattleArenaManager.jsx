@@ -140,19 +140,7 @@ export default function BattleArenaManager({ roomId, isHost, participants = [], 
     clearInterval(countdownRef.current);
   }, []);
 
-  // ── Vote drift during live ───────────────────────────────────────────────────
-  useEffect(() => {
-    if (phase === 'live') {
-      voteRef.current = setInterval(() => {
-        const drift = Math.floor(Math.random() * 5) - 2;
-        setVotesA(a => Math.max(1, Math.min(a + drift, 999)));
-        setVotesB(b => Math.max(1, Math.min(b + drift, 999)));
-      }, 800);
-    } else {
-      clearInterval(voteRef.current);
-    }
-    return () => clearInterval(voteRef.current);
-  }, [phase]);
+  // Votes come from audience chat commands (!A / !B) parsed by the chat handler — no simulation
 
   // ── Battle timer ─────────────────────────────────────────────────────────────
   useEffect(() => {
