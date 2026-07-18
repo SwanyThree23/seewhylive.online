@@ -25,7 +25,7 @@ function useHLSVideo(videoRef, streamUrl) {
     }
 
     // Dynamic hls.js import — only loaded when needed
-    import('hls.js').then(({ default: Hls }) => {
+    import(/* @vite-ignore */ 'hls.js').then(({ default: Hls }) => {
       if (!Hls.isSupported()) {
         video.src = streamUrl;
         return;
