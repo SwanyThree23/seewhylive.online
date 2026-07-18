@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -113,6 +114,14 @@ function PlatformBadge({ name, icon, connected, color, onToggle }) {
 // ── Main ──────────────────────────────────────────────────────────────────
 export default function MultiPlatformIntegration() {
   const { user } = useAuth();
+
+  const { data: activeRoom } = useQuery({
+    queryKey: ['multiplatformint-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   // Webhook state
   const [webhookUrl, setWebhookUrl] = useState('');
@@ -605,18 +614,18 @@ export default function MultiPlatformIntegration() {
       </div>
 
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

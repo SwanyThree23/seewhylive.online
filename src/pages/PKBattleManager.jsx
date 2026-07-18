@@ -670,6 +670,14 @@ export default function PKBattleManager() {
     queryFn: function() { return base44.auth.me(); },
   });
 
+  var { data: activeRoom } = useQuery({
+    queryKey: ['pkbattlemgr-active-room', user?.id],
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  var activeRoomId = activeRoom?.id || null;
+
   var { data: battles = [] } = useQuery({
     queryKey: ['pk-battles'],
     queryFn: function() { return base44.entities.PKBattle.list('-created_date', 50); },
@@ -852,8 +860,8 @@ export default function PKBattleManager() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="battle" viewerCount={activeBattleCount} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="battle" viewerCount={activeBattleCount} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />

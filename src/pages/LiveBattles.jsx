@@ -222,8 +222,8 @@ export default function LiveBattles() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="battles" viewerCount={battles.length} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={roomId} currentLayout="battles" viewerCount={battles.length} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
@@ -238,7 +238,7 @@ export default function LiveBattles() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={battles.length} peakViewers={battles.length} />
       <BackgroundCustomizer />

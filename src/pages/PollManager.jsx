@@ -39,6 +39,14 @@ export default function PollManager() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
+  const { data: activeRoom } = useQuery({
+    queryKey: ['pollmanager-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
   const { data: templates } = useQuery({
     queryKey: ['pollTemplates', user?.id],
     queryFn: () => user ? base44.entities.PollTemplate.filter({ creator_id: user.id }) : Promise.resolve([]),
@@ -198,20 +206,20 @@ export default function PollManager() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
       <BackgroundCustomizer />
     </div>
   );
