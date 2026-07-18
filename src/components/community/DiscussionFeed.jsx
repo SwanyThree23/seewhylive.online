@@ -6,7 +6,7 @@ import { MessageSquare, Heart, MessageCircle, Pin } from 'lucide-react';
 import { toast } from 'sonner';
 
 const G = '#D4AF37';
-const PANEL = '#0F0B1A';
+const PANEL = '#0D1022';
 const BORDER = 'rgba(212,175,55,0.18)';
 
 export default function DiscussionFeed({ communityId }) {
@@ -43,6 +43,13 @@ export default function DiscussionFeed({ communityId }) {
     onSuccess: (post) => {
       queryClient.invalidateQueries({ queryKey: ['communityDiscussions', communityId] });
       setNewPost('');
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'milestone',
+          title: `Posted in community discussion`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -57,7 +64,7 @@ export default function DiscussionFeed({ communityId }) {
           style={{ background: PANEL, border: `1px solid ${BORDER}` }}
         >
           <div className="flex gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
             <textarea
               placeholder="Share your thoughts with the community..."
               value={newPost}

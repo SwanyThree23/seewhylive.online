@@ -16,6 +16,7 @@ export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode
   var [camError,     setCamError]     = useState('');
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
+  var [flyReactions, setFlyReactions] = useState([]);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -143,6 +144,21 @@ export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode
       }
     }
   }, [isCamOff, isOwnCell]);
+
+  // Listen for reactions targeted at this seat
+  useEffect(function() {
+    if (!socket || !guestId) return;
+    function onReaction(payload) {
+      if (payload.guestId !== guestId) return;
+      var id = Date.now() + Math.random();
+      setFlyReactions(function(prev) { return prev.concat([{ id: id, emoji: payload.emoji, offset: Math.round(Math.random() * 40 - 20) }]); });
+      setTimeout(function() {
+        setFlyReactions(function(prev) { return prev.filter(function(r) { return r.id !== id; }); });
+      }, 1500);
+    }
+    socket.on('panel:reaction', onReaction);
+    return function() { socket.off('panel:reaction', onReaction); };
+  }, [socket, guestId]);
 
   // Remote cell: subscribe to video + audio producers
   useEffect(function() {
@@ -315,6 +331,25 @@ export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode
 
         {/* Connection quality dot */}
         <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
+        {isHost && (
+          <div style={{ position: 'absolute', top: 6, left: 6, fontSize: 11, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.8))', zIndex: 5 }}>
+            👑
+          </div>
+        )}
+        {guest && guest.role === 'mod' && !isHost && (
+          <div style={{ position: 'absolute', top: 6, left: 6, background: 'rgba(59,130,246,.85)', borderRadius: 999, padding: '2px 6px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#fff', zIndex: 5 }}>
+            MOD
+          </div>
+        )}
+        <div style={{ position: 'absolute', bottom: 0, left: '50%', pointerEvents: 'none', width: 0, height: 0 }}>
+          {flyReactions.map(function(r) {
+            return (
+              <div key={r.id} style={{ position: 'absolute', left: r.offset, bottom: 0, fontSize: 22, animation: 'panelReactFloat 1.5s ease forwards', userSelect: 'none', lineHeight: 1, pointerEvents: 'none' }}>
+                {r.emoji}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Name bar + EQ bars — hidden in fill/rect mode (host renders footer externally) */}

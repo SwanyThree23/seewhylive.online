@@ -733,6 +733,7 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
         )}
 
         {/* PANEL layout */}
+        <style dangerouslySetInnerHTML={{ __html: '@keyframes panelReactFloat { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translateY(-10px) scale(1); } 100% { transform: translateY(-70px) scale(1); opacity: 0; } }' }} />
         {!showGuests && stageLayout === 'panel' && (
           <div style={{ flex: 1, display: 'grid', gridTemplateColumns: allGridCols, gap: 2, padding: 2, overflow: 'hidden', background: '#0E0C09', alignContent: 'start' }}>
             {allParticipants.map(function(g) {
@@ -764,7 +765,21 @@ export default function RoomTab({ socket, guests, chat, isLive, setIsLive, userI
                     ? <OverlayCustomLT lowerThirds={overlayConfig.lowerThirds} guestId={gid} />
                     : <LowerThird name={g.username || gid} role={g.role || 'viewer'} isMuted={isOwn && isMuted} isCamOff={isOwn && isCamOff} isLive={isLive} />
                   }
-                  {/* Expand button — Bigo style */}
+                  {/* Quick reactions */}
+              <div style={{ position: 'absolute', bottom: 4, right: 4, display: 'flex', gap: 2, zIndex: 25 }}>
+                {['👍','❤️','😂','🔥','👏'].map(function(emo) {
+                  return (
+                    <button
+                      key={emo}
+                      onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('panel:react', { roomId: roomId, guestId: gid, emoji: emo }); }}
+                      style={{ width: 18, height: 18, background: 'rgba(0,0,0,.5)', border: 'none', borderRadius: '50%', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    >
+                      {emo}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Expand button — Bigo style */}
                   <button
                     onClick={function(e) { e.stopPropagation(); setExpandedId(gid); setStageLayout('expand'); }}
                     title="Expand panel"

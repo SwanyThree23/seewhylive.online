@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -18,7 +20,15 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,
@@ -463,7 +473,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   exit={{ opacity: 0, scale: 0.9, y: -4 }}
                   style={{
                     position: 'absolute', right: 0, top: 36, zIndex: 30,
-                    background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
+                    background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)',
                     borderRadius: 12, overflow: 'hidden', minWidth: 150,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
                   }}
@@ -672,7 +682,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',
@@ -799,7 +809,7 @@ Return ONLY valid JSON (no markdown, no backticks):
       } catch (_) {
         data = {
           title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
-          emoji: '🎵', tags, duration: `${2 + Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+          emoji: '🎵', tags, duration: '3:00',
           streamReady: true,
           lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
         };
@@ -812,7 +822,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         duration: data.duration || '2:30',
         emoji: data.emoji || '🎵',
         liked: false,
-        likeCount: Math.floor(Math.random() * 20),
+        likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
       }, ...prev]);
@@ -825,9 +835,9 @@ Return ONLY valid JSON (no markdown, no backticks):
         id: `t${Date.now()}`,
         title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
         tags: tags.slice(0, 6),
-        duration: `${2+Math.floor(Math.random()*2)}:${(10+Math.floor(Math.random()*50)).toString().padStart(2,'0')}`,
+        duration: '3:00',
         emoji: '🎵', liked: false, likeCount: 0,
-        streamReady: isInstrumental || Math.random() > 0.4,
+        streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
       setTracks(prev => [newTrack, ...prev]);
@@ -852,7 +862,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         ...track,
         id: `t${Date.now()}`,
         title: track.title + ' (Continued)',
-        duration: '1:' + (30 + Math.floor(Math.random() * 29)).toString(),
+        duration: '2:00',
         likeCount: 0,
         liked: false,
       };

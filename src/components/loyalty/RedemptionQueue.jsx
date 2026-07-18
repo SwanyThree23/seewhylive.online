@@ -17,9 +17,16 @@ export default function RedemptionQueue({ creatorId, roomId }) {
 
   const fulfillMutation = useMutation({
     mutationFn: ({ id, status }) => base44.entities.RewardRedemption.update(id, { status, fulfilled_at: new Date().toISOString() }),
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
       toast.success('Reward updated!');
       qc.invalidateQueries(['redemptions', creatorId, roomId]);
+      if (status === 'fulfilled' && creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'milestone',
+          title: 'Fulfilled a loyalty reward redemption',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -33,7 +40,7 @@ export default function RedemptionQueue({ creatorId, roomId }) {
         <span className="text-[10px] font-bold uppercase text-white/50" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
           Pending Redemptions
         </span>
-        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>
+        <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold" style={{ background: 'rgba(192,57,43,0.2)', color: '#FF4444' }}>
           {redemptions.length}
         </span>
       </div>

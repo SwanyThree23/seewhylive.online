@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -70,6 +70,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
               borderBottom: 'none',
               borderRadius: '20px 20px 0 0',
               boxShadow: '0 -8px 40px rgba(0,0,0,0.6)',
+              paddingBottom: 'env(safe-area-inset-bottom, 16px)',
             }}
           >
             {/* Drag handle */}
@@ -115,6 +116,8 @@ export function BottomSheetOption({ label, description, selected, onSelect, icon
       style={{
         background: selected ? 'rgba(212,175,55,0.08)' : 'transparent',
         borderBottom: '1px solid rgba(255,255,255,0.04)',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
       {icon && (

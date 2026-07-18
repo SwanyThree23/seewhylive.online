@@ -28,6 +28,8 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
   const [challengerHandle, setChallengerHandle] = useState('');
   const [duration, setDuration] = useState(180);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [isOvertime, setIsOvertime] = useState(false);
+  const OVERTIME_SECONDS = 30;
   const [hostScore, setHostScore] = useState(0);
   const [challengerScore, setChallengerScore] = useState(0);
   const [surrendered, setSurrendered] = useState(false);
@@ -113,6 +115,7 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
     setChallengerScore(0);
     setTimeLeft(duration);
     setSurrendered(false);
+    setIsOvertime(false);
   };
 
   const totalScore = hostScore + challengerScore;
@@ -259,11 +262,18 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                   <div className="flex flex-col gap-5">
                     {/* Timer */}
                     <div className="text-center">
+                      {isOvertime && (
+                        <p className="text-xs font-black uppercase tracking-widest mb-2 animate-pulse"
+                          style={{ color: '#FF3366', fontFamily: 'Barlow Condensed, sans-serif' }}
+                        >
+                          Sudden Death Overtime
+                        </p>
+                      )}
                       <div
                         className="inline-flex items-center gap-2 px-5 py-2 rounded-full"
-                        style={{ background: '#161929', border: `1px solid ${GOLD}44` }}
+                        style={{ background: '#161929', border: `1px solid ${isOvertime ? '#FF3366' : GOLD}44` }}
                       >
-                        <Timer size={16} color={GOLD} />
+                        <Timer size={16} color={isOvertime ? '#FF3366' : GOLD} />
                         <span
                           className="text-3xl font-black tracking-widest"
                           style={{ fontFamily: 'Barlow Condensed, sans-serif', color: timeLeft <= 10 ? PINK : GOLD }}
@@ -358,7 +368,11 @@ export default function PKBattleModal({ isOpen, onClose, roomId, isHost, current
                         {[{ label: '$1', pts: 10 }, { label: '$5', pts: 50 }, { label: '$10', pts: 100 }].map((tip) => (
                           <button
                             key={tip.label}
-                            onClick={() => setHostScore((s) => s + tip.pts)}
+                            onClick={() => {
+                          var boost = tip.pts >= 100 ? 1.5 : tip.pts >= 50 ? 1.2 : 1;
+                          var boosted = Math.floor(tip.pts * boost);
+                          setHostScore((s) => s + boosted);
+                        }}
                             className="flex-1 py-2.5 rounded-xl font-black text-base uppercase tracking-wide transition-opacity active:opacity-70"
                             style={{
                               fontFamily: 'Barlow Condensed, sans-serif',

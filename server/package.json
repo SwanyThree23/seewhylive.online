@@ -4,8 +4,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "start:legacy": "node index.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
@@ -19,6 +20,7 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mediasoup": "^3.14.14",
+    "multer": "^2.2.0",
     "node-wav": "^0.0.2",
     "openai": "^4.47.1",
     "pg": "^8.22.0",

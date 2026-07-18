@@ -24,7 +24,7 @@ const COLLAB_OPPORTUNITIES = [
     name: 'Domino Entertainment',
     type: 'Entertainment',
     interests: ['Comedy', 'Entertainment', 'Creative'],
-    color: '#F59E0B',
+    color: '#D4AF37',
     url: 'https://youtube.com/@dominoentertainment5513',
   },
 ];
@@ -49,7 +49,7 @@ export default function CollaborationMatcher() {
       className="space-y-3"
     >
       <div className="flex items-center gap-2 px-4">
-        <Zap className="w-4 h-4 text-yellow-400" />
+        <Zap className="w-4 h-4 text-[#D4AF37]" />
         <h3 className="text-sm font-bold text-white">Collaboration Opportunities</h3>
       </div>
 
@@ -97,7 +97,7 @@ export default function CollaborationMatcher() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.open(`https://youtube.com${creator.url}`, '_blank', 'noopener,noreferrer');
+                  window.open(creator.url, '_blank', 'noopener,noreferrer');
                 }}
                 style={{
                   width: '100%', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',

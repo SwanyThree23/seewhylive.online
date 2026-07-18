@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand,
@@ -52,12 +54,8 @@ import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
-import ChatModeration from '../components/live/ChatModeration';
-import BrandChyron from '../components/live/BrandChyron';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
-import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import NotificationHub from '../components/live/NotificationHub';
+import AudioPanel from '../components/live/AudioPanel';
+import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -125,13 +123,38 @@ import PollLaunchBar from '../components/live/PollLaunchBar';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
-import StreamEventBus from '../components/live/StreamEventBus';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
+import GiftShopTray from '../components/live/GiftShopTray';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import LiveTranscription from '../components/live/LiveTranscription';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import ReportModal from '../components/moderation/ReportModal';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GiftTray from '../components/live/GiftTray';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import TippingModal from '../components/monetization/TippingModal';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import TippingOverlay from '../components/live/TippingOverlay';
-import UnifiedChat from '../components/live/UnifiedChat';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import AudioMixer from '../components/live/AudioMixer';
-import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
-import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import TipNowModal from '../components/live/TipNowModal';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import ModerationActionModal from '../components/moderation/ModerationActionModal';
 import PayPerViewGate from '../components/live/PayPerViewGate';
 import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
@@ -183,7 +206,7 @@ const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
 const BG      = '#080B18';
-const BG2     = '#0d0618';
+const BG2     = '#0D1022';
 const GREEN   = '#6DBF7E';
 
 const PALETTE = ['#8B6F47','#6B7C4A','#CC7755','#4A6B7C','#7C4A6B','#5C6BC0','#4A8A7A','#EF6C00'];
@@ -198,6 +221,8 @@ function getYouTubeId(url) {
   return m ? m[1] : null;
 }
 
+const OCT = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
+
 function SpeakerTile({ member, size = 80 }) {
   const isHost    = member.role === 'host';
   const isCohost  = member.role === 'cohost';
@@ -210,24 +235,27 @@ function SpeakerTile({ member, size = 80 }) {
       <div className="relative" style={{ width: size, height: size }}>
         {isSpeaking && (
           <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ background: GOLD, opacity: 0.2 }}
-            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.08, 1] }}
+            className="absolute inset-0"
+            style={{ clipPath: OCT, background: GOLD, opacity: 0.25 }}
+            animate={{ opacity: [0.25, 0.55, 0.25], scale: [1, 1.08, 1] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
           />
         )}
-        <div
-          className="absolute inset-0 rounded-full"
-          style={{
-            border: isSpeaking ? `2.5px solid ${GOLD}` : `2px solid rgba(255,255,255,0.15)`,
-            transition: 'border-color 0.3s',
-          }}
-        />
-        <div
-          className="absolute inset-[3px] rounded-full flex items-center justify-center font-black text-lg text-white"
-          style={{ background: `linear-gradient(135deg, ${color}88, ${BG2})` }}
-        >
-          {(member.user_name || '?').charAt(0).toUpperCase()}
+        {/* OCT outer ring */}
+        <div className="absolute inset-0" style={{
+          clipPath: OCT,
+          background: isSpeaking ? GOLD : (isHost ? '#D4AF37' : 'rgba(255,255,255,0.18)'),
+          transition: 'background 0.3s',
+        }} />
+        {/* OCT inner fill */}
+        <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center font-black text-lg text-white" style={{
+          clipPath: OCT,
+          background: `linear-gradient(135deg, ${color}88, ${BG2})`,
+        }}>
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
         </div>
 
         {(isHost || isCohost) && (
@@ -236,21 +264,13 @@ function SpeakerTile({ member, size = 80 }) {
           </div>
         )}
         {isMuted && (
-          <div
-            className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: '#C0392B', border: `2px solid ${BG}` }}
-          >
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
         )}
-        <button
-          className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}
-        >
-          <Heart className="w-2.5 h-2.5" style={{ color: 'rgba(255,255,255,0.4)' }} />
-        </button>
       </div>
-      <p className="text-[12px] font-bold text-black truncate" style={{ maxWidth: size + 8 }}>
+      <p className="text-[12px] font-bold text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 8 }}>
         {(member.user_name || 'Guest').split(' ')[0]}
       </p>
     </div>
@@ -262,13 +282,17 @@ function AudienceTile({ member }) {
   const color = avatarColor(member.user_name || 'A');
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <div
-        className="rounded-full flex items-center justify-center font-bold text-sm text-white"
-        style={{ width: size, height: size, background: `linear-gradient(135deg, ${color}66, ${BG2})`, border: '2px solid rgba(255,255,255,0.1)' }}
-      >
-        {(member.user_name || '?').charAt(0).toUpperCase()}
+      <div className="relative" style={{ width: size, height: size }}>
+        <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
+        <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center font-bold text-sm text-white"
+          style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
+          {member.user_avatar
+            ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
+            : (member.user_name || '?').charAt(0).toUpperCase()
+          }
+        </div>
       </div>
-      <p className="text-[11px] truncate" style={{ color: '#888', maxWidth: size + 4 }}>
+      <p className="text-[11px] truncate" style={{ color: '#888', fontFamily: 'Barlow Condensed, sans-serif', maxWidth: size + 4 }}>
         {(member.user_name || 'Guest').slice(0, 8)}
       </p>
     </div>
@@ -276,8 +300,8 @@ function AudienceTile({ member }) {
 }
 
 export default function AudioRoom() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId    = urlParams.get('id');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const roomId = searchParams.get('id');
 
   const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
@@ -324,7 +348,7 @@ export default function AudioRoom() {
   });
   const { data: loves = [] } = useQuery({
     queryKey: ['audio-room-loves', roomId],
-    queryFn:  () => base44.entities.Tip.filter({ room_id: roomId, currency: 'love' }),
+    queryFn:  () => base44.entities.Reaction.filter({ room_id: roomId, emoji: '❤️', target_type: 'room' }),
     enabled:  !!roomId,
     refetchInterval: 5000,
   });
@@ -372,6 +396,12 @@ export default function AudioRoom() {
   }, []);
 
   useEffect(() => { setLoveCount(loves.length); }, [loves.length]);
+
+  useEffect(() => {
+    if (!roomId || !user?.id) return;
+    announceJoin(user.id);
+    return leavePeerRoom;
+  }, [roomId, user?.id]);
 
   const speakers = members.length > 0
     ? members.filter(m => m.role === 'host' || m.role === 'cohost' || m.role === 'speaker')
@@ -461,7 +491,7 @@ export default function AudioRoom() {
       return;
     }
     try {
-      await base44.entities.Tip.create({ room_id: roomId, user_id: user.id, currency: 'love', amount: 1 });
+      await base44.entities.Reaction.create({ room_id: roomId, user_id: user.id, emoji: '❤️', target_type: 'room', target_id: roomId });
       setLoveCount(c => c + 1);
     } catch {
       setLoveCount(c => c + 1);
@@ -490,7 +520,7 @@ export default function AudioRoom() {
         status:      'active',
         updated_at_ms: Date.now(),
       });
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      setSearchParams({ id: p.id });
     } catch {
       toast.error('Failed to create room');
       setCreating(false);
@@ -586,7 +616,7 @@ export default function AudioRoom() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80 }}>
+      <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 80, overscrollBehavior: "contain" }}>
 
         {party?.video_url && (
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
@@ -640,6 +670,17 @@ export default function AudioRoom() {
           peerUserIds={peerUserIds}
           onLeave={leaveRoom}
         />
+
+        {/* Multi-guest panel (host view) */}
+        {isHost && roomId && (
+          <MultiGuestPanel
+            participants={members}
+            spotlightId={null}
+            onSpotlight={() => {}}
+            roomId={roomId}
+            isHost={isHost}
+          />
+        )}
       </div>
 
       <div
@@ -649,7 +690,7 @@ export default function AudioRoom() {
         <button
           onClick={leaveRoom}
           className="text-[14px] font-black uppercase"
-          style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}
+          style={{ color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif' }}
         >
           Leave
         </button>

@@ -15,13 +15,37 @@ import {
   Crown, Layers
 } from 'lucide-react';
 import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import AnalyticsOverview from '../components/dashboard/AnalyticsOverview';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import RoomAnalyticsPanel from '../components/rooms/RoomAnalyticsPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import RecordingManager from '../components/content/RecordingManager';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import NotificationBell from '../components/shared/NotificationBell';
+import SubscriptionManager from '@/components/monetization/SubscriptionManager';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import PayPerViewCard from '../components/monetization/PayPerViewCard';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import DirectPayments from '../components/live/DirectPayments';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import SpotlightSection from '../components/community/SpotlightSection';
+import PollCard from '../components/community/PollCard';
+import CreatorBridge from '../components/social/CreatorBridge';
 import { toast } from 'sonner';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -56,7 +80,7 @@ const TABS = [
 function Card({ children, className = '', style = {} }) {
   return (
     <div className={`rounded-xl ${className}`}
-      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
+      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
       {children}
     </div>
   );
@@ -98,7 +122,7 @@ function OverviewTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns7', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useQuery({
@@ -114,7 +138,7 @@ function OverviewTab({ user }) {
     const total = txns.filter(t => {
       const td = new Date(t.created_date);
       return td.toDateString() === d.toDateString();
-    }).reduce((s, t) => s + (t.creator_amount || 0), 0);
+    }).reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
     return { label, total };
   });
 
@@ -137,7 +161,7 @@ function OverviewTab({ user }) {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -161,6 +185,19 @@ function OverviewTab({ user }) {
         </div>
       </Card>
 
+      {user?.id && <MilestoneAlerts creatorId={user.id} />}
+
+      {user && (
+        <div className="mb-4">
+          <CreatorBridge user={user} />
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mb-2">
+        <NotificationBell />
+        <ZEGOMobileAppBanner />
+      </div>
+
       <div className="flex flex-wrap gap-2">
         {[
           { label: '📡 Go Live', href: createPageUrl('GoLive'), color: BURGUNDY },
@@ -168,7 +205,7 @@ function OverviewTab({ user }) {
           { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
           { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
-          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(245,158,11,0.08)' },
+          { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(212,175,55,0.08)' },
         ].map(q => (
           <Link key={q.label} to={q.href}>
             <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
@@ -217,7 +254,7 @@ function AnalyticsTab({ user }) {
 
   const platformData = destinations.map(d => ({
     name: d.platform || d.label || 'Custom',
-    viewers: Math.floor(Math.random() * 200 + 50),
+    viewers: d.viewer_count || 0,
   }));
 
   const COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
@@ -283,6 +320,33 @@ function AnalyticsTab({ user }) {
           </div>
         </Card>
       )}
+
+      {/* Analytics Overview */}
+      {user?.id && <AnalyticsOverview creatorId={user.id} />}
+
+      {/* Audience Insights */}
+      {user?.id && <AudienceInsights creatorId={user.id} />}
+
+      {/* Earnings Breakdown */}
+      {user?.id && <EarningsBreakdown creatorId={user.id} />}
+
+      {/* Monetization dashboard widget */}
+      {roomAnalytics[0]?.room_id && (
+        <MonetizationDashboard roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Room Analytics Panel (most recent stream) */}
+      {roomAnalytics[0]?.room_id && (
+        <RoomAnalyticsPanel roomId={roomAnalytics[0].room_id} />
+      )}
+
+      {/* Streamer goals widget */}
+      {user?.id && (
+        <StreamerGoalsWidget creatorId={user.id} isCreator={true} />
+      )}
+
+      {/* AI highlight generator */}
+      <AIHighlightGenerator recording={null} />
     </div>
   );
 }
@@ -402,7 +466,7 @@ function ContentTab({ user }) {
                   </button>
                   <button onClick={() => deleteMut.mutate(v.id)}
                     className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B' }}>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
                     <Trash2 className="w-2.5 h-2.5" />
                   </button>
                 </div>
@@ -451,7 +515,7 @@ function ContentTab({ user }) {
               onClick={() => { setShowCreate(false); setEditVod(null); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
                 <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
@@ -493,6 +557,13 @@ function ContentTab({ user }) {
           </>
         )}
       </AnimatePresence>
+
+      {/* Recording Manager */}
+      {user?.id && (
+        <div className="mt-4">
+          <RecordingManager userId={user.id} />
+        </div>
+      )}
     </div>
   );
 }
@@ -564,13 +635,21 @@ function CommunityTab({ user }) {
             : communities.map(c => (
               <button key={c.id} onClick={() => setSelectedCommunity(c.id)}
                 className="px-3 py-1.5 rounded-xl text-[11px] font-black"
-                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(13,6,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(8,11,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
                 {c.name}
               </button>
             ))
           }
         </div>
       </div>
+
+      {/* Spotlight banner + section */}
+      {selectedCommunity && (
+        <div className="space-y-3">
+          <SpotlightBanner communityId={selectedCommunity} isAdmin={true} />
+          <SpotlightSection communityId={selectedCommunity} />
+        </div>
+      )}
 
       {/* Polls section */}
       <div className="space-y-3">
@@ -583,6 +662,9 @@ function CommunityTab({ user }) {
           </button>
         </div>
 
+        {polls.filter(p => p.status === 'active').map(poll => (
+          <PollCard key={`pc-${poll.id}`} poll={poll} />
+        ))}
         {polls.filter(p => p.status === 'active').map(poll => {
           const opts = Array.isArray(poll.options) ? poll.options : [];
           const total = poll.total_votes || 1;
@@ -593,7 +675,7 @@ function CommunityTab({ user }) {
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
                   <button onClick={() => endPollMut.mutate(poll.id)}
                     className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#C0392B', ...T }}>End</button>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
                 </div>
                 <div className="space-y-1.5">
                   {opts.map((o, i) => {
@@ -660,7 +742,7 @@ function CommunityTab({ user }) {
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
               <div className="flex items-center justify-between">
                 <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
                 <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
@@ -699,7 +781,7 @@ function MonetizationTab({ user }) {
   });
   const { data: txns = [] } = useQuery({
     queryKey: ['db-txns', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user?.id,
   });
   const { data: goals = [] } = useQuery({
@@ -707,6 +789,18 @@ function MonetizationTab({ user }) {
     queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: user?.id }),
     enabled: !!user?.id,
   });
+  const { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity-mt', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashCommunityId = dashCommunity?.id || null;
+  const { data: dashActiveRoom } = useQuery({
+    queryKey: ['dashActiveRoom-mt', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashActiveRoomId = dashActiveRoom?.id || null;
   const qc = useQueryClient();
   const toggleTierMut = useMutation({
     mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
@@ -714,12 +808,12 @@ function MonetizationTab({ user }) {
     onError: () => toast.error('Action failed.'),
   });
 
-  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_amount || 0), 0);
-  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_amount || 0), 0);
+  const tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  const giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
   const total = tipTotal + subTotal + giftTotal;
-  const creatorShare = total * 0.9;
-  const platformShare = total * 0.1;
+  const creatorShare = Math.floor(total * 90) / 100;
+  const platformShare = total - creatorShare;
 
   const pieData = [
     { name: 'Tips', value: tipTotal, color: GOLD },
@@ -776,7 +870,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#C0392B', ...T }}>
+              style={{ background: payout?.stripe_connected ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: payout?.stripe_connected ? '#6DBF7E' : '#FF4444', ...T }}>
               {payout?.stripe_connected ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {payout?.last_payout_at && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
@@ -796,7 +890,7 @@ function MonetizationTab({ user }) {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
                       {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                    <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -854,6 +948,56 @@ function MonetizationTab({ user }) {
           })}
         </div>
       )}
+
+      {/* Subscription manager + tiers */}
+      {user?.id && (
+        <div className="mb-4 space-y-4">
+          <SubscriptionManager creatorId={user.id} />
+          <SubscriptionTiers communityId={dashCommunityId} userId={user.id} />
+        </div>
+      )}
+
+      {/* PPV manager */}
+      {user?.id && (
+        <div className="mb-4">
+          <PayPerViewManager roomId={dashActiveRoomId} />
+          <PayPerViewCard event={null} />
+        </div>
+      )}
+
+      {/* Virtual goods store */}
+      {user?.id && (
+        <div className="mb-4">
+          <VirtualGoodsStore userId={user.id} />
+        </div>
+      )}
+
+      {/* Monetization center */}
+      {user?.id && (
+        <div className="mb-4">
+          <StreamerMonetizationCenter />
+        </div>
+      )}
+
+      {/* Direct payments modal */}
+      <DirectPayments isOpen={false} onClose={() => {}} creatorName={user?.full_name || ''} />
+
+      {/* Deep links to monetization pages */}
+      <div className="flex flex-wrap gap-3 pt-2">
+        {[
+          { label: '💰 Monetization',       href: 'Monetization'        },
+          { label: '⭐ Subscriptions',       href: 'CreatorSubscriptions' },
+          { label: '🎛 Widgets',             href: 'MonetizationWidgets' },
+          { label: '📊 Revenue Analytics',  href: 'Analytics'           },
+        ].map(item => (
+          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1067,7 +1211,7 @@ function SettingsTab({ user }) {
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
         <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
-          style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
+          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>
@@ -1102,6 +1246,12 @@ export default function DashboardPage() {
     queryFn: () => base44.entities.CreatorProfile.filter({ user_id: user?.id }).then(r => r[0]),
     enabled: !!user?.id,
   });
+  const { data: dashCommunity } = useQuery({
+    queryKey: ['dashCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const dashCommunityId = dashCommunity?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>

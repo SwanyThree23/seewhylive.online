@@ -11,19 +11,23 @@ export default function SwanyBotContextEnhancer({ userId, conversationId, onCont
   useEffect(() => {
     const enhanceContext = async () => {
       try {
-        const result = await base44.functions.invoke('enhanceSwanyBotContext', {
-          conversation_id: conversationId,
-          message_content: '',
-          user_context: { userId },
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Generate AI assistant context for a live streaming conversation. Return JSON: { "personalization_level": 0.8, "suggested_topics": ["streaming", "community", "tips"], "communication_style": "friendly" }`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              personalization_level: { type: 'number' },
+              suggested_topics: { type: 'array', items: { type: 'string' } },
+              communication_style: { type: 'string' },
+            },
+          },
         });
-
-        if (result?.data) {
-          setContextState(result.data);
-          setPersonalizationLevel(0.8);
-          onContextReady?.(result.data);
+        if (result) {
+          setContextState(result);
+          setPersonalizationLevel(result.personalization_level ?? 0.8);
+          onContextReady?.(result);
         }
       } catch (error) {
-        console.error('Context enhancement error:', error);
       }
     };
 

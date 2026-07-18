@@ -43,16 +43,16 @@ export default function BrandChyron() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden"
+      className="fixed left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden bottom-[calc(60px+env(safe-area-inset-bottom,0px))] md:bottom-0"
       style={{
-        background: 'linear-gradient(90deg, #03030A 0%, #07070F 50%, #03030A 100%)',
+        background: 'linear-gradient(90deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
         borderTop: '1px solid rgba(192,57,43,0.25)',
       }}
     >
       {/* Top accent line */}
       <div
         className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: 'linear-gradient(90deg, #C0392B, #FFB800, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
+        style={{ background: 'linear-gradient(90deg, #C0392B, #D4AF37, #C9A84C, #6DBF7E, #D4AF37, transparent)' }}
       />
 
       {/* Left: brand + signal */}

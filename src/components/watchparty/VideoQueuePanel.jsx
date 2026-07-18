@@ -25,8 +25,8 @@ function StatusBadge({ status }) {
     queued:   { label: 'Queued',   bg: `rgba(212,175,55,0.15)`,  color: GOLD,     border: `rgba(212,175,55,0.3)` },
     playing:  { label: 'Playing',  bg: `rgba(109,191,126,0.12)`,   color: '#6DBF7E', border: `rgba(109,191,126,0.3)`, pulse: true },
     played:   { label: 'Played',   bg: `rgba(255,255,255,0.05)`, color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
-    skipped:  { label: 'Skipped',  bg: `rgba(128,0,32,0.2)`,     color: '#ff6680', border: `rgba(128,0,32,0.4)` },
-    removed:  { label: 'Removed',  bg: `rgba(128,0,32,0.15)`,    color: '#ff6680', border: `rgba(128,0,32,0.3)` },
+    skipped:  { label: 'Skipped',  bg: `rgba(128,0,32,0.2)`,     color: '#C0392B', border: `rgba(128,0,32,0.4)` },
+    removed:  { label: 'Removed',  bg: `rgba(128,0,32,0.15)`,    color: '#C0392B', border: `rgba(128,0,32,0.3)` },
     pending:  { label: 'Pending ✓',bg: `rgba(212,175,55,0.15)`,  color: '#D4AF37', border: `rgba(212,175,55,0.3)` },
   }[status] || { label: status, bg: 'transparent', color: 'gray', border: 'gray' };
 
@@ -64,10 +64,17 @@ function AddVideoModal({ partyId, currentUser, nextPosition, requireApproval, on
       notes: notes.trim(),
     }),
     onSuccess: (item) => {
-      qc.invalidateQueries(['vq', partyId]);
+      qc.invalidateQueries({ queryKey: ['vq', partyId] });
       onAdded(item);
       onClose();
       toast.success(requireApproval ? 'Added — waiting for host approval' : 'Added to queue!');
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Added video to watch party queue: ${item?.title || title || 'Video'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -182,7 +189,7 @@ function QueueItem({ item, isHost, currentUser, onPlayVideo }) {
             <button disabled={alreadyVoted}
               onClick={() => voteMut.mutate({ dir: 'down' })}
               className="flex items-center gap-0.5 px-1.5 py-1 rounded text-[11px] font-bold transition-all"
-              style={{ background: 'rgba(128,0,32,0.12)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#ff6680', border: '1px solid rgba(128,0,32,0.25)' }}>
+              style={{ background: 'rgba(128,0,32,0.12)', color: alreadyVoted ? 'rgba(255,255,255,0.2)' : '#C0392B', border: '1px solid rgba(128,0,32,0.25)' }}>
               <ThumbsDown className="w-2.5 h-2.5" />{item.votes_down || 0}
             </button>
           </>
@@ -314,7 +321,7 @@ export default function VideoQueuePanel({ partyId, party, isHost, currentUser, o
             nextPosition={nextPosition}
             requireApproval={requireApproval}
             onClose={() => setShowModal(false)}
-            onAdded={() => qc.invalidateQueries(['vq', partyId])}
+            onAdded={() => qc.invalidateQueries({ queryKey: ['vq', partyId] })}
           />
         )}
       </AnimatePresence>

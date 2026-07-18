@@ -35,9 +35,10 @@ export default function VirtualGoodsStore({ userId }) {
   const purchaseMutation = useMutation({
     mutationFn: async ({ good }) => {
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
-        amount: good.price,
-        from_user_id: userId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(good.price * 90) / 100,
+        platform_cut: good.price - Math.floor(good.price * 90) / 100,
+        sender_id: userId,
         virtual_good_id: good.id,
         status: 'completed',
       });
@@ -52,10 +53,18 @@ export default function VirtualGoodsStore({ userId }) {
         await base44.entities.VirtualGood.update(good.id, { stock: good.stock - 1 });
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, { good }) => {
       toast.success('Item purchased! ✨');
       queryClient.invalidateQueries(['virtualGoods']);
       queryClient.invalidateQueries(['userInventory']);
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'ppv_purchase',
+          title: `Purchased: ${good?.name || 'Virtual Item'}`,
+          amount: good?.price,
+        }).catch(() => {});
+      }
     },
     onError: () => {
       toast.error('Purchase failed');
@@ -98,7 +107,7 @@ export default function VirtualGoodsStore({ userId }) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {goods.map((good) => (
-              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+              <div key={good.id} style={{ borderRadius: 12, background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 16px 8px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div style={{ flex: 1 }}>

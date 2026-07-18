@@ -20,8 +20,9 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
 
   const { data: roomMessages } = useQuery({
     queryKey: ['roomMessages', roomId],
-    queryFn: () => base44.entities.Message?.filter({ room_id: roomId }, '-created_date', 50) || [],
-    refetchInterval: 1000,
+    queryFn: () => base44.entities.Message.filter({ room_id: roomId }, '-created_date', 50),
+    refetchInterval: 3000,
+    enabled: !!roomId,
   });
 
   useEffect(() => {
@@ -47,7 +48,6 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
       });
       setInputValue('');
     } catch (error) {
-      console.error('Failed to send message:', error);
     }
   };
 
@@ -78,7 +78,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="fixed bottom-20 right-4 w-80 h-96 rounded-2xl flex flex-col overflow-hidden z-40"
-      style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
+      style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.2)' }}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
@@ -107,7 +107,7 @@ export default function ChatOverlay({ roomId, isVisible = true }) {
                 <div className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
                   style={{ background: msg.is_moderator ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.1)' }}>
                   {msg.is_moderator ? (
-                    <Shield className="w-3 h-3 text-[#7B5DA6]" />
+                    <Shield className="w-3 h-3" style={{ color: '#D4AF37' }} />
                   ) : (
                     <User className="w-3 h-3 text-white/40" />
                   )}

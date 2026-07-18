@@ -130,7 +130,7 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className="absolute top-full mt-2 left-0 z-50 w-80 rounded-2xl overflow-hidden shadow-2xl"
-            style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}
+            style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>

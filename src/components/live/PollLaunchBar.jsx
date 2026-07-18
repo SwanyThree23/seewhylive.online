@@ -36,7 +36,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       ends_at: new Date(Date.now() + dur * 1000).toISOString(),
       created_at: new Date().toISOString(),
     }),
-    onSuccess: () => {
+    onSuccess: (poll) => {
       toast.success('Poll launched! 📊');
       setOpen(false);
       setCustom(false);
@@ -44,6 +44,13 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
       setOptions(['', '', '']);
       qc.invalidateQueries(['livepoll', roomId]);
       qc.invalidateQueries(['polls', roomId]);
+      if (hostId) {
+        base44.entities.Activity.create({
+          user_id: hostId,
+          type: 'milestone',
+          title: `Launched live poll: ${poll?.question || question || 'Poll'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -52,8 +59,8 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
     mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
     onSuccess: () => {
       toast.success('Poll ended');
-      qc.invalidateQueries(['livepoll', roomId]);
-      qc.invalidateQueries(['polls', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
+      qc.invalidateQueries({ queryKey: ['polls', roomId] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -69,7 +76,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
         style={{
           ...T,
           background: activePoll
-            ? 'rgba(74,222,128,0.15)'
+            ? 'rgba(109,191,126,0.15)'
             : open ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)',
           border: activePoll ? '1px solid rgba(74,222,128,0.3)' : `1px solid ${G}30`,
           color: activePoll ? '#6DBF7E' : G,
@@ -117,7 +124,7 @@ export default function PollLaunchBar({ roomId, hostId, activePoll, isHost }) {
                     onClick={() => endPollMutation.mutate(activePoll.id)}
                     disabled={endPollMutation.isPending}
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-black uppercase transition-all disabled:opacity-50"
-                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#FF6B6B', ...T }}
+                    style={{ background: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.25)', color: '#C0392B', ...T }}
                   >
                     <Trash2 className="w-3 h-3" /> End Poll Now
                   </button>

@@ -3,41 +3,19 @@
   "type": "object",
   "properties": {
     "host_id": {
-      "type": "string",
-      "description": "User who created the party"
-    },
-    "title": {
       "type": "string"
     },
-    "video_url": {
-      "type": "string",
-      "description": "YouTube URL or direct video URL"
+    "party_code": {
+      "type": "string"
     },
-    "video_type": {
-      "type": "string",
-      "enum": [
-        "youtube",
-        "direct"
-      ],
-      "default": "youtube"
+    "stream_id": {
+      "type": "string"
     },
-    "playback_state": {
-      "type": "string",
-      "enum": [
-        "playing",
-        "paused",
-        "seeking"
-      ],
-      "default": "paused"
-    },
-    "current_time": {
-      "type": "number",
-      "default": 0,
-      "description": "Current playback time in seconds"
-    },
-    "updated_at_ms": {
-      "type": "number",
-      "description": "Epoch ms when state last changed (for sync)"
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
     },
     "status": {
       "type": "string",
@@ -47,25 +25,40 @@
       ],
       "default": "active"
     },
-    "participant_count": {
-      "type": "number",
-      "default": 0
-    },
-    "room_id": {
-      "type": "string",
-      "description": "Optional linked room for chat"
+    "settings": {
+      "type": "object"
     }
   },
   "required": [
     "host_id",
-    "title",
-    "video_url"
+    "party_code"
   ],
   "rls": {
     "create": {
       "data.host_id": "{{user.id}}"
     },
-    "read": {},
+    "read": {
+      "$or": [
+        {
+          "data.host_id": "{{user.id}}"
+        },
+        {
+          "data.is_public": true
+        },
+        {
+          "_id": {
+            "$in": [
+              "{{user.watch_parties_as_member}}"
+            ]
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
     "update": {
       "$or": [
         {
@@ -78,17 +71,6 @@
         }
       ]
     },
-    "delete": {
-      "$or": [
-        {
-          "data.host_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    }
+    "delete": null
   }
 }

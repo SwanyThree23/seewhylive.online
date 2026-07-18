@@ -10,10 +10,10 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 const STATUS = {
   idle: { label: 'Idle', color: 'rgba(255,255,255,0.3)' },
-  connecting: { label: 'Connecting…', color: '#F59E0B' },
+  connecting: { label: 'Connecting…', color: '#D4AF37' },
   live: { label: 'LIVE', color: '#C0392B' },
   recording: { label: 'Recording', color: '#6DBF7E' },
-  error: { label: 'Error', color: '#C0392B' },
+  error: { label: 'Error', color: '#EF4444' },
 };
 
 /**
@@ -117,6 +117,23 @@ export default function CompositorOverlay({
       });
       pcRef.current = pc;
 
+    pc.oniceconnectionstatechange = () => {
+      const state = pc.iceConnectionState;
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        console.warn('WHIP connection lost:', state);
+        setStatus('idle');
+        toast.error('Stream connection lost');
+        if (pcRef.current === pc) {
+          pcRef.current = null;
+        }
+        if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+          recorderRef.current.stop();
+          recorderRef.current = null;
+        }
+        stopCompositor();
+      }
+    };
+
       stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
       const offer = await pc.createOffer();
@@ -214,7 +231,7 @@ export default function CompositorOverlay({
         style={{
           background: open ? 'rgba(192,57,43,0.2)' : 'rgba(192,57,43,0.1)',
           border: `1px solid ${status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : 'rgba(192,57,43,0.3)'}`,
-          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#C0392B',
+          color: status === 'live' ? '#C0392B' : status === 'recording' ? '#6DBF7E' : '#FF8899',
           ...T,
         }}
       >
@@ -230,7 +247,7 @@ export default function CompositorOverlay({
           className="absolute right-0 top-full mt-2 z-50 rounded-2xl p-4 shadow-2xl space-y-3"
           style={{
             width: 360,
-            background: '#0D0618',
+            background: '#080B18',
             border: '1px solid rgba(212,175,55,0.2)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.7)',
           }}

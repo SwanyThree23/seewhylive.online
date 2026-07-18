@@ -94,7 +94,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
           clipPath: OCT,
           background: isHost
             ? `linear-gradient(135deg, ${CRIMSON}, #4a0012)`
-            : `rgba(30,10,30,0.9)`,
+            : `rgba(8,11,24,0.9)`,
           border: `2px solid rgba(212,175,55,0.3)`,
           position: 'relative',
           cursor: showControls ? 'pointer' : 'default',
@@ -145,7 +145,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: '#C0392B',
+            background: '#EF4444',
             border: `2px solid ${BG}`,
             display: 'flex',
             alignItems: 'center',
@@ -198,7 +198,7 @@ function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove
                 textAlign: 'left',
                 fontSize: 11,
                 fontFamily: 'Barlow Condensed, sans-serif',
-                color: '#C0392B',
+                color: '#EF4444',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -411,7 +411,7 @@ export default function AudioStageTab({
           }}
         >
           {isMuted
-            ? <MicOff style={{ width: 16, height: 16, color: '#C0392B' }} />
+            ? <MicOff style={{ width: 16, height: 16, color: '#EF4444' }} />
             : <Mic style={{ width: 16, height: 16, color: '#000' }} />}
         </motion.button>
 
@@ -563,7 +563,7 @@ export default function AudioStageTab({
                         borderRadius: 6,
                         background: 'rgba(192,57,43,0.1)',
                         border: '1px solid rgba(192,57,43,0.3)',
-                        color: '#C0392B',
+                        color: '#EF4444',
                         fontSize: 11,
                         fontFamily: 'Barlow Condensed, sans-serif',
                         fontWeight: 700,

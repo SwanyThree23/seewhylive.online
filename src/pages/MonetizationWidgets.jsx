@@ -6,25 +6,19 @@ import { Target, Bell, Gavel, Zap, Info } from 'lucide-react';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -38,6 +32,13 @@ const TABS = [
 export default function MonetizationWidgets() {
   const [activeTab, setActiveTab] = useState('goals');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   const { data: myRooms = [] } = useQuery({
     queryKey: ['my-live-rooms', user?.id],
@@ -83,7 +84,7 @@ export default function MonetizationWidgets() {
             <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
               <button onClick={() => setActiveTab(s.id)}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all"
-                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(13,6,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
+                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(8,11,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
                 <s.icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
                 <p className="text-xs font-black" style={{ ...T, color: activeTab === s.id ? s.color : 'rgba(255,255,255,0.5)' }}>{s.label}</p>
               </button>
@@ -104,7 +105,7 @@ export default function MonetizationWidgets() {
 
         {/* Goals */}
         {activeTab === 'goals' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Streamer Goals — Real-Time</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Goals update live and celebrate when reached with confetti</p>
@@ -117,7 +118,7 @@ export default function MonetizationWidgets() {
 
         {/* Sound Alerts */}
         {activeTab === 'alerts' && (
-          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
@@ -140,6 +141,24 @@ export default function MonetizationWidgets() {
             </div>
           </div>
         )}
+
+        {user?.id && (
+          <div className="mt-4">
+            <SubscriptionTiers creatorId={user.id} currentUserId={user.id} />
+          </div>
+        )}
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <AnimatedGiftShop recipientId={user?.id} roomId={activeRoom?.id || null} onClose={() => {}} />
+          <TipAlert roomId={activeRoom?.id || null} recipientId={user?.id} />
+          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoom?.id || null} communityId={null} />
+        </div>
+      </div>
+
+      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MonetizationDashboard roomId={activeRoom?.id || null} />
+        <VirtualGoodsStore userId={user?.id} />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

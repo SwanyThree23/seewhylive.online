@@ -26,7 +26,7 @@ export default function NotificationBell() {
     if (!user) return;
     const unsub = base44.entities.Notification.subscribe((event) => { // eslint-disable-line
       if (event.data?.user_id === user.id) {
-        qc.invalidateQueries(['notifications', user.id]);
+        qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });
     return unsub;

@@ -94,6 +94,9 @@ const StateVsState        = lazy(() => import('./pages/StateVsState'));
 const TributeWall         = lazy(() => import('./pages/TributeWall'));
 const INSForge            = lazy(() => import('./pages/INSForge'));
 const JoyceAI             = lazy(() => import('./pages/JoyceAI'));
+const AuraAI              = lazy(() => import('./pages/AuraAI'));
+const SwanyBotPage        = lazy(() => import('./pages/SwanyBotPage'));
+const VoiceAISettings     = lazy(() => import('./pages/VoiceAISettings'));
 const GuardianAI          = lazy(() => import('./pages/GuardianAI'));
 const StreamRefDash            = lazy(() => import('./pages/StreamRefDash'));
 const StreamInfraRef           = lazy(() => import('./pages/StreamInfraRef'));
@@ -107,8 +110,6 @@ const SeeWhyLIVEv17            = lazy(() => import('./pages/SeeWhyLIVEv17'));
 const BackPage                 = lazy(() => import('./pages/BackPage'));
 const CoverPage                = lazy(() => import('./pages/CoverPage'));
 const Login                    = lazy(() => import('./pages/Login'));
-const AuraAI                   = lazy(() => import('./pages/AuraAI'));
-const SwanyBotPage             = lazy(() => import('./pages/SwanyBotPage'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
 const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
@@ -224,6 +225,9 @@ export const PAGES = {
     "TributeWall": TributeWall,
     "INSForge": INSForge,
     "JoyceAI": JoyceAI,
+    "AuraAI": AuraAI,
+    "SwanyBotPage": SwanyBotPage,
+    "VoiceAISettings": VoiceAISettings,
     "GuardianAI": GuardianAI,
     "StreamRefDash": StreamRefDash,
     "StreamInfraRef": StreamInfraRef,
@@ -237,8 +241,6 @@ export const PAGES = {
     "BackPage": BackPage,
     "CoverPage": CoverPage,
     "Login": Login,
-    "AuraAI": AuraAI,
-    "SwanyBotPage": SwanyBotPage,
     "TranscriptionStudio": TranscriptionStudio,
     "RoomsManager": RoomsManager,
     "PKBattleArena": PKBattleArena,

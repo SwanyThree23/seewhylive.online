@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
+import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -20,7 +22,13 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -46,7 +54,7 @@ function genKey(prefix, userId) {
 function PanelCard({ title, icon: Icon, color, children, className }) {
   var c = color || '#d4af37';
   return (
-    <div className={'rounded-xl overflow-hidden ' + (className || '')} style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid ' + c + '28' }}>
+    <div className={'rounded-xl overflow-hidden ' + (className || '')} style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid ' + c + '28' }}>
       <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: '1px solid ' + c + '18' }}>
         {Icon && <Icon className="w-4 h-4" style={{ color: c }} />}
         <span className="text-xs font-bold uppercase tracking-wider" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
@@ -100,7 +108,7 @@ function CopyField({ label, value, mono }) {
           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
           style={{ background: copied ? 'rgba(109,191,126,0.1)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? '#6DBF7E60' : '#d4af3740') }}
         >
-          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-yellow-400" />}
+          {copied ? <Check className="w-3 h-3 text-[#6DBF7E]" /> : <Copy className="w-3 h-3 text-[#D4AF37]" />}
         </button>
       </div>
     </div>
@@ -268,24 +276,24 @@ function StreamTab({ user }) {
         </PanelCard>
 
         {/* VDO.Ninja */}
-        <PanelCard title="VDO.Ninja Guest Integration" icon={Video} color="#FFB800">
+        <PanelCard title="VDO.Ninja Guest Integration" icon={Video} color="#D4AF37">
           <div className="space-y-3">
             <p className="text-[11px] text-white/40">Browser-based guest video — no install required</p>
             <CopyField label="Guest Join URL" value={guestUrl} mono={true} />
             <CopyField label="Director View URL" value={directorUrl} mono={true} />
             <div className="grid grid-cols-2 gap-2">
               <a href={guestUrl} target="_blank" rel="noopener noreferrer">
-                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.12)', color:'#FFB800', border:'1px solid rgba(255,184,0,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(212,175,55,0.12)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.25)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <ExternalLink className="w-3 h-3" /> Guest Link
                 </button>
               </a>
               <a href={directorUrl} target="_blank" rel="noopener noreferrer">
-                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(255,184,0,0.08)', color:'rgba(255,184,0,0.6)', border:'1px solid rgba(255,184,0,0.15)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
+                <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, width:'100%', height:32, padding:'0 8px', borderRadius:8, background:'rgba(212,175,55,0.08)', color:'rgba(212,175,55,0.6)', border:'1px solid rgba(212,175,55,0.15)', fontSize:12, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif' }}>
                   <Eye className="w-3 h-3" /> Director
                 </button>
               </a>
             </div>
-            <div className="rounded-lg p-2" style={{ background: 'rgba(255,184,0,0.04)', border: '1px solid rgba(255,184,0,0.08)' }}>
+            <div className="rounded-lg p-2" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <p className="text-[10px] text-white/30">Guest opens URL → feeds into OBS via Browser Source</p>
             </div>
           </div>
@@ -328,6 +336,9 @@ function StreamTab({ user }) {
         </PanelCard>
 
       </div>
+
+      {/* Stream health monitor */}
+      <StreamHealthDashboard isLive={true} />
     </div>
   );
 }
@@ -336,7 +347,7 @@ function SocialAudioRoles() {
   var [role, setRole] = useState('listener');
   var roles = [
     { id: 'speaker', label: 'Speaker', Icon: Mic, color: '#d4af37', desc: 'Mic + video' },
-    { id: 'cohost', label: 'Co-Host', Icon: Crown, color: '#FFB800', desc: 'Moderation' },
+    { id: 'cohost', label: 'Co-Host', Icon: Crown, color: '#D4AF37', desc: 'Moderation' },
     { id: 'listener', label: 'Listener', Icon: Headphones, color: '#D4AF37', desc: 'Audio-only' },
   ];
   var selected = roles.find(function(r) { return r.id === role; }) || roles[2];
@@ -383,23 +394,18 @@ function LiveRoomTab({ user }) {
   var [myRole, setMyRole] = useState('listener');
   var [roomActive, setRoomActive] = useState(false);
 
-  var mockParticipants = [
-    { id: '1', name: 'Alex Rivera', role: 'host', mic: true, video: true, hand: false, speaking: true },
-    { id: '2', name: 'Jordan M.', role: 'speaker', mic: true, video: false, hand: false, speaking: false },
-    { id: '3', name: 'Sam Chen', role: 'speaker', mic: false, video: true, hand: true, speaking: false },
-    { id: '4', name: 'Tara K.', role: 'listener', mic: false, video: false, hand: false, speaking: false },
-    { id: '5', name: 'Devon L.', role: 'listener', mic: false, video: false, hand: true, speaking: false },
-    { id: '6', name: 'Maya R.', role: 'cohost', mic: true, video: true, hand: false, speaking: false },
-  ];
+  var liveParticipants = roomActive && user
+    ? [{ id: user.id, name: user.full_name || user.email || 'You', role: myRole, mic: micOn, video: videoOn, hand: handRaised, speaking: micOn && myRole !== 'listener' }]
+    : [];
 
-  var roleColors = { host: '#C0392B', cohost: '#FFB800', speaker: '#d4af37', listener: '#D4AF37' };
-  var hostParticipants = mockParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
-  var listenerParticipants = mockParticipants.filter(function(p) { return p.role === 'listener'; });
+  var roleColors = { host: '#C0392B', cohost: '#D4AF37', speaker: '#d4af37', listener: '#D4AF37' };
+  var hostParticipants = liveParticipants.filter(function(p) { return p.role === 'host' || p.role === 'cohost' || p.role === 'speaker'; });
+  var listenerParticipants = liveParticipants.filter(function(p) { return p.role === 'listener'; });
 
   return (
     <div className="space-y-4">
       {/* Room Header */}
-      <div className="rounded-xl p-4 flex items-center justify-between" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
+      <div className="rounded-xl p-4 flex items-center justify-between" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
         <div className="flex items-center gap-3">
           {roomActive ? (
             <div className="flex items-center gap-2">
@@ -410,7 +416,7 @@ function LiveRoomTab({ user }) {
             <span className="text-sm text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Offline</span>
           )}
           <span style={{ fontSize:10, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'rgba(255,255,255,0.05)', color:'rgba(255,255,255,0.5)', border:'1px solid rgba(255,255,255,0.1)' }}>
-            {mockParticipants.length} participants
+            {liveParticipants.length} participant{liveParticipants.length !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -443,7 +449,7 @@ function LiveRoomTab({ user }) {
                     >
                       {p.name.charAt(0)}
                       {p.hand && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px]" style={{ background: '#FFB800' }}>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[11px]" style={{ background: '#D4AF37' }}>
                           ✋
                         </div>
                       )}
@@ -496,6 +502,8 @@ function LiveRoomTab({ user }) {
               </div>
             </div>
           </PanelCard>
+          {/* Guest stream monitor */}
+          <GuestStreamMonitor guestName="Active Guest" isStreaming={roomActive} />
         </div>
 
         {/* Controls Panel */}
@@ -539,16 +547,16 @@ function LiveRoomTab({ user }) {
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
                 style={{ background: videoOn ? 'rgba(201,168,76,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (videoOn ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.08)') }}
               >
-                {videoOn ? <Video className="w-4 h-4 text-[#4A8A7A]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
+                {videoOn ? <Video className="w-4 h-4 text-[#6DBF7E]" /> : <VideoOff className="w-4 h-4 text-white/40" />}
                 <span className="text-xs" style={{ color: videoOn ? '#C9A84C' : 'rgba(255,255,255,0.4)' }}>{videoOn ? 'Video On' : 'Video Off'}</span>
               </button>
               <button
                 onClick={function() { setHandRaised(!handRaised); toast(handRaised ? 'Hand lowered' : '✋ Hand raised — waiting to speak'); }}
                 className="w-full flex items-center gap-3 py-2.5 px-3 rounded-lg transition-all"
-                style={{ background: handRaised ? 'rgba(255,184,0,0.12)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (handRaised ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.08)') }}
+                style={{ background: handRaised ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (handRaised ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)') }}
               >
-                <Hand className="w-4 h-4" style={{ color: handRaised ? '#FFB800' : 'rgba(255,255,255,0.4)' }} />
-                <span className="text-xs" style={{ color: handRaised ? '#FFB800' : 'rgba(255,255,255,0.4)' }}>{handRaised ? 'Hand Raised ✋' : 'Raise Hand'}</span>
+                <Hand className="w-4 h-4" style={{ color: handRaised ? '#D4AF37' : 'rgba(255,255,255,0.4)' }} />
+                <span className="text-xs" style={{ color: handRaised ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>{handRaised ? 'Hand Raised ✋' : 'Raise Hand'}</span>
               </button>
             </div>
           </PanelCard>
@@ -559,8 +567,8 @@ function LiveRoomTab({ user }) {
               {[
                 { label: 'On Stage', val: String(hostParticipants.length), c: '#d4af37' },
                 { label: 'Listeners', val: String(listenerParticipants.length + 42), c: '#D4AF37' },
-                { label: 'Hand Up', val: String(mockParticipants.filter(function(p) { return p.hand; }).length), c: '#FFB800' },
-                { label: 'Speaking', val: String(mockParticipants.filter(function(p) { return p.speaking; }).length), c: '#6DBF7E' },
+                { label: 'Hand Up', val: String(liveParticipants.filter(function(p) { return p.hand; }).length), c: '#D4AF37' },
+                { label: 'Speaking', val: String(liveParticipants.filter(function(p) { return p.speaking; }).length), c: '#6DBF7E' },
               ].map(function(s) {
                 return (
                   <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -618,7 +626,7 @@ function StudioTab({ user }) {
           { label: 'Idle Rooms', val: String(rooms.filter(function(r) { return r.status === 'idle'; }).length), c: '#D4AF3780' },
         ].map(function(s) {
           return (
-            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(7,7,15,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <p className="text-2xl font-bold" style={{ fontFamily: 'Orbitron, monospace', color: s.c }}>{s.val}</p>
               <p className="text-[10px] text-white/30 uppercase mt-1">{s.label}</p>
             </div>
@@ -730,17 +738,25 @@ var TABS = [
 ];
 
 export default function StreamInfra() {
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   var [activeTab, setActiveTab] = useState('stream');
 
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div className="min-h-screen" style={{ background: '#0B0B18', fontFamily: 'Rajdhani, sans-serif' }}>
       {/* Page header */}
-      <div style={{ background: 'rgba(7,7,15,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
+      <div style={{ background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

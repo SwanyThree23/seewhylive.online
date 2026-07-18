@@ -252,7 +252,7 @@ export default function ClipMarker({ roomId, user, streamStartTs, getClipBlobUrl
                       </span>
                       <div style={{
                         width: 6, height: 6, borderRadius: '50%', flexShrink: 0,
-                        background: c.status === 'published' ? GREEN : c.clip_url ? GREEN : '#FFB800',
+                        background: c.status === 'published' ? GREEN : c.clip_url ? GREEN : '#D4AF37',
                       }} />
                     </div>
                   ))}

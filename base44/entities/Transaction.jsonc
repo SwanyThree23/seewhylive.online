@@ -70,9 +70,7 @@
   ],
   "rls": {
     "create": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "data.sender_id": "{{user.id}}"
     },
     "read": {
       "$or": [

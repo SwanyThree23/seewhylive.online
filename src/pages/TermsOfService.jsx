@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen py-10">
       <div className="max-w-3xl mx-auto px-6">
         <Link to={createPageUrl('Home')}>
           <button style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>

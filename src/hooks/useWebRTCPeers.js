@@ -97,8 +97,7 @@ export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) 
           removePeer(from);
         }
       } catch (err) {
-        // Log but don't crash — a bad peer message should not break the room
-        console.warn('[WebRTC] signal error from', from, err?.message);
+        // a bad peer message should not break the room
       }
     });
 
@@ -117,9 +116,7 @@ export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) 
       candidate: safe.candidate || null,
       user_id: safe.user_id || null,
       created_at: new Date().toISOString(),
-    }).catch((err) => {
-      console.warn('[WebRTC] sendSignal failed:', signalType, err?.message);
-    });
+    }).catch(() => {});
   }, [roomId]);
 
   const createPeerConnection = useCallback((peerId) => {
@@ -151,7 +148,6 @@ export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) 
     // ICE gathering timeout — close stuck connections after 30 s
     const iceTimer = setTimeout(() => {
       if (pc.iceConnectionState === 'checking' || pc.iceConnectionState === 'new') {
-        console.warn('[WebRTC] ICE timeout for peer', peerId);
         removePeer(peerId);
       }
     }, ICE_TIMEOUT_MS);
@@ -198,7 +194,6 @@ export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) 
       await pc.setLocalDescription(offer);
       sendSignal(peerId, 'offer', { sdp: offer });
     } catch (err) {
-      console.warn('[WebRTC] addPeer failed:', err?.message);
       removePeer(peerId);
     }
     return pc;
@@ -215,18 +210,14 @@ export function useWebRTCPeers(roomId, localStream, { onPeerStateChange } = {}) 
   const handleIncomingAnswer = useCallback(async (fromPeer, sdp) => {
     const entry = peersRef.current.get(fromPeer);
     if (entry?.pc) {
-      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch((err) => {
-        console.warn('[WebRTC] setRemoteDescription failed:', err?.message);
-      });
+      await entry.pc.setRemoteDescription(new RTCSessionDescription(sdp)).catch(() => {});
     }
   }, []);
 
   const handleIncomingICE = useCallback(async (fromPeer, candidate) => {
     const entry = peersRef.current.get(fromPeer);
     if (entry?.pc && candidate) {
-      await entry.pc.addIceCandidate(new RTCIceCandidate(candidate)).catch((err) => {
-        console.warn('[WebRTC] addIceCandidate failed:', err?.message);
-      });
+      await entry.pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
     }
   }, []);
 

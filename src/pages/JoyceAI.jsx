@@ -1,34 +1,50 @@
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 
 import StreamEventBus from '../components/live/StreamEventBus';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import ChatOverlay from '../components/live/ChatOverlay';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
+function getVoiceSettings() {
+  try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
+  catch { return {}; }
+}
+function speakText(text) {
+  const vs = getVoiceSettings();
+  if (vs.enabled === false || vs.autoSpeak === false) return;
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
+  }).then(r => r.blob()).then(b => {
+    const a = new Audio(URL.createObjectURL(b));
+    a.volume = vs.volume !== undefined ? vs.volume : 0.8;
+    a.play();
+  }).catch(() => {});
+}
+
 const BG = '#080B18';
-const BG2 = '#0D0A14';
-const BG3 = '#13101C';
+const BG2 = '#0D0A08';
+const BG3 = '#13100A';
 const GOLD = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2438';
-const SLATEL = '#3D3555';
-const TEXT = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#8A7A94';
+const SLATE = '#2A2010';
+const SLATEL = '#3D3520';
+const TEXT = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
 const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
@@ -142,7 +158,9 @@ export default function JoyceAI() {
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: JOYCE_SYSTEM + '\n\nConversation so far:\n' + history + '\n\nRespond as Joyce AI in 1-3 sentences. Be direct and broadcast-ready.'
       });
-      setMessages(m => [...m, { role: 'assistant', text: res || "Let's keep it moving — what do you need?" }]);
+      const reply = res || "Let's keep it moving — what do you need?";
+      setMessages(m => [...m, { role: 'assistant', text: reply }]);
+      speakText(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "I'm thinking... try me again in a sec! The stream must go on. 🎙️" }]);
     }
@@ -176,7 +194,22 @@ export default function JoyceAI() {
             <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>YOUR LIVE CO-HOST · POWERED BY CLAUDE</div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={createPageUrl('GuardianAI')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(192,57,43,0.3)`, background: 'rgba(192,57,43,0.1)', color: '#C0392B', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🛡️ Guardian
+            </button>
+          </Link>
+          <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.25)`, background: 'rgba(212,175,55,0.07)', color: GOLD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚔️ SVS
+            </button>
+          </Link>
+          <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.2)`, background: 'rgba(212,175,55,0.06)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🔊 Voice
+            </button>
+          </Link>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 5,
             padding: '4px 10px', borderRadius: PILL,

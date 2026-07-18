@@ -15,18 +15,30 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
   const generateClips = async () => {
     setGenerating(true);
     try {
-      const result = await base44.functions.invoke('generateAutoClips', {
-        session_id: sessionId,
-        room_id: roomId,
-        creator_id: creatorId,
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `Generate 3 highlight clip suggestions for a live stream. Each clip should represent an exciting moment. Return JSON: { "clips": [{ "title": string, "duration": number (15-90 seconds), "views": 0 }] }`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            clips: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string' },
+                  duration: { type: 'number' },
+                  views: { type: 'number' },
+                },
+              },
+            },
+          },
+        },
       });
-
-      if (result?.data?.clips) {
-        setClips(result.data.clips);
-        toast.success(`Generated ${result.data.clips.length} clips!`);
+      if (result?.clips?.length) {
+        setClips(result.clips.map(c => ({ ...c, url: null })));
+        toast.success(`Generated ${result.clips.length} clip suggestions!`);
       }
     } catch (error) {
-      console.error('Clip generation error:', error);
       toast.error('Failed to generate clips');
     }
     setGenerating(false);
@@ -59,7 +71,7 @@ export default function ClipGeneratorAI({ sessionId, roomId, creatorId }) {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           className="space-y-2 p-3 rounded-lg"
-          style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}20` }}
+          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${G}20` }}
         >
           {clips.map((clip, idx) => (
             <motion.div

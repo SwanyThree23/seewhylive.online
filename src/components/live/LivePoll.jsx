@@ -14,7 +14,7 @@ function PollResults({ poll, votes, currentUser, onVote, onEnd }) {
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-bold text-white">{poll.question}</p>
         {onEnd && (
-          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <button onClick={onEnd} style={{ height: 24, padding: '0 4px', fontSize: 10, background: 'transparent', border: 'none', cursor: 'pointer', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Poll
           </button>
         )}
@@ -71,7 +71,7 @@ export default function LivePoll({ roomId, isHost }) {
     if (!activePoll?.id) return;
     const unsub = base44.entities.PollVote.subscribe((event) => {
       if (event.data?.poll_id !== activePoll.id) return;
-      qc.invalidateQueries(['pollvotes', activePoll.id]);
+      qc.invalidateQueries({ queryKey: ['pollvotes', activePoll.id] });
     });
     return unsub;
   }, [activePoll?.id, qc]);
@@ -98,7 +98,7 @@ export default function LivePoll({ roomId, isHost }) {
       created_at: new Date().toISOString(),
     }),
     onSuccess: () => {
-      qc.invalidateQueries(['livepoll', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       setCreating(false);
       setQuestion('');
       setOptions(['', '']);
@@ -110,7 +110,7 @@ export default function LivePoll({ roomId, isHost }) {
   const endPollMutation = useMutation({
     mutationFn: () => base44.entities.Poll.update(activePoll.id, { status: 'ended' }),
     onSuccess: async () => {
-      qc.invalidateQueries(['livepoll', roomId]);
+      qc.invalidateQueries({ queryKey: ['livepoll', roomId] });
       // Post summary to activity feed
       const winner = activePoll.options?.[
         Object.entries(voteTally).sort((a, b) => b[1] - a[1])[0]?.[0]
@@ -138,11 +138,24 @@ export default function LivePoll({ roomId, isHost }) {
         user_id: me?.id || 'anonymous',
       });
     },
-    onSuccess: (_, optionIndex) => {
+    onMutate: async (optionIndex) => {
+      await qc.cancelQueries({ queryKey: ['pollvotes', activePoll?.id] });
+      const prevVotes = qc.getQueryData(['pollvotes', activePoll?.id]);
+      // Optimistically add a vote
+      qc.setQueryData(['pollvotes', activePoll?.id], (old) =>
+        (old || []).concat({ poll_id: activePoll.id, option_index: optionIndex, user_id: 'optimistic' })
+      );
       setUserVotedOption(optionIndex);
-      qc.invalidateQueries(['pollvotes', activePoll?.id]);
+      return { prevVotes };
     },
-    onError: () => toast.error('Could not record vote'),
+    onError: (_err, _optionIndex, context) => {
+      if (context) qc.setQueryData(['pollvotes', activePoll?.id], context.prevVotes);
+      setUserVotedOption(null);
+      toast.error('Could not record vote');
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['pollvotes', activePoll?.id] });
+    },
   });
 
   const handleVote = (i) => {
@@ -152,7 +165,7 @@ export default function LivePoll({ roomId, isHost }) {
 
   if (!activePoll && !isHost) return null;
 
-  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
+  const inputStyle = { width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' };
   const inputSmStyle = { ...inputStyle, height: 28, padding: '0 10px', fontSize: 12 };
 
   return (
@@ -177,7 +190,7 @@ export default function LivePoll({ roomId, isHost }) {
         {activePoll ? (
           <motion.div key="poll" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex items-center gap-1.5 mb-2">
-              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(220,38,38,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
+              <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(192,57,43,0.8)', color: '#fff', border: 'none', display: 'inline-block' }}>LIVE</span>
             </div>
             <PollResults
               poll={activePoll}

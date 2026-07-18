@@ -377,6 +377,7 @@ input, select, textarea {
   left: 0;
   right: 0;
   height: 48px;
+  padding-top: env(safe-area-inset-top, 0px);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -401,7 +402,7 @@ input, select, textarea {
 
 .hud-version {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--burg);
   letter-spacing: 1px;
   flex-shrink: 0;
@@ -474,7 +475,7 @@ input, select, textarea {
 
 .hud-room {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(0, 201, 167, 0.7);
   letter-spacing: 1px;
   margin-left: auto;
@@ -543,7 +544,7 @@ input, select, textarea {
   flex: 1;
   padding: 1rem;
   padding-bottom: 48px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .tab-panel {
@@ -703,7 +704,7 @@ input, select, textarea {
 }
 
 .oct-you-tag {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(201, 168, 76, 0.6);
   display: block;
   text-align: center;
@@ -841,7 +842,7 @@ input, select, textarea {
   padding: 8px 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 4px; overscroll-behavior-y: contain;
 }
 
 .chat-msg {
@@ -1469,6 +1470,8 @@ input, select, textarea {
 .paywall-overlay {
   position: absolute;
   inset: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: rgba(7, 5, 10, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1614,7 +1617,7 @@ input, select, textarea {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 2px; overscroll-behavior-y: contain;
 }
 
 .bot-log-empty {
@@ -1748,7 +1751,7 @@ input, select, textarea {
   flex-direction: column;
   gap: 4px;
   max-height: 300px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .gift-table-row {
@@ -2161,7 +2164,7 @@ input, select, textarea {
 
 .stage-layout-btn {
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   padding: 4px 10px;
@@ -2182,7 +2185,7 @@ input, select, textarea {
 
 .stage-capacity {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 11px;
   color: rgba(138,122,98,.4);
   margin-left: auto;
   flex-shrink: 0;
@@ -2239,7 +2242,7 @@ input, select, textarea {
 
 .lower-third-role {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   color: #C9A84C;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -2384,7 +2387,7 @@ input, select, textarea {
   border-top: 1px solid rgba(201,168,76,.2);
   flex-shrink: 0;
   max-height: 140px;
-  overflow-y: auto;
+  overflow-y: auto; overscroll-behavior-y: contain;
 }
 
 .hand-queue-header {
@@ -2420,7 +2423,7 @@ input, select, textarea {
 
 .hand-queue-time {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 11px;
   color: rgba(138,122,98,.4);
   flex-shrink: 0;
 }
@@ -2484,7 +2487,7 @@ input, select, textarea {
 }
 
 .mc-btn-icon { font-size: 14px; line-height: 1; }
-.mc-btn-label { font-family: var(--font-mono); font-size: 7px; letter-spacing: .5px; }
+.mc-btn-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: .5px; }
 
 .mc-divider {
   width: 1px;
@@ -2577,7 +2580,7 @@ input, select, textarea {
 
 .role-pill {
   font-family: var(--font-mono);
-  font-size: 7.5px;
+  font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 2px 6px;
@@ -2595,7 +2598,7 @@ input, select, textarea {
   border-radius: 6px;
   padding: 4px 8px;
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #C9A84C;
   cursor: pointer;
@@ -2677,7 +2680,7 @@ select:focus { border-color: rgba(201,168,76,.5); }
   border-radius: 20px;
   padding: 6px 16px;
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 11px;
   color: #C9A84C;
   letter-spacing: 1px;
   pointer-events: none;
@@ -2720,6 +2723,17 @@ button, a, [role="button"] {
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+}
+
+button, [role="button"] {
+  min-height: 40px;
+  min-width: 40px;
+}
+
+button.icon-btn-compact, [role="button"].icon-btn-compact {
+  min-height: unset;
+  min-width: unset;
+  padding: 10px;
 }
 
 /* Prevent pull-to-refresh on chrome when we handle it ourselves */

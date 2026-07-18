@@ -32,10 +32,11 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       if (!user?.id) throw new Error('Not authenticated');
       // Create transaction
       await base44.entities.Transaction.create({
-        type: 'virtual_good',
-        amount: gift.price,
-        from_user_id: user.id,
-        to_user_id: recipientId,
+        transaction_type: 'direct_support',
+        creator_payout: Math.floor(gift.price * 90) / 100,
+        platform_cut: gift.price - Math.floor(gift.price * 90) / 100,
+        sender_id: user.id,
+        recipient_id: recipientId,
         room_id: roomId,
         virtual_good_id: gift.id,
         message: `Sent ${gift.name}`,
@@ -45,6 +46,24 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
       await base44.entities.AnimatedGift.update(gift.id, {
         times_sent: gift.times_sent + 1,
       });
+
+      // Log activity for both parties
+      await Promise.allSettled([
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'gift_sent',
+          title: `Sent ${gift.name} gift`,
+          amount: gift.price,
+          recipient_id: recipientId,
+        }),
+        base44.entities.Activity.create({
+          user_id: recipientId,
+          type: 'gift_received',
+          title: `Received ${gift.name} gift`,
+          amount: gift.price,
+          sender_id: user.id,
+        }),
+      ]);
     },
     onError: () => toast.error('Gift failed to send. Please try again.'),
     onSuccess: (_, gift) => {
@@ -154,7 +173,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
 
       {/* Selected Gift Preview */}
       {selectedGift && (
-        <Card className="bg-gradient-to-br from-[#7B5DA6] to-[#C0392B]">
+        <Card className="bg-gradient-to-br from-[#0D1022] to-[#0F1428]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -166,7 +185,7 @@ export default function AnimatedGiftShop({ recipientId, roomId, onClose }) {
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Gift className="w-8 h-8 text-[#7B5DA6]" />
+                    <Gift className="w-8 h-8 text-[#800020]" />
                   )}
                 </div>
                 <div>

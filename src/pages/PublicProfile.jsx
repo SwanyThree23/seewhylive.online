@@ -8,24 +8,22 @@ import VideoLibrary from '../components/vod/VideoLibrary';
 import FollowButton from '../components/shared/FollowButton';
 import PresenceDot from '../components/shared/PresenceDot';
 import ShareButtons from '../components/shared/ShareButtons';
+import SubscriberTierView from '../components/subscriptions/SubscriberTierView';
+import TierBadge from '../components/subscriptions/TierBadge';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
+import OnlinePresenceDot from '../components/shared/OnlinePresence';
+import DiscussionFeed from '../components/community/DiscussionFeed';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -49,6 +47,17 @@ export default function PublicProfile() {
     queryFn: () => base44.entities.Room.filter({ host_id: userId, is_public: true }, '-created_date', 6),
     enabled: !!userId,
   });
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', currentUser?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: currentUser?.id }).then(r => r[0] || null),
+    enabled: !!currentUser?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: BG }}>
@@ -76,7 +85,7 @@ export default function PublicProfile() {
   return (
     <div className="min-h-screen" style={{ background: BG }}>
       {/* Banner */}
-      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #0d0618 60%, #080B18 100%)` }}>
+      <div className="relative h-48 overflow-hidden" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 60%, #080B18 100%)` }}>
         {profile.banner_url && (
           <img src={profile.banner_url} className="w-full h-full object-cover absolute inset-0" alt="banner" />
         )}
@@ -91,7 +100,7 @@ export default function PublicProfile() {
           {/* OCT Avatar */}
           <div className="relative shrink-0" style={{ width: 96, height: 96 }}>
             <div className="absolute inset-0" style={{ clipPath: OCT, background: GOLD }} />
-            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #0d0618)` }}>
+            <div className="absolute inset-[3px] flex items-center justify-center" style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, #080B18)` }}>
               {profile.avatar_url
                 ? <img src={profile.avatar_url} className="w-full h-full object-cover" alt={profile.display_name} style={{ clipPath: OCT }} />
                 : <span className="text-3xl font-black" style={{ color: GOLD, ...T }}>{profile.display_name?.charAt(0)}</span>
@@ -104,8 +113,9 @@ export default function PublicProfile() {
               <h1 className="text-2xl font-black flex items-center gap-2" style={{ color: '#fff', ...T }}>
                 {profile.display_name}
                 <PresenceDot userId={userId} size="md" />
+                <OnlinePresenceDot isOnline={true} size="sm" />
               </h1>
-              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#4fc3f7' }} />}
+              {profile.is_verified && <CheckCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />}
               {profile.category && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>
                   {profile.category}
@@ -147,9 +157,27 @@ export default function PublicProfile() {
           </div>
         </div>
 
+        {/* Subscription Tiers */}
+        {userId && (
+          <div className="mb-6">
+            <SubscriberTierView creatorId={userId} userId={currentUser?.id} />
+            <div className="mt-3 flex items-center gap-3 flex-wrap">
+              <TierBadge tier={null} size="sm" showName />
+              {currentUser?.id && userId !== currentUser.id && (
+                <StripeSubscribeButton creatorId={userId} creatorName={profile?.display_name || ''} currentUserId={currentUser.id} />
+              )}
+            </div>
+            {currentUser?.id && userId !== currentUser.id && (
+              <div className="mt-3">
+                <TierSubscribeCard tier={null} currentSub={null} userId={currentUser.id} creatorId={userId} isHighlighted={false} />
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Recent Rooms */}
         {rooms.length > 0 && (
-          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+          <div className="rounded-2xl mb-6 p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
             <p className="text-xs font-black uppercase mb-3 flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
               <Video className="w-4 h-4" /> Recent Streams
             </p>
@@ -170,6 +198,34 @@ export default function PublicProfile() {
 
         {/* VOD Library */}
         <VideoLibrary creatorId={userId} />
+
+        {/* Subscription option */}
+        {userId && currentUser?.id && userId !== currentUser.id && (
+          <div className="mt-6">
+            <SubscriptionCard
+              tier={null}
+              price={4.99}
+              benefits={[]}
+              communityId={userCommunityId}
+              creatorId={userId}
+              isSubscribed={false}
+            />
+          </div>
+        )}
+
+        {/* Community discussion */}
+        {userId && (
+          <div className="mt-6">
+            <DiscussionFeed communityId={userId} />
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-col gap-4">
+          <OnlineUsersGrid compact maxVisible={8} />
+          <ContentRecommendations />
+          <CollaborationMatcher />
+          <ShareToSocial url={window.location.href} title="Check out this creator on SeeWhy LIVE!" />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="profile" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

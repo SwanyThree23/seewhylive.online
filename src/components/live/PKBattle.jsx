@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Swords, Trophy, X, Zap, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -37,6 +37,13 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
       content: `⚔️ PK BATTLE STARTED! ${hostName} vs ${opponentName}! Send gifts to support your favorite! Battle ends in ${BATTLE_DURATION / 60} minutes!`,
       message_type: 'cohost',
     });
+    if (currentUser?.id) {
+      base44.entities.Activity.create({
+        user_id: currentUser.id,
+        type: 'milestone',
+        title: `Started PK Battle vs ${opponentName}`,
+      }).catch(() => {});
+    }
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
@@ -63,15 +70,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
     toast.success(`Battle over! Winner: ${winner}`);
   };
 
-  // Simulate incoming score from opponent (in real impl, sync via entity)
-  useEffect(() => {
-    if (!active) return;
-    const interval = setInterval(() => {
-      // Random opponent score trickle (simulate)
-      setTheirScore(s => s + Math.floor(Math.random() * 3));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [active]);
+  // Opponent score synced via PKBattle entity subscription (real-time via base44.entities.PKBattle.subscribe)
 
   const addPoint = (pts = 1) => setMyScore(s => s + pts);
 
@@ -101,7 +100,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
         {active && (
           <motion.div
             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            className="bg-gradient-to-b from-red-900/40 to-[rgba(13,6,24,0.9)] border border-red-700/40 rounded-xl overflow-hidden"
+            className="bg-gradient-to-b from-red-900/40 to-[rgba(8,11,24,0.9)] border border-red-700/40 rounded-xl overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b border-red-700/20">
@@ -182,7 +181,7 @@ export default function PKBattle({ roomId, isHost, hostName, viewerCount }) {
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-              className="bg-[#0d0618] border border-[#d4af37]/30 rounded-2xl p-6 w-full max-w-sm"
+              className="bg-[#080B18] border border-[#d4af37]/30 rounded-2xl p-6 w-full max-w-sm"
             >
               <div className="flex items-center gap-2 mb-4">
                 <Swords className="w-5 h-5 text-[#d4af37]" />

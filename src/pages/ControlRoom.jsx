@@ -16,6 +16,8 @@ import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
 import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -698,7 +700,7 @@ export default function ControlRoomPage() {
       {<SubscriptionManager creatorId={user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={user?.id} />}
       {roomId && <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />}
-      <MerchWidget />
+      <MerchStrip roomId={roomId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

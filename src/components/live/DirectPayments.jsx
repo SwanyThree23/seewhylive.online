@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExternalLink, DollarSign, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import { isSafeUrl } from '@/lib/security';
 
 const PAYMENT_PLATFORMS = [
   { id: 'paypal', name: 'PayPal', emoji: '🅿️', color: 'from-[#5B7FA6] to-blue-700', baseUrl: 'https://paypal.me/', placeholder: 'your-username' },
@@ -37,7 +38,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
     if (platform.baseUrl && !val.startsWith('http')) {
       url = platform.baseUrl + val;
     }
-    if (!url.startsWith('http')) {
+    if (!isSafeUrl(url)) {
       toast.info(`Send to: ${val}`);
       navigator.clipboard.writeText(val).catch(() => {});
       return;
@@ -52,7 +53,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)' }} onClick={onClose} />
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#0d0618', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: 448, width: '100%', maxHeight: '85vh', overflowY: 'auto', background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 24, color: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#d4af37' }}>
             <DollarSign className="w-5 h-5" />
@@ -122,7 +123,7 @@ export default function DirectPayments({ isOpen, onClose, creatorName }) {
                     />
                   </div>
                   {links[platform.id] && (
-                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C0392B', display: 'flex', alignItems: 'center' }}>
+                    <button onClick={() => setLinks(prev => { const n = {...prev}; delete n[platform.id]; return n; })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF4444', display: 'flex', alignItems: 'center' }}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}

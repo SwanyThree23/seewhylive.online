@@ -2,25 +2,27 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Download, FileText, Table, FileSpreadsheet, CheckCircle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
-
+import StreamGoals from '../components/live/StreamGoals';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
+import ShareToSocial from '../components/social/ShareToSocial';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -84,6 +86,13 @@ export default function DataExportPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const handleExport = async (set, format) => {
     const key = `${set.id}-${format}`;
@@ -116,7 +125,7 @@ export default function DataExportPage() {
       <div className="max-w-3xl mx-auto px-4 md:px-6 pt-6 space-y-4">
         {EXPORT_SETS.map(set => (
           <div key={set.id} className="rounded-2xl p-5"
-            style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(212,175,55,0.1)` }}>
+            style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.1)` }}>
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="font-black text-sm text-white" style={T}>{set.label}</p>
@@ -157,6 +166,35 @@ export default function DataExportPage() {
           <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
             All exports contain only <strong style={{ color: 'rgba(255,255,255,0.6)' }}>your own data</strong>. Files are generated locally in your browser and never sent to any server.
           </p>
+        </div>
+
+        <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <StreamGoals isHost={true} />
+          <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+          {[
+            { label: '← Settings',           href: 'Settings'          },
+            { label: '📊 Analytics',          href: 'Analytics'         },
+            { label: '📈 Adv. Analytics',     href: 'AdvancedAnalytics' },
+            { label: '💰 Monetization',       href: 'Monetization'      },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
+          <AudienceInsights />
+          <EarningsBreakdown userId={user?.id} />
+          <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={8} />
+          <CollaborationMatcher />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />

@@ -92,7 +92,7 @@ export default function ShareButtons({ url, title, className = '' }) {
       {open && (
         <div style={{
           position:'absolute', top:'100%', right:0, marginTop:4, zIndex:50,
-          background:'rgba(13,6,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
+          background:'rgba(8,11,24,0.98)', border:'1px solid rgba(255,255,255,0.1)',
           borderRadius:12, boxShadow:'0 8px 32px rgba(0,0,0,0.6)', padding:12, width:208,
         }}>
           <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8, fontWeight:700, paddingLeft:4 }}>Share to</p>

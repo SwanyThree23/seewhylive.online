@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -169,6 +170,7 @@ function QRPreview({ url }) {
 
 export default function StreamShareHub() {
   const [searchParams] = useSearchParams();
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const roomId = searchParams.get('id');
 
   const [room, setRoom]         = useState(null);
@@ -464,4 +466,3 @@ export default function StreamShareHub() {
     </div>
   );
 }
-

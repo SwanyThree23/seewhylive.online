@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, MessageSquare, Plus } from 'lucide-react';
@@ -8,15 +8,13 @@ import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
 import DiscussionFeed from '@/components/community/DiscussionFeed';
 import SpotlightSection from '@/components/community/SpotlightSection';
+import SpotlightBanner from '../components/community/SpotlightBanner';
 import ReferralProgram from '@/components/community/ReferralProgram';
 import CreatePollModal from '../components/community/CreatePollModal';
 import PollCard from '../components/community/PollCard';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -46,11 +44,21 @@ export default function CommunityPage() {
   const { data: community, isLoading } = useQuery({
     queryKey: ['userCommunity', user?.id],
     queryFn: async () => {
+      if (communityIdParam) {
+        const list = await base44.entities.Community.filter({ id: communityIdParam });
+        return list?.[0] || null;
+      }
       if (!user?.id) return null;
-      const communities = await base44.entities.Community.filter({ creator_id: user.id }, '-created_date', 1);
-      return communities?.[0];
+      const owned = await base44.entities.Community.filter({ creator_id: user.id }, '-created_date', 1);
+      if (owned?.[0]) return owned[0];
+      const memberships = await base44.entities.CommunityMember.filter({ user_id: user.id }, '-joined_date', 1);
+      if (memberships?.[0]?.community_id) {
+        const joined = await base44.entities.Community.filter({ id: memberships[0].community_id });
+        return joined?.[0] || null;
+      }
+      return null;
     },
-    enabled: !!user?.id,
+    enabled: !!communityIdParam || !!user?.id,
   });
 
   const { data: membership } = useQuery({
@@ -134,39 +142,123 @@ export default function CommunityPage() {
 
   return (
     <div className="min-h-screen" style={{ background: BG }}>
-      {/* Header */}
-      <div className="sticky top-0 z-20 px-4 py-6 md:px-8 border-b" style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <Users className="w-6 h-6" style={{ color: G }} />
-            <h1 className="text-3xl font-black" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>
-              Community Hub
-            </h1>
-          </div>
-          <p className="text-white/60">Connect with your audience, share content, and build relationships</p>
-        </motion.div>
+      {/* Banner */}
+      <div className="relative overflow-hidden" style={{ height: 160 }}>
+        {community.banner_url
+          ? <img src={community.banner_url} className="w-full h-full object-cover absolute inset-0" alt="" />
+          : <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${CRIMSON}44 0%, #080B18 60%)` }} />
+        }
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(8,11,24,0.95) 100%)' }} />
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        {community?.id ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Main Feed */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="md:col-span-2"
-            >
-              <DiscussionFeed communityId={community.id} />
-            </motion.div>
+      {/* Community identity */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6" style={{ marginTop: -48 }}>
+        <div className="flex flex-col sm:flex-row items-start gap-4 mb-4">
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-2xl shrink-0 flex items-center justify-center font-black text-3xl"
+            style={{ background: community.avatar_url ? undefined : `linear-gradient(135deg, ${CRIMSON}, ${G})`, backgroundImage: community.avatar_url ? `url(${community.avatar_url})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', border: '3px solid rgba(212,175,55,0.3)', boxShadow: '0 4px 20px rgba(0,0,0,0.5)', color: '#fff', ...T }}>
+            {!community.avatar_url && (community.name?.charAt(0) || '?')}
+          </div>
 
-            {/* Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="space-y-4"
-            >
+          <div className="flex-1 sm:pt-10 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-black text-white" style={T}>{community.name}</h1>
+              {community.is_verified && <CheckCircle className="w-5 h-5" style={{ color: G }} />}
+              {community.category && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
+                  style={{ ...T, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: G }}>
+                  {community.category}
+                </span>
+              )}
+              {liveRooms.length > 0 && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase animate-pulse"
+                  style={{ ...T, background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B' }}>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500" /> LIVE
+                </span>
+              )}
+            </div>
+            {community.description && <p className="text-sm mt-1 max-w-xl" style={{ color: 'rgba(255,255,255,0.5)' }}>{community.description}</p>}
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                <strong style={{ color: G }}>{memberCount}</strong> members
+              </span>
+              {community.tags?.slice(0, 3).map(tag => (
+                <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', ...T }}>{tag}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="sm:pt-10 flex gap-2 flex-wrap">
+            {user && !isMember && (
+              <button onClick={() => joinMut.mutate()} disabled={joinMut.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
+                style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${G})`, color: '#000', border: 'none', cursor: 'pointer' }}>
+                <UserPlus className="w-3.5 h-3.5" /> Join
+              </button>
+            )}
+            {isMember && !isOwner && (
+              <button onClick={() => leaveMut.mutate()} disabled={leaveMut.isPending}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
+                style={{ ...T, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
+                <UserCheck className="w-3.5 h-3.5" /> Joined
+              </button>
+            )}
+            {isMember && (
+              <button onClick={() => setPollModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
+                style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: G, cursor: 'pointer' }}>
+                <Plus className="w-3.5 h-3.5" /> Poll
+              </button>
+            )}
+            {(isAdmin || isOwner) && (
+              <Link to={createPageUrl('CommunityAdmin') + `?id=${community.id}`}>
+                <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
+                  style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: G, cursor: 'pointer' }}>
+                  <Shield className="w-3.5 h-3.5" /> Admin
+                </button>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b mb-6 overflow-x-auto scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className="flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all shrink-0"
+                style={{ ...T, color: active ? G : 'rgba(255,255,255,0.35)', borderBottomColor: active ? G : 'transparent', background: 'transparent' }}>
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+                {tab.id === 'rooms' && liveRooms.length > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-black" style={{ background: 'rgba(192,57,43,0.2)', color: '#C0392B' }}>{liveRooms.length}</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'feed' && (
+            <motion.div key="feed" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-16">
+              <div className="md:col-span-2">
+                <DiscussionFeed communityId={community.id} />
+              </div>
+              <div className="space-y-4">
+                <ReferralProgram communityId={community.id} />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'spotlight' && (
+            <motion.div key="spotlight" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-16 space-y-6">
+              <SpotlightBanner communityId={community.id} isAdmin={isAdmin || isOwner} />
               <SpotlightSection communityId={community.id} />
               <ReferralProgram communityId={community.id} />
 
@@ -198,12 +290,54 @@ export default function CommunityPage() {
                 )}
               </div>
             </motion.div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-white/40">Create a community to get started</p>
-          </div>
-        )}
+          )}
+
+          {activeTab === 'rooms' && (
+            <motion.div key="rooms" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="pb-16">
+              {liveRooms.length === 0 ? (
+                <div className="text-center py-16">
+                  <Radio className="w-14 h-14 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.08)' }} />
+                  <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No live streams right now</p>
+                  <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.15)' }}>Check back soon</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {liveRooms.map(room => (
+                    <Link key={room.id} to={createPageUrl('Room') + `?id=${room.id}`}>
+                      <div className="p-4 rounded-2xl transition-all"
+                        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(192,57,43,0.3)' }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(192,57,43,0.6)'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(192,57,43,0.3)'}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                          <span className="text-[10px] font-black uppercase" style={{ color: '#C0392B', ...T }}>Live</span>
+                        </div>
+                        <p className="font-black text-sm text-white truncate" style={T}>{room.title}</p>
+                        <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                          {room.viewer_count || 0} watching
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {community?.id && (
+        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+      )}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
+        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
+        <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher currentUserId={user?.id} />
+        <ShareToSocial url={window.location.href} title={community?.name ? `Join "${community.name}" community on SeeWhy LIVE!` : 'Join our community on SeeWhy LIVE!'} />
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="community" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

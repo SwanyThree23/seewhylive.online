@@ -100,6 +100,13 @@ export default function ChatPanel({ roomId, currentUser, isHost, bannedWords = [
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['muted-users'] });
       toast.success(`User ${variables.action}ed`);
+      if (currentUser?.id) {
+        base44.entities.Activity.create({
+          user_id: currentUser.id,
+          type: 'milestone',
+          title: `Moderation action: ${variables.action} applied to chat user`,
+        }).catch(() => {});
+      }
     },
   });
 
@@ -244,7 +251,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
 
         <div className={`rounded-2xl px-4 py-2 relative ${
           isOwn 
-            ? 'bg-[#7B5DA6] text-white' 
+            ? 'bg-[#800020] text-white' 
             : 'bg-muted'
         }`}>
           <p className="text-sm break-words">{message.content}</p>
@@ -263,7 +270,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
               <Button
                 size="icon"
                 variant="ghost"
-                className="h-6 w-6 bg-orange-500 hover:bg-orange-600 text-white"
+                className="h-6 w-6 text-white" style={{ background: '#D4854A' }}
                 onClick={() => onModerate('mute')}
               >
                 <Ban className="w-3 h-3" />

@@ -22,10 +22,19 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import StreamGoals from '../components/live/StreamGoals';
+import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
-const BG2    = 'rgba(13,6,24,0.9)';
+const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK   = '#C0392B';
@@ -68,7 +77,7 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(13,6,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, ...T,
             fontWeight: 700, letterSpacing: '0.04em',
@@ -172,7 +181,7 @@ export default function AIHub() {
   useEffect(() => {
     function readDjTrack() {
       try {
-        const raw = sessionStorage.getItem('seewhy_dj_track');
+        const raw = localStorage.getItem('seewhy_dj_track');
         setDjTrack(raw ? JSON.parse(raw) : null);
       } catch {
         setDjTrack(null);
@@ -827,7 +836,7 @@ export default function AIHub() {
           <Link to={createPageUrl('INSForge')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: `linear-gradient(90deg, ${AMBER}, #E55100)`,
+              background: `linear-gradient(90deg, ${AMBER}, #CC7755)`,
               color: '#000', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -837,7 +846,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: State vs State ── */}
-        <Card accentColor="#5B7FA6">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>⚔️ State vs State</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Hybrid domino tournament series — states compete live on SeeWhy. Track brackets, rosters, live match scores, and standings.
@@ -851,7 +860,7 @@ export default function AIHub() {
           <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
-              background: 'linear-gradient(90deg, #5B7FA6, #C62828)',
+              background: 'linear-gradient(90deg, #800020, #C62828)',
               color: '#fff', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
@@ -861,7 +870,7 @@ export default function AIHub() {
         </Card>
 
         {/* ── Section 10: Tribute Wall ── */}
-        <Card accentColor="#7B5EA7">
+        <Card accentColor="#800020">
           <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🕊️ Tribute Wall</p>
           <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 14, lineHeight: 1.5 }}>
             Honor the legends who built domino culture. Read bios, leave tributes, and register for the memorial gaming event.
@@ -876,7 +885,7 @@ export default function AIHub() {
             <motion.div whileTap={{ scale: 0.97 }} style={{
               ...T, padding: '12px 0', borderRadius: 12, textAlign: 'center',
               background: 'rgba(123,94,167,0.2)', border: '1px solid rgba(123,94,167,0.5)',
-              color: '#A07BC4', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
+              color: '#C9A84C', fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}>
               Visit Tribute Wall →
@@ -1049,6 +1058,12 @@ export default function AIHub() {
           All AI features are included free · 90% creator payout · Powered by SeeWhy LIVE
         </p>
 
+      </div>
+
+      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

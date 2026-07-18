@@ -27,11 +27,18 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
       title: `${MOMENTS.find(m => m.id === momentType)?.label} @ ${Math.floor(elapsedSeconds / 60)}m`,
       upvotes: 0,
     }),
-    onSuccess: (_, momentType) => {
+    onSuccess: (highlight, momentType) => {
       setCaptured(momentType);
       toast.success('Moment captured! ⚡');
       setTimeout(() => setCaptured(null), 2000);
       setOpen(false);
+      if (creatorId) {
+        base44.entities.Activity.create({
+          user_id: creatorId,
+          type: 'clip_created',
+          title: `Captured ${MOMENTS.find(m => m.id === momentType)?.label || 'moment'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -45,9 +52,9 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95"
         style={{
           fontFamily: 'Barlow Condensed, sans-serif',
-          background: open ? 'rgba(255,184,0,0.2)' : 'rgba(255,184,0,0.08)',
-          border: '1px solid rgba(255,184,0,0.25)',
-          color: '#FFB800',
+          background: open ? 'rgba(212,175,55,0.2)' : 'rgba(212,175,55,0.08)',
+          border: '1px solid rgba(212,175,55,0.25)',
+          color: '#D4AF37',
         }}>
         <Scissors className="w-3 h-3" />
         Clip
@@ -60,7 +67,7 @@ export default function StreamHighlightCapture({ roomId, sessionId, creatorId, e
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute bottom-full mb-2 right-0 z-50 rounded-2xl p-2 space-y-1"
-            style={{ background: '#0d0618', border: '1px solid rgba(255,184,0,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+            style={{ background: '#080B18', border: '1px solid rgba(212,175,55,0.2)', width: 160, boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
             <p className="text-[11px] font-bold uppercase text-white/30 px-1 pb-1"
               style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Tag This Moment</p>
             {MOMENTS.map(m => (

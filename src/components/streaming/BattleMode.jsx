@@ -35,7 +35,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     if (!base44.entities.PKBattle) return;
     const unsub = base44.entities.PKBattle.subscribe((event) => {
       if (event.data?.room_id === roomId) {
-        qc.invalidateQueries(['pk_battles', roomId]);
+        qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
       }
     });
     return unsub;
@@ -81,7 +81,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     onSuccess: () => {
       setShowSetup(false);
       toast.success('⚔️ Battle started!');
-      qc.invalidateQueries(['pk_battles', roomId]);
+      qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
     },
     onError: () => toast.error('Could not start battle'),
   });
@@ -114,7 +114,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     onError: () => toast.error('Failed to end battle.'),
     onSuccess: () => {
       toast.success('Battle ended!');
-      qc.invalidateQueries(['pk_battles', roomId]);
+      qc.invalidateQueries({ queryKey: ['pk_battles', roomId] });
     },
   });
 
@@ -132,14 +132,14 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
     : 0;
 
   return (
-    <div className="border border-[#d4af37]/20 rounded-xl bg-[#1a0d2e]/80 overflow-hidden">
+    <div className="border border-[#d4af37]/20 rounded-xl bg-[#0F1428]/80 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[#d4af37]/10">
         <div className="flex items-center gap-2">
           <Swords className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Battle Mode</span>
           {activeBattle && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff', animation:'pulse 2s infinite' }}>LIVE</span>
           )}
         </div>
         {isHost && !activeBattle && (
@@ -153,7 +153,7 @@ export default function BattleMode({ roomId, isHost, hostName, participants = []
         {isHost && activeBattle && (
           <button
             onClick={() => endBattleMutation.mutate(activeBattle)}
-            style={{ height:24, fontSize:10, background:'#dc2626', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, background:'#C0392B', color:'#fff', border:'none', borderRadius:6, padding:'0 8px', cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             <X className="w-3 h-3" /> End
           </button>
@@ -287,7 +287,7 @@ function BattleSetupForm({ guests, durationMin, setDurationMin, onStart, isLoadi
               <select
                 value={val}
                 onChange={e => setVal(e.target.value)}
-                className="w-full bg-[#1a0d2e] border border-white/10 rounded px-2 py-1 text-[10px] text-white"
+                className="w-full bg-[#0F1428] border border-white/10 rounded px-2 py-1 text-[10px] text-white"
               >
                 <option value="">Select…</option>
                 {guests.map(g => (

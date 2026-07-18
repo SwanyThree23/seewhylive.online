@@ -42,7 +42,7 @@ export default function WatchQueue({ isHost, currentIndex = 0, onSelect }) {
   };
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.15)] rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
         <List className="w-3.5 h-3.5 text-[#d4af37]" />
         <span className="text-xs font-semibold text-[#d4af37]">Watch Queue</span>

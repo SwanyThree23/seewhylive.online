@@ -15,7 +15,7 @@ function SignalBarsIcon({ quality }) {
     { h: 'h-4', threshold: 2 },
     { h: 'h-5', threshold: 3 },
   ];
-  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#FFD700' : '#C0392B';
+  const color = quality >= 3 ? '#6DBF7E' : quality >= 2 ? '#D4AF37' : '#FF4444';
   return (
     <div className="flex items-end gap-0.5">
       {bars.map((b, i) => (
@@ -185,7 +185,7 @@ export default function DevicePreview({ user, onDeviceState, onStreamReady }) {
         {/* Real camera feed */}
         <video ref={videoRef} autoPlay playsInline muted
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ display: cameraOn && !isSim ? 'block' : 'none' }} />
+          style={{ opacity: cameraOn && !isSim ? 1 : 0, transition: 'opacity 0.2s', pointerEvents: 'none' }} />
 
         {/* Simulated / camera off state */}
         {(!cameraOn || isSim) && (

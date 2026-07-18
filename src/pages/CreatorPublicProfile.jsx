@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import SignalBars from '../components/live/SignalBars';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ShareToSocial from '../components/social/ShareToSocial';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import AnnouncementPanel from '../components/community/AnnouncementPanel';
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Radio, Users, DollarSign, Clock, Star,
@@ -9,51 +19,36 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+
 var G = {
   gold: "#d4af37",
   crimson: "#8B0000",
   crimsonBright: "#C41E3A",
-  cyan: "#4A8A7A",
+  cyan: "#6DBF7E",
   volt: "#D4AF37",
-  purple: "#BF5FFF",
+  purple: "#D4854A",
   gray: "#888",
   grayDim: "#444",
 };
 
 var BADGE_COLORS = {
-  super_fan: { color: "#FFD700", bg: "rgba(255,215,0,0.15)", icon: "👑" },
-  top_supporter: { color: "#FF6B6B", bg: "rgba(255,107,107,0.15)", icon: "❤️" },
-  raid_master: { color: "#4A8A7A", bg: "rgba(74,138,122,0.12)", icon: "⚡" },
-  poll_champion: { color: "#BF5FFF", bg: "rgba(191,95,255,0.15)", icon: "🏆" },
-  chat_legend: { color: "#D4AF37", bg: "rgba(200,255,0,0.1)", icon: "💬" },
-  watch_streak: { color: "#FF9500", bg: "rgba(255,149,0,0.15)", icon: "🔥" },
-  gifter: { color: "#FF69B4", bg: "rgba(255,105,180,0.12)", icon: "🎁" },
+  super_fan: { color: "#D4AF37", bg: "rgba(212,175,55,0.15)", icon: "👑" },
+  top_supporter: { color: "#C0392B", bg: "rgba(192,57,43,0.15)", icon: "❤️" },
+  raid_master: { color: "#D4AF37", bg: "rgba(212,175,55,0.12)", icon: "⚡" },
+  poll_champion: { color: "#800020", bg: "rgba(128,0,32,0.15)", icon: "🏆" },
+  chat_legend: { color: "#D4AF37", bg: "rgba(212,175,55,0.1)", icon: "💬" },
+  watch_streak: { color: "#D4854A", bg: "rgba(212,133,74,0.15)", icon: "🔥" },
+  gifter: { color: "#C9A84C", bg: "rgba(201,168,76,0.12)", icon: "🎁" },
   first_subscriber: { color: "#d4af37", bg: "rgba(212,175,55,0.15)", icon: "⭐" },
 };
 
 var RARITY_COLORS = {
   common: "#888",
-  rare: "#4A8A7A",
-  epic: "#BF5FFF",
-  legendary: "#FFD700",
+  rare: "#D4AF37",
+  epic: "#800020",
+  legendary: "#C9A84C",
 };
 
 function StatCard({ icon: Icon, label, value, color }) {
@@ -242,6 +237,12 @@ export default function CreatorPublicProfile() {
     } else {
       base44.entities.Follow.create({ creator_id: creatorId, follower_id: currentUser.id }).catch(() => {});
       setFollowToast('Following!');
+      base44.entities.Activity.create({
+        user_id: currentUser.id,
+        type: 'follow',
+        title: `Followed creator: ${profile?.display_name || profile?.full_name || 'Creator'}`,
+        recipient_id: creatorId,
+      }).catch(() => {});
     }
     setTimeout(() => setFollowToast(''), 2500);
   }

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, Users, Share2, Volume2, X, ExternalLink } from 'lucide-react';
+import { Copy, Check, Users, Share2, X, ExternalLink, Video, Mic, Monitor, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { safeSrc } from '@/lib/security';
 
@@ -32,56 +32,52 @@ function CopyBtn({ value, label }) {
 
 export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
   const [showPanel, setShowPanel] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(null);
-  const timeoutRef = useRef(null);
+  const [tab, setTab] = useState('invite'); // 'invite' | 'vdo'
 
-  // Generate VDO.ninja quick-join links with unique room IDs
-  const guestLinks = [
+  const rSlug = roomId?.slice(0, 8) || 'DEMO';
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://seewhylive.online';
+
+  // Native SeeWhy guest join URL (the primary invite link guests click)
+  const guestJoinUrl = `${origin}/GuestJoin?room=${roomId || 'demo'}`;
+
+  // VDO.ninja links — push (send to guest) + view (host receives in OBS/SeeWhy)
+  const vdoLinks = [
     {
-      name: 'Main Stage',
-      url: `https://vdo.ninja/?view=Swan23&room=MAIN-${roomId?.slice(0, 8) || 'DEMO'}&solo`,
-      color: 'bg-[rgba(212,175,55,0.08)]',
-      textColor: '#d4af37',
-      icon: '🎬',
-      description: 'Full video + audio',
-    },
-    {
-      name: 'Audio Only',
-      url: `https://vdo.ninja/?view=Swan23&room=AUDIO-${roomId?.slice(0, 8) || 'DEMO'}&audioonly`,
-      color: 'bg-[rgba(212,175,55,0.08)]',
-      textColor: '#D4AF37',
-      icon: '🎙️',
-      description: 'Audio stream only',
-    },
-    {
-      name: 'Screen Share',
-      url: `https://vdo.ninja/?view=Swan23&room=SCREEN-${roomId?.slice(0, 8) || 'DEMO'}&screen`,
-      color: 'bg-[rgba(201,168,76,0.08)]',
-      textColor: '#C9A84C',
-      icon: '🖥️',
-      description: 'Screen sharing mode',
+      name: 'Main Stage (Video+Audio)',
+      pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-main&room=SW-${rSlug}&label=${encodeURIComponent(roomName)}`,
+      viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-main&room=SW-${rSlug}&solo`,
+      icon: <Video className="w-3 h-3" />,
+      color: G,
+      desc: 'Full video + audio feed',
     },
     {
       name: 'Co-Host',
-      url: `https://vdo.ninja/?view=Swan23&room=COHOST-${roomId?.slice(0, 8) || 'DEMO'}&broadcast`,
-      color: 'bg-[rgba(255,136,0,0.08)]',
-      textColor: '#D4854A',
-      icon: '👥',
-      description: 'Full co-host access',
+      pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-cohost&room=SW-${rSlug}&label=CoHost`,
+      viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-cohost&room=SW-${rSlug}&solo`,
+      icon: <Crown className="w-3 h-3" />,
+      color: '#D4854A',
+      desc: 'Co-host slot with broadcast',
+    },
+    {
+      name: 'Audio Only',
+      pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-audio&room=SW-${rSlug}&audioonly&label=AudioGuest`,
+      viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-audio&room=SW-${rSlug}&audioonly&solo`,
+      icon: <Mic className="w-3 h-3" />,
+      color: '#6DBF7E',
+      desc: 'Voice-only connection',
+    },
+    {
+      name: 'Screen Share',
+      pushUrl: `https://vdo.ninja/?push=sw-${rSlug}-screen&room=SW-${rSlug}&screen&label=ScreenShare`,
+      viewUrl: `https://vdo.ninja/?view=sw-${rSlug}-screen&room=SW-${rSlug}&solo`,
+      icon: <Monitor className="w-3 h-3" />,
+      color: '#C9A84C',
+      desc: 'Desktop screen capture',
     },
   ];
 
-  const handleCopyLink = (link, name) => {
-    navigator.clipboard.writeText(link);
-    setCopiedLink(name);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setCopiedLink(null), 2000);
-    toast.success(`${name} link copied!`);
-  };
-
   return (
     <div className="flex flex-col gap-2">
-      {/* Toggle Button */}
       <button
         onClick={() => setShowPanel(!showPanel)}
         className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all"
@@ -93,12 +89,11 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
       >
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4" />
-          <span className="text-xs font-bold uppercase tracking-wider">Guest Connector</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={T}>Guest Connector</span>
         </div>
         {showPanel ? <X className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
       </button>
 
-      {/* Expandable Panel */}
       <AnimatePresence>
         {showPanel && (
           <motion.div
@@ -107,47 +102,24 @@ export default function GuestConnector({ roomId, roomName = 'SeeWhy Studio' }) {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-3 rounded-lg space-y-2" style={{ background: BG, border: `1px solid ${G}20` }}>
-              {/* Header Info */}
-              <div className="text-[11px] text-white/40 mb-2">
-                <p className="font-semibold">Quick-join links for remote guests</p>
-                <p className="mt-0.5">Low-latency VDO.ninja integration · Click to copy</p>
-              </div>
+            <div className="p-3 rounded-lg space-y-3" style={{ background: BG, border: `1px solid ${G}20` }}>
 
-              {/* Link Cards */}
-              <div className="space-y-2">
-                {guestLinks.map((link, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    onClick={() => handleCopyLink(link.url, link.name)}
-                    className={`p-2.5 rounded-lg cursor-pointer transition-all hover:scale-105 active:scale-95 ${link.color}`}
-                    style={{ borderLeft: `3px solid ${link.textColor}` }}
+              {/* Tabs */}
+              <div className="flex gap-1 p-0.5 rounded" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                {[['invite', 'Guest Invite'], ['vdo', 'VDO.ninja']].map(([key, label]) => (
+                  <button
+                    key={key}
+                    onClick={() => setTab(key)}
+                    className="flex-1 py-1 rounded text-[10px] font-black uppercase transition-all"
+                    style={{
+                      background: tab === key ? `${G}20` : 'transparent',
+                      color: tab === key ? G : 'rgba(255,255,255,0.35)',
+                      border: tab === key ? `1px solid ${G}35` : '1px solid transparent',
+                      ...T,
+                    }}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-lg">{link.icon}</span>
-                          <p className="text-xs font-bold" style={{ color: link.textColor }}>
-                            {link.name}
-                          </p>
-                        </div>
-                        <p className="text-[10px] text-white/40 mb-1">{link.description}</p>
-                        <p className="text-[11px] text-white/30 break-all font-mono line-clamp-1">
-                          {link.url.replace('https://', '')}
-                        </p>
-                      </div>
-                      <div className="flex-shrink-0 pt-0.5">
-                        {copiedLink === link.name ? (
-                          <Check className="w-4 h-4" style={{ color: link.textColor }} />
-                        ) : (
-                          <Copy className="w-4 h-4 text-white/30" />
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
+                    {label}
+                  </button>
                 ))}
               </div>
 

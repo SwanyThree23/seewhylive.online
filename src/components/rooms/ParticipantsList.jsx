@@ -207,7 +207,7 @@ function ParticipantItem({ participant, currentUser, onUpdateParticipant, onInvi
             <Video className="w-3 h-3 text-[#5B7FA6]" />
           )}
           {participant.hand_raised && (
-            <Hand className="w-3 h-3 text-yellow-500" />
+            <Hand className="w-3 h-3 text-[#D4AF37]" />
           )}
           {participant.is_streaming && (
             <Badge className="text-xs bg-[#C0392B]">LIVE</Badge>

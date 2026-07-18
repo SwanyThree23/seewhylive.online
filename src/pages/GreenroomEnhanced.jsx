@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -10,19 +12,7 @@ import { useCameraDevices } from '../hooks/useCameraDevices';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -39,6 +29,7 @@ export default function GreenroomEnhanced() {
   const activeRoomId = activeRoom?.id || null;
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
+  const [webrtcError, setWebrtcError] = useState(null);
   const [audioLevel, setAudioLevel] = useState(0);
   const [selectedCam, setSelectedCam] = useState(() => { try { return localStorage.getItem('swl_pref_cam') || ''; } catch { return ''; } });
   const [selectedMic, setSelectedMic] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || ''; } catch { return ''; } });
@@ -100,10 +91,8 @@ export default function GreenroomEnhanced() {
 
   // Camera stream → video element
   useEffect(() => {
-    if (videoRef.current && cameraStream) {
-      videoRef.current.srcObject = cameraStream;
-      setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
-    }
+    if (videoRef.current) videoRef.current.srcObject = cameraStream || null;
+    if (cameraStream) setChecklist(p => p.map(c => c.id === 'cam' ? { ...c, done: true } : c));
   }, [cameraStream]);
 
   function handleCameraSource(stream, info) {
@@ -133,9 +122,7 @@ export default function GreenroomEnhanced() {
   function handleResolutionChange(r) { setCamResolution(r); try { if (r) localStorage.setItem('swl_pref_resolution', r); } catch {} if (cameraStream) acquireCamera({ resolution: r }); }
 
   async function generatePin() {
-    const arr = new Uint32Array(1);
-    crypto.getRandomValues(arr);
-    const pin = (1000 + (arr[0] % 9000)).toString();
+    const pin = (1000 + (crypto.getRandomValues(new Uint16Array(1))[0] % 9000)).toString();
     setRoomPin(pin);
     // Use Web Crypto to encrypt the PIN with a room-specific salt
     try {
@@ -177,7 +164,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Camera preview + source picker */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="relative aspect-video bg-black">
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
             {!cameraStream && (
@@ -224,7 +211,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Pre-broadcast checklist */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)' }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-black" style={{ color: GOLD }}>Pre-Broadcast Checklist</span>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
@@ -249,7 +236,7 @@ export default function GreenroomEnhanced() {
         </div>
 
         {/* Room PIN (AES-encrypted) */}
-        <div className="rounded-2xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
+        <div className="rounded-2xl p-4" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(128,0,32,0.2)' }}>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-sm">🔐</span>
             <span className="text-sm font-black" style={{ color: CRIMSON }}>Private Room PIN</span>
@@ -272,6 +259,53 @@ export default function GreenroomEnhanced() {
             </button>
           )}
         </div>
+
+        {/* Device Preview */}
+        <DevicePreview user={null} onDeviceState={() => {}} />
+
+        {/* WebRTC Setup Banner (shows if camera/mic fails) */}
+        {webrtcError && (
+          <WebRTCSetupBanner
+            error={webrtcError}
+            audioEnabled={audioLevel > 0}
+            videoEnabled={!!cameraStream}
+            onRetry={() => setWebrtcError(null)}
+          />
+        )}
+
+        {/* Streaming presets */}
+        <StreamingPresets onApply={() => {}} />
+
+        {/* Stream metadata editor (title/category) */}
+        <StreamMetadataEditor />
+
+        {/* Room branding (logo, banner colors) */}
+        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+
+        {/* Guest connector + queue */}
+        <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
+        <GuestQueue roomId={activeRoomId} isHost={true} />
+
+        {/* Participant queue */}
+        <GreenroomQueue roomId={activeRoomId} isHost={true} />
+
+        {/* RTMP / WHIP Ingest Panel */}
+        <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+
+        {/* Guest RTMP panel */}
+        <GuestRTMPPanel participantId={null} userId={user?.id} />
+
+        {/* Guest stream monitor */}
+        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+
+        {/* Guest streaming permissions */}
+        <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
+
+        {/* Guest destinations panel */}
+        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+
+        {/* ZEGO guest approval */}
+        <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

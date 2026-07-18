@@ -203,7 +203,7 @@ function LiveSyncDashboard() {
       React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
         React.createElement("div", { style: { width: 8, height: 8, borderRadius: "50%", background: sync.sock ? "#7AD45A" : "#A03A3A", boxShadow: sync.sock ? "0 0 6px #7AD45A" : "none" } }),
         React.createElement("span", { style: { fontSize: 12, color: "#8A8678" } }, sync.sock ? "Connected" : "Connecting..."),
-        React.createElement("span", { style: { background: "#800020", color: "#EDE7D9", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 3 } }, sync.viewers + " watching"))),
+        React.createElement("span", { style: { background: "#800020", color: "#EDE7D9", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 3 } }, sync.viewers + " watching"))),
 
     React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" } },
       [["fire", "\uD83D\uDD25"], ["clap", "\uD83D\uDC4F"], ["hype", "\uD83C\uDF89"]].map(function(r) {
@@ -219,7 +219,7 @@ function LiveSyncDashboard() {
       }, "\uD83D\uDC8E Send 10 Gems")),
 
     React.createElement("div", { style: { background: "#1A1A1F", border: "1px solid #2A2A30", borderRadius: 6, overflow: "hidden" } },
-      React.createElement("div", { style: { padding: "7px 12px", background: "#151518", fontSize: 10, color: "#8A8678", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" } }, "Live Event Feed"),
+      React.createElement("div", { style: { padding: "7px 12px", background: "#151518", fontSize: 11, color: "#8A8678", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" } }, "Live Event Feed"),
       sync.events.length === 0
         ? React.createElement("div", { style: { padding: 20, textAlign: "center", color: "#8A8678", fontSize: 12 } }, "Waiting for live events...")
         : sync.events.map(function(e, i) {
@@ -227,7 +227,7 @@ function LiveSyncDashboard() {
           var label = { reaction: e.user + " reacted " + icon, gem: e.user + " sent " + (e.amount || 1) + " gems " + icon, vote: e.user + " voted " + icon, chat: e.user + ": " + (e.text || "") + " " + icon, poll: e.user + " voted in poll " + icon, battle: e.user + " voted in battle " + icon }[e.type] || e.type;
           return React.createElement("div", { key: i, style: { padding: "8px 12px", borderBottom: "1px solid #151518", fontSize: 12, display: "flex", justifyContent: "space-between" } },
             React.createElement("span", null, label),
-            React.createElement("span", { style: { fontSize: 10, color: "#8A8678" } }, new Date(e.ts).toLocaleTimeString()));
+            React.createElement("span", { style: { fontSize: 11, color: "#8A8678" } }, new Date(e.ts).toLocaleTimeString()));
         })));
 }
 /* ===== END SOCKET.IO CLIENT ===== */
@@ -309,7 +309,7 @@ function PlatformHealthMonitor() {
     React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}},
       React.createElement("h2",{style:{margin:0,color:"#D4AF37",fontSize:22}},"Platform Health"),
       React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
-        lastCheck?React.createElement("span",{style:{fontSize:10,color:"#8A8678"}},"Last check: "+lastCheck):null,
+        lastCheck?React.createElement("span",{style:{fontSize: 11,color:"#8A8678"}},"Last check: "+lastCheck):null,
         React.createElement("button",{onClick:runChecks,disabled:loading,style:{background:"#D4AF37",color:"#0B0B0D",border:"none",borderRadius:4,padding:"7px 14px",fontWeight:700,fontSize:12,cursor:"pointer"}},loading?"Checking...":"Run Checks"))),
 
     React.createElement("div",{style:{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}},
@@ -318,28 +318,28 @@ function PlatformHealthMonitor() {
         return React.createElement("div",{key:c.id,style:{flex:"1 1 140px",background:pillColor[s],border:"1px solid #2A2A30",borderRadius:6,padding:12,textAlign:"center"}},
           React.createElement("div",{style:{fontSize:18,marginBottom:4}},s==="ok"?"\u2705":s==="error"?"\u274C":"\u23F3"),
           React.createElement("div",{style:{fontSize:12,fontWeight:700,color:pillText[s]}},c.label),
-          React.createElement("div",{style:{fontSize:10,color:"#8A8678",marginTop:2}},s.toUpperCase()));
+          React.createElement("div",{style:{fontSize: 11,color:"#8A8678",marginTop:2}},s.toUpperCase()));
       }),
       socketInfo?React.createElement("div",{style:{flex:"1 1 140px",background:"#1A2A1A",border:"1px solid #3C5C2A",borderRadius:6,padding:12,textAlign:"center"}},
         React.createElement("div",{style:{fontSize:18,marginBottom:4}},"\uD83D\uDD0C"),
         React.createElement("div",{style:{fontSize:12,fontWeight:700,color:"#7AD45A"}},"Socket.IO"),
-        React.createElement("div",{style:{fontSize:10,color:"#8A8678",marginTop:2}},(socketInfo.socket_clients||0)+" clients")):null),
+        React.createElement("div",{style:{fontSize: 11,color:"#8A8678",marginTop:2}},(socketInfo.socket_clients||0)+" clients")):null),
 
     React.createElement("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:8,marginBottom:14}},
       metrics.map(function(m){
         return React.createElement("div",{key:m.label,style:{background:"#1A1A1F",border:"1px solid #2A2A30",borderRadius:6,padding:10}},
-          React.createElement("div",{style:{fontSize:9,color:"#8A8678",textTransform:"uppercase",letterSpacing:1,marginBottom:3}},m.label),
+          React.createElement("div",{style:{fontSize: 11,color:"#8A8678",textTransform:"uppercase",letterSpacing:1,marginBottom:3}},m.label),
           React.createElement("div",{style:{fontSize:11,color:"#6A9AF0",fontFamily:"monospace",wordBreak:"break-all"}},m.value));
       })),
 
     React.createElement("div",{style:{background:"#1A1A1F",border:"1px solid #2A2A30",borderRadius:6,overflow:"hidden"}},
-      React.createElement("div",{style:{padding:"7px 12px",background:"#151518",fontSize:10,color:"#8A8678",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}},"n8n Webhook Endpoints"),
+      React.createElement("div",{style:{padding:"7px 12px",background:"#151518",fontSize: 11,color:"#8A8678",fontWeight:700,letterSpacing:1,textTransform:"uppercase"}},"n8n Webhook Endpoints"),
       endpoints.map(function(ep){
         return React.createElement("div",{key:ep.path,style:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderBottom:"1px solid #151518"}},
-          React.createElement("span",{style:{fontSize:9,fontWeight:700,background:ep.method==="GET"?"#1A3A1A":"#1A2A3A",color:ep.method==="GET"?"#7AD45A":"#6A9AF0",padding:"2px 6px",borderRadius:3,minWidth:36,textAlign:"center"}},ep.method),
+          React.createElement("span",{style:{fontSize: 11,fontWeight:700,background:ep.method==="GET"?"#1A3A1A":"#1A2A3A",color:ep.method==="GET"?"#7AD45A":"#6A9AF0",padding:"2px 6px",borderRadius:3,minWidth:36,textAlign:"center"}},ep.method),
           React.createElement("div",{style:{flex:1}},
             React.createElement("div",{style:{fontSize:11,fontFamily:"monospace",color:"#D4AF37"}},ep.path),
-            React.createElement("div",{style:{fontSize:10,color:"#8A8678"}},ep.desc)));
+            React.createElement("div",{style:{fontSize: 11,color:"#8A8678"}},ep.desc)));
       })));
 }
 /* ===== END PLATFORM HEALTH MONITOR ===== */
@@ -414,6 +414,7 @@ export default function App() {
   var peakViewerRef = useRef(0);
   var sessionEarningsRef = useRef(0);
   var popstateNavRef = useRef(false);
+  var streamRecapRef = useRef(null);
   var prevEarningsRef = useRef(0);
   var prevGuestIdsRef = useRef(null);
 
@@ -428,10 +429,19 @@ export default function App() {
     return function() { clearTimeout(t); };
   }, []);
 
-  // History API — wire Android back button to tab navigation
+  // Keep streamRecapRef in sync for the popstate handler
+  useEffect(function() { streamRecapRef.current = streamRecap; }, [streamRecap]);
+
+  // History API — wire Android back button to tab navigation + overlay dismissal
   useEffect(function() {
     window.history.replaceState({ swTab: 'room' }, '');
     function onPop(e) {
+      // If the stream recap modal is open, dismiss it instead of navigating
+      if (streamRecapRef.current) {
+        setStreamRecap(null);
+        if (e.state && e.state.swTab) { popstateNavRef.current = true; }
+        return;
+      }
       if (e.state && e.state.swTab) {
         popstateNavRef.current = true;
         setActiveTab(e.state.swTab);
@@ -664,6 +674,7 @@ export default function App() {
         giftCount:      0
       };
       setStreamRecap(recap);
+      window.history.pushState({ swOverlay: 'recap' }, '');
       peakViewerRef.current = 0;
       sessionEarningsRef.current = 0;
       setSessionEarningsCents(0);
@@ -936,12 +947,12 @@ export default function App() {
         <div style={{ width: '100%', maxWidth: 360, display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: '#F0E8D4', letterSpacing: 4, lineHeight: 1 }}>SeeWhy LIVE</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', marginTop: 4, letterSpacing: 2 }}>v33.0 · WASHINGTON CLASSIC</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', marginTop: 4, letterSpacing: 2 }}>v33.0 · WASHINGTON CLASSIC</div>
           </div>
           <div style={{ background: 'rgba(26,21,16,.95)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 14, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: '#F0E8D4', letterSpacing: 1 }}>What's your display name?</div>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>This is how others see you in the room</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', marginTop: 4 }}>This is how others see you in the room</div>
             </div>
             <input
               autoFocus
@@ -961,7 +972,7 @@ export default function App() {
             </button>
             <button
               onClick={function() { var g = 'Guest' + Math.floor(Math.random() * 9000 + 1000); localStorage.setItem('sw_username', g); setUsername(g); setShowNameModal(false); }}
-              style={{ background: 'none', border: 'none', color: '#6B5A44', fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
+              style={{ background: 'none', border: 'none', color: '#6B5A44', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
               Join anonymously
             </button>
           </div>
@@ -991,15 +1002,15 @@ export default function App() {
             })}
           </div>
           <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 62, color: '#F0E8D4', letterSpacing: 5, lineHeight: 1, animation: 'splashPulse 1.8s infinite' }}>SeeWhy LIVE</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#C9A84C', marginTop: 6, letterSpacing: 3 }}>v33.0 · WASHINGTON CLASSIC</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C', marginTop: 6, letterSpacing: 3 }}>v33.0 · WASHINGTON CLASSIC</div>
           <div style={{ marginTop: 14, display: 'flex', gap: 8, justifyContent: 'center' }}>
             {['DOMINO ENTERTAINMENT','VIBENBONES','WASHINGTON DC'].map(function(label, i) {
-              return <span key={i} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '3px 9px', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>{label}</span>;
+              return <span key={i} style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 4, padding: '3px 9px', color: '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{label}</span>;
             })}
           </div>
           {nextEventCountdown && (
             <div style={{ background: 'rgba(128,0,32,.3)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 20px', textAlign: 'center', marginTop: 10 }}>
-              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>NEXT EVENT</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2, marginBottom: 4 }}>NEXT EVENT</div>
               <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#C9A84C', letterSpacing: 2 }}>{nextEventCountdown.label}</div>
               <CountdownClock targetTs={nextEventCountdown.ts} />
             </div>
@@ -1028,9 +1039,9 @@ export default function App() {
             </button>
           )}
           <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: '#F0E8D4', letterSpacing: 2 }}>SeeWhy LIVE</span>
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>v33.0</span>
-          {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 9, fontWeight: 700 }}>● LIVE</span>}
-          {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9 }}>OFFLINE</span>}
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>v33.0</span>
+          {isLive && <span style={{ background: 'rgba(255,26,60,.2)', border: '1px solid rgba(255,26,60,.5)', borderRadius: 4, padding: '2px 8px', color: '#FF1A3C', fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 700 }}>● LIVE</span>}
+          {!connected && <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '2px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 11 }}>OFFLINE</span>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: 1 }}>
           {isLive && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C' }}>{formatUptime(uptime)}</span>}
@@ -1038,7 +1049,7 @@ export default function App() {
             <span
               title="Click to edit title"
               onClick={function() { setTitleDraft(streamInfo.title); setEditingTitle(true); }}
-              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed rgba(201,168,76,.35)' }}>
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed rgba(201,168,76,.35)' }}>
               {streamInfo.title}
             </span>
           ) : null}
@@ -1062,10 +1073,10 @@ export default function App() {
                 if (t) setStreamInfo(function(prev) { return Object.assign({}, prev, { title: t }); });
                 setEditingTitle(false);
               }}
-              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 4, padding: '1px 5px', outline: 'none' }}
+              style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', letterSpacing: 0.5, maxWidth: 180, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 4, padding: '1px 5px', outline: 'none' }}
             />
           ) : null}
-          {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
+          {isLive && streamInfo.category ? <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C', letterSpacing: 1 }}>{streamInfo.category.toUpperCase()}</span> : null}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'flex-end' }}>
           {isLive && viewerCount > 0 && (
@@ -1074,18 +1085,18 @@ export default function App() {
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#FF6B81', letterSpacing: 1 }}>
                 {viewerCount >= 1000 ? (Math.floor(viewerCount / 100) / 10).toFixed(1) + 'K' : viewerCount}
               </span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>LIVE</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>LIVE</span>
             </div>
           )}
           {!isLive && (
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' }}>👁 {viewerCount}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>👁 {viewerCount}</span>
           )}
           {isLive && sessionEarningsCents > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '3px 7px' }}>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: '#C9A84C', letterSpacing: 1 }}>
                 ${(Math.floor(sessionEarningsCents) / 100).toFixed(2)}
               </span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62' }}>SESSION</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' }}>SESSION</span>
             </div>
           )}
           {/* Username chip — tap to edit */}
@@ -1105,15 +1116,15 @@ export default function App() {
               title="Edit display name"
               style={{ background: 'rgba(26,21,16,.8)', border: '1px solid #3D3020', borderRadius: 6, padding: '3px 8px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{username}</span>
-              <span style={{ fontSize: 8, color: '#8A7A62', flexShrink: 0 }}>✏</span>
+              <span style={{ fontSize: 11, color: '#8A7A62', flexShrink: 0 }}>✏</span>
             </button>
           )}
           {/* Share / Invite button */}
           <button onClick={shareRoom} title="Share room link"
-            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer', flexShrink: 0 }}>
+            style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, padding: '4px 8px', color: '#C9A84C', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>
             🔗
           </button>
-          <span style={{ fontSize: 9, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#C9A84C' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
+          <span style={{ fontSize: 11, fontFamily: "'DM Mono',monospace", color: apiHealth === 'good' ? '#C9A84C' : apiHealth === 'degraded' ? '#C9A84C' : '#FF1A3C', marginRight: 4 }}>
             {apiHealth === 'good' ? '● API' : apiHealth === 'degraded' ? '◑ API' : '○ API'}
           </span>
           {showInstallBanner && installPrompt && (
@@ -1128,7 +1139,7 @@ export default function App() {
                   setShowInstallBanner(false);
                 });
               }}
-              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 6, padding: '4px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap' }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 6, padding: '4px 10px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1, whiteSpace: 'nowrap' }}
             >
               ⬇ INSTALL
             </button>
@@ -1138,7 +1149,7 @@ export default function App() {
 
       {/* Secondary tab bar — hidden on room tab, shown when More drawer is open */}
       {activeTab !== 'room' && (
-      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none' }}>
+      <nav style={{ display: 'flex', overflowX: 'auto', background: 'rgba(14,12,9,.9)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '4px 8px', gap: 4, scrollbarWidth: 'none', overscrollBehavior: 'contain' }}>
         {TABS.filter(function(t) {
           if (t.id === 'room' || t.id === 'discover' || t.id === 'profile' || t.id === 'settings') return false;
           if (t.roles && t.roles.indexOf(role) === -1) return false;
@@ -1146,12 +1157,12 @@ export default function App() {
         }).map(function(tab) { return (
           <button
             key={tab.id}
-            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '5px 12px', color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap' }}
+            style={{ position: 'relative', background: activeTab === tab.id ? '#800020' : 'rgba(26,21,16,.8)', border: activeTab === tab.id ? '1px solid rgba(128,0,32,.6)' : '1px solid rgba(255,255,255,.06)', borderRadius: 6, padding: '8px 12px', minHeight: 36, color: activeTab === tab.id ? '#F0E8D4' : '#8A7A62', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: 1, cursor: 'pointer', whiteSpace: 'nowrap', userSelect: 'none', WebkitUserSelect: 'none' }}
             onClick={function() { setActiveTab(tab.id); if (tab.id === 'aura') setAuraUnread(0); }}
           >
             {tab.label}
             {tab.id === 'aura' && auraUnread > 0 && (
-              <span style={{ position: 'absolute', top: -4, right: -4, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(15,12,20,.8)' }}>
+              <span style={{ position: 'absolute', top: -4, right: -4, background: '#FF1A3C', color: '#fff', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 700, lineHeight: 1, border: '1px solid rgba(15,12,20,.8)' }}>
                 {auraUnread > 9 ? '9+' : auraUnread}
               </span>
             )}
@@ -1167,21 +1178,21 @@ export default function App() {
           var barColor = pct >= 100 ? '#C9A84C' : pct >= 75 ? '#C9A84C' : '#C9A84C';
           return (
             <div style={{ background: 'rgba(14,12,9,.95)', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: '#8A7A62', letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
-              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 10, color: '#F0E8D4', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, flexShrink: 0 }}>GOAL</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: '#F0E8D4', flexShrink: 0, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{streamGoal.label || 'Stream Goal'}</span>
               <div style={{ flex: 1, background: 'rgba(255,255,255,.06)', borderRadius: 999, height: 6, overflow: 'hidden' }}>
                 <div style={{ height: '100%', borderRadius: 999, background: barColor, width: pct + '%', transition: 'width .5s ease, background .3s' }} />
               </div>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: barColor, letterSpacing: 1, flexShrink: 0 }}>{pct}%</span>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', flexShrink: 0 }}>${(Math.floor(sessionEarningsCents) / 100).toFixed(0)}/${(Math.floor(streamGoal.goalCents) / 100).toFixed(0)}</span>
-              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#6B5A44', cursor: 'pointer', fontSize: 10, padding: '0 2px', flexShrink: 0, lineHeight: 1 }}>✕</button>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', flexShrink: 0 }}>${(Math.floor(sessionEarningsCents) / 100).toFixed(0)}/${(Math.floor(streamGoal.goalCents) / 100).toFixed(0)}</span>
+              <button onClick={function() { setStreamGoal(null); }} style={{ background: 'none', border: 'none', color: '#6B5A44', cursor: 'pointer', fontSize: 11, padding: '0 2px', flexShrink: 0, lineHeight: 1, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
           );
         })()
       )}
 
       {/* Tab Content */}
-      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible' }}>
+      <main style={{ padding: activeTab === 'room' ? '0' : '16px', flex: 1, paddingBottom: activeTab === 'room' ? 0 : 70, display: 'flex', flexDirection: 'column', overflow: activeTab === 'room' ? 'hidden' : 'visible', overscrollBehavior: 'contain' }}>
       <ErrorBoundary>
       <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2 }}>LOADING...</div>}>
       <div key={activeTab + '-' + tabResetKey} style={{ display: 'flex', flexDirection: 'column', flex: 1, animation: activeTab !== 'room' ? 'tabSlideIn .18s ease-out' : 'none' }}>
@@ -1604,11 +1615,11 @@ export default function App() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(14,12,9,.88)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div style={{ background: 'linear-gradient(160deg,#1A1510,#0E0C09)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 16, padding: '28px 24px', maxWidth: 360, width: '100%', textAlign: 'center', boxShadow: '0 0 60px rgba(201,168,76,.15), 0 4px 30px rgba(0,0,0,.7)' }}>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: '#C9A84C', letterSpacing: 4, marginBottom: 4 }}>STREAM RECAP</div>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 2, marginBottom: 20 }}>SeeWhy LIVE · Washington Classic</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
               <div style={{ background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#FF6B81', letterSpacing: 1 }}>{streamRecap.peakViewers >= 1000 ? (Math.floor(streamRecap.peakViewers / 100) / 10).toFixed(1) + 'K' : streamRecap.peakViewers}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>PEAK VIEWERS</div>
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents) / 100).toFixed(2)}</div>
@@ -1616,7 +1627,7 @@ export default function App() {
               </div>
               <div style={{ background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#C9A84C', letterSpacing: 1 }}>${(Math.floor(streamRecap.earningsCents * 0.9) / 100).toFixed(2)}</div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>YOUR CUT (90%)</div>
               </div>
               <div style={{ background: 'rgba(212,133,74,.08)', border: '1px solid rgba(212,133,74,.2)', borderRadius: 10, padding: '12px 8px' }}>
                 <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#D4854A', letterSpacing: 1 }}>
@@ -1624,12 +1635,12 @@ export default function App() {
                     ? Math.floor(streamRecap.durationSecs / 3600) + 'h ' + Math.floor((streamRecap.durationSecs % 3600) / 60) + 'm'
                     : Math.floor(streamRecap.durationSecs / 60) + 'm ' + (streamRecap.durationSecs % 60) + 's'}
                 </div>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', letterSpacing: 1, marginTop: 2 }}>DURATION</div>
               </div>
             </div>
             <button
-              onClick={function() { setStreamRecap(null); }}
-              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%' }}
+              onClick={function() { window.history.back(); }}
+              style={{ background: 'linear-gradient(135deg,#800020,#C01838)', border: 'none', borderRadius: 10, padding: '12px 32px', minHeight: 44, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 3, cursor: 'pointer', width: '100%', userSelect: 'none', WebkitUserSelect: 'none' }}
             >
               CLOSE RECAP
             </button>
@@ -1724,9 +1735,9 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         <span style={{ fontSize: 24, flexShrink: 0 }}>{p.emoji}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 15, color: TEXT }}>{p.name}</div>
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: accentColor, letterSpacing: .5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</div>
         </div>
-        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: accentColor, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: accentColor, letterSpacing: 1, flexShrink: 0 }}>{p.buildUrl ? 'PAY →' : 'COPY'}</span>
       </button>
     );
   }
@@ -1741,7 +1752,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
           {totalDollars && (
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: GOLD, letterSpacing: 1, lineHeight: 1, marginBottom: 6 }}>{totalDollars}</div>
           )}
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8.5, color: MUTED, letterSpacing: 1 }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, letterSpacing: 1 }}>
             90% creator &bull; 10% platform fee
           </div>
         </div>
@@ -1749,7 +1760,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         {/* Creator section */}
         {activeCreator.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 1.5, marginBottom: 8 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: TEAL, letterSpacing: 1.5, marginBottom: 8 }}>
               CREATOR — 90%{cDollars ? (' (' + cDollars + ')') : ''}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1761,7 +1772,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         {/* Platform fee section */}
         {activePlat.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: GOLD, letterSpacing: 1.5, marginBottom: 8 }}>
               SEEWHY FEE — 10%{pDollars ? (' (' + pDollars + ')') : ''}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1771,7 +1782,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         )}
 
         {activeCreator.length === 0 && activePlat.length === 0 && (
-          <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 20 }}>
+          <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, marginBottom: 20 }}>
             Contact the host to get payment details
           </div>
         )}
@@ -1779,7 +1790,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
           <div style={{ flex: 1, height: 1, background: BORDER }} />
-          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>AFTER PAYING BOTH</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, letterSpacing: 1 }}>AFTER PAYING BOTH</span>
           <div style={{ flex: 1, height: 1, background: BORDER }} />
         </div>
 
@@ -1787,7 +1798,7 @@ function PaywallScreen({ priceCents, onUnlock, addToast }) {
         <button onClick={onUnlock} style={{ width: '100%', background: 'rgba(201,168,76,.15)', border: '1.5px solid rgba(201,168,76,.4)', borderRadius: 14, padding: '16px', color: TEAL, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, cursor: 'pointer', letterSpacing: 2, marginBottom: 10 }}>
           ✓ I'VE PAID — ENTER LIVE
         </button>
-        <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED, letterSpacing: .5 }}>
+        <div style={{ textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 11, color: MUTED, letterSpacing: .5 }}>
           By entering you confirm you've sent payment to the creator and platform
         </div>
       </div>
@@ -1868,16 +1879,16 @@ function StreamKeysTab(props) {
 
   var glassCard = { background: 'rgba(26,21,16,.8)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 12, padding: '16px' };
   var panelTitle = { fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#F0E8D4', letterSpacing: 2, margin: '0 0 4px 0' };
-  var panelSub = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62', margin: '0 0 12px 0' };
+  var panelSub = { fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62', margin: '0 0 12px 0' };
   var formRow = { marginBottom: 10 };
   var inputStyle = { background: 'rgba(14,12,9,.8)', border: '1px solid #3D3020', borderRadius: 8, padding: '8px 12px', color: '#F0E8D4', fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, width: '100%', boxSizing: 'border-box' };
   var btnGold = { background: 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 8, padding: '9px 18px', color: '#C9A84C', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, cursor: 'pointer' };
-  var btnDelete = { background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 9, cursor: 'pointer' };
+  var btnDelete = { background: 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '4px 10px', color: '#FF6B81', fontFamily: "'DM Mono',monospace", fontSize: 11, cursor: 'pointer' };
   var keyRow = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,.04)' };
   var keyPlatform = { fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#F0E8D4', flex: 1 };
-  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#C9A84C' };
-  var keyDate = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
-  var mutedText = { fontFamily: "'DM Mono',monospace", fontSize: 9, color: '#8A7A62' };
+  var keyStatus = { fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#C9A84C' };
+  var keyDate = { fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' };
+  var mutedText = { fontFamily: "'DM Mono',monospace", fontSize: 11, color: '#8A7A62' };
 
   return (
     <div style={{ padding: '8px 0' }}>

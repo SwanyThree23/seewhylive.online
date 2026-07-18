@@ -47,10 +47,17 @@ export default function ZEGOGoLiveFlow({ roomId, userId, onLive, children }) {
     },
     onSuccess: ({ zrId }) => {
       setConnecting(false);
-      qc.invalidateQueries(['cr-room', roomId]);
-      qc.invalidateQueries(['zego-health', roomId]);
+      qc.invalidateQueries({ queryKey: ['cr-room', roomId] });
+      qc.invalidateQueries({ queryKey: ['zego-health', roomId] });
       toast.success('Stream is now LIVE via ZEGOCLOUD!');
       onLive?.();
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'room_created',
+          title: 'Started ZEGO live stream',
+        }).catch(() => {});
+      }
     },
     onError: () => { setConnecting(false); toast.error('Failed to start stream. Please try again.'); },
   });

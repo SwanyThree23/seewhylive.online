@@ -72,7 +72,7 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
               ${tier.price}/mo
             </span>
             {success === tier.id ? (
-              <button disabled style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#16a34a', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              <button disabled style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', background: '#4A9B5E', border: 'none', borderRadius: 8, color: '#fff', fontSize: 13, cursor: 'not-allowed', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <CheckCircle style={{ width: 16, height: 16 }} /> Active
               </button>
             ) : (
@@ -97,8 +97,8 @@ export default function StripeSubscribeButton({ creatorId, creatorName, currentU
 }
 
 async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
-  const creatorAmount = Math.floor(grossUsd * 90) / 100;
-  const platformAmount = Math.round((grossUsd - creatorAmount) * 100) / 100;
+  const creatorAmount = Math.floor(grossUsd * 100 * 0.90) / 100;
+  const platformAmount = grossUsd - creatorAmount;
 
   await Promise.all([
     base44.entities.ViewerSubscription.update(subId, {
@@ -107,14 +107,15 @@ async function simulatePaymentSuccess(subId, viewerId, creatorId, grossUsd) {
       expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
     }),
     base44.entities.Transaction.create({
-      from_user_id: viewerId,
-      to_user_id: creatorId,
-      amount: grossUsd,
-      type: 'subscription',
+      sender_id: viewerId,
+      recipient_id: creatorId,
+      creator_payout: Math.floor(grossUsd * 90) / 100,
+      platform_cut: grossUsd - Math.floor(grossUsd * 90) / 100,
+      transaction_type: 'subscription',
       status: 'completed',
       description: `Subscription payment`,
       metadata: {
-        creator_amount: creatorAmount,
+        creator_payout: creatorAmount,
         platform_amount: platformAmount,
         split: '90/10',
       },

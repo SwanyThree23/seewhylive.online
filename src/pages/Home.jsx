@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import QuickActionPanel from '../components/shared/QuickActionPanel';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import GridLines from '../components/home/GridLines';
+import NebulaBg from '../components/home/NebulaBg';
+import StarField from '../components/home/StarField';
+import NotificationBell from '../components/shared/NotificationBell';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Radio, Users } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeaturedContentSection from '../components/home/FeaturedContent';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
@@ -42,7 +50,10 @@ function usePullToRefresh(onRefresh) {
   function onTouchMove(e) {
     if (window.scrollY > 0) return;
     var dy = e.touches[0].clientY - startY.current;
-    if (dy > 0) setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    if (dy > 0) {
+      e.preventDefault();
+      setPullY(Math.min(dy * 0.45, THRESHOLD + 20));
+    }
   }
   async function onTouchEnd() {
     if (pullY >= THRESHOLD && !refreshing) {
@@ -111,7 +122,7 @@ function FanbaseRoomCard({ room }) {
   var categoryColor = {
     Music: '#C0392B', Gaming: '#D4AF37', Tech: '#4A8A7A',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
-    Lifestyle: '#FF6B8A', Tournament: '#CC7755', Domino: '#D4AF37'
+    Lifestyle: '#D4854A', Tournament: '#CC7755', Domino: '#D4AF37'
   };
   var tag = room.tags && room.tags[0];
   var tagColor = tag ? (categoryColor[tag] || '#D4AF37') : '#D4AF37';
@@ -120,14 +131,14 @@ function FanbaseRoomCard({ room }) {
   var accessStyle = accessLabel === 'PPV'
     ? { background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }
     : accessLabel === 'FAN'
-    ? { background: 'rgba(128,0,32,0.2)', color: '#ff9999', border: '1px solid rgba(128,0,32,0.4)' }
+    ? { background: 'rgba(128,0,32,0.2)', color: '#D4854A', border: '1px solid rgba(128,0,32,0.4)' }
     : { background: 'rgba(109,191,126,0.1)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.25)' };
 
   return (
     <Link to={`/LiveRoom?id=${room.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className="rounded-2xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
 
         {/* Top row: LIVE + TRENDING badges | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
@@ -150,7 +161,7 @@ function FanbaseRoomCard({ room }) {
         </div>
 
         {/* Thumbnail / placeholder */}
-        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+        <div className="relative mx-3 rounded-xl overflow-hidden" style={{ aspectRatio: '16/9', background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
           {room.thumbnail_url ? (
             <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
           ) : (
@@ -158,7 +169,7 @@ function FanbaseRoomCard({ room }) {
               <Radio className="w-8 h-8" style={{ color: 'rgba(212,175,55,0.2)' }} />
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(13,6,24,0.85) 0%, transparent 60%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.85) 0%, transparent 60%)' }} />
         </div>
 
         {/* Room title + host */}
@@ -265,6 +276,91 @@ function SpotlightStrip() {
         })}
       </div>
     </div>
+  );
+}
+
+// ── Washington Classic 2026 Hero Card ─────────────────────────────────────
+function WashingtonClassicHero() {
+  return (
+    <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none', display: 'block' }}>
+      <motion.div
+        whileTap={{ scale: 0.985 }}
+        style={{
+          margin: '0 16px',
+          borderRadius: 20,
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0A0005 0%, #1A0008 40%, #0D0A00 100%)',
+          border: '1px solid rgba(212,175,55,0.28)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(212,175,55,0.12)',
+          position: 'relative',
+        }}
+      >
+        {/* Background texture lines */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.06, backgroundImage: 'repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)', backgroundSize: '12px 12px' }} />
+
+        {/* Top badges row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0', position: 'relative' }}>
+          <span style={{
+            fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 10,
+            letterSpacing: '0.14em', textTransform: 'uppercase',
+            color: '#D4AF37', background: 'rgba(212,175,55,0.12)',
+            border: '1px solid rgba(212,175,55,0.3)', borderRadius: 99,
+            padding: '3px 10px',
+          }}>
+            🏆 UPCOMING EVENT
+          </span>
+          <span style={{
+            fontFamily: 'Space Mono, monospace', fontWeight: 700, fontSize: 10,
+            color: '#6DBF7E', background: 'rgba(109,191,126,0.12)',
+            border: '1px solid rgba(109,191,126,0.3)', borderRadius: 99,
+            padding: '3px 10px', letterSpacing: '0.06em',
+          }}>
+            WA #1 RANKED
+          </span>
+        </div>
+
+        {/* Title block */}
+        <div style={{ padding: '10px 16px 4px', position: 'relative' }}>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 28, color: '#F0E8D4', letterSpacing: '0.02em', lineHeight: 1.05 }}>
+            Washington Classic
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 22, color: '#D4AF37', letterSpacing: '0.04em', lineHeight: 1, marginTop: 2 }}>
+            2026
+          </div>
+          <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 6, letterSpacing: '0.02em' }}>
+            State vs State · 7 Rock Format · Double Elimination
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(212,175,55,0.1)', margin: '10px 16px' }} />
+
+        {/* Info row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '0 16px 14px', position: 'relative' }}>
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Venue</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>Jamar's Sports Bar</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Des Moines, WA</div>
+          </div>
+          <div style={{ width: 1, height: 36, background: 'rgba(212,175,55,0.15)' }} />
+          <div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 2 }}>Format</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13, color: '#F0E8D4' }}>5-pt / 150-pt Games</div>
+            <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Live on SeeWhy LIVE</div>
+          </div>
+          <div style={{ marginLeft: 'auto' }}>
+            <div style={{
+              fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 13,
+              color: '#000', background: 'linear-gradient(135deg, #D4AF37, #C9A84C)',
+              borderRadius: 10, padding: '8px 14px', letterSpacing: '0.06em',
+              textTransform: 'uppercase', boxShadow: '0 2px 12px rgba(212,175,55,0.4)',
+            }}>
+              View →
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
   );
 }
 
@@ -429,6 +525,7 @@ function applyFilter(rooms, filter) {
 
 // ── Home page ──────────────────────────────────────────────────────────────
 export default function Home() {
+  const navigate = useNavigate();
   var [activeFilter, setActiveFilter] = useState('All');
   var [showQuickAction, setShowQuickAction] = useState(false);
   var [showOnboarding, setShowOnboarding] = useState(false);
@@ -443,6 +540,9 @@ export default function Home() {
     refetchInterval: 10000,
   });
 
+  var liveCount = liveRooms.length;
+  var filteredRooms = applyFilter(liveRooms, activeFilter);
+
   var { data: communities = [] } = useQuery({
     queryKey: ['communities'],
     queryFn: function() { return base44.entities.Community.list('-member_count', 12); },
@@ -453,17 +553,32 @@ export default function Home() {
     queryFn: function() { return base44.auth.me(); },
   });
 
-  var liveCount = liveRooms.length;
-  var filteredRooms = applyFilter(liveRooms, activeFilter);
+  var { data: onboarding } = useQuery({
+    queryKey: ['onboarding-check', user?.id],
+    queryFn: async function() {
+      var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
+      return list[0] || null;
+    },
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  var showOnboardingBanner = user?.id && onboarding !== undefined && (!onboarding || !onboarding.step_1_profile);
 
   return (
     <div
-      className="min-h-screen"
-      style={{ background: '#080B18' }}
+      className="min-h-screen relative"
+      style={{ background: '#080B18', overscrollBehavior: 'contain' }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
+      <StarField />
+      <NebulaBg />
+      <GridLines />
+      <ZEGOMobileAppBanner />
+      <NotificationBell />
+      <ActivitySidebar isOpen={activityOpen} onClose={() => setActivityOpen(false)} />
+      <QuickActionPanel isOpen={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       {/* Pull-to-refresh indicator */}
       <motion.div
         style={{ height: pullY, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -476,6 +591,38 @@ export default function Home() {
           />
         )}
       </motion.div>
+
+      {/* ── NEW USER ONBOARDING BANNER ── */}
+      {showOnboardingBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-20 mx-4 mt-3 mb-1 rounded-2xl overflow-hidden cursor-pointer"
+          style={{ background: 'linear-gradient(135deg, rgba(128,0,32,0.35) 0%, rgba(212,175,55,0.18) 100%)', border: '1px solid rgba(212,175,55,0.3)' }}
+          onClick={() => { window.location.href = '/Onboarding'; }}
+        >
+          <div className="flex items-center gap-3 px-4 py-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)' }}>
+              <span style={{ fontSize: 20 }}>📡</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-white text-sm leading-tight"
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.03em' }}>
+                Complete Your Creator Setup
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                Set up profile, stream key &amp; 90/10 payout in 5 min
+              </p>
+            </div>
+            <div className="px-3 py-1.5 rounded-full font-black text-xs shrink-0"
+              style={{ background: '#D4AF37', color: '#000', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>
+              START →
+            </div>
+          </div>
+          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #800020, #D4AF37, #6DBF7E, #D4AF37)' }} />
+        </motion.div>
+      )}
 
       {/* ── HERO STRIP ── */}
       <div className="flex items-center justify-between px-4"
@@ -503,6 +650,11 @@ export default function Home() {
             Go Live →
           </motion.div>
         </Link>
+      </div>
+
+      {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
+      <div style={{ padding: '14px 0 10px' }}>
+        <WashingtonClassicHero />
       </div>
 
       {/* ── DOMINO SOCIAL EXPO FEATURED PARTNER ── */}
@@ -539,11 +691,19 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── WHO'S ONLINE ── */}
+      <OnlineUsersGrid compact maxVisible={12} />
+
       {/* ── PLATFORM FEATURES SPOTLIGHT ── */}
       <SpotlightStrip />
 
       {/* ── FEATURED PARTNER CONTENT ── */}
       <FeaturedContentSection />
+
+      {/* ── CONTENT RECOMMENDATIONS ── */}
+      <div className="px-4 pb-4">
+        <ContentRecommendations />
+      </div>
 
       {/* ── COMMUNITY CARDS (shown when Communities filter is active) ── */}
       {activeFilter === 'Communities' && (
@@ -557,9 +717,9 @@ export default function Home() {
               return (
                 <Link key={c.id} to={createPageUrl('Communities')}>
                   <motion.div whileTap={{ scale: 0.97 }} className="rounded-2xl overflow-hidden"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
                     <div className="h-20 flex items-center justify-center"
-                      style={{ background: 'linear-gradient(135deg, #1a0d2e, #0d1a2e)' }}>
+                      style={{ background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
                       <Users className="w-7 h-7" style={{ color: 'rgba(212,175,55,0.3)' }} />
                     </div>
                     <div className="p-2.5">
@@ -632,6 +792,10 @@ export default function Home() {
                   Be the first → Go Live
                 </motion.div>
               </Link>
+              {/* AI recommendations when no live rooms */}
+              <div className="mt-4 w-full">
+                <SwanAIRecommendations roomId={liveRooms[0]?.id || null} currentLayout="grid" viewerCount={0} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

@@ -13,6 +13,8 @@ export default function GreenroomQueue({ roomId, isHost }) {
   const [guestSearch, setGuestSearch] = useState('');
   const qc = useQueryClient();
 
+  const { data: currentUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+
   // Fetch all stage participants for this room
   const { data: participants = [], isLoading } = useQuery({
     queryKey: ['greenroom', roomId],
@@ -93,7 +95,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
           <Users className="w-4 h-4 text-[#d4af37]" />
           <span className="text-xs font-bold text-[#d4af37] uppercase tracking-wider">Greenroom</span>
           {waitingGuests.length > 0 && (
-            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#dc2626', color:'#fff' }}>
+            <span style={{ fontSize:11, fontWeight:900, padding:'2px 8px', borderRadius:99, background:'#C0392B', color:'#fff' }}>
               {waitingGuests.length} waiting
             </span>
           )}
@@ -121,7 +123,7 @@ export default function GreenroomQueue({ roomId, isHost }) {
         placeholder="Search guests…"
         value={guestSearch}
         onChange={e => setGuestSearch(e.target.value)}
-        style={{ width:'100%', padding:'6px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
+        style={{ width:'100%', padding:'6px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:10, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' }}
       />
 
       {/* Waiting queue */}
@@ -194,7 +196,7 @@ function GuestRow({ participant, status }) {
         {participant.user_name?.charAt(0)?.toUpperCase()}
       </div>
       <p className="text-[10px] font-semibold text-white truncate flex-1">{participant.user_name}</p>
-      <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'#15803d', color:'#fff', display:'inline-flex', alignItems:'center', gap:2 }}>
+      <span style={{ fontSize:11, fontWeight:900, padding:'2px 6px', borderRadius:99, background:'#4A9B5E', color:'#fff', display:'inline-flex', alignItems:'center', gap:2 }}>
         <Radio className="w-2 h-2" /> LIVE
       </span>
     </div>

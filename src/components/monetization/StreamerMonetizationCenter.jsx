@@ -145,7 +145,7 @@ const StreamerMonetizationCenter = () => {
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #7B5DA6, #C0392B)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(to bottom right, #800020, #D4854A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', ...T }}>#{idx + 1}</span>
                 </div>
                 <div>
@@ -182,11 +182,11 @@ const StreamerMonetizationCenter = () => {
       </div>
 
       {/* Payout Info */}
-      <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 8, padding: 12 }}>
-        <p style={{ fontSize: 10, color: '#93c5fd', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
+      <div style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: 8, padding: 12 }}>
+        <p style={{ fontSize: 10, color: '#C9A84C', fontWeight: 600, margin: '0 0 4px', ...T }}>Next Payout</p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 11, color: '#bfdbfe', ...T }}>$3,847 on May 31, 2026</span>
-          <span style={{ fontSize: 11, background: 'rgba(59,130,246,0.3)', color: '#93c5fd', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
+          <span style={{ fontSize: 11, color: '#C9A84C', ...T }}>$3,847 on May 31, 2026</span>
+          <span style={{ fontSize: 11, background: 'rgba(201,168,76,0.2)', color: '#C9A84C', padding: '4px 8px', borderRadius: 4, ...T }}>Ready to withdraw</span>
         </div>
       </div>
     </motion.div>

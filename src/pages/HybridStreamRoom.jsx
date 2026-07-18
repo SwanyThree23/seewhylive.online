@@ -423,7 +423,7 @@ export default function HybridStreamRoom() {
       {roomId && <TipAlert roomId={roomId} recipientId={room?.host_id || user?.id} />}
       {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: room?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={room?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
-      <MerchWidget />
+      <MerchStrip roomId={roomId} currentUser={user} hostId={room?.host_id || user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

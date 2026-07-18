@@ -150,7 +150,7 @@ export default function GlobalChatWidget() {
               maxWidth: 440,
               margin: '0 auto',
               height: minimized ? 52 : 'min(520px, 70vh)',
-              background: 'rgba(7,7,15,0.97)',
+              background: 'rgba(8,11,24,0.97)',
               border: '1px solid rgba(212,175,55,0.2)',
               backdropFilter: 'blur(20px)',
             }}>
@@ -179,7 +179,7 @@ export default function GlobalChatWidget() {
                     {showLangPicker && (
                       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                         className="absolute right-0 top-9 z-10 rounded-2xl overflow-hidden shadow-2xl"
-                        style={{ background: 'rgba(7,7,15,0.99)', border: '1px solid rgba(212,175,55,0.2)', width: 180, maxHeight: 280, overflowY: 'auto' }}>
+                        style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(212,175,55,0.2)', width: 180, maxHeight: 280, overflowY: 'auto' }}>
                         {LANGUAGES.map(l => (
                           <button key={l.code} onClick={() => { setLang(l.code); setShowLangPicker(false); }}
                             className="w-full flex items-center gap-2 px-3 py-2 text-xs transition-all"

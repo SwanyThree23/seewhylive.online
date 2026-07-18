@@ -9,14 +9,21 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import StreamGoals from '../components/live/StreamGoals';
+import PartyAnalyticsDashboard from '../components/watchparty/PartyAnalyticsDashboard';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import LivePollWidget from '../components/live/LivePollWidget';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import SubscriptionGate from '../components/live/SubscriptionGate';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
@@ -24,8 +31,8 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+
 const BG = '#080B18';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -40,7 +47,7 @@ const TABS = [
 
 function DarkTile({ children, style = {} }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 16, ...style }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)', borderRadius: 16, ...style }}>
       {children}
     </div>
   );
@@ -62,6 +69,13 @@ export default function ViewerDashboard() {
   const [notifFilter, setNotifFilter] = useState('all');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: liveRooms = [] } = useQuery({
     queryKey: ['all-live-rooms'],
@@ -100,7 +114,7 @@ export default function ViewerDashboard() {
 
   useEffect(() => {
     const unsub = base44.entities.Room.subscribe(() => {
-      qc.invalidateQueries(['all-live-rooms']);
+      qc.invalidateQueries({ queryKey: ['all-live-rooms'] });
     });
     return unsub;
   }, [qc]);
@@ -109,7 +123,7 @@ export default function ViewerDashboard() {
     if (!user) return;
     const unsub = base44.entities.Notification.subscribe((event) => {
       if (event.data?.user_id === user.id) {
-        qc.invalidateQueries(['notifications', user.id]);
+        qc.invalidateQueries({ queryKey: ['notifications', user.id] });
       }
     });
     return unsub;
@@ -179,7 +193,7 @@ export default function ViewerDashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
                 <h2 className="font-black text-white text-sm" style={T}>Live Now</h2>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.3)', color: '#C0392B', ...T }}>{liveRooms.length}</span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-black" style={{ background: 'rgba(128,0,32,0.15)', border: '1px solid rgba(128,0,32,0.4)', color: '#D4854A', ...T }}>{liveRooms.length}</span>
               </div>
               {liveRooms.length === 0 ? (
                 <p className="text-sm py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No one is live right now</p>
@@ -204,7 +218,7 @@ export default function ViewerDashboard() {
                         </div>
                         <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`} className="block mt-3">
                           <button className="w-full py-2 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-1.5"
-                            style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
+                            style={{ background: 'rgba(128,0,32,0.2)', border: '1px solid rgba(128,0,32,0.5)', color: '#D4854A', ...T }}>
                             <Radio className="w-3.5 h-3.5" /> Join Now
                           </button>
                         </Link>
@@ -241,7 +255,7 @@ export default function ViewerDashboard() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {recentVODs.slice(0, 6).map((vod, i) => (
                   <motion.div key={vod.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} className="group cursor-pointer">
-                    <div className="relative rounded-xl overflow-hidden aspect-video mb-2" style={{ background: 'rgba(26,10,32,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                    <div className="relative rounded-xl overflow-hidden aspect-video mb-2" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Play className="w-8 h-8 transition-all" style={{ color: 'rgba(255,255,255,0.25)' }} />
                       </div>
@@ -263,6 +277,11 @@ export default function ViewerDashboard() {
         {/* MY ACTIVITY */}
         {activeTab === 'activity' && (
           <>
+            {user?.id && (
+              <ViewerLoyaltyCard userId={user.id} />
+            )}
+            <LeaderboardPanel roomId={activeRoomId} />
+            <StreamGoals roomId={activeRoomId} isHost={false} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color="#7B5DA6" />
               <StatTile label="Clips" value={myClips.length} icon={Scissors} color="#7B5DA6" />
@@ -312,6 +331,7 @@ export default function ViewerDashboard() {
         {/* DISCOVER */}
         {activeTab === 'discover' && (
           <div className="space-y-3">
+            <ContentRecommendations />
             <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
               <TrendingUp className="w-4 h-4" style={{ color: GOLD }} /> Trending Streams
             </h2>
@@ -319,7 +339,7 @@ export default function ViewerDashboard() {
               <motion.div key={room.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
                 <Link to={createPageUrl('LiveRoom') + `?id=${room.id}`}>
                   <div className="flex items-center gap-3 p-3 rounded-xl transition-all"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(212,175,55,0.2)'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}>
                     <span className="font-mono text-sm w-5 text-center" style={{ color: 'rgba(212,175,55,0.4)' }}>{i + 1}</span>
@@ -375,7 +395,7 @@ export default function ViewerDashboard() {
               ) : filteredNotifs.map((n, i) => (
                 <motion.div key={n.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                   <div className="flex items-start gap-3 p-3 rounded-xl border transition-all"
-                    style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(13,6,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
+                    style={{ background: !n.is_read ? 'rgba(212,175,55,0.04)' : 'rgba(8,11,24,0.9)', borderColor: !n.is_read ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0"
                       style={{ background: n.type === 'tip' ? 'rgba(212,175,55,0.15)' : n.type === 'room_invite' ? 'rgba(192,57,43,0.12)' : 'rgba(255,255,255,0.06)' }}>
                       {n.type === 'tip' ? '💰' : n.type === 'room_invite' ? '🔴' : n.type === 'subscription' ? '⭐' : '🔔'}
@@ -392,6 +412,16 @@ export default function ViewerDashboard() {
             </div>
           </div>
         )}
+
+        {/* Analytics + milestone panel */}
+        <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {user?.id && <MilestoneAlerts creatorId={user.id} />}
+          <PartyAnalyticsDashboard partyId={null} isHost={false} />
+          <QuickPollLauncher roomId={activeRoomId} hostId={user?.id} isHost={false} />
+          <LivePollWidget roomId={activeRoomId} currentUser={user} isHost={false} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={activeRoomId} />
+          {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="viewer" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

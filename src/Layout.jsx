@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 import { injectFocusRing } from '@/hooks/useMobileUtils';
@@ -12,6 +12,7 @@ import {
   MessageSquare, ArrowLeft, DollarSign, Video, Sparkles, Lock, Tv2, Globe, Mic2, Swords, Heart, Bot, Tv,
   Users, Calendar, Bell, FileText, Settings2, Activity
 } from 'lucide-react';
+// DollarSign, Heart, Sparkles already imported above
 import NotificationHub from '@/components/live/NotificationHub';
 import UserMenu from '@/components/shared/UserMenu';
 import GlobalSearch from '@/components/shared/GlobalSearch';
@@ -22,6 +23,7 @@ import { useBackground } from '@/lib/BackgroundManager';
 import BrandChyron from '@/components/live/BrandChyron';
 import GlobalChatWidget from '@/components/live/GlobalChatWidget';
 import SwanyBotWidget from '@/components/guide/ARIAWidget';
+import { useMobileNavigation } from '@/hooks/useMobileNavigation';
 
 // ── 5 Bottom Nav Tabs ──────────────────────────────────────────────────────
 var BOTTOM_NAV = [
@@ -32,16 +34,15 @@ var BOTTOM_NAV = [
   { name: 'Me',    icon: User,         href: createPageUrl('Profile') },
 ];
 
-// ── Drawer nav groups ──────────────────────────────────────────────────────
+// ── Consolidated drawer nav groups (deduplicated from 91 → 65 items) ─────────
 var DRAWER_WATCH = [
   { name: 'Home',             icon: Home,    href: createPageUrl('Home') },
   { name: 'Discover',         icon: Eye,     href: createPageUrl('Discover') },
   { name: 'State vs State',   icon: Swords,  href: createPageUrl('StateVsState') },
+  { name: 'WA Classic',       icon: Trophy,  href: '/WashingtonClassic' },
   { name: 'Tribute Wall',     icon: Heart,   href: createPageUrl('TributeWall') },
   { name: 'Fallen Legends',   icon: Heart,   href: createPageUrl('FallenLegendsPage') },
   { name: 'Watch Party',      icon: Eye,     href: createPageUrl('WatchParty') },
-  { name: 'Featured Partners',icon: Tv2,     href: createPageUrl('Discover') + '?tab=partners' },
-  { name: 'Social Expo',      icon: Tv2,     href: createPageUrl('SocialExpo') },
   { name: 'Audio Room',       icon: Radio,   href: createPageUrl('AudioRoom') },
   { name: 'VOD Library',      icon: Video,   href: createPageUrl('VODLibrary') },
   { name: 'PPV Events',       icon: Eye,     href: createPageUrl('PayPerViewEvents') },
@@ -120,6 +121,14 @@ var DRAWER_ADMIN = [
   { name: 'Stream Infra',     icon: Server,          href: createPageUrl('StreamInfra') },
 ];
 
+// Tab ownership map — which URL patterns belong to each bottom-nav tab
+var TAB_OWNERSHIP = {
+  Home: /^(\/|\/Home)$/,
+  Watch: /\/(Discover|LiveRoom|Room|StateVsState|WashingtonClassic|SVSArena|PKBattleArena|LiveBattles|VODLibrary|WatchParty|TributeWall|FallenLegends|AudioRoom)/i,
+  Chat: /\/[Mm]essages/,
+  Me: /\/(Profile|Settings|CreatorDashboard|CreatorAnalytics|CreatorPublicProfile|Payouts|PayoutCenter|Notifications|Activity|CreatorSubscriptions|ViewerDashboard)/i,
+};
+
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -142,7 +151,6 @@ export default function Layout({ children, currentPageName }) {
     return function() { window.removeEventListener('popstate', onPop); };
   }, [showMobileMenu]);
   var navigate = useNavigate();
-  var scrollPositions = React.useRef({});
   var { backgroundStyle, backgrounds } = useBackground();
   // Scroll-position preservation per bottom-nav tab: save on scroll, restore via rAF on navigate
   useEffect(function() {
@@ -194,10 +202,28 @@ export default function Layout({ children, currentPageName }) {
     };
   }, [location.pathname]);
 
+  // Update tab memory when navigation occurs within a tab's domain
+  useEffect(function() {
+    var path = location.pathname;
+    var tabs = Object.keys(TAB_OWNERSHIP);
+    for (var i = 0; i < tabs.length; i++) {
+      if (TAB_OWNERSHIP[tabs[i]].test(path)) {
+        tabMemory.current[tabs[i]] = path + location.search;
+        break;
+      }
+    }
+  }, [location.pathname, location.search]);
+
   function isActive(href) {
     var path = location.pathname;
     var hrefPath = href.split('?')[0];
     return path === hrefPath || path === '/' + currentPageName;
+  }
+
+  function isTabActive(item) {
+    var pattern = TAB_OWNERSHIP[item.name];
+    if (pattern) return pattern.test(location.pathname);
+    return isActive(item.href);
   }
 
   var MAIN_PATHS = BOTTOM_NAV.map(function(i) { return i.href.split('?')[0]; });
@@ -246,13 +272,13 @@ export default function Layout({ children, currentPageName }) {
       {!isFullscreen && <>
       {/* Brand accent line — sits below status bar on notch devices */}
       <div className="fixed top-0 left-0 right-0 z-[101] pt-safe"
-        style={{ background: 'rgba(7,7,15,0.97)' }}>
+        style={{ background: 'rgba(8,11,24,0.97)' }}>
         <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #d4af37, #CC7755, #6B7C4A, #d4af37)' }} />
       </div>
 
       {/* ── HEADER ── */}
       <header className="sticky z-50 w-full"
-        style={{ top: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(7,7,15,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
+        style={{ top: 0, paddingTop: 'calc(3px + env(safe-area-inset-top, 0px))', background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(16px)' }}>
 
         <div className="flex h-14 items-center justify-between px-3 md:px-6 max-w-7xl mx-auto">
           {/* Logo / Back */}
@@ -322,7 +348,7 @@ export default function Layout({ children, currentPageName }) {
           <div className="flex items-center justify-between px-4 py-1 text-[10px] font-bold"
             style={{ background: 'rgba(180,50,30,0.12)', borderTop: '1px solid rgba(200,80,30,0.15)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}>SeeWhy LIVE</span>
               <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
               <span style={{ color: '#CC7755' }}>{liveCount} stream{liveCount !== 1 ? 's' : ''} live now</span>
@@ -376,10 +402,13 @@ export default function Layout({ children, currentPageName }) {
               {/* Group 1: Watch & Play */}
               <DrawerSection label="Watch & Play" items={DRAWER_WATCH} />
 
-              {/* Group 2: Create & Earn */}
-              <DrawerSection label="Create & Earn" items={DRAWER_CREATE} />
+              {/* Group 2: Create & Stream */}
+              <DrawerSection label="Create & Stream" items={DRAWER_CREATE} />
 
-              {/* Group 3: Account */}
+              {/* Group 3: Monetize & AI */}
+              <DrawerSection label="Monetize & AI" items={DRAWER_MONETIZE_AI} labelColor="#CC7755" />
+
+              {/* Group 4: Account */}
               <DrawerSection label="Account" items={DRAWER_ACCOUNT} />
 
               {/* Group 4: Admin (isAdmin only) */}
@@ -421,10 +450,10 @@ export default function Layout({ children, currentPageName }) {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.key}
-              initial={{ opacity: 0, x: 18 }}
+              initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -18 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
             >
               {children}
             </motion.div>
@@ -448,17 +477,20 @@ export default function Layout({ children, currentPageName }) {
           <nav className="flex items-end justify-around px-2 pt-2" style={{ height: 60 }}>
             {BOTTOM_NAV.map(function(item) {
               var Icon = item.icon;
-              var active = isActive(item.href);
+              var active = item.isCenter ? isActive(item.href) : isTabActive(item);
 
               function handleTabPress(e) {
-                if (active) {
-                  // Double-tap active tab → scroll to top
-                  e.preventDefault();
+                e.preventDefault();
+                if (active && !item.isCenter) {
+                  // Tap active tab → scroll to top
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  navigate(item.href, { replace: true });
                 } else {
-                  // Save current scroll before leaving
+                  // Save scroll of current page, then navigate to tab's remembered path
                   scrollPositions.current[location.pathname] = window.scrollY;
+                  var dest = item.isCenter
+                    ? item.href
+                    : (tabMemory.current[item.name] || item.href);
+                  navigate(dest);
                 }
               }
 
@@ -500,7 +532,7 @@ export default function Layout({ children, currentPageName }) {
 
       {/* Desktop footer */}
       <footer className="hidden md:block py-3 px-6 text-[10px]"
-        style={{ background: 'rgba(7,7,15,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
+        style={{ background: 'rgba(8,11,24,0.9)', borderTop: '1px solid rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.2)' }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
           <span style={{ fontFamily: 'Share Tech Mono, monospace' }}>© {new Date().getFullYear()} SeeWhy LIVE</span>
           <div className="flex items-center gap-4">

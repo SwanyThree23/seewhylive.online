@@ -49,6 +49,7 @@ var rtmp         = require('./rtmp');
 var vault        = require('./vault');
 var stripeModule = require('./stripe');
 var SwanyBot     = require('./swanybot');
+var ttsRouter    = require('./tts');
 var translation  = require('./translation');
 var aura         = require('./aura');
 var whisper      = require('./whisper');
@@ -240,6 +241,8 @@ if (giftCount.c === 0) {
 var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
+app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
+app.get('*', function(req, res) { res.sendFile(require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html')); });
 
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
@@ -298,6 +301,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
+app.use('/api/vod', vodRoutes);
 var n8nRouter = require('./n8nWebhooks');
 app.use('/api/n8n', n8nRouter);
 app.use(xssClean());
@@ -550,6 +554,8 @@ setInterval(function() {
 }, 60000);
 
 // ─── REST API Routes ──────────────────────────────────────────────────────
+
+app.use('/api/tts', ttsRouter);
 
 // GET /api/health
 app.get('/api/health', function(req, res) {
@@ -3157,3 +3163,17 @@ process.on('SIGINT', function() {
 });
 
 module.exports = { app, server, io };
+
+// ZEGO token generation endpoint
+app.post('/api/zego/token', function(req, res) {
+  var appId = parseInt(process.env.ZEGO_APP_ID);
+  var secret = process.env.ZEGO_SERVER_SECRET;
+  var userId = req.query.userId || 'guest_' + Date.now();
+  var roomId = req.query.roomId || 'room_1';
+  var expire = Math.floor(Date.now() / 1000) + 3600;
+  var nonce = Math.floor(Math.random() * 2147483647);
+  var crypto = require('crypto');
+  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now() / 1000) + '&userid=' + userId + '&version=1';
+  var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
+  res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
+});

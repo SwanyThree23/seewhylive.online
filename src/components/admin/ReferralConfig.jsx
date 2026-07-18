@@ -6,7 +6,7 @@ import { Gift, Users, TrendingUp, Award, DollarSign } from 'lucide-react';
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
 const CARD_CONTENT = { padding:'0 20px 20px' };
-const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const INPUT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 const SELECT_STYLE = { ...INPUT_STYLE };
 const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
 
@@ -60,7 +60,7 @@ export default function ReferralConfig({ communityId }) {
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:16 }}>
         <StatCard label="Total Referrals" value={totalReferrals} icon={Users} sub="All time" />
         <StatCard label="Completed" value={completedReferrals} color="#6DBF7E" icon={Award} sub="Successful" />
-        <StatCard label="Pending" value={pendingReferrals} color="#fb923c" icon={TrendingUp} sub="In progress" />
+        <StatCard label="Pending" value={pendingReferrals} color="#D4854A" icon={TrendingUp} sub="In progress" />
         <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon={DollarSign} sub="Success rate" />
       </div>
 
@@ -98,8 +98,8 @@ export default function ReferralConfig({ communityId }) {
               </div>
             </div>
 
-            <div style={{ background:'rgba(59,130,246,0.08)', border:'1px solid rgba(59,130,246,0.2)', borderRadius:8, padding:16 }}>
-              <p style={{ fontSize:13, color:'#93c5fd', margin:0 }}>
+            <div style={{ background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.2)', borderRadius:8, padding:16 }}>
+              <p style={{ fontSize:13, color:'#C9A84C', margin:0 }}>
                 <strong>Current Settings:</strong> Users will receive <strong>{rewardValue} {rewardType}</strong> for each successful referral.
               </p>
             </div>
@@ -129,7 +129,7 @@ export default function ReferralConfig({ communityId }) {
               {sortedReferrers.map((referrer, idx) => (
                 <div key={referrer.userId} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:12, background:'rgba(255,255,255,0.03)', borderRadius:8 }}>
                   <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#7B5DA6,#db2777)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
+                    <div style={{ width:32, height:32, borderRadius:'50%', background:'linear-gradient(135deg,#800020,#C0392B)', color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:12 }}>
                       #{idx + 1}
                     </div>
                     <div>

@@ -8,20 +8,20 @@ import { format } from 'date-fns';
 const CARD = { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:12, overflow:'hidden' };
 const CARD_HEADER = { padding:'16px 20px 12px' };
 const CARD_CONTENT = { padding:'0 20px 20px' };
-const TEXTAREA_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', minHeight:80 };
-const SELECT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(17,8,34,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
+const TEXTAREA_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif', resize:'none', minHeight:80 };
+const SELECT_STYLE = { width:'100%', padding:'10px 14px', background:'rgba(8,11,24,0.85)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:8, color:'#fff', fontSize:13, outline:'none', boxSizing:'border-box', fontFamily:'Barlow Condensed, sans-serif' };
 const LABEL_STYLE = { fontSize:13, fontWeight:600, display:'block', marginBottom:6, color:'rgba(255,255,255,0.8)' };
 
 const priorityBadge = {
   low:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
-  medium: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
-  high:   { background:'rgba(249,115,22,0.15)',  color:'#fb923c' },
-  urgent: { background:'rgba(192,57,43,0.15)',   color:'#C0392B' },
+  medium: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
+  high:   { background:'rgba(212,133,74,0.15)',  color:'#D4854A' },
+  urgent: { background:'rgba(192,57,43,0.15)',   color:'#FF4444' },
 };
 
 const statusBadge = {
-  pending:      { background:'rgba(234,179,8,0.15)',   color:'#facc15' },
-  under_review: { background:'rgba(59,130,246,0.15)',  color:'#60a5fa' },
+  pending:      { background:'rgba(212,175,55,0.15)',   color:'#D4AF37' },
+  under_review: { background:'rgba(212,175,55,0.15)',  color:'#D4AF37' },
   resolved:     { background:'rgba(109,191,126,0.15)',   color:'#6DBF7E' },
   dismissed:    { background:'rgba(156,163,175,0.15)', color:'#9ca3af' },
 };
@@ -68,7 +68,7 @@ export default function ReportsManager({ communityId, userId }) {
     },
     onSuccess: () => {
       toast.success('Report updated');
-      queryClient.invalidateQueries(['communityReports']);
+      queryClient.invalidateQueries({ queryKey: ['communityReports'] });
       setSelectedReport(null);
       setResolutionNotes('');
       setActionTaken('');

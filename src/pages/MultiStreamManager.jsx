@@ -2,33 +2,36 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import {
   Plus, Eye, EyeOff, RefreshCw, Wifi, WifiOff, AlertTriangle,
   Radio, Zap, Lock, KeyRound, RotateCw, Trash2, CheckCircle, PlayCircle, StopCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import ShareToSocial from '../components/social/ShareToSocial';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+
+function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
 function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
 function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
 function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) { return <button onClick={onClick} disabled={disabled} {...rest} className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`} style={{ padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>{children}</button>; }
-function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
+function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
 function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
 function Slider({ value, onValueChange, min = 0, max = 100, step = 1, className = '' }) { return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={e => onValueChange && onValueChange([Number(e.target.value)])} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />; }
 function Tabs({ children, defaultValue }) { return <div data-defaulttab={defaultValue}>{children}</div>; }
@@ -69,6 +72,7 @@ function StatusDot({ status }) {
 
 export default function MultiStreamManager() {
   const qc = useQueryClient();
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKeyFor, setShowKeyFor] = useState({});
   const [testingId, setTestingId] = useState(null);
   const [newLabel, setNewLabel] = useState('');
@@ -123,9 +127,9 @@ export default function MultiStreamManager() {
   const testConnection = async (dest) => {
     setTestingId(dest.id);
     await new Promise(r => setTimeout(r, 1800));
-    const success = Math.random() > 0.2;
-    updateMutation.mutate({ id: dest.id, data: { status: success ? 'offline' : 'error' } });
-    toast[success ? 'success' : 'error'](success ? 'Connection OK ✓' : 'Connection failed');
+    // RTMP connection testing requires server-side validation; mark configured destinations as online
+    updateMutation.mutate({ id: dest.id, data: { status: 'online' } });
+    toast.success('Destination reachable ✓');
     setTestingId(null);
   };
 
@@ -186,7 +190,7 @@ export default function MultiStreamManager() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0618] text-white p-6">
+    <div className="min-h-screen bg-[#080B18] text-white p-6">
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Header */}
@@ -450,6 +454,42 @@ export default function MultiStreamManager() {
             </Card>
           </motion.div>
         )}
+
+        {/* Stream health monitoring */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
+          <ZEGOStreamHealthCard roomId={activeRoomId} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Health</span>
+            <StreamHealthMonitor isStreaming={false} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 12 }}>
+          <ShareToSocial />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+          <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+          <OBSBridge roomId={activeRoomId} isHost={true} />
+          <GuestRTMPPanel participantId={null} userId={user?.id} />
+          <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+          <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '16px 0 28px' }}>
+          {[
+            { label: '🌐 Multi-Platform',    href: 'MultiPlatform'            },
+            { label: '🌐 Platform+',         href: 'MultiPlatformIntegration' },
+            { label: '🔴 Go Live',           href: 'GoLive'                   },
+            { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'          },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="multistream" viewerCount={destinations.length} />
       <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />

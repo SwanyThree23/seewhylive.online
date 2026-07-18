@@ -3,9 +3,23 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Key } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-
+import { useAuth } from '@/lib/AuthContext';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
+import TierEditor from '../components/subscriptions/TierEditor';
+import ZEGOSettingsDrawer from '../components/live/ZEGOSettingsDrawer';
+import MySubscriptions from '../components/subscriptions/MySubscriptions';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -34,7 +48,7 @@ const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 function Section({ icon: Icon, title, description, children }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
       <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Icon className="w-4 h-4" style={{ color: GOLD }} />
         <div>
@@ -80,6 +94,7 @@ function DarkInput({ value, onChange, placeholder, disabled }) {
 }
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreatorSetup, setShowCreatorSetup] = useState(false);
   const [showTierEditor, setShowTierEditor] = useState(false);
@@ -90,6 +105,8 @@ export default function SettingsPage() {
   const [showActivity, setShowActivity] = useState(true);
   const [publicProfile, setPublicProfile] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteStep, setDeleteStep] = useState(1); // 1 = reason, 2 = confirm
+  const [deleteReason, setDeleteReason] = useState('');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -97,6 +114,8 @@ export default function SettingsPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const activeRoomId = roomId;
 
   const { data: preferences } = useQuery({
     queryKey: ['userPreferences', user?.id],
@@ -124,7 +143,7 @@ export default function SettingsPage() {
     mutationFn: (data) => base44.auth.updateMe(data),
     onSuccess: () => {
       toast.success('Profile saved!');
-      queryClient.invalidateQueries(['currentUser']);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -136,7 +155,7 @@ export default function SettingsPage() {
     },
     onSuccess: () => {
       toast.success('Preferences saved!');
-      queryClient.invalidateQueries(['userPreferences']);
+      queryClient.invalidateQueries({ queryKey: ['userPreferences'] });
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -146,7 +165,7 @@ export default function SettingsPage() {
     setIsDeleting(true);
     try {
       await base44.auth.deleteMe();
-      window.location.href = '/';
+      navigate('/');
     } catch {
       toast.error('Could not delete account. Contact support.');
     } finally {
@@ -173,6 +192,40 @@ export default function SettingsPage() {
     { label: 'Newsletter Hub',    href: 'NewsletterHub' },
     { label: 'Social Expo',       href: 'SocialExpo' },
     { label: 'Multi-Platform+',   href: 'MultiPlatformIntegration' },
+    { label: 'Aura AI',           href: 'AuraAI' },
+    { label: 'SwanyBot',          href: 'SwanyBotPage' },
+    { label: 'Hybrid Stream',     href: 'HybridStreamRoom' },
+    { label: 'Enhancement Suite', href: 'EnhancementSuite' },
+    { label: 'Transcription',     href: 'TranscriptionStudio' },
+    { label: 'Poll Manager',      href: 'PollManager' },
+    { label: 'Multi-Stream Mgr',  href: 'MultiStreamManager' },
+    { label: 'Voice AI Settings', href: 'VoiceAISettings' },
+    { label: 'Stream Analytics',  href: 'StreamAnalytics' },
+    { label: 'Advanced Analytics',href: 'AdvancedAnalytics' },
+    { label: 'Challenges Hub',    href: 'ChallengesHub' },
+    { label: 'Loyalty Hub',       href: 'LoyaltyHub' },
+    { label: 'Communities',       href: 'Communities' },
+    { label: 'Overlay Builder',   href: 'OverlayBuilder' },
+    { label: 'Control Room',      href: 'ControlRoom' },
+    { label: 'PK Battle Mgr',     href: 'PKBattleManager' },
+    { label: 'Creator Subs',      href: 'CreatorSubscriptions' },
+    { label: 'Loyalty Program',   href: 'LoyaltyProgram' },
+    { label: 'Invite Users',      href: 'InviteUsers' },
+    { label: 'PPV Events',        href: 'PayPerViewEvents' },
+    { label: 'VOD Library',       href: 'VODLibrary' },
+    { label: 'Content Calendar',  href: 'ContentCalendar' },
+    { label: 'Clips Library',     href: 'ClipsLibrary' },
+    { label: 'Pre-Flight',        href: 'GreenRoomPreFlight' },
+    { label: 'Greenroom',         href: 'Greenroom' },
+    { label: 'Greenroom Enhanced',href: 'GreenroomEnhanced' },
+    { label: 'Newsletter',        href: 'Newsletter' },
+    { label: 'Dashboard',         href: 'Dashboard' },
+    { label: 'Social Expo',       href: 'SocialExpo' },
+    { label: 'Leaderboard',       href: 'Leaderboard' },
+    { label: 'Messages',          href: 'Messages' },
+    { label: 'BroadcastStudio',   href: 'BroadcastStudio' },
+    { label: 'Guardian AI',       href: 'GuardianAI' },
+    { label: 'PKBattle Arena',    href: 'PKBattleArena' },
   ];
 
   return (
@@ -252,16 +305,16 @@ export default function SettingsPage() {
         </Section>
 
         {/* Account */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <AlertTriangle className="w-4 h-4" style={{ color: '#C0392B' }} />
+            <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} />
             <p className="font-black text-sm text-white" style={T}>Account</p>
           </div>
           <div className="p-4 space-y-3">
             <button
               onClick={() => base44.auth.logout()}
               className="w-full px-4 py-2.5 rounded-xl font-black uppercase text-[11px] text-left"
-              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#C0392B', userSelect: 'none', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)', color: '#EF4444', userSelect: 'none', ...T }}>
               Log Out
             </button>
             <button
@@ -278,42 +331,87 @@ export default function SettingsPage() {
       {showDeleteDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteConfirmText(''); } }}>
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
           <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
+            role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
+            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
             <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
-                <Trash2 className="w-5 h-5" style={{ color: '#C0392B' }} />
+                <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
               </div>
-              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
+              <p id="delete-dialog-title" className="font-black text-lg text-white" style={T}>Delete Account?</p>
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
                 This permanently deletes your account, streams, and all data. This cannot be undone.
               </p>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(192,57,43,0.7)', ...T }}>
-                  Type DELETE to confirm
-                </label>
-                <input
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
-                  placeholder="DELETE"
-                  className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
-                  style={{ background: 'rgba(192,57,43,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.2)'}`, color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+              {/* Step indicator */}
+              <div className="flex items-center justify-center gap-2 mt-3">
+                {[1, 2].map(s => (
+                  <div key={s} className="rounded-full transition-all"
+                    style={{ width: deleteStep >= s ? 20 : 8, height: 8, background: deleteStep >= s ? '#EF4444' : 'rgba(192,57,43,0.2)' }} />
+                ))}
               </div>
-              <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-                className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
-                style={{ background: deleteConfirmText === 'DELETE' ? '#C0392B' : 'rgba(192,57,43,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(192,57,43,0.4)', userSelect: 'none', ...T }}>
-                {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
-              </button>
-              <button onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(''); }}
-                className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
-                style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
-                Cancel
-              </button>
             </div>
+
+            {/* Step 1: Reason */}
+            {deleteStep === 1 && (
+              <div className="p-5 space-y-3">
+                <p className="text-[10px] font-black uppercase text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                  Why are you leaving? (required)
+                </p>
+                <div className="space-y-2">
+                  {['I no longer use this service', 'Privacy concerns', 'Found a better platform', 'Too many notifications', 'Other reason'].map(reason => (
+                    <button key={reason} onClick={() => setDeleteReason(reason)}
+                      className="w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold transition-all"
+                      style={{ background: deleteReason === reason ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.08)'}`, color: deleteReason === reason ? '#EF4444' : 'rgba(255,255,255,0.55)', userSelect: 'none', ...T }}>
+                      {deleteReason === reason ? '● ' : '○ '}{reason}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setDeleteStep(2)} disabled={!deleteReason}
+                  className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                  style={{ background: deleteReason ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)', color: deleteReason ? '#EF4444' : 'rgba(239,68,68,0.3)', userSelect: 'none', ...T }}>
+                  Continue →
+                </button>
+                <button onClick={() => { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); }}
+                  className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Step 2: Confirm */}
+            {deleteStep === 2 && (
+              <div className="p-5 space-y-3">
+                <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                  <p className="text-[10px] font-bold" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Reason</p>
+                  <p className="text-xs font-black" style={{ color: '#EF4444', ...T }}>{deleteReason}</p>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase mb-1.5 text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
+                    Type DELETE to confirm
+                  </label>
+                  <input
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                    placeholder="DELETE"
+                    autoFocus
+                    className="w-full px-3 py-2.5 rounded-xl text-sm text-center outline-none font-black"
+                    style={{ background: 'rgba(239,68,68,0.06)', border: `1px solid ${deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.2)'}`, color: '#EF4444', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }} />
+                </div>
+                <button onClick={handleDeleteAccount} disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                  className="w-full py-3 rounded-xl font-black uppercase text-sm transition-all"
+                  style={{ background: deleteConfirmText === 'DELETE' ? '#EF4444' : 'rgba(239,68,68,0.12)', color: deleteConfirmText === 'DELETE' ? 'white' : 'rgba(239,68,68,0.4)', userSelect: 'none', ...T }}>
+                  {isDeleting ? 'Deleting…' : 'Permanently Delete Account'}
+                </button>
+                <button onClick={() => { setDeleteStep(1); setDeleteConfirmText(''); }}
+                  className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
+                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
+                  ← Back
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

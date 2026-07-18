@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-import StreamGoals from '../components/live/StreamGoals';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import RevenueDashboard from '../components/monetization/RevenueDashboard';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import AudienceInsights from '../components/dashboard/AudienceInsights';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -37,12 +32,12 @@ const COLORS = [GOLD, CRIMSON, '#D4AF37', '#C9A84C', '#6DBF7E'];
 const CHART_THEME = {
   cartesian: { stroke: 'rgba(255,255,255,0.06)' },
   tick: { fill: 'rgba(255,255,255,0.35)', fontSize: 10 },
-  tooltip: { contentStyle: { background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
+  tooltip: { contentStyle: { background: 'rgba(8,11,24,0.97)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12 }, cursor: { fill: 'rgba(212,175,55,0.06)' } },
 };
 
 function StatCard({ label, value, icon: Icon, color, sub }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 14, padding: '14px 16px' }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 14, padding: '14px 16px' }}>
       <p className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{label}</p>
       <div className="flex items-center gap-2">
         <Icon className="w-5 h-5" style={{ color }} />
@@ -55,7 +50,7 @@ function StatCard({ label, value, icon: Icon, color, sub }) {
 
 function DarkCard({ title, desc, children }) {
   return (
-    <div style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
+    <div style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', borderRadius: 16, padding: 20 }}>
       {(title || desc) && (
         <div className="mb-4">
           {title && <p className="font-black text-sm text-white" style={T}>{title}</p>}
@@ -73,6 +68,8 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState('revenue');
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get('room_id');
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['analyticsRooms', user?.id],
@@ -81,7 +78,7 @@ export default function AnalyticsPage() {
   });
   const { data: transactions = [] } = useQuery({
     queryKey: ['analyticsTransactions', user?.id],
-    queryFn: () => base44.entities.Transaction.filter({ to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Transaction.filter({ recipient_id: user?.id }, '-created_date', 100),
     enabled: !!user,
   });
   const { data: subscriptions = [] } = useQuery({
@@ -100,7 +97,7 @@ export default function AnalyticsPage() {
   });
 
   const totalViews = rooms.reduce((s, r) => s + (r.viewer_count || 0), 0);
-  const totalRevenue = transactions.reduce((s, t) => s + (t.amount || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + (t.creator_payout || 0) + (t.platform_cut || 0), 0);
   const avgViewers = rooms.length > 0 ? (totalViews / rooms.length).toFixed(0) : 0;
   const activeSubscriptions = subscriptions.filter(s => s.status === 'active').length;
   const liveRooms = rooms.filter(r => r.status === 'live').length;
@@ -110,7 +107,7 @@ export default function AnalyticsPage() {
 
   const revenueByMonth = transactions.reduce((acc, t) => {
     const month = new Date(t.created_date).toLocaleString('default', { month: 'short', year: '2-digit' });
-    acc[month] = (acc[month] || 0) + (t.amount || 0);
+    acc[month] = (acc[month] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
     return acc;
   }, {});
   const revenueChartData = Object.entries(revenueByMonth).slice(-6).map(([month, revenue]) => ({ month, revenue }));
@@ -371,6 +368,38 @@ export default function AnalyticsPage() {
             </DarkCard>
           </div>
         )}
+
+        {/* Revenue + Stream dashboards */}
+        <div className="mt-4 space-y-4">
+          <RevenueDashboard />
+          <StreamAnalyticsDashboard />
+        </div>
+
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <LeaderboardPanel roomId={rooms[0]?.id || null} />
+          <ShareToSocial />
+          <AudienceInsights />
+          <StreamerMonetizationCenter userId={user?.id} />
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16, paddingBottom: 24 }}>
+          {[
+            { label: '📈 Advanced Analytics', href: 'AdvancedAnalytics' },
+            { label: '📊 Stream Analytics',  href: 'StreamAnalytics'   },
+            { label: '💰 Monetization',      href: 'Monetization'      },
+            { label: '📤 Export Data',       href: 'DataExport'        },
+          ].map(item => (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>{item.label}</span>
+            </Link>
+          ))}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
+          <OnlineUsersGrid compact maxVisible={8} />
+          <CollaborationMatcher />
+          <ContentRecommendations />
+          <EarningsBreakdown userId={user?.id} />
+        </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={totalViews} />
       <MilestoneAlerts userId={user?.id} roomId={null} />

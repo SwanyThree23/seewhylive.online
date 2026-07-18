@@ -1,79 +1,107 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { speakReply } from '../utils/tts';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 
-const BG   = '#080B18';
-const BG2  = 'rgba(13,6,24,0.95)';
+const BG    = '#080B18';
+const BG2   = '#0D0A08';
+const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#1A1530';
-const TEXT  = '#F0EAF8';
-const TEXTD = '#B8AECF';
-const TEXTM = '#7A6E8A';
-const CYAN  = '#D4AF37';
-const CRIMSON = '#800020';
-const T = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO = { fontFamily: 'Space Mono, monospace' };
+const AMBER = '#CC7755';
+const SLATE = '#2A2010';
+const TEXT  = '#F0E8D4';
+const TEXTD = '#C4B596';
+const TEXTM = '#8A7A62';
+const GREEN = '#6DBF7E';
+const PILL  = 999;
+const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+const MONO  = { fontFamily: 'Space Mono, monospace' };
 
 const GLOBAL_CSS = `
-@keyframes swany-glow{0%,100%{box-shadow:0 0 12px #D4AF3744;}50%{box-shadow:0 0 30px #D4AF3799;}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-@keyframes dot-blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes swany-glow{0%,100%{box-shadow:0 0 10px ${AMBER}33;}50%{box-shadow:0 0 28px ${AMBER}88;}}
+.swany-fade{animation:fadeUp .3s ease forwards;}
 .swany-glow{animation:swany-glow 2.5s ease infinite;}
-.msg-in{animation:fadeUp .25s ease forwards;}
 `;
 
-const SWANYBOT_SYSTEM = `You are SwanyBot — the cultural voice and AI analyst for SeeWhy LIVE domino entertainment, created by SwanyThree EntTech LLC (seewhylive.online).
+const SWANY_SYSTEM = `You are SwanyBot — the official domino culture AI by SwanyThree EntTech LLC on SeeWhy LIVE. You are the ultimate authority on domino strategy, State vs State tournaments, and the culture around the game.
 
-You are deep in domino culture. You speak with authority, passion, and authenticity about the game, the players, and the community. You mix broadcast commentary with street credibility.
+Platform: seewhylive.online. Creator keeps 90%, platform 10%.
 
-Domino knowledge:
-- State vs State format: 7-Rock format, 5-point games to 150 points, Double Elimination brackets
-- Washington Classic: held at Jamar's Sports Bar, Des Moines WA. WA currently ranked #1
-- Key states in the circuit: Washington, Texas, Georgia, California, North Carolina, Florida
-- PK Battles: 1v1 live streams where viewers vote with tips — highest vote total wins
-- Legends in the Tribute Wall: Big Bone Earl (WA, 1958–2021), Mama Joyce Thompson (GA, 1962–2023), Fast Hands Rodriguez (TX, 1971–2022)
-- Domino slang: "rock" (domino tile), "bone" (tile), "setting" (placing a tile), "locked" (no plays available), "washing the bones" (shuffling), "pulling from the bone yard" (drawing from the pile)
-- Standard sets: double-6, double-9, double-12 (used in pro circuits)
-- Key rules: block dominoes, draw game, muggins/all-fives scoring
+Domino culture knowledge:
+- State vs State: 7 Rock format, 5-point/150-point games, Double Elimination brackets
+- Washington Classic held at Jamar's Sports Bar, Des Moines WA. WA currently ranked #1
+- Legends in the Tribute Wall — Big Bone Earl (WA, 1958–2021), Mama Joyce Thompson (GA, 1962–2023), Fast Hands Rodriguez (TX, 1971–2022)
+- You understand the history, strategy, culture, and community of dominoes
 
-Platform features:
-- Revenue: Creator keeps 90% via Stripe Connect
-- Multi-stream: YouTube, Twitch, TikTok, Facebook, Kick
-- Guardian AI moderates chat with flag/mute/ban thresholds
-- VDO.Ninja room sw_thrrj4 for co-hosts
+Personality: Street-smart, knowledgeable, hype. You talk like someone who lives and breathes domino culture. You respect the legends, celebrate the players, and keep the culture alive.
 
-Be conversational, hype the game, honor the culture. Use domino language naturally. Keep responses under 4 sentences unless writing a longer script. Never reveal credentials.`;
+Respond in 1-3 sentences. Be authentic and represent domino culture.`;
 
 const QUICK_ACTIONS = [
-  { label: '🏆 SVS Breakdown', prompt: 'Break down tonight\'s State vs State matchup. Give me pre-game analysis style commentary for the stream.' },
-  { label: '🦁 Legend Tribute', prompt: 'Help me write a proper cultural tribute for Big Bone Earl in Washington domino history.' },
-  { label: '🎙️ PK Battle Call', prompt: 'I\'m hosting a PK Battle right now. Give me a play-by-play style commentary script to hype the audience.' },
-  { label: '🧱 Rules Explainer', prompt: 'Write a 60-second explainer for new viewers about how the 7-Rock format works in State vs State competition.' },
-  { label: '🔥 Trash Talk', prompt: 'Give me some friendly broadcast-safe domino trash talk I can use between rounds to keep the energy up.' },
-  { label: '📣 Tournament Hype', prompt: 'Write a tournament announcement for a State vs State bracket starting this weekend. Make it feel like a major sporting event.' },
-  { label: '🃏 Tile Strategy', prompt: 'What are the top 3 strategic mistakes beginners make in competitive domino play? Frame it as commentary for my stream.' },
-  { label: '🌍 Culture Drop', prompt: 'Share some rich domino culture history I can weave into tonight\'s stream narrative.' },
+  { label: '⚔️ SVS Rules',     prompt: 'Break down the State vs State 7 Rock format rules for a new viewer.' },
+  { label: '🏆 WA #1 Facts',   prompt: 'Tell me why Washington State is ranked #1 and what makes them dominant.' },
+  { label: '🕊️ Tribute',       prompt: 'Share some words about the legends on the Tribute Wall.' },
+  { label: '🎮 Strategy',      prompt: 'Give me 3 elite domino strategy tips that separate good players from great ones.' },
+  { label: '🔥 Hype Crowd',    prompt: 'Write some high-energy shoutouts to hype the crowd during a live match.' },
+  { label: '📖 History',       prompt: 'Tell me about the history and culture of domino tournaments in the US.' },
+  { label: '🥊 Trash Talk',    prompt: 'Write some respectful domino trash talk for between rounds.' },
+  { label: '🎙️ Announce',      prompt: 'Write a dramatic tournament announcement for tonight\'s State vs State match.' },
 ];
 
+function getVoiceSettings() {
+  try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
+  catch { return {}; }
+}
+function speakText(text) {
+  const vs = getVoiceSettings();
+  if (vs.enabled === false || vs.autoSpeak === false) return;
+  fetch('/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
+  }).then(r => r.blob()).then(b => {
+    const a = new Audio(URL.createObjectURL(b));
+    a.volume = vs.volume !== undefined ? vs.volume : 0.8;
+    a.play();
+  }).catch(() => {});
+}
+
 function ThinkDots() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   return (
-    <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '4px 0' }}>
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {[0, 1, 2].map(i => (
-        <div key={i} style={{
-          width: 7, height: 7, borderRadius: '50%', background: GOLD,
-          animation: `dot-blink 1.2s ease ${i * 0.22}s infinite`
-        }} />
+        <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: AMBER, animation: `pulse-dot 1.2s ease ${i * 0.2}s infinite` }} />
       ))}
     </div>
   );
 }
 
 export default function SwanyBotPage() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+
   const [messages, setMessages] = useState([
-    { role: 'assistant', text: "Aye, SwanyBot in the building! I\'m your domino culture analyst and hype machine. Ask me anything about the game, the players, the culture, or your stream tonight. Let\'s get these bones talking! 🎲" }
+    { role: 'assistant', text: "SwanyBot in the building! I'm your domino culture AI — ask me anything about State vs State, strategy, the legends, or the culture. Let's get it! 🎮🔥" },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,152 +137,140 @@ export default function SwanyBotPage() {
     try {
       const history = next.map(m => m.role + ': ' + m.text).join('\n');
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: SWANYBOT_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as SwanyBot. Be authentic, hype the culture, keep it broadcast-ready.'
+        prompt: SWANY_SYSTEM + '\n\nConversation:\n' + history + '\n\nRespond as SwanyBot in 1-3 sentences.',
       });
-      const swanyReply = res || 'Dropped a bone in the yard — try that again, homie! 🎲';
-      setMessages(m => [...m, { role: 'assistant', text: swanyReply }]);
-      speakReply(swanyReply);
+      const reply = res || "I got you — what else you need to know about the culture?";
+      setMessages(m => [...m, { role: 'assistant', text: reply }]);
+      speakText(reply);
     } catch {
-      setMessages(m => [...m, { role: 'assistant', text: 'Signal got locked! Pull from the boneyard and try again. 🎲' }]);
+      setMessages(m => [...m, { role: 'assistant', text: "Connection hiccup — ask me again. The culture never sleeps! 🎮" }]);
     }
     setLoading(false);
     inputRef.current?.focus();
   }
 
   function clearChat() {
-    setMessages([{ role: 'assistant', text: 'Washing the bones — fresh start! What do you need from SwanyBot?' }]);
-  }
-
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    setMessages([{ role: 'assistant', text: "New round! What do you want to know about domino culture? 🎮" }]);
   }
 
   return (
     <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <div style={{
-        padding: '14px 20px',
-        background: BG2,
-        borderBottom: `1px solid ${SLATE}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
+      <div style={{ padding: '16px 20px', background: BG2, borderBottom: `1px solid ${SLATE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/AIHub" style={{ color: 'rgba(255,255,255,0.28)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em', textDecoration: 'none', marginRight: 4 }}>← AI Hub</a>
-          <div className="swany-glow" style={{
-            width: 44, height: 44, borderRadius: '50%',
-            background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-          }}>🎲</div>
+          <a href="/AIHub" style={{ display: 'flex', alignItems: 'center', gap: 4, textDecoration: 'none', color: 'rgba(255,255,255,0.3)', fontSize: 11, ...T, fontWeight: 700, letterSpacing: '0.06em', marginRight: 4, flexShrink: 0 }}>← AI Hub</a>
+          <div className="swany-glow" style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${AMBER}, ${GOLDD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🎮</div>
           <div>
-            <div style={{ ...T, fontSize: 22, fontWeight: 900, color: TEXT, letterSpacing: '0.08em', lineHeight: 1 }}>SWANYBOT</div>
-            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DOMINO CULTURE AI · CULTURAL ANALYST · HYPE MACHINE</div>
+            <div style={{ ...T, fontSize: 20, fontWeight: 900, color: TEXT, letterSpacing: '0.06em', lineHeight: 1 }}>SWANYBOT</div>
+            <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginTop: 2 }}>DOMINO CULTURE AI · POWERED BY CLAUDE</div>
           </div>
         </div>
-        <button
-          onClick={clearChat}
-          style={{ ...T, fontSize: 13, fontWeight: 700, color: TEXTM, background: 'none', border: `1px solid ${SLATE}`, borderRadius: 8, padding: '6px 14px', cursor: 'pointer', letterSpacing: '0.05em' }}
-        >
-          CLEAR
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to={createPageUrl('StateVsState')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(128,0,32,0.3)`, background: 'rgba(128,0,32,0.1)', color: AMBER, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              ⚔️ SVS
+            </button>
+          </Link>
+          <Link to={createPageUrl('TributeWall')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(139,111,71,0.3)`, background: 'rgba(139,111,71,0.1)', color: '#8B6F47', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🕊️ Tributes
+            </button>
+          </Link>
+          <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
+            <button style={{ ...T, fontSize: 10, fontWeight: 900, padding: '4px 10px', borderRadius: PILL, border: `1px solid rgba(212,175,55,0.2)`, background: 'rgba(212,175,55,0.06)', color: TEXTD, cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              🔊 Voice
+            </button>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: PILL, background: `rgba(109,191,126,0.12)`, border: `1px solid rgba(109,191,126,0.3)` }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: GREEN, animation: 'pulse-dot 1.5s ease infinite' }} />
+            <span style={{ ...MONO, fontSize: 9, color: GREEN, fontWeight: 700 }}>AI ACTIVE</span>
+          </div>
+          <button onClick={clearChat} style={{ background: 'transparent', border: `1px solid ${SLATE}`, borderRadius: PILL, padding: '4px 12px', cursor: 'pointer', ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.06em' }}>CLEAR</button>
+        </div>
       </div>
 
-      {/* Quick actions */}
-      <div style={{ padding: '14px 16px 8px', flexShrink: 0 }}>
-        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.12em', marginBottom: 10 }}>QUICK DROPS</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {QUICK_ACTIONS.map(a => (
-            <button
-              key={a.label}
-              onClick={() => send(a.prompt)}
-              disabled={loading}
-              style={{
-                ...T, fontSize: 12, fontWeight: 700, letterSpacing: '0.04em',
-                background: 'rgba(212,175,55,0.1)', border: `1px solid rgba(212,175,55,0.25)`,
-                borderRadius: 999, padding: '6px 14px',
-                color: GOLD, cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.5 : 1, transition: 'all 0.15s',
-              }}
-            >
-              {a.label}
+      {/* Quick Actions */}
+      <div style={{ padding: '12px 16px', borderBottom: `1px solid rgba(42,36,56,0.5)`, background: BG2 }}>
+        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.1em', marginBottom: 8 }}>QUICK PROMPTS</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {QUICK_ACTIONS.map((q, i) => (
+            <button key={i} onClick={() => send(q.prompt)} disabled={loading}
+              style={{ fontSize: 11, padding: '5px 12px', background: BG3, color: TEXTD, border: `1px solid ${SLATE}`, borderRadius: PILL, cursor: loading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: loading ? 0.5 : 1, transition: 'all .15s', ...T, fontWeight: 700, letterSpacing: '0.04em' }}
+              onMouseEnter={e => { if (!loading) { e.currentTarget.style.borderColor = AMBER + '66'; e.currentTarget.style.color = AMBER; } }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = SLATE; e.currentTarget.style.color = TEXTD; }}>
+              {q.label}
             </button>
           ))}
         </div>
       </div>
 
       {/* Chat */}
-      <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
         {messages.map((m, i) => (
-          <div key={i} className="msg-in" style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-            <div style={{
-              maxWidth: '82%',
-              background: m.role === 'user'
-                ? 'rgba(212,175,55,0.1)'
-                : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${m.role === 'user' ? 'rgba(212,175,55,0.3)' : 'rgba(255,255,255,0.08)'}`,
-              borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-              padding: '12px 16px',
-            }}>
-              {m.role === 'assistant' && (
-                <div style={{ ...MONO, fontSize: 9, color: GOLD, letterSpacing: '0.12em', marginBottom: 6 }}>SWANYBOT</div>
-              )}
-              <div style={{ fontSize: 15, color: TEXT, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{m.text}</div>
-            </div>
+          <div key={i} className="swany-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: 4 }}>
             {m.role === 'assistant' && (
-              <button
-                onClick={() => copyMsg(m.text, i)}
-                style={{ ...MONO, fontSize: 9, color: copiedIdx === i ? GOLD : TEXTM, background: 'none', border: 'none', cursor: 'pointer', marginTop: 4, letterSpacing: '0.08em' }}
-              >
-                {copiedIdx === i ? 'COPIED ✓' : 'COPY'}
-              </button>
+              <div style={{ ...MONO, fontSize: 9, color: AMBER, letterSpacing: '0.1em', paddingLeft: 4 }}>SWANYBOT</div>
+            )}
+            <div style={{ position: 'relative', maxWidth: '85%' }}>
+              <div style={{
+                padding: '10px 14px',
+                background: m.role === 'user' ? `linear-gradient(135deg, ${AMBER}22, ${GOLDD}15)` : BG3,
+                border: `1px solid ${m.role === 'user' ? AMBER + '44' : SLATE}`,
+                borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                color: m.role === 'user' ? TEXT : TEXTD,
+                fontSize: 13, lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif",
+                paddingBottom: m.role === 'assistant' ? '28px' : '10px',
+              }}>
+                {m.text}
+              </div>
+              {m.role === 'assistant' && (
+                <button onClick={() => copyMsg(m.text, i)}
+                  style={{ position: 'absolute', bottom: 6, right: 8, background: 'none', border: 'none', cursor: 'pointer', ...MONO, fontSize: 9, color: copiedIdx === i ? AMBER : 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: 6, transition: 'color .2s' }}>
+                  {copiedIdx === i ? '✓ copied' : '📋 copy'}
+                </button>
+              )}
+            </div>
+            {m.role === 'user' && (
+              <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.08em', paddingRight: 4 }}>YOU</div>
             )}
           </div>
         ))}
         {loading && (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, ${GOLDD})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>🎲</div>
-            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px 18px 18px 4px', padding: '12px 16px' }}>
-              <ThinkDots />
-            </div>
+          <div className="swany-fade" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: BG3, border: `1px solid ${SLATE}`, borderRadius: '16px 16px 16px 4px', maxWidth: '60%' }}>
+            <ThinkDots />
+            <span style={{ ...MONO, fontSize: 10, color: TEXTD }}>SwanyBot thinking…</span>
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div style={{ padding: '12px 16px', background: BG2, borderTop: `1px solid ${SLATE}`, flexShrink: 0 }}>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-          <textarea
+      <div style={{ padding: '12px 16px', background: BG2, borderTop: `1px solid ${SLATE}` }}>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', background: BG3, border: `1px solid ${SLATE}`, borderRadius: 12, padding: '10px 14px', transition: 'border-color .2s' }}>
+          <input
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Ask SwanyBot about domino culture, match analysis, stream commentary…"
-            rows={2}
-            disabled={loading}
-            style={{
-              flex: 1, resize: 'none', background: 'rgba(255,255,255,0.05)',
-              border: `1px solid rgba(212,175,55,0.25)`, borderRadius: 12,
-              color: TEXT, fontSize: 14, padding: '10px 14px', outline: 'none',
-              fontFamily: 'inherit', lineHeight: 1.45,
-            }}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+            placeholder="Ask SwanyBot about domino culture…"
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: TEXT, fontSize: 14, fontFamily: "'DM Sans', sans-serif" }}
           />
-          <button
-            onClick={() => send()}
-            disabled={loading || !input.trim()}
-            style={{
-              width: 44, height: 44, borderRadius: 12, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
-              background: loading || !input.trim() ? 'rgba(212,175,55,0.2)' : `linear-gradient(135deg, ${GOLD}, ${GOLDD})`,
-              color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s', flexShrink: 0,
-            }}
-          >
-            ↑
+          <button onClick={() => send()} disabled={loading || !input.trim()}
+            style={{ background: loading || !input.trim() ? SLATE : `linear-gradient(135deg, ${AMBER}, ${GOLDD})`, color: loading || !input.trim() ? TEXTM : TEXT, border: 'none', borderRadius: PILL, padding: '7px 18px', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', ...T, fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', transition: 'all .15s' }}>
+            SEND
           </button>
         </div>
-        <div style={{ ...MONO, fontSize: 9, color: TEXTM, letterSpacing: '0.08em', marginTop: 8, textAlign: 'center' }}>
-          ENTER to send · SHIFT+ENTER for new line
+        <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
+          SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
-        <SwanyBotEnhanced userId={null} conversationId={null} onContextReady={() => {}} />
+        <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
+        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
+        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
+        <div style={{ marginTop: 10 }}>
+          <ShareToSocial />
+        </div>
+        <ContentRecommendations />
+        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
       </div>
       <VoiceAISettings />
     </div>

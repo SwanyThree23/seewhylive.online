@@ -9,6 +9,63 @@ import { useRemoteSpeakingMap } from '@/hooks/useRemoteSpeakingMap';
 
 const GOLD = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
+// Reusable octagonal video cell used throughout the broadcast grid
+function OctCell({ videoRef, stream, label, sublabel, gold, paused, error, connecting, live, role }) {
+  const localRef = useRef(null);
+  const ref = videoRef || localRef;
+  const borderColor = gold ? 'rgba(212,175,55,0.7)' : 'rgba(201,168,76,0.3)';
+
+  useEffect(() => {
+    if (ref.current && stream) ref.current.srcObject = stream;
+  }, [stream]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      className="relative aspect-square"
+    >
+      {/* Gold OCT border ring — pulses when speaking/gold */}
+      <div className="absolute inset-0" style={{ clipPath: OCT, background: borderColor }} />
+
+      <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
+        style={{ clipPath: OCT, background: '#0A0A12' }}>
+        {error ? (
+          <p className="text-[11px] text-center px-2" style={{ color: '#ef4444' }}>{error}</p>
+        ) : connecting ? (
+          <div className="text-center">
+            <div className="w-8 h-8 rounded-full animate-pulse mx-auto mb-1" style={{ background: 'rgba(212,175,55,0.2)' }} />
+            <p className="text-[11px]" style={{ color: GOLD }}>Connecting…</p>
+          </div>
+        ) : stream ? (
+          <video ref={ref} autoPlay playsInline muted={!!videoRef} className="w-full h-full object-cover" />
+        ) : (
+          <div className="text-center px-2">
+            <div className="w-10 h-10 rounded-full mx-auto mb-1 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
+            {label && <p className="text-[11px] font-bold truncate" style={{ color: GOLD }}>{label}</p>}
+            {sublabel && <p className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>{sublabel}</p>}
+          </div>
+        )}
+
+        {/* Overlay labels */}
+        {stream && (
+          <div className="absolute bottom-0 left-0 right-0 px-1 py-0.5"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
+            <div className="flex items-center gap-1">
+              {label && <span className="text-[10px] font-black truncate flex-1" style={{ color: GOLD, ...T }}>{label}</span>}
+              {role && <span className="text-[8px] px-1 rounded font-bold" style={{ background: 'rgba(201,168,76,0.2)', color: '#C9A84C' }}>{role}</span>}
+              {live && <span className="text-[8px] px-1 rounded font-bold animate-pulse" style={{ background: 'rgba(109,191,126,0.2)', color: '#6DBF7E' }}>LIVE</span>}
+              {paused && <VideoOff className="w-2.5 h-2.5 text-white/40" />}
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 /**
  * Full ZEGOCLOUD WebRTC integration:
@@ -40,6 +97,8 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
   const [participants, setParticipants] = useState([]);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(null);
+  const [screenSharing, setScreenSharing] = useState(false);
+  const screenTrackRef = useRef(null);
   const mediaInitialized = useRef(false);
 
   // Fetch ZEGO config & room state
@@ -66,10 +125,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
 
   // Join signaling mutation
   const joinSignalingMut = useMutation({
-    mutationFn: () => base44.functions.invoke('zegoSignaling', {
-      action: 'join',
-      roomId,
+    mutationFn: () => base44.entities.Participant.create({
+      room_id: roomId,
       role: isHost ? 'host' : 'viewer',
+      joined_at: new Date().toISOString(),
     }),
     onSuccess: () => {
       toast.success('Connected to room');
@@ -158,6 +217,39 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     }
   };
 
+  // Screen share toggle
+  const handleScreenShare = async () => {
+    if (!localStreamRef.current) return;
+    if (screenSharing) {
+      screenTrackRef.current?.stop();
+      screenTrackRef.current = null;
+      const camTrack = await navigator.mediaDevices.getUserMedia({ video: true }).then(s => s.getVideoTracks()[0]).catch(() => null);
+      if (camTrack && localStreamRef.current) {
+        const old = localStreamRef.current.getVideoTracks()[0];
+        if (old) localStreamRef.current.removeTrack(old);
+        localStreamRef.current.addTrack(camTrack);
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
+      }
+      setScreenSharing(false);
+      toast('Camera restored');
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        screenTrackRef.current = screenTrack;
+        const old = localStreamRef.current.getVideoTracks()[0];
+        if (old) localStreamRef.current.removeTrack(old);
+        localStreamRef.current.addTrack(screenTrack);
+        if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
+        screenTrack.onended = () => { handleScreenShare(); };
+        setScreenSharing(true);
+        toast.success('Screen sharing started');
+      } catch {
+        toast.error('Screen share cancelled');
+      }
+    }
+  };
+
   // End stream (host only)
   const endStreamMut = useMutation({
     mutationFn: () => {
@@ -170,8 +262,15 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries(['zego-active']);
+      qc.invalidateQueries({ queryKey: ['zego-active'] });
       toast.success('Stream ended');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'room_ended',
+          title: 'Ended live stream',
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -190,6 +289,10 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
     if (count <= 4) return 'grid grid-cols-2 gap-2';
     return 'grid grid-cols-3 gap-2';
   };
+
+  const OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
+  const count = 1 + participants.length;
+  const cellSize = count <= 2 ? 180 : count <= 6 ? 140 : 110;
 
   return (
     <div className="rounded-2xl overflow-hidden flex flex-col h-full" style={{ background: '#0F0F1A', border: '1px solid rgba(201,168,76,0.15)' }}>
@@ -228,55 +331,33 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
           )}
         </motion.div>
 
-        {/* Peer Videos — real WebRTC streams */}
+        {/* Peer Videos — real WebRTC streams, octagonal */}
         {participants.map(p => {
-          // Find peerId whose announceJoin userId matches this participant's user_id
           const peerId = Array.from(peerUserIds.entries()).find(([, uid]) => uid === p.user_id)?.[0];
-          const stream = peerId ? remoteStreams.get(peerId) : undefined;
+          const peerStream = peerId ? remoteStreams.get(peerId) : undefined;
           const connState = peerId ? peerStates.get(peerId) : undefined;
+          const initials = (p.name || 'P').slice(0, 2).toUpperCase();
+          const isConnected = connState === 'connected' && !!peerStream;
           return (
-            <motion.div
+            <OctCell
               key={p.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative rounded-xl overflow-hidden"
-              style={{ background: '#000', border: '1px solid rgba(212,175,55,0.2)' }}>
-              {stream ? (
-                <video
-                  autoPlay playsInline
-                  ref={el => { if (el && el.srcObject !== stream) el.srcObject = stream; }}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: '#0A0A0F' }}>
-                  <div className="text-center">
-                    <div className="w-12 h-12 rounded-full mx-auto mb-2 animate-pulse" style={{ background: 'rgba(212,175,55,0.15)' }} />
-                    <p className="text-[10px]" style={{ color: GOLD }}>{p.name}</p>
-                    <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? 'Connection failed' : 'Waiting for stream…'}
-                    </p>
-                  </div>
-                </div>
-              )}
-              <div className="absolute top-2 left-2 flex items-center gap-1">
-                <span className="text-[11px] font-black uppercase px-2 py-1 rounded" style={{ background: 'rgba(0,0,0,0.6)', color: '#C9A84C' }}>
-                  {p.role}
-                </span>
-                {connState === 'connected' && stream && (
-                  <span className="text-[7px] px-1.5 py-0.5 rounded font-bold" style={{ background: 'rgba(109,191,126,0.2)', color: '#6DBF7E' }}>LIVE</span>
-                )}
-              </div>
-            </motion.div>
+              stream={peerStream}
+              label={p.name}
+              sublabel={connState === 'connecting' ? 'Connecting…' : connState === 'failed' ? '⚠ Failed' : peerStream ? undefined : 'Waiting…'}
+              live={connState === 'connected' && !!peerStream}
+              role={p.role}
+            />
           );
         })}
       </div>
 
       {/* Controls Bar */}
       <div className="flex items-center justify-between gap-2 p-3" style={{ background: 'rgba(0,0,0,0.5)', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="flex items-center gap-1 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <div className="flex items-center gap-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
           <Users className="w-3 h-3" />
-          <span>{participants.length + 1} in room</span>
+          <span id="zego-participant-count" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, color: GOLD, fontSize: 12 }}>
+            {participants.length + 1} LIVE
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -289,7 +370,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
             style={{
               background: localMuted ? 'rgba(255,68,68,0.2)' : 'rgba(109,191,126,0.15)',
               border: localMuted ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(109,191,126,0.3)',
-              color: localMuted ? '#C0392B' : '#6DBF7E',
+              color: localMuted ? '#FF4444' : '#6DBF7E',
             }}>
             {localMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </motion.button>
@@ -303,16 +384,23 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
             style={{
               background: localVideoPaused ? 'rgba(255,68,68,0.2)' : 'rgba(201,168,76,0.15)',
               border: localVideoPaused ? '1px solid rgba(255,68,68,0.4)' : '1px solid rgba(201,168,76,0.3)',
-              color: localVideoPaused ? '#C0392B' : '#C9A84C',
+              color: localVideoPaused ? '#FF4444' : '#C9A84C',
             }}>
             {localVideoPaused ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
           </motion.button>
 
-          {/* Screen share (stub) */}
+          {/* Screen share */}
           <motion.button
             whileTap={{ scale: 0.92 }}
-            className="flex items-center justify-center w-9 h-9 rounded-lg"
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }}>
+            onClick={handleScreenShare}
+            disabled={!localStreamRef.current}
+            title={screenSharing ? 'Stop screen share' : 'Share screen'}
+            className="flex items-center justify-center w-9 h-9 rounded-lg transition-all"
+            style={{
+              background: screenSharing ? 'rgba(212,133,74,0.2)' : 'rgba(255,255,255,0.05)',
+              border: screenSharing ? '1px solid rgba(212,133,74,0.4)' : '1px solid rgba(255,255,255,0.1)',
+              color: screenSharing ? '#D4854A' : 'rgba(255,255,255,0.4)',
+            }}>
             <Monitor className="w-4 h-4" />
           </motion.button>
 
@@ -331,7 +419,7 @@ export default function ZEGOLiveRoom({ roomId, userId, userName, isHost, onStrea
               onClick={handleEndStream}
               disabled={endStreamMut.isPending || !zegoStream}
               className="flex items-center justify-center w-9 h-9 rounded-lg"
-              style={{ background: 'rgba(255,68,68,0.2)', border: '1px solid rgba(255,68,68,0.4)', color: '#C0392B' }}>
+              style={{ background: 'rgba(255,68,68,0.2)', border: '1px solid rgba(255,68,68,0.4)', color: '#FF4444' }}>
               <PhoneOff className="w-4 h-4" />
             </motion.button>
           )}

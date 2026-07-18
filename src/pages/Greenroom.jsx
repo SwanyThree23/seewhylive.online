@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DevicePreview from '../components/greenroom/DevicePreview';
+import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import SelectSheet from '../components/shared/SelectSheet';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
@@ -171,8 +172,8 @@ const ROLES = ['audience', 'speaker', 'guest', 'co-host'];
 function PermissionPill({ label, status }) {
   const cfg = {
     granted: { color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', icon: '✓' },
-    denied:  { color: '#C0392B', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
-    prompt:  { color: '#FFD700', border: 'rgba(255,215,0,0.3)',  icon: '…' },
+    denied:  { color: '#FF4444', border: 'rgba(255,68,68,0.3)',  icon: '✗' },
+    prompt:  { color: '#D4AF37', border: 'rgba(212,175,55,0.3)',  icon: '…' },
   }[status] || { color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)', icon: '?' };
 
   return (
@@ -186,6 +187,7 @@ function PermissionPill({ label, status }) {
 function WaitingRoom({ waitlistEntry, onCancel }) {
   const [elapsed, setElapsed] = useState(0);
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const iv = setInterval(() => setElapsed(e => e + 1), 1000);
@@ -205,7 +207,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
       const roomId = new URLSearchParams(window.location.search).get('room_id');
-      window.location.href = `/LiveRoom?id=${roomId}`;
+      navigate(`/LiveRoom?id=${roomId}`);
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
@@ -228,7 +230,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
         <X className="w-12 h-12 text-[#C0392B]" />
         <div>
-          <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
+          <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
           <p className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>The host isn't admitting new guests right now.</p>
           {entry?.deny_reason && <p className="text-[11px] mt-1 italic" style={{ color: 'rgba(255,255,255,0.3)' }}>"{entry.deny_reason}"</p>}
         </div>
@@ -306,6 +308,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
 }
 
 export default function GreenroomPage() {
+  const navigate = useNavigate();
   const params = new URLSearchParams(window.location.search);
   const roomId = params.get('room_id');
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
@@ -459,7 +462,7 @@ export default function GreenroomPage() {
     },
     onSuccess: (result) => {
       if (result.action === 'navigate') {
-        window.location.href = result.path;
+        navigate(result.path);
       } else if (result.action === 'wait') {
         setWaitlistEntry(result.wlEntry);
       }
@@ -773,6 +776,18 @@ export default function GreenroomPage() {
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+              <ZEGOStreamHealthCard roomId={room?.id || null} />
+              {isHost && <StreamGoals isHost={true} />}
+              <EnhancedAudioMixer roomId={room?.id || null} isHost={isHost} />
+              <PanelMusicPlayer roomId={room?.id || null} isHost={isHost} />
+              <PrivatePanel roomId={room?.id || null} currentUser={user} isHost={isHost} />
+              {isHost && <GreenroomWaitlistPanel roomId={room?.id || null} currentUser={user} onAdmit={() => {}} />}
+              <OnlineUsersGrid compact maxVisible={10} />
+              <ContentRecommendations />
+              <CollaborationMatcher />
+            </div>
           </div>
         </div>
       </div>

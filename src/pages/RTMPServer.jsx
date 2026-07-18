@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+
+function cryptoHex(len = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(Math.ceil(len / 2)));
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, len);
+}
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -6,23 +11,24 @@ import { ArrowLeft, Server, Copy, RefreshCw, Eye, EyeOff, Radio, Tv2, Wifi, Zap,
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
-
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
+import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import WebhookHooks from '../components/live/WebhookHooks';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import NotificationBell from '../components/shared/NotificationBell';
-import RewardShop from '../components/loyalty/RewardShop';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import ViewerCount from '../components/live/ViewerCount';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
   { name: 'Streamlabs', logo: '🎮', url: 'https://streamlabs.com', port: 1935, protocol: 'RTMP' },
@@ -68,10 +74,7 @@ export default function RTMPServer() {
   const [regenerating, setRegenerating] = useState(false);
   const [streamKey, setStreamKey] = useState(() => {
     const stored = localStorage.getItem(`rtmp_key_${user?.id}`);
-    if (stored) return stored;
-    const arr = new Uint8Array(18);
-    crypto.getRandomValues(arr);
-    return `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
+    return stored || `sk_live_${cryptoHex(24)}`;
   });
   const [activeTab, setActiveTab] = useState('setup');
   const [evmuxKey, setEvmuxKey] = useState(() => {
@@ -86,9 +89,7 @@ export default function RTMPServer() {
   const regenerateKey = () => {
     setRegenerating(true);
     setTimeout(() => {
-      const arr = new Uint8Array(18);
-      crypto.getRandomValues(arr);
-      const newKey = `sk_live_${Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('')}`;
+      const newKey = `sk_live_${cryptoHex(24)}`;
       setStreamKey(newKey);
       localStorage.setItem(`rtmp_key_${user?.id}`, newKey);
       setRegenerating(false);
@@ -97,7 +98,7 @@ export default function RTMPServer() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d0618] to-[#0d1020] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#080B18] to-[#0d1020] text-white">
       {/* Header */}
       <div className="border-b border-white/10 bg-black/40 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
@@ -107,7 +108,7 @@ export default function RTMPServer() {
             </button>
           </Link>
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-orange-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#D4854A] flex items-center justify-center">
               <Server className="w-4 h-4 text-black" />
             </div>
             <div>
@@ -187,16 +188,16 @@ export default function RTMPServer() {
               <div className="space-y-4">
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Wifi className="w-4 h-4 text-blue-400" />
+                    <Wifi className="w-4 h-4 text-[#D4AF37]" />
                     <h2 className="font-bold text-sm">SRT Ingest</h2>
-                    <span style={{ background: 'rgba(30,58,138,0.5)', color: '#93c5fd', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
+                    <span style={{ background: 'rgba(128,0,32,0.2)', color: '#C9A84C', fontSize: 11, fontWeight: 900, padding: '2px 6px', borderRadius: 99, fontFamily: 'Barlow Condensed, sans-serif' }}>LOW LATENCY</span>
                   </div>
                   <CopyField label="SRT URL" value={SRT_SERVER} />
                   <CopyField label="Stream ID (passphrase)" value={streamKey} secret />
                 </div>
                 <div className="bg-white/5 border border-white/10 rounded-xl p-5 space-y-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Tv2 className="w-4 h-4 text-[#7B5DA6]" />
+                    <Tv2 className="w-4 h-4 text-[#D4854A]" />
                     <h2 className="font-bold text-sm">HLS Playback</h2>
                   </div>
                   <CopyField label="HLS URL" value={PLAYBACK_URL} />
@@ -359,7 +360,7 @@ export default function RTMPServer() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Status', value: 'Idle', color: 'text-yellow-400', icon: '⏸' },
+                { label: 'Status', value: 'Idle', color: 'text-[#D4AF37]', icon: '⏸' },
                 { label: 'Uptime', value: '—', color: 'text-white', icon: '⏱' },
                 { label: 'Bitrate', value: '—', color: 'text-white', icon: '📡' },
                 { label: 'Viewers', value: '0', color: 'text-white', icon: '👁' },
@@ -417,6 +418,11 @@ export default function RTMPServer() {
                 </motion.a>
               ))}
             </div>
+            <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <ZEGOStreamHealthCard roomId={activeRoomId} />
+              <ZEGOConfigPanel user={user} />
+            </div>
+
             {/* OBS step-by-step */}
             <div className="bg-white/5 border border-white/10 rounded-xl p-5">
               <h2 className="font-bold text-sm mb-4 flex items-center gap-2">
@@ -440,6 +446,19 @@ export default function RTMPServer() {
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+          <StreamHealthDashboard isLive={false} />
+          <CoStreamPanel roomId={activeRoomId} />
+          <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
+          <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
+          <GuestRTMPPanel participantId={null} userId={user?.id} />
+          {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
+          {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <OnlineUsersGrid compact maxVisible={10} />
+          <ContentRecommendations />
+        </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="rtmp" viewerCount={activeRoom?.viewer_count || 0} />
       <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />

@@ -1,14 +1,15 @@
 // server/socket/battleHandlers.js
 // INTEGRATION: call registerBattleHandlers(io, socket) from inside your existing
 // io.on('connection', socket => { ... }) block in index.js / your socket setup file.
+// CORRECTED: uses defenderId/challenger_points/defender_points/duration_minutes,
+// matching the real pre-existing pk_battles schema.
 
 const battleService = require('../services/battleService');
 const loyaltyService = require('../services/loyaltyService');
 
-// Reuse your existing tick constants if you have them defined elsewhere —
-// import them instead of redefining if e.g. HEARTBEAT_MS already exists globally.
 const HEARTBEAT_MS = 5000;
 const MAX_DRIFT_MS = 300;
+const BATTLE_WIN_POINTS = 100; // adjust to taste
 
 const activeTimers = new Map(); // battleId -> interval handle
 
@@ -21,11 +22,13 @@ function registerBattleHandlers(io, socket) {
     try {
       const battle = await battleService.createChallenge({
         challengerId: socket.data.userId,
-        opponentId: payload.opponentId,
-        mode: payload.mode,
-        durationSeconds: payload.durationSeconds,
+        defenderId: payload.defenderId,
+        challengerName: payload.challengerName,
+        defenderName: payload.defenderName,
+        roomId: payload.roomId,
+        durationMinutes: payload.durationMinutes,
       });
-      io.to(`user:${payload.opponentId}`).emit('battle:challenge', battle);
+      io.to(`user:${payload.defenderId}`).emit('battle:challenge', battle);
       if (cb) cb({ ok: true, battle });
     } catch (err) {
       if (cb) cb({ ok: false, error: err.message });
@@ -34,11 +37,7 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:accept', async (payload, cb) => {
     try {
-      const battle = await battleService.acceptChallenge(
-        payload.battleId,
-        payload.challengerRoomId,
-        payload.opponentRoomId
-      );
+      const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId);
       socket.join(roomName(payload.battleId));
       io.to(`user:${battle.challenger_id}`).emit('battle:accept', battle);
       if (cb) cb({ ok: true, battle });
@@ -69,13 +68,13 @@ function registerBattleHandlers(io, socket) {
       const battle = await battleService.castVote({
         battleId: payload.battleId,
         voterId: socket.data.userId,
-        side: payload.side,
+        side: payload.side, // 'challenger' | 'defender'
         giftValueCents: payload.giftValueCents,
       });
       io.to(roomName(payload.battleId)).emit('battle:score_update', {
         battleId: battle.id,
-        challengerScore: battle.challenger_score,
-        opponentScore: battle.opponent_score,
+        challengerPoints: battle.challenger_points,
+        defenderPoints: battle.defender_points,
       });
       if (cb) cb({ ok: true, battle });
     } catch (err) {
@@ -86,7 +85,7 @@ function registerBattleHandlers(io, socket) {
 
 function startCountdown(io, battle) {
   const room = roomName(battle.id);
-  const endTime = Date.now() + battle.duration_seconds * 1000;
+  const endTime = Date.now() + battle.duration_minutes * 60 * 1000;
 
   const interval = setInterval(async () => {
     const remainingMs = endTime - Date.now();
@@ -119,6 +118,25 @@ function startCountdown(io, battle) {
   }, HEARTBEAT_MS);
 
   activeTimers.set(battle.id, interval);
+}
+
+async function endBattleAndBroadcast(io, room, battleId) {
+  try {
+    const ended = await battleService.endBattle(battleId);
+    io.to(room).emit('battle:end', ended);
+
+    // Rewards & Leaderboard integration: award points to the winner.
+    if (ended.winner_id) {
+      await loyaltyService.awardPoints({
+        userId: ended.winner_id,
+        points: BATTLE_WIN_POINTS,
+        source: 'pk_battle_win',
+        sourceId: ended.id,
+      });
+    }
+  } catch (err) {
+    io.to(room).emit('battle:error', { message: err.message });
+  }
 }
 
 module.exports = { registerBattleHandlers };

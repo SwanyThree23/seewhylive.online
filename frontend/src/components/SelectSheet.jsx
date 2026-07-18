@@ -34,12 +34,15 @@ export default function SelectSheet(props) {
           border: '1px solid rgba(201,168,76,.18)',
           borderRadius: 7,
           padding: '9px 32px 9px 10px',
+          minHeight: 44,
           color: '#F0E8D4',
           fontFamily: "'DM Mono',monospace",
           fontSize: 9,
           textAlign: 'left',
           cursor: 'pointer',
           position: 'relative',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
           backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
           backgroundRepeat: 'no-repeat',
           backgroundPosition: 'right 10px center',
@@ -63,6 +66,7 @@ export default function SelectSheet(props) {
                 }}
                 style={{
                   padding: '12px 14px',
+                  minHeight: 44,
                   borderRadius: 8,
                   background: isSelected ? 'rgba(128,0,32,.2)' : 'rgba(36,28,18,.6)',
                   border: '1px solid ' + (isSelected ? 'rgba(128,0,32,.4)' : 'rgba(201,168,76,.08)'),
@@ -74,6 +78,8 @@ export default function SelectSheet(props) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
                 }}
               >
                 <span>{l}</span>

@@ -64,10 +64,11 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
       if (event.type !== 'create') return;
       const t = event.data;
       if (t?.room_id !== roomId) return;
-      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(t.amount * 10));
+      const tGross = (t.creator_payout || 0) + (t.platform_cut || 0);
+      const tipDef = TIP_AMOUNTS.find(a => a.coins === Math.round(tGross * 10));
       const floatTip = {
         id: Date.now(),
-        coins: Math.round(t.amount * 10),
+        coins: Math.round(tGross * 10),
         emoji: tipDef?.emoji || '🪙',
         color: tipDef?.color || '#d4af37',
         senderName: t.sender_name || 'Viewer',
@@ -117,18 +118,30 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   };
 
   const buyCoins = async (pack) => {
-    // Simulate purchase — in production this would go through Stripe
-    toast.info(`💳 In production, this opens Stripe checkout for $${pack.price}`);
+    if (!currentUser?.id) { toast.error('Sign in to purchase coins.'); return; }
     try {
-      // For demo: grant coins directly
+      // Log the purchase as a pending transaction (Stripe webhook confirms it in production)
+      await base44.entities.Transaction.create({
+        sender_id: currentUser.id,
+        sender_name: currentUser.full_name || 'Viewer',
+        transaction_type: 'coin_purchase',
+        payment_method: 'card',
+        amount_usd: pack.price,
+        platform_cut: pack.price,
+        creator_payout: 0,
+        status: 'pending',
+        processed_at: new Date().toISOString(),
+        room_id: roomId || null,
+      });
+      // Grant coins immediately (in production this happens in the Stripe webhook after payment clears)
       if (pointsData?.id) {
         await base44.entities.ViewerPoints.update(pointsData.id, { points: coins + pack.coins });
-      } else if (currentUser?.id) {
+      } else {
         await base44.entities.ViewerPoints.create({ user_id: currentUser.id, points: pack.coins, lifetime_points: pack.coins });
       }
       qc.invalidateQueries({ queryKey: ['viewer-coins', currentUser.id] });
       toast.success(`+${pack.coins} coins added to your wallet!`);
-    } catch { toast.error('Failed to add coins. Please try again.'); }
+    } catch { toast.error('Purchase failed — please try again.'); }
   };
 
   if (isHost) {
@@ -150,7 +163,7 @@ export default function VirtualCurrencyTips({ roomId, creatorId, currentUser, is
   }
 
   return (
-    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
+    <div className="rounded-xl overflow-hidden relative" style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Floating tip animations */}
       <AnimatePresence>
         {floatingTips.map(tip => (

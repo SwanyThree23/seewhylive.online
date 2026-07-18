@@ -34,7 +34,6 @@ export function usePresenceHeartbeat(roomId) {
           }
         }
       } catch (error) {
-        console.warn('Presence heartbeat failed:', error);
       }
     };
 
@@ -52,7 +51,6 @@ export function usePresenceHeartbeat(roomId) {
           }
         }
       } catch (error) {
-        console.warn('Mark offline failed:', error);
       }
     };
 

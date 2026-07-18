@@ -20,14 +20,15 @@ export default function TipAlert({ roomId, recipientId }) {
     const unsubscribe = base44.entities.Transaction.subscribe((event) => {
       if (
         event.type === 'create' &&
-        event.data.type === 'tip' &&
+        (event.data.transaction_type === 'direct_support' || event.data.type === 'tip') &&
         event.data.room_id === roomId &&
-        event.data.to_user_id === recipientId
+        (event.data.recipient_id === recipientId || event.data.to_user_id === recipientId)
       ) {
+        const alertGross = (event.data.creator_payout || 0) + (event.data.platform_cut || 0);
         const newAlert = {
           id: event.data.id,
-          amount: event.data.amount,
-          from: event.data.from_user_id,
+          amount: alertGross,
+          from: event.data.sender_id || event.data.from_user_id,
           message: event.data.message,
           timestamp: Date.now(),
         };
@@ -35,7 +36,7 @@ export default function TipAlert({ roomId, recipientId }) {
         setAlerts((prev) => [...prev, newAlert]);
 
         // Trigger confetti for large tips
-        if (event.data.amount >= 25) {
+        if (alertGross >= 25) {
           confetti({
             particleCount: 100,
             spread: 70,
@@ -65,7 +66,7 @@ export default function TipAlert({ roomId, recipientId }) {
               initial={{ opacity: 0, x: 100, scale: 0.8 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.8 }}
-              className="bg-gradient-to-r from-[#7B5DA6] to-[#C0392B] text-white rounded-lg shadow-2xl p-4 min-w-[300px]"
+              className="bg-gradient-to-r from-[#800020] to-[#C0392B] text-white rounded-lg shadow-2xl p-4 min-w-[300px]"
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -74,9 +75,9 @@ export default function TipAlert({ roomId, recipientId }) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl font-bold">${alert.amount}</span>
-                    <span className="text-[#7B5DA6]">Tip Received!</span>
+                    <span className="text-[#C9A84C]">Tip Received!</span>
                   </div>
-                  <p className="text-sm text-[#7B5DA6]">
+                  <p className="text-sm text-[#C9A84C]">
                     From User {alert.from.slice(0, 8)}
                   </p>
                   {alert.message && (

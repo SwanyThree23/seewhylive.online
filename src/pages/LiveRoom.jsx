@@ -125,6 +125,7 @@ import PointsNotification from '../components/live/PointsNotification';
 import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
 import ChatOverlay from '../components/live/ChatOverlay';
 import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PKBattleModal from '../components/live/PKBattleModal';
 import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
@@ -994,7 +995,7 @@ export default function LiveRoom() {
               { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
               { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
               { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)', action: () => setPayOpen(true) },
-              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  },
+              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  , action: () => setBattleOpen(true) },
               { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
             ].map(s => (
               <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
@@ -1201,6 +1202,9 @@ export default function LiveRoom() {
             creatorName={hostName}
           />
         )}
+          {battleOpen && (
+            <PKBattleModal isOpen={battleOpen} onClose={() => setBattleOpen(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />
+          )}
       </AnimatePresence>
 
       {(roomId || party?.id) && (
@@ -1325,7 +1329,7 @@ export default function LiveRoom() {
       {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
       {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
-      <MerchWidget />
+      <MerchStrip roomId={roomId} currentUser={user} hostId={party?.host_id || user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

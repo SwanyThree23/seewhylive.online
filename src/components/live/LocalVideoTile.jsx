@@ -27,9 +27,9 @@ export default function LocalVideoTile({
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
+    const el = videoRef.current;
+    if (!el) return;
+    el.srcObject = stream || null;
   }, [stream]);
 
   // Track PiP state to keep button label in sync

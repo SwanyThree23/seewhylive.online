@@ -9,7 +9,7 @@ const CATEGORIES = ['gaming', 'music', 'education', 'talk', 'fitness', 'cooking'
 const inputStyle = {
   width: '100%',
   padding: '10px 14px',
-  background: 'rgba(17,8,34,0.85)',
+  background: 'rgba(8,11,24,0.85)',
   border: '1px solid rgba(255,255,255,0.1)',
   borderRadius: 8,
   color: '#fff',
@@ -39,9 +39,17 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       });
     },
     onSuccess: () => {
-      qc.invalidateQueries(['creatorProfile', user?.id]);
+      qc.invalidateQueries({ queryKey: ['creatorProfile', user?.id] });
       toast.success('Creator profile created! Welcome to SeeWhy LIVE 🎉');
       onClose();
+      if (user?.id) {
+        base44.entities.Activity.create({
+          user_id: user.id,
+          type: 'room_created',
+          title: 'Creator profile set up',
+          description: category,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -53,7 +61,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(13,6,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <Sparkles style={{ width: 20, height: 20, color: '#C9A84C' }} />
@@ -94,7 +102,7 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
-              style={{ width: '100%', padding: '10px 14px', background: 'rgba(17,8,34,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box' }}
             >
               {CATEGORIES.map(c => (
                 <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>
@@ -102,9 +110,9 @@ export default function CreatorProfileSetup({ user, isOpen, onClose }) {
             </select>
           </div>
 
-          <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8, padding: 12, fontSize: 14, color: '#b45309' }}>
+          <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: 12, fontSize: 14, color: '#C9A84C' }}>
             <p style={{ fontWeight: 600, marginBottom: 4 }}>What you unlock:</p>
-            <ul style={{ fontSize: 12, color: '#d97706', paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <ul style={{ fontSize: 12, color: '#D4854A', paddingLeft: 16, margin: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <li>Public creator profile page</li>
               <li>90/10 revenue split on tips &amp; subscriptions</li>
               <li>VOD library, stream analytics, loyalty rewards</li>

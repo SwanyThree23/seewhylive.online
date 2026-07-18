@@ -54,10 +54,13 @@ export default function InteractivePollWidget({ roomId, isHost }) {
   };
 
   const handleVote = (pollId, optionIndex) => {
-    setVotes(prev => ({
-      ...prev,
-      [pollId]: { ...prev[pollId], voted: optionIndex }
-    }));
+    setVotes(prev => {
+      var current = prev[pollId] || {};
+      if (current.voted !== undefined) return prev;
+      var counts = { ...(current.counts || {}) };
+      counts[optionIndex] = (counts[optionIndex] || 0) + 1;
+      return { ...prev, [pollId]: { ...current, voted: optionIndex, counts } };
+    });
   };
 
   const getTotalVotes = (pollId) => {
@@ -68,7 +71,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
     return isHost ? (
       <button
         onClick={() => setShowCreate(true)}
-        style={{ width:'100%', background:'#2563eb', color:'#fff', border:'none', borderRadius:8, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif', fontSize:13, fontWeight:600 }}
+        style={{ width:'100%', background:'#800020', color:'#fff', border:'none', borderRadius:8, height:36, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:'Barlow Condensed, sans-serif', fontSize:13, fontWeight:600 }}
       >
         <BarChart3 className="w-3 h-3" />
         Create Poll
@@ -80,11 +83,11 @@ export default function InteractivePollWidget({ roomId, isHost }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="bg-[#1a0a2e]/50 border border-blue-600/20 rounded-lg p-3 space-y-3"
+      className="bg-[#0F1428]/50 border border-[#D4AF37]/30/20 rounded-lg p-3 space-y-3"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-blue-400" />
+          <BarChart3 className="w-4 h-4 text-[#D4AF37]" />
           <h3 className="text-sm font-bold text-white">Live Poll</h3>
         </div>
         {isHost && (
@@ -149,7 +152,7 @@ export default function InteractivePollWidget({ roomId, isHost }) {
               </button>
               <button
                 onClick={handleCreatePoll}
-                style={{ flex:1, background:'#2563eb', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:11, fontWeight:600 }}
+                style={{ flex:1, background:'#800020', color:'#fff', border:'none', borderRadius:6, height:32, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:11, fontWeight:600 }}
               >
                 Launch
               </button>
@@ -169,19 +172,22 @@ export default function InteractivePollWidget({ roomId, isHost }) {
 
           <div className="space-y-1.5">
             {poll.options.map((option, optIdx) => {
-              const isVoted = votes[poll.id]?.voted === optIdx;
-              const fakeVotes = Math.floor(Math.random() * 50) + 5;
-              const percentage = (fakeVotes / 100) * 100;
+              const pollVotes = votes[poll.id];
+              const isVoted = pollVotes?.voted === optIdx;
+              const counts = pollVotes?.counts || {};
+              const totalVotes = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+              const optionVotes = counts[optIdx] || 0;
+              const percentage = (optionVotes / totalVotes) * 100;
 
               return (
                 <button
                   key={optIdx}
                   onClick={() => handleVote(poll.id, optIdx)}
-                  className={`w-full text-left transition-all ${isVoted ? 'ring-1 ring-blue-400' : ''}`}
+                  className={`w-full text-left transition-all ${isVoted ? 'ring-1 ring-[#D4AF37]' : ''}`}
                 >
                   <div className="flex items-center justify-between text-[11px] mb-0.5">
                     <div className="flex items-center gap-1">
-                      {isVoted && <CheckCircle2 className="w-3 h-3 text-blue-400" />}
+                      {isVoted && <CheckCircle2 className="w-3 h-3 text-[#D4AF37]" />}
                       <span className="text-white">{option}</span>
                     </div>
                     <span className="text-white/50">{Math.round(percentage)}%</span>

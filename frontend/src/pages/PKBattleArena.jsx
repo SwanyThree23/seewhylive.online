@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import BattleTimer from '../components/battle/BattleTimer';
 import BattleScoreBar from '../components/battle/BattleScoreBar';
 import BattleVoteButton from '../components/battle/BattleVoteButton';
-import StateVsStateBanner from '../components/battle/StateVsStateBanner';
 import battleService from '../services/battleService';
 
 // Base44 ruleset: function expressions only, var only, no optional chaining/??.
+// CORRECTED to match the real pk_battles schema: defender_id (not opponent_id),
+// challenger_points/defender_points (not challenger_score/opponent_score),
+// single room_id (not separate challenger_room_id/opponent_room_id), no mode column
+// (StateVsStateBanner removed until/unless a mode column is added).
+//
 // INTEGRATION: swap the two placeholder divs below for your real mediasoup
-// video component (the one used in LiveRoom.jsx) — pass challengerRoomId /
-// opponentRoomId as props to it instead of rendering placeholders.
+// video component (the one used in LiveRoom.jsx) — pass battle.room_id as a prop.
 var PKBattleArena = function (props) {
   var battleId = props.battleId;
   var socket = props.socket; // pass your existing connected socket.io client in
@@ -24,7 +27,7 @@ var PKBattleArena = function (props) {
   useEffect(function () {
     battleService.getBattle(battleId).then(function (b) {
       setBattle(b);
-      if (b && b.duration_seconds) setRemainingSeconds(b.duration_seconds);
+      if (b && b.duration_minutes) setRemainingSeconds(b.duration_minutes * 60);
     });
 
     if (!socket) return;
@@ -34,8 +37,8 @@ var PKBattleArena = function (props) {
       setBattle(function (prev) {
         if (!prev) return prev;
         var next = Object.assign({}, prev);
-        next.challenger_score = payload.challengerScore;
-        next.opponent_score = payload.opponentScore;
+        next.challenger_points = payload.challengerPoints;
+        next.defender_points = payload.defenderPoints;
         return next;
       });
     };
@@ -102,33 +105,24 @@ var PKBattleArena = function (props) {
 
   return (
     <div style={containerStyle}>
-      {battle.mode === 'state_vs_state' ? (
-        <StateVsStateBanner
-          challengerTeamName="Home Team"
-          opponentTeamName="Away Team"
-          challengerCreators={[]}
-          opponentCreators={[]}
-        />
-      ) : null}
-
       <BattleTimer remainingSeconds={remainingSeconds} />
 
       <div style={splitStyle}>
         <div style={halfStyle}>
-          {/* TODO: replace with real mediasoup video component, pass battle.challenger_room_id */}
-          Challenger stream
+          {/* TODO: replace with real mediasoup video component, pass battle.room_id, filter to challenger's producer */}
+          {battle.challenger_name || 'Challenger'} stream
         </div>
         <div style={halfStyle}>
-          {/* TODO: replace with real mediasoup video component, pass battle.opponent_room_id */}
-          Opponent stream
+          {/* TODO: replace with real mediasoup video component, pass battle.room_id, filter to defender's producer */}
+          {battle.defender_name || 'Defender'} stream
         </div>
       </div>
 
-      <BattleScoreBar challengerScore={battle.challenger_score} opponentScore={battle.opponent_score} />
+      <BattleScoreBar challengerScore={battle.challenger_points} opponentScore={battle.defender_points} />
 
       <div style={voteRowStyle}>
-        <BattleVoteButton battleId={battleId} side="challenger" label="Gift Challenger" />
-        <BattleVoteButton battleId={battleId} side="opponent" label="Gift Opponent" />
+        <BattleVoteButton battleId={battleId} side="challenger" label={'Gift ' + (battle.challenger_name || 'Challenger')} />
+        <BattleVoteButton battleId={battleId} side="defender" label={'Gift ' + (battle.defender_name || 'Defender')} />
       </div>
 
       {battle.status === 'ended' ? (

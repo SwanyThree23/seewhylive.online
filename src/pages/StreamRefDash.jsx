@@ -1,4 +1,19 @@
 import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { Link } from "react-router-dom";
+import { createPageUrl } from "../utils";
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import OBSBridge from '../components/obs/OBSBridge';
+import SwanDirectorPanel from '../components/live/SwanDirectorPanel';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
+import ChatModeration from '../components/live/ChatModeration';
+import StreamMetadata from '../components/live/StreamMetadata';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
@@ -8,8 +23,9 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
   { id: "webrtc",    icon: "🌐", label: "WebRTC" },
@@ -143,7 +159,7 @@ function RTMPTab() {
             <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
         ))}
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ YouTube Data API v3 key required for auto-stream-title injection — <Badge type="pending">pending</Badge>
         </div>
       </Section>
@@ -465,7 +481,7 @@ function SupabaseTab() {
             </div>
             <div className="flex flex-wrap gap-1">
               {t.cols.map((c) => (
-                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/20 px-1.5 py-0.5 rounded">{c}</span>
+                <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/8 px-1.5 py-0.5 rounded">{c}</span>
               ))}
             </div>
           </div>
@@ -537,8 +553,8 @@ function EnvTab() {
           <div className="text-2xl font-mono text-[#6DBF7E]">{statusCounts.live}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Live</div>
         </div>
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3 text-center">
-          <div className="text-2xl font-mono text-yellow-400">{statusCounts.pending}</div>
+        <div className="bg-[#D4AF37]/8 border border-[#D4AF37]/30 rounded p-3 text-center">
+          <div className="text-2xl font-mono text-[#D4AF37]">{statusCounts.pending}</div>
           <div className="text-xs text-white/40 uppercase tracking-wider">Pending</div>
         </div>
         <div className="bg-[#C0392B]/10 border border-red-500/30 rounded p-3 text-center">
@@ -551,7 +567,7 @@ function EnvTab() {
         <div className="text-xs text-white/30 mb-3">Files: /var/www/seewhylive/.env · ecosystem.config.js (env block)</div>
         {envVars.map((v) => (
           <div key={v.key} className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
-            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-yellow-300" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
+            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-[#D4AF37]/80" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
               {v.key}
             </span>
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -627,7 +643,7 @@ function StatusTab() {
                 <div className="text-white/30 text-[10px] font-mono">{check.url}</div>
               </div>
               <div className="text-right">
-                {isChecking && <span className="text-yellow-300 text-xs animate-pulse">checking...</span>}
+                {isChecking && <span className="text-[#D4AF37]/80 text-xs animate-pulse">checking...</span>}
                 {r && !isChecking && (
                   <div>
                     <Badge type={r.ok ? "live" : "critical"}>{r.ok ? "reachable" : "error"}</Badge>
@@ -897,7 +913,7 @@ function JudgesTab() {
         <Row label="Audit Trail" value="All judge actions signed with JWT sub + timestamp" />
         <Code>POST /api/judge/authenticate  # returns judge session token</Code>
         <Code>GET  /api/judge/my-matches     # active + upcoming assignments</Code>
-        <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 rounded p-3 text-xs text-yellow-200">
+        <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ Judge role must be assigned by platform admin before tournament day — allow 24h for propagation
         </div>
       </Section>
@@ -940,6 +956,14 @@ const TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState("rtmp");
   const ActiveContent = TAB_CONTENT[activeTab];
 
@@ -964,11 +988,17 @@ export default function StreamRefDash() {
               <div className="text-white/20 text-[9px] font-mono mt-1">v41 · Washington Classic 2026</div>
             </div>
           </div>
-          <div className="flex gap-3 mt-3 flex-wrap">
+          <div className="flex gap-3 mt-3 flex-wrap items-center">
             <Badge type="live">Production Live</Badge>
             <Badge type="gold">90/10 Creator Split</Badge>
             <Badge type="pending">4 keys pending</Badge>
             <Badge type="info">9 tabs</Badge>
+            <Link to={createPageUrl('StreamAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(192,57,43,0.15)', color: '#D4854A', border: '1px solid rgba(192,57,43,0.35)' }}>📊 Stream Analytics</span>
+            </Link>
+            <Link to={createPageUrl('AdvancedAnalytics')} style={{ textDecoration: 'none' }}>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold cursor-pointer" style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)' }}>📈 Advanced Analytics</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -998,6 +1028,16 @@ export default function StreamRefDash() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-4 py-6">
         <ActiveContent />
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <StreamHealthDashboard isLive={false} />
+        <ZEGOConfigPanel roomId={activeRoomId} />
+        <OBSBridge roomId={activeRoomId} isHost={true} />
+        <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ChatModeration />
+        <StreamMetadata room={null} isHost={false} />
       </div>
 
       {/* Footer */}

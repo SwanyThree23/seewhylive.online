@@ -83,7 +83,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#C9A84C' : '#6DBF7E';
 
   return (
-    <div className="bg-[rgba(13,6,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
+    <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-white/5"
@@ -98,7 +98,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               style={{ background: levelColor }}
             />
           </div>
-          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#C0392B', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
+          {micMuted && <span style={{ fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(127,29,29,0.6)', color: '#FF4444', border: '1px solid rgba(185,28,28,0.4)' }}>MUTED</span>}
         </div>
         {collapsed ? <ChevronDown className="w-3 h-3 text-white/40" /> : <ChevronUp className="w-3 h-3 text-white/40" />}
       </button>
@@ -140,7 +140,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 speakerMuted
                   ? 'bg-gray-800 border border-gray-600 text-gray-400'
-                  : 'bg-blue-900/30 border border-blue-600/40 text-blue-400'
+                  : 'bg-[#0F1428]/50 border border-[#D4AF37]/25 text-[#D4AF37]'
               }`}
             >
               {speakerMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
@@ -201,7 +201,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               onChange={(e) => setBgMusic(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
             >
-              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#0d0618]">{m.label}</option>)}
+              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#080B18]">{m.label}</option>)}
             </select>
           </div>
         </motion.div>

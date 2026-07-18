@@ -21,9 +21,16 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['challenges']);
-      queryClient.invalidateQueries(['challengeParticipation']);
+      queryClient.invalidateQueries({ queryKey: ['challenges'] });
+      queryClient.invalidateQueries({ queryKey: ['challengeParticipation'] });
       toast.success('Joined challenge successfully!');
+      if (userId) {
+        base44.entities.Activity.create({
+          user_id: userId,
+          type: 'challenge_joined',
+          title: `Joined challenge: ${challenge?.title || 'Challenge'}`,
+        }).catch(() => {});
+      }
     },
     onError: () => toast.error('Action failed.'),
   });
@@ -33,7 +40,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
   const isCompleted = userParticipation?.completed;
 
   const statusBadgeStyle = {
-    upcoming: { background: 'rgba(59,130,246,0.2)', color: '#60a5fa' },
+    upcoming: { background: 'rgba(212,175,55,0.2)', color: '#D4AF37' },
     active:   { background: 'rgba(109,191,126,0.2)',  color: '#6DBF7E' },
     completed:{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' },
   };
@@ -56,7 +63,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
 
   return (
     <div style={{
-      background: isCompleted ? 'rgba(234,179,8,0.07)' : 'rgba(255,255,255,0.04)',
+      background: isCompleted ? 'rgba(212,175,55,0.07)' : 'rgba(255,255,255,0.04)',
       border: '1px solid rgba(255,255,255,0.1)',
       borderRadius: 12,
       overflow: 'hidden',
@@ -137,7 +144,7 @@ export default function ChallengeCard({ challenge, userParticipation, userId }) 
                 Join Challenge
               </button>
             ) : isCompleted ? (
-              <button disabled style={{ ...btnBase, background: '#16a34a', color: '#fff', cursor: 'default' }}>
+              <button disabled style={{ ...btnBase, background: '#4A9B5E', color: '#fff', cursor: 'default' }}>
                 <Trophy className="w-4 h-4" /> Completed!
               </button>
             ) : (

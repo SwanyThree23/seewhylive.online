@@ -209,6 +209,7 @@ export default function RoomPage() {
   const [participants, setParticipants] = useState([]);
   const [stages, setStages] = useState([]);
   const [activeTab, setActiveTab] = useState('chat');
+  const [pinnedId, setPinnedId] = useState(null);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
@@ -230,6 +231,10 @@ export default function RoomPage() {
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
   const [isRecording, setIsRecording] = useState(false);
+  const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showGiftShop, setShowGiftShop] = useState(false);
+  const [showWhisperPanel, setShowWhisperPanel] = useState(false);
+  const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const recordingRef = useRef(null);
   const recordingStartRef = useRef(null);
 
