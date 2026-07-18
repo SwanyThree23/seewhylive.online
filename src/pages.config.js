@@ -134,6 +134,9 @@ const VoiceAISettings          = lazy(() => import('./pages/VoiceAISettings'));
 const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
 const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
 const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
+const OpenRouterHub            = lazy(() => import('./pages/OpenRouterHub'));
+const LLMLinguaStudio          = lazy(() => import('./pages/LLMLinguaStudio'));
+const VDONinjaManager          = lazy(() => import('./pages/VDONinjaManager'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -261,6 +264,9 @@ export const PAGES = {
     "WashingtonClassic": WashingtonClassic,
     "WisperFlo": WisperFlo,
     "EmbedPlayer": EmbedPlayer,
+    "OpenRouterHub": OpenRouterHub,
+    "LLMLinguaStudio": LLMLinguaStudio,
+    "VDONinjaManager": VDONinjaManager,
 }
 
 export const pagesConfig = {
