@@ -56,6 +56,13 @@ export default function CreatorDashboardPage() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['creatordashboard-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   const { data: recentRooms = [] } = useQuery({
     queryKey: ['creatorRooms', user?.id],
@@ -331,8 +338,8 @@ export default function CreatorDashboardPage() {
         </motion.div>
 
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="creator" viewerCount={activeSubs.length} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="creator" viewerCount={activeRoom?.viewer_count || activeSubs.length} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       {user?.id && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={user?.id} isSubscribed={false} />}
@@ -345,12 +352,12 @@ export default function CreatorDashboardPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={activeSubs.length} />
+      <StreamGoals isHost={true} currentTips={Math.floor(tipsThisWeek)} currentSubs={activeSubs.length} currentViewers={activeRoom?.viewer_count || activeSubs.length} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
-      <ViewerCount count={activeSubs.length} peakViewers={activeSubs.length} />
+      <ViewerCount count={activeRoom?.viewer_count || activeSubs.length} peakViewers={activeRoom?.peak_viewers || activeSubs.length} />
       <BackgroundCustomizer />
     </div>
   );
