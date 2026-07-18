@@ -106,12 +106,57 @@ function streamDuration(room) {
   return Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
 }
 
+// ── Live ranking score ─────────────────────────────────────────────────────
+function scoreRoom(room) {
+  var viewers = room.viewer_count || room.participant_count || 0;
+  var startMs = room.started_at ? new Date(room.started_at).getTime()
+              : room.created_at ? new Date(room.created_at).getTime()
+              : Date.now();
+  var ageMinutes = (Date.now() - startMs) / 60000;
+
+  // Base: sqrt dampens superstar effect so small rooms can compete
+  var score = Math.sqrt(viewers + 1) * 10;
+
+  // Freshness bonus — decays linearly from 15 pts at 0 min to 0 at 90 min
+  score += Math.max(0, 1 - ageMinutes / 90) * 15;
+
+  // Room type multipliers
+  if (room.room_type === 'battle')      score *= 1.3;
+  if (room.room_type === 'watch_party') score *= 1.15;
+  if (room.room_type === 'panel' && viewers > 3) score *= 1.1;
+
+  // Trending bonus
+  if (viewers >= 500) score *= 1.1;
+
+  // PPV/fan-only slight reduction (less discoverable)
+  if (room.ppv_price || room.is_fan_only) score *= 0.92;
+
+  return score;
+}
+
+// Is this room "rising" — new and gaining traction?
+function isRising(room) {
+  var viewers = room.viewer_count || room.participant_count || 0;
+  var startMs = room.started_at ? new Date(room.started_at).getTime()
+              : room.created_at ? new Date(room.created_at).getTime()
+              : Date.now();
+  var ageMinutes = (Date.now() - startMs) / 60000;
+  return ageMinutes < 25 && viewers >= 5;
+}
+
+var RANK_STYLES = [
+  { label: '#1', bg: 'linear-gradient(135deg, #B8860B, #D4AF37)', color: '#000', glow: 'rgba(212,175,55,0.45)' },
+  { label: '#2', bg: 'linear-gradient(135deg, #6B6B6B, #B0B0B0)', color: '#000', glow: 'rgba(176,176,176,0.35)' },
+  { label: '#3', bg: 'linear-gradient(135deg, #7B3F00, #CD7F32)', color: '#fff', glow: 'rgba(205,127,50,0.35)' },
+];
+
 // ── FanbaseRoomCard ────────────────────────────────────────────────────────
-function FanbaseRoomCard({ room }) {
+function FanbaseRoomCard({ room, rank, rising }) {
   var participantCount = room.participant_count || room.viewer_count || 0;
   var displayNames = (room.participant_names || []).slice(0, 3);
   var extra = participantCount > 3 ? participantCount - 3 : 0;
   var isTrending = participantCount >= 500;
+  var rankStyle = rank != null && rank < 3 ? RANK_STYLES[rank] : null;
   var categoryColor = {
     Music: '#C0392B', Gaming: '#D4AF37', Tech: '#D4AF37',
     Education: '#6B7C4A', Business: '#D4AF37', Sports: '#CC7755',
@@ -131,15 +176,35 @@ function FanbaseRoomCard({ room }) {
     <Link to={`/LiveRoom?id=${room.id}`}>
       <motion.div whileTap={{ scale: 0.98 }}
         className="rounded-2xl overflow-hidden cursor-pointer"
-        style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
+        style={{
+          background: 'rgba(8,11,24,0.9)',
+          border: rankStyle
+            ? `1px solid ${rankStyle.glow.replace('0.', '0.3').replace('rgba', 'rgba')}`
+            : '1px solid rgba(212,175,55,0.12)',
+          boxShadow: rankStyle
+            ? `0 4px 24px ${rankStyle.glow}, 0 0 0 1px rgba(0,0,0,0.4)`
+            : '0 4px 20px rgba(0,0,0,0.4)',
+        }}>
 
-        {/* Top row: LIVE + TRENDING badges | Join */}
+        {/* Top row: LIVE + badges | Rank badge | Join */}
         <div className="flex items-center justify-between px-3 pt-2.5 pb-1">
           <div className="flex items-center gap-1.5">
+            {rankStyle && (
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full"
+                style={{ background: rankStyle.bg, color: rankStyle.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', boxShadow: `0 2px 8px ${rankStyle.glow}` }}>
+                {rankStyle.label}
+              </span>
+            )}
             <span className="flex items-center gap-1 text-[11px] font-black px-1.5 py-0.5 rounded-full"
               style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
+            {rising && !isTrending && (
+              <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(109,191,126,0.12)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                ↑ RISING
+              </span>
+            )}
             {isTrending && (
               <span className="text-[11px] font-black px-1.5 py-0.5 rounded-full"
                 style={{ background: 'rgba(212,133,74,0.15)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -556,8 +621,13 @@ export default function Home() {
 
   var { data: liveRooms = [], isLoading: loadingLive } = useQuery({
     queryKey: ['rooms', 'live'],
-    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 20); },
+    // Fetch wider pool so ranking algo has more to work with
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 50); },
     refetchInterval: 10000,
+    select: function(rooms) {
+      // Re-rank client-side with composite score
+      return [...rooms].sort(function(a, b) { return scoreRoom(b) - scoreRoom(a); });
+    },
   });
 
   var liveCount = liveRooms.length;
@@ -765,6 +835,19 @@ export default function Home() {
       {/* ── ROOM CARDS ── */}
       {activeFilter !== 'Communities' && (
       <div className="px-4 pt-4 pb-8">
+        {/* Section label */}
+        {filteredRooms.length > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[10px] font-black uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              🏆 Ranked Live
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(212,175,55,0.08)' }} />
+            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'Space Mono, monospace' }}>
+              {filteredRooms.length} streams
+            </span>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           {loadingLive ? (
             <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -785,7 +868,7 @@ export default function Home() {
                   <motion.div key={room.id}
                     initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}>
-                    <FanbaseRoomCard room={room} />
+                    <FanbaseRoomCard room={room} rank={i} rising={isRising(room)} />
                   </motion.div>
                 );
               })}
