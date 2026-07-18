@@ -358,7 +358,7 @@ export default function AuraAI() {
       <SwanyBotWidget />
       <NotificationBell />
       <GlobalSearch />
-      <StreamGoals isHost={false} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
       <ContentRecommendations />
       <VoiceAISettings />
     </div>

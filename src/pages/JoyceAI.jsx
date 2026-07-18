@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 
+import StreamEventBus from '../components/live/StreamEventBus';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
@@ -96,8 +97,20 @@ export default function JoyceAI() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+
+  function handleTipEvent(msg) {
+    if (!msg?.tip_amount) return;
+    const name = msg.user_name || 'Someone';
+    const amount = msg.tip_amount;
+    const note = msg.content ? ` saying "${msg.content}"` : '';
+    setMessages(prev => [...prev, {
+      role: 'system',
+      text: `🔔 Live tip event: ${name} just tipped $${amount}${note}. Suggest a shoutout response the host can read live.`,
+    }]);
+  }
 
   function copyMsg(text, idx) {
     navigator.clipboard.writeText(text).then(() => {
@@ -309,7 +322,7 @@ export default function JoyceAI() {
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
       </div>
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={busViewerCount} />
       <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -317,13 +330,14 @@ export default function JoyceAI() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
       <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
       <BackgroundCustomizer />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={handleTipEvent} onMessageReceived={() => {}} />}
     </div>
   );
 }
