@@ -150,8 +150,6 @@ function PointsBreakdownRow({ vp }) {
 
 export default function LoyaltyHubPage() {
   const [activeTab, setActiveTab] = useState('my_card');
-  const [showTierEditor, setShowTierEditor] = useState(false);
-  const [editingTier, setEditingTier] = useState(null);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', user?.id],
@@ -199,7 +197,7 @@ export default function LoyaltyHubPage() {
       if (user?.id) {
         base44.entities.Activity.create({
           user_id: user.id,
-          type: 'ppv_purchase',
+          type: 'loyalty_redemption',
           title: `Redeemed loyalty reward: ${reward.name}`,
           amount: reward.points_required,
         }).catch(() => {});
