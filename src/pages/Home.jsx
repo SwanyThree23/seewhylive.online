@@ -650,6 +650,8 @@ export default function Home() {
   const navigate = useNavigate();
   var [activeFilter, setActiveFilter] = useState('All');
   var [showQuickAction, setShowQuickAction] = useState(false);
+  var [activityOpen, setActivityOpen] = useState(false);
+  var [quickActionsOpen, setQuickActionsOpen] = useState(false);
   var [showOnboarding, setShowOnboarding] = useState(false);
   var qc = useQueryClient();
   var { pullY, refreshing, onTouchStart, onTouchMove, onTouchEnd } = usePullToRefresh(async function() {

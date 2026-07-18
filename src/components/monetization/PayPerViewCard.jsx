@@ -8,6 +8,7 @@ import { Lock, Users, DollarSign, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import moment from 'moment';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';

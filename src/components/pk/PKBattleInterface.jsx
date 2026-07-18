@@ -71,6 +71,10 @@ export default function PKBattleInterface({ roomId }) {
     tips: battle?.challenger_tips || 0,
   };
 
+  const setBattleActive = () => {};
+  const setCreator = () => {};
+  const setChallenger = () => {};
+
   useEffect(() => {
     if (!battle?.started_at) return;
     const battleDuration = battle.duration_seconds || 180;

@@ -21,6 +21,7 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
 
   const enabled = !!creatorId;
 
+  const setGoals = (updater) => qc.setQueryData(['stream-goals', creatorId, roomId], (prev) => updater(prev || []));
   const { data: goals = [] } = useQuery({
     queryKey: ['stream-goals', creatorId, roomId],
     queryFn: () => base44.entities.StreamerGoal.filter(

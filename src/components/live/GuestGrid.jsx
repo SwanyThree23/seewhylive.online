@@ -253,6 +253,7 @@ export default React.memo(function GuestGrid({
   peerUserIds,     // Map<peerId, userId> from useWebRTCPeers
   localStream,     // MediaStream from useLocalMedia (for current user's tile)
   currentUserId,   // current user's id, to identify which tile gets localStream
+  speakingIds = {},
 }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);

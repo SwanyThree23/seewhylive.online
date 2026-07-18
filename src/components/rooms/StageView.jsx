@@ -262,21 +262,8 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
             style={{ background: '#EF4444', border: '2px solid #080B18' }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
-        )}
-        {/* LIVE badge */}
-        {participant.is_streaming && (
-          <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-black text-white animate-pulse"
-            style={{ background: '#EF4444' }}>
-            LIVE
-          </div>
-        )}
-        {isCurrentUser && (
-          <div className="absolute -top-1 left-0 right-0 flex justify-center">
-            <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded"
-              style={{ background: '#D4AF37', color: '#000' }}>You</span>
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
       {/* Name + role */}
       <div className="text-center">
         <p className="text-[11px] font-bold text-white truncate" style={{ maxWidth: 136, fontFamily: 'Barlow Condensed, sans-serif' }}>
