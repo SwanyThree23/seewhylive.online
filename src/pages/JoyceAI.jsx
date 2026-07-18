@@ -83,6 +83,13 @@ function ThinkDots() {
 
 export default function JoyceAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['joyce-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
@@ -302,8 +309,8 @@ export default function JoyceAI() {
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
@@ -313,7 +320,7 @@ export default function JoyceAI() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

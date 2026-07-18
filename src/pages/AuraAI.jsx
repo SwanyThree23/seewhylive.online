@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { speakReply } from '../utils/tts';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -126,6 +127,14 @@ function ThinkDots() {
 }
 
 export default function AuraAI() {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['aura-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeMode, setActiveMode] = useState('STRATEGY');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm AURA — your editorial luxury AI co-host. I handle broadcast strategy, production quality, and revenue maximization. What are we building tonight?" }

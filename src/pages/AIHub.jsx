@@ -5,6 +5,7 @@ import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
+import StreamEventBus from '../components/live/StreamEventBus';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -138,6 +139,15 @@ function FeatureItem({ icon, label }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export default function AIHub() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['aihub-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
+  const [tipTotal, setTipTotal] = useState(0);
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -950,21 +960,22 @@ export default function AIHub() {
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={busViewerCount} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={busViewerCount} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
       <BackgroundCustomizer />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
     </div>
   );
 }

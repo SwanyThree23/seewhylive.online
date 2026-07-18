@@ -95,6 +95,13 @@ function StatCard({ label, value, color = GOLD, icon: Icon }) {
 
 export default function GuardianAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['guardian-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const queryClient = useQueryClient();
   const [flagT,  setFlagT]  = useState(50);
   const [muteT,  setMuteT]  = useState(75);
@@ -404,20 +411,20 @@ export default function GuardianAI() {
         @keyframes spin  { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
       `}</style>
-      <SwanAIRecommendations roomId={null} currentLayout="ai" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
-      <ViewerCount count={0} peakViewers={0} />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.viewer_count || 0} />
       <BackgroundCustomizer />
       <ModerationToast toasts={modToasts} />
     </div>
