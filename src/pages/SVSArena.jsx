@@ -162,11 +162,18 @@ export default function SVSArena() {
   // ── Fetch persisted bracket from DB ──────────────────────────────────────
   // We store each match as a PKBattle record whose creator_name = stateA,
   // challenger_name = stateB, and creator_tips/challenger_tips hold the score.
-  const { data: dbMatches = [] } = useQuery({
+  const { data: dbMatches = [], refetch: refetchBracket } = useQuery({
     queryKey: ['svsBracket'],
     queryFn:  () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
-    refetchInterval: 8000,
+    refetchInterval: 30000,
   });
+
+  useEffect(() => {
+    const unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.data?.room_id === SVS_BRACKET_ID) refetchBracket();
+    });
+    return unsub;
+  }, [refetchBracket]);
 
   // Merge DB scores into local bracket on first load and on refetch
   useEffect(() => {
