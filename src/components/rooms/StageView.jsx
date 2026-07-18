@@ -262,8 +262,8 @@ function ParticipantTile({ participant, isCurrentUser, onUpdateParticipant, remo
             style={{ background: '#EF4444', border: '2px solid #080B18' }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
       {/* Name + role */}
       <div className="text-center">
         <p className="text-[11px] font-bold text-white truncate" style={{ maxWidth: 136, fontFamily: 'Barlow Condensed, sans-serif' }}>
