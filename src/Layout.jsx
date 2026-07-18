@@ -479,7 +479,7 @@ export default function Layout({ children, currentPageName }) {
       <GlobalChatWidget />
 
       {/* SwanyBot — Voice AI Guide */}
-      <SwanyBotWidget />
+      <SwanyBotWidget pageName={currentPageName} />
 
       {/* ── MOBILE BOTTOM NAV (5 tabs) ── */}
       {!isFullscreen && (

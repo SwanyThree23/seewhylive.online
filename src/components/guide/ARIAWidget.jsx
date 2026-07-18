@@ -53,7 +53,7 @@ function TypingDots() {
   );
 }
 
-export default function SwanyBotWidget() {
+export default function SwanyBotWidget({ pageName }) {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -268,10 +268,11 @@ export default function SwanyBotWidget() {
     try {
       const conv = await initConversation();
       setConversation(conv);
-      // Send greeting
+      // Send greeting with optional page context
+      const pageCtx = pageName ? ` (I'm currently on the ${pageName} page)` : '';
       await base44.agents.addMessage(conv, {
         role: 'user',
-        content: "Yo! I just got here and I want to know what See - Why - LIVE is all about. Introduce yourself and break it down for me!",
+        content: `Yo! I just got here${pageCtx} and I want to know what See - Why - LIVE is all about. Introduce yourself and break it down for me!`,
       });
     } catch {
       setLoading(false);
