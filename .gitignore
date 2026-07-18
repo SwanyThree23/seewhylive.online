@@ -44,4 +44,16 @@ data/
 *.bak-*
 *.superseded-*
 server/test.mp4
-0.02}
+# SQLite write-ahead-log files — change constantly, shouldn't be tracked
+data/*.db-shm
+data/*.db-wal
+
+# Backup files from in-place edits
+*.backup.*
+
+# Transfer artifacts from chunked file transfers
+*.tar.gz
+*.tar.gz.b64
+base44/.app.jsonc
+repo-latest/
+frontend/dist/
