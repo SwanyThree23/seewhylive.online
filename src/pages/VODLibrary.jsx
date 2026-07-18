@@ -240,5 +240,6 @@ export default function VODLibraryPage() {
       <CreatorBridge user={user || null} />
       <BackgroundCustomizer />
     </div>
+  </div>
   );
 }

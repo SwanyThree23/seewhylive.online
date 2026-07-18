@@ -110,7 +110,7 @@ export default function PrivatePanel({ isHost, currentUser }) {
     const arr = new Uint8Array(4);
     crypto.getRandomValues(arr);
     const code = Array.from(arr).map(b => b.toString(36)).join('').toUpperCase().slice(0, 6);
-    setActivePanels(prev => [...prev, {
+    const newPanel = {
       id: Date.now(),
       type: selectedType,
       name: panelName,

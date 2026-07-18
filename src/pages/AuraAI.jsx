@@ -39,14 +39,6 @@ Your personality: Articulate, encouraging, premium-feel. You help creators craft
 
 Respond in 1-3 sentences. Be direct, polished, and inspiring.`;
 
-const QUICK_ACTIONS = [
-  { label: '✨ Content Hook',   prompt: 'Write me a premium 15-second opening hook for my live stream tonight.' },
-  { label: '💎 Brand Voice',   prompt: 'Help me define a unique brand voice for my SeeWhy LIVE channel.' },
-  { label: '📈 Growth Plan',   prompt: 'Give me a 3-step growth strategy to double my viewer count this month.' },
-  { label: '🎤 Collab Pitch',  prompt: 'Write a compelling collaboration pitch I can send to another creator.' },
-  { label: '💰 Revenue Tips',  prompt: 'What are the top 3 ways to maximize my 90% creator revenue on SeeWhy LIVE?' },
-  { label: '🎬 Scene Intro',   prompt: 'Write a cinematic intro announcement for my next pay-per-view event.' },
-];
 
 const AURA_MODES = {
   STRATEGY: {

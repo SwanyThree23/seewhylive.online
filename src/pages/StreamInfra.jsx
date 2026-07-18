@@ -25,7 +25,6 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
-import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,

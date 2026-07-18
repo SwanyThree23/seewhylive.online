@@ -280,7 +280,7 @@ export default function AudioRoom() {
   const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
-  const { speakers } = useCameraDevices();
+  const { speakers: speakerDevices } = useCameraDevices();
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
@@ -807,7 +807,7 @@ export default function AudioRoom() {
 
               <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {/* Speaker output */}
-                {speakers.length > 1 && (
+                {speakerDevices.length > 1 && (
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
@@ -819,7 +819,7 @@ export default function AudioRoom() {
                       className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
                       style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
                     >
-                      {speakers.map(d => (
+                      {speakerDevices.map(d => (
                         <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
                           {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
                         </option>
@@ -989,7 +989,7 @@ export default function AudioRoom() {
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}

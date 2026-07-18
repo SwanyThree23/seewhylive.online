@@ -314,7 +314,6 @@ export default function GreenroomPage() {
   const destType = params.get('destination_type') || 'room'; // room | panel | watch_party | new_room
 
   const qc = useQueryClient();
-  const navigate = useNavigate();
   const [deviceState, setDeviceState] = useState({ cameraOn: false, micOn: false, networkQuality: 3, isSim: false });
   const [previewStream, setPreviewStream] = useState(null);
   const [displayName, setDisplayName] = useState('');

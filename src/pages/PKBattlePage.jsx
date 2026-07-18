@@ -463,18 +463,6 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
-  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-  React.useEffect(() => {
-    return () => {
-      if (leftCaptureStream) leftCaptureStream.getTracks().forEach(t => t.stop());
-      if (rightCaptureStream) rightCaptureStream.getTracks().forEach(t => t.stop());
-    };
-  }, [leftCaptureStream, rightCaptureStream]);
-
   if (!battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#080B18] via-[#001428] to-[#080B18] flex items-center justify-center px-4">
