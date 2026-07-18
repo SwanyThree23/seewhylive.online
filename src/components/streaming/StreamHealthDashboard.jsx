@@ -66,27 +66,7 @@ function lossStatus(pct) {
   return 'critical';
 }
 
-const HealthMetric = ({ label, value, unit, status, trend }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="bg-white/5 border border-white/10 rounded-lg p-2.5"
-  >
-    <div className="flex items-center justify-between mb-1.5">
-      <span className="text-[11px] text-white/60 font-semibold uppercase">{label}</span>
-      {trend === 'up'   && <TrendingUp  className="w-3 h-3 text-[#6DBF7E]" />}
-      {trend === 'down' && <TrendingDown className="w-3 h-3 text-[#C0392B]" />}
-    </div>
-    <div className="flex items-baseline gap-1">
-      <span className="text-lg font-bold text-white">{value ?? '—'}</span>
-      {unit && <span className="text-[11px] text-white/50">{unit}</span>}
-    </div>
-    <div className="flex items-center gap-1.5 mt-1.5">
-      <div className="h-1.5 w-1.5 rounded-full" style={{ background: STATUS_COLOR[status] || '#555' }} />
-      <span className="text-[11px] text-white/40 capitalize">{status}</span>
-    </div>
-  </motion.div>
-);
+/* duplicate HealthMetric removed — using the definition above */
 
 const EMPTY = {
   bitrate:   { value: null, unit: 'kbps', status: 'offline', trend: null, label: 'Bitrate' },

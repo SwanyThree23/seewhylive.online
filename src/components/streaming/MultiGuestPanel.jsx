@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Radio, Swords, Users, LayoutGrid, Maximize2 } from 'lucide-react';
+import { Radio, Swords, Users, LayoutGrid, Maximize2, Mic, MicOff, Video, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import OctagonalVideoGrid from './OctagonalVideoGrid';
 import GuestRTMPPanel from '@/components/streaming/GuestRTMPPanel';

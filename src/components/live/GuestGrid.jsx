@@ -30,7 +30,7 @@ function getGridClass(slots) {
   return 'grid-cols-5';
 }
 
-export default React.memo(function GuestGrid({ participants = [], isHost, onInvite, hostId, maxGuests = 20, speakingIds = {} }) {
+React.memo(function GuestGridLegacy({ participants = [], isHost, onInvite, hostId, maxGuests = 20, speakingIds = {} }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);
   const [audioStates, setAudioStates] = useState({});
@@ -333,6 +333,7 @@ export default React.memo(function GuestGrid({
   peerUserIds,     // Map<peerId, userId> from useWebRTCPeers
   localStream,     // MediaStream from useLocalMedia (for current user's tile)
   currentUserId,   // current user's id, to identify which tile gets localStream
+  speakingIds = {},
 }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);

@@ -94,6 +94,7 @@ var DRAWER_CREATE = [
   { name: 'Poll Manager',      icon: LayoutDashboard, href: createPageUrl('PollManager') },
 ];
 
+var DRAWER_MONETIZE_AI = [];
 var DRAWER_ACCOUNT = [
   { name: 'Profile',  icon: User,       href: createPageUrl('Profile') },
   { name: 'Settings', icon: SearchIcon, href: createPageUrl('Settings') },
@@ -131,6 +132,8 @@ var TAB_OWNERSHIP = {
 export default function Layout({ children, currentPageName }) {
   var [showSearch, setShowSearch] = useState(false);
   var [showMobileMenu, setShowMobileMenu] = useState(false);
+  var scrollPositions = useRef({});
+  var tabMemory = useRef({});
   var location = useLocation();
   var { canGoBack, goBack } = useMobileNavigation();
   useEffect(function() { injectFocusRing(); }, []);

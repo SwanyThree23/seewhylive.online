@@ -349,7 +349,7 @@ function SeatInviteDrawer({ seat, roomId, onClose }) {
 }
 
 // ── Stage Tab ────────────────────────────────────────────────────────────────
-function StageTab({ roomId, isHost, isCoHost, currentUser, participants, raisedHands, onSpotlight, spotlitId }) {
+function StageTab({ roomId, isHost, isCoHost, currentUser, participants, raisedHands, onSpotlight, spotlitId, speakingIds = {} }) {
   var [view, setView] = useState('dashboard');
   var [inviteSeat, setInviteSeat] = useState(null);
 
