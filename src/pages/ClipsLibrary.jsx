@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -33,7 +33,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 const C = { burg:'#800020', gold:'#D4AF37', volt:'#D4AF37', obs:'#080B18', gray:'#666', white:'#F5F0E8' };
 const STATUSES = { processing:{label:'PROCESSING',color:'#D4AF37'}, published:{label:'PUBLISHED',color:'#6DBF7E'}, private:{label:'PRIVATE',color:'#666'} };
 
-function ClipCard({ clip, onDelete, onShare }) {
+function ClipCard({ clip, onDelete, onShare, onLike }) {
   const dur = clip.duration_seconds || (clip.end_timestamp_seconds - clip.start_timestamp_seconds) || 30;
   const status = clip.clip_url ? 'published' : 'processing';
   const S = STATUSES[status];
@@ -55,10 +55,11 @@ function ClipCard({ clip, onDelete, onShare }) {
         <div style={{ fontFamily:'Barlow Condensed', fontSize:13, color:C.white, marginBottom:4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{clip.title}</div>
         <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:8 }}>
           <span style={{ fontSize:10, color:C.gray }}>👁 {clip.view_count||0}</span>
-          <span style={{ fontSize:10, color:C.gray }}>🔗 {clip.share_count||0} shares</span>
-          {clip.share_count > 20 && <span style={{ fontSize:11, color:C.volt, fontFamily:'Barlow Condensed' }}>{clip.share_count} shares</span>}
+          <span style={{ fontSize:10, color:C.gray }}>❤️ {clip.like_count||0}</span>
+          <span style={{ fontSize:10, color:C.gray }}>🔗 {clip.share_count||0}</span>
         </div>
         <div style={{ display:'flex', gap:6 }}>
+          <button onClick={() => onLike(clip)} style={{ padding:'5px 8px', background:'rgba(192,57,43,0.08)', border:'1px solid rgba(192,57,43,0.2)', borderRadius:5, color:'#E74C3C', cursor:'pointer', fontSize:11 }} title="Like">❤️</button>
           <button onClick={() => onShare(clip)} style={{ flex:1, padding:'5px', background:'rgba(212,175,55,0.08)', border:`1px solid rgba(212,175,55,0.2)`, borderRadius:5, color:C.gold, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:10, letterSpacing:1 }}>SHARE</button>
           <button onClick={() => onDelete(clip.id)} style={{ padding:'5px 8px', background:'rgba(128,0,32,0.08)', border:`1px solid rgba(128,0,32,0.2)`, borderRadius:5, color:C.burg, cursor:'pointer', fontSize:11 }}>🗑</button>
         </div>
@@ -111,6 +112,20 @@ export default function ClipsLibraryPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
   });
 
+  const likeMut = useMutation({
+    mutationFn: clip => base44.entities.StreamClip.update(clip.id, { like_count: (clip.like_count || 0) + 1 }),
+    onSuccess: () => qc.invalidateQueries({ queryKey:['clips'] }),
+  });
+
+  // Real-time clip updates
+  useEffect(() => {
+    const unsub = base44.entities.StreamClip.subscribe(() => {
+      qc.invalidateQueries({ queryKey: ['clips'] });
+      qc.invalidateQueries({ queryKey: ['moments-strip'] });
+    });
+    return unsub;
+  }, [qc]);
+
   const sorted = [...clips].sort((a,b) => {
     if (sort==='views') return (b.view_count||0)-(a.view_count||0);
     if (sort==='shares') return (b.share_count||0)-(a.share_count||0);
@@ -118,9 +133,10 @@ export default function ClipsLibraryPage() {
   });
 
   const share = (clip) => {
-    navigator.clipboard.writeText(`${window.location.origin}/clips/${clip.id}`).then(() => {
+    navigator.clipboard.writeText(`${window.location.origin}/ClipsLibrary`).then(() => {
       setToast('Link copied! 🔗');
       setTimeout(() => setToast(''), 2500);
+      base44.entities.StreamClip.update(clip.id, { share_count: (clip.share_count || 0) + 1 }).catch(() => {});
     }).catch(() => {});
   };
 
@@ -160,7 +176,7 @@ export default function ClipsLibraryPage() {
           </div>
         ) : (
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:12 }}>
-            {sorted.map(clip => <ClipCard key={clip.id} clip={clip} onDelete={id=>deleteMut.mutate(id)} onShare={share} />)}
+            {sorted.map(clip => <ClipCard key={clip.id} clip={clip} onDelete={id=>deleteMut.mutate(id)} onShare={share} onLike={c=>likeMut.mutate(c)} />)}
           </div>
         )}
         {/* Stream Highlights */}

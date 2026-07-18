@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
@@ -356,6 +356,68 @@ function SpotlightStrip() {
                   letterSpacing: '0.02em', opacity: 0.9,
                 }}>{item.sub}</p>
               </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Moments strip ─────────────────────────────────────────────────────────
+var MOMENT_EMOJI_MAP = { fire:'🔥', epic:'⚡', funny:'😂', tip:'💡', peak:'📈', highlight:'🌟', auto:'🤖', battle:'⚔️', domino:'🁣' };
+function ytIdFromUrl(url) {
+  if (!url) return null;
+  var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function MomentsStrip() {
+  var qc = useQueryClient();
+  var { data: clips = [] } = useQuery({
+    queryKey: ['moments-strip'],
+    queryFn: function() { return base44.entities.StreamClip.list('-created_date', 10); },
+    staleTime: 30000,
+  });
+  useEffect(function() {
+    var unsub = base44.entities.StreamClip.subscribe(function() {
+      qc.invalidateQueries({ queryKey: ['moments-strip'] });
+    });
+    return unsub;
+  }, [qc]);
+  if (clips.length === 0) return null;
+  return (
+    <div style={{ paddingTop: 4, paddingBottom: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 8px' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.22)' }}>
+          ✂️ Moments
+        </span>
+        <Link to={createPageUrl('ClipsLibrary')} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(212,175,55,0.45)', textDecoration: 'none' }}>
+          See all →
+        </Link>
+      </div>
+      <div style={{ overflowX: 'auto', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', gap: 8, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {clips.map(function(clip) {
+          var dur = clip.duration_seconds || Math.max(0, (clip.end_timestamp_seconds || 30) - (clip.start_timestamp_seconds || 0));
+          var durStr = Math.floor(dur / 60) + ':' + String(Math.floor(dur % 60)).padStart(2, '0');
+          var emoji = MOMENT_EMOJI_MAP[clip.highlight_type] || MOMENT_EMOJI_MAP[clip.trigger_type] || MOMENT_EMOJI_MAP[clip.clip_type] || '🎬';
+          var thumb = clip.thumbnail_url || clip.thumbnail || null;
+          var yt = !thumb ? ytIdFromUrl(clip.clip_url || '') : null;
+          return (
+            <Link key={clip.id} to={createPageUrl('ClipsLibrary')} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <motion.div whileTap={{ scale: 0.96 }} style={{ width: 126, borderRadius: 10, overflow: 'hidden', background: 'rgba(8,11,24,0.92)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <div style={{ height: 71, position: 'relative', background: 'linear-gradient(135deg, rgba(128,0,32,0.3), rgba(8,11,24,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {(thumb || yt) ? (
+                    <img src={yt ? ('https://img.youtube.com/vi/' + yt + '/mqdefault.jpg') : thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', inset: 0 }} />
+                  ) : (
+                    <span style={{ fontSize: 24 }}>{emoji}</span>
+                  )}
+                  <div style={{ position: 'absolute', bottom: 4, right: 4, padding: '1px 5px', borderRadius: 3, background: 'rgba(0,0,0,0.72)', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: '#fff', letterSpacing: '0.04em' }}>{durStr}</div>
+                </div>
+                <div style={{ padding: '5px 7px 7px' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{clip.title || 'Moment'}</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>👁 {clip.view_count || 0}</p>
+                </div>
+              </motion.div>
             </Link>
           );
         })}
@@ -904,6 +966,9 @@ export default function Home() {
         </AnimatePresence>
       </div>
       )}
+
+      {/* ── MOMENTS STRIP ── */}
+      <MomentsStrip />
     </div>
   );
 }
