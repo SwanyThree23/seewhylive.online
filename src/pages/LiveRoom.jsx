@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mic, MicOff, MessageCircle, Heart, Hand, Crown,
@@ -432,7 +433,7 @@ export default function LiveRoom() {
     video: false,
     audioDeviceId: activeMicId,
   });
-  const { speakers } = useCameraDevices();
+  const { cameras: cameraDevices, speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   const announceJoinRef = useRef(announceJoin);
   const leaveRoomRef = useRef(leaveRoom);
@@ -1153,18 +1154,12 @@ export default function LiveRoom() {
                       <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
                       <span className="text-xs font-bold uppercase text-white/60">Output Device</span>
                     </div>
-                    <select
+                    <MobileSelect
                       value={prefSpeaker}
-                      onChange={e => setPrefSpeaker(e.target.value)}
-                      className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
-                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                    >
-                      {speakers.map(d => (
-                        <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
-                          {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={v => setPrefSpeaker(v)}
+                      options={speakers.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` }))}
+                      placeholder="Default speaker"
+                    />
                   </div>
                 )}
                 <div className="space-y-2">
@@ -1393,7 +1388,7 @@ export default function LiveRoom() {
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={false} userName={user?.full_name || ''} isHost={isHost} isSpeaking={localSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Mic'} isMuted={!audioEnabled} isVideoOff={true} onMicToggle={handleToggleAudio} onVideoToggle={() => {}} />}
       {isHost && roomId && <PipCameraTile localStream={localStream} videoEnabled={false} roomId={roomId} tipTotal={tipTotal} />}
-      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={() => {}} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={(id) => reacquireMedia({ cameraId: id })} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
       {isHost && <LiveCaptionOverlay stream={localStream} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />}
       {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}

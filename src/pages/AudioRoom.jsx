@@ -281,7 +281,7 @@ export default function AudioRoom() {
   const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
-  const { speakers: speakerDevices } = useCameraDevices();
+  const { cameras: cameraDevices, speakers: speakerDevices } = useCameraDevices();
   const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
@@ -655,6 +655,7 @@ export default function AudioRoom() {
             onSpotlight={(id) => setSpotlightId(prev => prev === id ? null : id)}
             roomId={roomId}
             isHost={isHost}
+            speakingIds={new Set(Object.keys(speakingIds).filter(k => speakingIds[k]))}
           />
         )}
       </div>
@@ -960,7 +961,7 @@ export default function AudioRoom() {
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
-      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={() => {}} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={(id) => reacquireMedia({ cameraId: id })} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
       {isHost && <LiveCaptionOverlay stream={localStream} position="top" />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}

@@ -64,6 +64,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import PollLaunchBar from '../components/live/PollLaunchBar';
 import SuperChatRail from '../components/live/SuperChatRail';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -1506,7 +1507,7 @@ export default function WatchPartyPage() {
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
-        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={false} onClose={() => {}} />}
+        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} />}
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
@@ -1522,6 +1523,12 @@ export default function WatchPartyPage() {
           <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
         )}
       </div>
+
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'M',     label: 'Toggle microphone' },
+        { key: 'Space', label: 'Push-to-talk (hold when muted)' },
+        { key: '?',     label: 'Show keyboard shortcuts' },
+      ]} />
 
       {/* Spotlight overlay — double-tap any octagon in the participant strip */}
       <AnimatePresence>
