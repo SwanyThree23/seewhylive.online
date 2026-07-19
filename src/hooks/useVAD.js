@@ -31,16 +31,21 @@ export function useVAD({ streams = {}, threshold = DEFAULT_THRESHOLD } = {}) {
 
   // Rebuild AudioContext nodes whenever the stream map changes
   useEffect(() => {
-    const nextKey = Object.keys(streams).sort().join(',');
-    if (nextKey === streamKeysRef.current) return; // no-op if unchanged
+    // Key includes stream.id so reconnects (same user, new MediaStream) are detected
+    const nextKey = Object.entries(streams)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([uid, s]) => `${uid}:${s?.id ?? ''}`)
+      .join(',');
+    if (nextKey === streamKeysRef.current) return;
     streamKeysRef.current = nextKey;
 
     const currentIds = new Set(Object.keys(streams));
     const existingIds = new Set(Object.keys(nodesRef.current));
 
-    // Tear down nodes for removed streams
+    // Tear down nodes for removed streams or replaced streams (different stream.id)
     existingIds.forEach(id => {
-      if (!currentIds.has(id)) {
+      const streamChanged = nodesRef.current[id]?.streamId !== streams[id]?.id;
+      if (!currentIds.has(id) || streamChanged) {
         try {
           nodesRef.current[id].source.disconnect();
           nodesRef.current[id].ctx.close();
@@ -49,9 +54,9 @@ export function useVAD({ streams = {}, threshold = DEFAULT_THRESHOLD } = {}) {
       }
     });
 
-    // Create nodes for new streams
+    // Create nodes for new streams or replaced streams
     currentIds.forEach(id => {
-      if (existingIds.has(id) && nodesRef.current[id]) return;
+      if (nodesRef.current[id]) return;
       const stream = streams[id];
       if (!stream || !(stream instanceof MediaStream)) return;
       if (!stream.getAudioTracks().some(t => t.enabled && t.readyState !== 'ended')) return;
@@ -63,7 +68,7 @@ export function useVAD({ streams = {}, threshold = DEFAULT_THRESHOLD } = {}) {
         analyser.smoothingTimeConstant = 0.5;
         const source = ctx.createMediaStreamSource(stream);
         source.connect(analyser);
-        nodesRef.current[id] = { ctx, analyser, source };
+        nodesRef.current[id] = { ctx, analyser, source, streamId: stream.id };
       } catch {
         /* browser may block AudioContext before user gesture — silently skip */
       }
