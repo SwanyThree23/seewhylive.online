@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { Mic, MicOff, Volume2, VolumeX, ChevronDown, ChevronUp, Music, Radio, Zap, Headphones } from 'lucide-react';
 
 const BG_MUSIC = [
@@ -196,13 +197,12 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
           {/* BG Music */}
           <div className="space-y-1">
             <p className="text-[10px] text-white/40 flex items-center gap-1"><Music className="w-3 h-3" /> Background Music</p>
-            <select
+            <MobileSelect
               value={bgMusic}
-              onChange={(e) => setBgMusic(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-white outline-none"
-            >
-              {BG_MUSIC.map(m => <option key={m.id} value={m.id} className="bg-[#080B18]">{m.label}</option>)}
-            </select>
+              onChange={(v) => setBgMusic(v)}
+              options={BG_MUSIC.map(m => ({ value: m.id, label: m.label }))}
+              placeholder="Select music"
+            />
           </div>
         </motion.div>
       )}
