@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useWatchPartySync } from '@/hooks/useWatchPartySync';
+import { useMultiSpeakingSet } from '@/hooks/useMultiSpeakingSet';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -227,13 +228,20 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   );
 }
 
-function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52 }) {
+function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52, onDoubleClick }) {
   const vRef = useRef(null);
   useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s' }} />
-      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }} onDoubleClick={onDoubleClick}>
+      {isSpeaking && (
+        <motion.div
+          style={{ position: 'absolute', inset: 0, clipPath: OCT, background: '#D4AF37', zIndex: 0 }}
+          animate={{ opacity: [0.3, 0.65, 0.3] }}
+          transition={{ duration: 1.0, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {stream ? (
           <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
@@ -249,7 +257,7 @@ function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size =
   );
 }
 
-function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, peerUserIds }) {
+function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, peerUserIds, onSpotlight }) {
   var displayMembers = members.slice(0, 8);
   var overflow = members.length - 8;
   return (
@@ -262,7 +270,7 @@ function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, p
         var stream = (peerId && remoteStreams) ? remoteStreams.get(peerId) : null;
         return (
           <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
-            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} />
+            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} onDoubleClick={onSpotlight ? () => onSpotlight(m) : undefined} />
             <span className="text-white/50 truncate max-w-[52px]" style={{ fontSize: 7 }}>{m.user_name}</span>
           </div>
         );
@@ -490,6 +498,8 @@ export default function WatchPartyPage() {
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: localStream });
   const [peerQuality, setPeerQuality] = useState(() => new Map());
+  const speakingSet = useMultiSpeakingSet({ localStream, localUserId: user?.id, remoteStreams, peerUserIds });
+  const [spotlightMember, setSpotlightMember] = useState(null);
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
@@ -987,7 +997,7 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={null} remoteStreams={remoteStreams} peerUserIds={peerUserIds} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={(m) => setSpotlightMember(prev => prev?.user_id === m.user_id ? null : m)} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -1380,6 +1390,51 @@ export default function WatchPartyPage() {
           <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
         )}
       </div>
+
+      {/* Spotlight overlay — double-tap any octagon in the participant strip */}
+      <AnimatePresence>
+        {spotlightMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSpotlightMember(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 600,
+              background: 'rgba(0,0,0,0.92)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16,
+            }}
+          >
+            <OctVideoCell
+              member={spotlightMember}
+              isHost={spotlightMember.user_id === party?.host_id}
+              isSpeaking={speakingSet.has(spotlightMember.user_id)}
+              stream={(() => {
+                if (peerUserIds && remoteStreams) {
+                  for (const [peerId, uid] of peerUserIds) {
+                    if (uid === spotlightMember.user_id) return remoteStreams.get(peerId) || null;
+                  }
+                }
+                return spotlightMember.user_id === user?.id ? localStream : null;
+              })()}
+              size={160}
+            />
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 22, fontWeight: 900, color: '#D4AF37', letterSpacing: '0.05em', margin: 0 }}>
+              {spotlightMember.user_name}
+            </p>
+            {speakingSet.has(spotlightMember.user_id) && (
+              <motion.span
+                animate={{ opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 1.0, repeat: Infinity }}
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, letterSpacing: '0.14em', color: '#D4AF37', textTransform: 'uppercase' }}
+              >
+                ● Speaking
+              </motion.span>
+            )}
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>Tap anywhere to close</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

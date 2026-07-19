@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
+import { useMultiSpeakingSet } from '@/hooks/useMultiSpeakingSet';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -213,7 +214,9 @@ export default function AudioRoom() {
   const [echoCan, setEchoCan] = useState(true);
   const [autoGain, setAutoGain] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [spotlightId, setSpotlightId] = useState(null);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const remoteSpkSet = useMultiSpeakingSet({ localStream: null, localUserId: null, remoteStreams, peerUserIds });
   const { bars: netBars, label: netLabel, rtt: netRtt } = useConnectionQuality(null, 5000);
 
   const [createTitle,    setCreateTitle]    = useState('');
@@ -493,7 +496,7 @@ export default function AudioRoom() {
           members={members.map(m => ({
             ...m,
             display_name: m.user_name,
-            speaking: m.user_id === user?.id ? localIsSpeaking : m.speaking,
+            speaking: m.user_id === user?.id ? localIsSpeaking : remoteSpkSet.has(m.user_id),
           }))}
           localStream={localStream}
           remoteStreams={remoteStreams}
@@ -505,8 +508,8 @@ export default function AudioRoom() {
         {isHost && roomId && (
           <MultiGuestPanel
             participants={members}
-            spotlightId={null}
-            onSpotlight={() => {}}
+            spotlightId={spotlightId}
+            onSpotlight={(id) => setSpotlightId(prev => prev === id ? null : id)}
             roomId={roomId}
             isHost={isHost}
           />
