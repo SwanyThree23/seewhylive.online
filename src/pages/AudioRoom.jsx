@@ -343,6 +343,7 @@ export default function AudioRoom() {
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
   const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
@@ -1004,7 +1005,7 @@ export default function AudioRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1038,7 +1039,7 @@ export default function AudioRoom() {
       {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={party?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
-      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} />
+      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} triggerEdit={goalTick} />
       <SuperChatRail superchats={[]} />
       {roomId && user?.id && party?.host_id && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 

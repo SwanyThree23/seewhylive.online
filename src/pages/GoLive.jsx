@@ -558,6 +558,7 @@ export default function GoLive() {
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
   const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -1139,7 +1140,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} onGoal={() => setGoalTick(t => t + 1)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1163,7 +1164,7 @@ export default function GoLive() {
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} speakingIds={speakingIds} />}
       {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => setTimeout(() => navigate('/'), 2000)} />}
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
-      {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
+      {partyId && <LiveGoalWidget roomId={partyId} isHost={true} triggerEdit={goalTick} />}
       {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}
       {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={user?.id} onClose={() => setShowSwanPanel(false)} />}
       {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}

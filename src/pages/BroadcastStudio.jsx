@@ -574,6 +574,7 @@ export default function BroadcastStudio() {
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
@@ -1838,7 +1839,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
-                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} />
+                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} triggerEdit={goalTick} />
                 </div>
 
                 {/* Pinned message */}
@@ -3058,7 +3059,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={isHost} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setActiveTab('polls') : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setActiveTab('polls') : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}

@@ -13,9 +13,13 @@ const PRESETS = [
   { label: '10 subs',     type: 'subs',    target: 10 },
 ];
 
-export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount = 0 }) {
+export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount = 0, triggerEdit }) {
   const [goal, setGoal] = useState(null);
   const [editing, setEditing] = useState(false);
+  const prevTriggerEdit = React.useRef(triggerEdit);
+  useEffect(() => {
+    if (triggerEdit !== prevTriggerEdit.current) { setEditing(true); prevTriggerEdit.current = triggerEdit; }
+  }, [triggerEdit]);
   const [customLabel, setCustomLabel] = useState('');
   const [customTarget, setCustomTarget] = useState('');
   const [customType, setCustomType] = useState('viewers');
