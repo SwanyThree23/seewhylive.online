@@ -228,6 +228,7 @@ export default function RoomPage() {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [pollTick, setPollTick] = useState(0);
   const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const screenStreamRef = useRef(null);
   const handleStartShare = (stream) => { if (!stream) return; screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
@@ -1023,7 +1024,7 @@ export default function RoomPage() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1059,7 +1060,7 @@ export default function RoomPage() {
       {isHost && roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       <StreamMetricsBar startTime={streamStartRef.current} memberCount={participants.length} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <SuperChatRail superchats={[]} />
-      <LiveGoalWidget memberCount={participants.length} tipTotal={tipTotal} subCount={0} />
+      <LiveGoalWidget memberCount={participants.length} tipTotal={tipTotal} subCount={0} triggerEdit={goalTick} />
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={room?.host_id || user?.id} creatorName={''} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={user?.full_name || ''} viewerCount={participants.length} />}
