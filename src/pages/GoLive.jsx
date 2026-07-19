@@ -1210,7 +1210,7 @@ export default function GoLive() {
       {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
       {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} />}
       {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}
-      {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={showClipCreator} onClose={() => setShowClipCreator(false)} />}
+      {partyId && user?.id && showClipCreator && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} onClose={() => setShowClipCreator(false)} />}
       {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
 
       {/* ── DM WHISPER SYSTEM ── */}

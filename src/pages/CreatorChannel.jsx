@@ -18,7 +18,6 @@ import { createPageUrl } from '../utils';
 import { isSafeUrl } from '@/lib/security';
 import ShareModal from '../components/live/ShareModal';
 import PaywallGate from '../components/live/PaywallGate';
-import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ShareToSocial from '../components/social/ShareToSocial';
@@ -332,7 +331,6 @@ export default function CreatorChannel() {
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <PaywallGate roomId={activeRoomId} creatorId={userId} price={0} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
-          <ClipCreatorSheet roomId={activeRoomId} sessionId={activeRoomId} creatorId={userId} elapsedSeconds={0} roomTitle="Stream" onClose={() => {}} />
           <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <OnlineUsersGrid compact maxVisible={10} />
 

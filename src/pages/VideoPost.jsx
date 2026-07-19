@@ -10,7 +10,6 @@ import ShareButtons from '../components/shared/ShareButtons';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import VODCard from '../components/vod/VODCard';
-import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
