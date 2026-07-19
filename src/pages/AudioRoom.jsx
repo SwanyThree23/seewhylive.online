@@ -282,14 +282,12 @@ export default function AudioRoom() {
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
   const { cameras: cameraDevices, speakers: speakerDevices } = useCameraDevices();
-  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+  const { remoteStreams, peerUserIds, peersRef, announceJoin } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
-  const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
@@ -308,6 +306,7 @@ export default function AudioRoom() {
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
+  const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
 
   const { data: party } = useQuery({
     queryKey: ['audio-room', roomId],
@@ -387,7 +386,7 @@ export default function AudioRoom() {
   useEffect(() => {
     if (!roomId || !user?.id) return;
     announceJoin(user.id);
-    return leavePeerRoom;
+    return leaveRoom;
   }, [roomId, user?.id]);
 
   const speakers = members.length > 0
@@ -406,6 +405,7 @@ export default function AudioRoom() {
   const myMember   = members.find(m => m.user_id === user?.id);
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
+  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });

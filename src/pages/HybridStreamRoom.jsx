@@ -182,8 +182,6 @@ export default function HybridStreamRoom() {
   const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
-  const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
-  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const [hybridChatMessages, setHybridChatMessages] = useState([]);
   const [hybridHypeLevel, setHybridHypeLevel] = useState(0);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
@@ -227,6 +225,8 @@ export default function HybridStreamRoom() {
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
   });
+  const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
 
   const { data: room, isLoading } = useQuery({
     queryKey: ['room', roomId],
@@ -290,6 +290,10 @@ export default function HybridStreamRoom() {
     onError: () => toast.error('Action failed.'),
   });
 
+  const isHost = room?.host_id === user?.id;
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: hybridChatMessages, hypeLevel: hybridHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: hybridChatMessages[hybridChatMessages.length - 1] || null });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
@@ -316,10 +320,6 @@ export default function HybridStreamRoom() {
       </div>
     );
   }
-
-  const isHost = room.host_id === user?.id;
-  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: hybridChatMessages, hypeLevel: hybridHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
-  useVoiceAgentRuntime({ chatMessage: hybridChatMessages[hybridChatMessages.length - 1] || null });
 
   return (
     <div className="h-screen overflow-hidden" style={{ background: '#080B18', fontFamily: 'Barlow Condensed, sans-serif' }}>

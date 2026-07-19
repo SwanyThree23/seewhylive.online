@@ -413,7 +413,6 @@ export default function WatchPartyPage() {
   const [elapsed, setElapsed] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
   const [activeScene, setActiveScene] = useState('main');
@@ -484,6 +483,7 @@ export default function WatchPartyPage() {
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
     enabled: !!partyId,
   });
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { data: activePoll } = useQuery({
     queryKey: ['active-poll', partyId],
