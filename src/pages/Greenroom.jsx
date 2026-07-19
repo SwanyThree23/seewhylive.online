@@ -80,6 +80,7 @@ import GiftShopTray from '../components/live/GiftShopTray';
 import { GiftLeaderboard } from '../components/live/GiftSystem';
 import SubscriptionManager from '../components/monetization/SubscriptionManager';
 import ClipCreator from '../components/live/ClipCreator';
+import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
 import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
@@ -345,6 +346,7 @@ export default function GreenroomPage() {
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  const [showClipCreator, setShowClipCreator] = useState(false);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -861,6 +863,7 @@ export default function GreenroomPage() {
       {roomId && user?.id && <VirtualCurrencyTips roomId={roomId} creatorId={room?.host_id || user?.id} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
+      {isHost && roomId && user?.id && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => setShowClipCreator(false)} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
@@ -921,7 +924,7 @@ export default function GreenroomPage() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
