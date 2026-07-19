@@ -895,6 +895,9 @@ export default function Home() {
       {/* ── TOP LIVE STRIP ── Rooms worth being in, the moment they go live */}
       <TopLiveStrip rooms={liveRooms} loading={loadingLive} />
 
+      {/* ── MOMENTS STRIP ── Recent clips from the creators you follow */}
+      <MomentsStrip />
+
       {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
       <div style={{ padding: '14px 0 10px' }}>
         <WashingtonClassicHero />

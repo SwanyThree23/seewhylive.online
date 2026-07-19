@@ -1,8 +1,85 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Youtube, Upload, List, Radio, Link as LinkIcon, X, ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { Youtube, Upload, List, Radio, Link as LinkIcon, X, ChevronDown, Plus, Trash2, Search } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+
+const YT_API_KEY = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_YOUTUBE_API_KEY : undefined;
+
+function YoutubeSearchPanel({ onPick }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const debounceRef = useRef(null);
+
+  const runSearch = useCallback(async (q) => {
+    if (!q.trim() || !YT_API_KEY) return;
+    setLoading(true);
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=9&type=video&key=${YT_API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setResults((data.items || []).map(item => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        channel: item.snippet.channelTitle,
+        thumb: item.snippet.thumbnails?.default?.url,
+      })));
+    } catch {
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    if (!query.trim()) { setResults([]); return; }
+    debounceRef.current = setTimeout(() => runSearch(query), 500);
+    return () => clearTimeout(debounceRef.current);
+  }, [query, runSearch]);
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" />
+        <input
+          placeholder="Search YouTube…"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          style={{ width: '100%', height: 34, paddingLeft: 28, paddingRight: 10, fontSize: 13, background: 'rgba(255,0,0,0.06)', border: '1px solid rgba(255,0,0,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+        />
+      </div>
+      {loading && (
+        <div className="flex items-center justify-center py-3">
+          <div className="w-4 h-4 border-2 border-red-500/40 border-t-red-500 rounded-full animate-spin" />
+        </div>
+      )}
+      {results.length > 0 && (
+        <div className="grid grid-cols-3 gap-1.5 max-h-52 overflow-y-auto pr-0.5" style={{ scrollbarWidth: 'thin' }}>
+          {results.map(r => (
+            <button
+              key={r.id}
+              onClick={() => onPick(r)}
+              className="text-left rounded-lg overflow-hidden group transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <img src={r.thumb} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'rgba(255,0,0,0.5)' }}>
+                  <span style={{ fontSize: 18 }}>▶</span>
+                </div>
+              </div>
+              <div className="p-1">
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.8)', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{r.title}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TABS = [
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
@@ -65,8 +142,13 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
   function submitYouTube() {
     const id = getYouTubeId(ytUrl);
     if (!id) { toast.error('Invalid YouTube URL'); return; }
-    onSelect({ type: 'youtube', url: ytUrl, title: `YouTube: ${id}`, ytId: id });
+    onSelect({ type: 'youtube', url: `https://www.youtube.com/watch?v=${id}`, title: `YouTube: ${id}`, ytId: id });
     setYtUrl('');
+    setOpen(false);
+  }
+
+  function pickYouTubeResult(result) {
+    onSelect({ type: 'youtube', url: `https://www.youtube.com/watch?v=${result.id}`, title: result.title, ytId: result.id });
     setOpen(false);
   }
 
@@ -167,7 +249,19 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
             <div className="p-4 space-y-3">
               {tab === 'youtube' && (
                 <>
-                  <p className="text-[10px] text-white/40">Paste a YouTube video, shorts, or live URL</p>
+                  {YT_API_KEY && (
+                    <>
+                      <YoutubeSearchPanel onPick={pickYouTubeResult} />
+                      <div className="flex items-center gap-2" style={{ margin: '4px 0' }}>
+                        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.1em' }}>OR PASTE LINK</span>
+                        <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+                      </div>
+                    </>
+                  )}
+                  {!YT_API_KEY && (
+                    <p className="text-[10px] text-white/40">Paste a YouTube video, shorts, or live URL</p>
+                  )}
                   <input
                     placeholder="https://youtube.com/watch?v=..."
                     value={ytUrl}

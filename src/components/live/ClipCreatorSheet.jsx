@@ -13,15 +13,20 @@ function autoTitle(roomTitle) {
   return `${roomTitle || 'Stream'} · ${t}`;
 }
 
+function clipUrl(clip) {
+  return `${window.location.origin}/moments/${clip.id}`;
+}
+
 async function shareClip(clip) {
-  const text = `Check out this clip: ${clip.title}`;
+  const url = clipUrl(clip);
+  const text = `Check out this moment: ${clip.title}`;
   if (navigator.share) {
     try {
-      await navigator.share({ title: clip.title, text, url: window.location.href });
+      await navigator.share({ title: clip.title, text, url });
       return;
     } catch { /* user cancelled or API unavailable */ }
   }
-  await navigator.clipboard.writeText(window.location.href).catch(() => {});
+  await navigator.clipboard.writeText(url).catch(() => {});
   toast.success('Link copied to clipboard');
 }
 
