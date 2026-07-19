@@ -195,7 +195,7 @@ export default function LivePoll({ roomId, isHost }) {
             <PollResults
               poll={activePoll}
               votes={voteTally}
-              currentUser={currentUser}
+              currentUser={currentUser || null}
               onVote={userVotedOption === null ? handleVote : null}
               onEnd={isHost ? () => endPollMutation.mutate() : null}
             />

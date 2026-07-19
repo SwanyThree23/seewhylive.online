@@ -6,22 +6,25 @@ import { toast } from 'sonner';
 import StreamHealthDashboard from '@/components/streaming/StreamHealthDashboard';
 import OBSBridge from '../components/obs/OBSBridge';
 import EnhancedIngestPanel from '@/components/streaming/EnhancedIngestPanel';
-import GuestStreamMonitor from '@/components/streaming/GuestStreamMonitor';
-import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
-import BitratePresets from '../components/streaming/BitratePresets';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import StreamAnalyticsDashboard from '../components/streaming/StreamAnalyticsDashboard';
-import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import NativeSelect from '../components/shared/NativeSelect';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import RTMPFanoutPanel from '../components/streaming/RTMPFanoutPanel';
 import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
-import StreamGoals from '../components/live/StreamGoals';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import NativeSelect from '@/components/shared/NativeSelect';
 import {
   Radio, Server, Copy, Check, Users, Mic, MicOff,
   Video, VideoOff, Zap, Globe, RefreshCw, Terminal,
@@ -38,9 +41,8 @@ function copyText(val) {
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
-  var arr = crypto.getRandomValues(new Uint8Array(4));
-  var rnd = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
-  return prefix + '_' + id + '_' + rnd;
+  const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+  return prefix + '_' + id + '_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
 }
 
 /* ─── Sub-components ─── */
@@ -136,8 +138,8 @@ function StreamTab({ user }) {
   var [streamKey, setStreamKey] = useState(function() { return genKey('sw', userId); });
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
   var [vdoRoom] = useState(function() {
-    var arr = crypto.getRandomValues(new Uint8Array(5));
-    return 'sw_' + Array.from(arr, b => b.toString(16).padStart(2, '0')).join('').slice(0, 10);
+    const arr = new Uint8Array(5); crypto.getRandomValues(arr);
+    return 'sw_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
   });
   var [perms, setPerms] = useState({
     speakers_can_share_screen: true,
@@ -808,27 +810,21 @@ export default function StreamInfra() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={roomId} isHost={false} />
-        <EnhancedIngestPanel roomId={roomId} isHost={false} />
-        <ZEGOConfigPanel roomId={roomId} />
-        <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
-        <StreamingPresets onApply={() => {}} />
-        <GuestRTMPPanel participantId={null} userId={user?.id} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={false} isLive={false} />
-        <ZEGOStreamHealthCard roomId={activeRoomId} />
-        <OnlineUsersGrid compact maxVisible={8} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
-        <AutomatedHighlightReels streamSession={null} />
-        <RTMPFanoutPanel roomId={activeRoomId} isHost={true} />
-        <GuestInviteGenerator roomId={activeRoomId} isHost={true} />
-        <StreamGoals isHost={true} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="infra" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

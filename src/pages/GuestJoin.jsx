@@ -12,14 +12,12 @@ import StreamGoals from '../components/live/StreamGoals';
 import GreenroomWaitlistPanel from '../components/greenroom/GreenroomWaitlistPanel';
 import GuestConnector from '../components/live/GuestConnector';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
-import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
 import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import { useLocalMedia } from '../hooks/useLocalMedia';
-import DevicePreview from '../components/greenroom/DevicePreview';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import GuestLandingPageV49 from '../components/streaming/GuestLandingPageV49';
+import AgeGate from '../components/AgeGate';
+import { getStoredAge } from '@/lib/ageVerification';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -30,6 +28,7 @@ export default function GuestJoin() {
   const roomId = urlParams.get('room') || urlParams.get('id');
   const inviteToken = urlParams.get('token');
 
+  const [ageVerified, setAgeVerified] = useState(() => { const a = getStoredAge(); return a !== null && a >= 18; });
   const [name, setName] = useState('');
   const [participantId, setParticipantId] = useState(null);
   const [status, setStatus] = useState('idle');
@@ -115,6 +114,37 @@ export default function GuestJoin() {
 
   const card = { background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 16, padding: 20 };
 
+  // Age gate — required for all entry paths
+  if (!ageVerified) {
+    return (
+      <AgeGate
+        minAge={18}
+        feature="join a live room"
+        onPass={() => setAgeVerified(true)}
+        onSkip={() => setAgeVerified(true)}
+        overlay={true}
+      />
+    );
+  }
+
+  // Token-based invite: show richer pre-join panel
+  if (inviteToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0d0618', fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="w-full max-w-sm">
+          <GuestLandingPanel
+            token={inviteToken}
+            roomId={roomId}
+            onJoin={() => {
+              if (roomId) window.location.href = createPageUrl('LiveRoom') + '?id=' + roomId;
+            }}
+          />
+        </div>
+        <SwanyBotWidget />
+      </div>
+    );
+  }
+
   if (!roomId) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#080B18' }}>
@@ -177,19 +207,29 @@ export default function GuestJoin() {
                   placeholder="Your display name"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && name.trim() && joinMutation.mutate()}
+                  onKeyDown={e => e.key === 'Enter' && name.trim() && setStatus('device-check')}
                   style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 12 }}
                 />
                 <button
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-black uppercase text-xs"
-                  onClick={() => joinMutation.mutate()}
-                  disabled={!name.trim() || joinMutation.isPending}
-                  style={{ ...T, background: !name.trim() || joinMutation.isPending ? 'rgba(212,175,55,0.2)' : GOLD, border: 'none', color: !name.trim() || joinMutation.isPending ? 'rgba(255,255,255,0.3)' : '#000', cursor: !name.trim() || joinMutation.isPending ? 'default' : 'pointer' }}>
+                  onClick={() => name.trim() && setStatus('device-check')}
+                  disabled={!name.trim()}
+                  style={{ ...T, background: !name.trim() ? 'rgba(212,175,55,0.2)' : GOLD, border: 'none', color: !name.trim() ? 'rgba(255,255,255,0.3)' : '#000', cursor: !name.trim() ? 'default' : 'pointer' }}>
                   <Radio className="w-4 h-4" />
-                  {joinMutation.isPending ? 'Joining…' : 'Join Greenroom'}
+                  Check Camera &amp; Join
                 </button>
               </div>
             </motion.div>
+          )}
+
+          {status === 'device-check' && (
+            <GuestLandingPageV49
+              key="device-check"
+              guestName={name}
+              roomId={roomId}
+              onProceed={() => joinMutation.mutate()}
+              onBack={() => setStatus('idle')}
+            />
           )}
 
           {status === 'waiting' && (
@@ -202,7 +242,7 @@ export default function GuestJoin() {
                   </div>
                   <h2 className="text-base font-black text-white" style={T}>{name}</h2>
                   <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${readyState ? '' : 'animate-pulse'}`}
-                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(212,175,55,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, color: readyState ? '#6DBF7E' : '#D4AF37' }}>
+                    style={{ ...T, background: readyState ? 'rgba(109,191,126,0.12)' : 'rgba(255,200,0,0.12)', border: `1px solid ${readyState ? 'rgba(109,191,126,0.3)' : 'rgba(255,200,0,0.3)'}`, color: readyState ? '#6DBF7E' : '#ffc800' }}>
                     {readyState ? <><CheckCircle className="w-2.5 h-2.5" /> Ready</> : <><Clock className="w-2.5 h-2.5" /> Waiting</>}
                   </span>
                   <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>

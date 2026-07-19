@@ -7,7 +7,26 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, Users, DollarSign, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import moment from 'moment';
+
+const GOLD    = '#D4AF37';
+const CRIMSON = '#800020';
+const GREEN   = '#6DBF7E';
+const PANEL   = 'rgba(13,6,24,0.95)';
+const T       = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const ACCESS_LABELS = {
+  single_event:      'Single Event',
+  early_access:      'Early Access',
+  exclusive_content: 'Exclusive',
+};
+
+const STATUS_CONFIG = {
+  upcoming: { bg: 'rgba(212,175,55,0.12)',  border: 'rgba(212,175,55,0.3)',   color: GOLD,    label: 'Upcoming'  },
+  live:     { bg: 'rgba(192,57,43,0.12)',  border: 'rgba(192,57,43,0.4)',   color: '#C0392B', label: '🔴 LIVE' },
+  ended:    { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.35)', label: 'Ended' },
+};
 
 export default function PayPerViewCard({ event }) {
   const queryClient = useQueryClient();

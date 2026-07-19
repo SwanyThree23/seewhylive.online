@@ -112,17 +112,31 @@ const CoverPage                = lazy(() => import('./pages/CoverPage'));
 const Login                    = lazy(() => import('./pages/Login'));
 const TranscriptionStudio      = lazy(() => import('./pages/TranscriptionStudio'));
 const RoomsManager             = lazy(() => import('./pages/RoomsManager'));
-const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
 const PKBattleArena            = lazy(() => import('./pages/PKBattleArena'));
-const GoLiveStudio             = lazy(() => import('./pages/GoLiveStudio'));
-const PayoutCenter             = lazy(() => import('./pages/PayoutCenter'));
-const FallenLegendsPage        = lazy(() => import('./pages/FallenLegendsPage'));
-const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
-const INSForgeStudio           = lazy(() => import('./pages/INSForgeStudio'));
+const EmbedPage                = lazy(() => import('./pages/EmbedPage'));
+const MerchStore               = lazy(() => import('./pages/MerchStore'));
+const StreamShareHub           = lazy(() => import('./pages/StreamShareHub'));
+const SeeWhyLIVEv41            = lazy(() => import('./pages/SeeWhyLIVEv41'));
 const CreatorAnalytics         = lazy(() => import('./pages/CreatorAnalytics'));
+const FallenLegendsPage        = lazy(() => import('./pages/FallenLegendsPage'));
+const ForgotPassword           = lazy(() => import('./pages/ForgotPassword'));
+const GreenRoomPreFlight       = lazy(() => import('./pages/GreenRoomPreFlight'));
+const GoLiveStudio             = lazy(() => import('./pages/GoLiveStudio'));
+const INSForgeStudio           = lazy(() => import('./pages/INSForgeStudio'));
+const PayoutCenter             = lazy(() => import('./pages/PayoutCenter'));
+const Register                 = lazy(() => import('./pages/Register'));
+const ResetPassword            = lazy(() => import('./pages/ResetPassword'));
 const SVSArena                 = lazy(() => import('./pages/SVSArena'));
-const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
 const StudioHub                = lazy(() => import('./pages/StudioHub'));
+const UnifiedRoom              = lazy(() => import('./pages/UnifiedRoom'));
+const WebsiteGenerator         = lazy(() => import('./pages/WebsiteGenerator'));
+const VoiceAgentBuilder        = lazy(() => import('./pages/VoiceAgentBuilder'));
+const WashingtonClassic        = lazy(() => import('./pages/WashingtonClassic'));
+const WisperFlo                = lazy(() => import('./pages/WisperFlo'));
+const EmbedPlayer              = lazy(() => import('./pages/EmbedPlayer'));
+const OpenRouterHub            = lazy(() => import('./pages/OpenRouterHub'));
+const LLMLinguaStudio          = lazy(() => import('./pages/LLMLinguaStudio'));
+const VDONinjaManager          = lazy(() => import('./pages/VDONinjaManager'));
 
 export const PAGES = {
     "AIHub": AIHub,
@@ -228,17 +242,32 @@ export const PAGES = {
     "Login": Login,
     "TranscriptionStudio": TranscriptionStudio,
     "RoomsManager": RoomsManager,
-    "GreenRoomPreFlight": GreenRoomPreFlight,
     "PKBattleArena": PKBattleArena,
-    "GoLiveStudio": GoLiveStudio,
-    "PayoutCenter": PayoutCenter,
-    "FallenLegends": FallenLegendsPage,
-    "WashingtonClassic": WashingtonClassic,
-    "INSForgeStudio": INSForgeStudio,
+    "EmbedPage": EmbedPage,
+    "MerchStore": MerchStore,
+    "StreamShareHub": StreamShareHub,
+    "SeeWhyLIVEv41": SeeWhyLIVEv41,
     "CreatorAnalytics": CreatorAnalytics,
+    "FallenLegendsPage": FallenLegendsPage,
+    "ForgotPassword": ForgotPassword,
+    "GreenRoomPreFlight": GreenRoomPreFlight,
+    "GoLiveStudio": GoLiveStudio,
+    "INSForgeStudio": INSForgeStudio,
+    "PayoutCenter": PayoutCenter,
+    "Register": Register,
+    "ResetPassword": ResetPassword,
     "SVSArena": SVSArena,
-    "WisperFlo": WisperFlo,
     "StudioHub": StudioHub,
+    "UnifiedRoom": UnifiedRoom,
+    "WebsiteGenerator": WebsiteGenerator,
+    "VoiceAgentBuilder": VoiceAgentBuilder,
+    "VoiceAISettings": VoiceAISettings,
+    "WashingtonClassic": WashingtonClassic,
+    "WisperFlo": WisperFlo,
+    "EmbedPlayer": EmbedPlayer,
+    "OpenRouterHub": OpenRouterHub,
+    "LLMLinguaStudio": LLMLinguaStudio,
+    "VDONinjaManager": VDONinjaManager,
 }
 
 export const pagesConfig = {

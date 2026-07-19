@@ -414,8 +414,8 @@ export default function RecordingManager({ userId }) {
             </div>
             <div className="bg-[#D4AF37]/5 p-3 rounded-lg">
               <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-[#D4AF37] mt-0.5" />
-                <div className="text-sm text-[#D4AF37]">
+                <Sparkles className="w-4 h-4 text-[#5B7FA6] mt-0.5" />
+                <div className="text-sm" style={{ color: '#5B7FA6' }}>
                   <p className="font-medium">AI-Powered Upload</p>
                   <p>Files will be automatically analyzed to generate titles, descriptions, categories, and keywords.</p>
                 </div>

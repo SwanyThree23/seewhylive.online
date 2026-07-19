@@ -21,9 +21,13 @@ import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import StreamGoals from '../components/live/StreamGoals';
+import ViewerCount from '../components/live/ViewerCount';
+import NotificationHub from '../components/live/NotificationHub';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
 import ShareToSocial from '../components/social/ShareToSocial';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import StreamHealthDashboard from '../components/streaming/StreamHealthMonitor';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -1294,8 +1298,7 @@ export default function SeeWhyLIVEv37() {
   });
   const userCommunityId = userCommunity?.id || null;
   const [activeTab, setActiveTab] = useState('stage');
-  const { localStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams, peerUserIds } = useWebRTCPeers(roomId, localStream);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
 
   const panelMap = {
     stage:     <StagePanel />,
@@ -1363,25 +1366,17 @@ export default function SeeWhyLIVEv37() {
         </div>
         {panelMap[activeTab]}
       </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <ReactionOverlay partyId={null} currentUser={user} />
-        <WatchPartyAnalytics party={null} members={[]} pollCount={0} reactionCount={0} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={false} currentUser={user} />
-        <StreamerGoalsWidget creatorId={user?.id} roomId={roomId} isCreator={false} />
-        <GreenroomQueue roomId={roomId} isHost={false} />
-        <SocialLeaderboard roomId={roomId} />
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        {/* new components here */}
-        <OnlineUsersGrid compact maxVisible={10} roomId={roomId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentUser={user} isHost={true} />
+      <SwanyBotWidget />
+      <SwanyBotEnhanced userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
+      <StreamGoals hostId={user?.id || null} roomId={null} isHost={true} />
+      <ViewerCount roomId={null} />
+      <NotificationHub userId={null} roomId={null} />
+      <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
+      <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
+      <StreamHealthDashboard roomId={null} isHost={true} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
+      <GlobalSearch onClose={() => {}} />
     </div>
   );
 }

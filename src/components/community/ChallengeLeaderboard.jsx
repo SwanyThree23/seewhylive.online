@@ -47,7 +47,7 @@ export default function ChallengeLeaderboard({ challengeId }) {
       {/* Header */}
       <div style={{ padding: '16px 16px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 15, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 2px', ...T }}>
-          <Trophy className="w-5 h-5" style={{ color: '#D4AF37' }} />
+          <Trophy className="w-5 h-5" style={{ color: '#7B5DA6' }} />
           Leaderboard
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>Top performers in this challenge</p>

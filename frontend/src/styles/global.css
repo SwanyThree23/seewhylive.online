@@ -721,9 +721,9 @@ input, select, textarea {
   z-index: 5;
 }
 
-.conn-dot--green  { background: #00ff88; box-shadow: 0 0 4px #00ff88; }
+.conn-dot--green  { background: #6DBF7E; box-shadow: 0 0 4px #6DBF7E; }
 .conn-dot--yellow { background: #ffcc00; box-shadow: 0 0 4px #ffcc00; }
-.conn-dot--red    { background: #ff4444; box-shadow: 0 0 4px #ff4444; }
+.conn-dot--red    { background: #C0392B; box-shadow: 0 0 4px #C0392B; }
 
 /* ============================================================
    EQ BARS

@@ -152,13 +152,12 @@ export default function OverlayBuilderPage() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    queryKey: ['overlaybuilder-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
     enabled: !!user?.id,
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
-  const roomId = activeRoomId;
   const { data: layouts = [] } = useQuery({
     queryKey: ['overlay-layouts', user?.id],
     queryFn: () => base44.entities.OverlayLayout.filter({ creator_id: user?.id }),
@@ -340,18 +339,21 @@ export default function OverlayBuilderPage() {
           />
         </div>
       </div>
-
-      {user?.id && (
-        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12, borderTop: '1px solid rgba(212,175,55,0.08)' }}>
-          <AlertConfig creatorId={user.id} />
-          <LowerThirdsBanner onBannerChange={() => {}} />
-          <OverlayThemeBuilder creatorId={user.id} />
-          <SceneSwitcher activeScene={null} onSceneChange={() => {}} />
-          <CompositorOverlay stream={null} isHost={true} roomId={roomId} />
-        </div>
-      )}
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="overlay" viewerCount={activeRoom?.viewer_count || 0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

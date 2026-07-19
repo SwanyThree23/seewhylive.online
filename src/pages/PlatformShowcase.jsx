@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -120,7 +120,7 @@ const FEATURES = [
     title: 'AI Podcast Studio',
     description: 'NotebookLM-style podcast creation with AI scripting, panel recording, and episode library.',
     icon: '🎙️',
-    color: '#D4AF37',
+    color: '#4A8A7A',
     highlights: ['AI script generation', 'Panel recording', 'Episode library'],
     link: '/PodcastStudio',
   },
@@ -128,7 +128,6 @@ const FEATURES = [
 
 export default function PlatformShowcase() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
   const [selected, setSelected] = useState(0);
   const feature = FEATURES[selected];
 
@@ -298,24 +297,21 @@ export default function PlatformShowcase() {
           </motion.a>
         </motion.div>
       </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamAnalyticsDashboard roomId={roomId} isHost={false} isLive={false} />
-        <VODLibrary creatorId={user?.id} />
-        <ShopDashboard creatorId={user?.id} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <ActivitySidebar isOpen={false} onClose={() => {}} />
-        <QuickActionPanel isOpen={false} onClose={() => {}} />
-      </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        {/* new components here */}
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

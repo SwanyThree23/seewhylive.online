@@ -1,9 +1,10 @@
 import React, { useReducer, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
-import DualStreamManager from '../components/streaming/DualStreamManager';
-import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
 import BitratePresets from '../components/streaming/BitratePresets';
 import DestinationsManager from '../components/streaming/DestinationsManager';
@@ -25,11 +26,10 @@ import {
   Radio, Video, Mic, Wifi, Shield, Layers, ChevronRight,
   AlertTriangle, Play, Square, SkipForward, Volume2, Monitor,
   Users, Clock, Activity, Zap, Youtube, Twitch, Facebook,
-  ToggleLeft, ToggleRight, Eye, TrendingUp
+  ToggleLeft, ToggleRight, Eye, TrendingUp, Settings
 } from 'lucide-react';
 
 const RTMP_URL = 'rtmp://ingest.seewhylive.online:1935/live';
-const STREAM_KEY = 'sw_6991033b_n8gf2vyf';
 const CREATOR_SPLIT = 0.90;
 
 const SCENES = [
@@ -142,10 +142,10 @@ function StatBox({ label, value, unit, color, warn }) {
 
 export default function GoLiveStudio() {
   const [state, dispatch] = useReducer(reducer, initState);
-  const [overlayLayers, setOverlayLayers] = useState([]);
   const uptimeRef = useRef(null);
   const healthRef = useRef(null);
   const countdownRef = useRef(null);
+  const [showCamSettings, setShowCamSettings] = useState(false);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -155,6 +155,15 @@ export default function GoLiveStudio() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+
+  const prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || undefined; } catch { return undefined; } })();
+  const prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || undefined; } catch { return undefined; } })();
+  const { localStream, videoEnabled, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
+
+  function handleCamChange(deviceId) {
+    try { if (deviceId) localStorage.setItem('swl_pref_cam', deviceId); } catch {}
+    reacquireMedia({ videoDeviceId: deviceId });
+  }
 
   var allChecked = Object.values(state.checklist).every(Boolean);
 
@@ -224,7 +233,7 @@ export default function GoLiveStudio() {
         </div>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>GO LIVE STUDIO</div>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>SeeWhy LIVE · {RTMP_URL}</div>
+          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>SeeWhy LIVE · Multi-Platform Studio</div>
         </div>
         {isLive && (
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.5)', borderRadius: 8, padding: '4px 12px' }}>
@@ -239,6 +248,13 @@ export default function GoLiveStudio() {
             <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>viewers</span>
           </div>
         )}
+        <button
+          onClick={() => setShowCamSettings(true)}
+          style={{ marginLeft: 'auto', width: 34, height: 34, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title="Camera & mic settings"
+        >
+          <Settings size={15} />
+        </button>
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 16px', display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
@@ -257,13 +273,6 @@ export default function GoLiveStudio() {
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(90deg, rgba(7,5,10,0.95), rgba(212,175,55,0.15))', borderTop: '2px solid #d4af37', padding: '10px 16px' }}>
                 <div style={{ fontSize: 15, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>SeeWhy LIVE</div>
                 <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{state.lowerThirdText}</div>
-              </div>
-            )}
-
-            {/* News Block overlay — live lower thirds on the preview */}
-            {overlayLayers.length > 0 && (
-              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 5 }}>
-                <NewsBlockOverlay.Overlay layers={overlayLayers} />
               </div>
             )}
           </div>
@@ -290,12 +299,21 @@ export default function GoLiveStudio() {
             </div>
           </div>
 
-          {/* News Block overlay — multi-layer lower thirds */}
-          <NewsBlockOverlay onLayersChange={setOverlayLayers} />
-
-          {/* Dual Stream — 16:9 landscape + 9:16 portrait simultaneously */}
+          {/* Lower Third */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
-            <DualStreamManager localStream={null} isActive={isLive} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.15em', fontFamily: 'Barlow Condensed, sans-serif' }}>LOWER THIRD BANNER</div>
+              <button onClick={() => dispatch({ type: 'TOGGLE_LOWER_THIRD' })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: state.showLowerThird ? '#d4af37' : 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                {state.showLowerThird ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                {state.showLowerThird ? 'ON' : 'OFF'}
+              </button>
+            </div>
+            <input
+              value={state.lowerThirdText}
+              onChange={e => dispatch({ type: 'SET_LOWER_THIRD_TEXT', payload: e.target.value })}
+              placeholder="Banner text..."
+              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            />
           </div>
 
           {/* Audio Controls */}
@@ -398,21 +416,30 @@ export default function GoLiveStudio() {
             <div style={{ fontSize: 12, color: '#d4af37', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', marginBottom: 8, wordBreak: 'break-all', fontFamily: 'Share Tech Mono, monospace' }}>{RTMP_URL}</div>
             <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginBottom: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>STREAM KEY</div>
             <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', background: 'rgba(0,0,0,0.3)', borderRadius: 6, padding: '6px 10px', fontFamily: 'Share Tech Mono, monospace', letterSpacing: '0.05em' }}>••••••••••••••</div>
-            <button
-              onClick={() => navigator.clipboard.writeText(STREAM_KEY)}
-              style={{ marginTop: 8, width: '100%', padding: '6px', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: 6, color: '#d4af37', fontSize: 12, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}
-            >
-              Copy Stream Key
-            </button>
+            <div style={{ marginTop: 8, fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif', textAlign: 'center' }}>
+              Find your stream key in Settings → Stream Keys
+            </div>
           </div>
 
-          {/* Live Destination Editor — add/start/stop platforms mid-stream */}
+          {/* Multi-Destination */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 14 }}>
-            <LiveDestinationEditor
-              roomId={activeRoomId}
-              isHost={true}
-              isLive={isLive}
-            />
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.12em', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>MULTI-DESTINATION</div>
+            {DESTINATIONS.map(dest => (
+              <div key={dest.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: dest.color }} />
+                  <span style={{ fontSize: 13, color: state.destinations[dest.id] ? '#fff' : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{dest.label}</span>
+                  {dest.required && <span style={{ fontSize: 9, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>PRIMARY</span>}
+                </div>
+                <button
+                  onClick={() => dispatch({ type: 'TOGGLE_DESTINATION', payload: dest.id })}
+                  disabled={dest.required}
+                  style={{ width: 36, height: 20, borderRadius: 10, border: 'none', background: state.destinations[dest.id] ? dest.color : 'rgba(255,255,255,0.15)', cursor: dest.required ? 'default' : 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s' }}
+                >
+                  <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: state.destinations[dest.id] ? 19 : 3, transition: 'left 0.2s' }} />
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* Guardian Status */}
@@ -491,6 +518,9 @@ export default function GoLiveStudio() {
           <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
         </div>
       </div>
+      {activeRoomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={activeRoomId} tipTotal={0} />}
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      {state.phase === 'live' && <LiveCaptionOverlay stream={localStream} />}
     </div>
   );
 }

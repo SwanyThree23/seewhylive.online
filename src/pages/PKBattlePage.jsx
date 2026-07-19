@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { isSafeUrl } from '@/lib/security';
 import { Swords, Trophy, ArrowLeft, Plus, Users, Zap, Clock, Gift, Crown } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
 import ShareButtons from '../components/shared/ShareButtons';
@@ -20,19 +20,40 @@ import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
-import GiftTray from '../components/live/GiftTray';
-import TipNowModal from '../components/live/TipNowModal';
-import PointsNotification from '../components/live/PointsNotification';
-import SuperChatRail from '../components/live/SuperChatRail';
-import LivePoll from '../components/live/LivePoll';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import BattleArenaManager from '../components/live/BattleArenaManager';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 const BATTLE_DURATION = 180;
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
@@ -173,8 +194,8 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
         />
       </div>
       <div className="flex items-center justify-between text-xs font-bold mt-1">
-        <span className="text-[#D4AF37]">{leftVotes.toLocaleString()} pts</span>
-        <span className="text-red-400">{rightVotes.toLocaleString()} pts</span>
+        <span className="text-blue-400">{leftVotes.toLocaleString()} pts</span>
+        <span className="text-[#C0392B]">{rightVotes.toLocaleString()} pts</span>
       </div>
     </div>
   );
@@ -442,18 +463,6 @@ export default function PKBattlePage() {
 
   const copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
 
-  const { localStream: localCamStream } = useLocalMedia({ audio: true, video: true });
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds } = useWebRTCPeers(battleId || '', localCamStream);
-  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-  React.useEffect(() => {
-    return () => {
-      if (leftCaptureStream) leftCaptureStream.getTracks().forEach(t => t.stop());
-      if (rightCaptureStream) rightCaptureStream.getTracks().forEach(t => t.stop());
-    };
-  }, [leftCaptureStream, rightCaptureStream]);
-
   if (!battleId) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#080B18] via-[#001428] to-[#080B18] flex items-center justify-center px-4">
@@ -541,7 +550,54 @@ export default function PKBattlePage() {
   const bLeftStream = leftStream;
   const bRightStream = rightStream;
 
-  const isHost = !!(user?.id && battle?.creator_id === user?.id);
+  const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamPK);
+  const [activeMicId, setActiveMicId] = useState(prefMicPK);
+  const { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
+  const announceJoinBattleRef = useRef(announceJoinBattle);
+  const leaveRoomBattleRef = useRef(leaveRoomBattle);
+  useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
+  useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
+  useEffect(() => {
+    if (!user?.id || !battleId) return;
+    announceJoinBattleRef.current?.(user.id);
+  }, [user?.id, battleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => leaveRoomBattleRef.current?.(), []);
+
+  const [activeBattlePc, setActiveBattlePc] = useState(null);
+  useEffect(() => {
+    const entries = Array.from(battlePeersRef.current.entries());
+    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    setActiveBattlePc(connected ? connected[1].pc : null);
+  }, [battleRemoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
+
+  const [peakViewers, setPeakViewers] = useState(0);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
+  const subCount = useSubscriptionCount(user?.id);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState('auto');
+
+  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
+  const [pkChatMessages, setPkChatMessages] = useState([]);
+  const [pkHypeLevel, setPkHypeLevel] = useState(0);
+  const [showPKCamSettings, setShowPKCamSettings] = useState(false);
+  const isHostBattle = !!(user?.id && battle?.creator_id === user?.id);
+  useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: pkChatMessages[pkChatMessages.length - 1] || null });
+
+  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
+  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
+
+  React.useEffect(() => () => {
+    leftCaptureStream?.getTracks().forEach(t => t.stop());
+    rightCaptureStream?.getTracks().forEach(t => t.stop());
+  }, [leftCaptureStream, rightCaptureStream]);
 
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
@@ -558,14 +614,16 @@ export default function PKBattlePage() {
   };
 
   const handleBattleScreenCapture = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
-      if (!leftCaptureStream) setLeftCaptureStream(stream);
-      else setRightCaptureStream(stream);
-      return stream;
-    } catch {
-      // User cancelled or permission denied — leave existing streams unchanged
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!leftCaptureStream) {
+      if (videoTrack) videoTrack.onended = () => setLeftCaptureStream(null);
+      setLeftCaptureStream(stream);
+    } else {
+      if (videoTrack) videoTrack.onended = () => setRightCaptureStream(null);
+      setRightCaptureStream(stream);
     }
+    return stream;
   };
 
   var giftsDisabled = countdown !== null;
@@ -800,19 +858,33 @@ export default function PKBattlePage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <GiftTray roomId={battleId} currentUser={user} recipientId={battle?.creator_id} />
-        {battle?.creator_id && <TipNowModal roomId={battleId} recipientId={battle.creator_id} isOpen={false} onClose={() => {}} />}
-        {user?.id && <PointsNotification userId={user.id} />}
-        {battleId && <SuperChatRail roomId={battleId} currentUser={user} />}
-        {battleId && <LivePoll roomId={battleId} isHost={isHost} />}
-        <OnlineUsersGrid roomId={battleId} remoteStreams={battleRemoteStreams} peerUserIds={battlePeerUserIds} localStream={localCamStream} currentUser={user} compact maxVisible={8} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={null} />
-        <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-      </div>
+      <SwanAIRecommendations roomId={battleId} currentLayout="battle" viewerCount={battleRemoteStreams.size} />
+      <MilestoneAlerts userId={user?.id} roomId={battleId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {battleId && <BattleMode roomId={battleId} isHost={!!(user?.id && battle?.creator_id === user?.id)} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {user?.id && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={battle?.status === 'active'} />}
+      {battleId && <TranscriptionPanel recordingUrl={''} roomTitle={battle?.title || ''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={subCount} currentViewers={battleRemoteStreams.size} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={battleId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={battleRemoteStreams.size} peakViewers={peakViewers} />
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
+      <BackgroundCustomizer />
+      <BattleArenaManager roomId={battleId} isHost={isHostBattle} onBattleEnd={() => { qc.invalidateQueries({ queryKey: ['pk-battle', battleId] }); setTimeout(() => navigate('/'), 2000); }} />
+      {battleId && isHostBattle && <GuestInviteGenerator roomId={battleId} isHost={isHostBattle} />}
+      {battleId && isHostBattle && <PipCameraTile localStream={localCamStream} videoEnabled={true} roomId={battleId} tipTotal={0} />}
+      {isHostBattle && <PreJoinSettingsModal open={showPKCamSettings} onClose={() => setShowPKCamSettings(false)} stream={localCamStream} devices={{ cameras: [] }} onCameraChange={(id) => { try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHostBattle && <LiveCaptionOverlay stream={localCamStream} />}
     </div>
   );
 }

@@ -89,7 +89,7 @@ export default function AdvancedAnalyticsPage() {
           {[
             { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, icon: DollarSign, color: '#6DBF7E' },
             { label: 'Live Rooms', value: activeRooms, icon: Radio, color: '#C0392B' },
-            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#D4AF37' },
+            { label: 'Total Viewers', value: totalViewers, icon: Users, color: '#4A8A7A' },
             { label: 'Avg. Engagement', value: `${metrics.length > 0 ? (metrics.reduce((a, m) => a + m.value, 0) / metrics.length).toFixed(1) : 0}%`, icon: Zap, color: GOLD },
           ].map(({ label, value, icon: Icon, color }) => (
             <div key={label} className="rounded-2xl p-4"
@@ -142,7 +142,7 @@ export default function AdvancedAnalyticsPage() {
                 <XAxis dataKey="date" tick={TICK} axisLine={false} tickLine={false} />
                 <YAxis tick={TICK} axisLine={false} tickLine={false} />
                 <Tooltip {...TOOLTIP_STYLE} />
-                <Line type="monotone" dataKey="value" stroke="#D4AF37" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="value" stroke="#4A8A7A" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -204,7 +204,7 @@ export default function AdvancedAnalyticsPage() {
               </div>
               <div className="space-y-3">
                 {[
-                  { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#D4AF37' },
+                  { title: 'Optimize Stream Times', desc: 'Peak viewership at 7–9 PM', color: '#4A8A7A' },
                   { title: 'Increase Monetization', desc: '15% conversion rate on tips', color: '#6DBF7E' },
                   { title: 'Community Engagement', desc: 'Chat activity up 23%', color: '#D4AF37' },
                 ].map(({ title, desc, color }) => (
@@ -222,7 +222,7 @@ export default function AdvancedAnalyticsPage() {
               <div className="space-y-4">
                 {[
                   { label: 'System Performance', value: 95, text: 'Excellent', color: '#6DBF7E' },
-                  { label: 'User Satisfaction', value: 88, text: 'High', color: '#D4AF37' },
+                  { label: 'User Satisfaction', value: 88, text: 'High', color: '#4A8A7A' },
                   { label: 'Content Quality', value: 82, text: 'Good', color: '#D4AF37' },
                 ].map(({ label, value, text, color }) => (
                   <div key={label}>
@@ -270,6 +270,22 @@ export default function AdvancedAnalyticsPage() {
           </div>
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="analytics" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

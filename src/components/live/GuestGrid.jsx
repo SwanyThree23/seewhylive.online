@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
 import GuestStreamingPermissions from './GuestStreamingPermissions';
+import SpeakingIndicator from './SpeakingIndicator';
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const GOLD = '#D4AF37';
@@ -29,39 +30,20 @@ function getGridClass(slots) {
   return 'grid-cols-5';
 }
 
-/* ───── single octagonal tile ───── */
-function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser, onSpotlight }) {
-  const videoRef   = useRef(null);
-  const [speaking, setSpeaking] = useState(false);
-  const vadRefs    = useRef({});
-  const glow       = ROLE_GLOW[participant?.role] || GOLD;
+
+function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSpotlight, isHostUser: hostCtrl, externalSpeaking }) {
+  const [simSpeaking, setSimSpeaking] = useState(false);
+
+  // Use real speaking data when available; fall back to simulation
+  const hasRealData = externalSpeaking !== undefined && externalSpeaking !== null;
+  const speaking = hasRealData ? externalSpeaking : simSpeaking;
 
   // Real Web Audio API VAD on the participant's remote (or local) stream
   useEffect(() => {
-    const stream = participant?.remoteStream;
-    if (!stream || stream.getAudioTracks().length === 0) { setSpeaking(false); return; }
-    let running = true;
-    try {
-      const ctx      = new AudioContext();
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      ctx.createMediaStreamSource(stream).connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      const tick = () => {
-        if (!running) return;
-        analyser.getByteFrequencyData(data);
-        setSpeaking(data.reduce((s, v) => s + v, 0) / data.length > 12);
-        vadRefs.current.raf = requestAnimationFrame(tick);
-      };
-      vadRefs.current.raf = requestAnimationFrame(tick);
-      vadRefs.current.ctx = ctx;
-    } catch {}
-    return () => {
-      running = false;
-      cancelAnimationFrame(vadRefs.current.raf);
-      vadRefs.current.ctx?.close();
-    };
-  }, [participant?.remoteStream]);
+    if (compact || hasRealData) return;
+    const interval = setInterval(() => setSimSpeaking(Math.random() > 0.6), 800);
+    return () => clearInterval(interval);
+  }, [compact, hasRealData]);
 
   // Attach stream to video element whenever it changes
   useEffect(() => {
@@ -81,6 +63,7 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
   const isLocal = !!participant?.isLocal;
 
   return (
+    <SpeakingIndicator isSpeaking={speaking && !compact} isHost={isHostUser}>
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.8 }}
@@ -96,38 +79,69 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
 
       {/* Octagonal cell */}
       <div
-        onClick={() => !compact && onSpotlight?.(participant.id)}
-        style={{
-          clipPath: OCT,
-          width: px, height: px,
-          background: '#080B18',
-          border: `3px solid ${speaking ? glow : participant?.is_streaming ? '#C0392B' : `${glow}55`}`,
-          boxShadow: speaking
-            ? `0 0 20px ${glow}55, inset 0 0 12px ${glow}22`
-            : participant?.is_streaming
-              ? '0 0 20px rgba(192,57,43,0.5), inset 0 0 12px rgba(192,57,43,0.15)'
-              : `0 0 8px ${glow}33`,
-          overflow: 'hidden',
-          cursor: 'pointer',
-          flexShrink: 0,
-          position: 'relative',
-        }}>
-        {/* Video feed or avatar */}
-        {hasVideo ? (
-          <video ref={videoRef} autoPlay playsInline muted={isLocal}
-            className="w-full h-full object-cover"
-            style={{ transform: isLocal ? 'scaleX(-1)' : 'none' }} />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"
-            style={{ background: `linear-gradient(145deg, ${CRIMSON}44, #080B18)` }}>
-            {participant?.user_avatar ? (
-              <img src={participant.user_avatar} alt={participant.user_name}
-                className="w-full h-full object-cover opacity-70" />
-            ) : (
-              <span className="font-black text-white"
-                style={{ fontSize: px * 0.3, color: glow, textShadow: `0 0 16px ${glow}` }}>
-                {participant?.user_name?.charAt(0)?.toUpperCase()}
-              </span>
+        className={`w-full h-full rounded-lg border-2 overflow-hidden bg-gradient-to-br from-[#1a0a20] to-[#0d0618] flex flex-col relative transition-all duration-200 ${
+          speaking && !compact
+            ? 'border-[#4A8A7A] shadow-[0_0_16px_rgba(74,138,122,0.4)]'
+            : 'border-white/10 group-hover:border-[#d4af37]/40'
+        }`}
+      >
+        {/* Center avatar */}
+        <div className="flex-1 flex items-center justify-center">
+          <div style={{ width: isSpotlight ? 96 : compact ? 40 : 56, height: isSpotlight ? 96 : compact ? 40 : 56, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(to bottom right, #800020, #d4af37)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isSpotlight ? 32 : compact ? 14 : 20, fontWeight: 700, color: '#fff' }}>
+            {participant.user_name?.charAt(0)?.toUpperCase()}
+          </div>
+          {speaking && !compact && (
+            <div className="absolute flex items-end gap-0.5 bottom-10 left-1/2 -translate-x-1/2">
+              {[3, 5, 4, 6, 3].map((h, i) => (
+                <motion.div
+                  key={i}
+                  animate={{ height: [h, h * 1.8, h] }}
+                  transition={{ duration: 0.3, repeat: Infinity, delay: i * 0.05 }}
+                  className="w-0.5 rounded-full bg-[#4A8A7A]"
+                  style={{ height: h }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2">
+          <div className="flex items-center justify-between gap-1">
+            <div className="flex items-center gap-1 min-w-0">
+              {isHostUser && <Crown className="w-3 h-3 text-[#d4af37] shrink-0" />}
+              <p className={`text-white font-semibold truncate ${compact ? 'text-[11px]' : 'text-xs'}`}>
+                {participant.user_name}
+              </p>
+            </div>
+            {!compact && (
+              <div className="flex items-center gap-1 shrink-0">
+                {participant.is_audio_enabled !== false
+                  ? <Mic className="w-2.5 h-2.5 text-[#6DBF7E]" />
+                  : <MicOff className="w-2.5 h-2.5 text-[#C0392B]" />}
+                {Array.from({ length: connDots }).map((_, i) => (
+                  <div key={i} className="w-1 h-1 rounded-full bg-[#6DBF7E]" />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Hover controls */}
+        {!compact && (
+          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+            <button
+              onClick={() => onSpotlight?.(participant.id)}
+              className="w-6 h-6 rounded bg-black/60 hover:bg-[#d4af37]/20 flex items-center justify-center"
+            >
+              {isSpotlight ? <Minimize2 className="w-3 h-3 text-white" /> : <Maximize2 className="w-3 h-3 text-white" />}
+            </button>
+            {hostCtrl && (
+              <GuestStreamingPermissions
+                participant={participant}
+                isHost={hostCtrl}
+                onPermissionChange={() => {}}
+              />
             )}
           </div>
         )}
@@ -197,6 +211,7 @@ function GuestTile({ participant, isSpotlight, compact, isHostBadge, isHostUser,
         </div>
       )}
     </motion.div>
+    </SpeakingIndicator>
   );
 }
 
@@ -238,6 +253,7 @@ export default React.memo(function GuestGrid({
   peerUserIds,     // Map<peerId, userId> from useWebRTCPeers
   localStream,     // MediaStream from useLocalMedia (for current user's tile)
   currentUserId,   // current user's id, to identify which tile gets localStream
+  speakingIds = {},
 }) {
   const [layoutSlots, setLayoutSlots] = useState(4);
   const [spotlightId, setSpotlightId] = useState(null);

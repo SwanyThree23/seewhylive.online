@@ -221,51 +221,26 @@ export default function LiveBattles() {
           </div>
         )}
       </div>
-
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <PKBattleProgress battleId={battles?.[0]?.id || null} />
-        <BattleScoreboard roomId={battles?.[0]?.id || null} />
-      </div>
-
-      {/* Battle engagement tools */}
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <PKBattleInterface roomId={battles?.[0]?.id || null} />
-        <TournamentBracket />
-        <MatchmakingQueue user={user} onMatchFound={() => {}} />
-        <LoveTap roomId={battles?.[0]?.id || null} user={user} creatorId={battles?.[0]?.creator_id || null} creatorName="Creator" />
-        <GiftShopTray roomId={battles?.[0]?.id || null} currentUser={user} />
-        <PKBattleVotePanel battleId={battles?.[0]?.id || null} creatorId={battles?.[0]?.creator_id || null} challengerId={battles?.[0]?.challenger_id || null} creatorName={battles?.[0]?.creator_name || 'Creator'} challengerName={battles?.[0]?.challenger_name || 'Challenger'} />
-        <PKBattleSoundboard battleId={battles?.[0]?.id || null} isBattleActive={battles?.[0]?.status === 'active'} />
-        <BattleMode roomId={battles?.[0]?.id || null} isHost={false} hostName="" participants={[]} />
-        <BattleOverlay battle={battles?.[0] || null} onBattleUpdate={() => {}} />
-        <PKAnalyticsDashboard battles={battles || []} user={user} />
-      </div>
-
-      {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-        {[
-          ['PKBattleArena',   '⚔️ Battle Arena'],
-          ['PKBattleManager', '⚙️ Manage'],
-          ['StateVsState',    '🏟️ SVS'],
-          ['Leaderboard',     '👑 Elite League'],
-          ['Home',            '🏠 Home'],
-        ].map(([page, label]) => (
-          <Link key={page} to={createPageUrl(page)} style={{ textDecoration: 'none' }}>
-            <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {label}
-            </button>
-          </Link>
-        ))}
-      </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <ShareToSocial url={window.location.href} title="SeeWhy LIVE" />
-      </div>
+      <SwanAIRecommendations roomId={roomId} currentLayout="battles" viewerCount={battles.length} />
+      <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
+      {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
+      {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
+      {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={battles.length} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={battles.length} peakViewers={battles.length} />
+      <BackgroundCustomizer />
     </div>
   );
 }

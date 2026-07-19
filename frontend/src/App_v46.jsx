@@ -22,7 +22,7 @@ const C = {
   blue: '#2979FF',
   cyan: '#00BCD4',
   orange: '#FF6D00',
-  purple: '#7C3AED',
+  purple: '#7B5DA6',
 };
 
 const CREATOR_SPLIT = function(t) { return Math.floor(t * 90 / 100); };
@@ -38,7 +38,7 @@ const GUARDIAN_FLAG = 0.50;
 const CONNECTION_CHECK_INTERVAL = 2000;
 const BASE44_APP_ID = '6990f5f24823b53e21fcdc9d';
 const INGEST_URL = 'rtmp://ingest.seewhylive.online:1935/live';
-const STREAM_KEY_PREFIX = 'sw_6991033b_';
+const STREAM_KEY_PREFIX = 'sw_';
 const SUPABASE_URL = 'https://xlrcibziouffgxciecvc.supabase.co';
 
 // Subscription tiers
@@ -78,14 +78,18 @@ function fmtK(n) {
 function fmtTime(s) { return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
 function fmtMoney(cents) { return '$' + (Math.floor(cents) / 100).toFixed(2); }
 function avatarColor(name) {
-  var palette = [C.burgundy, '#1565C0', '#2E7D32', '#6A1B9A', '#E65100', '#00695C', '#37474F', '#C62828'];
+  var palette = [C.burgundy, '#5B7FA6', '#2E7D32', '#6A1B9A', '#E65100', '#00695C', '#37474F', '#C62828'];
   var h = 0;
   for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % palette.length;
   return palette[h];
 }
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function tsNow() { return Date.now(); }
-function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).slice(2, 10); }
+function genStreamKey() {
+  var arr = new Uint8Array(6);
+  crypto.getRandomValues(arr);
+  return STREAM_KEY_PREFIX + Array.from(arr).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('');
+}
 
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
@@ -472,7 +476,7 @@ function PKBattleModal(props) {
             <div style={{ color: C.muted, fontSize: 11, letterSpacing: 1 }}>REMAINING</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
-            {[{ name: hostName, score: scoreA, color: C.burgundy }, { name: opponent, score: scoreB, color: '#1565C0' }].map(function(side, i) {
+            {[{ name: hostName, score: scoreA, color: C.burgundy }, { name: opponent, score: scoreB, color: '#5B7FA6' }].map(function(side, i) {
               return (
                 <div key={i} style={{ background: 'linear-gradient(135deg,' + side.color + '33,' + C.charcoal + ')', border: '2px solid ' + side.color, borderRadius: 12, padding: 14, textAlign: 'center' }}>
                   <div style={{ color: '#fff', fontWeight: 800, fontSize: 11, marginBottom: 4 }}>{side.name}</div>
@@ -487,7 +491,7 @@ function PKBattleModal(props) {
               <div style={{ width: pctA + '%', background: C.burgundy, transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>{pctA}%</span>
               </div>
-              <div style={{ width: pctB + '%', background: '#1565C0', transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: pctB + '%', background: '#5B7FA6', transition: 'width 0.5s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>{pctB}%</span>
               </div>
             </div>
@@ -2063,7 +2067,7 @@ function BattlesPage(props) {
             <div style={{ color: C.white, fontWeight: 800, fontSize: 14, margin: '4px 0 10px' }}>State vs State: WA vs CA 🔥</div>
             <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', height: 20, marginBottom: 8 }}>
               <div style={{ width: '54%', background: C.burgundy, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>WA 54%</span></div>
-              <div style={{ width: '46%', background: '#1565C0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>CA 46%</span></div>
+              <div style={{ width: '46%', background: '#5B7FA6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#fff', fontSize: 10, fontWeight: 800 }}>CA 46%</span></div>
             </div>
             <div style={{ color: C.muted, fontSize: 11 }}>👁 1,204 watching · Tap to join</div>
           </div>
@@ -2711,7 +2715,7 @@ function PKBattleArenaV2({ user, dispatch }) {
           <div>
             <div style={{ textAlign: 'center', marginBottom: 12 }}>
               <div style={{ fontSize: 22, fontFamily: "'Bebas Neue',sans-serif", color: C.gold }}>BATTLE LIVE!</div>
-              <div style={{ fontSize: 32, fontFamily: 'monospace', color: timeLeft < 30 ? '#ff4444' : C.green }}>{timeLeft}s</div>
+              <div style={{ fontSize: 32, fontFamily: 'monospace', color: timeLeft < 30 ? '#C0392B' : C.green }}>{timeLeft}s</div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <div style={{ textAlign: 'center' }}>
@@ -2731,7 +2735,7 @@ function PKBattleArenaV2({ user, dispatch }) {
         )}
         {battleState === 'ended' && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 28, fontFamily: "'Bebas Neue',sans-serif", color: scores.creator >= scores.challenger ? C.green : '#ff4444' }}>
+            <div style={{ fontSize: 28, fontFamily: "'Bebas Neue',sans-serif", color: scores.creator >= scores.challenger ? C.green : '#C0392B' }}>
               {scores.creator >= scores.challenger ? 'YOU WIN! 🏆' : 'CHALLENGER WINS'}
             </div>
             <div style={{ fontSize: 20, fontFamily: 'monospace', margin: '8px 0', color: C.gold }}>{scores.creator} — {scores.challenger}</div>
@@ -3094,7 +3098,7 @@ function GuardianV2() {
     { msg: '[user banned]', score: 0.97, action: 'BANNED', ts: Date.now() - 600000 },
   ];
   function getAction(s) {
-    if (s >= GUARDIAN_BAN) return { label: 'BAN', color: '#ff4444' };
+    if (s >= GUARDIAN_BAN) return { label: 'BAN', color: '#C0392B' };
     if (s >= GUARDIAN_MUTE) return { label: 'MUTE', color: C.orange };
     if (s >= GUARDIAN_FLAG) return { label: 'FLAG', color: '#ffcc00' };
     return { label: 'ALLOW', color: C.green };
@@ -3114,7 +3118,7 @@ function GuardianV2() {
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 12 }}>
-        {[['FLAG', GUARDIAN_FLAG, '#ffcc00'], ['MUTE', GUARDIAN_MUTE, C.orange], ['BAN', GUARDIAN_BAN, '#ff4444']].map(function(item) {
+        {[['FLAG', GUARDIAN_FLAG, '#ffcc00'], ['MUTE', GUARDIAN_MUTE, C.orange], ['BAN', GUARDIAN_BAN, '#C0392B']].map(function(item) {
           return (
             <div key={item[0]} style={{ background: C.slate, border: '1px solid #2a2a2a', borderRadius: 6, padding: 10, textAlign: 'center' }}>
               <div style={{ fontSize: 14, color: item[2], fontWeight: 700 }}>{item[1]}</div>
@@ -3134,7 +3138,7 @@ function GuardianV2() {
         {score !== null && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ flex: 1, background: '#1a1a1a', borderRadius: 3, height: 8, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: (score * 100) + '%', background: score >= 0.95 ? '#ff4444' : score >= 0.75 ? C.orange : score >= 0.5 ? '#ffcc00' : C.green, transition: 'width 0.5s' }} />
+              <div style={{ height: '100%', width: (score * 100) + '%', background: score >= 0.95 ? '#C0392B' : score >= 0.75 ? C.orange : score >= 0.5 ? '#ffcc00' : C.green, transition: 'width 0.5s' }} />
             </div>
             <div style={{ fontSize: 14, fontFamily: 'monospace', color: getAction(score).color }}>{score.toFixed(2)} → {getAction(score).label}</div>
           </div>
@@ -3457,7 +3461,7 @@ function PayoutsPanelV2() {
               <div style={{ fontWeight: 600, fontSize: 13 }}>{fmt$(p.amount)}</div>
               <div style={{ fontSize: 11, color: C.muted }}>{p.method} · {p.date}</div>
             </div>
-            <span style={{ background: '#ff000022', color: '#ff4444', border: '1px solid #ff444444', fontSize: 10, padding: '2px 6px', borderRadius: 3 }}>PAID</span>
+            <span style={{ background: '#ff000022', color: '#C0392B', border: '1px solid #C0392B44', fontSize: 10, padding: '2px 6px', borderRadius: 3 }}>PAID</span>
           </div>
         );
       })}
@@ -3614,7 +3618,7 @@ function InfraV2() {
     }, 1200);
     return function() { clearTimeout(t); };
   }, []);
-  function statusColor(s) { return s === 'online' ? C.green : s === 'degraded' ? C.orange : s === 'offline' ? '#ff4444' : C.muted; }
+  function statusColor(s) { return s === 'online' ? C.green : s === 'degraded' ? C.orange : s === 'offline' ? '#C0392B' : C.muted; }
   return (
     <div>
       <div style={{ fontSize: 22, fontFamily: "'Bebas Neue',sans-serif", color: C.gold, marginBottom: 12 }}>INFRASTRUCTURE</div>

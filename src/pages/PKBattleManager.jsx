@@ -671,6 +671,14 @@ export default function PKBattleManager() {
     queryFn: function() { return base44.auth.me(); },
   });
 
+  var { data: activeRoom } = useQuery({
+    queryKey: ['pkbattlemgr-active-room', user?.id],
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  var activeRoomId = activeRoom?.id || null;
+
   var { data: battles = [] } = useQuery({
     queryKey: ['pk-battles'],
     queryFn: function() { return base44.entities.PKBattle.list('-created_date', 50); },
@@ -835,14 +843,21 @@ export default function PKBattleManager() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
-        <TipAlert roomId={roomId} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={{ id: null, name: 'Creator' }} roomId={roomId} />
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="battle" viewerCount={activeBattleCount} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeBattleCount} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={currentBattle?.id || null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={activeBattleCount} peakViewers={activeBattleCount} />
+      <BackgroundCustomizer />
     </div>
   );
 }

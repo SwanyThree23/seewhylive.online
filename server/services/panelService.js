@@ -83,7 +83,14 @@ async function requestJoin({ roomId, userId }) {
      RETURNING *`,
     [roomId, userId]
   );
-  return result.rows[0];
+  const row = result.rows[0];
+  // Enrich with display info for the host's approval queue
+  const userRow = await db.query('SELECT display_name, avatar_url FROM users WHERE id = $1', [userId]);
+  if (userRow.rows[0]) {
+    row.display_name = userRow.rows[0].display_name;
+    row.avatar_url   = userRow.rows[0].avatar_url;
+  }
+  return row;
 }
 
 async function resolveJoinRequest({ roomId, userId, approve }) {
@@ -124,11 +131,18 @@ async function setPrivacy({ roomId, isPrivate, gatingMode = null }) {
     inviteCode = generateInviteCode();
   }
   const result = await db.query(
-    `UPDATE streams SET privacy = $2, is_public = $3, private_gating_mode = $4, invite_code = $5
-     WHERE id = $1 RETURNING id, privacy, is_public, private_gating_mode, invite_code`,
-    [roomId, isPrivate ? 'private' : 'public', !isPrivate, isPrivate ? gatingMode : null, inviteCode]
+    `UPDATE streams SET privacy = $2, private_gating_mode = $3, invite_code = $4
+     WHERE id = $1 RETURNING id, privacy, private_gating_mode, invite_code`,
+    [roomId, isPrivate ? 'private' : 'public', isPrivate ? gatingMode : null, inviteCode]
   );
   return result.rows[0];
+}
+
+async function setMuted({ roomId, userId, isMuted }) {
+  await db.query(
+    'UPDATE room_panel_slots SET is_muted = $3 WHERE stream_id = $1 AND user_id = $2',
+    [roomId, userId, isMuted]
+  );
 }
 
 async function getPanelState(roomId) {
@@ -143,5 +157,5 @@ async function getPanelState(roomId) {
 
 module.exports = {
   assignSlot, releaseSlot, checkJoinGate, requestJoin, resolveJoinRequest,
-  generateInviteCode, setExpandedSlot, setAudioOnly, setPrivacy, getPanelState,
+  generateInviteCode, setExpandedSlot, setAudioOnly, setPrivacy, getPanelState, setMuted,
 };

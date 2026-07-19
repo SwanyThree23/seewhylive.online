@@ -349,7 +349,7 @@ function SeatInviteDrawer({ seat, roomId, onClose }) {
 }
 
 // ── Stage Tab ────────────────────────────────────────────────────────────────
-function StageTab({ roomId, isHost, isCoHost, currentUser, participants, raisedHands, onSpotlight, spotlitId }) {
+function StageTab({ roomId, isHost, isCoHost, currentUser, participants, raisedHands, onSpotlight, spotlitId, speakingIds = {} }) {
   var [view, setView] = useState('dashboard');
   var [inviteSeat, setInviteSeat] = useState(null);
 
@@ -384,7 +384,7 @@ function StageTab({ roomId, isHost, isCoHost, currentUser, participants, raisedH
         <GuestGrid
           participants={participants} isHost={isHost} hostId={currentUser && currentUser.id}
           maxGuests={20} onInvite={function(seat) { setInviteSeat({ num: seat }); }}
-          onSpotlight={onSpotlight} />
+          onSpotlight={onSpotlight} speakingIds={speakingIds} />
       )}
       {view === 'controls' && (
         <GuestControls
@@ -586,7 +586,7 @@ function LinksTab({ roomId, isHost, isCoHost }) {
 }
 
 // ── Main CoStreamHub ─────────────────────────────────────────────────────────
-export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, compact }) {
+export default function CoStreamHub({ roomId, isHost, isCoHost, currentUser, compact, speakingIds }) {
   var [activeTab, setActiveTab] = useState('stage');
   var [spotlitId, setSpotlitId] = useState(null);
   var [floaters, setFloaters] = useState([]);

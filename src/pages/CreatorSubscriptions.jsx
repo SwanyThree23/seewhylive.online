@@ -21,7 +21,17 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
 const BG    = '#080B18';
 const GOLD  = '#D4AF37';
 const PINK    = '#C0392B';
@@ -257,7 +267,7 @@ function CreatorView({ user }) {
             {tiers.length > 0 ? `${tiers.length} tier${tiers.length > 1 ? 's' : ''} active` : 'No tiers set up yet'}
           </div>
         </div>
-        <Link to={createPageUrl('Monetize')} style={{
+        <Link to={createPageUrl('Monetization')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           padding: '8px 14px', borderRadius: 10,
           background: `${GOLD}15`, border: `1px solid ${GOLD}35`,
@@ -628,7 +638,7 @@ export default function CreatorSubscriptionsPage() {
           )}
           {tab === 'my' && user && (
             <motion.div key="my" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <MySubscriptionsView user={user} />
+              <MySubscriptions userId={user.id} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -649,6 +659,21 @@ export default function CreatorSubscriptionsPage() {
           </div>
         )}
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

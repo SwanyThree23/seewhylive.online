@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
+import { useOpenRouter } from '../hooks/useOpenRouter';
 import { AnimatePresence, motion } from 'framer-motion';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SpotlightBanner from '../components/community/SpotlightBanner';
@@ -34,9 +35,9 @@ const BG3    = '#13182C';
 const GOLD   = '#D4AF37';
 const CRIMSON= '#800020';
 const AMBER  = '#D4854A';
-const CYAN   = '#D4AF37';
-const PURPLE = '#D4AF37';
-const BLUE   = '#C0392B';
+const CYAN   = '#4A8A7A';
+const PURPLE = '#7B5DA6';
+const BLUE   = '#5B7FA6';
 const RED2   = '#C62828';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -90,6 +91,7 @@ function Swatch({ hex }) {
 export default function INSForge() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { invoke: invokeAI, hasKey: hasOpenRouterKey } = useOpenRouter();
   const [selected, setSelected] = useState(null);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -152,10 +154,8 @@ export default function INSForge() {
         setGenStep(step);
       }, 480);
 
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are the SeeWhy LIVE INS Forge — an AI creative asset generator for SwanyThree EntTech LLC.
-
-Asset Type: ${selected.label}
+      const rawText = await invokeAI({
+        prompt: `Asset Type: ${selected.label}
 Creative Brief: "${prompt}"
 Brand Context: SeeWhy LIVE — dark backgrounds (#080B18), gold (#D4AF37) accents, crimson (#800020) brand, Barlow Condensed / Bebas Neue display fonts, broadcast & domino culture aesthetic.
 
@@ -171,38 +171,14 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
   "brand_elements": ["element1", "element2", "element3"],
   "dimensions": "recommended dimensions"
 }`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            title: { type: 'string' },
-            headline: { type: 'string' },
-            subline: { type: 'string' },
-            copy_lines: { type: 'array', items: { type: 'string' } },
-            color_palette: { type: 'array', items: { type: 'string' } },
-            layout_notes: { type: 'string' },
-            cta: { type: 'string' },
-            brand_elements: { type: 'array', items: { type: 'string' } },
-            dimensions: { type: 'string' },
-          },
-        },
+        systemPrompt: 'You are the SeeWhy LIVE INS Forge — an AI creative asset generator for SwanyThree EntTech LLC. Always respond with valid JSON only.',
+        jsonMode: true,
+        maxTokens: 1024,
       });
 
       clearInterval(stepInterval);
-      const parsed = typeof res === 'string' ? JSON.parse(res) : res;
+      const parsed = typeof rawText === 'string' ? JSON.parse(rawText) : rawText;
       setResult(parsed);
-      setBriefSaved(false);
-      // Persist to Activity log
-      if (user?.id) {
-        base44.entities.Activity.create({
-          user_id: user.id,
-          type: 'brief_generated',
-          title: `${selected.label}: ${parsed.headline || prompt.slice(0, 60)}`,
-          created_at: new Date().toISOString(),
-        }).then(() => {
-          setBriefSaved(true);
-          qc.invalidateQueries({ queryKey: ['insforge-briefs', user?.id] });
-        }).catch(() => {});
-      }
     } catch (e) {
       clearInterval(stepInterval);
       setError('Failed to generate. Try again.');
@@ -440,65 +416,21 @@ Generate a complete creative brief for this asset. Respond ONLY with valid JSON 
           Select an asset type above to begin forging
         </div>
       )}
-
-      {/* Recent brief history */}
-      {recentBriefs.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.22)', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
-            📂 Recent Briefs
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {recentBriefs.map(b => (
-              <div key={b.id} style={{ background: BG3, border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '8px 12px' }}>
-                <div style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {b.title}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <ShareToSocial />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-      </div>
-
-      {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
-        <Link to={createPageUrl('AIHub')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🤖 AI Hub
-          </button>
-        </Link>
-        <Link to={createPageUrl('OverlayEditor')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🎚️ Overlays
-          </button>
-        </Link>
-        <Link to={createPageUrl('StreamAlerts')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🔔 Alerts
-          </button>
-        </Link>
-        <Link to={createPageUrl('BroadcastStudio')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🎬 Studio
-          </button>
-        </Link>
-      </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <CollaborationMatcher />
-        <CreatorBridge />
-        <AudienceInsights />
-        <ContentRecommendations />
-        <MilestoneAlerts userId={currentUser?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        <AutomatedHighlightReels streamSession={null} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

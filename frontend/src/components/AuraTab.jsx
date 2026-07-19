@@ -18,7 +18,7 @@ var QUICK_PROMPTS = [
 var INITIAL_MSG = { role: 'aura', text: '🤖 AURA ONLINE — SeeWhy LIVE v33 suite active. Washington Classic energy IMMACULATE! 🎲', time: fmtTime() };
 
 var AURA_MODES = [
-  { id: 'hype',  label: 'HYPE',  emoji: '🔥', desc: 'MAX energy. CAPS. Stadium vibes.', color: '#FF1564' },
+  { id: 'hype',  label: 'HYPE',  emoji: '🔥', desc: 'MAX energy. CAPS. Stadium vibes.', color: '#C0392B' },
   { id: 'sassy', label: 'SASSY', emoji: '💅', desc: 'Sharp & witty with light shade.',  color: '#C9A84C' },
   { id: 'calm',  label: 'CALM',  emoji: '🧊', desc: 'Analytical. Data-driven.',          color: '#C9A84C' },
   { id: 'kind',  label: 'KIND',  emoji: '💛', desc: 'Warm. Inclusive. Community-first.', color: '#C9A84C' },
@@ -194,8 +194,8 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
     <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 430 }}>
 
       {tierBlocked && (
-        <div style={{ background: 'rgba(255,21,100,.08)', border: '1px solid rgba(255,21,100,.3)', borderRadius: 10, padding: 12, marginBottom: 12 }}>
-          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#FF1564' }}>
+        <div style={{ background: 'rgba(192,57,43,.08)', border: '1px solid rgba(192,57,43,.3)', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: '#C0392B' }}>
             &#x26A0; AURA AI requires Pro or Studio tier
           </div>
           <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', marginTop: 4 }}>
@@ -260,7 +260,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
         </div>
 
         {/* USAGE COUNTER */}
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: usageCount >= 18 ? '#FF1564' : '#8A7A62', marginBottom: 6 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: usageCount >= 18 ? '#C0392B' : '#8A7A62', marginBottom: 6 }}>
           {'AURA CALLS THIS HOUR: ' + usageCount + ' / 60'}
         </div>
       </div>
@@ -271,7 +271,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
           {auraMessages.map(function(msg) {
             return (
               <div key={msg.id} style={{ background: 'rgba(139,92,246,.08)', border: '1px solid rgba(139,92,246,.25)', borderRadius: 8, padding: '8px 10px', marginBottom: 5 }}>
-                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 3 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7B5DA6', letterSpacing: 1, marginBottom: 3 }}>
                   {msg.mode.toUpperCase()}
                 </div>
                 <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 12, color: '#F0E8D4', lineHeight: 1.4 }}>
@@ -390,7 +390,7 @@ export default function AuraTab({ isLive, viewerCount, addToast, socket, roomId,
                 padding: '7px 10px'
               }}>
                 {isTrigger && (
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#A78BFA', letterSpacing: 1, marginBottom: 2 }}>⚡ AURA TRIGGER</div>
+                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#7B5DA6', letterSpacing: 1, marginBottom: 2 }}>⚡ AURA TRIGGER</div>
                 )}
                 {m.role === 'aura' && (
                   <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', letterSpacing: 1, marginBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>

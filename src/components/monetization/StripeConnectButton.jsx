@@ -103,7 +103,7 @@ export default function StripeConnectButton({ creatorId }) {
           <span style={{ fontWeight: 900, fontSize: 16 }}>Stripe Connect</span>
           {isConnected
             ? <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(109,191,126,0.15)', color: '#6DBF7E', border: '1px solid rgba(109,191,126,0.3)', marginLeft: 'auto' }}>Connected</span>
-            : <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(212,175,55,0.1)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.3)', marginLeft: 'auto' }}>Not Connected</span>}
+            : <span style={{ fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 99, background: 'rgba(234,179,8,0.1)', color: '#D4854A', border: '1px solid rgba(249,115,22,0.3)', marginLeft: 'auto' }}>Not Connected</span>}
         </div>
       </div>
       <div style={{ padding: 20 }}>

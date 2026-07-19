@@ -34,7 +34,7 @@ export default function RoomAnalyticsPanel({ roomId }) {
       label: 'Current Viewers',
       value: room?.viewer_count || 0,
       icon: Users,
-      color: 'text-[#D4AF37]',
+      color: 'text-[#5B7FA6]',
     },
     {
       label: 'Peak Viewers',

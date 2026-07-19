@@ -87,19 +87,10 @@ function groupByDate(items) {
 }
 
 export default function ActivityPage() {
-  const qc = useQueryClient();
-  const [filter, setFilter] = useState('all');
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const activeRoomId = roomId;
-
-  const { data: activities = [], isLoading, refetch } = useQuery({
-    queryKey: ['activities', user?.id],
-    queryFn: () => base44.entities.Activity.list('-created_date', 200),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
+  const { data: activities = [] } = useQuery({
+    queryKey: ['activities'],
+    queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
 
   const { data: notifications = [] } = useQuery({
@@ -373,6 +364,21 @@ export default function ActivityPage() {
         <CollaborationMatcher />
         <ContentRecommendations />
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

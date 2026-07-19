@@ -3,30 +3,39 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import SwanyBotContextEnhancer from '../components/guide/SwanyBotEnhanced';
-import AIStreamSummary from '../components/live/AIStreamSummary';
+import StreamEventBus from '../components/live/StreamEventBus';
+
+
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import StreamGoals from '../components/live/StreamGoals';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
 
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#080B18';
 const BG2    = 'rgba(8,11,24,0.9)';
 const GOLD   = '#D4AF37';
 const CRIMSON = '#800020';
-const PINK    = '#C0392B';
-const CYAN   = '#D4AF37';
-const PURPLE = '#D4AF37';
-const AMBER  = '#D4854A';
+const PINK   = '#C0392B';
+const CYAN   = '#4A8A7A';
+const PURPLE = '#7B5DA6';
 const GREEN  = '#6DBF7E';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -137,42 +146,14 @@ export default function AIHub() {
   const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    queryKey: ['aihub-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
     enabled: !!user?.id,
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
-
-  // Fetch recent room messages for Guardian + ARIA context
-  const { data: recentRoomMessages = [] } = useQuery({
-    queryKey: ['aihub-room-messages', activeRoomId],
-    queryFn: () => base44.entities.Message.filter({ room_id: activeRoomId }, '-created_date', 25),
-    enabled: !!activeRoomId,
-    refetchInterval: 20000,
-  });
-
-  // ARIA post-to-chat mutation
-  const ariaPostMut = useMutation({
-    mutationFn: (content) => base44.entities.Message.create({
-      room_id: activeRoomId,
-      user_id: user?.id,
-      user_name: 'ARIA 🤖',
-      content,
-      type: 'ai_message',
-    }),
-    onSuccess: () => {
-      showToast('🤖 ARIA message sent to chat!');
-      qc.invalidateQueries({ queryKey: ['aihub-room-messages', activeRoomId] });
-    },
-    onError: () => showToast('⚠️ Start a live room first to send to chat'),
-  });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const [tipTotal, setTipTotal] = useState(0);
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const [guardianOn, setGuardianOn]   = useState(true);
   const [ariaOn, setAriaOn]           = useState(false);
   const [directorOn, setDirectorOn]   = useState(false);
@@ -284,7 +265,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
   // Guardian status badge color
   function guardianStatusColor(status) {
     if (status === 'alert')   return '#C0392B';
-    if (status === 'warning') return '#D4AF37';
+    if (status === 'warning') return '#C9A84C';
     return GREEN;
   }
 
@@ -401,7 +382,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
             onClick={() => showToast('Set active track in Music Studio first')}
             style={{
               ...T, width: '100%', padding: '10px 0', borderRadius: 12, marginBottom: 14,
-              background: 'rgba(212,175,55,0.06)', border: `1px solid ${CYAN}30`,
+              background: 'rgba(74,138,122,0.06)', border: `1px solid ${CYAN}30`,
               color: CYAN, fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
               textTransform: 'uppercase', cursor: 'pointer',
             }}
@@ -745,7 +726,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
             ].map(item => (
               <div key={item.title} style={{
                 padding: '12px 14px', borderRadius: 12,
-                background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.15)',
+                background: 'rgba(123,93,166,0.06)', border: '1px solid rgba(123,93,166,0.15)',
               }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.icon}</div>
                 <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 3 }}>{item.title}</p>
@@ -985,67 +966,97 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
           </Link>
         </Card>
 
-        {/* ── Aura AI + SwanyBot + Voice Settings row ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          <Link to={createPageUrl('AuraAI')} style={{ textDecoration: 'none' }}>
-            <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.15)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 14px' }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>✨</div>
-              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>AURA AI</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Premium co-host · Brand & content</div>
+        {/* ── Section 14: OpenRouter Hub ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🧠 OpenRouter Hub</p>
+            <span style={{ ...T, fontSize: 11, color: PURPLE, fontWeight: 700, letterSpacing: '0.05em' }}>MULTI-MODEL</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Compare 16+ AI models side-by-side, run prompt templates, track token usage, and route to the best model for every task.
+          </p>
+          <Link to={createPageUrl('OpenRouterHub')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(123,93,166,0.08)', border: '1px solid rgba(123,93,166,0.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(123,93,166,0.15)', border: '1px solid rgba(123,93,166,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🧠</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: PURPLE, fontWeight: 900 }}>OPEN ROUTER HUB</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>GPT-4 · CLAUDE · GEMINI · LLAMA</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: PURPLE, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Compare →</span>
             </div>
           </Link>
-          <Link to={createPageUrl('SwanyBotPage')} style={{ textDecoration: 'none' }}>
-            <div style={{ background: BG2, border: '1px solid rgba(204,119,85,0.2)', borderRadius: 16, borderLeft: `3px solid #CC7755`, padding: '14px 14px' }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>🎮</div>
-              <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#CC7755', letterSpacing: '0.06em' }}>SWANYBOT</div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 3, lineHeight: 1.4, fontFamily: 'Space Mono, monospace' }}>Domino culture · SVS expert</div>
+        </Card>
+
+        {/* ── Section 15: LLM Lingua Studio ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>✂️ LLM Lingua Studio</p>
+            <span style={{ ...T, fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: '0.05em' }}>TOKEN SAVER</span>
+          </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Compress prompts by 20–80% without losing meaning. Cut API costs and fit more context into every model call.
+          </p>
+          <Link to={createPageUrl('LLMLinguaStudio')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: `${GOLD}09`, border: `1px solid ${GOLD}30`, borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${GOLD}15`, border: `1px solid ${GOLD}35`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>✂️</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900 }}>COMPRESS PROMPTS</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>SEMANTIC · EXTRACTIVE · KEYWORDS</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: GOLD, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Launch →</span>
             </div>
           </Link>
-        </div>
-        <Link to={createPageUrl('VoiceAISettings')} style={{ textDecoration: 'none' }}>
-          <div style={{ background: BG2, border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16, borderLeft: `3px solid ${GOLD}`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, ${GOLD}, #8A6F2E)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🔊</div>
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: GOLD, letterSpacing: '0.06em' }}>VOICE AI SETTINGS</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>TTS · Voice selector · Volume · Speed</div>
-              </div>
-            </div>
-            <span style={{ ...T, fontSize: 12, color: GOLD, fontWeight: 900, letterSpacing: '0.06em' }}>Configure →</span>
+        </Card>
+
+        {/* ── Section 16: VDO Ninja Manager ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>📷 VDO.Ninja Manager</p>
+            <span style={{ ...T, fontSize: 11, color: CYAN, fontWeight: 700, letterSpacing: '0.05em' }}>WEBCAM GUESTS</span>
           </div>
-        </Link>
-        <Link to={createPageUrl('TranscriptionStudio')} style={{ textDecoration: 'none' }}>
-          <div style={{ background: BG2, border: '1px solid rgba(74,124,89,0.2)', borderRadius: 16, borderLeft: `3px solid #4A7C59`, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #4A7C59, #2A5C39)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📝</div>
-              <div>
-                <div style={{ ...T, fontSize: 14, fontWeight: 900, color: '#6DBF7E', letterSpacing: '0.06em' }}>TRANSCRIPTION STUDIO</div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', fontFamily: 'Space Mono, monospace', marginTop: 2 }}>Live captions · SRT export · Multi-language</div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Invite remote guests with zero install. Generate WebRTC guest links, director controls, and HD camera feeds for your streams.
+          </p>
+          <Link to={createPageUrl('VDONinjaManager')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(74,138,122,0.08)', border: '1px solid rgba(74,138,122,0.25)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(74,138,122,0.15)', border: '1px solid rgba(74,138,122,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📷</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: CYAN, fontWeight: 900 }}>MANAGE GUESTS</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>WEBRTC · NO INSTALL · HD VIDEO</div>
+                </div>
               </div>
+              <span style={{ ...T, fontSize: 13, color: CYAN, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Open →</span>
             </div>
-            <span style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.06em' }}>Open →</span>
+          </Link>
+        </Card>
+
+        {/* ── Section 17: Voice Agent Builder ── */}
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ ...T, fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>🎙️ Voice Agent Builder</p>
+            <span style={{ ...T, fontSize: 11, color: '#6DBF7E', fontWeight: 700, letterSpacing: '0.05em' }}>AI VOICE</span>
           </div>
-        </Link>
-
-        {/* ── AI Persona Customizer ── */}
-        <div style={{ marginTop: 8 }}>
-          <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
-        </div>
-
-        {/* ── AI Stream Summary ── */}
-        <div style={{ marginTop: 8 }}>
-          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SeeWhy LIVE" viewerCount={0} elapsedSeconds={0} />
-        </div>
-
-        {/* ── Content Recommendations ── */}
-        <div style={{ marginTop: 8 }}>
-          <ContentRecommendations userId={user?.id} />
-        </div>
-
-        {/* ── SwanyBot Context Enhancer ── */}
-        <div style={{ marginTop: 8 }}>
-          <SwanyBotContextEnhancer userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        </div>
+          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.5)', padding: '4px 16px 12px', lineHeight: 1.5 }}>
+            Build AI voice agents for streaming, healthcare, real estate, e-commerce, and 9 more industries. Simulate dialogue, set triggers, and deploy.
+          </p>
+          <Link to={createPageUrl('VoiceAgentBuilder')} style={{ textDecoration: 'none', display: 'block' }}>
+            <div style={{ margin: '0 16px 16px', background: 'rgba(109,191,126,0.06)', border: '1px solid rgba(109,191,126,0.2)', borderRadius: 10, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(109,191,126,0.12)', border: '1px solid rgba(109,191,126,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🎙️</div>
+                <div>
+                  <div style={{ ...T, fontSize: 12, color: '#6DBF7E', fontWeight: 900 }}>BUILD VOICE AGENT</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', fontFamily: 'Space Mono, monospace' }}>ELEVENLABS · 9 INDUSTRIES · SIMULATION</div>
+                </div>
+              </div>
+              <span style={{ ...T, fontSize: 13, color: '#6DBF7E', fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase' }}>Build →</span>
+            </div>
+          </Link>
+        </Card>
 
         {/* ── Bottom info strip ── */}
         <p style={{
@@ -1065,13 +1076,22 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
-
-      <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
-        <OnlineUsersGrid compact maxVisible={10} />
-        <CollaborationMatcher />
-        <StreamGoals isHost={false} />
-        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-      </div>
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="ai" viewerCount={busViewerCount} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={0} currentViewers={busViewerCount} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
+      <BackgroundCustomizer />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={() => {}} />}
     </div>
   );
 }

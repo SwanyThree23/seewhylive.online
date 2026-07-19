@@ -32,7 +32,7 @@ const PINK    = '#C0392B';
 const GREEN  = '#6DBF7E';
 const OCT    = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 
-const PALETTE = ['#D4AF37','#C0392B','#6DBF7E','#D4854A','#D4AF37','#D4854A','#6DBF7E','#C0392B'];
+const PALETTE = ['#D4AF37','#C0392B','#00C8C8','#A855F7','#22D3EE','#F97316','#84CC16','#C0392B'];
 const avatarColor = n => PALETTE[(n?.charCodeAt(0) ?? 0) % PALETTE.length];
 
 const ALL_NAMES = ['SwanyThree','Joyce 🦋','CaliBonesOG','Marvin','Yahawadah','Tom','Durand','Phelo','Simone','Obi','Kenya','Marcus','Tasha','DeeJay','Rakim','Zara','Kwame','Blessed','BigFacts','Nijah'];
@@ -697,6 +697,16 @@ export default function TestMode() {
         <StreamGoals isHost={false} />
         <StreamHealthDashboard roomId={null} isHost={false} />
       </div>
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
     </div>
   );
 }

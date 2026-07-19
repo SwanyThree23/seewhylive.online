@@ -67,6 +67,31 @@ export default function GuardianTab({ addToast, isLive, chat, socket, roomId }) 
   var total = blocked + allowed;
   var blockRate = total > 0 ? Math.floor((blocked / total) * 100) : 0;
 
+  // Real-time unban + remote mod-rules sync
+  useEffect(function() {
+    if (!socket) return;
+    function onUserUnbanned(data) {
+      if (!data || !data.username) return;
+      setBannedUsers(function(prev) { return prev.filter(function(u) { return u !== data.username; }); });
+      if (addToast) addToast('✅ ' + data.username + ' unbanned', 'success');
+    }
+    function onModRulesUpdated(data) {
+      if (!data || !Array.isArray(data.rules)) return;
+      setRules(function(prev) {
+        return prev.map(function(r) {
+          var updated = data.rules.find(function(u) { return u.id === r.id; });
+          return updated ? Object.assign({}, r, { enabled: updated.enabled }) : r;
+        });
+      });
+    }
+    socket.on('user-unbanned',   onUserUnbanned);
+    socket.on('mod-rules-updated', onModRulesUpdated);
+    return function() {
+      socket.off('user-unbanned',   onUserUnbanned);
+      socket.off('mod-rules-updated', onModRulesUpdated);
+    };
+  }, [socket, addToast]);
+
   useEffect(function() {
     try { localStorage.setItem('sw_guardian_rules', JSON.stringify(rules)); } catch(e) {}
   }, [rules]);

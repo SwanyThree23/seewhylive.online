@@ -151,6 +151,10 @@ export default function LiveTranscription({
         mediaRecorderRef.current = mr;
         chunksBufferRef.current = [];
 
+        mr.ondataavailable = (e) => {
+          if (e.data?.size > 0) chunksBufferRef.current.push(e.data);
+        };
+
         // Start with 1s timeslices — ondataavailable fires every second, no stop/start
         mr.start(1000);
         setIsTranscribing(true);
@@ -261,13 +265,10 @@ export default function LiveTranscription({
             key={lastCaption.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="mb-2 p-3 rounded-lg backdrop-blur-md"
-            style={{
-              background: 'rgba(8,11,24,0.85)',
-              border: `1px solid ${G}30`,
-            }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+            className="pointer-events-auto mb-1.5 p-3 rounded-lg backdrop-blur-md"
+            style={{ background: 'rgba(7,7,15,0.9)', border: `1px solid ${G}35` }}
           >
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">

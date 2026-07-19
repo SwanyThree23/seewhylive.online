@@ -17,8 +17,8 @@ const tierConfig = {
   },
   elite: {
     icon: Crown,
-    color: '#D4AF37',
-    gradient: 'linear-gradient(135deg, #D4AF37, #D4854A)',
+    color: '#C9A84C',
+    gradient: 'linear-gradient(135deg, #C9A84C, #d97706)',
   },
 };
 

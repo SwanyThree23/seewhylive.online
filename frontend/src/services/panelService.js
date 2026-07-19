@@ -34,6 +34,18 @@ function leavePanel(socket, roomId) {
   socket.emit('panel:leave', { roomId: roomId });
 }
 
+function kickPanelist(socket, roomId, targetUserId) {
+  return new Promise(function(resolve, reject) {
+    socket.emit('panel:kick', { roomId: roomId, targetUserId: targetUserId }, function(res) {
+      if (res && res.ok) resolve(); else reject(new Error((res && res.error) || 'kick failed'));
+    });
+  });
+}
+
+function mutePanelist(socket, roomId, targetUserId, isMuted) {
+  socket.emit('panel:mute', { roomId: roomId, targetUserId: targetUserId, isMuted: isMuted });
+}
+
 function expandTile(socket, roomId, slotIndex, expanded) {
   socket.emit('panel:expand', { roomId: roomId, slotIndex: slotIndex, expanded: expanded });
 }
@@ -73,6 +85,8 @@ var panelService = {
   requestJoin: requestJoin,
   resolveJoinRequest: resolveJoinRequest,
   leavePanel: leavePanel,
+  kickPanelist: kickPanelist,
+  mutePanelist: mutePanelist,
   expandTile: expandTile,
   toggleAudioOnly: toggleAudioOnly,
   onSlotAssigned: onSlotAssigned,

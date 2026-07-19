@@ -176,7 +176,7 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
   );
 }
 
-// ── STEP 1: Profile ──────────────────────────────────────────────────────────
+// ── STEP 1: Profile ──────────────────────────────────────────────
 function Step1({ onboarding, user, onDone, setStep }) {
   const [form, setForm] = useState({ display_name: user?.full_name || '', bio: '', avatar: '🎙', category: 'Gaming' });
   const [saving, setSaving] = useState(false);
@@ -224,7 +224,7 @@ function Step1({ onboarding, user, onDone, setStep }) {
   );
 }
 
-// ── STEP 2: Branding ─────────────────────────────────────────────────────────
+// ── STEP 2: Branding ─────────────────────────────────────────────
 function Step2({ onboarding, onDone, setStep }) {
   const [theme, setTheme] = useState(0);
   const [font, setFont] = useState(0);
@@ -263,43 +263,19 @@ function Step2({ onboarding, onDone, setStep }) {
           </div>
         </div>
       </div>
-      <label style={lbl}>Font Pairing</label>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-        {FONTS.map((f, i) => (
-          <button key={f.name} onClick={() => setFont(i)}
-            style={{ flex: 1, padding: '10px 8px', borderRadius: 10, border: `2px solid ${font === i ? C.gold : 'rgba(255,255,255,0.08)'}`, background: font === i ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', transition: 'all 0.15s' }}>
-            <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 900, color: font === i ? C.gold : 'rgba(255,255,255,0.45)' }}>{f.name}</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 2 }}>{f.sample}</div>
-          </button>
-        ))}
-      </div>
       <NavButtons step={2} setStep={setStep} onSave={save} saving={saving} />
     </div>
   );
 }
 
-// ── STEP 3: Streaming Setup ───────────────────────────────────────────────────
+// ── STEP 3: Streaming Setup ──────────────────────────────────────
 function Step3({ onboarding, onDone, setStep }) {
-  const RTMP = 'rtmp://ingest.seewhylive.online/live';
-  const [streamKey, setStreamKey] = useState('');
-
-  useEffect(() => {
-    base44.auth.me().then(user => {
-      if (user.stream_key) {
-        setStreamKey(user.stream_key);
-      } else {
-        const bytes = crypto.getRandomValues(new Uint8Array(8));
-        const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        const newKey = `SK_${hex}`;
-        setStreamKey(newKey);
-        base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
-      }
-    }).catch(() => {
-      const bytes = crypto.getRandomValues(new Uint8Array(8));
-      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-      setStreamKey(`SK_${hex}`);
-    });
-  }, []);
+  const RTMP = 'rtmp://ingest.seewhy.live/live';
+  const [streamKey] = useState(() => {
+    const arr = new Uint8Array(9);
+    crypto.getRandomValues(arr);
+    return 'sk_' + Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,16).toUpperCase();
+  });
   const [showKey, setShowKey] = useState(false);
   const [zegoId, setZegoId] = useState('');
   const [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
@@ -344,7 +320,7 @@ function Step3({ onboarding, onDone, setStep }) {
   );
 }
 
-// ── STEP 4: Subscription Tiers ────────────────────────────────────────────────
+// ── STEP 4: Subscription Tiers ───────────────────────────────────
 function Step4({ user, onDone, setStep }) {
   const [tiers, setTiers] = useState(DEFAULT_TIERS.map((t, i) => ({...t, id: i})));
   const [saving, setSaving] = useState(false);
@@ -385,17 +361,13 @@ function Step4({ user, onDone, setStep }) {
           </div>
         ))}
       </div>
-      {tiers.length < 4 && (
-        <button onClick={addTier} style={{ width: '100%', padding: '10px', background: 'transparent', border: `1px dashed ${C.burg}`, borderRadius: 10, color: C.burg, cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.06em', marginBottom: 4 }}>
-          + Add Custom Tier
-        </button>
-      )}
+      {tiers.length < 4 && <button onClick={addTier} style={{ width:'100%', padding:'8px', background:'transparent', border:`1px dashed ${C.burg}`, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:12, letterSpacing:1, marginBottom:8 }}>+ ADD CUSTOM TIER</button>}
       <NavButtons step={4} setStep={setStep} onSave={save} saving={saving} onSkip={() => onDone({ step_4_subscription: true, current_step: 5 })} />
     </div>
   );
 }
 
-// ── STEP 5: Community ─────────────────────────────────────────────────────────
+// ── STEP 5: Community ────────────────────────────────────────────
 function Step5({ user, onDone, setStep }) {
   const [form, setForm] = useState({ name: '', description: '', category: 'other', welcome_message: '' });
   const [saving, setSaving] = useState(false);
@@ -427,13 +399,13 @@ function Step5({ user, onDone, setStep }) {
         ))}
       </div>
       <label style={lbl}>Welcome Message</label>
-      <textarea style={{...inp, height: 56, resize: 'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
+      <textarea style={{...inp, height:56, resize:'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
       <NavButtons step={5} setStep={setStep} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
     </div>
   );
 }
 
-// ── STEP 6: Test Stream ───────────────────────────────────────────────────────
+// ── STEP 6: Test Stream ──────────────────────────────────────────
 function Step6({ user, onDone, setStep }) {
   const [started, setStarted] = useState(false);
   const [countdown, setCountdown] = useState(30);
@@ -487,14 +459,14 @@ function Step6({ user, onDone, setStep }) {
           </div>
         )}
         {done && (
-          <div>
-            <div style={{ fontSize: 52, marginBottom: 12 }}>✅</div>
-            <div style={{ fontFamily: FONT, fontSize: 20, fontWeight: 900, color: C.gold, marginBottom: 6 }}>Test Stream Complete!</div>
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Your streaming setup is working perfectly.</div>
-          </div>
-        )}
-      </div>
+        <div>
+          <div style={{ fontSize:48, marginBottom:8 }}>✅</div>
+          <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.volt }}>TEST STREAM COMPLETE!</div>
+          <div style={{ fontSize:12, color:C.gray, marginTop:4 }}>Your streaming setup is working perfectly.</div>
+        </div>
+      )}
       <NavButtons step={6} setStep={setStep} onSave={save} saving={saving} canNext={done} onSkip={() => onDone({ step_6_test_stream: true, current_step: 7 })} />
+      </div>
     </div>
   );
 }
@@ -651,9 +623,31 @@ export default function OnboardingPage() {
     if (data.current_step) setStep(data.current_step);
   };
 
-  if (!user) return (
-    <div style={{ background: '#080B18', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: FONT, fontSize: 14, letterSpacing: '0.1em' }}>
-      Loading…
+  if (!user) return <div style={{background:'#080B18',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#666',fontFamily:'Barlow Condensed',fontSize:14}}>Loading…</div>;
+
+  return (
+    <div style={{ minHeight:'100vh', background:'#080B18', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
+      <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
+        style={{ width:'100%', maxWidth:480, background:'rgba(13,6,24,0.97)', borderRadius:12, border:`1px solid rgba(212,175,55,0.15)`, overflow:'hidden' }}>
+        {/* Logo bar */}
+        <div style={{ padding:'14px 20px', background:`linear-gradient(90deg, ${C.burg}22, transparent)`, borderBottom:'1px solid rgba(212,175,55,0.1)', display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:18 }}>📡</span>
+          <span style={{ fontFamily:'Barlow Condensed', fontSize:14, color:C.gold, letterSpacing:2 }}>SEEWHY LIVE — CREATOR SETUP</span>
+        </div>
+        <ProgressBar step={step} onboarding={onboarding} />
+        <AnimatePresence mode="wait">
+          <motion.div key={step} initial={{ opacity:0, x:20 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0, x:-20 }} transition={{ duration:0.2 }}>
+            {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 2 && <Step2 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+            {step === 3 && <Step3 onboarding={onboarding} onDone={handleDone} setStep={setStep} />}
+            {step === 4 && <Step4 user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 5 && <Step5 user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 6 && <Step6 user={user} onDone={handleDone} setStep={setStep} />}
+            {step === 7 && <Step7 onDone={handleDone} />}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+      <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
     </div>
   );
 

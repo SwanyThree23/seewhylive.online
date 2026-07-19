@@ -7,7 +7,12 @@ import { creatorCents, platformCents, getPlatformHandles } from '../platformConf
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
 import PollOverlay from './PollOverlay.jsx';
-import panelService from '../services/panelService.js';
+import AudioOnlyToggle from './panel/AudioOnlyToggle.jsx';
+import JoinRequestQueue from './panel/JoinRequestQueue.jsx';
+import GiftLayer from './GiftLayer.jsx';
+import GoldenWallPanel from './GoldenWallPanel.jsx';
+import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
+import ShareSheet from './share/ShareSheet.jsx';
 
 var MAX_STAGE = 20;
 
@@ -223,6 +228,76 @@ function WaveBars({ color }) {
   );
 }
 
+function OverlayBanner({ banner }) {
+  if (!banner || !banner.visible || !banner.text) return null;
+  var isTop = banner.position === 'top';
+  return (
+    <div style={{ position: 'absolute', [isTop ? 'top' : 'bottom']: 0, left: 0, right: 0, zIndex: 30, pointerEvents: 'none', padding: isTop ? '10px 16px 20px' : '20px 16px 10px', background: isTop ? 'linear-gradient(rgba(14,12,9,.85),transparent)' : 'linear-gradient(transparent,rgba(14,12,9,.85))' }}>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: banner.color || '#C9A84C', letterSpacing: 4, textShadow: '0 2px 10px rgba(0,0,0,.9)', textAlign: 'center' }}>
+        {banner.text}
+      </div>
+    </div>
+  );
+}
+
+function OverlayCountdown({ countdown }) {
+  var [rem, setRem] = useState(0);
+  useEffect(function() {
+    if (!countdown || !countdown.visible || !countdown.targetTs) return;
+    function tick() { setRem(Math.max(0, countdown.targetTs - Math.floor(Date.now() / 1000))); }
+    tick();
+    var t = setInterval(tick, 1000);
+    return function() { clearInterval(t); };
+  }, [countdown && countdown.targetTs, countdown && countdown.visible]);
+  if (!countdown || !countdown.visible) return null;
+  var h   = Math.floor(rem / 3600);
+  var m   = Math.floor((rem % 3600) / 60);
+  var s   = rem % 60;
+  var str = (h > 0 ? String(h).padStart(2, '0') + ':' : '') + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  return (
+    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'none', textAlign: 'center', background: 'rgba(14,12,9,.75)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 12, padding: '14px 24px', backdropFilter: 'blur(8px)' }}>
+      <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#8A7A62', letterSpacing: 3, marginBottom: 4 }}>{countdown.label || 'STARTING SOON'}</div>
+      <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 42, color: '#C9A84C', letterSpacing: 6, lineHeight: 1 }}>{str}</div>
+    </div>
+  );
+}
+
+function OverlayScoreBug({ scoreBug }) {
+  if (!scoreBug || !scoreBug.visible) return null;
+  return (
+    <div style={{ position: 'absolute', bottom: 12, right: 12, zIndex: 30, pointerEvents: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', background: 'rgba(10,7,18,.88)', border: '1px solid rgba(201,168,76,.4)', borderRadius: 6, overflow: 'hidden', backdropFilter: 'blur(4px)' }}>
+        <div style={{ padding: '5px 10px', textAlign: 'center', borderRight: '1px solid rgba(201,168,76,.2)' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#F0E8D4', letterSpacing: 2 }}>{scoreBug.team1.name || 'TEAM 1'}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team1.score}</div>
+        </div>
+        <div style={{ padding: '5px 8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 6, color: '#8A7A62', letterSpacing: 1 }}>{scoreBug.label || ''}</div>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 800, fontSize: 10, color: '#FF6B81' }}>VS</div>
+        </div>
+        <div style={{ padding: '5px 10px', textAlign: 'center', borderLeft: '1px solid rgba(201,168,76,.2)' }}>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 11, color: '#F0E8D4', letterSpacing: 2 }}>{scoreBug.team2.name || 'TEAM 2'}</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: '#C9A84C', lineHeight: 1 }}>{scoreBug.team2.score}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OverlayCustomLT({ lowerThirds, guestId }) {
+  if (!lowerThirds) return null;
+  var lt = lowerThirds[guestId];
+  if (!lt || !lt.visible) return null;
+  return (
+    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 25, pointerEvents: 'none', padding: '24px 10px 8px', background: 'linear-gradient(transparent,rgba(14,12,9,.9))' }}>
+      <div style={{ borderLeft: '3px solid #C9A84C', paddingLeft: 7 }}>
+        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#F0E8D4', letterSpacing: 2, lineHeight: 1, textShadow: '0 2px 8px rgba(0,0,0,.9)' }}>{lt.name}</div>
+        {lt.title && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', marginTop: 2, letterSpacing: 1 }}>{lt.title}</div>}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function LiveRoomPage({
@@ -233,6 +308,7 @@ export default function LiveRoomPage({
 }) {
   var [rtcReady,      setRtcReady]      = useState(false);
   var [isMuted,       setIsMuted]       = useState(false);
+  var [micLevel,      setMicLevel]      = useState(0);
   var [isCamOff,      setIsCamOff]      = useState(false);
   var [chatOpen,      setChatOpen]      = useState(false);
   var [chatInput,     setChatInput]     = useState('');
@@ -258,6 +334,7 @@ export default function LiveRoomPage({
   var [qaInput,        setQaInput]        = useState('');
   var [showQa,         setShowQa]         = useState(false);
   var [qaMyVotes,      setQaMyVotes]      = useState({});
+  var [showShareSheet, setShowShareSheet] = useState(false);
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
   var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
   var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
@@ -472,6 +549,36 @@ export default function LiveRoomPage({
       setScreenShareHost(null);
     });
 
+    socket.on('room-audio-only', function(data) {
+      if (!data) return;
+      setAudioOnly(Boolean(data.enabled));
+      if (addToast) addToast(data.enabled ? '🎤 Host switched to audio-only mode' : '📹 Video mode re-enabled', 'info');
+    });
+
+    socket.on('panel:audio_only_changed', function(data) {
+      if (!data || data.roomId !== roomId) return;
+      setAudioOnly(Boolean(data.isAudioOnly));
+    });
+
+    socket.on('subscriber-only-changed', function(data) {
+      if (!data) return;
+      if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
+    });
+
+    socket.on('user-banned', function(data) {
+      if (!data) return;
+      if (data.userId === userId) {
+        if (addToast) addToast('🚫 You have been removed from this room', 'error');
+      }
+    });
+
+    socket.on('user-unbanned', function(data) {
+      if (!data) return;
+      if (data.username && username && data.username === username) {
+        if (addToast) addToast('✅ Your ban has been lifted — welcome back!', 'success');
+      }
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -492,6 +599,10 @@ export default function LiveRoomPage({
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
+      socket.off('room-audio-only');
+      socket.off('subscriber-only-changed');
+      socket.off('user-banned');
+      socket.off('user-unbanned');
     };
   }, [socket]);
 
@@ -504,6 +615,34 @@ export default function LiveRoomPage({
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
+
+  // ── Local mic level analyzer (for GlobalMicButtonV49) ──
+  useEffect(function() {
+    if (!rtcReady || isMuted) { setMicLevel(0); return; }
+    var producer = rtcManager && rtcManager.producers && rtcManager.producers['audio'];
+    if (!producer || !producer.track) return;
+    var ctx, source, analyser, buf, id;
+    try {
+      var stream = new MediaStream([producer.track]);
+      ctx      = new (window.AudioContext || window.webkitAudioContext)();
+      source   = ctx.createMediaStreamSource(stream);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      buf = new Uint8Array(analyser.frequencyBinCount);
+      id  = setInterval(function() {
+        analyser.getByteFrequencyData(buf);
+        var sum = 0;
+        for (var i = 0; i < buf.length; i++) sum += buf[i];
+        var avg = sum / buf.length;
+        setMicLevel(Math.min(100, Math.round((avg / 128) * 100)));
+      }, 80);
+    } catch(e) {}
+    return function() {
+      clearInterval(id);
+      try { if (ctx) ctx.close(); } catch(e2) {}
+    };
+  }, [rtcReady, isMuted]);
 
   function toggleMute() { setIsMuted(function(v) { return !v; }); }
   function toggleCam()  { setIsCamOff(function(v) { return !v; }); }
@@ -527,7 +666,7 @@ export default function LiveRoomPage({
     var fid = Date.now() + Math.random();
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
-    if (socket) socket.emit('react', { roomId: roomId, userId: userId, emoji: emoji });
+    if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
     setReactsOpen(false);
   }
 
@@ -797,6 +936,10 @@ export default function LiveRoomPage({
         streamStats={streamStats}
       />
 
+      {(role === 'host' || role === 'cohost') && (
+        <JoinRequestQueue socket={socket} roomId={roomId} />
+      )}
+
       {/* ════════════════ ROOM HEADER ════════════════ */}
       <div style={{ background: SURF, borderBottom: '1px solid ' + BORDER, padding: '10px 16px 10px', flexShrink: 0 }}>
 
@@ -1027,7 +1170,7 @@ export default function LiveRoomPage({
                           <button
                             onClick={function(e) { e.stopPropagation(); if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid }); }}
                             title="Invite to stage"
-                            style={{ padding: '4px 8px', background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 7, color: '#FF8C00', cursor: 'pointer', fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, letterSpacing: .5 }}>
+                            style={{ padding: '4px 8px', background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 7, color: '#D4854A', cursor: 'pointer', fontSize: 10, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, letterSpacing: .5 }}>
                             + STAGE
                           </button>
                         )}
@@ -1108,6 +1251,8 @@ export default function LiveRoomPage({
                         )}
                       </div>
                     </div>
+
+                    <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={gid} />
 
                     {/* Overlay badges (top-left) */}
                     <div style={{ position: 'absolute', top: 5, left: 5, display: 'flex', gap: 3, zIndex: 10, pointerEvents: 'none' }}>
@@ -1209,6 +1354,7 @@ export default function LiveRoomPage({
                     onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
                     onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
                   />
+                  <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
                 <div style={{ padding: '8px 12px 10px', background: CARD }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1266,6 +1412,9 @@ export default function LiveRoomPage({
               )}
             </div>
           )}
+          <OverlayBanner banner={overlayConfig && overlayConfig.banner} />
+          <OverlayCountdown countdown={overlayConfig && overlayConfig.countdown} />
+          <OverlayScoreBug scoreBug={overlayConfig && overlayConfig.scoreBug} />
           <ChyronOverlay socket={socket} roomId={roomId} role={role} isLive={isLive} />
         </div>
 
@@ -1278,7 +1427,7 @@ export default function LiveRoomPage({
                   In the Room
                 </span>
                 {Object.keys(raisedHands).length > 0 && (
-                  <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#FF8C00', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
+                  <span style={{ background: 'rgba(255,140,0,.18)', border: '1px solid rgba(255,140,0,.4)', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#D4854A', animation: 'handBadgePulse 1.2s ease-in-out infinite' }}>
                     ✋ {Object.keys(raisedHands).length} raised
                   </span>
                 )}
@@ -1353,7 +1502,7 @@ export default function LiveRoomPage({
       {floatReacts.map(function(r) {
         return (
           <div key={r.fid} style={{
-            position: 'absolute', left: (30 + Math.random() * 30) + '%', bottom: 90,
+            position: 'absolute', left: '38%', bottom: 90,
             fontSize: 28, pointerEvents: 'none', zIndex: 55,
             animation: 'fadeSlideIn .4s ease',
           }}>
@@ -1361,6 +1510,8 @@ export default function LiveRoomPage({
           </div>
         );
       })}
+
+      <GiftLayer giftFloats={tipFeed} />
 
       {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
       {audioOnly && (
@@ -1558,7 +1709,7 @@ export default function LiveRoomPage({
               </div>
             </div>
             {/* Exit + controls bar (always visible at top) */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(rgba(0,0,0,.7),transparent)', zIndex: 10 }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '12px 16px', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(rgba(0,0,0,.7),transparent)', zIndex: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isLive && <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, borderRadius: 999, padding: '3px 9px' }}>
                   <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', animation: 'livePulse 1.2s infinite' }} />
@@ -1729,6 +1880,15 @@ export default function LiveRoomPage({
       )}
 
       {/* ════════════════ TIP LEADERBOARD PANEL ════════════════ */}
+      {(role === 'host' || role === 'cohost') && tipFeed.length > 0 && (
+        <div style={{ position: 'absolute', left: 8, top: 80, zIndex: 60, width: 200 }}>
+          <GoldenWallPanel
+            items={tipFeed.map(function(t) { return { id: t.id, type: t.emoji ? 'GIFT' : 'TIP', amountCents: t.amount, username: t.from, ts: t.ts }; })}
+            maxVisible={5}
+          />
+        </div>
+      )}
+
       {showLeader && tipLeader.length > 0 && (
         <div style={{
           position: 'absolute', right: 8, top: 80, zIndex: 60,
@@ -2411,6 +2571,17 @@ export default function LiveRoomPage({
               )}
             </div>
 
+            {/* ── Audio-only toggle (panel system) ── */}
+            <div style={{ background: CARD, borderRadius: 12, padding: '14px 16px', marginBottom: 12, border: '1px solid ' + BORDER }}>
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 14, color: MUTED, marginBottom: 8, letterSpacing: .5, textTransform: 'uppercase' }}>Media Mode</div>
+              <AudioOnlyToggle
+                socket={socket}
+                roomId={roomId}
+                isAudioOnly={audioOnly}
+                videoProducer={rtcManager && rtcManager.producers ? rtcManager.producers['video'] : null}
+              />
+            </div>
+
             <button onClick={function() { setShowPrivateSet(false); }} style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, color: MUTED, cursor: 'pointer' }}>
               Done
             </button>
@@ -2532,6 +2703,51 @@ export default function LiveRoomPage({
         isLive={isLive}
         addToast={addToast}
       />
+
+      {/* ════════════════ FLOATING MIC BUTTON ════════════════ */}
+      {/* Visible for non-host/cohost panel participants with RTC active */}
+      {rtcReady && role !== 'host' && role !== 'cohost' && (
+        <GlobalMicButtonV49
+          audioEnabled={!isMuted}
+          toggleAudio={toggleMute}
+          isSpeaking={!!(speakingIds && speakingIds[userId])}
+          micLevel={micLevel}
+          visible={true}
+        />
+      )}
+
+      {/* ════════════════ FLOATING SHARE BUTTON ════════════════ */}
+      <button
+        onClick={function() { setShowShareSheet(true); }}
+        title="Share room"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(env(safe-area-inset-bottom,0px) + 88px)',
+          left: 20,
+          zIndex: 9999,
+          width: 48, height: 48,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.07)',
+          border: '1.5px solid rgba(201,168,76,0.25)',
+          color: '#C9A84C',
+          fontSize: 20,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        }}>
+        📤
+      </button>
+
+      {/* ════════════════ SHARE SHEET ════════════════ */}
+      {showShareSheet && (
+        <ShareSheet
+          shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          title={'Join ' + ((streamInfo && streamInfo.title) || username + ' on SeeWhy LIVE')}
+          onClose={function() { setShowShareSheet(false); }}
+        />
+      )}
     </div>
   );
 }

@@ -25,6 +25,17 @@ import GuestInviteGenerator from '../components/streaming/GuestInviteGenerator';
 import RTMPIngestPanel from '../components/streaming/RTMPIngestPanel';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 
+
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
 // ── Brand tokens ──────────────────────────────────────────────────────────────
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';
@@ -633,15 +644,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
   const [tab, setTab] = useState('create');
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
@@ -1481,23 +1484,21 @@ export default function PodcastStudio() {
       )}
 
       <Toast message={toast} />
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIStreamSummary roomId={roomId} isHost={true} streamTitle="Podcast Session" viewerCount={0} elapsedSeconds={0} />
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
-        <SwanAIRecommendations roomId={roomId} currentLayout="podcast" viewerCount={0} />
-        <StreamGoals isHost={true} />
-        <CollaborationMatcher />
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <ClipGeneratorAI roomId={roomId} sessionId={roomId} elapsedSeconds={0} isHost={true} />
-        <AutomatedHighlightReels roomId={roomId} sessionId={roomId} isHost={true} />
-        <VODCard vod={null} onPlay={() => {}} onEdit={() => {}} />
-        <RTMPFanoutPanel roomId={roomId} isHost={true} />
-        <GuestInviteGenerator roomId={roomId} isHost={true} />
-        <GuestConnector roomId={roomId} />
-        <RTMPIngestPanel roomId={roomId} />
-        <AdvancedEncoderSettings onApply={() => {}} />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="podcast" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

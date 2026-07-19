@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, Package, Plus, X, Check, Tag, BarChart2, Truck } from 'lucide-react';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import { toast } from 'sonner';
-import NativeSelect from '@/components/shared/NativeSelect';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';

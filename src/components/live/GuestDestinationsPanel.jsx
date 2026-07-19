@@ -61,7 +61,7 @@ function DestRow({ dest, userId }) {
           {platform.label}
         </span>
         {validState === 'ok' && <CheckCircle className="w-3 h-3 text-[#6DBF7E]" />}
-        {validState === 'err' && <XCircle className="w-3 h-3 text-red-400" />}
+        {validState === 'err' && <XCircle className="w-3 h-3 text-[#C0392B]" />}
         <div onClick={function() { updateMut.mutate({ is_enabled: !dest.is_enabled }); }} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}><div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} /></div>
         <button onClick={function() { deleteMut.mutate(); }} className="text-white/20 hover:text-[#C0392B] transition-colors">
           <Trash2 className="w-3 h-3" />

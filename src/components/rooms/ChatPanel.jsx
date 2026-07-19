@@ -245,7 +245,7 @@ function MessageBubble({ message, isOwn, isHost, roomId, onDelete, onModerate })
             {format(new Date(message.created_date), 'h:mm a')}
           </span>
           {message.is_pinned && (
-            <Pin className="w-3 h-3 text-[#D4AF37]" />
+            <Pin className="w-3 h-3 text-[#5B7FA6]" />
           )}
         </div>
 

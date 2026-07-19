@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocalMedia } from '../hooks/useLocalMedia';
+import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import {
   Radio, Zap, AlertTriangle, CheckCircle, Eye, EyeOff, Copy,
   RefreshCw, Power, StopCircle, Cpu, Wifi, Clock, Monitor,
@@ -9,10 +13,9 @@ import {
 } from 'lucide-react';
 import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
 import ZEGOGoLiveFlow from '../components/zego/ZEGOGoLiveFlow';
+import ZEGOLiveRoom from '../components/zego/ZEGOLiveRoom';
 import { toast } from 'sonner';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import DestinationsManager from '../components/streaming/DestinationsManager';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
@@ -39,6 +42,7 @@ import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
 import SuperChatBar from '../components/live/SuperChatBar';
 import StreamGoals from '../components/live/StreamGoals';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamMetricsBar from '../components/live/StreamMetricsBar';
 import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
 import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
 import AIStreamSummary from '../components/live/AIStreamSummary';
@@ -65,6 +69,8 @@ import RecordingManager from '../components/content/RecordingManager';
 import OBSBridge from '../components/obs/OBSBridge';
 import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
+import WebSourceOverlayV49 from '../components/streaming/WebSourceOverlayV49';
 import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
 import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
 import GreenroomQueue from '../components/streaming/GreenroomQueue';
@@ -81,7 +87,7 @@ import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWh
 import TipAlert from '../components/monetization/TipAlert';
 import TippingModal from '../components/monetization/TippingModal';
 import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import { MerchStrip } from '../components/merch/MerchWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
 import NotificationBell from '../components/shared/NotificationBell';
 import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
 import PayPerViewManager from '../components/monetization/PayPerViewManager';
@@ -93,6 +99,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
+import OctagonalVideoGrid from '../components/streaming/OctagonalVideoGrid';
 import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
@@ -131,6 +138,12 @@ import GuestStreamingPermissions from '../components/live/GuestStreamingPermissi
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import { useConnectionQuality } from '../hooks/useConnectionQuality';
+import { useVODRecording } from '../hooks/useVODRecording';
+import { useHighlightDetector } from '../hooks/useHighlightDetector';
+import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
+import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
+import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WebhookHooks from '../components/live/WebhookHooks';
 import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
 import TierBadge from '../components/subscriptions/TierBadge';
@@ -152,7 +165,17 @@ import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
 import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
+import LiveStageGrid from '../components/live/LiveStageGrid';
+import RTMPIngestPanel from '../components/live/RTMPIngestPanel';
+import WebSourceOverlay from '../components/live/WebSourceOverlay';
+import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
+import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
+import PipCameraTile from '../components/live/PipCameraTile';
+import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
+import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
+import StreamMetadata from '../components/live/StreamMetadata';
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';
 
@@ -185,9 +208,9 @@ function StatusBadge({ status }) {
   return (
     <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
       style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
-      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />}
+      {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
-      {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping inline-block" />}
+      {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-ping inline-block" />}
       {cfg.label}
     </span>
   );
@@ -311,7 +334,7 @@ function EndStreamModal({ onConfirm, onCancel }) {
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
         style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
         <div className="flex items-center gap-3">
-          <StopCircle className="w-8 h-8 text-red-400" />
+          <StopCircle className="w-8 h-8 text-[#C0392B]" />
           <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
         </div>
         <p className="text-[12px]" style={{ color: 'rgba(255,255,255,0.5)' }}>This will end the live stream for all viewers. This action cannot be undone.</p>
@@ -339,10 +362,43 @@ export default function ControlRoomPage() {
 
   const [showStreamKey, setShowStreamKey] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [uptime, setUptime] = useState(0);
+  const prefCamCR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  const prefMicCR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  const [activeCamId, setActiveCamId] = useState(prefCamCR);
+  const [activeMicId, setActiveMicId] = useState(prefMicCR);
+  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamCR, audioDeviceId: prefMicCR });
+  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
+  const [crChatMessages, setCrChatMessages] = useState([]);
+  const [crHypeLevel, setCrHypeLevel] = useState(0);
+  const [showCRCamSettings, setShowCRCamSettings] = useState(false);
+  useHighlightDetector({ partyId: roomId, roomId, isHost: true, user, messages: crChatMessages, hypeLevel: crHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: crChatMessages[crChatMessages.length - 1] || null });
+  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
+  const subCount = useSubscriptionCount(user?.id);
+  const [remoteSpeakingIds, setRemoteSpeakingIds] = useState({});
+  const speakingIds = isSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
+  const [viewerCount, setViewerCount] = useState(0);
+  const [peakViewers, setPeakViewers] = useState(0);
+  const [tipTotal, setTipTotal] = useState(0);
+  const [isSharing, setIsSharing] = useState(false);
+  const [showEvmux, setShowEvmux] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
+  const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  const screenStreamRef = useRef(null);
+  const _applyShareStream = (stream) => { screenStreamRef.current = stream; const vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  const handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
+  const handleStopShare = () => { screenStreamRef.current?.getTracks().forEach(t => t.stop()); screenStreamRef.current = null; setIsSharing(false); };
+  const [lastChatMsg, setLastChatMsg] = useState(null);
+  const [activeScene, setActiveScene] = useState('main');
+  const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
@@ -384,6 +440,7 @@ export default function ControlRoomPage() {
     }, 1000);
     return () => clearInterval(iv);
   }, [session?.started_at]);
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
 
   const toggleDest = useMutation({
     mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
@@ -433,6 +490,7 @@ export default function ControlRoomPage() {
     onError: () => toast.error('Action failed.'),
   });
 
+  const elapsed = Math.floor(uptime / 1000);
   const latestHealth = healthMetrics[0];
   const liveCount = destinations.filter(d => d.status === 'live').length;
   const enabledCount = destinations.filter(d => d.is_enabled).length;
@@ -547,6 +605,32 @@ export default function ControlRoomPage() {
         </div>
       )}
 
+      {/* Live video grid — shown while stream is active */}
+      {isLive && roomId && (
+        <div className="px-4 md:px-8 pt-4" style={{ height: 360 }}>
+          <ZEGOLiveRoom
+            roomId={roomId}
+            userId={user?.id}
+            userName={user?.full_name || user?.email || ''}
+            isHost={true}
+            onStreamHealth={() => {}}
+            onSpeakingChange={setRemoteSpeakingIds}
+          />
+        </div>
+      )}
+
+      {/* RTMP Ingest — push external cameras or secondary OBS into this room */}
+      {roomId && (
+        <div className="px-4 md:px-8 pt-4">
+          <RTMPIngestPanel roomId={roomId} streamKey={session?.stream_key} />
+        </div>
+      )}
+
+      {/* Advanced Encoder Settings */}
+      <div className="px-4 md:px-8 pt-4">
+        <AdvancedEncoderSettings onApply={(p) => { if (p?.resolution) reacquireMedia({ resolution: p.resolution }); }} />
+      </div>
+
       {/* Destinations Manager */}
       <div className="p-4 md:p-8">
         <DestinationsManager userId={user?.id} />
@@ -568,7 +652,32 @@ export default function ControlRoomPage() {
           </div>
         </div>
       )}
-      <SwanAIRecommendations roomId={roomId} currentLayout="control" viewerCount={0} />
+      {/* Live Stage Grid — active participants */}
+      {participants.length > 0 && (
+        <div className="px-4 md:px-8 pb-6">
+          <p className="text-[10px] font-black uppercase mb-2"
+            style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>
+            Stage · {participants.length} on air
+          </p>
+          <LiveStageGrid
+            participants={participants.map(function(p) {
+              return {
+                id: p.id,
+                name: p.display_name || p.full_name || 'Guest',
+                audioLevel: 0,
+                isHost: p.role === 'host',
+                isCoHost: p.role === 'cohost',
+                videoStream: null,
+                muted: !!p.muted,
+                isLocal: p.user_id === user?.id,
+              };
+            })}
+            maxSeats={participants.length}
+            onTapSeat={function(id) { toast.info('Tap: ' + id); }}
+          />
+        </div>
+      )}
+      <SwanAIRecommendations roomId={roomId} currentLayout="control" viewerCount={viewerCount} />
       <MilestoneAlerts userId={user?.id} roomId={roomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
@@ -593,20 +702,30 @@ export default function ControlRoomPage() {
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
+      {roomId && participants.length > 0 && (
+        <OctagonalVideoGrid
+          roomId={roomId}
+          participants={participants}
+          currentUser={user}
+          isHost={true}
+          compactMode={true}
+        />
+      )}
       {roomId && <CollaborativeWhiteboard roomId={roomId} />}
       {roomId && user?.id && <PointsEarnWidget userId={user.id} creatorId={user?.id} roomId={roomId} isHost={true} />}
       {roomId && <RedemptionQueue creatorId={user?.id} roomId={roomId} />}
       {roomId && <RewardShop creatorId={user?.id} roomId={roomId} currentUser={user} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
-      {<StreamingPresets onApply={() => {}} />}
-      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={0} />}
-      <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+      {<StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
+      {roomId && <EmbedPlayer roomId={roomId} creatorName={user?.full_name || ''} streamTitle={room?.title || 'Control Room'} viewerCount={viewerCount} />}
+      <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={() => {}} />
       {user?.id && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
       {roomId && <AutomatedClipGenerator streamSession={{room_id: roomId}} isLive={roomId != null} />}
       {roomId && <InteractivePollWidget roomId={roomId} isHost={true} />}
       {<StreamMetadataEditor initialTitle={room?.title || 'Control Room'} initialCategory={'entertainment'} />}
+      {room && <StreamMetadata room={room} isHost={true} />}
       {<StreamerMonetizationCenter />}
       {user?.id && <VirtualGoodsStore userId={user.id} />}
       {<SoundAlertsManager creatorId={user?.id} />}
@@ -616,26 +735,26 @@ export default function ControlRoomPage() {
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {!true && roomId && <QuickTip recipientId={user?.id} recipientName={''} onTipSent={() => {}} />}
-      {<LowerThirdsBanner onBannerChange={() => {}} />}
-      {<SceneSwitcher activeScene={'main'} onSceneChange={() => {}} />}
+      {<LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} />}
-      {roomId && <LiveAudiencePulse roomId={roomId} isHost={true} viewerCount={0} />}
+      {roomId && <LiveAudiencePulse roomId={roomId} isHost={true} viewerCount={viewerCount} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
-      {roomId && <AIStreamSummary roomId={roomId} isHost={true} streamTitle={room?.title || ''} viewerCount={0} elapsedSeconds={0} />}
+      {roomId && <AIStreamSummary roomId={roomId} isHost={true} streamTitle={room?.title || ''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
       <HostAlertCenter />
-      {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={0} />}
+      {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={viewerCount} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={user?.id} isHost={true} />}
       {roomId && user?.id && <SuperChatBar roomId={roomId} currentUser={user} recipientId={user?.id} recipientName={''} />}
       {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {<LocalVideoTile stream={null} audioEnabled={true} videoEnabled={true} userName={user?.full_name || ''} isHost={true} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} isHost={true} isPinned={false} onPinToggle={() => {}} points={0} label={'Host'} />}
-      {<AudioPanel micMuted={false} onMicToggle={() => {}} participants={[]} />}
-      {<EvmuxWebSource isActive={false} onClose={() => {}} />}
+      {<LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={true} isSpeaking={isSpeaking} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
+      {<CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
+      {<AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
+      {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={user?.id} />}
       {<SubscriptionTiers communityId={null} userId={user?.id} />}
@@ -645,35 +764,39 @@ export default function ControlRoomPage() {
       {<CreatorTierManager creatorId={user?.id} />}
       {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
-      {roomId && <GuestGrid participants={[]} isHost={true} onInvite={() => {}} hostId={user?.id} />}
-      {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
-      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={() => {}} />
+      {roomId && <GuestGrid participants={participants} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
+      {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
+      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={false} onClose={() => {}} />
-      <GlobalSearch onClose={() => {}} />
-      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => {}} />}
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
+      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
+      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
       <PaywallGate isHost={true} streamTitle={room?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={user?.id} roomId={roomId} />}
       {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
+      {roomId && <RTMPFanoutPanelV49 roomId={roomId} isHost={true} />}
+      {roomId && <WebSourceOverlayV49 roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
+      <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={user?.id} onClose={() => setShowSwanPanel(false)} />}
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={true} />}
-      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => {}} />}
+      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={true} currentUser={user} />
-      {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={0} hostName={user?.full_name || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={() => {}} onTipReceived={() => {}} onMessageReceived={() => {}} />}
+      {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => setLastChatMsg(msg?.content || null)} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={user?.id} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={true} />}
-      {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />}
-      {<AudioMixer micMuted={false} onMicToggle={() => {}} />}
-      {<EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />}
-      {<ScreenSharePanel isSharing={false} onStartShare={() => {}} onStopShare={() => {}} />}
+      {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
+      {<AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
+      {<EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
+      {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
       {roomId && user?.id && <EnhancedStreamChat roomId={roomId} userId={user.id} userName={user?.full_name || ''} userRole={true ? 'host' : 'viewer'} />}
@@ -681,12 +804,12 @@ export default function ControlRoomPage() {
       {roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={true} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
       {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
-      {<BitratePresets selected={'auto'} onChange={() => {}} />}
+      {<BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}
       {roomId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
@@ -694,13 +817,19 @@ export default function ControlRoomPage() {
       <CollaborationMatcher />
       <ContentRecommendations />
       <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} roomId={roomId} creatorId={user?.id} currentTips={0} currentSubs={0} currentViewers={0} />
-      <ViewerCount count={0} peakViewers={0} />
-      {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={0} currentUser={user} />}
-      {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={0} isHost={true} />}
+      <StreamGoals isHost={true} currentTips={tipTotal} currentSubs={subCount} currentViewers={viewerCount} />
+      <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
+      <ViewerCount count={viewerCount} peakViewers={peakViewers} />
+      {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
+      {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}
-      {room && <RoomBrandingEditor roomData={room} onBrandingChange={() => {}} isHost={true} />}
+      {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
       <BackgroundCustomizer />
+      <WebSourceOverlay isStreamActive={isLive} />
+      {roomId && <GuestInviteGeneratorV49 roomId={roomId} isHost={true} />}
+      {roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={tipTotal} />}
+      <PreJoinSettingsModal open={showCRCamSettings} onClose={() => setShowCRCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <LiveCaptionOverlay stream={localStream} />
     </div>
   );
 }

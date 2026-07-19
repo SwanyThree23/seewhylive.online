@@ -141,10 +141,10 @@ export default function OBSBridge() {
   };
 
   return (
-    <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(212,175,55,0.15)', borderRadius:12, overflow:'hidden', color:'#fff' }}>
+    <div style={{ background:'rgba(255,255,255,0.04)', border:'1px solid rgba(74,138,122,0.15)', borderRadius:12, overflow:'hidden', color:'#fff' }}>
       {/* Header */}
       <div style={{ padding:'16px 16px 12px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:700, color:'#D4AF37' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:14, fontWeight:700, color:'#4A8A7A' }}>
           <Monitor style={{ width:16, height:16 }} /> OBS Studio Bridge
         </div>
         <span style={{
@@ -182,7 +182,7 @@ export default function OBSBridge() {
             <button
               onClick={connect}
               disabled={connecting}
-              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#D4AF37', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: connecting ? 'not-allowed' : 'pointer', opacity: connecting ? 0.7 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
+              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'10px', background:'#4A8A7A', color:'#000', border:'none', borderRadius:8, fontWeight:700, cursor: connecting ? 'not-allowed' : 'pointer', opacity: connecting ? 0.7 : 1, fontSize:13, fontFamily:'Barlow Condensed, sans-serif' }}
             >
               <Wifi style={{ width:16, height:16 }} />
               {connecting ? 'Connecting...' : 'Connect to OBS'}
@@ -217,7 +217,7 @@ export default function OBSBridge() {
                 ].map(s => (
                   <div key={s.label} style={{ background:'rgba(255,255,255,0.05)', borderRadius:12, padding:8, textAlign:'center' }}>
                     <p style={{ fontSize:10, color:'rgba(255,255,255,0.4)', margin:'0 0 2px' }}>{s.label}</p>
-                    <p style={{ fontSize:14, fontWeight:700, color:'#D4AF37', margin:0 }}>{s.value}</p>
+                    <p style={{ fontSize:14, fontWeight:700, color:'#4A8A7A', margin:0 }}>{s.value}</p>
                   </div>
                 ))}
               </div>
@@ -243,16 +243,16 @@ export default function OBSBridge() {
                       onClick={() => switchScene(scene.sceneName)}
                       style={{
                         width:'100%', display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:12, fontSize:14, border:'none', cursor:'pointer', transition:'all 0.15s', textAlign:'left',
-                        background: active ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
-                        borderLeft: active ? '1px solid rgba(212,175,55,0.3)' : '1px solid transparent',
-                        color: active ? '#D4AF37' : 'rgba(255,255,255,0.6)',
+                        background: active ? 'rgba(74,138,122,0.15)' : 'rgba(255,255,255,0.05)',
+                        borderLeft: active ? '1px solid rgba(74,138,122,0.3)' : '1px solid transparent',
+                        color: active ? '#4A8A7A' : 'rgba(255,255,255,0.6)',
                         fontWeight: active ? 600 : 400,
                       }}
                     >
                       <ChevronRight style={{ width:14, height:14, flexShrink:0, opacity: active ? 1 : 0 }} />
                       <span style={{ flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{scene.sceneName}</span>
                       {active && (
-                        <span style={{ fontSize:11, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(212,175,55,0.2)', color:'#D4AF37', border:'1px solid rgba(212,175,55,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
+                        <span style={{ fontSize:11, fontWeight:900, padding:'1px 6px', borderRadius:99, background:'rgba(74,138,122,0.2)', color:'#4A8A7A', border:'1px solid rgba(74,138,122,0.3)', fontFamily:'Barlow Condensed, sans-serif' }}>LIVE</span>
                       )}
                     </button>
                   );

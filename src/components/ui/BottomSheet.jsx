@@ -26,27 +26,17 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
     }
   }, [isOpen]);
 
-  // Android hardware back button dismisses the sheet instead of navigating away
-  var pushedToHistory = useRef(false);
-  var onCloseRef = useRef(onClose);
-  useEffect(function() { onCloseRef.current = onClose; }, [onClose]);
-  useEffect(function() {
-    if (!isOpen) return;
-    pushedToHistory.current = true;
-    window.history.pushState({ swBottomSheet: true }, '');
-    function onPop() {
-      pushedToHistory.current = false;
-      onCloseRef.current();
+  // Android hardware back button: push state on open so back closes the sheet
+  useEffect(() => {
+    if (isOpen) {
+      window.history.pushState({ swBottomSheet: true }, '');
     }
-    window.addEventListener('popstate', onPop);
-    return function() {
-      window.removeEventListener('popstate', onPop);
-      if (pushedToHistory.current) {
-        pushedToHistory.current = false;
-        window.history.back();
-      }
-    };
   }, [isOpen]);
+  useEffect(() => {
+    function onPop() { if (isOpen) onClose(); }
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
@@ -74,7 +64,8 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
             className="fixed left-0 right-0 bottom-0 z-[201] flex flex-col"
             style={{
               maxHeight,
-              background: 'rgba(8,11,24,0.99)',
+              paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+              background: 'rgba(10,7,22,0.99)',
               border: '1px solid rgba(212,175,55,0.15)',
               borderBottom: 'none',
               borderRadius: '20px 20px 0 0',
@@ -96,8 +87,8 @@ export default function BottomSheet({ isOpen, onClose, title, children, maxHeigh
                   {title}
                 </span>
                 <button onClick={onClose}
-                  className="w-11 h-11 flex items-center justify-center rounded-xl"
-                  style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+                  className="flex items-center justify-center rounded-xl"
+                  style={{ width: 44, height: 44, minWidth: 44, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', WebkitUserSelect: 'none' }}>
                   <X className="w-4 h-4" />
                 </button>
               </div>

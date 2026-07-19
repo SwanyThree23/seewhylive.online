@@ -168,8 +168,8 @@ export default function OctagonalVideoWindow({
             onClick={onMicToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isMuted
-                ? 'bg-red-900/50 border border-red-600 text-red-400'
-                : 'bg-[#0F1428]/50 border border-[#6DBF7E]/35 text-[#6DBF7E]'
+                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
+                : 'border border-green-600 text-[#6DBF7E]'
             }`}
             style={isMuted ? undefined : { background: 'rgba(109,191,126,0.15)' }}
           >
@@ -181,8 +181,8 @@ export default function OctagonalVideoWindow({
             onClick={onVideoToggle}
             className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isVideoOff
-                ? 'bg-red-900/50 border border-red-600 text-red-400'
-                : 'bg-[#0F1428]/70 border border-[#D4AF37]/40 text-[#D4AF37]'
+                ? 'bg-red-900/50 border border-red-600 text-[#C0392B]'
+                : 'bg-blue-900/50 border border-blue-600 text-blue-400'
             }`}
           >
             {isVideoOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}

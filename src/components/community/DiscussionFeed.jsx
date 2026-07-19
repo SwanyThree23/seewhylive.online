@@ -109,7 +109,7 @@ export default function DiscussionFeed({ communityId }) {
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#800020] to-[#D4854A]" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#5B7FA6] to-[#4A8A7A]" />
                 <div>
                   <p className="text-sm font-bold text-white">{post.user_name}</p>
                   <p className="text-[10px] text-white/40">{new Date(post.created_date).toLocaleDateString()}</p>

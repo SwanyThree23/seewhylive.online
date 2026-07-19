@@ -61,20 +61,26 @@ export default function LocalVideoTile({
     : undefined;
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#080B18]" style={{
-      clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
-      border: '3px solid #d4af37',
-      boxShadow: '0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)'
-    }}>
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        playsInline
-        className="w-full h-full object-cover scale-x-[-1]"
-        style={{ display: stream && videoEnabled ? 'block' : 'none' }}
-      />
-      {!(stream && videoEnabled) && (
+    <div
+      className="relative w-full h-full overflow-hidden bg-[#0d0618]"
+      style={{
+        clipPath: 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)',
+        border: `3px solid ${GOLD}`,
+        boxShadow: speakingRing ?? `0 0 30px rgba(212,175,55,0.6), inset 0 0 20px rgba(212,175,55,0.3)`,
+        transition: 'box-shadow 0.2s ease',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {stream && videoEnabled ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover scale-x-[-1]"
+        />
+      ) : (
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#800020] to-[#d4af37] flex items-center justify-center text-3xl font-bold text-white">
             {userName?.charAt(0)?.toUpperCase()}
@@ -101,10 +107,10 @@ export default function LocalVideoTile({
         <div className="flex items-center gap-1">
           {audioEnabled
             ? <Mic className="w-3 h-3 text-[#6DBF7E]" />
-            : <MicOff className="w-3 h-3 text-red-400" />}
+            : <MicOff className="w-3 h-3 text-[#C0392B]" />}
           {videoEnabled
-            ? <Video className="w-3 h-3 text-[#D4AF37]" />
-            : <VideoOff className="w-3 h-3 text-red-400" />}
+            ? <Video className="w-3 h-3 text-blue-400" />
+            : <VideoOff className="w-3 h-3 text-[#C0392B]" />}
         </div>
       </div>
 

@@ -278,7 +278,7 @@ export default function InsForgeTab({ addToast, isLive }) {
     { id: 'nginxtest',   label: 'TEST NGINX CFG',  icon: '⚡', cmd: 'nginx -t',                         color: '#C9A84C' },
     { id: 'nginxreload', label: 'RELOAD NGINX',    icon: '🔃', cmd: 'nginx -s reload',                  color: '#C9A84C' },
     { id: 'diskcheck',   label: 'DISK USAGE',      icon: '💾', cmd: 'df -h /opt/seewhy',                color: '#C9A84C' },
-    { id: 'memcheck',    label: 'MEMORY',          icon: '🧠', cmd: 'free -h',                          color: '#FF6B35' },
+    { id: 'memcheck',    label: 'MEMORY',          icon: '🧠', cmd: 'free -h',                          color: '#D4854A' },
     { id: 'dbbackup',    label: 'BACKUP DB',       icon: '🗄', cmd: 'cp seewhy.db seewhy.db.bak',        color: '#FF1A3C' },
     { id: 'sslcheck',    label: 'SSL STATUS',      icon: '🔒', cmd: 'certbot certificates',             color: '#C9A84C' },
   ];
@@ -479,7 +479,7 @@ export default function InsForgeTab({ addToast, isLive }) {
           )}
 
           <div style={{ background: 'rgba(255,107,53,.06)', border: '1px solid rgba(255,107,53,.2)', borderRadius: 8, padding: '8px 12px' }}>
-            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#FF6B35', letterSpacing: 1 }}>⚠ Actions above simulate VPS commands. In production, connect to a secure SSH exec endpoint on the backend to run real commands.</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#D4854A', letterSpacing: 1 }}>⚠ Actions above simulate VPS commands. In production, connect to a secure SSH exec endpoint on the backend to run real commands.</div>
           </div>
         </div>
       )}

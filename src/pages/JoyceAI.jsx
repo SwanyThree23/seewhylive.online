@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+
+
+import StreamEventBus from '../components/live/StreamEventBus';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import ChatOverlay from '../components/live/ChatOverlay';
@@ -46,7 +47,7 @@ const TEXTM = '#8A7A62';
 const GREEN = '#6DBF7E';
 const RUBY = '#8B1A2F';
 const RUBYL = '#B22340';
-const CYAN = '#D4AF37';
+const CYAN = '#4A8A7A';
 const PILL = 999;
 
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -98,15 +99,33 @@ function ThinkDots() {
 
 export default function JoyceAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  const { data: activeRoom } = useQuery({
+    queryKey: ['joyce-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "Hey! I'm Joyce AI — your SeeWhy LIVE co-host. Ask me anything about running your stream, the tournament, tributes, or revenue. Let's make this broadcast fire! 🔥" },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [busViewerCount, setBusViewerCount] = useState(0);
   const chatRef = useRef(null);
   const inputRef = useRef(null);
+
+  function handleTipEvent(msg) {
+    if (!msg?.tip_amount) return;
+    const name = msg.user_name || 'Someone';
+    const amount = msg.tip_amount;
+    const note = msg.content ? ` saying "${msg.content}"` : '';
+    setMessages(prev => [...prev, {
+      role: 'system',
+      text: `🔔 Live tip event: ${name} just tipped $${amount}${note}. Suggest a shoutout response the host can read live.`,
+    }]);
+  }
 
   function copyMsg(text, idx) {
     navigator.clipboard.writeText(text).then(() => {
@@ -335,16 +354,22 @@ export default function JoyceAI() {
           Joyce AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
       </div>
-
-      <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => {}} />
-        <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona="hype" />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <SwanyBotEnhanced userId={user?.id} conversationId={roomId} onContextReady={() => {}} />
-        <ChatOverlay roomId={roomId} isVisible={false} />
-        <AICopilotSidebar roomId={roomId} isHost={false} />
-      </div>
-        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={busViewerCount} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={busViewerCount} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={busViewerCount} peakViewers={busViewerCount} />
+      <BackgroundCustomizer />
+      {activeRoomId && <StreamEventBus roomId={activeRoomId} isHost={true} sessionId={activeRoomId} onViewerUpdate={setBusViewerCount} onTipReceived={handleTipEvent} onMessageReceived={() => {}} />}
     </div>
   );
 }

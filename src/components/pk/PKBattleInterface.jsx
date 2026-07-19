@@ -71,6 +71,10 @@ export default function PKBattleInterface({ roomId }) {
     tips: battle?.challenger_tips || 0,
   };
 
+  const setBattleActive = () => {};
+  const setCreator = () => {};
+  const setChallenger = () => {};
+
   useEffect(() => {
     if (!battle?.started_at) return;
     const battleDuration = battle.duration_seconds || 180;
@@ -102,7 +106,22 @@ export default function PKBattleInterface({ roomId }) {
           <h2 className="text-2xl font-black text-white">PK BATTLE</h2>
         </div>
         <p className="text-white/60 mb-6">Challenge another creator to a live battle</p>
-        <p className="text-[11px] text-white/40 mt-2">No active battle in this room</p>
+        <button
+          onClick={() => {
+            setBattleActive(true);
+            setTimeLeft(180);
+            setCreator(p => ({ ...p, tips: 0, score: 0 }));
+            setChallenger(p => ({ ...p, tips: 0, score: 0 }));
+          }}
+          style={{
+            width: '100%', height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', borderRadius: 8,
+            background: '#C9A84C', color: '#000', border: 'none',
+          }}
+        >
+          <Swords className="w-4 h-4" />
+          Start Battle
+        </button>
       </motion.div>
     );
   }
@@ -171,7 +190,7 @@ export default function PKBattleInterface({ roomId }) {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="bg-[#6DBF7E]/20 border border-[#6DBF7E]/40/50 rounded-lg p-4 text-center"
+          className="bg-[#6DBF7E]/20 border border-green-500/50 rounded-lg p-4 text-center"
         >
           <Trophy className="w-6 h-6 mx-auto mb-2 text-[#6DBF7E]" />
           <p className="text-sm font-bold text-white mb-2">

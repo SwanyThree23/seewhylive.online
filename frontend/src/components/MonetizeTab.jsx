@@ -98,7 +98,7 @@ export default function MonetizeTab({ addToast, isLive, socket, roomId, username
     var goal = { label: goalLabel, goalCents: cents };
     localStorage.setItem('sw_stream_goal', JSON.stringify(goal));
     if (setStreamGoal) setStreamGoal(goal);
-    if (socket) socket.emit('stream-goal', { roomId: roomId, label: goalLabel, goalCents: cents });
+    if (socket) socket.emit('stream-goal-set', { roomId: roomId, label: goalLabel, goalCents: cents });
     if (addToast) addToast('Stream goal set: ' + goalLabel, 'success');
   }
 

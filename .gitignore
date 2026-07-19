@@ -40,6 +40,10 @@ server/database.sqlite
 frontend/src/App.jsx.bak
 data/
 
+# Backup and junk files
+*.bak-*
+*.superseded-*
+server/test.mp4
 # SQLite write-ahead-log files — change constantly, shouldn't be tracked
 data/*.db-shm
 data/*.db-wal
@@ -52,3 +56,4 @@ data/*.db-wal
 *.tar.gz.b64
 base44/.app.jsonc
 repo-latest/
+frontend/dist/

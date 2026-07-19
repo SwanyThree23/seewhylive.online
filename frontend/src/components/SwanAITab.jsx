@@ -13,7 +13,7 @@ var TEXT  = '#F0E8D4';
 var MUTED = '#8A7A62';
 var DIM   = '#2E2318';
 var BORD  = 'rgba(255,255,255,.06)';
-var ORG   = '#FF6B35';
+var ORG   = '#D4854A';
 
 var ANIM = [
   '@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}',

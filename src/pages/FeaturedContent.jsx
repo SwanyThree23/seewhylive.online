@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Play, ExternalLink, Youtube, Star, Users, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -25,9 +25,8 @@ const CHANNELS = [
     handle: '@dominoentertainment5513',
     url: 'https://youtube.com/@dominoentertainment5513',
     description: 'Live entertainment, shows, and exclusive content',
-    bg: 'rgba(128,0,32,0.25)',
-    border: 'rgba(192,57,43,0.3)',
-    accent: '#C0392B',
+    color: 'from-red-900 to-orange-900',
+    accent: '#D4854A',
     emoji: '🎭',
   },
   {
@@ -58,9 +57,8 @@ const CHANNELS = [
     handle: '@aiversepodcast',
     url: 'https://youtube.com/@aiversepodcast',
     description: 'AI, tech, and futurism — conversations that matter',
-    bg: 'rgba(212,175,55,0.08)',
-    border: 'rgba(212,175,55,0.2)',
-    accent: '#D4AF37',
+    color: 'from-blue-900 to-[#4A8A7A]',
+    accent: '#4A8A7A',
     emoji: '🤖',
   },
 ];
@@ -120,20 +118,6 @@ function YouTubeEmbed({ videoId, title }) {
 
 export default function FeaturedContent() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
-  const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
-    refetchInterval: 30000,
-  });
-  const activeRoomId = activeRoom?.id || roomId;
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
   const [activeChannel, setActiveChannel] = useState(null);
 
   return (
@@ -272,6 +256,21 @@ export default function FeaturedContent() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

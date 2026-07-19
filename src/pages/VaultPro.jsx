@@ -1,21 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { createPageUrl } from '../utils';
-import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2 } from 'lucide-react';
-import SpotlightBanner from '../components/community/SpotlightBanner';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import EarningsBreakdown from '../components/dashboard/EarningsBreakdown';
-import RevenueDashboard from '../components/monetization/RevenueDashboard';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
+import { useQuery } from '@tanstack/react-query';
+import { Lock, Eye, EyeOff, Plus, Copy, Key, Shield, FileText, Hash, ClipboardList, Loader2, Zap, Check } from 'lucide-react';
+
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 
@@ -116,15 +103,6 @@ const PLATFORMS = ['OBS', 'Twitch', 'YouTube', 'Facebook Live', 'Custom RTMP'];
 // ── Main component ────────────────────────────────────────────────────────────
 export default function VaultPro() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const [searchParams] = useSearchParams();
-  const roomId = searchParams.get('room_id');
-  const { data: userCommunity } = useQuery({
-    queryKey: ['userCommunity', user?.id],
-    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
-    enabled: !!user?.id,
-  });
-  const userCommunityId = userCommunity?.id || null;
-
   // Vault lock state
   const [vaultUnlocked, setVaultUnlocked]   = useState(false);
   const [vaultPassword, setVaultPassword]   = useState('');
@@ -161,6 +139,49 @@ export default function VaultPro() {
 
   // Audit log
   const [auditLog, setAuditLog] = useState([]);
+
+  // AI API Keys (plain localStorage, not vault-encrypted)
+  const AI_SERVICES = [
+    { id: 'openrouter', label: 'OpenRouter', desc: 'Multi-model routing (GPT-4, Claude, Gemini, Llama)', link: 'https://openrouter.ai/keys', placeholder: 'sk-or-v1-…' },
+    { id: 'anthropic',  label: 'Anthropic',  desc: 'Claude API direct access',                          link: 'https://console.anthropic.com', placeholder: 'sk-ant-…' },
+    { id: 'openai',     label: 'OpenAI',     desc: 'GPT-4o, Whisper, TTS',                              link: 'https://platform.openai.com/api-keys', placeholder: 'sk-…' },
+    { id: 'elevenlabs', label: 'ElevenLabs', desc: 'Voice synthesis & cloning',                         link: 'https://elevenlabs.io/app/settings/api-keys', placeholder: 'Your EL key…' },
+    { id: 'deepgram',   label: 'Deepgram',   desc: 'Real-time speech-to-text',                         link: 'https://console.deepgram.com', placeholder: 'Token…' },
+    { id: 'wispr',      label: 'WisperFlo',  desc: 'AI voice automation',                               link: 'https://wispr.io', placeholder: 'API key…' },
+  ];
+
+  const [aiKeys, setAiKeys] = useState(() => {
+    const obj = {};
+    AI_SERVICES.forEach(s => {
+      try { obj[s.id] = localStorage.getItem(`swl_apikey_${s.id}`) || ''; } catch { obj[s.id] = ''; }
+    });
+    return obj;
+  });
+  const [aiRevealed, setAiRevealed] = useState({});
+  const [aiEditing, setAiEditing]   = useState({});
+  const [aiSaved, setAiSaved]       = useState({});
+  const [aiCopied, setAiCopied]     = useState({});
+
+  function saveAiKey(id) {
+    try {
+      localStorage.setItem(`swl_apikey_${id}`, aiKeys[id]);
+      setAiSaved(p => ({ ...p, [id]: true }));
+      setTimeout(() => setAiSaved(p => ({ ...p, [id]: false })), 1800);
+      setAiEditing(p => ({ ...p, [id]: false }));
+      addAudit(`AI key saved — ${AI_SERVICES.find(s => s.id === id)?.label || id}`, '🔑');
+    } catch {
+      setError('Could not save key.');
+    }
+  }
+
+  function clearAiKey(id) {
+    try {
+      localStorage.removeItem(`swl_apikey_${id}`);
+      setAiKeys(p => ({ ...p, [id]: '' }));
+      setAiRevealed(p => ({ ...p, [id]: false }));
+      addAudit(`AI key cleared — ${AI_SERVICES.find(s => s.id === id)?.label || id}`, '🗑️');
+    } catch {}
+  }
 
   function addAudit(action, icon = '🔐') {
     setAuditLog(prev => [{ action, icon, time: new Date().toISOString() }, ...prev]);
@@ -388,6 +409,7 @@ export default function VaultPro() {
             {/* Tabs */}
             <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
               <TabBtn label="Stream Keys"   icon={Key}           active={activeTab === 'streamkeys'}   onClick={() => setActiveTab('streamkeys')} />
+              <TabBtn label="AI Keys"       icon={Zap}           active={activeTab === 'aikeys'}       onClick={() => setActiveTab('aikeys')} />
               <TabBtn label="Content"       icon={FileText}      active={activeTab === 'content'}      onClick={() => setActiveTab('content')} />
               <TabBtn label="Room PINs"     icon={Hash}          active={activeTab === 'pins'}         onClick={() => setActiveTab('pins')} />
               <TabBtn label="Audit"         icon={ClipboardList} active={activeTab === 'audit'}        onClick={() => setActiveTab('audit')} />
@@ -582,6 +604,97 @@ export default function VaultPro() {
               </div>
             )}
 
+            {/* ─ Tab: AI API Keys ─ */}
+            {activeTab === 'aikeys' && (
+              <div className="space-y-3">
+                <div className="px-1 pb-1 flex items-start gap-2 rounded-xl p-3" style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                  <Zap className="w-4 h-4 shrink-0 mt-0.5" style={{ color: GOLD }} />
+                  <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                    AI API keys are stored in your browser (localStorage) — not vault-encrypted. They are private to this device. Keys are used by OpenRouter Hub, LLM Lingua Studio, Voice Agent Builder, and other AI tools.
+                  </p>
+                </div>
+
+                {AI_SERVICES.map(svc => {
+                  const val     = aiKeys[svc.id] || '';
+                  const hasKey  = val.length > 0;
+                  const revealed = aiRevealed[svc.id];
+                  const editing  = aiEditing[svc.id];
+                  const saved    = aiSaved[svc.id];
+
+                  return (
+                    <div key={svc.id} className="rounded-2xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.03)', border: hasKey ? '1px solid rgba(212,175,55,0.18)' : '1px solid rgba(255,255,255,0.07)' }}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: hasKey ? GREEN : 'rgba(255,255,255,0.15)' }} />
+                            <p className="text-[13px] font-black" style={{ color: hasKey ? '#fff' : 'rgba(255,255,255,0.5)', ...T }}>{svc.label}</p>
+                          </div>
+                          <p className="text-[11px] ml-4" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{svc.desc}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {hasKey && !editing && (
+                            <>
+                              <button onClick={() => setAiRevealed(p => ({ ...p, [svc.id]: !p[svc.id] }))}
+                                className="p-1.5 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                {revealed ? <EyeOff className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} /> : <Eye className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />}
+                              </button>
+                              <button onClick={() => { navigator.clipboard.writeText(val).then(() => { setAiCopied(p => ({ ...p, [svc.id]: true })); setTimeout(() => setAiCopied(p => ({ ...p, [svc.id]: false })), 1500); }).catch(() => {}); addAudit(`AI key copied — ${svc.label}`, '📋'); }}
+                                className="p-1.5 rounded-lg" style={{ background: aiCopied[svc.id] ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.05)', border: aiCopied[svc.id] ? '1px solid rgba(109,191,126,0.25)' : '1px solid rgba(255,255,255,0.08)' }}>
+                                {aiCopied[svc.id] ? <Check className="w-3 h-3" style={{ color: GREEN }} /> : <Copy className="w-3 h-3" style={{ color: GOLD }} />}
+                              </button>
+                            </>
+                          )}
+                          <button onClick={() => setAiEditing(p => ({ ...p, [svc.id]: !p[svc.id] }))}
+                            className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase" style={{ background: editing ? 'rgba(255,255,255,0.08)' : 'rgba(212,175,55,0.1)', border: `1px solid ${editing ? 'rgba(255,255,255,0.12)' : 'rgba(212,175,55,0.25)'}`, color: editing ? 'rgba(255,255,255,0.5)' : GOLD, ...T }}>
+                            {editing ? 'Cancel' : hasKey ? 'Update' : 'Add'}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Key display (not editing) */}
+                      {hasKey && !editing && (
+                        <div className="mt-1 px-3 py-1.5 rounded-lg font-mono text-[11px]" style={{ background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(255,255,255,0.06)', color: revealed ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.3)', wordBreak: 'break-all' }}>
+                          {revealed ? val : '•'.repeat(Math.min(val.length, 40))}
+                        </div>
+                      )}
+
+                      {/* Edit input */}
+                      {editing && (
+                        <div className="space-y-2 mt-1">
+                          <input
+                            type="text"
+                            value={aiKeys[svc.id] || ''}
+                            onChange={e => setAiKeys(p => ({ ...p, [svc.id]: e.target.value }))}
+                            placeholder={svc.placeholder}
+                            autoFocus
+                            className="w-full rounded-xl px-3 py-2 text-[12px] font-mono outline-none"
+                            style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(212,175,55,0.3)', color: 'rgba(255,255,255,0.9)' }}
+                          />
+                          <div className="flex gap-2">
+                            <button onClick={() => saveAiKey(svc.id)}
+                              className="flex-1 py-2 rounded-xl text-[11px] font-black uppercase flex items-center justify-center gap-1.5"
+                              style={{ background: saved ? 'rgba(109,191,126,0.15)' : 'rgba(212,175,55,0.15)', border: `1px solid ${saved ? 'rgba(109,191,126,0.3)' : 'rgba(212,175,55,0.3)'}`, color: saved ? GREEN : GOLD, ...T }}>
+                              {saved ? <><Check className="w-3 h-3" /> Saved</> : 'Save Key'}
+                            </button>
+                            {hasKey && (
+                              <button onClick={() => clearAiKey(svc.id)}
+                                className="px-3 py-2 rounded-xl text-[11px] font-black uppercase"
+                                style={{ background: 'rgba(128,0,32,0.08)', border: '1px solid rgba(128,0,32,0.2)', color: 'rgba(192,57,43,0.8)', ...T }}>
+                                Clear
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>
+                            Get key at: <a href={svc.link} target="_blank" rel="noopener noreferrer" style={{ color: GOLD, textDecoration: 'none' }}>{svc.link.replace('https://', '')}</a>
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* ─ Tab: Audit Log ─ */}
             {activeTab === 'audit' && (
               <div className="space-y-2">
@@ -623,50 +736,21 @@ export default function VaultPro() {
           </button>
         </div>
       )}
-
-      {/* Community spotlight + milestone alerts */}
-      <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
-        <MilestoneAlerts creatorId={user?.id} />
-      </div>
-
-      {/* Cross-nav footer */}
-      <div style={{ padding: '10px 16px', background: 'rgba(8,11,24,0.95)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link to={createPageUrl('CreatorDashboard')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            📊 Creator Dashboard
-          </button>
-        </Link>
-        <Link to={createPageUrl('Dashboard')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            🏠 Dashboard
-          </button>
-        </Link>
-        <Link to={createPageUrl('Settings')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            ⚙️ Settings
-          </button>
-        </Link>
-        <Link to={createPageUrl('Monetization')} style={{ textDecoration: 'none' }}>
-          <button style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, padding: '5px 14px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: '#C4B596', cursor: 'pointer', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            💰 Monetization
-          </button>
-        </Link>
-      </div>
-
-      <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <EarningsBreakdown userId={user?.id} />
-        <RevenueDashboard userId={user?.id} />
-        <StreamerMonetizationCenter userId={user?.id} />
-        <MonetizationDashboard roomId={roomId} />
-        <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />
-        <VirtualGoodsStore userId={user?.id} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <ContentRecommendations />
-        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
-        <CollaborationMatcher />
-        <ShareToSocial url={window.location.href} title="Secured with SeeWhy LIVE Vault Pro" />
-      </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

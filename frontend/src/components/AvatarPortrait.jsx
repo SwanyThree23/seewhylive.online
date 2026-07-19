@@ -3,16 +3,16 @@ import React from 'react';
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
 var COLOR_PAIRS = [
-  ['#FF1564', '#800020'],
+  ['#C0392B', '#800020'],
   ['#C9A84C', '#7A4800'],
   ['#C9A84C', '#005048'],
   ['#C9A84C', '#5B0099'],
   ['#C9A84C', '#0033AA'],
-  ['#FF6B35', '#AA3300'],
-  ['#00D4FF', '#005566'],
+  ['#D4854A', '#AA3300'],
+  ['#5B7FA6', '#005566'],
   ['#FF1493', '#880055'],
   ['#C9A84C', '#335500'],
-  ['#FF8C00', '#663300'],
+  ['#D4854A', '#663300'],
 ];
 
 function strHash(s) {
@@ -37,7 +37,7 @@ export default function AvatarPortrait({ username, size, isLive, isHost, rank, s
   var darkColor   = pair[1];
   var bg = 'radial-gradient(ellipse at 35% 25%, ' + accentColor + '88, ' + darkColor + '66, rgba(14,12,9,.95))';
 
-  var ringColor = rank === 1 ? '#C9A84C' : (isHost ? '#FF1564' : accentColor + '88');
+  var ringColor = rank === 1 ? '#C9A84C' : (isHost ? '#C0392B' : accentColor + '88');
   var ringW     = (rank === 1 || isHost) ? 3 : 2;
   var glowSz    = Math.floor(sz / 3);
 

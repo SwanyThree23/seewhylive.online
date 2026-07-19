@@ -192,7 +192,7 @@ export default function AIModeration({ roomId, isHost = false, moderatorId, thre
                       title="Approve — message is fine"
                       className="p-1 rounded hover:bg-white/10"
                     >
-                      <Check className="w-3 h-3" style={{ color: '#6DBF7E' }} />
+                      <Check className="w-3 h-3 text-[#6DBF7E]" />
                     </button>
                     {/* Warn user */}
                     <button

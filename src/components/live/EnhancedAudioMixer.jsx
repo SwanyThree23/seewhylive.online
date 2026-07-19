@@ -80,7 +80,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
   }, [gain, noiseSuppression, echoCancellation, bgMusic, mono]);
 
   const avgLevel = vuLevels.reduce((a, b) => a + b) / vuLevels.length;
-  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#D4AF37' : '#6DBF7E';
+  const levelColor = avgLevel > 0.8 ? '#C0392B' : avgLevel > 0.5 ? '#C9A84C' : '#6DBF7E';
 
   return (
     <div className="bg-[rgba(8,11,24,0.9)] border border-[rgba(212,175,55,0.2)] rounded-xl overflow-hidden" style={{ backdropFilter: 'blur(12px)' }}>
@@ -115,7 +115,7 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
                   animate={{ height: `${(micMuted ? 0.02 : level) * 100}%` }}
                   transition={{ duration: 0.08 }}
                   className="flex-1 rounded-sm"
-                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#D4AF37' : '#6DBF7E' }}
+                  style={{ background: level > 0.8 ? '#C0392B' : level > 0.5 ? '#C9A84C' : '#6DBF7E' }}
                 />
               ))}
             </div>
@@ -127,8 +127,8 @@ export default function EnhancedAudioMixer({ micMuted, onMicToggle, onAudioSetti
               onClick={onMicToggle}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                 micMuted
-                  ? 'bg-red-900/50 border border-red-600/50 text-red-400'
-                  : 'bg-[#0F1428]/30 border border-[#6DBF7E]/35/40 text-[#6DBF7E]'
+                  ? 'bg-red-900/50 border border-red-600/50 text-[#C0392B]'
+                  : 'border border-green-600/40 text-[#6DBF7E]'
               }`}
               style={!micMuted ? { background: 'rgba(109,191,126,0.15)' } : undefined}
             >

@@ -119,7 +119,7 @@ export default function BetaStatusPage() {
           {[
             { label: 'Features Live', value: liveCount, color: '#6DBF7E' },
             { label: 'In Beta Preview', value: betaCount, color: GOLD },
-            { label: 'Live Rooms Now', value: liveRooms, color: '#D4AF37' },
+            { label: 'Live Rooms Now', value: liveRooms, color: '#4A8A7A' },
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
           ].map(({ label, value, color }) => (
             <div key={label} className="rounded-2xl p-4 text-center"

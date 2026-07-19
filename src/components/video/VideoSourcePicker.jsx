@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const TABS = [
   { id: 'youtube', label: 'YouTube', icon: Youtube, color: '#FF0000' },
   { id: 'device',  label: 'Device',  icon: Upload,   color: '#d4af37' },
-  { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#D4AF37' },
+  { id: 'url',     label: 'URL',     icon: LinkIcon,  color: '#4A8A7A' },
   { id: 'stream',  label: 'Stream',  icon: Radio,     color: '#6DBF7E' },
   { id: 'playlist',label: 'Playlist',icon: List,      color: '#D4AF37' },
 ];
@@ -214,9 +214,9 @@ export default function VideoSourcePicker({ onSelect, playlist = [], onPlaylistC
                     value={directUrl}
                     onChange={e => setDirectUrl(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && submitDirect()}
-                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 36, padding: '0 12px', fontSize: 14, background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.2)', color: 'white', borderRadius: 8, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 8, cursor: 'pointer' }}>
+                  <button onClick={submitDirect} style={{ width: '100%', height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, fontWeight: 700, background: 'rgba(74,138,122,0.15)', color: '#4A8A7A', border: '1px solid rgba(74,138,122,0.3)', borderRadius: 8, cursor: 'pointer' }}>
                     <LinkIcon className="w-3.5 h-3.5" /> Play URL
                   </button>
                 </>

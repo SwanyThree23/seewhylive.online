@@ -90,7 +90,7 @@ export default function MultiStreamConfig({ roomId, isHost }) {
           animate={{ opacity: 1, y: 0 }}
           className={`p-3 rounded-lg border flex items-center gap-2 ${
             streamStatus.success
-              ? 'bg-[#0F1428]/20 border-[#6DBF7E]/35/50 text-[#6DBF7E]/80'
+              ? 'border-green-600/50 text-green-300'
               : 'bg-red-900/20 border-red-600/50 text-red-300'
           }`}
           style={streamStatus.success ? { background: 'rgba(109,191,126,0.15)' } : undefined}

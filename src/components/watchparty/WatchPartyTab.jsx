@@ -599,14 +599,15 @@ function FourKRoomMode({ user, party, members, remoteStreams }) {
   return (
     <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ position: 'relative', width: '100%', borderRadius: 12, overflow: 'hidden' }}>
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          style={{ width: '100%', aspectRatio: '16/9', background: '#000', objectFit: 'cover', transform: 'scaleX(-1)', display: localStream ? 'block' : 'none' }}
-        />
-        {!localStream && (
+        {localStream ? (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: '100%', aspectRatio: '16/9', display: 'block', background: '#000', objectFit: 'cover', transform: mirrored ? 'scaleX(-1)' : 'none', transition: 'transform 0.2s' }}
+          />
+        ) : (
           <VideoPlaceholder
             icon={<Camera style={{ width: 48, height: 48 }} />}
             text="Enable Camera for 4K Room"

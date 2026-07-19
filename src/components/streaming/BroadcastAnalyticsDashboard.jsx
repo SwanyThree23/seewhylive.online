@@ -17,11 +17,10 @@ const StatCard = ({ icon: Icon, label, value, trend, color }) => (
     <div className="flex items-center justify-between">
       <div>
         <p className="text-[11px] text-white/60 uppercase font-semibold">{label}</p>
-        <p className="text-xl font-bold text-white mt-1">{value ?? 0}</p>
-        {trend !== undefined && trend !== null && (
-          <p className={`text-[11px] mt-1 flex items-center gap-0.5 ${trend >= 0 ? 'text-[#6DBF7E]' : 'text-red-400'}`}>
-            {trend >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {Math.abs(trend)}%
+        <p className="text-xl font-bold text-white mt-1">{value}</p>
+        {trend && (
+          <p className={`text-[11px] mt-1 ${trend > 0 ? 'text-[#6DBF7E]' : 'text-[#C0392B]'}`}>
+            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </p>
         )}
       </div>

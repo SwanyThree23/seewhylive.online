@@ -207,49 +207,11 @@
     background: linear-gradient(135deg, #800020 0%, #A0522D 40%, #d4af37 100%);
   }
 
-  /* ── Mobile touch accuracy: min 44px for form controls, manipulation for all ── */
-  @media (pointer: coarse) {
-    button, a, [role="button"], [role="tab"] {
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    input, select, textarea {
-      min-height: 44px;
-      touch-action: manipulation;
-    }
-    /* Bottom nav and primary tabs get explicit 44px minimum */
-    nav a, nav button {
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
-  /* Minimum font sizes: 14px for all text content on mobile */
-  p, li, td, th, span, button, a, div { font-size: max(14px, 0.875em); }
-  label, small, .text-label { font-size: max(14px, 0.75em); }
-  /* Override Tailwind arbitrary small-text utility classes */
-  .text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-\[12px\], .text-\[13px\] {
-    font-size: 14px !important;
-  }
-  .text-xs { font-size: 14px !important; }
-  /* Override inline styles with small font sizes */
-  [style*="font-size:8px"], [style*="font-size: 8px"],
-  [style*="font-size:9px"], [style*="font-size: 9px"],
-  [style*="font-size:10px"], [style*="font-size: 10px"],
-  [style*="font-size:11px"], [style*="font-size: 11px"],
-  [style*="font-size:12px"], [style*="font-size: 12px"],
-  [style*="font-size:13px"], [style*="font-size: 13px"] {
-    font-size: 14px !important;
-  }
-}
-
-/* BrandChyron positioning — sit above the 60px mobile bottom nav */
-.brand-chyron {
-  bottom: 0;
-}
-@media (max-width: 767px) {
-  .brand-chyron {
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  /* Mobile: boost sub-12px text to readable minimums */
+  @media (max-width: 640px) {
+    .text-\[10px\] { font-size: 12px; }
+    .text-\[11px\] { font-size: 12px; }
+    .text-\[12px\] { font-size: 13px; }
+    .text-\[9px\]  { font-size: 11px; }
   }
 }

@@ -60,6 +60,13 @@ export default function StreamAnalytics() {
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['streamanalytics-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id && !roomId,
+    refetchInterval: 30000,
+  });
+  const effectiveRoomId = roomId || activeRoom?.id || null;
 
   const { data: roomAnalytics = [] } = useQuery({
     queryKey: ['room-analytics', roomId],
@@ -171,7 +178,7 @@ export default function StreamAnalytics() {
           {[
             { label: 'Peak Viewers',  value: peakViewers, sub: `Avg: ${avgViewers}`,                                    color: CYAN,     icon: Users },
             { label: 'Total Revenue', value: `$${totalTips.toFixed(2)}`, sub: `90% = $${(totalTips * 0.9).toFixed(2)} yours`, color: GOLD, icon: DollarSign },
-            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#D4AF37', icon: MessageSquare },
+            { label: 'Chat Messages', value: totalMessages, sub: `${Math.round(totalMessages / Math.max(viewerData.length, 1))} msg/min`, color: '#7B5DA6', icon: MessageSquare },
             { label: 'Engagement',    value: `${Math.round(((totalMessages + tipData.length) / Math.max(avgViewers, 1)) * 100)}%`, sub: 'vs. 12% avg', color: GREEN, icon: TrendingUp },
           ].map((kpi, i) => (
             <motion.div key={kpi.label}
@@ -340,6 +347,22 @@ export default function StreamAnalytics() {
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={effectiveRoomId} currentLayout="analytics" viewerCount={avgViewers} />
+      <MilestoneAlerts userId={user?.id} roomId={effectiveRoomId} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <AIHighlightGenerator recording={null} />
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={avgViewers} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={effectiveRoomId} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={avgViewers} peakViewers={peakViewers} />
+      <BackgroundCustomizer />
     </div>
   );
 }

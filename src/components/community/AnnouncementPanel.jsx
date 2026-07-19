@@ -89,7 +89,7 @@ export default function AnnouncementPanel({ communityId, userId }) {
       {/* Header */}
       <div style={{ padding: '20px 20px 0' }}>
         <h3 style={{ fontWeight: 700, fontSize: 16, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px', ...T }}>
-          <Megaphone className="w-5 h-5" style={{ color: '#D4AF37' }} />
+          <Megaphone className="w-5 h-5" style={{ color: '#7B5DA6' }} />
           Create Announcement
         </h3>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, ...T }}>

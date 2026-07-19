@@ -58,6 +58,7 @@ export default function AudioStageTab(props) {
   var [listeners,    setListeners]    = useState([]);
   var [myMicOn,      setMyMicOn]      = useState(false);
   var [myHandRaised, setMyHandRaised] = useState(false);
+  var [stageLocked,  setStageLocked]  = useState(false);
   var [loveCount,    setLoveCount]    = useState(0);
   var [joined,       setJoined]       = useState(false);
   var [memberCount,  setMemberCount]  = useState(0);
@@ -117,11 +118,31 @@ export default function AudioStageTab(props) {
       setPinnedYtId(data.ytId);
     }
 
+    function onStageLock(data) {
+      if (data && typeof data.locked === 'boolean') setStageLocked(data.locked);
+    }
+
+    function onStageRemove(data) {
+      if (!data || !data.guestId || data.guestId !== userId) return;
+      if (addToast) addToast('You have been removed from the stage', 'error');
+      stopMic();
+      setMyMicOn(false);
+      setMyHandRaised(false);
+    }
+
+    function onStageInvite(data) {
+      if (!data || data.guestId !== userId) return;
+      if (addToast) addToast('🎙 You\'ve been invited to speak on stage!', 'success');
+    }
+
     socket.on('audio-stage-state',    onStageState);
     socket.on('audio-stage-update',   onStageUpdate);
     socket.on('love-update',          onLoveUpdate);
     socket.on('audio-stage-speaking', onStageSpeaking);
     socket.on('watch-stage-pin',      onStagePin);
+    socket.on('stage-lock-update',    onStageLock);
+    socket.on('stage-remove',         onStageRemove);
+    socket.on('stage-invite',         onStageInvite);
 
     return function() {
       socket.off('audio-stage-state',    onStageState);
@@ -129,8 +150,11 @@ export default function AudioStageTab(props) {
       socket.off('love-update',          onLoveUpdate);
       socket.off('audio-stage-speaking', onStageSpeaking);
       socket.off('watch-stage-pin',      onStagePin);
+      socket.off('stage-lock-update',    onStageLock);
+      socket.off('stage-remove',         onStageRemove);
+      socket.off('stage-invite',         onStageInvite);
     };
-  }, [socket, roomId]);
+  }, [socket, roomId, userId, addToast]);
 
   // ── Join on mount ──────────────────────────────────────────
   useEffect(function() {
@@ -530,24 +554,26 @@ export default function AudioStageTab(props) {
           {myMicOn ? '🎙 MIC ON' : '🎙 MIC OFF'}
         </button>
 
-        {/* Hand raise */}
+        {/* Hand raise — disabled when stage is locked */}
         {!isMeOnStage && (
           <button
-            onClick={toggleHand}
+            onClick={stageLocked ? undefined : toggleHand}
+            disabled={stageLocked}
             style={{
               flex: 1,
-              background: myHandRaised ? 'rgba(212,133,74,.2)' : 'rgba(255,255,255,.05)',
-              border: '1px solid ' + (myHandRaised ? AMBER : MUTED),
+              background: stageLocked ? 'rgba(255,255,255,.03)' : myHandRaised ? 'rgba(212,133,74,.2)' : 'rgba(255,255,255,.05)',
+              border: '1px solid ' + (stageLocked ? 'rgba(138,122,98,.25)' : myHandRaised ? AMBER : MUTED),
               borderRadius: 8,
               padding: '9px 0',
-              color: myHandRaised ? AMBER : MUTED,
+              color: stageLocked ? 'rgba(138,122,98,.4)' : myHandRaised ? AMBER : MUTED,
               fontFamily: "'Barlow Condensed',sans-serif",
               fontWeight: 700,
               fontSize: 13,
-              cursor: 'pointer',
-              letterSpacing: 1
+              cursor: stageLocked ? 'not-allowed' : 'pointer',
+              letterSpacing: 1,
+              opacity: stageLocked ? 0.6 : 1,
             }}>
-            🤚 {myHandRaised ? 'LOWER' : 'RAISE'}
+            {stageLocked ? '🔒 LOCKED' : myHandRaised ? '🤚 LOWER' : '🤚 RAISE'}
           </button>
         )}
 

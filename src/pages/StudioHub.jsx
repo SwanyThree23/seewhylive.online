@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import {
   Radio, Mic, Tv, Settings, Swords, Users, Video,
   Zap, BarChart2, Globe, Cpu, Sliders, ChevronRight,
+  Bot, Layers, Scissors, Camera,
 } from 'lucide-react';
 import StreamGoals from '../components/live/StreamGoals';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -116,6 +117,41 @@ const TOOLS = [
     icon: Users,
     color: '#6DBF7E',
     page: 'Greenroom',
+  },
+  {
+    label: 'Website Generator',
+    desc: 'AI-powered site builder',
+    icon: Globe,
+    color: '#C9A84C',
+    page: 'WebsiteGenerator',
+  },
+  {
+    label: 'Voice Agent Builder',
+    desc: 'Create AI voice agents for streams',
+    icon: Bot,
+    color: '#6DBF7E',
+    page: 'VoiceAgentBuilder',
+  },
+  {
+    label: 'OpenRouter Hub',
+    desc: 'Multi-model AI comparison & routing',
+    icon: Cpu,
+    color: '#7B5DA6',
+    page: 'OpenRouterHub',
+  },
+  {
+    label: 'LLM Lingua Studio',
+    desc: 'AI prompt compression & token saving',
+    icon: Scissors,
+    color: '#C9A84C',
+    page: 'LLMLinguaStudio',
+  },
+  {
+    label: 'VDO.Ninja Manager',
+    desc: 'WebRTC guest & camera management',
+    icon: Camera,
+    color: '#4A8A7A',
+    page: 'VDONinjaManager',
   },
 ];
 

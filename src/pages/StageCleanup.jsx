@@ -164,10 +164,12 @@ export default function StageCleanupPage() {
             <div className="w-8 h-8 rounded-full animate-spin" style={{ border: `2px solid ${GOLD}`, borderTopColor: 'transparent' }} />
           </div>
         ) : ghostStages.length === 0 ? (
-          <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-            <CheckCircle className="w-14 h-14 mx-auto mb-3" style={{ color: '#6DBF7E' }} />
-            <p className="font-black text-lg text-white" style={T}>All clean!</p>
-            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
+          <div style={{ background:'rgba(13,6,24,0.9)', border:'1px solid rgba(212,175,55,0.1)', borderRadius:16, padding:20 }}>
+            <div style={{ padding:'64px 0', textAlign:'center' }} className="space-y-3">
+              <CheckCircle className="w-14 h-14 mx-auto text-[#6DBF7E]" />
+              <p className="text-lg font-semibold">All clean!</p>
+              <p className="text-sm text-muted-foreground">No ghost stages older than {ageDays} day{ageDays !== 1 ? 's' : ''} found.</p>
+            </div>
           </div>
         ) : (
           <div className="space-y-2">

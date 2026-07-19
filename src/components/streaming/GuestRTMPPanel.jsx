@@ -20,8 +20,8 @@ const PLATFORM_PRESETS = [
 
 const STATUS_CONFIG = {
   live:       { dot: 'bg-[#6DBF7E] animate-pulse',  text: 'LIVE',       textColor: 'text-[#6DBF7E]'  },
-  connecting: { dot: 'bg-[#D4AF37] animate-pulse', text: 'Connecting', textColor: 'text-[#D4AF37]' },
-  error:      { dot: 'bg-red-400',                  text: 'Error',      textColor: 'text-red-400'    },
+  connecting: { dot: 'bg-yellow-400 animate-pulse', text: 'Connecting', textColor: 'text-yellow-400' },
+  error:      { dot: 'bg-[#C0392B]',                  text: 'Error',      textColor: 'text-[#C0392B]'    },
   offline:    { dot: 'bg-white/20',                 text: 'Idle',       textColor: 'text-white/30'   },
 };
 
@@ -132,7 +132,7 @@ function DestinationRow({ dest, userId, onRemove }) {
         <div className="flex gap-1.5 pt-0.5">
           <button
             onClick={validate} disabled={validating}
-            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(212,175,55,0.2)', color:'#D4AF37', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
+            style={{ height:24, fontSize:10, padding:'0 8px', background:'transparent', border:'1px solid rgba(74,138,122,0.2)', color:'#4A8A7A', borderRadius:6, cursor:validating?'not-allowed':'pointer', display:'flex', alignItems:'center', gap:4 }}
           >
             {validating ? <RefreshCw className="w-2.5 h-2.5 animate-spin" /> : <Wifi className="w-2.5 h-2.5" />}
             {validating ? 'Testing…' : 'Validate'}

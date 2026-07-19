@@ -1,39 +1,34 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import AIStreamSummary from '../components/live/AIStreamSummary';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import { speakReply } from '../utils/tts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import GlobalSearch from '../components/shared/GlobalSearch';
 import StreamGoals from '../components/live/StreamGoals';
-import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
-import TippingModal from '../components/monetization/TippingModal';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import VoiceAISettings from '../components/settings/VoiceAISettings';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';
 const BG3   = '#13100A';
 const GOLD  = '#D4AF37';
 const GOLDD = '#8A6F2E';
-const SLATE = '#2A2010';
-const TEXT  = '#F0E8D4';
-const TEXTD = '#C4B596';
-const TEXTM = '#8A7A62';
-const GREEN = '#6DBF7E';
-const PILL  = 999;
-const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
-const MONO  = { fontFamily: 'Space Mono, monospace' };
+const SLATE = '#1A1530';
+const TEXT  = '#F0EAF8';
+const TEXTD = '#B8AECF';
+const TEXTM = '#7A6E8A';
+const PURPLE = '#7B5DA6';
+const CYAN   = '#D4AF37';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const MONO = { fontFamily: 'Space Mono, monospace' };
 
 const GLOBAL_CSS = `
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.35;}}
-@keyframes aura-glow{0%,100%{box-shadow:0 0 10px ${GOLD}33;}50%{box-shadow:0 0 32px ${GOLD}99;}}
-.aura-fade{animation:fadeUp .3s ease forwards;}
-.aura-glow{animation:aura-glow 3s ease infinite;}
+@keyframes aura-pulse{0%,100%{box-shadow:0 0 12px #7B5DA644;}50%{box-shadow:0 0 32px #7B5DA699;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes dot-blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.aura-glow{animation:aura-pulse 2.8s ease infinite;}
+.msg-in{animation:fadeUp .25s ease forwards;}
 `;
 
 const AURA_SYSTEM = `You are Aura AI — a premium live-streaming co-host and creative partner by SwanyThree EntTech LLC on SeeWhy LIVE (seewhylive.online). You are polished, sophisticated, and deeply creative.
@@ -44,32 +39,67 @@ Your personality: Articulate, encouraging, premium-feel. You help creators craft
 
 Respond in 1-3 sentences. Be direct, polished, and inspiring.`;
 
-const QUICK_ACTIONS = [
-  { label: '✨ Content Hook',   prompt: 'Write me a premium 15-second opening hook for my live stream tonight.' },
-  { label: '💎 Brand Voice',   prompt: 'Help me define a unique brand voice for my SeeWhy LIVE channel.' },
-  { label: '📈 Growth Plan',   prompt: 'Give me a 3-step growth strategy to double my viewer count this month.' },
-  { label: '🎤 Collab Pitch',  prompt: 'Write a compelling collaboration pitch I can send to another creator.' },
-  { label: '💰 Revenue Tips',  prompt: 'What are the top 3 ways to maximize my 90% creator revenue on SeeWhy LIVE?' },
-  { label: '🎬 Scene Intro',   prompt: 'Write a cinematic intro announcement for my next pay-per-view event.' },
-];
 
-function getVoiceSettings() {
-  try { return JSON.parse(localStorage.getItem('seewhy_voice_settings') || '{}'); }
-  catch { return {}; }
-}
-function speakText(text) {
-  const vs = getVoiceSettings();
-  if (vs.enabled === false || vs.autoSpeak === false) return;
-  fetch('/api/tts', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input: text.substring(0, 300), voice: vs.voice || 'nova', speed: vs.speed || 1.0 }),
-  }).then(r => r.blob()).then(b => {
-    const a = new Audio(URL.createObjectURL(b));
-    a.volume = vs.volume !== undefined ? vs.volume : 0.8;
-    a.play();
-  }).catch(() => {});
-}
+const AURA_MODES = {
+  STRATEGY: {
+    label: '🎬 Strategy',
+    color: PURPLE,
+    system: AURA_SYSTEM,
+    hint: 'Broadcast strategy & production quality',
+  },
+  HYPE: {
+    label: '🔥 Hype',
+    color: '#D4854A',
+    hint: 'High-energy crowd hype & engagement',
+    system: `You are AURA in HYPE MODE — an ultra-high-energy live event hype master for SeeWhy LIVE. Your responses are short, punchy, all-caps where needed, loaded with emojis and audience callouts. You drive donations, reactions, and viral moments. Think stadium announcer meets rap battle host. Every response should make the audience FEEL the energy. Keep answers under 3 sentences. Use exclamation marks. Make it LOUD.`,
+  },
+  EDUCATOR: {
+    label: '📚 Educator',
+    color: '#6DBF7E',
+    hint: 'Educational content & structured teaching',
+    system: `You are AURA in EDUCATOR MODE — a calm, structured teaching co-host for SeeWhy LIVE. You help creators deliver educational content: clear explanations, step-by-step breakdowns, quiz prompts for the chat, and engaging lesson frameworks. Your tone is warm, authoritative, and pedagogically sound. You suggest interactive elements (polls, Q&A, chat challenges) and help pace the educational content for live streaming. Keep answers focused and actionable.`,
+  },
+  MODERATOR: {
+    label: '🛡️ Moderator',
+    color: '#D4AF37',
+    hint: 'Community management & conflict resolution',
+    system: `You are AURA in MODERATOR MODE — a calm, firm community management co-host for SeeWhy LIVE. You help creators handle difficult chat situations, write moderation announcements, craft community guidelines, de-escalate conflicts, and manage disruptive viewers professionally. Your tone is measured, fair, and authoritative — never inflammatory. Suggest specific chat commands, timeout policies, and positive reinforcement strategies. Always prioritize creator safety and community health.`,
+  },
+};
+
+const QUICK_ACTIONS_BY_MODE = {
+  STRATEGY: [
+    { label: '🎬 Stream Opener', prompt: 'Write me a luxury opening script for tonight\'s live domino tournament stream. Make it cinematic and hype the audience in the first 10 seconds.' },
+    { label: '💸 Revenue Drive', prompt: 'Give me a 3-step subscriber conversion script I can run during a slow moment in the stream to drive Gold tier sign-ups.' },
+    { label: '📡 Multi-Stream', prompt: 'I\'m about to go multi-platform. Give me a quick checklist and talking points to tell viewers on all platforms where to find me.' },
+    { label: '🎙️ Guest Intro', prompt: 'Write a 30-second introduction script for a VIP co-host guest joining my stream via VDO.Ninja.' },
+    { label: '⚔️ PK Battle Hype', prompt: 'I\'m about to start a PK Battle. Give me a hype script to get the crowd behind both competitors before the countdown.' },
+    { label: '📊 Mid-Stream CTA', prompt: 'I\'m 30 minutes into my stream. Write a mid-show call-to-action that drives tips without feeling desperate.' },
+    { label: '🔴 Go Live Checklist', prompt: 'Give me a production-quality pre-stream checklist covering audio, video, overlays, chat moderation, and monetization.' },
+    { label: '🌟 Closing Segment', prompt: 'Write a premium closing segment script that thanks top tippers, teases next stream, and drives subscription conversions in under 60 seconds.' },
+  ],
+  HYPE: [
+    { label: '🔥 HYPE DROP', prompt: 'Give me an explosive 10-second crowd hype drop to kick off this stream RIGHT NOW!' },
+    { label: '💎 TIP STORM', prompt: 'Write a 15-second tip storm callout that will get the crowd sending gifts immediately!' },
+    { label: '👑 SHOUTOUT', prompt: 'Give me a hype shoutout script for the top 3 gifters in the room right now.' },
+    { label: '⚡ REACTION WAVE', prompt: 'Write something that will make EVERYONE react in chat at the same time — hearts, flames, crowns!' },
+    { label: '🎯 CHALLENGE', prompt: 'Create a live viewer challenge that drives engagement and makes people tag their friends.' },
+  ],
+  EDUCATOR: [
+    { label: '📋 Lesson Outline', prompt: 'Help me structure a 30-minute educational stream on domino strategy into clear segments with audience engagement moments.' },
+    { label: '❓ Chat Quiz', prompt: 'Give me 5 quiz questions I can pose to the chat during a domino strategy lesson.' },
+    { label: '🎯 Learning CTA', prompt: 'Write a mid-lesson check-in that encourages viewers to apply what they learned and share their answer in chat.' },
+    { label: '📝 Summary Slide', prompt: 'Help me create a 3-point verbal summary to close a lesson that reinforces key takeaways.' },
+  ],
+  MODERATOR: [
+    { label: '⚠️ Warning Script', prompt: 'Write a firm but fair warning message to post in chat for a viewer being disruptive.' },
+    { label: '🤝 Welcome Rules', prompt: 'Write a brief chat welcome + community rules message I can pin at the top of every stream.' },
+    { label: '🚫 Timeout Notice', prompt: 'Write a short announcement when I time out a disruptive user that explains why without creating drama.' },
+    { label: '🌟 Positive Reset', prompt: 'My chat has gone negative. Write a reset message that shifts the energy back to positive without calling out specific users.' },
+  ],
+};
+
+const QUICK_ACTIONS = QUICK_ACTIONS_BY_MODE.STRATEGY;
 
 function ThinkDots() {
   return (
@@ -84,12 +114,13 @@ function ThinkDots() {
 export default function AuraAI() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
-    queryKey: ['activeRoom', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    queryKey: ['aura-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
     enabled: !!user?.id,
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const [activeMode, setActiveMode] = useState('STRATEGY');
   const [messages, setMessages] = useState([
     { role: 'assistant', text: "I'm Aura — your premium creative partner on SeeWhy LIVE. Ready to elevate your stream, sharpen your brand, and help you build something unforgettable. What are we creating today? ✨" },
   ]);
@@ -192,7 +223,21 @@ export default function AuraAI() {
       {/* Chat */}
       <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 0 }}>
         {messages.map((m, i) => (
-          <div key={i} className="aura-fade" style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: 4 }}>
+          <div key={i} className="msg-in" style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div style={{
+              maxWidth: '82%',
+              background: m.role === 'user'
+                ? `linear-gradient(135deg, ${PURPLE}22, rgba(109,40,217,0.2))`
+                : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${m.role === 'user' ? 'rgba(123,93,166,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+              padding: '12px 16px',
+            }}>
+              {m.role === 'assistant' && (
+                <div style={{ ...MONO, fontSize: 9, color: PURPLE, letterSpacing: '0.12em', marginBottom: 6 }}>AURA</div>
+              )}
+              <div style={{ fontSize: 15, color: TEXT, lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{m.text}</div>
+            </div>
             {m.role === 'assistant' && (
               <div style={{ ...MONO, fontSize: 9, color: GOLD, letterSpacing: '0.1em', paddingLeft: 4 }}>AURA AI</div>
             )}
@@ -221,9 +266,11 @@ export default function AuraAI() {
           </div>
         ))}
         {loading && (
-          <div className="aura-fade" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: BG3, border: `1px solid ${SLATE}`, borderRadius: '16px 16px 16px 4px', maxWidth: '60%' }}>
-            <ThinkDots />
-            <span style={{ ...MONO, fontSize: 10, color: TEXTD }}>Aura is crafting…</span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, ${PURPLE}, #7B5DA6)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>✨</div>
+            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '18px 18px 18px 4px', padding: '12px 16px' }}>
+              <ThinkDots />
+            </div>
           </div>
         )}
       </div>
@@ -235,32 +282,40 @@ export default function AuraAI() {
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-            placeholder="Ask Aura to help with your stream…"
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: TEXT, fontSize: 14, fontFamily: "'DM Sans', sans-serif" }}
+            onKeyDown={handleKey}
+            placeholder="Ask AURA about broadcast strategy, scripts, revenue, production…"
+            rows={2}
+            disabled={loading}
+            style={{
+              flex: 1, resize: 'none', background: 'rgba(255,255,255,0.05)',
+              border: `1px solid rgba(123,93,166,0.25)`, borderRadius: 12,
+              color: TEXT, fontSize: 14, padding: '10px 14px', outline: 'none',
+              fontFamily: 'inherit', lineHeight: 1.45,
+            }}
           />
-          <button onClick={() => send()} disabled={loading || !input.trim()}
-            style={{ background: loading || !input.trim() ? SLATE : `linear-gradient(135deg, ${GOLD}, ${GOLDD})`, color: loading || !input.trim() ? TEXTM : BG, border: 'none', borderRadius: PILL, padding: '7px 18px', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer', ...T, fontSize: 12, fontWeight: 900, letterSpacing: '0.06em', transition: 'all .15s' }}>
-            SEND
+          <button
+            onClick={() => send()}
+            disabled={loading || !input.trim()}
+            style={{
+              width: 44, height: 44, borderRadius: 12, border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+              background: loading || !input.trim() ? 'rgba(123,93,166,0.2)' : `linear-gradient(135deg, ${PURPLE}, #7B5DA6)`,
+              color: '#fff', fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s', flexShrink: 0,
+            }}
+          >
+            ↑
           </button>
         </div>
         <div style={{ ...MONO, fontSize: 9, color: TEXTM, textAlign: 'center', marginTop: 8, letterSpacing: '0.06em' }}>
           Aura AI · SeeWhy LIVE · SwanyThree EntTech LLC · 90/10 Creator Split
         </div>
       </div>
-
-      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="Aura AI Session" viewerCount={0} elapsedSeconds={0} />
-        <ContentRecommendations />
-        <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <AuraPanelDrawer roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-        <OnlineUsersGrid compact maxVisible={10} />
-        <StreamGoals isHost={false} />
-        <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={false} />
-        <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={activeRoomId} communityId={null} />
-        <CollaborationMatcher />
-      </div>
+      <SwanyBotWidget />
+      <NotificationBell />
+      <GlobalSearch />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
+      <ContentRecommendations />
+      <VoiceAISettings />
     </div>
   );
 }

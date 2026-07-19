@@ -186,7 +186,7 @@ export default function NewsletterPage() {
                   {createMutation.isPending ? 'Saving…' : 'Save Draft'}
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer', ...T }}>
+                  style={{ background: 'rgba(74,138,122,0.08)', border: '1px solid rgba(74,138,122,0.2)', color: '#4A8A7A', cursor: 'pointer', ...T }}>
                   <Calendar className="w-3.5 h-3.5" /> Schedule
                 </button>
               </div>
@@ -260,6 +260,21 @@ export default function NewsletterPage() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

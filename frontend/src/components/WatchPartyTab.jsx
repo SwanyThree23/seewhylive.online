@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AvatarPortrait from './AvatarPortrait.jsx';
+import VideoPlayerControls from './video/VideoPlayerControls.jsx';
+import VideoSourcePicker, { detectVideoType } from './video/VideoSourcePicker.jsx';
 
 var OCT_CLIP = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
@@ -625,6 +627,22 @@ export default function WatchPartyTab(props) {
     }
   }
 
+  function handleSkipBack() {
+    if (sourceType === 'youtube' && playerRef.current) {
+      try { playerRef.current.seekTo(Math.max(0, posRef.current - 10), true); } catch(e) {}
+    } else if (videoRef2.current) {
+      videoRef2.current.currentTime = Math.max(0, videoRef2.current.currentTime - 10);
+    }
+  }
+
+  function handleSkipForward() {
+    if (sourceType === 'youtube' && playerRef.current) {
+      try { playerRef.current.seekTo(posRef.current + 10, true); } catch(e) {}
+    } else if (videoRef2.current) {
+      videoRef2.current.currentTime = videoRef2.current.currentTime + 10;
+    }
+  }
+
   function handleSyncAll() {
     var pos = posRef.current;
     if (socket && roomId) {
@@ -638,6 +656,33 @@ export default function WatchPartyTab(props) {
       });
     }
     if (addToast) addToast('Synced all viewers to current position', 'success');
+  }
+
+  function handleSourceSelect(source) {
+    if (!isHost) return;
+    var url   = source.url   || '';
+    var title = source.title || url;
+    if (source.type === 'youtube' && source.ytId) {
+      setVideoId(source.ytId);
+      setDirectUrl('');
+      setSourceType('youtube');
+      setUrlInput(url);
+      setCurrentTitle(title);
+      setPosition(0); posRef.current = 0;
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: source.ytId, url: url, type: 'youtube' });
+      if (!watchPartyActive) { setWatchPartyActive(true); setShowCreatePanel(false); if (socket) socket.emit('watch-party-start', { roomId: roomId }); }
+      if (addToast) addToast('Loading: ' + title, 'info');
+    } else if (source.type === 'direct' || source.type === 'stream') {
+      setDirectUrl(url);
+      setVideoId('');
+      setSourceType('direct');
+      setUrlInput(url);
+      setCurrentTitle(title);
+      setPosition(0); posRef.current = 0;
+      if (socket && roomId) socket.emit('watch-party-url', { roomId: roomId, videoId: null, url: url, type: 'direct' });
+      if (!watchPartyActive) { setWatchPartyActive(true); setShowCreatePanel(false); if (socket) socket.emit('watch-party-start', { roomId: roomId }); }
+      if (addToast) addToast('Loading: ' + title, 'info');
+    }
   }
 
   function handleCreateParty() {
@@ -962,7 +1007,21 @@ export default function WatchPartyTab(props) {
             style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(14,12,9,.9)', border: '1px solid rgba(201,168,76,.15)', borderRadius: 7, padding: '8px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 10, outline: 'none', marginBottom: 12 }}
           />
 
-          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>Video Source</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, textTransform: 'uppercase' }}>Video Source</div>
+            <VideoSourcePicker
+              isHost={isHost}
+              isCoHost={false}
+              compact={true}
+              playlist={queue.map(function(q) { return { url: q.url, title: q.title }; })}
+              onPlaylistChange={function(updated) {
+                setQueue(function() {
+                  return updated.map(function(item) { return { id: Date.now() + Math.random(), url: item.url, title: item.title, type: detectVideoType(item.url), addedBy: 'host', duration: 0 }; });
+                });
+              }}
+              onSelect={handleSourceSelect}
+            />
+          </div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
             {[
               { key: 'youtube', label: '🔴 YouTube',    enabled: true },
@@ -1123,7 +1182,7 @@ export default function WatchPartyTab(props) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
           {/* ── VIDEO AREA ── */}
-          <div style={{ flex: 1, background: '#000', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 180 }}>
+          <div data-video-container style={{ flex: 1, background: '#000', position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 180 }}>
 
             {/* Floating reactions overlay */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 10 }}>
@@ -1164,6 +1223,18 @@ export default function WatchPartyTab(props) {
             {videoId ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                 <div ref={ytDivRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
+                <VideoPlayerControls
+                  playerRef={playerRef}
+                  playerType="youtube"
+                  isHost={isHost}
+                  isCoHost={false}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeek={function(t) { if (playerRef.current) { try { playerRef.current.seekTo(t, true); } catch(e) {} } }}
+                  onSkipBack={handleSkipBack}
+                  onSkipForward={handleSkipForward}
+                  syncStatus={synced ? 'synced' : null}
+                />
               </div>
             ) : directUrl ? (
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden', background: '#000' }}>
@@ -1171,7 +1242,7 @@ export default function WatchPartyTab(props) {
                   ref={videoRef2}
                   src={directUrl}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
-                  controls={isHost}
+                  controls={false}
                   onTimeUpdate={function() {
                     if (!videoRef2.current) return;
                     var t = videoRef2.current.currentTime;
@@ -1210,6 +1281,18 @@ export default function WatchPartyTab(props) {
                     📂 LOCAL FILE
                   </div>
                 )}
+                <VideoPlayerControls
+                  playerRef={videoRef2}
+                  playerType="direct"
+                  isHost={isHost}
+                  isCoHost={false}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeek={function(t) { posRef.current = t; setPosition(Math.floor(t)); if (socket && roomId) socket.emit('watch-party-seek', { roomId: roomId, position: t }); }}
+                  onSkipBack={handleSkipBack}
+                  onSkipForward={handleSkipForward}
+                  syncStatus={synced ? 'synced' : null}
+                />
               </div>
             ) : (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 20px' }}>

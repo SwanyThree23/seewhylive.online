@@ -17,7 +17,7 @@ var RANKINGS = [
 
 var REGION_COLORS = {
   West:      '#C9A84C',
-  Southwest: '#FF6B35',
+  Southwest: '#D4854A',
   Southeast: '#C9A84C',
   Northeast: '#C9A84C',
   Midwest:   '#C9A84C',

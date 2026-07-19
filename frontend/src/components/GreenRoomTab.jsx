@@ -406,7 +406,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
                       <button
                         onClick={function() { isOnStage ? removeFromStage(id) : inviteToStage(id); }}
                         title={isOnStage ? 'Remove from stage' : 'Add to stage'}
-                        style={{ width: 44, height: 44, borderRadius: 8, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(212,133,74,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(212,133,74,.4)'), color: isOnStage ? '#FF6B35' : '#C9A84C', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
+                        style={{ width: 44, height: 44, borderRadius: 8, background: isOnStage ? 'rgba(255,107,53,.15)' : 'rgba(212,133,74,.15)', border: '1px solid ' + (isOnStage ? 'rgba(255,107,53,.4)' : 'rgba(212,133,74,.4)'), color: isOnStage ? '#D4854A' : '#C9A84C', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'monospace' }}>
                         {isOnStage ? '↓' : '↑'}
                       </button>
                       <button
@@ -581,7 +581,7 @@ export default function GreenRoomTab({ guests, addToast, socket, roomId, userId,
             <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#C9A84C', letterSpacing: 2, marginBottom: 12 }}>GUARDIAN AI THRESHOLDS</div>
             {[
               ['FLAG (review)',  50, '#C9A84C'],
-              ['MUTE (enforce)', 75, '#FF6B35'],
+              ['MUTE (enforce)', 75, '#D4854A'],
               ['BAN (enforce)',  95, '#FF1A3C'],
             ].map(function(row) {
               return (

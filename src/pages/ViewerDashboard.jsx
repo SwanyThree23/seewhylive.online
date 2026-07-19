@@ -232,19 +232,19 @@ export default function ViewerDashboard() {
             {/* Upcoming */}
             <div className="space-y-3">
               <h2 className="font-black text-white text-sm flex items-center gap-2" style={T}>
-                <Clock className="w-4 h-4" style={{ color: GOLD }} /> Upcoming Streams
+                <Clock className="w-4 h-4" style={{ color: '#4A8A7A' }} /> Upcoming Streams
               </h2>
               {scheduledRooms.slice(0, 4).map(room => (
                 <div key={room.id} className="flex items-center gap-3 p-3 rounded-xl transition-all"
-                  style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.08)' }}>
-                    <Clock className="w-5 h-5" style={{ color: GOLD }} />
+                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(74,138,122,0.1)' }}>
+                    <Clock className="w-5 h-5" style={{ color: '#4A8A7A' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate" style={T}>{room.title}</p>
-                    <p className="text-xs" style={{ color: GOLD }}>{getCountdown(room.scheduled_start)}</p>
+                    <p className="text-xs" style={{ color: '#4A8A7A' }}>{getCountdown(room.scheduled_start)}</p>
                   </div>
-                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: GOLD, ...T }}>Upcoming</span>
+                  <span className="text-[11px] font-black px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.2)', color: '#4A8A7A', ...T }}>Upcoming</span>
                 </div>
               ))}
             </div>
@@ -283,8 +283,8 @@ export default function ViewerDashboard() {
             <LeaderboardPanel roomId={activeRoomId} />
             <StreamGoals roomId={activeRoomId} isHost={false} />
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color={GOLD} />
-              <StatTile label="Clips" value={myClips.length} icon={Scissors} color={GOLD} />
+              <StatTile label="Subscriptions" value={mySubscriptions.length} icon={Star} color="#7B5DA6" />
+              <StatTile label="Clips" value={myClips.length} icon={Scissors} color="#7B5DA6" />
               <StatTile label="Notifications" value={notifications.length} icon={Bell} color={GOLD} />
               <StatTile label="Live Now" value={liveRooms.length} icon={Heart} color="#D4854A" />
             </div>
@@ -297,7 +297,7 @@ export default function ViewerDashboard() {
                 : mySubscriptions.map(s => (
                   <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(212,175,55,0.15)' }}>
-                      <Star className="w-4 h-4" style={{ color: GOLD }} />
+                      <Star className="w-4 h-4" style={{ color: '#7B5DA6' }} />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-black text-white" style={T}>{s.tier_name || 'Subscription'}</p>
@@ -311,12 +311,12 @@ export default function ViewerDashboard() {
 
             {/* My Clips */}
             <DarkTile style={{ padding: 16 }}>
-              <p className="text-xs font-black uppercase mb-3" style={{ color: GOLD, ...T }}>My Clips</p>
+              <p className="text-xs font-black uppercase mb-3" style={{ color: '#7B5DA6', ...T }}>My Clips</p>
               {myClips.length === 0
                 ? <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.25)' }}>No clips yet — create one during a stream!</p>
                 : myClips.map(c => (
                   <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl mb-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div className="w-10 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm" style={{ background: 'rgba(212,175,55,0.08)' }}>✂️</div>
+                    <div className="w-10 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm" style={{ background: 'rgba(123,93,166,0.1)' }}>✂️</div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate" style={T}>{c.title}</p>
                       <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{c.duration_seconds}s · {c.view_count || 0} views</p>
@@ -423,6 +423,21 @@ export default function ViewerDashboard() {
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
         </div>
       </div>
+      <SwanAIRecommendations roomId={null} currentLayout="viewer" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
+      <StreamerMonetizationCenter />
+      <NotificationBell />
+      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <HostAlertCenter />
+      <ViewerCount count={0} peakViewers={0} />
+      <BackgroundCustomizer />
     </div>
   );
 }

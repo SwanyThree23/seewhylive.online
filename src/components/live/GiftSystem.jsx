@@ -144,7 +144,7 @@ export function GiftTray({ roomId, currentUser, hostId, onSend }) {
       base44.entities.Transaction.create({
         sender_id: currentUser?.id, sender_name: currentUser?.full_name || "Viewer",
         recipient_id: hostId, room_id: roomId,
-        amount: Math.floor(gift.price * 0.1), creator_payout: Math.floor(gift.price * 0.09), platform_cut: Math.floor(gift.price * 0.1) - Math.floor(gift.price * 0.09),
+        amount: Math.floor(gift.price * 0.1), platform_cut: Math.floor(gift.price * 0.01), creator_payout: Math.floor(gift.price * 0.09),
         transaction_type: "direct_support", status: "completed",
       }),
       base44.entities.TipAlert.create({

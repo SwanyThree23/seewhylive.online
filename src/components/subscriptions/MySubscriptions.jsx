@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Calendar, RefreshCw } from 'lucide-react';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import EmptyState from '@/components/shared/EmptyState';
 
 const statusColors = {
   active:    { background: 'rgba(109,191,126,0.15)',  color: '#6DBF7E',           border: '1px solid rgba(109,191,126,0.3)' },
@@ -36,17 +38,13 @@ export default function MySubscriptions({ userId }) {
     onError: () => toast.error('Action failed.'),
   });
 
-  if (isLoading) return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {[...Array(3)].map((_, i) => <div key={i} style={{ height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />)}
-    </div>
-  );
+  if (isLoading) return <LoadingSpinner size="default" />;
 
   if (subs.length === 0) return (
-    <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
-      <p style={{ fontSize: 32, marginBottom: 8 }}>📭</p>
-      <p>You haven't subscribed to any creator yet.</p>
-    </div>
+    <EmptyState
+      title="No subscriptions yet"
+      description="You haven't subscribed to any creator yet. Support a creator to unlock exclusive perks."
+    />
   );
 
   return (

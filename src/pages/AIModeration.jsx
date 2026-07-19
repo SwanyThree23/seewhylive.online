@@ -170,7 +170,7 @@ export default function AIModerationPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: 'Total Scanned', value: stats.total, icon: Shield, color: GOLD },
-            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#C0392B' },
+            { label: 'Pending Review', value: stats.pending, icon: AlertTriangle, color: '#ff6400' },
             { label: 'Safe Content', value: stats.safe, icon: CheckCircle, color: '#6DBF7E' },
             { label: 'Violations', value: stats.violations, icon: XCircle, color: '#C0392B' },
           ].map(({ label, value, icon: Icon, color }) => (
@@ -315,7 +315,7 @@ export default function AIModerationPage() {
                 <div className="space-y-4">
                   {[
                     { label: 'Average Confidence', value: moderations.reduce((acc, m) => acc + (m.ai_confidence || 0), 0) / moderations.length * 100, color: GOLD },
-                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#D4AF37' },
+                    { label: 'Review Rate', value: stats.violations > 0 ? (reviewed.length / stats.violations) * 100 : 0, color: '#4A8A7A' },
                     { label: 'Violation Rate', value: (stats.violations / stats.total) * 100, color: '#C0392B' },
                   ].map(({ label, value, color }) => (
                     <div key={label}>
@@ -351,8 +351,15 @@ export default function AIModerationPage() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
-        <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-        <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={null} />
+      {user?.id && <AlertConfig creatorId={user.id} />}
+      {user?.id && <ShopDashboard creatorId={user.id} />}
+      <SwanyBotWidget />
+      <CollaborationMatcher />
+      <ContentRecommendations />
+      <CreatorBridge user={user || null} />
+      <BackgroundCustomizer />
     </div>
   );
 }
