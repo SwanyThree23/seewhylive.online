@@ -187,6 +187,8 @@ export default function HybridStreamRoom() {
   const [hybridHypeLevel, setHybridHypeLevel] = useState(0);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const [viewerCount, setViewerCount] = useState(0);
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
@@ -233,6 +235,13 @@ export default function HybridStreamRoom() {
     queryKey: ['participants', roomId],
     queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
     enabled: !!roomId,
+  });
+
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', roomId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!roomId,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
@@ -486,7 +495,7 @@ export default function HybridStreamRoom() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
       {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
@@ -505,7 +514,7 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
-      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
+      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={activePoll} isHost={isHost} />}
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
@@ -514,7 +523,7 @@ export default function HybridStreamRoom() {
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}

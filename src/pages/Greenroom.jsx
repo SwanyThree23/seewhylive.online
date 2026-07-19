@@ -359,6 +359,14 @@ export default function GreenroomPage() {
     enabled: !!roomId,
     refetchInterval: 10000,
   });
+
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', roomId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!roomId,
+    refetchInterval: 5000,
+  });
+
   const subCount = useSubscriptionCount(room?.host_id || user?.id);
 
   useEffect(() => {
@@ -878,7 +886,7 @@ export default function GreenroomPage() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
       {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={() => {}} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseCancel(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCancel(s.echoCancellation); }} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
@@ -895,7 +903,7 @@ export default function GreenroomPage() {
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
-      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
+      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={activePoll} isHost={isHost} />}
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => isHost && hostReadyMut.mutate()} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
@@ -904,7 +912,7 @@ export default function GreenroomPage() {
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} />}
-      {isHost && <EnhancedAudioMixer micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={() => {}} />}
+      {isHost && <EnhancedAudioMixer micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseCancel(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCancel(s.echoCancellation); }} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
