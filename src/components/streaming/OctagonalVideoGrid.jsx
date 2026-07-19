@@ -185,6 +185,7 @@ export default function OctagonalVideoGrid({
   isHost,
   onStreamOut,             // optional callback when user starts RTMP stream-out
   compactMode = false,     // true = smaller cells, strip controls
+  speakingIds,             // Set<userId> — live speaking detection from useRemoteSpeakingMap
 }) {
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
@@ -277,7 +278,7 @@ export default function OctagonalVideoGrid({
       role: isHost ? 'host' : 'guest',
       isMuted: localMuted,
       isVideoOff: localVideoOff && !isScreenSharing,
-      isSpeaking: false,
+      isSpeaking: speakingIds ? speakingIds.has(currentUser?.id) : false,
       isStreaming: true,
       avatarUrl: currentUser?.avatar_url,
       userId: currentUser?.id,
@@ -297,7 +298,7 @@ export default function OctagonalVideoGrid({
           role: p.role,
           isMuted: !p.is_audio_enabled,
           isVideoOff: !p.is_video_enabled,
-          isSpeaking: false,
+          isSpeaking: speakingIds ? speakingIds.has(p.user_id) : false,
           isStreaming: p.is_streaming,
           avatarUrl: p.user_avatar,
           userId: p.user_id,

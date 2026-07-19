@@ -433,7 +433,7 @@ export default function LiveRoom() {
     video: false,
     audioDeviceId: activeMicId,
   });
-  const { speakers } = useCameraDevices();
+  const { cameras: cameraDevices, speakers } = useCameraDevices();
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   const announceJoinRef = useRef(announceJoin);
   const leaveRoomRef = useRef(leaveRoom);
@@ -1388,7 +1388,7 @@ export default function LiveRoom() {
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={false} userName={user?.full_name || ''} isHost={isHost} isSpeaking={localSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Mic'} isMuted={!audioEnabled} isVideoOff={true} onMicToggle={handleToggleAudio} onVideoToggle={() => {}} />}
       {isHost && roomId && <PipCameraTile localStream={localStream} videoEnabled={false} roomId={roomId} tipTotal={tipTotal} />}
-      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={() => {}} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={(id) => reacquireMedia({ cameraId: id })} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
       {isHost && <LiveCaptionOverlay stream={localStream} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />}
       {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
