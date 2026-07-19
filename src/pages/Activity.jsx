@@ -87,8 +87,10 @@ function groupByDate(items) {
 }
 
 export default function ActivityPage() {
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState('all');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activities = [] } = useQuery({
+  const { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });
