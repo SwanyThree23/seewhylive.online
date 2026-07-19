@@ -201,6 +201,7 @@ export default function HybridStreamRoom() {
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
+  const [raidTick, setRaidTick] = useState(0);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
@@ -467,7 +468,7 @@ export default function HybridStreamRoom() {
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
-      {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} />}
+      {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={viewerCount} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={room?.title || ''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
@@ -533,7 +534,7 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}

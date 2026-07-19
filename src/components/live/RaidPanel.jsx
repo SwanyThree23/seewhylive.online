@@ -174,9 +174,13 @@ function RaidLauncher({ room, currentUser, onClose }) {
   );
 }
 
-export default function RaidPanelButton({ room, currentUser, isHost }) {
+export default function RaidPanelButton({ room, currentUser, isHost, triggerOpen }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const prevTrigger = useRef(triggerOpen);
+  useEffect(() => {
+    if (triggerOpen !== prevTrigger.current) { setOpen(true); prevTrigger.current = triggerOpen; }
+  }, [triggerOpen]);
   const [activateRaid, setActiveRaid] = useState(null);
   const [incomingRaid, setIncomingRaid] = useState(null);
   const qc = useQueryClient();

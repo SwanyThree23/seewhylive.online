@@ -390,6 +390,7 @@ export default function ControlRoomPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
+  const [raidTick, setRaidTick] = useState(0);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
@@ -749,7 +750,7 @@ export default function ControlRoomPage() {
       {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
-      {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} />}
+      {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} triggerOpen={raidTick} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={true} viewerCount={viewerCount} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
       {roomId && <AIStreamSummary roomId={roomId} isHost={true} streamTitle={room?.title || ''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
@@ -814,7 +815,7 @@ export default function ControlRoomPage() {
       {roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={true} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onPoll={() => setPollTick(t => t + 1)} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
