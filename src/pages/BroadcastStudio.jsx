@@ -573,6 +573,7 @@ export default function BroadcastStudio() {
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
+  const [raidTick, setRaidTick] = useState(0);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
@@ -2995,7 +2996,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenEnabled) setScreenEnabled(true); else if (s === 'camera' && screenEnabled) setScreenEnabled(false); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
-      {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
+      {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
       {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
       {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} elapsedSeconds={elapsed} />}
@@ -3057,7 +3058,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={isHost} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setActiveTab('polls') : undefined} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setActiveTab('polls') : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}

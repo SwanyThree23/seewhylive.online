@@ -557,6 +557,7 @@ export default function GoLive() {
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
+  const [raidTick, setRaidTick] = useState(0);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -1067,7 +1068,7 @@ export default function GoLive() {
       {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
-      {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}
+      {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} triggerOpen={raidTick} />}
       {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
       {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
@@ -1138,7 +1139,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
