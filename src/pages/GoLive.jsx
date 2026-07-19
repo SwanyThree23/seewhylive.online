@@ -99,6 +99,7 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
+import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -559,6 +560,7 @@ export default function GoLive() {
   const [pollTick, setPollTick] = useState(0);
   const [raidTick, setRaidTick] = useState(0);
   const [goalTick, setGoalTick] = useState(0);
+  const [reactEmoji, setReactEmoji] = useState(null);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -1140,7 +1142,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} onGoal={() => setGoalTick(t => t + 1)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} onGoal={() => setGoalTick(t => t + 1)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1159,6 +1161,7 @@ export default function GoLive() {
       <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
       {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
+      {partyId && user && <LiveEmoticonStorm partyId={partyId} currentUser={user} triggerReact={reactEmoji} />}
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
       {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} speakingIds={speakingIds} />}
