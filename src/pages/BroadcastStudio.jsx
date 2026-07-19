@@ -2226,19 +2226,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <div className="mt-2 flex items-center gap-2"
                       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '8px 12px' }}>
                       <span className="text-xs shrink-0" style={{ color: GOLD }}>🔊</span>
-                      <select
+                      <MobileSelect
                         value={prefSpeaker}
-                        onChange={e => {
-                          const id = e.target.value;
+                        onChange={id => {
                           setPrefSpeaker(id);
                           try { if (id) localStorage.setItem('swl_pref_speaker', id); } catch {}
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: prefSpeaker ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', outline: 'none', cursor: 'pointer' }}>
-                        <option value="" style={{ background: '#080B18' }}>Default speakers</option>
-                        {speakers.map(s => (
-                          <option key={s.deviceId} value={s.deviceId} style={{ background: '#080B18', color: '#fff' }}>{s.label}</option>
-                        ))}
-                      </select>
+                        options={speakers.map(s => ({ value: s.deviceId, label: s.label }))}
+                        placeholder="Default speakers"
+                      />
                     </div>
                   )}
                 </div>

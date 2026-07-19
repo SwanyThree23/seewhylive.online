@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { base44 } from '@/api/base44Client';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -238,10 +239,12 @@ export default function TranscriptionStudio() {
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Language selector */}
-          <select value={lang} onChange={e => setLang(e.target.value)}
-            style={{ ...MONO, fontSize: 10, background: BG3, border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 8, color: TEXTD, padding: '4px 8px', cursor: 'pointer', outline: 'none' }}>
-            {LANGS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <MobileSelect
+            value={lang}
+            onChange={v => setLang(v)}
+            options={LANGS.map(l => ({ value: l, label: l }))}
+            placeholder="Language"
+          />
 
           {/* Overlay toggle */}
           <button onClick={() => setShowOverlay(v => !v)}

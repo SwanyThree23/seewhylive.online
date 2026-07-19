@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -875,15 +876,16 @@ export default function PodcastStudio() {
               {/* Add source form */}
               {addingSource && (
                 <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 14 }}>
-                  <select
+                  <MobileSelect
                     value={sourceType}
-                    onChange={e => setSourceType(e.target.value)}
-                    style={{ ...selectStyle, marginBottom: 8 }}
-                  >
-                    <option value="text">📄 Text</option>
-                    <option value="url">🔗 URL</option>
-                    <option value="note">📝 Note</option>
-                  </select>
+                    onChange={v => setSourceType(v)}
+                    options={[
+                      { value: 'text', label: '📄 Text' },
+                      { value: 'url',  label: '🔗 URL' },
+                      { value: 'note', label: '📝 Note' },
+                    ]}
+                    placeholder="Source type"
+                  />
                   <textarea
                     value={sourceInput}
                     onChange={e => setSourceInput(e.target.value)}
@@ -993,23 +995,33 @@ export default function PodcastStudio() {
                   <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Duration
                   </label>
-                  <select value={duration} onChange={e => setDuration(e.target.value)} style={{ ...selectStyle, marginTop: 6 }}>
-                    <option value="5min">5 min</option>
-                    <option value="15min">15 min</option>
-                    <option value="30min">30 min</option>
-                    <option value="60min">60 min</option>
-                  </select>
+                  <MobileSelect
+                    value={duration}
+                    onChange={v => setDuration(v)}
+                    options={[
+                      { value: '5min',  label: '5 min' },
+                      { value: '15min', label: '15 min' },
+                      { value: '30min', label: '30 min' },
+                      { value: '60min', label: '60 min' },
+                    ]}
+                    placeholder="Duration"
+                  />
                 </div>
                 <div>
                   <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Tone
                   </label>
-                  <select value={tone} onChange={e => setTone(e.target.value)} style={{ ...selectStyle, marginTop: 6 }}>
-                    <option value="Casual">Casual</option>
-                    <option value="Professional">Professional</option>
-                    <option value="Educational">Educational</option>
-                    <option value="Entertaining">Entertaining</option>
-                  </select>
+                  <MobileSelect
+                    value={tone}
+                    onChange={v => setTone(v)}
+                    options={[
+                      { value: 'Casual',        label: 'Casual' },
+                      { value: 'Professional',  label: 'Professional' },
+                      { value: 'Educational',   label: 'Educational' },
+                      { value: 'Entertaining',  label: 'Entertaining' },
+                    ]}
+                    placeholder="Tone"
+                  />
                 </div>
               </div>
 
