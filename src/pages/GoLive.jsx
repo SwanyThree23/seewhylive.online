@@ -569,6 +569,7 @@ export default function GoLive() {
     try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
     cameraRetryRef.current?.({ videoId: id });
   }, []);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
@@ -647,14 +648,13 @@ export default function GoLive() {
     return () => clearInterval(pollId);
   }, [partyId, user?.id]);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-
   const { data: activePoll } = useQuery({
     queryKey: ['active-poll', partyId],
     queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
     enabled: !!partyId,
     refetchInterval: 5000,
   });
+
 
   const streamKey = user?.id
     ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
@@ -1077,7 +1077,7 @@ export default function GoLive() {
       {<SubscriptionManager creatorId={user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={user?.id} />}
       {partyId && <LiveAuctionWidget creatorId={user?.id} roomId={partyId} isCreator={true} currentUser={user} />}
-      <MerchStrip roomId={partyId} currentUser={user} hostId={user?.id} />
+      <MerchWidget roomId={partyId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
       {partyId && <PKBattleInterface roomId={partyId} />}
       {partyId && <CoStreamPanel roomId={partyId} />}

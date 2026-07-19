@@ -264,6 +264,9 @@ export default function RoomPage() {
   const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
 
+  // WebRTC peer mesh — must be declared before useRemoteSpeakingMap / activePc effect that depend on it
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
+
   // Speaking detection + network quality
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
@@ -286,6 +289,9 @@ export default function RoomPage() {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
+  // Derived from currentParticipant state — must be computed before hooks that use it
+  const isHost = currentParticipant?.role === 'host';
+  const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
@@ -336,8 +342,6 @@ export default function RoomPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [toggleAudio, toggleVideo]);
 
-  // WebRTC peer mesh — connects to all other participants via STUN/TURN
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   const announceJoinRef = useRef(announceJoin);
   const leaveRoomRef = useRef(leaveRoom);
   useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
@@ -547,6 +551,19 @@ export default function RoomPage() {
     }
   }, [room, user]);
 
+  // Moderation toasts — must be unconditional (before any early returns) to obey Rules of Hooks
+  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
+  useEffect(() => {
+    if (!roomId) return;
+    const unsub = base44.entities.ChatModeration.subscribe((event) => {
+      if (event.type !== 'create') return;
+      const d = event.data;
+      if (d?.room_id !== roomId || !d?.auto_detected) return;
+      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: d.target_user_name || 'User' });
+    });
+    return unsub;
+  }, [roomId]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#080B18' }}>
@@ -573,22 +590,6 @@ export default function RoomPage() {
       </div>
     );
   }
-
-  const isHost = currentParticipant?.role === 'host';
-  const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
-
-  // Moderation toasts for audience
-  const { toasts: modToasts, push: pushModToast } = useModerationToasts();
-  useEffect(() => {
-    if (!roomId) return;
-    const unsub = base44.entities.ChatModeration.subscribe((event) => {
-      if (event.type !== 'create') return;
-      const d = event.data;
-      if (d?.room_id !== roomId || !d?.auto_detected) return;
-      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: d.target_user_name || 'User' });
-    });
-    return unsub;
-  }, [roomId]);
 
   const hostParticipant = participants.find(p => p.user_id === room.host_id);
   const speakerName = participants.find(p => p.is_speaking)?.user_name;

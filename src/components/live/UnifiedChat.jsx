@@ -123,9 +123,11 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     const unsub = base44.entities.Message.subscribe((event) => {
       if (event.data?.room_id !== roomId) return;
       if (event.type === 'create') {
-        setMessages(prev => [...prev.slice(-199), event.data]);
-        const chatters = new Set([...messages.map(m => m.user_id), event.data.user_id]);
-        setActiveChatters(chatters.size);
+        setMessages(prev => {
+          const next = [...prev.slice(-199), event.data];
+          setActiveChatters(new Set(next.map(m => m.user_id)).size);
+          return next;
+        });
       } else if (event.type === 'delete') {
         setMessages(prev => prev.filter(m => m.id !== event.id));
       }
@@ -138,16 +140,17 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   // Auto-translate new messages when a target language is selected
   useEffect(() => {
     if (!translateLang) return;
+    let cancelled = false;
     const pending = messages.filter(
       m => !translationMap[m.id] && m.content && m.message_type !== 'moderation'
     );
-    // Translate latest 8 at most per batch to respect rate limits
     pending.slice(-8).forEach(async msg => {
       const translated = await translateText(msg.content, translateLang);
-      if (translated && translated.toLowerCase() !== msg.content.toLowerCase()) {
+      if (!cancelled && translated && translated.toLowerCase() !== msg.content.toLowerCase()) {
         setTranslationMap(prev => ({ ...prev, [msg.id]: translated }));
       }
     });
+    return () => { cancelled = true; };
   }, [messages, translateLang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -169,6 +172,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const sendMessage = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed || !currentUser) return;
+    if (subOnly && !isHost) { toast.error('Subscriber-only mode — become a subscriber to chat'); return; }
     if (slowMode && Date.now() - lastSentAt < slowInterval * 1000) return;
     const withEmotes = processEmotes(trimmed);
     const filtered = guardianFilter(withEmotes);
@@ -185,7 +189,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     setReplyTo(null);
     setLastSentAt(Date.now());
     textareaRef.current?.focus();
-  }, [input, currentUser, roomId, slowMode, slowInterval, lastSentAt, replyTo]);
+  }, [input, currentUser, roomId, slowMode, slowInterval, lastSentAt, replyTo, subOnly, isHost]);
 
   const clearChat = () => {
     if (window.confirm('Clear all chat messages?')) {
