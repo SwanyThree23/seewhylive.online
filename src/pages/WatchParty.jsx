@@ -485,6 +485,13 @@ export default function WatchPartyPage() {
     enabled: !!partyId,
   });
 
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', partyId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 5000,
+  });
+
   const isHost = party?.host_id === user?.id;
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
@@ -1514,7 +1521,7 @@ export default function WatchPartyPage() {
         <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
         <MilestoneAlerts userId={user?.id} roomId={partyId} />
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
-        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} />}
+        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} />}
         <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
         {partyId && party?.host_id && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
