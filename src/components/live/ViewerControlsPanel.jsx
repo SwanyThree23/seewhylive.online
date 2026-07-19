@@ -2,6 +2,7 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { MobileSelect } from "@/components/ui/MobileSelect";
 
 var C = {
   bg: "#0D0D0D", card: "#1A1A1A", surface: "#161616",
@@ -168,14 +169,20 @@ export default function ViewerControlsPanel({ roomId, currentUser, onClose }) {
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div style={{ background: C.card, border: "1px solid " + C.burgundy, borderRadius: 12, padding: 20, width: "100%", maxWidth: 320 }}>
             <div style={{ fontFamily: C.fOrb, fontSize: 11, color: C.gold, marginBottom: 16, letterSpacing: 2 }}>🚩 REPORT</div>
-            <select value={reportReason} onChange={e => setReportReason(e.target.value)}
-              style={{ width: "100%", background: "#111", border: "1px solid #333", color: C.white, borderRadius: 6, padding: "8px 10px", fontFamily: C.fRaj, fontSize: 13, marginBottom: 12 }}>
-              <option value="spam">Spam</option>
-              <option value="harassment">Harassment</option>
-              <option value="hate_speech">Hate Speech</option>
-              <option value="nudity">Inappropriate Content</option>
-              <option value="other">Other</option>
-            </select>
+            <div style={{ marginBottom: 12 }}>
+              <MobileSelect
+                value={reportReason}
+                onChange={(v) => setReportReason(v)}
+                options={[
+                  { value: 'spam', label: 'Spam' },
+                  { value: 'harassment', label: 'Harassment' },
+                  { value: 'hate_speech', label: 'Hate Speech' },
+                  { value: 'nudity', label: 'Inappropriate Content' },
+                  { value: 'other', label: 'Other' },
+                ]}
+                placeholder="Select reason"
+              />
+            </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => setShowReport(false)} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "1px solid #333", background: C.surface, color: C.gray, cursor: "pointer", fontFamily: C.fMon, fontSize: 10 }}>CANCEL</button>
               <button onClick={() => reportMutation.mutate()} style={{ flex: 1, padding: "8px", borderRadius: 6, border: "1px solid " + C.burgundy, background: C.burgundy, color: C.white, cursor: "pointer", fontFamily: C.fMon, fontSize: 10 }}>SUBMIT</button>

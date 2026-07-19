@@ -432,6 +432,13 @@ export default function ControlRoomPage() {
     refetchInterval: 10000,
   });
 
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', roomId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!roomId,
+    refetchInterval: 5000,
+  });
+
   // Uptime counter
   useEffect(() => {
     if (!session?.started_at) return;
@@ -786,7 +793,7 @@ export default function ControlRoomPage() {
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
-      {roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={true} />}
+      {roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={activePoll} isHost={true} />}
       {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={room} />}
