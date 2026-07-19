@@ -32,21 +32,26 @@ function getGridClass(slots) {
 }
 
 
-function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSpotlight, isHostUser: hostCtrl, externalSpeaking }) {
+function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, isHostBadge, onSpotlight, isHostUser: hostCtrl, externalSpeaking }) {
   const [simSpeaking, setSimSpeaking] = useState(false);
+  const videoRef = useRef(null);
 
   // Use real speaking data when available; fall back to simulation
   const hasRealData = externalSpeaking !== undefined && externalSpeaking !== null;
   const speaking = hasRealData ? externalSpeaking : simSpeaking;
 
-  // Real Web Audio API VAD on the participant's remote (or local) stream
+  // Derived display values
+  const glow      = ROLE_GLOW[participant?.role] || ROLE_GLOW.viewer;
+  const connDots  = Math.min(4, Math.max(1, participant?.signal_strength ?? 3));
+
+  // Fallback sim-speaking when no real VAD data
   useEffect(() => {
     if (compact || hasRealData) return;
     const interval = setInterval(() => setSimSpeaking(Math.random() > 0.6), 800);
     return () => clearInterval(interval);
   }, [compact, hasRealData]);
 
-  // Attach stream to video element whenever it changes
+  // Attach remote/local stream to <video> element
   useEffect(() => {
     if (!videoRef.current) return;
     const s = participant?.remoteStream ?? null;
@@ -57,8 +62,7 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
   }, [participant?.remoteStream]);
 
   const px = isSpotlight ? 180 : compact ? 60 : 110;
-  // Show video if stream exists and has active video tracks; honour explicit is_video_enabled=false
-  const stream = participant?.remoteStream;
+  const stream   = participant?.remoteStream;
   const hasVideo = !!stream && participant?.is_video_enabled !== false &&
     (stream.getVideoTracks?.()?.some(t => t.enabled && t.readyState !== 'ended') ?? true);
   const isLocal = !!participant?.isLocal;
@@ -86,13 +90,25 @@ function GuestTile({ participant, isSpotlight, compact, isHost: isHostUser, onSp
             : 'border-white/10 group-hover:border-[#d4af37]/40'
         }`}
       >
-        {/* Center avatar */}
-        <div className="flex-1 flex items-center justify-center">
+        {/* Video feed or avatar */}
+        <div className="flex-1 flex items-center justify-center relative">
+          {hasVideo && (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted={isLocal}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+          {/* Avatar shown when no video */}
+          {!hasVideo && (
           <div style={{ width: isSpotlight ? 96 : compact ? 40 : 56, height: isSpotlight ? 96 : compact ? 40 : 56, borderRadius: '50%', overflow: 'hidden', background: 'linear-gradient(to bottom right, #800020, #d4af37)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isSpotlight ? 32 : compact ? 14 : 20, fontWeight: 700, color: '#fff' }}>
             {participant.user_name?.charAt(0)?.toUpperCase()}
           </div>
+          )}
           {speaking && !compact && (
-            <div className="absolute flex items-end gap-0.5 bottom-10 left-1/2 -translate-x-1/2">
+            <div className="absolute flex items-end gap-0.5 bottom-10 left-1/2 -translate-x-1/2 z-10">
               {[3, 5, 4, 6, 3].map((h, i) => (
                 <motion.div
                   key={i}
