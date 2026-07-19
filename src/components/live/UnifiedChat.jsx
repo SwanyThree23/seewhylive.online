@@ -5,10 +5,38 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
+  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X, Languages
 } from 'lucide-react';
+import { Drawer } from 'vaul';
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
+
+const LANGUAGES = [
+  { code: 'es', label: 'Español',    flag: '🇪🇸' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { code: 'pt', label: 'Português',  flag: '🇧🇷' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'ar', label: 'العربية',    flag: '🇸🇦' },
+  { code: 'zh', label: '中文',       flag: '🇨🇳' },
+  { code: 'hi', label: 'हिन्दी',    flag: '🇮🇳' },
+  { code: 'ja', label: '日本語',     flag: '🇯🇵' },
+  { code: 'ko', label: '한국어',     flag: '🇰🇷' },
+  { code: 'ru', label: 'Русский',    flag: '🇷🇺' },
+  { code: 'sw', label: 'Kiswahili',  flag: '🇰🇪' },
+];
+
+async function translateText(text, targetLang) {
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.responseData?.translatedText || null;
+  } catch {
+    return null;
+  }
+}
 
 const MSG_BG = {
   poll: { background: 'rgba(109,191,126,0.15)' },
@@ -49,6 +77,9 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const [msgPerMin, setMsgPerMin] = useState(0);
   const [activeChatters, setActiveChatters] = useState(0);
   const [lastSentAt, setLastSentAt] = useState(0);
+  const [translateLang, setTranslateLang] = useState(null);
+  const [translationMap, setTranslationMap] = useState({});
+  const [langSheetOpen, setLangSheetOpen] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const qc = useQueryClient();
@@ -77,6 +108,21 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   }, [roomId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // Auto-translate new messages when a target language is selected
+  useEffect(() => {
+    if (!translateLang) return;
+    const pending = messages.filter(
+      m => !translationMap[m.id] && m.content && m.message_type !== 'moderation'
+    );
+    // Translate latest 8 at most per batch to respect rate limits
+    pending.slice(-8).forEach(async msg => {
+      const translated = await translateText(msg.content, translateLang);
+      if (translated && translated.toLowerCase() !== msg.content.toLowerCase()) {
+        setTranslationMap(prev => ({ ...prev, [msg.id]: translated }));
+      }
+    });
+  }, [messages, translateLang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const recent = messages.filter(m => Date.now() - new Date(m.created_date).getTime() < 60000);
@@ -214,6 +260,11 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                     )}
                   </div>
                   <p className="text-xs text-white/80 break-words leading-relaxed mt-0.5">{msg.content}</p>
+                  {translateLang && translationMap[msg.id] && (
+                    <p className="text-xs text-white/40 italic break-words leading-relaxed mt-0.5">
+                      {translationMap[msg.id]}
+                    </p>
+                  )}
                 </div>
                 {/* Touch-friendly action button */}
                 <button onClick={() => setReplyTo(msg)}
@@ -272,6 +323,17 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <Smile className="w-4 h-4" style={{ color: showEmojiPicker ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
           </button>
 
+          {/* Language translate toggle */}
+          <button onClick={() => setLangSheetOpen(true)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
+            title={translateLang ? `Translating to ${LANGUAGES.find(l => l.code === translateLang)?.label}` : 'Translate chat'}
+            style={{
+              background: translateLang ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${translateLang ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+            <Languages className="w-4 h-4" style={{ color: translateLang ? '#6DBF7E' : 'rgba(255,255,255,0.4)' }} />
+          </button>
+
           <div className="flex-1 relative">
             <textarea
               ref={textareaRef}
@@ -299,6 +361,58 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
           </div>
         )}
       </div>
+
+      {/* Language picker — vaul bottom sheet */}
+      <Drawer.Root open={langSheetOpen} onOpenChange={setLangSheetOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-[190]" style={{ background: 'rgba(0,0,0,0.6)' }} />
+          <Drawer.Content
+            className="fixed bottom-0 left-0 right-0 z-[200] rounded-t-2xl pb-8"
+            style={{ background: '#0D1022', border: '1px solid rgba(212,175,55,0.18)', maxHeight: '80vh', overflowY: 'auto' }}
+          >
+            <Drawer.Handle className="mx-auto mt-3 mb-4 w-10 h-1 rounded-full bg-white/15" />
+            <div className="px-4 pb-4 space-y-2">
+              <p className="text-sm font-black text-white mb-3" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                Translate Chat <span className="text-white/30 font-normal text-xs">— powered by MyMemory</span>
+              </p>
+
+              {/* Off option */}
+              <button
+                onClick={() => { setTranslateLang(null); setTranslationMap({}); setLangSheetOpen(false); }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
+                style={{
+                  background: !translateLang ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${!translateLang ? '#D4AF37' : 'rgba(255,255,255,0.08)'}`,
+                }}
+              >
+                <span className="text-xl">🌐</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white">Original (no translation)</p>
+                  <p className="text-[11px] text-white/40">Show messages as sent</p>
+                </div>
+                {!translateLang && <div className="w-2 h-2 rounded-full bg-[#D4AF37] shrink-0" />}
+              </button>
+
+              {/* Language options */}
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { setTranslateLang(lang.code); setTranslationMap({}); setLangSheetOpen(false); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
+                  style={{
+                    background: translateLang === lang.code ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${translateLang === lang.code ? '#6DBF7E' : 'rgba(255,255,255,0.08)'}`,
+                  }}
+                >
+                  <span className="text-xl">{lang.flag}</span>
+                  <p className="text-sm font-bold text-white flex-1">{lang.label}</p>
+                  {translateLang === lang.code && <div className="w-2 h-2 rounded-full bg-[#6DBF7E] shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   );
 }
