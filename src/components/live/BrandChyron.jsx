@@ -43,6 +43,7 @@ export default function BrandChyron() {
 
   return (
     <div
+      id="sw-chyron"
       className="fixed left-0 right-0 z-[100] h-[34px] flex items-center overflow-hidden bottom-[calc(60px+env(safe-area-inset-bottom,0px))] md:bottom-0"
       style={{
         background: 'linear-gradient(90deg, #080B18 0%, #0D1022 50%, #080B18 100%)',
