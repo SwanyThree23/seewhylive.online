@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 
 export default function PreJoinSettingsModal(props) {
   var open = props.open;
@@ -110,34 +111,22 @@ export default function PreJoinSettingsModal(props) {
 
         <div style={{ marginBottom: '14px' }}>
           <div style={rowLabel}>Camera</div>
-          <select
-            style={selectStyle}
-            onChange={function (e) { props.onCameraChange && props.onCameraChange(e.target.value); }}
-          >
-            {cameras.map(function (cam, i) {
-              return (
-                <option key={cam.deviceId || i} value={cam.deviceId}>
-                  {cam.label || 'Camera ' + (i + 1)}
-                </option>
-              );
-            })}
-          </select>
+          <MobileSelect
+            value={cameras[0]?.deviceId || ''}
+            onChange={function (v) { props.onCameraChange && props.onCameraChange(v); }}
+            options={cameras.map(function (cam, i) { return { value: cam.deviceId || String(i), label: cam.label || 'Camera ' + (i + 1) }; })}
+            placeholder="Select camera"
+          />
         </div>
 
         <div style={{ marginBottom: '14px' }}>
           <div style={rowLabel}>Resolution</div>
-          <select
-            style={selectStyle}
+          <MobileSelect
             value={resolution}
-            onChange={function (e) {
-              setResolution(e.target.value);
-              props.onResolutionChange && props.onResolutionChange(e.target.value);
-            }}
-          >
-            <option value="auto">Auto</option>
-            <option value="720p">720p</option>
-            <option value="1080p">1080p</option>
-          </select>
+            onChange={function (v) { setResolution(v); props.onResolutionChange && props.onResolutionChange(v); }}
+            options={[{ value: 'auto', label: 'Auto' }, { value: '720p', label: '720p' }, { value: '1080p', label: '1080p' }]}
+            placeholder="Select resolution"
+          />
         </div>
 
         <ToggleRow
