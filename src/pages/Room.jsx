@@ -49,6 +49,7 @@ import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 import ClipCreator from '../components/live/ClipCreator';
+import RoomWatchPartyPlayer from '../components/live/RoomWatchPartyPlayer';
 import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
 import LiveTranscription from '../components/live/LiveTranscription';
 import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
@@ -214,6 +215,7 @@ export default function RoomPage() {
   const [activeTab, setActiveTab] = useState('chat');
   const [pinnedId, setPinnedId] = useState(null);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [showWatchParty, setShowWatchParty] = useState(false);
   const [showPreflight, setShowPreflight] = useState(false);
   const [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
   const [noiseSupp, setNoiseSupp] = useState(true);
@@ -631,6 +633,18 @@ export default function RoomPage() {
             SeeWhy LIVE
           </span>
           <ShareButtons url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={room?.title} />
+          <button
+            onClick={() => setShowWatchParty(!showWatchParty)}
+            title={showWatchParty ? 'Close Watch Party' : 'Start Watch Party'}
+            className="flex items-center gap-1 px-2 h-8 rounded-xl font-black text-[11px] uppercase transition-all"
+            style={{
+              background: showWatchParty ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.06)',
+              border: showWatchParty ? '1px solid rgba(212,175,55,0.4)' : '1px solid transparent',
+              color: showWatchParty ? '#D4AF37' : 'rgba(255,255,255,0.4)',
+              fontFamily: 'Barlow Condensed, sans-serif',
+            }}>
+            📺 Watch
+          </button>
           <button onClick={() => setShowWhiteboard(!showWhiteboard)}
             className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
@@ -752,6 +766,15 @@ export default function RoomPage() {
                 </div>
               )}
             </div>
+
+            {/* Watch Party Player */}
+            {showWatchParty && roomId && (
+              <RoomWatchPartyPlayer
+                roomId={roomId}
+                isHost={isHost}
+                currentUser={user}
+              />
+            )}
 
             {/* Whiteboard */}
             {showWhiteboard && (
