@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useWatchPartySync } from '@/hooks/useWatchPartySync';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -156,6 +157,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     };
   }, [videoId]);
 
+  // Host: 5-second heartbeat so viewers always get a fresh reference point
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
@@ -164,25 +166,19 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
       if (state === window.YT?.PlayerState?.PLAYING) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
-    }, 3000);
+    }, 5000);
     return () => clearInterval(iv);
   }, [isHost, onStateChange]);
 
-  useEffect(() => {
-    if (isHost || !playerRef.current || !syncData) return;
-    const serverTime = syncData.current_time || 0;
-    const lagMs = Date.now() - (syncData.updated_at_ms || Date.now());
-    const adjustedTime = serverTime + lagMs / 1000;
-    const current = playerRef.current.getCurrentTime?.() || 0;
-    if (Math.abs(current - adjustedTime) > 2) {
-      playerRef.current.seekTo?.(adjustedTime, true);
-    }
-    if (syncData.playback_state === 'playing') {
-      playerRef.current.playVideo?.();
-    } else {
-      playerRef.current.pauseVideo?.();
-    }
-  }, [syncData, isHost]);
+  // Viewer: 300ms drift-correction via the shared sync hook
+  useWatchPartySync({
+    isHost,
+    syncData,
+    getCurrentTime: () => playerRef.current?.getCurrentTime?.() ?? 0,
+    onSeek:  (t) => playerRef.current?.seekTo?.(t, true),
+    onPlay:  ()  => playerRef.current?.playVideo?.(),
+    onPause: ()  => playerRef.current?.pauseVideo?.(),
+  });
 
   return <div ref={iframeRef} className="w-full h-full" />;
 }
@@ -198,25 +194,25 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
     });
   };
 
+  // Host: 5-second heartbeat
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
-    }, 3000);
+    }, 5000);
     return () => clearInterval(iv);
   }, [isHost, onStateChange]);
 
-  useEffect(() => {
-    if (isHost || !videoRef.current || !syncData) return;
-    const v = videoRef.current;
-    const serverTime = syncData.current_time || 0;
-    const lagMs = Date.now() - (syncData.updated_at_ms || Date.now());
-    const adjustedTime = serverTime + lagMs / 1000;
-    if (Math.abs(v.currentTime - adjustedTime) > 2) v.currentTime = adjustedTime;
-    if (syncData.playback_state === 'playing') v.play().catch(() => {});
-    else v.pause();
-  }, [syncData, isHost]);
+  // Viewer: 300ms drift-correction via the shared sync hook
+  useWatchPartySync({
+    isHost,
+    syncData,
+    getCurrentTime: () => videoRef.current?.currentTime ?? 0,
+    onSeek:  (t) => { if (videoRef.current) videoRef.current.currentTime = t; },
+    onPlay:  ()  => videoRef.current?.play().catch(() => {}),
+    onPause: ()  => videoRef.current?.pause(),
+  });
 
   return (
     <video
