@@ -1351,7 +1351,7 @@ export default function LiveRoom() {
       {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
       {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
-      <MerchStrip roomId={roomId} currentUser={user} hostId={party?.host_id || user?.id} />
+      <MerchWidget roomId={roomId} currentUser={user} hostId={party?.host_id || user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

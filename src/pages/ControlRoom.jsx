@@ -711,7 +711,7 @@ export default function ControlRoomPage() {
       {<SubscriptionManager creatorId={user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={user?.id} />}
       {roomId && <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />}
-      <MerchStrip roomId={roomId} currentUser={user} hostId={user?.id} />
+      <MerchWidget roomId={roomId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

@@ -126,7 +126,6 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
-import { MerchStrip } from '../components/merch/MerchWidget';
 import ReportModal from '../components/moderation/ReportModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
