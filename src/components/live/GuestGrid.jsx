@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Video, VideoOff, Maximize2, Minimize2, Crown, Link, Radio } from 'lucide-react';
 import GuestDestinationsPanel from './GuestDestinationsPanel';
 import GuestStreamingPermissions from './GuestStreamingPermissions';
 import SpeakingIndicator from './SpeakingIndicator';
+import { useVAD } from '../../hooks/useVAD';
 
 const OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 const GOLD = '#D4AF37';
@@ -259,6 +260,23 @@ export default React.memo(function GuestGrid({
   const [spotlightId, setSpotlightId] = useState(null);
   const [showDestsFor, setShowDestsFor] = useState(null);
 
+  // Build stream map for VAD: { userId: MediaStream }
+  const vadStreams = useMemo(() => {
+    const map = {};
+    if (currentUserId && localStream) map[currentUserId] = localStream;
+    if (remoteStreams && peerUserIds) {
+      peerUserIds.forEach((uid, peerId) => {
+        const s = remoteStreams.get(peerId);
+        if (s) map[uid] = s;
+      });
+    }
+    return map;
+  }, [localStream, remoteStreams, peerUserIds, currentUserId]);
+
+  // Real Web Audio VAD; falls back to speakingIds prop when no streams available
+  const vadResult = useVAD({ streams: vadStreams });
+  const activeSpeakers = Object.keys(vadStreams).length > 0 ? vadResult : speakingIds;
+
   const speakers = participants
     .filter(p => ['host', 'co-host', 'speaker', 'guest'].includes(p.role))
     .slice(0, maxGuests)
@@ -330,13 +348,15 @@ export default React.memo(function GuestGrid({
               isHostBadge={spotlightGuest.user_id === hostId}
               isHostUser={isHost}
               onSpotlight={() => setSpotlightId(null)}
+              externalSpeaking={activeSpeakers[spotlightGuest.user_id]}
             />
           </div>
           <div className="flex gap-3 overflow-x-auto justify-center pb-1">
             {speakers.filter(s => s.id !== spotlightId).map(p => (
               <GuestTile key={p.id} participant={p} compact
                 isHostBadge={p.user_id === hostId} isHostUser={isHost}
-                onSpotlight={id => setSpotlightId(id)} />
+                onSpotlight={id => setSpotlightId(id)}
+                externalSpeaking={activeSpeakers[p.user_id]} />
             ))}
           </div>
         </div>
@@ -347,7 +367,8 @@ export default React.memo(function GuestGrid({
               <GuestTile key={p.id} participant={p}
                 isHostBadge={p.user_id === hostId}
                 isHostUser={isHost}
-                onSpotlight={id => setSpotlightId(id)} />
+                onSpotlight={id => setSpotlightId(id)}
+                externalSpeaking={activeSpeakers[p.user_id]} />
             ))}
             {Array.from({ length: Math.min(empty, 8) }).map((_, i) => (
               <EmptySlot key={`empty-${i}`} onInvite={onInvite} isHost={isHost} />
