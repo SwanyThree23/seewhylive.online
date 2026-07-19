@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MobileSelect } from '@/components/ui/MobileSelect';
-import { useVaultPro } from '@/hooks/useVaultPro';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -1040,6 +1039,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     { id: 'viewers', label: '👥 Panel',  desc: 'Manage' },
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
+    { id: 'audio',  label: '🎚 Audio', desc: 'Mic & speaker' },
     { id: 'health',  label: '❤️ Health', desc: 'Stream stats' },
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
@@ -1704,7 +1704,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
-                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={0} />
+                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} />
                 </div>
 
                 {/* Pinned message */}
@@ -1813,7 +1813,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 )}
 
                 {/* WebRTC setup banner */}
-                <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
+                <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
 
                 {/* Webhook hooks */}
                 {isHost && partyId && (
@@ -1825,7 +1825,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Evmux web source */}
                 {isHost && (
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => {}} />
+                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => setShowEvmux(false)} />
                   </div>
                 )}
 
@@ -2419,7 +2419,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           roomId={partyId}
                           sessionId={partyId}
                           creatorId={user.id}
-                          elapsedSeconds={0}
+                          elapsedSeconds={elapsed}
                           isHost={isHost}
                         />
                       )}
@@ -2707,9 +2707,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher currentUserId={user?.id} />
-        <SwanAIRecommendations roomId={partyId} currentLayout="broadcast" viewerCount={0} />
+        <SwanAIRecommendations roomId={partyId} currentLayout="broadcast" viewerCount={liveViewers || members.length} />
         <MilestoneAlerts userId={user?.id} roomId={partyId} />
-        <StreamGoals isHost={true} />
+        <StreamGoals isHost={isHost} />
       </div>
     </div>
   );

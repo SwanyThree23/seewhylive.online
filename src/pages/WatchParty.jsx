@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useWatchPartySync } from '@/hooks/useWatchPartySync';
 import { useMultiSpeakingSet } from '@/hooks/useMultiSpeakingSet';
+import { MobileSelect } from '@/components/ui/MobileSelect';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon, Mic, MicOff, Settings } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -485,7 +487,7 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
-  const { localStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
 
   const [activeWpPc, setActiveWpPc] = useState(null);
@@ -500,6 +502,16 @@ export default function WatchPartyPage() {
   const [peerQuality, setPeerQuality] = useState(() => new Map());
   const speakingSet = useMultiSpeakingSet({ localStream, localUserId: user?.id, remoteStreams, peerUserIds });
   const [spotlightMember, setSpotlightMember] = useState(null);
+
+  // ── Audio controls ────────────────────────────────────────────────────────
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
+  const [autoGain, setAutoGain] = useState(true);
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  const [wpAudioSettingsOpen, setWpAudioSettingsOpen] = useState(false);
+  const { speakers: speakerDevices } = useCameraDevices();
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
@@ -606,6 +618,46 @@ export default function WatchPartyPage() {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(iv);
   }, [partyId]);
+
+  // Speaker output routing
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function') el.setSinkId(prefSpeaker).catch(() => {});
+    });
+    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
+  }, [prefSpeaker]);
+
+  // Audio processing constraints (NS / EC / AGC)
+  useEffect(() => {
+    applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
+
+  // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
+  useEffect(() => {
+    if (!partyId) return;
+    const onDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAudio(); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        if (!audioEnabled) { pttWasEnabledRef.current = false; setPttActive(true); toggleAudio(); }
+        else { pttWasEnabledRef.current = true; }
+      }
+    };
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (pttActive && !pttWasEnabledRef.current) toggleAudio();
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyId, audioEnabled, pttActive]);
 
   useEffect(() => {
     if (isHost || !partyId) return;
@@ -868,6 +920,24 @@ export default function WatchPartyPage() {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {/* Mic toggle */}
+            <button
+              onClick={toggleAudio}
+              title={audioEnabled ? 'Mute mic (M)' : 'Unmute mic (M)'}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: audioEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(192,57,43,0.15)', border: `1px solid ${audioEnabled ? 'rgba(109,191,126,0.35)' : 'rgba(192,57,43,0.35)'}` }}>
+              {audioEnabled
+                ? <Mic className="w-3.5 h-3.5" style={{ color: '#6DBF7E' }} />
+                : <MicOff className="w-3.5 h-3.5" style={{ color: '#C0392B' }} />}
+            </button>
+            {/* Audio settings */}
+            <button
+              onClick={() => setWpAudioSettingsOpen(v => !v)}
+              title="Audio settings"
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: wpAudioSettingsOpen ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: wpAudioSettingsOpen ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>
+              <Settings className="w-3.5 h-3.5" />
+            </button>
             {document.pictureInPictureEnabled && (
               <button onClick={handlePip}
                 className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95 text-sm"
@@ -949,6 +1019,68 @@ export default function WatchPartyPage() {
           )}
         </div>
       </div>
+
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
+
+      {/* Audio settings drawer */}
+      <AnimatePresence>
+        {wpAudioSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="shrink-0 overflow-hidden"
+            style={{ background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}
+          >
+            <div className="px-4 py-3 space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</p>
+
+              {/* Speaker output */}
+              {speakerDevices.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Output Device</p>
+                  <MobileSelect
+                    value={prefSpeaker}
+                    onChange={setPrefSpeaker}
+                    label="Output Device"
+                    options={[
+                      { value: '', label: 'Default speakers' },
+                      ...speakerDevices.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` })),
+                    ]}
+                  />
+                </div>
+              )}
+
+              {/* NS / EC / AGC toggles */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {[
+                  { label: 'Noise Suppress.', val: noiseSupp, set: setNoiseSupp },
+                  { label: 'Echo Cancel.', val: echoCan, set: setEchoCan },
+                  { label: 'Auto Gain', val: autoGain, set: setAutoGain },
+                ].map(({ label, val, set }) => (
+                  <button
+                    key={label}
+                    onClick={() => set(v => !v)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+                    style={{
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      background: val ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${val ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                      color: val ? '#6DBF7E' : 'rgba(255,255,255,0.35)',
+                    }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: val ? '#6DBF7E' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {pttActive && (
+                <p className="text-[10px] font-bold uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>● PTT Active — release Space to mute</p>
+              )}
+              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>M = toggle mic · Space (hold) = push-to-talk</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showSyncWarn && !isHost && (
         <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(212,175,55,0.15)', borderBottom: '1px solid rgba(212,175,55,0.3)' }}>
