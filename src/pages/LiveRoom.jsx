@@ -549,6 +549,7 @@ export default function LiveRoom() {
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
@@ -1447,7 +1448,7 @@ export default function LiveRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => {} : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1465,7 +1466,7 @@ export default function LiveRoom() {
       <ViewerCount count={liveCount} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
-      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} triggerOpen={pollTick} />}
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if (party?.id) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
       <BackgroundCustomizer />

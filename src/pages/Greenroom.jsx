@@ -347,6 +347,7 @@ export default function GreenroomPage() {
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showModerationAppeal, setShowModerationAppeal] = useState(false);
   const [showClipCreator, setShowClipCreator] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
 
   const [elapsed, setElapsed] = useState(0);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
@@ -865,7 +866,7 @@ export default function GreenroomPage() {
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={room?.title || ''} onClose={() => setShowClipCreator(false)} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
-      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} triggerOpen={pollTick} />}
       {!isHost && roomId && room?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
       {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (roomId) base44.entities.Room.update(roomId, b).catch(() => {}); }} isHost={true} />}
       <HostAlertCenter />
@@ -924,7 +925,7 @@ export default function GreenroomPage() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!deviceState.micOn} onMicToggle={() => setDeviceState(prev => ({ ...prev, micOn: !prev.micOn }))} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}

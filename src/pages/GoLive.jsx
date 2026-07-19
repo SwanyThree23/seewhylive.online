@@ -556,6 +556,7 @@ export default function GoLive() {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -1078,7 +1079,7 @@ export default function GoLive() {
       {partyId && <GoldenWall roomId={partyId} />}
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
-      {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} />}
+      {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} triggerOpen={pollTick} />}
       <RoomBrandingEditor roomData={null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
@@ -1137,7 +1138,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}

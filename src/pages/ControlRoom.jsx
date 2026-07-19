@@ -389,6 +389,7 @@ export default function ControlRoomPage() {
   const [tipTotal, setTipTotal] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
@@ -813,7 +814,7 @@ export default function ControlRoomPage() {
       {roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={true} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onPoll={() => setPollTick(t => t + 1)} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -831,7 +832,7 @@ export default function ControlRoomPage() {
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       {roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={room?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
-      {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} />}
+      {roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={true} triggerOpen={pollTick} />}
       {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if (room?.id) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
       <BackgroundCustomizer />
       <WebSourceOverlay isStreamActive={isLive} />
