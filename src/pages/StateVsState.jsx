@@ -1,7 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import PKBattleProgress from '../components/pk/PKBattleProgress';
+import BattleMode from '../components/streaming/BattleMode';
+import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import TournamentBracket from '../components/pk/TournamentBracket';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
@@ -14,9 +24,12 @@ const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
 const BLUE  = '#D4854A';
 const RED2  = '#C62828';
-const TEAL  = '#4A8A7A';
-const CYAN  = '#4A8A7A';
+const TEAL  = '#6DBF7E';
+const CYAN  = '#D4AF37';
 const T     = { fontFamily: 'Barlow Condensed, sans-serif' };
+
+const SVS_BRACKET_ID = 'svs_bracket_v1';
+const SVS_MATCH_ID   = 'svs_sf1_live';
 
 const STATES_DATA = [
   {
@@ -187,7 +200,7 @@ function getState(id) {
   return STATES_DATA.find(x => x.id === id) || null;
 }
 
-function BracketView({ matches }) {
+function BracketView({ matches, wlMap = {} }) {
   const rounds = ['QF', 'SF', 'FINAL'];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -221,7 +234,7 @@ function BracketView({ matches }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sA ? sA.name : 'TBD'}
                           </div>
-                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{sA.record.w}W–{sA.record.l}L</div>}
+                          {sA && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamA]?.w ?? sA.record.w)}W–{(wlMap[m.teamA]?.l ?? sA.record.l)}L</div>}
                         </div>
                       </div>
                       <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -240,7 +253,7 @@ function BracketView({ matches }) {
                           <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 18, color: '#fff', lineHeight: 1 }}>
                             {sB ? sB.name : 'TBD'}
                           </div>
-                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{sB.record.w}W–{sB.record.l}L</div>}
+                          {sB && <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{(wlMap[m.teamB]?.w ?? sB.record.w)}W–{(wlMap[m.teamB]?.l ?? sB.record.l)}L</div>}
                         </div>
                         <StateCircle stateId={m.teamB} size={40} />
                       </div>
@@ -266,7 +279,7 @@ function BracketView({ matches }) {
   );
 }
 
-function RostersView() {
+function RostersView({ wlMap = {} }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       {STATES_DATA.map(s => (
@@ -275,7 +288,7 @@ function RostersView() {
             <StateCircle stateId={s.id} size={44} />
             <div>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{s.record.w}W – {s.record.l}L · {s.pts} PTS</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700 }}>{(wlMap[s.id]?.w ?? s.record.w)}W – {(wlMap[s.id]?.l ?? s.record.l)}L · {s.pts} PTS</div>
             </div>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
@@ -300,24 +313,74 @@ function RostersView() {
 }
 
 function LiveMatchView() {
-  const [scores, setScores] = useState({ wa: 4, fl: 3 });
-  const [plays, setPlays] = useState(INITIAL_PLAYS);
+  const qc = useQueryClient();
   const wa = getState('wa');
   const fl = getState('fl');
 
-  function addGame(side) {
-    setScores(prev => ({ ...prev, [side]: prev[side] + 1 }));
-  }
+  const { data: matchRec } = useQuery({
+    queryKey: ['svs-live-match'],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_MATCH_ID }, '-created_date', 1),
+    select: data => data[0] || null,
+    refetchInterval: 15000,
+  });
 
-  function addPlay() {
-    const newPlay = {
-      time: new Date().toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
-      player: plays.length % 2 === 0 ? 'K. Daniels' : 'O. Smith',
-      action: 'Manual log play',
-      pts: 1,
-    };
-    setPlays(prev => [newPlay, ...prev]);
-  }
+  useEffect(() => {
+    const unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.data?.room_id === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-live-match'] });
+    });
+    return unsub;
+  }, [qc]);
+
+  const scoreWa = matchRec?.creator_tips ?? 4;
+  const scoreFl = matchRec?.challenger_tips ?? 3;
+
+  const { data: playMsgs = [] } = useQuery({
+    queryKey: ['svs-play-log'],
+    queryFn: () => base44.entities.Message.filter({ room_id: SVS_MATCH_ID, type: 'play_log' }, '-created_date', 20),
+    refetchInterval: 20000,
+  });
+
+  useEffect(() => {
+    const unsub = base44.entities.Message.subscribe(e => {
+      if (e.data?.room_id === SVS_MATCH_ID) qc.invalidateQueries({ queryKey: ['svs-play-log'] });
+    });
+    return unsub;
+  }, [qc]);
+
+  const addGameMut = useMutation({
+    mutationFn: async (side) => {
+      const newWa = scoreWa + (side === 'wa' ? 1 : 0);
+      const newFl = scoreFl + (side === 'fl' ? 1 : 0);
+      const payload = { creator_tips: newWa, challenger_tips: newFl, status: 'live' };
+      if (matchRec) return base44.entities.PKBattle.update(matchRec.id, payload);
+      return base44.entities.PKBattle.create({ room_id: SVS_MATCH_ID, creator_name: 'wa', challenger_name: 'fl', ...payload });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-live-match'] }),
+  });
+
+  const PLAY_PLAYERS = ['K. Daniels', 'O. Smith', 'T. Brooks', 'V. Brown'];
+  const addPlayMut = useMutation({
+    mutationFn: () => base44.entities.Message.create({
+      room_id: SVS_MATCH_ID,
+      type: 'play_log',
+      user_name: PLAY_PLAYERS[playMsgs.length % PLAY_PLAYERS.length],
+      content: 'Manual log play (+1)',
+    }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['svs-play-log'] }),
+  });
+
+  const plays = playMsgs.length > 0
+    ? playMsgs.map(p => {
+        const m = p.content.match(/^(.*?)\s*\(\+(\d+)\)$/);
+        return {
+          id: p.id,
+          time: new Date(p.created_at).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }),
+          player: p.user_name,
+          action: m ? m[1] : p.content,
+          pts: m ? parseInt(m[2]) : 1,
+        };
+      })
+    : INITIAL_PLAYS;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -333,12 +396,9 @@ function LiveMatchView() {
           <div style={{ textAlign: 'center', flex: 1 }}>
             <div style={{
               fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif',
-              fontSize: 56,
-              color: GOLD,
-              lineHeight: 1,
-              letterSpacing: 4,
+              fontSize: 56, color: GOLD, lineHeight: 1, letterSpacing: 4,
             }}>
-              {scores.wa}–{scores.fl}
+              {scoreWa}–{scoreFl}
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
@@ -347,19 +407,17 @@ function LiveMatchView() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 8 }}>
-          <Btn label="+1 GAME WA" variant="state" size="sm" onClick={() => addGame('wa')} />
-          <Btn label="+1 GAME FL" variant="ruby" size="sm" onClick={() => addGame('fl')} />
+          <Btn label="+1 GAME WA" variant="state" size="sm" disabled={addGameMut.isPending} onClick={() => addGameMut.mutate('wa')} />
+          <Btn label="+1 GAME FL" variant="ruby" size="sm" disabled={addGameMut.isPending} onClick={() => addGameMut.mutate('fl')} />
         </div>
       </GCard>
       <GCard>
         <div style={{ ...T, fontSize: 13, fontWeight: 700, color: GOLD, marginBottom: 10, letterSpacing: '0.06em' }}>LIVE PLAY LOG</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {plays.map((p, i) => (
-            <div key={i} style={{
+            <div key={p.id || i} style={{
               display: 'flex', alignItems: 'center', gap: 10,
-              padding: '8px 10px',
-              background: BG3,
-              borderRadius: 8,
+              padding: '8px 10px', background: BG3, borderRadius: 8,
               border: '1px solid rgba(255,255,255,0.05)',
             }}>
               <span style={{ ...T, fontSize: 11, color: TEAL, fontWeight: 700, minWidth: 38 }}>{p.time}</span>
@@ -370,14 +428,14 @@ function LiveMatchView() {
           ))}
         </div>
         <div style={{ marginTop: 12 }}>
-          <Btn label="+ LOG PLAY" variant="ghost" size="sm" onClick={addPlay} />
+          <Btn label="+ LOG PLAY" variant="ghost" size="sm" disabled={addPlayMut.isPending} onClick={() => addPlayMut.mutate()} />
         </div>
       </GCard>
     </div>
   );
 }
 
-function StandingsView() {
+function StandingsView({ wlMap = {} }) {
   const sorted = [...STATES_DATA].sort((a, b) => b.pts - a.pts);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -405,7 +463,7 @@ function StandingsView() {
             <StateCircle stateId={s.id} size={36} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 17, color: '#fff', lineHeight: 1 }}>{s.name}</div>
-              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{s.record.w}W – {s.record.l}L</div>
+              <div style={{ ...T, fontSize: 11, color: s.color, fontWeight: 700, marginTop: 2 }}>{(wlMap[s.id]?.w ?? s.record.w)}W – {(wlMap[s.id]?.l ?? s.record.l)}L</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontFamily: 'Bebas Neue, Barlow Condensed, sans-serif', fontSize: 20, color: isFirst ? GOLD : '#fff' }}>{s.pts}</div>
@@ -745,19 +803,56 @@ function JudgesView() {
 const TABS = ['BRACKET', 'ROSTERS', 'LIVE MATCH', 'STANDINGS', 'JUDGES'];
 
 export default function StateVsState() {
+  const qc = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [tab, setTab] = useState('BRACKET');
+  const roomId = new URLSearchParams(window.location.search).get('room_id');
 
-  const { data: activeRoom } = useQuery({
-    queryKey: ['statevsstate-active-room', user?.id],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
-    enabled: !!user?.id,
+  const { data: bracketRecords = [] } = useQuery({
+    queryKey: ['svs-bracket-records'],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
     refetchInterval: 30000,
   });
-  const activeRoomId = activeRoom?.id || null;
 
-  const [tab, setTab] = useState('BRACKET');
-  const [matches, setMatches] = useState(BRACKET_MATCHES);
-  const roomId = new URLSearchParams(window.location.search).get('room_id');
+  useEffect(() => {
+    const unsub = base44.entities.PKBattle.subscribe(e => {
+      if (e.data?.room_id === SVS_BRACKET_ID) qc.invalidateQueries({ queryKey: ['svs-bracket-records'] });
+    });
+    return unsub;
+  }, [qc]);
+
+  const matches = useMemo(() => {
+    if (!bracketRecords.length) return BRACKET_MATCHES;
+    const map = {};
+    bracketRecords.forEach(r => { map[`${r.creator_name}:${r.challenger_name}`] = r; });
+    return BRACKET_MATCHES.map(m => {
+      const hit = map[`${m.teamA}:${m.teamB}`];
+      if (!hit) return m;
+      return {
+        ...m,
+        scoreA: hit.creator_tips ?? m.scoreA,
+        scoreB: hit.challenger_tips ?? m.scoreB,
+        status: hit.status === 'ended' ? 'complete' : hit.status === 'live' ? 'live' : m.status,
+      };
+    });
+  }, [bracketRecords]);
+
+  const wlMap = useMemo(() => {
+    if (!bracketRecords.length) {
+      const fallback = {};
+      STATES_DATA.forEach(s => { fallback[s.id] = { ...s.record }; });
+      return fallback;
+    }
+    const map = {};
+    STATES_DATA.forEach(s => { map[s.id] = { w: 0, l: 0 }; });
+    matches.filter(m => m.status === 'complete').forEach(m => {
+      const aWon = m.scoreA > m.scoreB;
+      if (map[m.teamA] !== undefined) map[m.teamA][aWon ? 'w' : 'l']++;
+      if (map[m.teamB] !== undefined) map[m.teamB][aWon ? 'l' : 'w']++;
+    });
+    return map;
+  }, [matches, bracketRecords.length]);
+
   const { data: svsBattles = [] } = useQuery({
     queryKey: ['svsActiveBattles'],
     queryFn: () => base44.entities.PKBattle.filter({ status: 'live' }, '-created_date', 5),
@@ -841,26 +936,51 @@ export default function StateVsState() {
         })}
       </div>
 
-      {tab === 'BRACKET' && <BracketView matches={matches} />}
-      {tab === 'ROSTERS' && <RostersView />}
+      {tab === 'BRACKET' && <BracketView matches={matches} wlMap={wlMap} />}
+      {tab === 'ROSTERS' && <RostersView wlMap={wlMap} />}
       {tab === 'LIVE MATCH' && <LiveMatchView />}
-      {tab === 'STANDINGS' && <StandingsView />}
+      {tab === 'STANDINGS' && <StandingsView wlMap={wlMap} />}
       {tab === 'JUDGES' && <JudgesView />}
-      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={activeRoom?.viewer_count || 0} />
-      <StreamerMonetizationCenter />
-      <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
-      <HostAlertCenter />
-      <ViewerCount count={activeRoom?.viewer_count || 0} peakViewers={activeRoom?.peak_viewers || 0} />
-      <BackgroundCustomizer />
+
+      <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <LeaderboardPanel roomId={roomId} />
+        <PKBattleProgress battleId={activeBattle?.id || null} />
+      </div>
+
+      {/* Cross-navigation footer */}
+      <div style={{ padding: '16px 16px 32px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {[
+          { to: '/SwanyBotPage',    label: '🤖 SwanyBot AI',  bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/Leaderboard',     label: '👑 Elite League', bg: 'rgba(212,175,55,0.08)',  border: 'rgba(212,175,55,0.2)',  color: '#D4AF37' },
+          { to: '/PKBattleManager', label: '🥊 PK Battle',    bg: 'rgba(192,57,43,0.1)',    border: 'rgba(192,57,43,0.25)', color: '#C0392B' },
+          { to: '/PKBattleArena',   label: '⚔️ Battle Arena', bg: 'rgba(192,57,43,0.08)',   border: 'rgba(192,57,43,0.2)',  color: '#C0392B' },
+          { to: '/TributeWall',     label: '🕊️ Tribute Wall', bg: 'rgba(139,111,71,0.1)',   border: 'rgba(139,111,71,0.25)',color: '#8B6F47' },
+        ].map(function(item) {
+          return (
+            <Link key={item.to} to={item.to} style={{ textDecoration: 'none' }}>
+              <button style={{
+                padding: '8px 16px', borderRadius: 999, border: `1px solid ${item.border}`,
+                background: item.bg, color: item.color, cursor: 'pointer',
+                fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900,
+                fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
+              }}>{item.label}</button>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={false} />
+        <SocialLeaderboard roomId={roomId} />
+        <GiftShopTray roomId={roomId} currentUser={user} />
+        <BattleScoreboard roomId={roomId} />
+        <TournamentBracket />
+        <EngagementBadgesDisplay roomId={roomId} userId={user?.id} creatorId={user?.id} />
+        <OnlineUsersGrid compact maxVisible={10} />
+        <ContentRecommendations />
+        <MilestoneAlerts userId={user?.id} roomId={roomId} />
+        <SwanAIRecommendations roomId={roomId} currentLayout="default" viewerCount={0} />
+      </div>
     </div>
   );
 }

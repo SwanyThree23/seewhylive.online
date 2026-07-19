@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -357,6 +358,7 @@ export default function AudioRoom() {
   const [noiseSupp,   setNoiseSupp]   = useState(true);
   const [echoCan,     setEchoCan]     = useState(true);
   const [autoGain,    setAutoGain]    = useState(true);
+  const [spotlightId, setSpotlightId] = useState(null);
 
   const [createTitle,    setCreateTitle]    = useState('');
   const [createVideoUrl, setCreateVideoUrl] = useState('');
@@ -649,8 +651,8 @@ export default function AudioRoom() {
         {isHost && roomId && (
           <MultiGuestPanel
             participants={members}
-            spotlightId={null}
-            onSpotlight={() => {}}
+            spotlightId={spotlightId}
+            onSpotlight={(id) => setSpotlightId(prev => prev === id ? null : id)}
             roomId={roomId}
             isHost={isHost}
           />
@@ -813,18 +815,12 @@ export default function AudioRoom() {
                       <Volume2 className="w-3.5 h-3.5" style={{ color: GOLD }} />
                       <span className="text-xs font-bold uppercase text-white/60">Output Device</span>
                     </div>
-                    <select
+                    <MobileSelect
                       value={prefSpeaker}
-                      onChange={e => setPrefSpeaker(e.target.value)}
-                      className="w-full h-9 px-3 rounded-xl text-sm text-white outline-none"
-                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Barlow Condensed, sans-serif' }}
-                    >
-                      {speakerDevices.map(d => (
-                        <option key={d.deviceId} value={d.deviceId} style={{ background: '#111' }}>
-                          {d.label || `Speaker ${d.deviceId.slice(0, 6)}`}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={v => setPrefSpeaker(v)}
+                      options={speakerDevices.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` }))}
+                      placeholder="Select speaker"
+                    />
                   </div>
                 )}
 

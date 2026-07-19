@@ -21,7 +21,6 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
 
   const enabled = !!creatorId;
 
-  const setGoals = (updater) => qc.setQueryData(['stream-goals', creatorId, roomId], (prev) => updater(prev || []));
   const { data: goals = [] } = useQuery({
     queryKey: ['stream-goals', creatorId, roomId],
     queryFn: () => base44.entities.StreamerGoal.filter(
@@ -62,11 +61,13 @@ export default function StreamGoals({ isHost, roomId, creatorId, currentTips = 0
 
   useEffect(() => {
     goals.forEach(goal => {
-      const current = getCurrentValue(goal.type);
-      const pct = current / goal.target;
-      if (pct >= 1 && !goal.completed) {
-        setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, completed: true } : g));
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#4A8A7A'] });
+      if (completed.has(goal.id)) return;
+      const current = getCurrentValue(goal.goal_type);
+      const target = goal.target_amount;
+      if (target > 0 && current >= target) {
+        setCompleted(prev => new Set([...prev, goal.id]));
+        completeMut.mutate(goal.id);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.4 }, colors: ['#6DBF7E', '#d4af37', '#D4AF37'] });
         fireAlert({ type: 'milestone', duration: 8000, title: `🎯 GOAL REACHED: ${goal.title}!`, body: goal.reward_text });
       }
     });

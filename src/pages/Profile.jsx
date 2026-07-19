@@ -115,7 +115,6 @@ export default function ProfilePage() {
   const [displayName, setDisplayName]     = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [activeTab, setActiveTab]         = useState('Overview');
-  const [isOnline]                        = useState(true);
   const [setupOpen, setSetupOpen]         = useState(false);
   const fileRef = useRef();
 
@@ -131,6 +130,7 @@ export default function ProfilePage() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const isOnline = !!activeRoom;
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['userReferrals', user?.id],

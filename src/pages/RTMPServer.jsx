@@ -91,6 +91,18 @@ export default function RTMPServer() {
     }
   }, [user?.id]);
 
+  // Load stream key from user profile; generate and save if missing
+  useEffect(() => {
+    if (!user) return;
+    if (user.stream_key) {
+      setStreamKey(user.stream_key);
+    } else {
+      const newKey = `sk_live_${cryptoHex(24)}`;
+      setStreamKey(newKey);
+      base44.auth.updateMe({ stream_key: newKey }).catch(() => {});
+    }
+  }, [user?.id]);
+
   const RTMP_SERVER = 'rtmp://ingest.seewhy.live/live';
   const SRT_SERVER = 'srt://ingest.seewhy.live:9710';
   const PLAYBACK_URL = `https://cdn.seewhy.live/hls/${streamKey}/index.m3u8`;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Crown, TrendingUp, Star, Zap, DollarSign, Users, Trophy, Radio, Swords } from 'lucide-react';
@@ -24,14 +24,25 @@ import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
-const SVS_STATES = [
-  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', w: 4, l: 1, pts: 1820 },
-  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', w: 3, l: 1, pts: 1740 },
-  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', w: 3, l: 2, pts: 1650 },
-  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', w: 3, l: 2, pts: 1610 },
-  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', w: 2, l: 3, pts: 1380 },
-  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', w: 1, l: 4, pts: 1120 },
+const SVS_BRACKET_ID = 'svs_bracket_v1';
+
+// Static config: colors/names/abbr only — W-L derived from DB
+const SVS_STATE_CONFIG = [
+  { id: 'wa', name: 'Washington', abbr: 'WA', color: '#D4854A', pts: 1820 },
+  { id: 'fl', name: 'Florida',    abbr: 'FL', color: '#C0392B', pts: 1740 },
+  { id: 'ca', name: 'California', abbr: 'CA', color: '#6DBF7E', pts: 1650 },
+  { id: 'tx', name: 'Texas',      abbr: 'TX', color: '#800020', pts: 1610 },
+  { id: 'ny', name: 'New York',   abbr: 'NY', color: '#D4AF37', pts: 1380 },
+  { id: 'ga', name: 'Georgia',    abbr: 'GA', color: '#CC7755', pts: 1120 },
 ];
+// Fallback with static W-L for when DB has no records yet
+const SVS_STATES = SVS_STATE_CONFIG.map((s, i) => ({
+  ...s,
+  w: [4, 3, 3, 3, 2, 1][i],
+  l: [1, 1, 2, 2, 3, 4][i],
+}));
+
+const PERIOD_MS = { week: 7 * 86_400_000, month: 30 * 86_400_000, all: Infinity };
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -205,8 +216,40 @@ export default function LeaderboardPage() {
     queryFn: () => base44.entities.User.list('-created_date', 200),
   });
 
+  const { data: svsRecords = [] } = useQuery({
+    queryKey: ['svs-bracket-records'],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: SVS_BRACKET_ID }, '-created_date', 20),
+    staleTime: 60000,
+    refetchInterval: 60000,
+  });
+
+  const [activeTab, setActiveTab] = useState('earnings');
+  const [period, setPeriod] = useState('all');
+
+  // SVS standings derived from DB; fall back to static if no records yet
+  const svsStates = useMemo(() => {
+    if (!svsRecords.length) return SVS_STATES;
+    const wl = {};
+    SVS_STATE_CONFIG.forEach(s => { wl[s.id] = { w: 0, l: 0 }; });
+    svsRecords.filter(r => r.status === 'ended').forEach(r => {
+      const aWon = (r.creator_tips || 0) > (r.challenger_tips || 0);
+      if (wl[r.creator_name] !== undefined) wl[r.creator_name][aWon ? 'w' : 'l']++;
+      if (wl[r.challenger_name] !== undefined) wl[r.challenger_name][aWon ? 'l' : 'w']++;
+    });
+    return SVS_STATE_CONFIG
+      .map(s => ({ ...s, w: wl[s.id]?.w ?? 0, l: wl[s.id]?.l ?? 0 }))
+      .sort((a, b) => b.w - a.w || a.l - b.l);
+  }, [svsRecords]);
+
+  // Period cutoff for earnings / viewers tabs
+  const cutoff = period === 'all' ? 0 : Date.now() - PERIOD_MS[period];
+  const filteredTransactions = period === 'all' ? transactions
+    : transactions.filter(t => new Date(t.created_date || 0).getTime() >= cutoff);
+  const filteredRooms = period === 'all' ? rooms
+    : rooms.filter(r => new Date(r.created_date || 0).getTime() >= cutoff);
+
   // Revenue leaderboard: aggregate by creator
-  const revenueByCreator = transactions.reduce((acc, t) => {
+  const revenueByCreator = filteredTransactions.reduce((acc, t) => {
     const key = t.recipient_id || t.to_user_id;
     if (!key) return acc;
     acc[key] = (acc[key] || 0) + (t.creator_payout || 0) + (t.platform_cut || 0);
@@ -222,7 +265,7 @@ export default function LeaderboardPage() {
     })
     .filter(e => e.user);
 
-  const topByViewers = [...rooms]
+  const topByViewers = [...filteredRooms]
     .sort((a, b) => (b.viewer_count || 0) - (a.viewer_count || 0))
     .slice(0, 20)
     .map(room => {
@@ -235,9 +278,6 @@ export default function LeaderboardPage() {
     const user = allUsers.find(u => u.id === profile.user_id);
     return { user: user || { full_name: profile.display_name, email: '', id: profile.user_id }, subscribers: profile.subscriber_count || 0 };
   }).filter(e => e.user);
-
-  const [activeTab, setActiveTab] = useState('earnings');
-  const [period, setPeriod] = useState('all');
 
   // Select list + stat accessors by active tab
   const tabData = {
@@ -323,7 +363,7 @@ export default function LeaderboardPage() {
                 </p>
               </div>
               <div className="p-3 space-y-2">
-                {SVS_STATES.map((s, i) => (
+                {svsStates.map((s, i) => (
                   <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl"
                     style={{
                       background: i === 0 ? `${GOLD}09` : 'rgba(255,255,255,0.02)',

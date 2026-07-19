@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, X, Eye, EyeOff, Copy, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, X, Eye, EyeOff, Copy, Trash2, AlertCircle, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { useVaultPro } from '@/hooks/useVaultPro';
 
 const GOLD = '#D4AF37';
 const PLATFORMS = [
@@ -13,6 +14,7 @@ const PLATFORMS = [
 ];
 
 export default function DestinationsManager({ userId }) {
+  const { mask } = useVaultPro();
   const [showForm, setShowForm] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [label, setLabel] = useState('');
@@ -20,6 +22,7 @@ export default function DestinationsManager({ userId }) {
   const [serverUrl, setServerUrl] = useState('');
   const [bitrate, setBitrate] = useState(3000);
   const [showKey, setShowKey] = useState(false);
+  const [revealedId, setRevealedId] = useState(null);
   const qc = useQueryClient();
 
   const { data: destinations = [] } = useQuery({
@@ -206,6 +209,16 @@ export default function DestinationsManager({ userId }) {
                     <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>
                       {dest.bitrate_kbps}kbps • {dest.server_url.replace('rtmps://', '').split('/')[0]}
                     </p>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Lock className="w-2.5 h-2.5" style={{ color: 'rgba(212,175,55,0.4)' }} />
+                      <span className="text-[10px] font-mono" style={{ color: 'rgba(212,175,55,0.6)', letterSpacing: '0.05em' }}>
+                        {revealedId === dest.id ? dest.stream_key_encrypted : mask(dest.stream_key_encrypted)}
+                      </span>
+                      <button onClick={() => setRevealedId(revealedId === dest.id ? null : dest.id)}
+                        className="text-[9px] ml-1" style={{ color: 'rgba(255,255,255,0.25)' }}>
+                        {revealedId === dest.id ? 'hide' : 'show'}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1">

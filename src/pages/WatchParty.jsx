@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useWatchPartySync } from '@/hooks/useWatchPartySync';
+import { useMultiSpeakingSet } from '@/hooks/useMultiSpeakingSet';
+import { MobileSelect } from '@/components/ui/MobileSelect';
+import { useCameraDevices } from '../hooks/useCameraDevices';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon } from 'lucide-react';
+import { Users, Plus, Youtube, Video, LogOut, List, Maximize2, Minimize2, X as XIcon, Mic, MicOff, Settings } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { toast } from 'sonner';
@@ -28,152 +32,39 @@ import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import CompositorOverlay from '../components/streaming/CompositorOverlay';
 import { useLocalMedia } from '../hooks/useLocalMedia';
 import { useWebRTCPeers } from '../hooks/useWebRTCPeers';
-import { useRemoteSpeakingMap } from '../hooks/useRemoteSpeakingMap';
 import { useAutoSpeakGate } from '../hooks/useAutoSpeakGate';
-import { useWatchPartySocket } from '../hooks/useWatchPartySocket';
 import { useVODRecording } from '../hooks/useVODRecording';
 import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useHighlightDetector } from '../hooks/useHighlightDetector';
-import { useVoiceAgentRuntime } from '../hooks/useVoiceAgentRuntime';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import AlertConfig from '../components/live/AlertConfig';
-import ShopDashboard from '../components/merch/ShopDashboard';
-import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
-import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
-import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
-import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
-
-import ClipCreator from '../components/live/ClipCreator';
-import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
-import LiveTranscription from '../components/live/LiveTranscription';
-import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
-import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
-import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
-import GoldenWall from '../components/live/GoldenWall';
-import QuickPollLauncher from '../components/live/QuickPollLauncher';
-import GiftTray from '../components/live/GiftTray';
-import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
-import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
-import HostAlertCenter from '../components/live/HostAlertCenter';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
-import ViewerCount from '../components/live/ViewerCount';
-import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
-import AIStreamSummary from '../components/live/AIStreamSummary';
-import ChatModeration from '../components/live/ChatModeration';
-import BrandChyron from '../components/live/BrandChyron';
-import { WhisperPanel } from '../components/live/DMWhisperPanel';
-import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
-import SceneSwitcher from '../components/live/SceneSwitcher';
-import NotificationHub from '../components/live/NotificationHub';
-import SoundboardWidget from '../components/live/SoundboardWidget';
-import RaidPanelButton from '../components/live/RaidPanel';
-import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
-import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
-import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
-import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import QuickTip from '../components/rooms/QuickTip';
-import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
-import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
-import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
-import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
-import ShareToSocial from '../components/social/ShareToSocial';
-import VideoShortRecorder from '../components/vod/VideoShortRecorder';
-import RecordingManager from '../components/content/RecordingManager';
-import OBSBridge from '../components/obs/OBSBridge';
-import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
-import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
-import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
-import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
-import GreenroomQueue from '../components/streaming/GreenroomQueue';
-import StreamingPresets from '../components/streaming/StreamingPresets';
-import EmbedPlayer from '../components/streaming/EmbedPlayer';
-import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
-import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
-import RedemptionQueue from '../components/loyalty/RedemptionQueue';
-import RewardShop from '../components/loyalty/RewardShop';
-import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
-import PKBattleInterface from '../components/pk/PKBattleInterface';
-import CoStreamPanel from '../components/collaboration/CoStreamPanel';
-import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
-import TipAlert from '../components/monetization/TipAlert';
-import TippingModal from '../components/monetization/TippingModal';
-import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
-import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
-import NotificationBell from '../components/shared/NotificationBell';
-import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
-import PayPerViewManager from '../components/monetization/PayPerViewManager';
-import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
-import GiftShopTray from '../components/live/GiftShopTray';
-import { GiftLeaderboard } from '../components/live/GiftSystem';
-import SubscriptionManager from '../components/monetization/SubscriptionManager';
-import SwanyBotWidget from '../components/guide/ARIAWidget';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CreatorBridge from '../components/social/CreatorBridge';
-import BattleMode from '../components/streaming/BattleMode';
-import BitratePresets from '../components/streaming/BitratePresets';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
-import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
-import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
-import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
-import BattleScoreboard from '../components/live/BattleScoreboard';
-import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
-import GlobalChatWidget from '../components/live/GlobalChatWidget';
-import GuestConnector from '../components/live/GuestConnector';
-import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
-import LeaderboardPanel from '../components/live/LeaderboardPanel';
-import MobileStreamControls from '../components/live/MobileStreamControls';
-import PointsNotification from '../components/live/PointsNotification';
-import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
-import ChatOverlay from '../components/live/ChatOverlay';
-import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
-import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
-import PollLaunchBar from '../components/live/PollLaunchBar';
-import PreStreamCountdown from '../components/live/PreStreamCountdown';
-import PrivatePanel from '../components/live/PrivatePanel';
-import StreamChatbot from '../components/live/StreamChatbot';
-import StreamEventBus from '../components/live/StreamEventBus';
-import TippingOverlay from '../components/live/TippingOverlay';
-import UnifiedChat from '../components/live/UnifiedChat';
-import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
-import AudioMixer from '../components/live/AudioMixer';
-import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
-import ScreenSharePanel from '../components/live/ScreenSharePanel';
-import PayPerViewGate from '../components/live/PayPerViewGate';
-import PaywallGate from '../components/live/PaywallGate';
-import SubscriptionGate from '../components/live/SubscriptionGate';
-import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
-import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
-import MultiStreamConfig from '../components/live/MultiStreamConfig';
-import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
-import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
-import WebhookHooks from '../components/live/WebhookHooks';
-import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
-import TierBadge from '../components/subscriptions/TierBadge';
-import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
-import GuestGrid from '../components/live/GuestGrid';
-import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
-import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
-import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
-import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
-import LocalVideoTile from '../components/live/LocalVideoTile';
-import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
-import CameraDeviceSelector from '../components/live/CameraDeviceSelector';
-import PreJoinSettingsModal from '../components/live/PreJoinSettingsModal';
-import PipCameraTile from '../components/live/PipCameraTile';
-import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
-import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
-import WatchPartyCoStreamPanel from '../components/live/WatchPartyCoStreamPanel';
-import VideoQueue from '../components/watchparty/VideoQueue';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import { MerchStrip } from '../components/merch/MerchWidget';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import ChatOverlay from '../components/live/ChatOverlay';
+import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import GiftTray from '../components/live/GiftTray';
+import GiftAnimation from '../components/live/GiftAnimation';
+import TipNowModal from '../components/live/TipNowModal';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import UnifiedChat from '../components/live/UnifiedChat';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ShareToSocial from '../components/social/ShareToSocial';
+import LoveTap from '../components/live/LoveTap';
+import TipWidget from '../components/live/TipWidget';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import SuperChatRail from '../components/live/SuperChatRail';
+
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
@@ -269,6 +160,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
     };
   }, [videoId]);
 
+  // Host: 5-second heartbeat so viewers always get a fresh reference point
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
@@ -277,25 +169,19 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
       if (state === window.YT?.PlayerState?.PLAYING) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
-    }, 3000);
+    }, 5000);
     return () => clearInterval(iv);
   }, [isHost, onStateChange]);
 
-  useEffect(() => {
-    if (isHost || !playerRef.current || !syncData) return;
-    const serverTime = syncData.current_time || 0;
-    const lagMs = Date.now() - (syncData.updated_at_ms || Date.now());
-    const adjustedTime = serverTime + lagMs / 1000;
-    const current = playerRef.current.getCurrentTime?.() || 0;
-    if (Math.abs(current - adjustedTime) > 2) {
-      playerRef.current.seekTo?.(adjustedTime, true);
-    }
-    if (syncData.playback_state === 'playing') {
-      playerRef.current.playVideo?.();
-    } else {
-      playerRef.current.pauseVideo?.();
-    }
-  }, [syncData, isHost]);
+  // Viewer: 300ms drift-correction via the shared sync hook
+  useWatchPartySync({
+    isHost,
+    syncData,
+    getCurrentTime: () => playerRef.current?.getCurrentTime?.() ?? 0,
+    onSeek:  (t) => playerRef.current?.seekTo?.(t, true),
+    onPlay:  ()  => playerRef.current?.playVideo?.(),
+    onPause: ()  => playerRef.current?.pauseVideo?.(),
+  });
 
   return <div ref={iframeRef} className="w-full h-full" />;
 }
@@ -311,25 +197,25 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
     });
   };
 
+  // Host: 5-second heartbeat
   useEffect(() => {
     if (!isHost) return;
     const iv = setInterval(() => {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
-    }, 3000);
+    }, 5000);
     return () => clearInterval(iv);
   }, [isHost, onStateChange]);
 
-  useEffect(() => {
-    if (isHost || !videoRef.current || !syncData) return;
-    const v = videoRef.current;
-    const serverTime = syncData.current_time || 0;
-    const lagMs = Date.now() - (syncData.updated_at_ms || Date.now());
-    const adjustedTime = serverTime + lagMs / 1000;
-    if (Math.abs(v.currentTime - adjustedTime) > 2) v.currentTime = adjustedTime;
-    if (syncData.playback_state === 'playing') v.play().catch(() => {});
-    else v.pause();
-  }, [syncData, isHost]);
+  // Viewer: 300ms drift-correction via the shared sync hook
+  useWatchPartySync({
+    isHost,
+    syncData,
+    getCurrentTime: () => videoRef.current?.currentTime ?? 0,
+    onSeek:  (t) => { if (videoRef.current) videoRef.current.currentTime = t; },
+    onPlay:  ()  => videoRef.current?.play().catch(() => {}),
+    onPause: ()  => videoRef.current?.pause(),
+  });
 
   return (
     <video
@@ -344,13 +230,20 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   );
 }
 
-function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52 }) {
+function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52, onDoubleClick }) {
   const vRef = useRef(null);
   useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s' }} />
-      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }} onDoubleClick={onDoubleClick}>
+      {isSpeaking && (
+        <motion.div
+          style={{ position: 'absolute', inset: 0, clipPath: OCT, background: '#D4AF37', zIndex: 0 }}
+          animate={{ opacity: [0.3, 0.65, 0.3] }}
+          transition={{ duration: 1.0, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      )}
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: isSpeaking ? 'rgba(212,175,55,0.7)' : isMemberHost ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)', transition: 'background 0.3s', zIndex: 1 }} />
+      <div style={{ position: 'absolute', inset: 3, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
         {stream ? (
           <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
@@ -366,7 +259,7 @@ function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size =
   );
 }
 
-function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, peerUserIds }) {
+function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, peerUserIds, onSpotlight }) {
   var displayMembers = members.slice(0, 8);
   var overflow = members.length - 8;
   return (
@@ -379,7 +272,7 @@ function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, p
         var stream = (peerId && remoteStreams) ? remoteStreams.get(peerId) : null;
         return (
           <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
-            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} />
+            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} onDoubleClick={onSpotlight ? () => onSpotlight(m) : undefined} />
             <span className="text-white/50 truncate max-w-[52px]" style={{ fontSize: 7 }}>{m.user_name}</span>
           </div>
         );
@@ -535,7 +428,6 @@ export default function WatchPartyPage() {
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
-  const [showCamSettings, setShowCamSettings] = useState(false);
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -595,57 +487,8 @@ export default function WatchPartyPage() {
   const isHost = party?.host_id === user?.id;
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
 
-  const prefCamWP = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  const prefMicWP = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const [activeCamId, setActiveCamId] = useState(prefCamWP);
-  const [activeMicId, setActiveMicId] = useState(prefMicWP);
-  const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamWP, audioDeviceId: prefMicWP });
-  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
-  const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream);
-  const announceJoinRef = useRef(announceJoin);
-  const leaveRoomRef = useRef(leaveRoom);
-  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
-  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
-  useEffect(() => {
-    if (!user?.id || !partyId) return;
-    announceJoinRef.current?.(user.id);
-  }, [user?.id, partyId]);
-  useEffect(() => () => leaveRoomRef.current?.(), []);
-
-  const { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
-  const speakingIds = user?.id && localSpeaking ? new Set([user.id]) : new Set();
-  const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
-  const gridSpeakingIds = localSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
-
-  // VOD recording — runs while host has local stream and party is loaded
-  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: isHost ? localStream : null });
-
-  // Per-peer connection quality — Map<userId, {bars, rtt}>
-  const [peerQuality, setPeerQuality] = useState(() => new Map());
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const qual = new Map();
-      for (const [peerId, { pc }] of peersRef.current.entries()) {
-        if (pc.connectionState !== 'connected') continue;
-        const uid = peerUserIds?.get(peerId);
-        if (!uid) continue;
-        try {
-          const stats = await pc.getStats();
-          let totalRtt = 0, cnt = 0;
-          stats.forEach(r => {
-            if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.currentRoundTripTime != null) {
-              totalRtt += r.currentRoundTripTime * 1000; cnt++;
-            }
-          });
-          const rtt = cnt > 0 ? Math.round(totalRtt / cnt) : null;
-          qual.set(uid, { bars: rtt == null ? 3 : rtt < 80 ? 4 : rtt < 200 ? 3 : rtt < 400 ? 2 : 1, rtt });
-        } catch {}
-      }
-      setPeerQuality(qual);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [peerUserIds]); // peersRef is a stable ref
+  const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true });
+  const { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
 
   const [activeWpPc, setActiveWpPc] = useState(null);
   useEffect(() => {
@@ -655,8 +498,21 @@ export default function WatchPartyPage() {
     setActiveWpPc(null);
   }, [peerUserIds]);
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
+  const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: party?.title || 'Watch Party', stream: localStream });
+  const [peerQuality, setPeerQuality] = useState(() => new Map());
+  const speakingSet = useMultiSpeakingSet({ localStream, localUserId: user?.id, remoteStreams, peerUserIds });
+  const [spotlightMember, setSpotlightMember] = useState(null);
+
+  // ── Audio controls ────────────────────────────────────────────────────────
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
+  const [autoGain, setAutoGain] = useState(true);
+  const [pttActive, setPttActive] = useState(false);
+  const pttWasEnabledRef = useRef(false);
+  const [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  const [wpAudioSettingsOpen, setWpAudioSettingsOpen] = useState(false);
+  const { speakers: speakerDevices } = useCameraDevices();
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
-  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   const [screenCaptureStream, setScreenCaptureStream] = useState(null);
   const [chatLines, setChatLines] = useState([]);
@@ -678,14 +534,13 @@ export default function WatchPartyPage() {
     screenCaptureStream?.getTracks().forEach(t => t.stop());
   }, [screenCaptureStream]);
 
-  const wpCompositorSlots = [
-    { stream: screenCaptureStream, label: '' },
-    { stream: localStream, label: 'You' },
-    ...Array.from(remoteStreams.entries()).map(([peerId, stream]) => ({
-      stream,
-      label: peerUserIds?.get(peerId) || 'Guest',
-    })),
-  ];
+  useEffect(() => {
+    if (!partyId || !user?.id) return;
+    announceJoin(user.id);
+    return leaveRTCRoom;
+  }, [partyId, user?.id]);
+
+  const wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
   const wpOverlayConfig = {
     title: party?.title || 'Watch Party',
     subtitle: `${members?.length || 0} watching`,
@@ -764,6 +619,46 @@ export default function WatchPartyPage() {
     return () => clearInterval(iv);
   }, [partyId]);
 
+  // Speaker output routing
+  useEffect(() => {
+    if (!prefSpeaker) return;
+    document.querySelectorAll('video, audio').forEach(el => {
+      if (typeof el.setSinkId === 'function') el.setSinkId(prefSpeaker).catch(() => {});
+    });
+    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
+  }, [prefSpeaker]);
+
+  // Audio processing constraints (NS / EC / AGC)
+  useEffect(() => {
+    applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
+  }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
+
+  // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
+  useEffect(() => {
+    if (!partyId) return;
+    const onDown = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAudio(); }
+      if (e.key === ' ' && !e.repeat) {
+        e.preventDefault();
+        if (!audioEnabled) { pttWasEnabledRef.current = false; setPttActive(true); toggleAudio(); }
+        else { pttWasEnabledRef.current = true; }
+      }
+    };
+    const onUp = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (pttActive && !pttWasEnabledRef.current) toggleAudio();
+        setPttActive(false);
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    window.addEventListener('keyup', onUp);
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyId, audioEnabled, pttActive]);
+
   useEffect(() => {
     if (isHost || !partyId) return;
     const iv = setInterval(function() {
@@ -781,102 +676,7 @@ export default function WatchPartyPage() {
     setSyncData(data);
     setShowSyncWarn(false);
   }, []);
-  const { pushState: pushStateDB } = useSyncEngine({ party, isHost, onTimeSync });
-
-  // Socket-based real-time sync — faster than DB polling
-  const { connected: wpSocketConnected, emitPlay, emitPause, emitSeek, emitUrl, emitSync } = useWatchPartySocket({
-    partyId,
-    userId: user?.id,
-    userName: user?.full_name || user?.email || 'Guest',
-    isHost,
-    onPlay: useCallback(({ position, lag = 0 }) => {
-      if (isHost) return;
-      setSyncData(prev => ({
-        ...(prev || {}),
-        playback_state: 'playing',
-        current_time: position + lag,
-        updated_at_ms: Date.now(),
-      }));
-      setShowSyncWarn(false);
-    }, [isHost]),
-    onPause: useCallback(({ position }) => {
-      if (isHost) return;
-      setSyncData(prev => ({
-        ...(prev || {}),
-        playback_state: 'paused',
-        current_time: position,
-        updated_at_ms: Date.now(),
-      }));
-      setShowSyncWarn(false);
-    }, [isHost]),
-    onSeek: useCallback(({ position }) => {
-      if (isHost) return;
-      setSyncData(prev => ({
-        ...(prev || {}),
-        current_time: position,
-        updated_at_ms: Date.now(),
-      }));
-      setShowSyncWarn(false);
-    }, [isHost]),
-    onUrl: useCallback(({ videoId, url, type }) => {
-      if (isHost) return;
-      // Mirrors the DB update that changeVideo() does so the player re-renders
-      qc.setQueryData(['watchparty', partyId], (old) => old ? {
-        ...old,
-        video_url: url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : old.video_url),
-        video_type: type || 'youtube',
-        current_time: 0,
-        playback_state: 'paused',
-      } : old);
-    }, [isHost, partyId, qc]),
-    onSync: useCallback((state) => {
-      if (isHost) return;
-      // Full catch-up: update query cache with video source
-      qc.setQueryData(['watchparty', partyId], (old) => old ? {
-        ...old,
-        video_url: state.url || (state.videoId ? `https://www.youtube.com/watch?v=${state.videoId}` : old.video_url),
-        video_type: state.type || 'youtube',
-        current_time: state.position || 0,
-        playback_state: state.playing ? 'playing' : 'paused',
-        updated_at_ms: state.ts || Date.now(),
-      } : old);
-      setSyncData({
-        playback_state: state.playing ? 'playing' : 'paused',
-        current_time: state.position || 0,
-        updated_at_ms: state.ts || Date.now(),
-      });
-      setShowSyncWarn(false);
-    }, [isHost, partyId, qc]),
-  });
-
-  // Host: intercept pushState to also fire socket events for instant sync
-  const pushState = useCallback((playerState) => {
-    pushStateDB(playerState); // keep DB as durable fallback
-    if (!isHost) return;
-    if (playerState.playing) {
-      emitPlay(playerState.currentTime || 0);
-    } else {
-      emitPause(playerState.currentTime || 0);
-    }
-  }, [pushStateDB, isHost, emitPlay, emitPause]);
-
-  // Host: broadcast full sync heartbeat every 10 s so late-joiners catch up quickly
-  useEffect(() => {
-    if (!isHost || !partyId) return;
-    const iv = setInterval(() => {
-      const vid = party?.video_url;
-      if (!vid) return;
-      const ytId = vid.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
-      emitSync({
-        videoId: ytId,
-        url: vid,
-        type: ytId ? 'youtube' : 'direct',
-        playing: (syncData?.playback_state || party?.playback_state) === 'playing',
-        position: syncData?.current_time ?? party?.current_time ?? 0,
-      });
-    }, 10000);
-    return () => clearInterval(iv);
-  }, [isHost, partyId, party, syncData, emitSync]);
+  const { pushState } = useSyncEngine({ party, isHost, onTimeSync });
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -944,9 +744,6 @@ export default function WatchPartyPage() {
         updated_at_ms: Date.now(),
       });
       qc.invalidateQueries({ queryKey: ['watchparty', partyId] });
-      // Also push instantly over socket so viewers don't wait for DB poll
-      const ytId = source.url?.match(/(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1] || null;
-      emitUrl({ videoId: ytId, url: source.url, type: source.type });
       toast.success('Video changed!');
     } catch { toast.error('Failed to change video.'); }
   };
@@ -991,28 +788,56 @@ export default function WatchPartyPage() {
             Watch together in sync · real-time reactions · shared chat
           </p>
         </div>
-        <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)' }}>
-          <Input
-            placeholder="Party title (e.g. Movie Night)"
-            value={partyTitle}
-            onChange={e => setPartyTitle(e.target.value)}
-            className="h-11 text-white placeholder:text-white/30"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-          />
-          <div className="space-y-2">
-            <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { id: 'youtube', label: 'YouTube URL', icon: Youtube, color: '#FF0000', placeholder: 'https://youtube.com/watch?v=...' },
-                { id: 'direct', label: 'Direct URL', icon: Video, color: '#4A8A7A', placeholder: 'https://example.com/video.mp4' },
-              ].map(opt => (
-                <button key={opt.id}
-                  onClick={() => { setVideoUrl(''); }}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all"
-                  style={{ background: `${opt.color}12`, border: `1px solid ${opt.color}30`, color: opt.color }}>
-                  <opt.icon className="w-4 h-4" /> {opt.label}
-                </button>
-              ))}
+
+        {/* Active parties */}
+        {activeParties.length > 0 && (
+          <div style={{ padding: '16px 16px 0' }}>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', margin: '0 0 10px' }}>
+              🟢 Live Now · {activeParties.length} {activeParties.length === 1 ? 'party' : 'parties'}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {activeParties.map(function(p) {
+                var ytId = p.video_type === 'youtube' ? getYouTubeId(p.video_url) : null;
+                return (
+                  <motion.a
+                    key={p.id}
+                    href={`/WatchParty?id=${p.id}`}
+                    whileTap={{ scale: 0.98 }}
+                    style={{ textDecoration: 'none', display: 'block', borderRadius: 16, overflow: 'hidden', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+                  >
+                    <div style={{ display: 'flex', gap: 12, padding: '12px 14px', alignItems: 'center' }}>
+                      {/* Thumbnail */}
+                      <div style={{ width: 80, height: 45, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#0F1428', position: 'relative' }}>
+                        {ytId ? (
+                          <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Video size={20} style={{ color: 'rgba(212,175,55,0.3)' }} />
+                          </div>
+                        )}
+                        <div style={{ position: 'absolute', top: 4, left: 4 }}>
+                          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 9, letterSpacing: '0.1em', color: '#C0392B', background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 4, padding: '1px 5px' }}>
+                            ● LIVE
+                          </span>
+                        </div>
+                      </div>
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 15, color: '#fff', margin: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {p.title || 'Watch Party'}
+                        </p>
+                        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(212,175,55,0.6)', margin: '2px 0 0' }}>
+                          {p.participant_count || 0} watching · {p.host_name || 'Host'}
+                        </p>
+                      </div>
+                      {/* Join btn */}
+                      <div style={{ flexShrink: 0, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 900, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#000', background: 'linear-gradient(135deg, #B8860B, #D4AF37)', borderRadius: 20, padding: '7px 14px' }}>
+                        Join
+                      </div>
+                    </div>
+                  </motion.a>
+                );
+              })}
             </div>
           </div>
         )}
@@ -1030,21 +855,16 @@ export default function WatchPartyPage() {
               className="h-11 text-white placeholder:text-white/30"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
-            {videoUrl && (
-              <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#4A8A7A' }}>
-                {detectType(videoUrl) === 'youtube'
-                  ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
-                  : <><Video className="w-3.5 h-3.5" /> Direct video URL</>}
-              </div>
-            )}
-            {videoUrl && getYouTubeId(videoUrl) && (
-              <img
-                src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
-                className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
-                alt="preview"
+            <div className="space-y-2">
+              <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
+              <Input
+                placeholder="YouTube URL or direct video URL"
+                value={videoUrl}
+                onChange={e => setVideoUrl(e.target.value)}
+                className="h-11 text-white placeholder:text-white/30"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
               />
-            )}
-            {videoUrl && (
+              {videoUrl && (
                 <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#D4AF37' }}>
                   {detectType(videoUrl) === 'youtube'
                     ? <><Youtube className="w-3.5 h-3.5" /> YouTube video detected {getYouTubeId(videoUrl) && '✓'}</>
@@ -1100,6 +920,24 @@ export default function WatchPartyPage() {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
+            {/* Mic toggle */}
+            <button
+              onClick={toggleAudio}
+              title={audioEnabled ? 'Mute mic (M)' : 'Unmute mic (M)'}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: audioEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(192,57,43,0.15)', border: `1px solid ${audioEnabled ? 'rgba(109,191,126,0.35)' : 'rgba(192,57,43,0.35)'}` }}>
+              {audioEnabled
+                ? <Mic className="w-3.5 h-3.5" style={{ color: '#6DBF7E' }} />
+                : <MicOff className="w-3.5 h-3.5" style={{ color: '#C0392B' }} />}
+            </button>
+            {/* Audio settings */}
+            <button
+              onClick={() => setWpAudioSettingsOpen(v => !v)}
+              title="Audio settings"
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
+              style={{ background: wpAudioSettingsOpen ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: wpAudioSettingsOpen ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>
+              <Settings className="w-3.5 h-3.5" />
+            </button>
             {document.pictureInPictureEnabled && (
               <button onClick={handlePip}
                 className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95 text-sm"
@@ -1170,17 +1008,79 @@ export default function WatchPartyPage() {
           )}
           {isHost ? (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: wpSocketConnected ? '#6DBF7E' : '#FFB000' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>{wpSocketConnected ? 'Socket ●' : 'DB Sync'}</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>±0ms</span>
             </span>
           ) : (
             <span className="ml-auto flex items-center gap-1 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: wpSocketConnected ? '#6DBF7E' : '#FFB000' }} />
-              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>{wpSocketConnected ? `Live Sync ±${Math.abs(syncDrift)}ms` : `DB Sync ±${Math.abs(syncDrift)}ms`}</span>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#6DBF7E' }} />
+              <span className="text-[11px] font-mono" style={{ color: 'rgba(109,191,126,0.6)' }}>Live Sync ±{Math.abs(syncDrift)}ms</span>
             </span>
           )}
         </div>
       </div>
+
+      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
+
+      {/* Audio settings drawer */}
+      <AnimatePresence>
+        {wpAudioSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="shrink-0 overflow-hidden"
+            style={{ background: 'rgba(8,11,24,0.98)', borderBottom: '1px solid rgba(212,175,55,0.15)' }}
+          >
+            <div className="px-4 py-3 space-y-3">
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</p>
+
+              {/* Speaker output */}
+              {speakerDevices.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase mb-1" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Output Device</p>
+                  <MobileSelect
+                    value={prefSpeaker}
+                    onChange={setPrefSpeaker}
+                    label="Output Device"
+                    options={[
+                      { value: '', label: 'Default speakers' },
+                      ...speakerDevices.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` })),
+                    ]}
+                  />
+                </div>
+              )}
+
+              {/* NS / EC / AGC toggles */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {[
+                  { label: 'Noise Suppress.', val: noiseSupp, set: setNoiseSupp },
+                  { label: 'Echo Cancel.', val: echoCan, set: setEchoCan },
+                  { label: 'Auto Gain', val: autoGain, set: setAutoGain },
+                ].map(({ label, val, set }) => (
+                  <button
+                    key={label}
+                    onClick={() => set(v => !v)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+                    style={{
+                      fontFamily: 'Barlow Condensed, sans-serif',
+                      background: val ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${val ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                      color: val ? '#6DBF7E' : 'rgba(255,255,255,0.35)',
+                    }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: val ? '#6DBF7E' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {pttActive && (
+                <p className="text-[10px] font-bold uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>● PTT Active — release Space to mute</p>
+              )}
+              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>M = toggle mic · Space (hold) = push-to-talk</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showSyncWarn && !isHost && (
         <div className="shrink-0 flex items-center gap-2 px-3 py-2" style={{ background: 'rgba(212,175,55,0.15)', borderBottom: '1px solid rgba(212,175,55,0.3)' }}>
@@ -1229,7 +1129,7 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingIds} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={(m) => setSpotlightMember(prev => prev?.user_id === m.user_id ? null : m)} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -1395,7 +1295,7 @@ export default function WatchPartyPage() {
             {/* AI Music Section */}
             <div style={{
               borderRadius: 12, padding: '14px 16px',
-              background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.15)',
+              background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)',
             }}>
               <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: '#fff', display: 'block', marginBottom: 10 }}>
                 🎵 AI Music
@@ -1403,9 +1303,9 @@ export default function WatchPartyPage() {
               {wpDjTrack ? (
                 <div style={{
                   padding: '8px 12px', borderRadius: 8, marginBottom: 10,
-                  background: 'rgba(74,138,122,0.08)', border: '1px solid rgba(74,138,122,0.2)',
+                  background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
                 }}>
-                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#4A8A7A', fontWeight: 700, margin: 0 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#D4AF37', fontWeight: 700, margin: 0 }}>
                     Now Playing: {wpDjTrack.emoji && `${wpDjTrack.emoji} `}{wpDjTrack.title}
                   </p>
                 </div>
@@ -1417,8 +1317,8 @@ export default function WatchPartyPage() {
               <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={() => setAiPanelOpen(false)}>
                 <div style={{
                   fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 8,
-                  textAlign: 'center', background: 'rgba(74,138,122,0.1)', border: '1px solid rgba(74,138,122,0.25)',
-                  color: '#4A8A7A', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  textAlign: 'center', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
+                  color: '#D4AF37', fontSize: 12, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase',
                   cursor: 'pointer',
                 }}>
                   Open Music Studio →
@@ -1485,7 +1385,13 @@ export default function WatchPartyPage() {
                 {isHost && (
                   <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if (party?.id) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
                 )}
-                <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />
+                <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
+                {party?.host_id && (
+                  <SuperChatBar roomId={partyId} currentUser={user} recipientId={party.host_id} recipientName={party.host_name || ''} />
+                )}
+                {party?.host_id && partyId && (
+                  <MerchStrip roomId={partyId} currentUser={user} hostId={party.host_id} />
+                )}
                 {members.length < 10 && (
                   <InviteCard partyUrl={window.location.href} />
                 )}
@@ -1593,154 +1499,74 @@ export default function WatchPartyPage() {
           </div>
         </div>
       </div>
-      <SwanAIRecommendations roomId={partyId} currentLayout="watch" viewerCount={members?.length || 0} />
-      <MilestoneAlerts userId={user?.id} roomId={partyId} />
-      {user?.id && <AlertConfig creatorId={user.id} />}
-      {party?.host_id && <ShopDashboard creatorId={party.host_id} />}
-      {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={isHost} />}
-      {partyId && <ZEGOStreamHealthCard roomId={partyId} />}
-      {user && <ZEGOConfigPanel user={user} />}
-      {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={party?.host_id || user?.id} />}
-      {partyId && <LiveTranscription isLive={true} roomId={partyId} stream={localStream} speaker={user?.full_name} />}
-      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
-      {partyId && user?.id && <VirtualCurrencyTips roomId={partyId} creatorId={party?.host_id || user?.id} currentUser={user} isHost={isHost} />}
-      {partyId && <GoldenWall roomId={partyId} />}
-      {isHost && partyId && <SwanDirectorHUD roomId={partyId} hostId={user?.id} onOpenPanel={() => setShowSwanPanel(true)} />}
-      {isHost && partyId && <StreamerGoalsWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} embedded={true} />}
-      {isHost && partyId && <PayPerViewManager roomId={partyId} />}
-      {isHost && partyId && <MonetizationDashboard roomId={partyId} />}
-      {partyId && <GiftShopTray roomId={partyId} currentUser={user} />}
-      {partyId && <GiftLeaderboard roomId={partyId} />}
-      {isHost && <SubscriptionManager creatorId={party?.host_id || user?.id} />}
-      {partyId && <TipAlert roomId={partyId} recipientId={party?.host_id || user?.id} />}
-      {!isHost && partyId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={partyId} />}
-      {partyId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={partyId} isCreator={isHost} currentUser={user} />}
-      <MerchWidget />
-      <NotificationBell />
-      {partyId && <PKBattleInterface roomId={partyId} />}
-      {partyId && <CoStreamPanel roomId={partyId} />}
-      {isHost && partyId && <CollaborativeWhiteboard roomId={partyId} />}
-      {partyId && user?.id && <PointsEarnWidget userId={user.id} creatorId={party?.host_id || user?.id} roomId={partyId} isHost={isHost} />}
-      {isHost && partyId && <RedemptionQueue creatorId={party?.host_id || user?.id} roomId={partyId} />}
-      {partyId && <RewardShop creatorId={party?.host_id || user?.id} roomId={partyId} currentUser={user} />}
-      {!isHost && user?.id && <ViewerLoyaltyCard userId={user.id} creatorId={party?.host_id || user?.id} compact={true} />}
-      {partyId && <GreenroomQueue roomId={partyId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
-      {partyId && <EmbedPlayer roomId={partyId} creatorName={user?.full_name || ''} streamTitle={party?.title || 'Watch Party'} viewerCount={members.length} />}
-      <LiveTranslationWidget chatMessage={chatMessages[chatMessages.length - 1]?.content || null} onTranslation={() => {}} />
-      {isHost && user?.id && <RecordingManager userId={user.id} />}
-      {isHost && <OBSBridge />}
-      <ZEGOMobileAppBanner />
-      {isHost && partyId && <AutomatedClipGenerator streamSession={{room_id: partyId}} isLive={partyId != null} />}
-      {partyId && <InteractivePollWidget roomId={partyId} isHost={isHost} />}
-      {isHost && <StreamMetadataEditor initialTitle={party?.title || 'Watch Party'} initialCategory={'entertainment'} />}
-      {isHost && <StreamerMonetizationCenter />}
-      {!isHost && showGiftShop && partyId && <AnimatedGiftShop recipientId={party?.host_id || user?.id} roomId={partyId} onClose={() => setShowGiftShop(false)} />}
-      {isHost && user?.id && <VirtualGoodsStore userId={user.id} />}
-      {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
-      <ShareToSocial content={{text: ''}} />
-      {isHost && partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
-      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
-      {isHost && partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
-      {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
-      <StreamHealthDashboard isLive={partyId != null} />
-      {!isHost && partyId && <QuickTip recipientId={party?.host_id || user?.id} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
-      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenCaptureStream) handleScreenCapture(); else if (s === 'camera' && screenCaptureStream) { screenCaptureStream.getTracks().forEach(t => t.stop()); setScreenCaptureStream(null); } }} />}
-      <NotificationHub />
-      {isHost && <SoundboardWidget isVisible={true} />}
-      {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
-      {partyId && <LiveAudiencePulse roomId={partyId} isHost={isHost} viewerCount={members.length} />}
-      {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
-      {isHost && partyId && <AIStreamSummary roomId={partyId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={members.length} elapsedSeconds={elapsed} />}
-      {isHost && <ChatModeration collapsed={true} />}
-      <BrandChyron />
-      {!isHost && showWhisperPanel && partyId && user?.id && <WhisperPanel roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
-      <HostAlertCenter />
-      {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
-      {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id || user?.id} isHost={isHost} />}
-      {partyId && user?.id && <SuperChatBar roomId={partyId} currentUser={user} recipientId={party?.host_id || user?.id} recipientName={''} />}
-      {user?.id && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
-      {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={user?.full_name || ''} isHost={isHost} isSpeaking={localSpeaking} />}
-      {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
-      {isHost && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
-      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
-      {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />}
-      {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
-      {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
-      {isHost && <StripeConnectButton creatorId={party?.host_id || user?.id} />}
-      {!isHost && user?.id && <StripeSubscribeButton creatorId={party?.host_id || user?.id} creatorName={''} currentUserId={user.id} />}
-      {<SubscriptionTiers communityId={null} userId={user?.id} />}
-      {party && <WatchPartyAnalytics party={party} members={members} pollCount={0} reactionCount={0} />}
-      {partyId && user?.id && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={user?.full_name || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {partyId && <PaymentMethodSelector creatorId={party?.host_id || user?.id} roomId={partyId} onPaymentComplete={() => toast.success('Payment complete!')} />}
-      {isHost && <CreatorTierManager creatorId={party?.host_id || user?.id} />}
-      {user?.id && <TierBadge tier={null} size={'sm'} showName={false} />}
-      {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {partyId && isHost && <GuestInviteGenerator roomId={partyId} isHost={isHost} />}
-      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={gridSpeakingIds} />}
-      {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
-      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { setVideoUrl(url); if (isHost && party?.id) base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
-      <YouTubeDiscovery />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
-      {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
-      {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
-      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
-      {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
-      {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
-      {isHost && partyId && <WebhookHooks roomId={partyId} isHost={isHost} />}
-      {isHost && <PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
-      <PanelMusicPlayer />
-      {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={isHost} />}
-      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} />}
-      <PrivatePanel isHost={isHost} currentUser={user} />
-      {partyId && <StreamChatbot roomId={partyId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={party} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={isHost} sessionId={partyId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) setChatMessages(prev => [...prev, msg]); }} />}
-      {partyId && <TippingOverlay roomId={partyId} creatorId={party?.host_id || user?.id} isVisible={true} />}
-      {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />}
-      {isHost && partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => toast.success('AI persona configured!')} />}
-      {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={() => {}} />}
-      {isHost && <ScreenSharePanel isSharing={!!screenCaptureStream} onStartShare={handleScreenCapture} onStopShare={() => { screenCaptureStream?.getTracks().forEach(t => t.stop()); setScreenCaptureStream(null); }} />}
-      {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
-      {partyId && <BattleScoreboard roomId={partyId} />}
-      {partyId && user?.id && <EnhancedStreamChat roomId={partyId} userId={user.id} userName={user?.full_name || ''} userRole={isHost ? 'host' : 'viewer'} />}
-      <GlobalChatWidget />
-      {isHost && partyId && <GuestConnector roomId={partyId} roomName={''} />}
-      {partyId && <InteractivePollingSystem roomId={partyId} isHost={isHost} currentUser={user} />}
-      {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} roomId={partyId} />}
-      {user?.id && <PointsNotification userId={user.id} />}
-      {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={party?.host_id || user?.id} />}
-      {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
-      {partyId && <BattleMode roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} />}
-      {isHost && <BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
-      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
-      {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
-      {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
-      <SwanyBotWidget />
-      <CollaborationMatcher />
-      <ContentRecommendations />
-      <CreatorBridge user={user || null} />
-      <StreamGoals isHost={isHost} currentTips={tipTotal} currentSubs={subCount} currentViewers={Math.max(busViewerCount, members.length)} />
-      <ViewerCount count={Math.max(busViewerCount, members.length)} peakViewers={peakViewers} />
-      {isHost && partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
-      {isHost && partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
-      {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={isHost} />}
-      {!isHost && partyId && party?.host_id && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
-      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if (party?.id) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
-      <BackgroundCustomizer />
-      <WatchPartyCoStreamPanel roomId={partyId} currentUser={user || null} isHost={true} />
-      <VideoQueue isHost={isHost} currentUser={user} currentVideoUrl={videoUrl} onPlayVideo={(url) => { setVideoUrl(url); if (isHost && party?.id) base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
-      {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={party?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
-      <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
-      {isHost && partyId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={partyId} tipTotal={tipTotal} />}
-      {isHost && <LiveCaptionOverlay stream={localStream} />}
+
+      <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <GiftTray roomId={partyId} currentUser={user} recipientId={party?.host_id} />
+        {partyId && <GiftAnimation roomId={partyId} />}
+        <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
+        <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
+        <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
+        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={false} onClose={() => {}} />}
+        <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
+        <ContentRecommendations />
+        <CollaborationMatcher />
+        <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
+        <MilestoneAlerts userId={user?.id} roomId={partyId} />
+        {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
+        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} />}
+        <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
+        {partyId && party?.host_id && !isHost && (
+          <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
+        )}
+        {partyId && party?.host_id && !isHost && (
+          <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
+        )}
+      </div>
+
+      {/* Spotlight overlay — double-tap any octagon in the participant strip */}
+      <AnimatePresence>
+        {spotlightMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSpotlightMember(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 600,
+              background: 'rgba(0,0,0,0.92)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 16,
+            }}
+          >
+            <OctVideoCell
+              member={spotlightMember}
+              isHost={spotlightMember.user_id === party?.host_id}
+              isSpeaking={speakingSet.has(spotlightMember.user_id)}
+              stream={(() => {
+                if (peerUserIds && remoteStreams) {
+                  for (const [peerId, uid] of peerUserIds) {
+                    if (uid === spotlightMember.user_id) return remoteStreams.get(peerId) || null;
+                  }
+                }
+                return spotlightMember.user_id === user?.id ? localStream : null;
+              })()}
+              size={160}
+            />
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 22, fontWeight: 900, color: '#D4AF37', letterSpacing: '0.05em', margin: 0 }}>
+              {spotlightMember.user_name}
+            </p>
+            {speakingSet.has(spotlightMember.user_id) && (
+              <motion.span
+                animate={{ opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 1.0, repeat: Infinity }}
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, letterSpacing: '0.14em', color: '#D4AF37', textTransform: 'uppercase' }}
+              >
+                ● Speaking
+              </motion.span>
+            )}
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>Tap anywhere to close</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

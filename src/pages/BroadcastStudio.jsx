@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -1164,6 +1165,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     ...(canManage ? [{ id: 'manage', label: '🛡 Manage', desc: 'Host tools' }] : []),
     ...(canManage ? [{ id: 'queue',  label: '🎙 Queue',  desc: 'Guest queue' }] : []),
     ...(canStream ? [{ id: 'audio',  label: '🎚 Audio',  desc: 'Mixer' }] : []),
+    { id: 'health',  label: '❤️ Health', desc: 'Stream stats' },
     { id: 'ai',    label: '🤖 AI',    desc: 'Music & Mod' },
     { id: 'share', label: '📢 Share', desc: 'Go Viral' },
   ];
@@ -1828,7 +1830,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Stream goal */}
                 <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Stream Goal</p>
-                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={0} />
+                  <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} />
                 </div>
 
                 {/* Pinned message */}
@@ -1937,7 +1939,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 )}
 
                 {/* WebRTC setup banner */}
-                <WebRTCSetupBanner error={null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={() => {}} />
+                <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
 
                 {/* Webhook hooks */}
                 {isHost && partyId && (
@@ -1949,7 +1951,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 {/* Evmux web source */}
                 {isHost && (
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => {}} />
+                    <EvmuxWebSource isActive={party?.status === 'live'} onClose={() => setShowEvmux(false)} />
                   </div>
                 )}
 
@@ -2157,22 +2159,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   />
                   {/* Audio output (speaker) selector — Chrome/Edge only */}
                   {speakers.length > 1 && (
-                    <div className="mt-2 flex items-center gap-2"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '8px 12px' }}>
-                      <span className="text-xs shrink-0" style={{ color: GOLD }}>🔊</span>
-                      <select
-                        value={prefSpeaker}
-                        onChange={e => {
-                          const id = e.target.value;
+                    <div className="mt-2">
+                      <MobileSelect
+                        value={prefSpeaker || ''}
+                        onChange={(id) => {
                           setPrefSpeaker(id);
                           try { if (id) localStorage.setItem('swl_pref_speaker', id); } catch {}
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', color: prefSpeaker ? '#fff' : 'rgba(255,255,255,0.3)', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif', outline: 'none', cursor: 'pointer' }}>
-                        <option value="" style={{ background: '#080B18' }}>Default speakers</option>
-                        {speakers.map(s => (
-                          <option key={s.deviceId} value={s.deviceId} style={{ background: '#080B18', color: '#fff' }}>{s.label}</option>
-                        ))}
-                      </select>
+                        label="Output Device"
+                        placeholder="Default speakers"
+                        options={[{ value: '', label: 'Default speakers' }, ...speakers.map(s => ({ value: s.deviceId, label: s.label }))]}
+                      />
                     </div>
                   )}
                 </div>
@@ -2617,7 +2614,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                           roomId={partyId}
                           sessionId={partyId}
                           creatorId={user.id}
-                          elapsedSeconds={0}
+                          elapsedSeconds={elapsed}
                           isHost={isHost}
                         />
                       )}
