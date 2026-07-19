@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings as SettingsIcon, Bell, Lock, User, LayoutDashboard, Download, Trash2, AlertTriangle, Key } from 'lucide-react';
+import { Drawer } from 'vaul';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -322,23 +323,30 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {showDeleteDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-5"
-          style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); } }}>
-          <div className="w-full max-w-sm rounded-2xl overflow-hidden"
-            role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title"
-            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)' }}>
-            <div className="p-5 text-center" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
+      {/* Delete account — vaul bottom sheet */}
+      <Drawer.Root
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); setDeleteConfirmText(''); }
+        }}
+      >
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-[200]" style={{ background: 'rgba(0,0,0,0.75)' }} />
+          <Drawer.Content
+            className="fixed bottom-0 left-0 right-0 z-[210] rounded-t-2xl"
+            style={{ background: 'rgba(8,11,24,0.99)', border: '1px solid rgba(192,57,43,0.3)', paddingBottom: 40 }}
+          >
+            <Drawer.Handle className="mx-auto mt-3 mb-5 w-10 h-1 rounded-full bg-white/15" />
+
+            <div className="px-5 text-center pb-2" style={{ borderBottom: '1px solid rgba(192,57,43,0.1)' }}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)' }}>
                 <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} />
               </div>
-              <p id="delete-dialog-title" className="font-black text-lg text-white" style={T}>Delete Account?</p>
+              <p className="font-black text-lg text-white" style={T}>Delete Account?</p>
               <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
                 This permanently deletes your account, streams, and all data. This cannot be undone.
               </p>
-              {/* Step indicator */}
               <div className="flex items-center justify-center gap-2 mt-3">
                 {[1, 2].map(s => (
                   <div key={s} className="rounded-full transition-all"
@@ -347,7 +355,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Step 1: Reason */}
             {deleteStep === 1 && (
               <div className="p-5 space-y-3">
                 <p className="text-[10px] font-black uppercase text-center" style={{ color: 'rgba(239,68,68,0.7)', ...T }}>
@@ -367,15 +374,9 @@ export default function SettingsPage() {
                   style={{ background: deleteReason ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.06)', color: deleteReason ? '#EF4444' : 'rgba(239,68,68,0.3)', userSelect: 'none', ...T }}>
                   Continue →
                 </button>
-                <button onClick={() => { setShowDeleteDialog(false); setDeleteStep(1); setDeleteReason(''); }}
-                  className="w-full py-2.5 rounded-xl font-black uppercase text-xs"
-                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', userSelect: 'none', ...T }}>
-                  Cancel
-                </button>
               </div>
             )}
 
-            {/* Step 2: Confirm */}
             {deleteStep === 2 && (
               <div className="p-5 space-y-3">
                 <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)' }}>
@@ -406,9 +407,9 @@ export default function SettingsPage() {
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
       <SwanAIRecommendations roomId={null} currentLayout="settings" viewerCount={0} />
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
