@@ -1685,7 +1685,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   <EnhancedPollingSystem roomId={partyId} hostId={party?.host_id} isHost={canManage} />
                 )}
                 <InteractivePollingSystem roomId={partyId} isHost={canManage} currentUser={user} />
-                <PollLaunchBar roomId={partyId} hostId={party?.host_id} activePoll={null} isHost={canManage} />
+                <PollLaunchBar roomId={partyId} hostId={party?.host_id} activePoll={activePoll} isHost={canManage} />
                 <QuickPollLauncher roomId={partyId} hostId={party?.host_id} isHost={canManage} />
                 <LivePollOverlay roomId={partyId} currentUser={user} isHost={canManage} position="bottom-left" />
               </div>

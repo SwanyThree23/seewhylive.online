@@ -647,6 +647,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 export default function PodcastStudio() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [tab, setTab] = useState('create');
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
   const [sources, setSources] = useState([]);
   const [addingSource, setAddingSource] = useState(false);
   const [sourceInput, setSourceInput] = useState('');
@@ -1248,7 +1250,7 @@ export default function PodcastStudio() {
             <AudioMixer micMuted={false} onMicToggle={() => {}} />
 
             {/* Enhanced Audio Mixer */}
-            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={() => {}} />
+            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />
 
             {/* Soundboard */}
             <SoundboardWidget />
