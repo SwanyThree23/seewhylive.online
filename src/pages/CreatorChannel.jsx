@@ -329,7 +329,7 @@ export default function CreatorChannel() {
         )}
 
         <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <PaywallGate roomId={activeRoomId} creatorId={userId} price={0} />
+          <PaywallGate isHost={true} streamTitle="" onUnlock={() => {}} isUnlocked={true} />
           <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title="Creator Channel" />
           <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <OnlineUsersGrid compact maxVisible={10} />
