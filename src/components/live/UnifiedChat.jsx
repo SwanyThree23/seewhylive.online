@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X, Languages
+  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X, Languages, Shield
 } from 'lucide-react';
 import { Drawer } from 'vaul';
 
@@ -24,6 +24,32 @@ const LANGUAGES = [
   { code: 'ru', label: 'Русский',    flag: '🇷🇺' },
   { code: 'sw', label: 'Kiswahili',  flag: '🇰🇪' },
 ];
+
+// ── Guardian AI moderation ────────────────────────────────────────────────
+const OFFENSIVE = ['spam', 'scam', 'hack', 'inappropriate', 'offensive', 'violence', 'hate', 'abuse', 'exploit'];
+const SPAM_RX = [
+  /(.)\1{5,}/g,
+  /(?:visit|click|buy|now|free\s*\$)[^\s]*/gi,
+  /https?:\/\/(?!(?:youtube|youtu\.be|twitch\.tv))[^\s]+/gi, // block non-whitelisted links
+];
+const EMOTES = { ':)':'😊', ':(':'😢', ':D':'😄', ':O':'😲', 'PogU':'🎉', 'Kappa':'😏', 'GG':'👏', 'LUL':'😂', 'FIRE':'🔥', 'EZ':'💪' };
+
+function guardianFilter(text) {
+  let out = text;
+  OFFENSIVE.forEach(w => { out = out.replace(new RegExp(`\\b${w}\\b`, 'gi'), '***'); });
+  SPAM_RX.forEach(rx => { out = out.replace(rx, ''); });
+  return out.trim();
+}
+function processEmotes(text) {
+  let out = text;
+  Object.entries(EMOTES).forEach(([k, v]) => { out = out.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), v); });
+  return out;
+}
+function userColor(uid = '') {
+  let h = 0;
+  for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) & 0xffff;
+  return `hsl(${h % 360}, 65%, 62%)`;
+}
 
 async function translateText(text, targetLang) {
   try {
@@ -144,11 +170,14 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     const trimmed = input.trim();
     if (!trimmed || !currentUser) return;
     if (slowMode && Date.now() - lastSentAt < slowInterval * 1000) return;
+    const withEmotes = processEmotes(trimmed);
+    const filtered = guardianFilter(withEmotes);
+    if (!filtered) { toast.error('Message blocked by Guardian AI'); return; }
     sendMutation.mutate({
       room_id: roomId,
       user_id: currentUser.id,
       user_name: currentUser.full_name || currentUser.email,
-      content: replyTo ? `@${replyTo.user_name}: ${trimmed}` : trimmed,
+      content: replyTo ? `@${replyTo.user_name}: ${filtered}` : filtered,
       message_type: 'regular',
       reply_to_id: replyTo?.id,
     });
@@ -166,6 +195,14 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
+
+      {/* Guardian AI badge — always visible */}
+      <div className="flex items-center gap-1.5 px-3 pt-2 pb-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        <Shield className="w-2.5 h-2.5 text-[#6DBF7E]" />
+        <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(109,191,126,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Guardian AI active
+        </span>
+      </div>
 
       {/* Host controls toggle */}
       {isHost && (
@@ -251,7 +288,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-[11px] font-bold ${msg.user_id === currentUser?.id ? 'text-[#C9A84C]' : 'text-[#d4af37]'}`}>
+                    <span className="text-[11px] font-bold"
+                      style={{ color: msg.user_id === currentUser?.id ? '#C9A84C' : userColor(msg.user_id) }}>
                       {msg.user_name}
                     </span>
                     <MessageBadge type={msg.message_type} />
