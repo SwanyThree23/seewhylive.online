@@ -110,8 +110,34 @@ function streamDuration(room) {
 
 // ── Top Live Strip ─────────────────────────────────────────────────────────
 // Horizontal scroller of the top 8 live rooms — first thing users see.
+function TopLiveStripSkeleton() {
+  return (
+    <div style={{ background: 'rgba(8,11,24,0.99)', borderBottom: '1px solid rgba(212,175,55,0.06)' }}>
+      <div className="flex items-center gap-2 px-4 pt-2.5 pb-1">
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+        <div className="h-2 w-16 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />
+      </div>
+      <div className="overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2.5 px-4" style={{ width: 'max-content' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-xl overflow-hidden shrink-0 animate-pulse"
+              style={{ width: 116, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.06)' }}>
+              <div style={{ height: 72, background: 'rgba(255,255,255,0.04)' }} />
+              <div className="px-2 py-1.5 space-y-1.5">
+                <div className="h-2 rounded" style={{ background: 'rgba(255,255,255,0.06)', width: '80%' }} />
+                <div className="h-2 rounded" style={{ background: 'rgba(255,255,255,0.04)', width: '55%' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TopLiveStrip({ rooms, loading }) {
-  if (loading || !rooms || rooms.length === 0) return null;
+  if (loading) return <TopLiveStripSkeleton />;
+  if (!rooms || rooms.length === 0) return null;
   var top = rooms.slice(0, 8);
 
   return (

@@ -8,6 +8,7 @@ import {
   Tag, Image, AlignLeft, Layers, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { encryptStreamKey, decryptStreamKey } from '../lib/security';
 import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
 import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
 import { useQuery } from '@tanstack/react-query';
@@ -405,9 +406,37 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
 function RtmpKeyRow({ streamKey }) {
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [vaultPayload, setVaultPayload] = useState(null);   // AES-256-GCM ciphertext
+  const [plainDisplay, setPlainDisplay] = useState('');      // transient — cleared on hide
 
-  function copy() {
-    navigator.clipboard?.writeText(streamKey);
+  // Encrypt on mount so plain key never sits in state long-term
+  useEffect(() => {
+    if (!streamKey) return;
+    encryptStreamKey(streamKey)
+      .then(p => setVaultPayload(p))
+      .catch(() => setVaultPayload(null));
+  }, [streamKey]);
+
+  async function toggleReveal() {
+    if (revealed) {
+      setRevealed(false);
+      setPlainDisplay('');
+    } else {
+      try {
+        const plain = vaultPayload
+          ? await decryptStreamKey(vaultPayload)
+          : streamKey;
+        setPlainDisplay(plain);
+        setRevealed(true);
+      } catch {
+        toast.error('Vault decryption failed');
+      }
+    }
+  }
+
+  async function copy() {
+    const plain = vaultPayload ? await decryptStreamKey(vaultPayload).catch(() => streamKey) : streamKey;
+    navigator.clipboard?.writeText(plain);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success('Stream key copied');
@@ -420,8 +449,16 @@ function RtmpKeyRow({ streamKey }) {
       border: '1px solid rgba(255,255,255,0.08)',
       padding: '10px 12px',
     }}>
-      <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
-        RTMP Stream Key
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>
+          RTMP Stream Key
+        </div>
+        {vaultPayload && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 4, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)' }}>
+            <Lock style={{ width: 8, height: 8, color: '#6DBF7E' }} />
+            <span style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, letterSpacing: '0.06em', color: '#6DBF7E', textTransform: 'uppercase' }}>Vault Pro</span>
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <code style={{
@@ -434,9 +471,9 @@ function RtmpKeyRow({ streamKey }) {
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}>
-          {revealed ? streamKey : '●●●●●●●●●●●●●●●●●●●●'}
+          {revealed ? plainDisplay : '●●●●●●●●●●●●●●●●●●●●'}
         </code>
-        <button onClick={() => setRevealed(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <button onClick={toggleReveal} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           {revealed
             ? <Lock style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.3)' }} />
             : <Unlock style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.3)' }} />}
