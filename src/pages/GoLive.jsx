@@ -1196,7 +1196,7 @@ export default function GoLive() {
       <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
-      {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
+      {partyId && <GuestControls roomId={partyId} isHost={true} participants={members} onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})} onRemoveGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(() => {})} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
       {partyId && user && <LiveEmoticonStorm partyId={partyId} currentUser={user} triggerReact={reactEmoji} />}
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}

@@ -431,10 +431,10 @@ export default function TranscriptionStudio() {
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <AIStreamSummary roomId={null} isHost={true} />
-      <SwanAIRecommendations roomId={null} currentLayout='transcription' viewerCount={0} />
-      <AIHighlightGenerator roomId={null} isHost={true} />
-      <StreamHealthMonitor isStreaming={false} />
+      <AIStreamSummary roomId={activeRoomId} isHost={true} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout='transcription' viewerCount={0} />
+      <AIHighlightGenerator roomId={activeRoomId} isHost={true} />
+      <StreamHealthMonitor isStreaming={live} />
     </div>
   );
 }
