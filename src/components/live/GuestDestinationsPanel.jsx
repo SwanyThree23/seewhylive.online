@@ -95,6 +95,10 @@ function DestRow({ dest, userId }) {
           Save
         </button>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+        <Lock style={{ width: 8, height: 8, color: '#7B5DA6' }} />
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, color: 'rgba(123,93,166,0.7)', letterSpacing: '0.06em' }}>AES-256-GCM · Vault Pro</span>
+      </div>
 
       {dest.platform === 'custom' && (
         <input
