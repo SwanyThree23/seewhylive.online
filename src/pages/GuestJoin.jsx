@@ -19,7 +19,7 @@ import GuestLandingPageV49 from '../components/streaming/GuestLandingPageV49';
 import AgeGate from '../components/AgeGate';
 import { getStoredAge } from '@/lib/ageVerification';
 import DevicePreview from '../components/greenroom/DevicePreview';
-import OctagonalVideoWindow from '../components/rooms/OctagonalVideoWindow';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import PreStreamCountdown from '../components/live/PreStreamCountdown';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
