@@ -32,6 +32,7 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -67,6 +68,7 @@ export default function ViewerDashboard() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('following');
   const [notifFilter, setNotifFilter] = useState('all');
+  const [reactEmoji, setReactEmoji] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -419,7 +421,8 @@ export default function ViewerDashboard() {
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
           <QuickPollLauncher roomId={activeRoomId} hostId={user?.id} isHost={false} />
           <LivePollWidget roomId={activeRoomId} currentUser={user} isHost={false} />
-          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={activeRoomId} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} roomId={activeRoomId} />
+          {activeRoomId && user && <RoomReactionOverlay roomId={activeRoomId} currentUser={user} triggerReact={reactEmoji} />}
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
         </div>
       </div>
