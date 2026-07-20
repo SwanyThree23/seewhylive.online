@@ -279,9 +279,6 @@ export default function RoomPage() {
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
 
-  // VOD recording — activated once host has a local stream and room is loaded
-  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
-  const subCount = useSubscriptionCount(room?.host_id || user?.id);
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
@@ -292,8 +289,6 @@ export default function RoomPage() {
   // Derived from currentParticipant state — must be computed before hooks that use it
   const isHost = currentParticipant?.role === 'host';
   const isSpeaker = ['host', 'co-host', 'speaker'].includes(currentParticipant?.role);
-  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
-  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   // Stream start time — set once on mount
   const streamStartRef = useRef(Date.now());
@@ -359,6 +354,12 @@ export default function RoomPage() {
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
     enabled: !!roomId,
   });
+
+  // VOD recording — room must be loaded first to pass title/host_id
+  const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: room?.title || 'Live Room', stream: localStream });
+  const subCount = useSubscriptionCount(room?.host_id || user?.id);
+  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+  useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   const { data: fetchedStages = [] } = useQuery({
     queryKey: ['stages', roomId],
