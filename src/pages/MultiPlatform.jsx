@@ -251,7 +251,7 @@ export default function MultiPlatform() {
                   </div>
                 )}
                 {user?.id && (
-                  <RTMPFanoutPanel userId={user.id} isStreaming={false} />
+                  <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoomId} />
                 )}
                 {user?.id && (
                   <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />

@@ -1376,7 +1376,7 @@ export default function SeeWhyLIVEv37() {
       <ViewerCount roomId={null} />
       <NotificationHub userId={null} roomId={null} />
       <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
-      <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
+      <ShareToSocial roomId={activeRoomId} streamTitle={''} isLive={!!activeRoomId} />
       <StreamHealthDashboard roomId={null} isHost={true} />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />

@@ -178,7 +178,7 @@ export default function DataExportPage() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={true} />
-          <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+          <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
@@ -199,7 +199,7 @@ export default function DataExportPage() {
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
           <StreamHealthDashboard roomId={activeRoomId} isHost={false} />

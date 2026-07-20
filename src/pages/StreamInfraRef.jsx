@@ -797,7 +797,7 @@ export default function StreamInfraRef() {
         <ZEGOConfigPanel roomId={activeRoomId} />
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
-        <StreamHealthDashboard isLive={false} />
+        <StreamHealthDashboard isLive={!!activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={false} />
         <StreamMetadata room={null} isHost={false} />
       </div>
@@ -805,7 +805,7 @@ export default function StreamInfraRef() {
         {/* new components here */}
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
         <AutomatedHighlightReels streamSession={null} />
       </div>
       <SwanyBotWidget />

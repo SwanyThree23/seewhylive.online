@@ -289,14 +289,14 @@ export default function ContentCalendarPage() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
         {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
       </div>
 

@@ -1032,7 +1032,7 @@ export default function StreamRefDash() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamHealthDashboard isLive={false} />
+        <StreamHealthDashboard isLive={!!activeRoomId} />
         <ZEGOConfigPanel roomId={activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={true} />
         <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
