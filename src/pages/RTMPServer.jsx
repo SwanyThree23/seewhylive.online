@@ -481,14 +481,14 @@ export default function RTMPServer() {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
-          <StreamHealthDashboard isLive={false} />
+          <StreamHealthDashboard isLive={!!activeRoomId} />
           <CoStreamPanel roomId={activeRoomId} />
           <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
           <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
           {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
         </div>

@@ -402,9 +402,9 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
         <AutomatedHighlightReels streamSession={null} />
-        <AutomatedClipGenerator streamSession={null} isLive={false} />
+        <AutomatedClipGenerator streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
-        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
       </div>
