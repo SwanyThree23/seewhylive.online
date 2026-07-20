@@ -426,7 +426,7 @@ export default function TranscriptionStudio() {
         <LiveTranscription roomId={activeRoomId} isHost={false} />
         <OnlineUsersGrid compact maxVisible={8} />
         <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <CollaborationMatcher />
       </div>
       <SwanyBotWidget />

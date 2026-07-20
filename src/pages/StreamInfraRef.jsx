@@ -806,7 +806,7 @@ export default function StreamInfraRef() {
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />

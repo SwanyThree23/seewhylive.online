@@ -744,7 +744,7 @@ export default function ControlRoomPage() {
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
-      {<BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {<BroadcastAnalyticsDashboard streamSession={room || null} isLive={roomId != null} />}
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
