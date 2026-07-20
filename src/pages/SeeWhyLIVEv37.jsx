@@ -1374,7 +1374,7 @@ export default function SeeWhyLIVEv37() {
       <SwanyBotEnhanced userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
       <StreamGoals hostId={user?.id || null} roomId={null} isHost={true} />
       <ViewerCount roomId={null} />
-      <NotificationHub userId={null} roomId={null} />
+      <NotificationHub userId={user?.id || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
       <ShareToSocial roomId={activeRoomId} streamTitle={''} isLive={!!activeRoomId} />
       <StreamHealthDashboard roomId={null} isHost={true} />

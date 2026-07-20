@@ -263,9 +263,9 @@ export default function CreateCommunityPage() {
         </form>
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
-          <AnnouncementFeed communityId={null} />
-          <ReferralProgram communityId={null} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <ReferralProgram communityId={userCommunityId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

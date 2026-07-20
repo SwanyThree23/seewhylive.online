@@ -370,7 +370,7 @@ export default function TributeWall() {
 
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={null} roomId={null} />
+      <MilestoneAlerts userId={user?.id || null} roomId={activeRoomId} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
