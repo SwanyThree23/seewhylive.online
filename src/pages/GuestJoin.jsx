@@ -18,6 +18,10 @@ import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 import GuestLandingPageV49 from '../components/streaming/GuestLandingPageV49';
 import AgeGate from '../components/AgeGate';
 import { getStoredAge } from '@/lib/ageVerification';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import OctagonalVideoWindow from '../components/rooms/OctagonalVideoWindow';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';

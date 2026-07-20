@@ -27,6 +27,7 @@ import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

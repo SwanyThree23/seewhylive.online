@@ -19,6 +19,16 @@ import StreamGoals from '../components/live/StreamGoals';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD = '#D4AF37';
 

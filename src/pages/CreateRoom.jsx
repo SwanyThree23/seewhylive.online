@@ -23,6 +23,14 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import ViewerCount from '../components/live/ViewerCount';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

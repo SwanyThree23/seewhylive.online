@@ -21,6 +21,13 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AlertConfig from '../components/live/AlertConfig';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD = '#D4AF37';
 const PINK    = '#C0392B';
