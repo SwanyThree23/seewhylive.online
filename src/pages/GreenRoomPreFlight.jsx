@@ -110,6 +110,8 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   }, [user?.id]);
   const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKey, setShowKey] = useState(false);
+  const [previewMicOn, setPreviewMicOn] = useState(true);
+  const [previewVideoOn, setPreviewVideoOn] = useState(true);
   const streamRef = useRef(null);
 
   const allReady = tests.mic === 'ready' && tests.camera === 'ready' && tests.network === 'ready';
@@ -203,7 +205,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <ZEGOStreamHealthCard roomId={activeRoomId} />
       <GuestQueue roomId={activeRoomId} isHost={false} />
       <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
-      <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+      <OctagonalVideoWindow title="Preview" isMuted={!previewMicOn} isVideoOff={!previewVideoOn} onMicToggle={() => setPreviewMicOn(v => !v)} onVideoToggle={() => setPreviewVideoOn(v => !v)} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
       <DevicePreview user={user} onDeviceState={() => {}} />
 

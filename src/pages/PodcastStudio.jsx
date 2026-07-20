@@ -674,6 +674,7 @@ export default function PodcastStudio() {
   const [toast, setToast] = useState('');
   const [panelSegIdx, setPanelSegIdx] = useState(0);
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
+  const [micOn, setMicOn] = useState(true);
 
   function showToast(msg) {
     setToast(msg);
@@ -1247,10 +1248,10 @@ export default function PodcastStudio() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Audio Mixer */}
-            <AudioMixer micMuted={false} onMicToggle={() => {}} />
+            <AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />
 
             {/* Enhanced Audio Mixer */}
-            <EnhancedAudioMixer micMuted={false} onMicToggle={() => {}} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />
+            <EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />
 
             {/* Soundboard */}
             <SoundboardWidget />
