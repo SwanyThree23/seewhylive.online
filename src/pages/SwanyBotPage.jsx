@@ -5,6 +5,8 @@ import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
 import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';

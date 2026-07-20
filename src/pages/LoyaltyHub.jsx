@@ -28,6 +28,9 @@ import StreamGoals from '../components/live/StreamGoals';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

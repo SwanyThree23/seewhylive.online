@@ -25,6 +25,16 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
 
 function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
 function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }

@@ -19,6 +19,7 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 // ─── CRITERION VAULT DESIGN SYSTEM ───────────────────────────────────────────
 const CV = {

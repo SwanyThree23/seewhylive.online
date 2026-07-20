@@ -28,6 +28,8 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG   = '#080B18';
 const BG2  = '#0D0A08';

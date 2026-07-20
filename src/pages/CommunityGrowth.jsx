@@ -28,6 +28,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

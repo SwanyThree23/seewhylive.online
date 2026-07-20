@@ -33,6 +33,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

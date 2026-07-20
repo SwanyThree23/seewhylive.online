@@ -32,6 +32,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const BG     = '#0E0C09';
 const BG2    = 'rgba(14,12,9,0.92)';

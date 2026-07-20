@@ -20,6 +20,13 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

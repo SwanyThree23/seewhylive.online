@@ -33,6 +33,14 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AlertConfig from '../components/live/AlertConfig';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
