@@ -20,6 +20,8 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import CreatorBridge from '../components/social/CreatorBridge';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import VODCard from '../components/vod/VODCard';
+import VODPicker from '../components/vod/VODPicker';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

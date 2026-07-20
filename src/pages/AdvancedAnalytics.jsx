@@ -32,6 +32,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

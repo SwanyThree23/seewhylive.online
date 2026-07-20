@@ -9,6 +9,7 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Copy, Download } from 'lucide-react';
 import ShareToSocial from '../components/social/ShareToSocial';
 import RecordingManager from '../components/content/RecordingManager';
 import LiveTranslationWidget from '../components/live/LiveTranslationWidget';

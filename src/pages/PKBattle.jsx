@@ -32,6 +32,10 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

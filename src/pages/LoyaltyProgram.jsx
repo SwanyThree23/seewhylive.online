@@ -37,6 +37,9 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';

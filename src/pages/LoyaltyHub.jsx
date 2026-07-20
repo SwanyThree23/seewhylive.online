@@ -31,6 +31,9 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import SubscriptionCard from '../components/monetization/SubscriptionCard';
+import TierEditor from '../components/subscriptions/TierEditor';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
 const GOLD = '#D4AF37';
 const BURGUNDY = '#800020';

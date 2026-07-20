@@ -30,6 +30,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 
 const GOLD = '#D4AF37';
 const CYAN = '#C9A84C';

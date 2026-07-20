@@ -7,6 +7,10 @@ import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 import VoiceAISettings from '../components/settings/VoiceAISettings';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 const BG    = '#080B18';
 const BG2   = '#0D0A08';

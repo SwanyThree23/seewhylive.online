@@ -41,6 +41,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';

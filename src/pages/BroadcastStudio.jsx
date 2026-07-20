@@ -9,6 +9,7 @@ import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
   ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, FlipHorizontal2,
+  Hand,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -218,6 +219,7 @@ import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import ClipCreator from '../components/live/ClipCreator';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import TierBadge from '../components/subscriptions/TierBadge';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };

@@ -32,6 +32,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
+import CreatorProfileSetup from '../components/profile/CreatorProfileSetup';
 
 var G = {
   gold: "#d4af37",

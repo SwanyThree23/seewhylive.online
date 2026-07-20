@@ -28,6 +28,7 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CreatorBridge from '../components/social/CreatorBridge';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 const BG = '#0d0618';
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';

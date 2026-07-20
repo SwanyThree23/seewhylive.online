@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Settings } from 'lucide-react';
+import {
+  Settings,
+  AlertTriangle,
+  Check,
+  Copy,
+  Globe,
+  Lock,
+  Radio,
+  Shield,
+  ArrowLeft,
+  Tag,
+} from 'lucide-react';;;
 import { createPageUrl } from '@/utils';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import AlertConfig from '../components/live/AlertConfig';
@@ -18,6 +29,9 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import SpotlightBanner from '../components/community/SpotlightBanner';
+import ShareToSocial from '../components/social/ShareToSocial';
 
 function Toggle({ checked, onChange }) {
   return (
