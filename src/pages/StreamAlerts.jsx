@@ -21,7 +21,6 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import ShopDashboard from '../components/merch/ShopDashboard';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
-import AlertConfig from '../components/live/AlertConfig';
 import CreatorBridge from '../components/social/CreatorBridge';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import NotificationBell from '../components/shared/NotificationBell';
