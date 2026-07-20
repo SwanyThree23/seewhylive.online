@@ -57,6 +57,17 @@ import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboar
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import AudioPanel from '../components/live/AudioPanel';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import NotificationHub from '../components/live/NotificationHub';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import UnifiedChat from '../components/live/UnifiedChat';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AudioMixer from '../components/live/AudioMixer';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
