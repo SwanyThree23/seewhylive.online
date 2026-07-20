@@ -165,6 +165,7 @@ import PipCameraTile from '../components/live/PipCameraTile';
 import LiveCaptionOverlay from '../components/live/LiveCaptionOverlay';
 import StreamWebSourceManager from '../components/live/StreamWebSourceManager';
 import GlobalMicButtonV49 from '../components/streaming/GlobalMicButtonV49';
+import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 export default function HybridStreamRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
@@ -202,6 +203,7 @@ export default function HybridStreamRoom() {
   const [showEvmux, setShowEvmux] = useState(false);
   const [pollTick, setPollTick] = useState(0);
   const [raidTick, setRaidTick] = useState(0);
+  const [reactEmoji, setReactEmoji] = useState(null);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showGiftShop, setShowGiftShop] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
@@ -534,7 +536,7 @@ export default function HybridStreamRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={room?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -562,6 +564,7 @@ export default function HybridStreamRoom() {
       {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
       {isHost && <LiveCaptionOverlay stream={localStream} />}
       {isHost && <StreamWebSourceManager isStreamActive={room?.status === 'live'} />}
+      {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
       <GlobalMicButtonV49 audioEnabled={audioEnabled} toggleAudio={toggleAudio} isSpeaking={isSpeaking} micLevel={0} visible={true} />
     </div>
   );
