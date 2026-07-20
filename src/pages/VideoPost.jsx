@@ -10,7 +10,6 @@ import ShareButtons from '../components/shared/ShareButtons';
 import SpotlightBanner from '../components/community/SpotlightBanner';
 import DiscussionFeed from '../components/community/DiscussionFeed';
 import VODCard from '../components/vod/VODCard';
-import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
@@ -20,6 +19,16 @@ import StreamGoals from '../components/live/StreamGoals';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD = '#D4AF37';
 

@@ -24,6 +24,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },

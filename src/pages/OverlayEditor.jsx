@@ -34,6 +34,7 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
+import AlertConfig from '../components/live/AlertConfig';
 const G = '#D4AF37';
 const BG = '#0A0710';
 

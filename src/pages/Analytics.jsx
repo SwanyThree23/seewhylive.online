@@ -18,6 +18,19 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import TopTippers from '../components/monetization/TopTippers';
+import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import {
   TrendingUp, Users, DollarSign, Radio, Eye, Activity,
   MessageSquare, Star, Crown, Zap

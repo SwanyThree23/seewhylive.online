@@ -26,6 +26,7 @@ import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────

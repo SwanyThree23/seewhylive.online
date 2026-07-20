@@ -24,6 +24,7 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import RewardShop from '../components/loyalty/RewardShop';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import NativeSelect from '../components/ui/NativeSelect';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {

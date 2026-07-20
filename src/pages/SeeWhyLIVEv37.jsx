@@ -28,6 +28,9 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import StreamHealthDashboard from '../components/streaming/StreamHealthMonitor';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import GlobalSearch from '../components/shared/GlobalSearch';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {

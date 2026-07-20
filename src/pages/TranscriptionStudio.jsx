@@ -8,6 +8,16 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Copy, Download } from 'lucide-react';
+import ShareToSocial from '../components/social/ShareToSocial';
+import RecordingManager from '../components/content/RecordingManager';
+import LiveTranslationWidget from '../components/live/LiveTranslationWidget';
+import LiveTranscription from '../components/live/LiveTranscription';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AutomatedHighlightReels from '../components/content/AutomatedHighlightReels';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';

@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
-import ClipCreatorSheet from '../components/live/ClipCreatorSheet';
 import VODCard from '../components/vod/VODCard';
 import VODTrimEditor from '../components/vod/VODTrimEditor';
 import ChapterEditor from '../components/vod/ChapterEditor';
@@ -75,7 +74,6 @@ export default function ClipsLibraryPage() {
   const [filter, setFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const [toast, setToast] = useState('');
-  const [clipSheetOpen, setClipSheetOpen] = useState(false);
   const [trimVod, setTrimVod] = useState(null);
   const [chapterVod, setChapterVod] = useState(null);
   const qc = useQueryClient();

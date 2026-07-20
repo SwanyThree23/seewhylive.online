@@ -9,6 +9,7 @@ import {
   Mic, MicOff, Video, VideoOff, PhoneOff, Users,
   Radio, LogOut, Copy, Maximize2, Minimize2,
   ChevronLeft, ChevronRight, Swords, Monitor, LayoutGrid, FlipHorizontal2,
+  Hand,
 } from 'lucide-react';
 import { isSafeUrl, clampStr, LIMITS } from '@/lib/security';
 
@@ -185,9 +186,44 @@ import RoomEntryGate from '../components/RoomEntryGate';
 import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
 import RTMPFanoutPanel from '../components/live/RTMPFanoutPanel';
 import PipCameraTile from '../components/live/PipCameraTile';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOGuestJoin from '../components/zego/ZEGOGuestJoin';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import WebhookHooks from '../components/live/WebhookHooks';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import RecordingManager from '../components/content/RecordingManager';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
+import PaymentMethodSelector from '../components/monetization/PaymentMethodSelector';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import CollabPlaylist from '../components/watchparty/CollabPlaylist';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import ClipCreator from '../components/live/ClipCreator';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import TierBadge from '../components/subscriptions/TierBadge';
 const GOLD = '#D4AF37';
 const BG = '#080B18';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
+const OCT = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
 
 // ── Video sync engine ────────────────────────────────────────────────────────
 function useSyncEngine({ party, isController, onTimeSync }) {
@@ -313,12 +349,11 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
 // ── Octagonal avatar thumbnail (audience rail) ───────────────────────────────
 function OctAvatarThumb({ name, stream, size = 36 }) {
   const vRef = useRef(null);
-  const oct = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 25%)';
   useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.3)' }} />
-      <div style={{ position: 'absolute', inset: 2, clipPath: oct, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: 'rgba(212,175,55,0.3)' }} />
+      <div style={{ position: 'absolute', inset: 2, clipPath: OCT, background: '#0d0618', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {stream ? (
           <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
@@ -420,8 +455,8 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
       {/* PIP camera when screen sharing */}
       {screenStream && localStream && videoEnabled && (
         <div className="absolute bottom-2 right-2" style={{ width: 80, height: 80 }}>
-          <div style={{ position: 'absolute', inset: 0, clipPath: oct, background: 'rgba(212,175,55,0.5)' }} />
-          <div style={{ position: 'absolute', inset: 2, clipPath: oct, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: 'rgba(212,175,55,0.5)' }} />
+          <div style={{ position: 'absolute', inset: 2, clipPath: OCT, overflow: 'hidden' }}>
             <video ref={camRef} autoPlay muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </div>
@@ -600,8 +635,6 @@ export default function BroadcastStudio() {
   const [slowModeCooldown, setSlowModeCooldown] = useState(30);
   const [pinnedMessage, setPinnedMessage] = useState(null);
 
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);
-
   // Elapsed timer for clip timestamps
   useEffect(() => {
     const iv = setInterval(() => setElapsed(s => s + 1), 1000);
@@ -630,6 +663,7 @@ export default function BroadcastStudio() {
     enabled: !!partyId,
     refetchInterval: 5000,
   });
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);
 
   // Real-time roster
   useEffect(() => {
@@ -666,9 +700,6 @@ export default function BroadcastStudio() {
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
   var speakGate=useAutoSpeakGate({stream:localStream,enabled:true});
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel,isClipping=speakGate.isClipping;
-  var remoteSpeakingIds=useRemoteSpeakingMap(remoteStreams,peerUserIds);
-  var speakingIds=isSpeaking&&user&&user.id?Object.assign({},remoteSpeakingIds,{[user.id]:true}):remoteSpeakingIds;
-
   // WebRTC peer mesh — uses partyId as the signaling channel room
   const { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
     onPeerStateChange: useCallback((peerId, state) => {
@@ -682,6 +713,9 @@ export default function BroadcastStudio() {
       }
     }, []),
   });
+
+  var remoteSpeakingIds=useRemoteSpeakingMap(remoteStreams,peerUserIds);
+  var speakingIds=isSpeaking&&user&&user.id?Object.assign({},remoteSpeakingIds,{[user.id]:true}):remoteSpeakingIds;
 
   // Connection quality — monitor first connected peer
   const [activePc, setActivePc] = useState(null);
@@ -2148,7 +2182,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   isHost={isHost}
                   isLive={party?.status === 'live'}
                 />
-                <WebSourceOverlay />
+                <StreamWebSourceManager />
               </div>
             )}
 

@@ -440,6 +440,21 @@ export default function LiveRoom() {
   const leaveRoomRef = useRef(leaveRoom);
   useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
   useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+
+  // Fetch real room data — must precede any hook or expression that reads user/party
+  const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: members = [] } = useQuery({
+    queryKey: ['room-members', roomId],
+    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+  const { data: party } = useQuery({
+    queryKey: ['room', roomId],
+    queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
+    enabled: !!roomId,
+  });
+
   useEffect(() => {
     if (!user?.id || !roomId) return;
     announceJoinRef.current?.(user.id);
@@ -461,20 +476,6 @@ export default function LiveRoom() {
   }, [remoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
-
-  // Fetch real room members if roomId provided
-  const { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: members = [] } = useQuery({
-    queryKey: ['room-members', roomId],
-    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
-    enabled: !!roomId,
-    refetchInterval: 10000,
-  });
-  const { data: party } = useQuery({
-    queryKey: ['room', roomId],
-    queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
-    enabled: !!roomId,
-  });
 
   const isExclusiveStream = party?.is_exclusive === true;
   const isHost = user?.id && party?.host_id && user.id === party.host_id;
@@ -604,6 +605,7 @@ export default function LiveRoom() {
   const [payOpen, setPayOpen]           = useState(false);
   const [giftOpen, setGiftOpen]         = useState(false);
   const [giftEvent, setGiftEvent]       = useState(null);
+  const [battleOpen, setBattleOpen]     = useState(false);
   const lastGiftTsRef                   = useRef(0);
   // Panel Seat Approval
   const [approvalMode, setApprovalMode]   = useState(false);
@@ -1351,7 +1353,7 @@ export default function LiveRoom() {
       {roomId && <TipAlert roomId={roomId} recipientId={party?.host_id || user?.id} />}
       {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: party?.host_id }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={party?.host_id || user?.id} roomId={roomId} isCreator={isHost} currentUser={user} />}
-      <MerchStrip roomId={roomId} currentUser={user} hostId={party?.host_id || user?.id} />
+      <MerchWidget roomId={roomId} currentUser={user} hostId={party?.host_id || user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

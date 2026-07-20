@@ -21,6 +21,16 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import ShareToSocial from '../components/social/ShareToSocial';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -87,8 +97,10 @@ function groupByDate(items) {
 }
 
 export default function ActivityPage() {
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState('all');
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  const { data: activities = [] } = useQuery({
+  const { data: activities = [], isLoading, refetch } = useQuery({
     queryKey: ['activities'],
     queryFn: () => base44.entities.Activity.list('-created_date', 100),
   });

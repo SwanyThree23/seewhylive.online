@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '../utils';
 import { speakReply } from '../utils/tts';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';

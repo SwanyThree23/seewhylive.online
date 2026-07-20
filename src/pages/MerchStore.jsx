@@ -10,6 +10,7 @@ import NotificationBell from '../components/shared/NotificationBell';
 import RewardShop from '../components/loyalty/RewardShop';
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import NativeSelect from '../components/ui/NativeSelect';
 
 const BG      = '#080B18';
 const GOLD    = '#D4AF37';

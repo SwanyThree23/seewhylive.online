@@ -372,6 +372,7 @@ export default function ControlRoomPage() {
   const { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamCR, audioDeviceId: prefMicCR });
   const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const [crChatMessages, setCrChatMessages] = useState([]);
@@ -406,7 +407,6 @@ export default function ControlRoomPage() {
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
   const handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: room } = useQuery({
     queryKey: ['cr-room', roomId],
     queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
@@ -711,7 +711,7 @@ export default function ControlRoomPage() {
       {<SubscriptionManager creatorId={user?.id} />}
       {roomId && <TipAlert roomId={roomId} recipientId={user?.id} />}
       {roomId && <LiveAuctionWidget creatorId={user?.id} roomId={roomId} isCreator={true} currentUser={user} />}
-      <MerchStrip roomId={roomId} currentUser={user} hostId={user?.id} />
+      <MerchWidget roomId={roomId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}

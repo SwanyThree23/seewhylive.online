@@ -17,6 +17,11 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 function Toggle({ checked, onChange }) {
   return (

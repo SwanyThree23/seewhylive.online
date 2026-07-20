@@ -34,8 +34,9 @@ function MomentCard({ clip, currentUserId, onLike }) {
         cursor: 'pointer',
       }}
     >
-      {/* Thumbnail area */}
+      {/* Thumbnail area — tap to open moment detail */}
       <div
+        onClick={() => { window.location.href = `/moments/${clip.id}`; }}
         style={{
           height: 140,
           background: `linear-gradient(135deg, ${BURG}55, ${OBS})`,
@@ -119,7 +120,14 @@ function MomentCard({ clip, currentUserId, onLike }) {
             {clip.like_count || 0}
           </button>
           <button
-            onClick={() => { navigator.clipboard.writeText(clip.clip_url || window.location.href).then(() => toast.success('Link copied!')).catch(() => {}); }}
+            onClick={() => {
+              const url = `${window.location.origin}/moments/${clip.id}`;
+              if (navigator.share) {
+                navigator.share({ title: clip.title || 'Moment', url }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(url).then(() => toast.success('Link copied!')).catch(() => {});
+              }
+            }}
             style={{
               padding: '5px 10px', borderRadius: 6, cursor: 'pointer',
               background: 'rgba(255,255,255,0.04)',
