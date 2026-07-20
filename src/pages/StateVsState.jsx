@@ -29,7 +29,6 @@ import ViewerCount from '../components/live/ViewerCount';
 
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG   = '#080B18';
 const BG2  = '#0D1022';
