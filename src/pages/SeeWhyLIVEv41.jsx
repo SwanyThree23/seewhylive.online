@@ -2169,7 +2169,7 @@ export default function SeeWhyLIVEv41() {
       <SwanyBotEnhanced />
       <NotificationBell />
       <SwanDirectorHUD roomId={null} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
-      <GiftSystem roomId={null} userId={null} isHost={true} />
+      <GiftSystem roomId={null} userId={user?.id || null} isHost={true} />
       <GiftLeaderboard roomId={null} />
       <ViewerCount count={0} peakViewers={0} />
       <HostAlertCenter />

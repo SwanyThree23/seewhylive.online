@@ -9,6 +9,7 @@ import HexagonalStageGrid from '@/components/room/HexagonalStageGrid';
 import FloatingControlBar from '@/components/room/FloatingControlBar';
 import RoomActionBar from '@/components/room/RoomActionBar';
 import MuteNotificationToast from '@/components/room/MuteNotificationToast';
+import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 import { toast } from 'sonner';
 
 const GOLD = '#d4af37';
@@ -31,6 +32,7 @@ export default function UnifiedRoom() {
 
   const [isMicOn, setIsMicOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
+  const [reactEmoji, setReactEmoji] = useState(null);
   const [muteNotification, setMuteNotification] = useState(null);
   const [speakingId, setSpeakingId] = useState('host');
 
@@ -92,7 +94,7 @@ export default function UnifiedRoom() {
         speakingName={participants.find(p => p.user_id === speakingId)?.name}
         isLive={room?.status === 'live' || !room}
         onClose={() => navigate('/')}
-        onShare={() => toast('Share link copied!')}
+        onShare={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Share link copied!')).catch(() => {})}
         onMenu={() => toast('Menu')}
       />
 
@@ -164,7 +166,7 @@ export default function UnifiedRoom() {
 
       {/* Floating control bar */}
       <FloatingControlBar
-        onReact={() => toast('react')}
+        onReact={() => setReactEmoji({ emoji: '❤️', ts: Date.now() })}
         onChat={() => toast('Chat opening…')}
         onToggleVideo={() => { setIsVideoOn(!isVideoOn); toast(isVideoOn ? 'Video off' : 'Video on'); }}
         onToggleMic={handleToggleMic}
@@ -222,6 +224,7 @@ export default function UnifiedRoom() {
           </div>
         </div>
       </div>
+      {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
     </div>
   );
 }
