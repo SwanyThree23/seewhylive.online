@@ -575,6 +575,12 @@ export default function GoLive() {
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const { data: party } = useQuery({
+    queryKey: ['golive-party', partyId],
+    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 30000,
+  });
   const { data: members = [] } = useQuery({
     queryKey: ['golive-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
@@ -1121,7 +1127,7 @@ export default function GoLive() {
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} triggerOpen={pollTick} />}
-      <RoomBrandingEditor roomData={null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
+      <RoomBrandingEditor roomData={party || null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
@@ -1144,7 +1150,7 @@ export default function GoLive() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
       {partyId && <GuestInviteGenerator roomId={partyId} isHost={true} />}
       {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
-      {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {partyId && <EnhancedRoomControls isHost={true} roomData={party || null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />

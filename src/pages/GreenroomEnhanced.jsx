@@ -305,7 +305,7 @@ export default function GreenroomEnhanced() {
         <StreamMetadataEditor />
 
         {/* Room branding (logo, banner colors) */}
-        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+        <RoomBrandingEditor roomData={activeRoom || null} onBrandingChange={(b) => { if (activeRoomId) base44.entities.Room.update(activeRoomId, b).catch(() => {}); }} isHost={true} />
 
         {/* Guest connector + queue */}
         <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
@@ -321,7 +321,7 @@ export default function GreenroomEnhanced() {
         <GuestRTMPPanel participantId={null} userId={user?.id} />
 
         {/* Guest stream monitor */}
-        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+        <GuestStreamMonitor guestName="Guest" isStreaming={isLive} />
 
         {/* Guest streaming permissions */}
         <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
