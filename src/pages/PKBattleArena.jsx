@@ -190,6 +190,12 @@ export default function PKBattleArena() {
   const roomId = new URLSearchParams(window.location.search).get('id') || null;
   const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: battleMembers = [] } = useQuery({
+    queryKey: ['pk-members', roomId],
+    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
   const [tab, setTab] = useState('live');
   const [votes, setVotes] = useState({});
   const [selectedOpponent, setSelectedOpponent] = useState(null);
@@ -285,7 +291,7 @@ export default function PKBattleArena() {
       <BattleArenaManager roomId={roomId} isHost={true} onBattleEnd={() => { setTimeout(() => navigate('/'), 2000); }} />
       <PKBattleInterface roomId={roomId} />
       <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={battleActive} />
-      <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+      <GuestControls participants={battleMembers} onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})} onRemoveGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(() => {})} />
       <LivePoll roomId={roomId} isHost={true} />
     </div>
   );
