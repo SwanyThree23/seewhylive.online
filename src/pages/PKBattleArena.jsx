@@ -190,6 +190,8 @@ export default function PKBattleArena() {
   const roomId = new URLSearchParams(window.location.search).get('id') || null;
   const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const [tab, setTab] = useState('live');
+  const [votes, setVotes] = useState({});
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [battleSecs, setBattleSecs]             = useState(0);
   const [hostVotes, setHostVotes]               = useState(50);

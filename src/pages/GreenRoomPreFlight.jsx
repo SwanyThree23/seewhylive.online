@@ -41,7 +41,7 @@ function genToken() {
   const rand = () => cryptoRandB36(8);
   const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
   const session = Date.now();
-  return `${uid}?session=${session}`;
+  return `${user}?session=${session}`;
 }
 
 function genVDOLink() {

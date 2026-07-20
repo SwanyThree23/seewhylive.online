@@ -840,7 +840,7 @@ export default function MonetizationPage() {
           {tab === 'tiers' && user?.id && (
             <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CreatorTierManager creatorId={user.id} />
-              <TierEditor open={tierEditorOpen} onClose={() => setTierEditorOpen(false)} creatorId={user.id} existing={null} />
+              <TierEditor open={showTierEditor} onClose={() => setShowTierEditor(false)} creatorId={user.id} existing={null} />
               <SubscriptionTiers communityId={userCommunityId} userId={user.id} />
               <SubscriptionCard
                 tier="bronze"
