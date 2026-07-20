@@ -117,6 +117,13 @@ export default function CommunityPage() {
   const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
 
   const [showCreatePoll, setShowCreatePoll] = useState(false);
+  const [activeTab, setActiveTab] = useState('feed');
+
+  const TABS = [
+    { id: 'feed',      label: 'Feed',      icon: MessageSquare },
+    { id: 'spotlight', label: 'Spotlight', icon: Globe         },
+    { id: 'rooms',     label: 'Live',      icon: Radio         },
+  ];
 
   const { data: polls = [] } = useQuery({
     queryKey: ['community-polls', community?.id],
@@ -213,7 +220,7 @@ export default function CommunityPage() {
               </button>
             )}
             {isMember && (
-              <button onClick={() => setPollModalOpen(true)}
+              <button onClick={() => setShowCreatePoll(true)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
                 style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: G, cursor: 'pointer' }}>
                 <Plus className="w-3.5 h-3.5" /> Poll
@@ -334,7 +341,7 @@ export default function CommunityPage() {
       </div>
 
       {community?.id && (
-        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+        <CreatePollModal isOpen={showCreatePoll} onClose={() => setShowCreatePoll(false)} communityId={community.id} />
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>

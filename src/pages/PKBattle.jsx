@@ -79,6 +79,8 @@ export default function PKBattlePage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const [tab, setTab] = useState('active');
+  const [votes, setVotes] = useState({});
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
