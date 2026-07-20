@@ -278,7 +278,7 @@ export default function ContentCalendarPage() {
       )}
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <ShareToSocial />
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />

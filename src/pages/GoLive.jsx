@@ -1106,7 +1106,7 @@ export default function GoLive() {
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
-      {<BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {<BroadcastAnalyticsDashboard streamSession={party || null} isLive={partyId != null} />}
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />

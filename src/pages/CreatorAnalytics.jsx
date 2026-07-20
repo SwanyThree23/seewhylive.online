@@ -357,7 +357,7 @@ export default function CreatorAnalytics() {
         <StreamerGoalsWidget creatorId={user?.id} roomId={activeRoomId} isCreator={true} embedded={true} />
         <PerformanceDashboard roomId={activeRoomId} sessionId={activeRoomId} />
         <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <ShareToSocial content={null} />
         <CollaborationMatcher />
         <OnlineUsersGrid compact maxVisible={8} />
