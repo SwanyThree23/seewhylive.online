@@ -16,7 +16,7 @@ import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget
 import LiveTranscription from '../components/live/LiveTranscription';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
-import AutomatedHighlightReels from '../components/content/AutomatedHighlightReels';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG   = '#080B18';
