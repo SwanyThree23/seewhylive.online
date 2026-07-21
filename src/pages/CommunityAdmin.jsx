@@ -315,7 +315,7 @@ export default function CommunityAdminPage() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-          <StreamHealthDashboard roomId={communityId} isHost={false} />
+          <StreamHealthDashboard roomId={communityId} isHost={true} />
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>

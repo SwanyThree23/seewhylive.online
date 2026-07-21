@@ -1073,7 +1073,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={true} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

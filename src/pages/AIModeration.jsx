@@ -342,7 +342,7 @@ export default function AIModerationPage() {
         )}
 
         <div className="mt-6 space-y-4 px-4 pb-6">
-          <AIModeration roomId={activeRoomId} isHost={false} />
+          <AIModeration roomId={activeRoomId} isHost={true} />
           <HostAlertCenter roomId={activeRoomId} />
           <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
           <ModerationAppealPanel flagId={null} messageId={null} roomId={activeRoomId} onClose={() => {}} />
@@ -353,7 +353,7 @@ export default function AIModerationPage() {
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
-          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
           <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>

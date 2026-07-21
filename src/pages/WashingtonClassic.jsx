@@ -355,7 +355,7 @@ export default function WashingtonClassic() {
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
         <BattleScoreboard roomId={activeRoomId} />
-        <BattleMode roomId={activeRoomId} isHost={false} hostName={null} participants={[]} />
+        <BattleMode roomId={activeRoomId} isHost={true} hostName={null} participants={[]} />
         <StreamAnalyticsDashboard roomId={activeRoomId} />
         <ChallengeLeaderboard communityId={userCommunityId} />
         <TournamentBracket />

@@ -1036,9 +1036,9 @@ export default function StreamRefDash() {
         <ZEGOConfigPanel roomId={activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={true} />
         <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={true} onStreamHealth={() => {}} />
         <ChatModeration />
-        <StreamMetadata room={null} isHost={false} />
+        <StreamMetadata room={activeRoom || null} isHost={true} />
       </div>
 
       {/* Footer */}
