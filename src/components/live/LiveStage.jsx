@@ -1,79 +1,99 @@
 /**
- * LiveStage.jsx — SFU-backed dynamic live-streaming stage for SeeWhy LIVE.
+ * LiveStage.jsx — SFU-backed dynamic live-streaming stage for SeeWhy LIVE (v2).
  *
  * Roles:
- *   "panelist"  — publishes camera+audio; sees all other panelists. Sub-100ms via SFU uplink.
- *   "viewer"    — subscribes only; no getUserMedia call, no camera permission prompt.
+ *   "panelist" — publishes camera+audio (one uplink, SFU fans out to subscribers).
+ *   "viewer"   — subscribe-only; never calls getUserMedia; zero camera permission prompts.
+ *               Viewers can upgrade to panelist at runtime without a page reload.
  *
  * Layout rules:
  *   1 panelist  → full-screen (grid-cols-1)
  *   2 panelists → side-by-side (grid-cols-2)
  *   3–4         → 2×2 grid
  *   5+          → 3-column grid
- *   Screen share active → 70/30 split: screen dominant left, webcam sidebar right
+ *   Screen share active → 70/30 split (screen dominant left, webcam sidebar right)
+ *   Pinned tile         → 70/30 split (pinned dominant, rest in sidebar)
  *
- * SFU integration: ZEGOCLOUD ZegoExpressEngine via @/lib/zegoEngine singleton.
- * Tracks published/subscribed as ZEGO stream IDs: `{roomId}_{userId}_{type}`.
+ * SFU data channels (ZEGO broadcast/custom commands):
+ *   Chat:      sendBroadcastMessage / IMRecvBroadcastMessage
+ *   Reactions: sendCustomCommand   / IMRecvCustomCommand (JSON {type:"reaction",emoji})
+ *   Users:     roomUserUpdate event → viewerCount badge
  *
- * Usage:
- *   <LiveStage
- *     roomId="abc123"
- *     userId="user_456"
- *     userName="Alice"
- *     role="panelist"          // "panelist" | "viewer"
- *     token={zegoToken}        // obtained server-side via ZEGO token API
- *   />
+ * Instant co-hosting: viewers click "Go on Stage" → upgradeToParticipant() →
+ *   creates ZEGO stream + starts publishing — no reload required.
+ *
+ * Adaptive degradation: ZEGO networkQuality events (0–5 scale) → 'good'/'warning'/'poor'
+ *   label + toast when quality drops to 'poor'.
  */
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MicOff, VideoOff, MonitorOff, Maximize2, Pin, Users, Radio, Wifi } from 'lucide-react';
+import {
+  MicOff, VideoOff, MonitorOff, Pin, Radio, Wifi,
+  MessageSquare, Send, X, Users, Zap,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
-// ─── ZEGO Engine singleton ─────────────────────────────────────────────────
-// Lazy-loaded so the heavy SDK is only bundled when the stage actually mounts.
-let _engine = null;
+// ─── Design tokens ─────────────────────────────────────────────────────────
+const GOLD  = '#D4AF37';
+const BURG  = '#800020';
+const GREEN = '#6DBF7E';
+const RED   = '#C0392B';
+const BG    = '#080B18';
+const FONT  = 'Barlow Condensed, sans-serif';
+
+// ─── Emoji reaction palette ────────────────────────────────────────────────
+const REACTION_EMOJIS = ['👏', '🔥', '❤️', '😂', '🎉'];
+
+// ─── ZEGO engine singleton ─────────────────────────────────────────────────
+// Lazy-loaded so the SDK only bundles when the stage actually mounts.
+let _zegoEngine = null;
 
 async function getZegoEngine() {
-  if (_engine) return _engine;
+  if (_zegoEngine) return _zegoEngine;
   const { ZegoExpressEngine } = await import('zego-express-engine-webrtc');
   const appId  = Number(import.meta.env.VITE_ZEGO_APP_ID || 0);
   const server = import.meta.env.VITE_ZEGO_SERVER || '';
   if (!appId || !server) {
-    console.warn('[LiveStage] VITE_ZEGO_APP_ID / VITE_ZEGO_SERVER not set — using mock engine');
+    console.warn('[LiveStage] VITE_ZEGO_APP_ID / VITE_ZEGO_SERVER not configured — stage disabled');
     return null;
   }
-  _engine = new ZegoExpressEngine(appId, server);
-  return _engine;
+  _zegoEngine = new ZegoExpressEngine(appId, server);
+  return _zegoEngine;
 }
 
-// Stream ID convention: `{roomId}_{userId}_{type}`
-function streamId(roomId, userId, type) {
+// Stream ID convention: `{roomId}_{userId}_{type}` (camera | screen)
+function makeStreamId(roomId, userId, type) {
   return `${roomId}_${userId}_${type}`;
 }
 
-// ─── Custom hook: useLiveStage ─────────────────────────────────────────────
+// ─── useLiveStage ──────────────────────────────────────────────────────────
 /**
- * Manages ZEGO room lifecycle:
- *   - Joins room + logs in user
- *   - Publishes camera/audio for panelists (never for viewers)
- *   - Subscribes to remote streams as they arrive
- *   - Tracks screen-share stream separately
- *   - Cleans up on unmount
- *
- * Returns { localStream, remoteStreams, screenShareStream, toggleMic, toggleCam, startScreenShare, stopScreenShare, quality }
+ * Core SFU lifecycle hook. Manages:
+ *   - ZEGO loginRoom + optional publish (panelists only)
+ *   - roomStreamUpdate: subscribe remote MediaStreams from SFU
+ *   - networkQuality: 'good' / 'warning' / 'poor' with toast on degradation
+ *   - roomUserUpdate: viewer count badge
+ *   - IMRecvBroadcastMessage: incoming chat messages
+ *   - IMRecvCustomCommand: incoming emoji reactions
+ *   - upgradeToParticipant(): viewer → panelist at runtime
+ *   - sendChat() / sendReaction(): outgoing data channel messages
  */
 export function useLiveStage({ roomId, userId, userName, role, token }) {
-  const [localStream, setLocalStream]         = useState(null);
-  const [remoteStreams, setRemoteStreams]      = useState([]); // [{ userId, userName, stream, type }]
-  const [screenShareStream, setScreenShare]   = useState(null);
-  const [micOn, setMicOn]                     = useState(true);
-  const [camOn, setCamOn]                     = useState(true);
-  const [quality, setQuality]                 = useState('good'); // 'good' | 'warning' | 'poor'
-  const engineRef                             = useRef(null);
-  const publishedRef                          = useRef(false);
+  const [localStream,   setLocalStream]   = useState(null);
+  const [remoteStreams, setRemoteStreams]  = useState([]); // [{ streamId, userId, userName, stream, type }]
+  const [screenShare,   setScreenShare]   = useState(null);
+  const [micOn,         setMicOn]         = useState(true);
+  const [camOn,         setCamOn]         = useState(true);
+  const [quality,       setQuality]       = useState('good');
+  const [viewerCount,   setViewerCount]   = useState(0);
+  const [chatMessages,  setChatMessages]  = useState([]);
+  const [lastReaction,  setLastReaction]  = useState(null); // { id, emoji, fromUser }
+  const [isPublishing,  setIsPublishing]  = useState(role === 'panelist');
 
-  const isPanelist = role === 'panelist';
+  const engineRef    = useRef(null);
+  const publishedRef = useRef(false);
+  const reactionSeq  = useRef(0);
 
-  // Join room and set up event listeners
   useEffect(() => {
     if (!roomId || !userId || !token) return;
     let mounted = true;
@@ -83,37 +103,37 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
       if (!engine || !mounted) return;
       engineRef.current = engine;
 
-      // ── Subscribe to remote stream events ─────────────────────────
-      // The SFU notifies us when any publisher starts/stops; we pull
-      // the MediaStream via startPlayingStream and attach it to a <video>.
-
+      // ── 1. Remote stream events from SFU ──────────────────────────────
+      // The SFU notifies when any publisher starts/stops. We call
+      // startPlayingStream() so ZEGO delivers the MediaStream to us;
+      // that stream is then attached to a <video> srcObject in VideoTile.
       engine.on('roomStreamUpdate', async (rId, updateType, streamList) => {
         if (rId !== roomId || !mounted) return;
 
         if (updateType === 'ADD') {
           for (const s of streamList) {
-            // Decode stream ID to extract publisher identity
-            const [, pubUserId, type] = s.streamID.split('_');
+            const parts     = s.streamID.split('_');
+            const pubUserId = parts[1];
+            const type      = parts[2] || 'camera';
             if (pubUserId === userId) continue; // skip own stream echo
 
-            // Ask ZEGO SFU to start delivering this stream to us
             const mediaStream = await engine.startPlayingStream(s.streamID);
             if (!mounted) { engine.stopPlayingStream(s.streamID); return; }
 
             setRemoteStreams(prev => {
-              const filtered = prev.filter(r => r.streamId !== s.streamID);
-              return [...filtered, {
+              const deduped = prev.filter(r => r.streamId !== s.streamID);
+              return [...deduped, {
                 streamId: s.streamID,
-                userId: pubUserId,
+                userId:   pubUserId,
                 userName: s.extraInfo || pubUserId,
-                stream: mediaStream,
-                type: type || 'camera',
+                stream:   mediaStream,
+                type,
               }];
             });
 
-            // Track screen shares separately for the 70/30 layout switch
+            // Track screen share separately to trigger 70/30 layout switch
             if (type === 'screen') {
-              setScreenShare({ streamId: s.streamID, stream: mediaStream, userId: pubUserId });
+              setScreenShare({ streamId: s.streamID, stream: mediaStream, userId: pubUserId, local: false });
             }
           }
         }
@@ -127,27 +147,74 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
         }
       });
 
-      // ── Quality monitoring ─────────────────────────────────────────
-      // ZEGO emits network quality scores 0–5; map to human label.
+      // ── 2. Network quality → adaptive degradation ─────────────────────
+      // ZEGO scores 0–5; we map to three labels and notify on poor quality.
       engine.on('networkQuality', (uid, _up, down) => {
-        if (uid === userId) {
-          setQuality(down >= 4 ? 'good' : down >= 2 ? 'warning' : 'poor');
-        }
+        if (uid !== userId) return;
+        const q = down >= 4 ? 'good' : down >= 2 ? 'warning' : 'poor';
+        setQuality(prev => {
+          if (prev !== 'poor' && q === 'poor') {
+            toast.warning('Weak connection — video quality auto-reduced by SFU.');
+          }
+          return q;
+        });
       });
 
-      // ── Login + optional publish ───────────────────────────────────
+      // ── 3. Viewer count via roomUserUpdate ────────────────────────────
+      // SFU fires this when any user joins or leaves the room.
+      engine.on('roomUserUpdate', (rId, updateType, userList) => {
+        if (rId !== roomId) return;
+        setViewerCount(prev =>
+          updateType === 'ADD'
+            ? prev + userList.length
+            : Math.max(0, prev - userList.length)
+        );
+      });
+
+      // ── 4. Data channel: broadcast chat messages ──────────────────────
+      engine.on('IMRecvBroadcastMessage', (rId, chatData) => {
+        if (rId !== roomId || !mounted) return;
+        setChatMessages(prev => [
+          ...prev.slice(-199),
+          ...chatData.map(c => ({
+            id:       `${c.fromUser.userID}_${c.sendTime}`,
+            userId:   c.fromUser.userID,
+            userName: c.fromUser.userName,
+            text:     c.message,
+            time:     c.sendTime,
+            local:    false,
+          })),
+        ]);
+      });
+
+      // ── 5. Data channel: emoji reactions ─────────────────────────────
+      // Custom commands carry JSON {type:"reaction", emoji:"🔥"} payloads.
+      engine.on('IMRecvCustomCommand', (rId, fromUser, command) => {
+        if (rId !== roomId || !mounted) return;
+        try {
+          const payload = JSON.parse(command);
+          if (payload.type === 'reaction') {
+            setLastReaction({ id: ++reactionSeq.current, emoji: payload.emoji, fromUser: fromUser.userName });
+          }
+        } catch { /* malformed payload — ignore */ }
+      });
+
+      // ── 6. Login room ─────────────────────────────────────────────────
       await engine.loginRoom(roomId, token, { userID: userId, userName });
 
-      if (isPanelist) {
-        // Capture local camera+audio. Viewers never reach this branch.
-        const local = await engine.createZegoStream({ camera: { video: true, audio: true } });
-        if (!mounted) { engine.destroyStream(local); return; }
-        setLocalStream(local);
-
-        // One uplink per user — the SFU handles all subscriber downlinks.
-        const camStreamId = streamId(roomId, userId, 'camera');
-        engine.startPublishingStream(camStreamId, local, { extraInfo: userName });
-        publishedRef.current = true;
+      // ── 7. Panelist: create + publish camera stream ───────────────────
+      // Viewers never reach this block — zero getUserMedia for viewers.
+      if (role === 'panelist') {
+        try {
+          const local = await engine.createZegoStream({ camera: { video: true, audio: true } });
+          if (!mounted) { engine.destroyStream(local); return; }
+          setLocalStream(local);
+          engine.startPublishingStream(makeStreamId(roomId, userId, 'camera'), local, { extraInfo: userName });
+          publishedRef.current = true;
+          setIsPublishing(true);
+        } catch (e) {
+          toast.error('Camera/mic access denied — check permissions.');
+        }
       }
     })();
 
@@ -157,19 +224,22 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
         const engine = engineRef.current;
         if (!engine) return;
         if (publishedRef.current) {
-          engine.stopPublishingStream(streamId(roomId, userId, 'camera'));
-          engine.stopPublishingStream(streamId(roomId, userId, 'screen'));
+          engine.stopPublishingStream(makeStreamId(roomId, userId, 'camera'));
+          engine.stopPublishingStream(makeStreamId(roomId, userId, 'screen'));
+          publishedRef.current = false;
         }
-        if (localStream) engine.destroyStream(localStream);
         engine.off('roomStreamUpdate');
         engine.off('networkQuality');
+        engine.off('roomUserUpdate');
+        engine.off('IMRecvBroadcastMessage');
+        engine.off('IMRecvCustomCommand');
         await engine.logoutRoom(roomId);
       })();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, userId, token, isPanelist]);
+  }, [roomId, userId, token]);
 
-  // ── Mic / camera toggle ────────────────────────────────────────────
+  // ── Mic / camera toggles ───────────────────────────────────────────
   const toggleMic = useCallback(() => {
     if (!localStream || !engineRef.current) return;
     const next = !micOn;
@@ -187,99 +257,158 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
   // ── Screen share ───────────────────────────────────────────────────
   const startScreenShare = useCallback(async () => {
     const engine = engineRef.current;
-    if (!engine || !isPanelist) return;
-    const screenStream = await engine.createZegoStream({ screen: { audio: false } });
-    const ssId = streamId(roomId, userId, 'screen');
-    engine.startPublishingStream(ssId, screenStream, { extraInfo: `${userName}_screen` });
-    setScreenShare({ streamId: ssId, stream: screenStream, userId, local: true });
-  }, [roomId, userId, userName, isPanelist]);
+    if (!engine || !isPublishing) return;
+    try {
+      const ss  = await engine.createZegoStream({ screen: { audio: false } });
+      const ssId = makeStreamId(roomId, userId, 'screen');
+      engine.startPublishingStream(ssId, ss, { extraInfo: `${userName}_screen` });
+      setScreenShare({ streamId: ssId, stream: ss, userId, local: true });
+    } catch {
+      toast.error('Screen share permission denied.');
+    }
+  }, [roomId, userId, userName, isPublishing]);
 
   const stopScreenShare = useCallback(() => {
     const engine = engineRef.current;
     if (!engine) return;
-    engine.stopPublishingStream(streamId(roomId, userId, 'screen'));
+    engine.stopPublishingStream(makeStreamId(roomId, userId, 'screen'));
     setScreenShare(null);
   }, [roomId, userId]);
 
-  return { localStream, remoteStreams, screenShareStream, micOn, camOn, toggleMic, toggleCam, startScreenShare, stopScreenShare, quality };
+  // ── Instant co-hosting: viewer → panelist without reload ───────────
+  const upgradeToParticipant = useCallback(async () => {
+    const engine = engineRef.current;
+    if (!engine || isPublishing) return;
+    try {
+      const local = await engine.createZegoStream({ camera: { video: true, audio: true } });
+      setLocalStream(local);
+      engine.startPublishingStream(makeStreamId(roomId, userId, 'camera'), local, { extraInfo: userName });
+      publishedRef.current = true;
+      setIsPublishing(true);
+      toast.success('You are now on stage!');
+    } catch {
+      toast.error('Camera/mic access denied — cannot join stage.');
+    }
+  }, [roomId, userId, userName, isPublishing]);
+
+  // ── Data channel: send chat message ───────────────────────────────
+  const sendChat = useCallback(async (text) => {
+    const engine = engineRef.current;
+    if (!engine || !text.trim()) return;
+    await engine.sendBroadcastMessage(roomId, text.trim());
+    // Optimistically show own message locally
+    setChatMessages(prev => [...prev.slice(-199), {
+      id:       `${userId}_local_${Date.now()}`,
+      userId,
+      userName,
+      text:     text.trim(),
+      time:     Date.now(),
+      local:    true,
+    }]);
+  }, [roomId, userId, userName]);
+
+  // ── Data channel: send emoji reaction ─────────────────────────────
+  const sendReaction = useCallback(async (emoji) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    const payload = JSON.stringify({ type: 'reaction', emoji });
+    // Empty list broadcasts to all room participants
+    await engine.sendCustomCommand(roomId, payload, []);
+    // Show own reaction locally immediately
+    setLastReaction({ id: ++reactionSeq.current, emoji, fromUser: userName, local: true });
+  }, [roomId, userName]);
+
+  return {
+    localStream, remoteStreams, screenShare,
+    micOn, camOn, quality, viewerCount,
+    chatMessages, lastReaction,
+    isPublishing,
+    toggleMic, toggleCam,
+    startScreenShare, stopScreenShare,
+    upgradeToParticipant,
+    sendChat, sendReaction,
+  };
 }
 
 // ─── VideoTile ─────────────────────────────────────────────────────────────
 /**
- * Attaches a MediaStream to a <video> element.
- * The SFU delivers each track individually — we map stream → srcObject here.
+ * Maps a ZEGO SFU MediaStream to a <video> srcObject.
+ * The SFU delivers each encoded track; assigning stream → srcObject
+ * is the critical bridge from network transport to DOM rendering.
  */
 function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
     const el = videoRef.current;
-    if (!el || !stream) return;
-    // Attach SFU track to DOM — this is the critical bridge from ZEGO stream → HTML video
-    el.srcObject = stream;
-    el.play().catch(() => {});
+    if (!el) return;
+    // Attach SFU track bundle to video element
+    el.srcObject = stream || null;
+    if (stream) el.play().catch(() => {});
     return () => { el.srcObject = null; };
   }, [stream]);
 
-  const qualityColor = quality === 'good' ? '#6DBF7E' : quality === 'warning' ? '#D4AF37' : '#C0392B';
+  const qualityColor = quality === 'good' ? GREEN : quality === 'warning' ? GOLD : RED;
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden bg-[#080B18] border border-white/5 group">
-      {/* SFU video track output */}
+    <div className="relative w-full h-full rounded-xl overflow-hidden group" style={{ background: BG, border: '1px solid rgba(255,255,255,0.06)' }}>
+      {/* SFU video output — muted on local to prevent echo */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        muted={isLocal} // local preview always muted to avoid echo
-        className={`w-full h-full object-cover transition-opacity ${isCamOff ? 'opacity-0' : 'opacity-100'}`}
+        muted={isLocal}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isCamOff ? 'opacity-0' : 'opacity-100'}`}
       />
 
-      {/* Camera-off placeholder */}
+      {/* Camera-off avatar placeholder */}
       {isCamOff && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#080B18]">
-          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-2">
-            <span className="text-2xl font-black text-white/30" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+        <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: BG }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <span className="text-2xl font-black text-white/25" style={{ fontFamily: FONT }}>
               {(label || '?')[0].toUpperCase()}
             </span>
           </div>
-          <VideoOff className="w-4 h-4 text-white/20" />
+          <VideoOff className="w-4 h-4 text-white/15" />
         </div>
       )}
 
-      {/* Bottom overlay: name + status badges */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-2 flex items-end gap-2">
-        <span className="text-white text-xs font-bold flex-1 truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-          {label}{isLocal && ' (You)'}
+      {/* Bottom gradient: name + status */}
+      <div className="absolute bottom-0 left-0 right-0 flex items-end gap-2 p-2" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)' }}>
+        <span className="text-white text-xs font-bold flex-1 truncate" style={{ fontFamily: FONT }}>
+          {label}{isLocal ? ' (You)' : ''}
         </span>
-
-        {/* Network quality dot — reflects SFU downlink score */}
-        <div className="w-2 h-2 rounded-full" style={{ background: qualityColor }} title={`Network: ${quality}`} />
-
-        {/* Muted overlay badge */}
+        {/* SFU downlink quality dot */}
+        <div className="w-2 h-2 rounded-full shrink-0" style={{ background: qualityColor }} title={`Network: ${quality}`} />
+        {/* Muted badge */}
         {isMuted && (
-          <span className="flex items-center gap-1 bg-[#C0392B]/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+          <span className="flex items-center gap-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(192,57,43,0.85)', fontFamily: FONT }}>
             <MicOff className="w-2.5 h-2.5" /> Muted
           </span>
         )}
       </div>
+
+      {/* LIVE badge — local publisher only */}
+      {isLocal && (
+        <div className="absolute top-2 left-2 flex items-center gap-1 text-white text-[9px] font-black px-2 py-0.5 rounded-full" style={{ background: 'rgba(128,0,32,0.85)', border: '1px solid rgba(128,0,32,0.6)', fontFamily: FONT }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          LIVE
+        </div>
+      )}
 
       {/* Pin button — appears on hover */}
       {onPin && (
         <button
           onClick={onPin}
           className={`absolute top-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-all
-            ${isPinned ? 'bg-[#D4AF37]/20 border border-[#D4AF37]/40 opacity-100' : 'bg-black/40 border border-white/10 opacity-0 group-hover:opacity-100'}`}
+            ${isPinned ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+          style={{
+            background: isPinned ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.5)',
+            border: `1px solid ${isPinned ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}`,
+          }}
         >
-          <Pin className={`w-3.5 h-3.5 ${isPinned ? 'text-[#D4AF37]' : 'text-white/60'}`} />
+          <Pin className="w-3.5 h-3.5" style={{ color: isPinned ? GOLD : 'rgba(255,255,255,0.6)' }} />
         </button>
-      )}
-
-      {/* LIVE badge for local publisher */}
-      {isLocal && (
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-[#800020]/80 border border-[#800020]/60 text-white text-[9px] font-black px-2 py-0.5 rounded-full" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-          LIVE
-        </div>
       )}
     </div>
   );
@@ -287,101 +416,207 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
 
 // ─── Dynamic grid class ────────────────────────────────────────────────────
 function gridClass(count) {
-  if (count === 1) return 'grid-cols-1';
-  if (count === 2) return 'grid-cols-2';
-  if (count <= 4)  return 'grid-cols-2 grid-rows-2';
+  if (count === 1)  return 'grid-cols-1';
+  if (count === 2)  return 'grid-cols-2';
+  if (count <= 4)   return 'grid-cols-2 grid-rows-2';
   return 'grid-cols-3';
 }
 
-// ─── LiveStage ─────────────────────────────────────────────────────────────
+// ─── FloatingReaction ──────────────────────────────────────────────────────
+// Animated emoji that floats upward and fades — triggered by data channel events.
+function FloatingReaction({ reaction, onDone }) {
+  // Deterministically vary horizontal position using reaction ID
+  const leftPct = 10 + (reaction.id % 9) * 9;
+  return (
+    <motion.div
+      className="absolute pointer-events-none select-none text-2xl z-10"
+      style={{ bottom: 64, left: `${leftPct}%` }}
+      initial={{ y: 0, opacity: 1, scale: 0.8 }}
+      animate={{ y: -90, opacity: 0, scale: 1.3 }}
+      transition={{ duration: 2.2, ease: 'easeOut' }}
+      onAnimationComplete={onDone}
+    >
+      {reaction.emoji}
+    </motion.div>
+  );
+}
+
+// ─── ChatPanel ─────────────────────────────────────────────────────────────
+// Data-channel backed live chat. Slides in from the right of the stage.
+function ChatPanel({ messages, onSend, onClose }) {
+  const [input,   setInput]  = useState('');
+  const bottomRef            = useRef(null);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  function handleSend() {
+    if (!input.trim()) return;
+    onSend(input.trim());
+    setInput('');
+  }
+
+  return (
+    <motion.div
+      className="flex flex-col shrink-0 w-64 min-h-0 overflow-hidden"
+      style={{ background: 'rgba(8,11,24,0.97)', borderLeft: '1px solid rgba(212,175,55,0.12)' }}
+      initial={{ width: 0, opacity: 0 }}
+      animate={{ width: 256, opacity: 1 }}
+      exit={{ width: 0, opacity: 0 }}
+      transition={{ type: 'spring', damping: 22, stiffness: 200 }}
+    >
+      {/* Panel header */}
+      <div className="flex items-center justify-between px-3 py-2.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: FONT, color: GOLD }}>
+          Live Chat
+        </span>
+        <button onClick={onClose} className="transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      {/* Message list */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-0">
+        {messages.length === 0 && (
+          <p className="text-center text-xs mt-8" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.2)' }}>
+            No messages yet — say hi! 👋
+          </p>
+        )}
+        {messages.map(msg => (
+          <div key={msg.id} className={`flex flex-col ${msg.local ? 'items-end' : 'items-start'}`}>
+            <span className="text-[9px] mb-0.5" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.3)' }}>
+              {msg.userName}
+            </span>
+            <div
+              className="max-w-[90%] px-2.5 py-1.5 rounded-xl text-[11px]"
+              style={{
+                background:  msg.local ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.05)',
+                border:      `1px solid ${msg.local ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.08)'}`,
+                color:       'rgba(255,255,255,0.82)',
+                fontFamily:  FONT,
+                wordBreak:   'break-word',
+              }}
+            >
+              {msg.text}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input row */}
+      <div className="shrink-0 p-2 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
+          placeholder="Say something…"
+          className="flex-1 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none"
+          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', fontFamily: FONT }}
+        />
+        <button
+          onClick={handleSend}
+          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all"
+          style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.28)' }}
+        >
+          <Send className="w-3 h-3" style={{ color: GOLD }} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── LiveStage (main export) ───────────────────────────────────────────────
 export default function LiveStage({ roomId, userId, userName, role = 'viewer', token }) {
   const {
-    localStream, remoteStreams, screenShareStream,
-    micOn, camOn, toggleMic, toggleCam,
-    startScreenShare, stopScreenShare, quality,
+    localStream, remoteStreams, screenShare,
+    micOn, camOn, quality, viewerCount,
+    chatMessages, lastReaction,
+    isPublishing,
+    toggleMic, toggleCam,
+    startScreenShare, stopScreenShare,
+    upgradeToParticipant,
+    sendChat, sendReaction,
   } = useLiveStage({ roomId, userId, userName, role, token });
 
-  const isPanelist = role === 'panelist';
-  const [pinnedId, setPinnedId] = useState(null);
+  const [pinnedId,         setPinnedId]         = useState(null);
+  const [showChat,         setShowChat]         = useState(false);
+  const [floatingReactions, setFloatingReactions] = useState([]);
+
+  // Build floating reaction list from incoming lastReaction events
+  useEffect(() => {
+    if (!lastReaction) return;
+    setFloatingReactions(prev => [...prev.slice(-15), lastReaction]);
+  }, [lastReaction]);
+
+  function removeReaction(id) {
+    setFloatingReactions(prev => prev.filter(r => r.id !== id));
+  }
 
   const togglePin = useCallback((id) => {
     setPinnedId(prev => prev === id ? null : id);
   }, []);
 
-  // All camera tiles to display (local panelist first, then remotes)
+  // All camera tiles: local panelist first, then remotes
   const cameraTiles = useMemo(() => {
     const tiles = [];
-    // Local panelist's own camera — displayed as preview (muted to prevent echo)
-    if (isPanelist && localStream) {
+    if (isPublishing && localStream) {
       tiles.push({ id: `local_${userId}`, stream: localStream, label: userName, isLocal: true, isMuted: !micOn, isCamOff: !camOn });
     }
-    // Remote camera streams from SFU
     for (const r of remoteStreams) {
       if (r.type !== 'camera') continue;
       tiles.push({ id: r.streamId, stream: r.stream, label: r.userName, isLocal: false, isMuted: false, isCamOff: false });
     }
     return tiles;
-  }, [isPanelist, localStream, remoteStreams, userId, userName, micOn, camOn]);
+  }, [isPublishing, localStream, remoteStreams, userId, userName, micOn, camOn]);
 
-  // ── Screen-share layout (70/30 split) ──────────────────────────────
-  if (screenShareStream) {
+  // ── Screen share: 70/30 split layout ──────────────────────────────
+  const stageContent = (() => {
+    if (screenShare) {
+      return (
+        <div className="flex-1 flex gap-2 min-h-0">
+          <div className="flex-[7] min-w-0 min-h-0">
+            <VideoTile
+              stream={screenShare.stream}
+              label={screenShare.local ? `${userName}'s Screen` : 'Shared Screen'}
+              isMuted={false} isCamOff={false} quality={quality}
+            />
+          </div>
+          <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
+            {cameraTiles.map(tile => (
+              <div key={tile.id} className="flex-1 min-h-0">
+                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Pinned tile: one dominant, rest in sidebar
+    const pinnedTile = pinnedId ? cameraTiles.find(t => t.id === pinnedId) : null;
+    if (pinnedTile && cameraTiles.length > 1) {
+      const rest = cameraTiles.filter(t => t.id !== pinnedId);
+      return (
+        <div className="flex-1 flex gap-2 min-h-0">
+          <div className="flex-[7] min-w-0 min-h-0">
+            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} />
+          </div>
+          <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
+            {rest.map(tile => (
+              <div key={tile.id} className="flex-1 min-h-0">
+                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Standard dynamic grid
     return (
-      <div className="w-full h-full flex gap-2 min-h-0">
-        {/* Dominant 70% — screen share track */}
-        <div className="flex-[7] min-w-0 min-h-0">
-          <VideoTile
-            stream={screenShareStream.stream}
-            label={screenShareStream.local ? `${userName}'s Screen` : `Shared Screen`}
-            isMuted={false}
-            isCamOff={false}
-            quality={quality}
-          />
-        </div>
-        {/* 30% sidebar — webcam feeds stacked vertically */}
-        <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
-          {cameraTiles.map(tile => (
-            <div key={tile.id} className="flex-1 min-h-0">
-              <VideoTile
-                stream={tile.stream}
-                label={tile.label}
-                isLocal={tile.isLocal}
-                isMuted={tile.isMuted}
-                isCamOff={tile.isCamOff}
-                isPinned={pinnedId === tile.id}
-                onPin={() => togglePin(tile.id)}
-                quality={quality}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ── Pinned layout — one tile takes 70%, rest in sidebar ────────────
-  const pinnedTile = pinnedId ? cameraTiles.find(t => t.id === pinnedId) : null;
-  if (pinnedTile && cameraTiles.length > 1) {
-    const rest = cameraTiles.filter(t => t.id !== pinnedId);
-    return (
-      <div className="w-full h-full flex gap-2 min-h-0">
-        <div className="flex-[7] min-w-0 min-h-0">
-          <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} />
-        </div>
-        <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
-          {rest.map(tile => (
-            <div key={tile.id} className="flex-1 min-h-0">
-              <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ── Standard dynamic grid layout ──────────────────────────────────
-  return (
-    <div className="w-full h-full flex flex-col gap-2 min-h-0">
-      {/* Stage grid — class adapts to participant count */}
       <div className={`flex-1 grid gap-2 min-h-0 ${gridClass(cameraTiles.length)}`}>
         <AnimatePresence>
           {cameraTiles.map(tile => (
@@ -394,84 +629,174 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               transition={{ duration: 0.2 }}
               className="min-h-0 min-w-0"
             >
-              <VideoTile
-                {...tile}
-                isPinned={pinnedId === tile.id}
-                onPin={() => togglePin(tile.id)}
-                quality={quality}
-              />
+              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} />
             </motion.div>
           ))}
         </AnimatePresence>
 
-        {/* Empty stage placeholder for viewers waiting for panelists */}
+        {/* Empty stage placeholder */}
         {cameraTiles.length === 0 && (
-          <div className="col-span-full row-span-full flex flex-col items-center justify-center bg-[#080B18] rounded-xl border border-white/5">
-            <Radio className="w-10 h-10 text-white/10 mb-3" />
-            <p className="text-white/20 text-sm font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-              {isPanelist ? 'Starting your camera…' : 'Waiting for the show to start'}
+          <div className="col-span-full row-span-full flex flex-col items-center justify-center rounded-xl" style={{ background: BG, border: '1px solid rgba(255,255,255,0.05)' }}>
+            <Radio className="w-10 h-10 mb-3" style={{ color: 'rgba(255,255,255,0.1)' }} />
+            <p className="text-sm font-bold" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.2)' }}>
+              {isPublishing ? 'Starting your camera…' : 'Waiting for the show to start'}
             </p>
           </div>
         )}
       </div>
+    );
+  })();
 
-      {/* Panelist controls bar — viewers never see this */}
-      {isPanelist && (
-        <div className="flex items-center justify-center gap-3 pb-1">
-          <StageBtn
-            active={micOn}
-            icon={micOn ? 'mic' : 'mic-off'}
-            label={micOn ? 'Mute' : 'Unmute'}
-            onClick={toggleMic}
-            danger={!micOn}
-          />
-          <StageBtn
-            active={camOn}
-            icon={camOn ? 'cam' : 'cam-off'}
-            label={camOn ? 'Stop Video' : 'Start Video'}
-            onClick={toggleCam}
-            danger={!camOn}
-          />
-          {screenShareStream?.local ? (
-            <StageBtn icon="screen-off" label="Stop Share" onClick={stopScreenShare} danger />
-          ) : (
-            <StageBtn icon="screen" label="Share Screen" onClick={startScreenShare} />
-          )}
-          {/* Network quality indicator */}
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-white/10">
-            <Wifi className={`w-3 h-3 ${quality === 'good' ? 'text-[#6DBF7E]' : quality === 'warning' ? 'text-[#D4AF37]' : 'text-[#C0392B]'}`} />
-            <span className="text-[10px] font-bold" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: quality === 'good' ? '#6DBF7E' : quality === 'warning' ? '#D4AF37' : '#C0392B' }}>
+  return (
+    <div className="w-full h-full flex min-h-0" style={{ fontFamily: FONT }}>
+
+      {/* ── Main stage column ── */}
+      <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-0 relative">
+
+        {/* Top status bar */}
+        <div className="flex items-center gap-2 shrink-0 px-1">
+          {/* Viewer count — SFU roomUserUpdate */}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Users className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />
+            <span className="text-[10px] font-bold" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              {viewerCount + cameraTiles.length}
+            </span>
+          </div>
+
+          {/* Network quality */}
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Wifi className="w-3 h-3" style={{ color: quality === 'good' ? GREEN : quality === 'warning' ? GOLD : RED }} />
+            <span className="text-[10px] font-bold" style={{ color: quality === 'good' ? GREEN : quality === 'warning' ? GOLD : RED }}>
               {quality === 'good' ? 'Good' : quality === 'warning' ? 'Weak' : 'Poor'}
             </span>
           </div>
+
+          <div className="flex-1" />
+
+          {/* Chat toggle */}
+          <button
+            onClick={() => setShowChat(v => !v)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all"
+            style={{
+              background: showChat ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+              border:     `1px solid ${showChat ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`,
+            }}
+          >
+            <MessageSquare className="w-3.5 h-3.5" style={{ color: showChat ? GOLD : 'rgba(255,255,255,0.4)' }} />
+            {chatMessages.length > 0 && (
+              <span className="text-[10px] font-bold" style={{ color: GOLD }}>{chatMessages.length}</span>
+            )}
+          </button>
         </div>
-      )}
+
+        {/* Video grid / layouts */}
+        {stageContent}
+
+        {/* Floating emoji reactions — data channel driven */}
+        <AnimatePresence>
+          {floatingReactions.map(r => (
+            <FloatingReaction key={r.id} reaction={r} onDone={() => removeReaction(r.id)} />
+          ))}
+        </AnimatePresence>
+
+        {/* ── Bottom controls ── */}
+        <div className="shrink-0 flex items-center justify-center gap-2 pb-1 flex-wrap">
+          {/* Panelist controls */}
+          {isPublishing && (
+            <>
+              <StageBtn icon="mic"    active={micOn} danger={!micOn} label={micOn ? 'Mute' : 'Unmute'} onClick={toggleMic} />
+              <StageBtn icon="cam"    active={camOn} danger={!camOn} label={camOn ? 'Stop Cam' : 'Start Cam'} onClick={toggleCam} />
+              {screenShare?.local
+                ? <StageBtn icon="screen-off" danger label="Stop Share" onClick={stopScreenShare} />
+                : <StageBtn icon="screen"            label="Share Screen" onClick={startScreenShare} />
+              }
+            </>
+          )}
+
+          {/* Viewer upgrade button — shown when not yet publishing */}
+          {!isPublishing && (
+            <button
+              onClick={upgradeToParticipant}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
+              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Go on Stage
+            </button>
+          )}
+
+          {/* Emoji reaction bar — all users */}
+          <div className="flex items-center gap-1 px-2 py-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            {REACTION_EMOJIS.map(emoji => (
+              <button
+                key={emoji}
+                onClick={() => sendReaction(emoji)}
+                className="text-base leading-none px-1 py-0.5 rounded-lg transition-all hover:scale-125 active:scale-110"
+                title={`React with ${emoji}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Chat panel (slides in from right) ── */}
+      <AnimatePresence>
+        {showChat && (
+          <ChatPanel
+            messages={chatMessages}
+            onSend={sendChat}
+            onClose={() => setShowChat(false)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
 
-// ── Small stage control button ─────────────────────────────────────────────
+// ─── StageBtn ──────────────────────────────────────────────────────────────
 function StageBtn({ icon, label, onClick, active = true, danger = false }) {
   const icons = {
-    'mic':        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>,
-    'mic-off':    <MicOff className="w-4 h-4" />,
-    'cam':        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>,
-    'cam-off':    <VideoOff className="w-4 h-4" />,
-    'screen':     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
+    'mic': (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+        <line x1="12" y1="19" x2="12" y2="23"/>
+        <line x1="8"  y1="23" x2="16" y2="23"/>
+      </svg>
+    ),
+    'mic-off':    <MicOff    className="w-4 h-4" />,
+    'cam': (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <polygon points="23 7 16 12 23 17 23 7"/>
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+      </svg>
+    ),
+    'cam-off':    <VideoOff  className="w-4 h-4" />,
+    'screen': (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <line x1="8"  y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
+      </svg>
+    ),
     'screen-off': <MonitorOff className="w-4 h-4" />,
   };
 
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl border transition-all text-[10px] font-bold
-        ${danger
-          ? 'bg-[#C0392B]/15 border-[#C0392B]/30 text-[#C0392B] hover:bg-[#C0392B]/25'
-          : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:text-white'
-        }`}
-      style={{ fontFamily: 'Barlow Condensed, sans-serif' }}
+      className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl border transition-all text-[10px] font-bold"
+      style={{
+        fontFamily: FONT,
+        background: danger ? 'rgba(192,57,43,0.14)' : 'rgba(255,255,255,0.05)',
+        border:     `1px solid ${danger ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
+        color:      danger ? RED : 'rgba(255,255,255,0.6)',
+      }}
     >
-      {icons[icon]}
+      {icons[icon] ?? null}
       {label}
     </button>
   );
