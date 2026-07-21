@@ -40,12 +40,17 @@ export function useLiveStage({ roomId, role, userId, userName }) {
 
   // ── 1. Local media (panelists only) ───────────────────────────────────────
   // Viewers pass audio:false, video:false — getUserMedia is never called.
-  var { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError } =
-    useLocalMedia({ audio: isPanelist, video: isPanelist });
+  var {
+    localStream, audioEnabled, videoEnabled,
+    toggleAudio, toggleVideo,
+    startScreenShare, stopScreenShare, isSharingScreen,
+    error: mediaError,
+  } = useLocalMedia({ audio: isPanelist, video: isPanelist });
 
   // ── 2. WebRTC peer mesh ───────────────────────────────────────────────────
   // Viewers pass null as localStream — the hook adds no tracks to offers.
-  var { remoteStreams, peerStates, peerUserIds } =
+  // peersRef.current is a Map<peerId, {pc}> — pass to VideoTile for quality stats.
+  var { remoteStreams, peerStates, peerUserIds, peersRef } =
     useWebRTCPeers(roomId, isPanelist ? localStream : null);
 
   // ── 3. Build participants array ───────────────────────────────────────────
@@ -108,6 +113,12 @@ export function useLiveStage({ roomId, role, userId, userName }) {
     toggleVideo,
     audioEnabled,
     videoEnabled,
+    // Screen share — panelists only
+    startScreenShare: isPanelist ? startScreenShare : null,
+    stopScreenShare:  isPanelist ? stopScreenShare  : null,
+    isSharingScreen:  isPanelist ? isSharingScreen  : false,
+    // Raw peer map for per-peer RTCPeerConnection quality stats
+    peersRef,
     localStream,
     mediaError,
     isPanelist,

@@ -28,8 +28,9 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff, Video, VideoOff, Monitor, Users, PhoneOff, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, Users, PhoneOff, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { useLiveStage } from '@/hooks/useLiveStage';
+import { useConnectionQuality } from '@/hooks/useConnectionQuality';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 var T = { fontFamily: 'Barlow Condensed, sans-serif' };
@@ -43,16 +44,21 @@ var EMERALD = '#6DBF7E';
 function gridClass(count) {
   if (count <= 1) return 'grid-cols-1';
   if (count === 2) return 'grid-cols-2';
-  if (count <= 4)  return 'grid-cols-2';
+  if (count <= 4)  return 'grid-cols-2 grid-rows-2';
   return 'grid-cols-3';
 }
+
+// ── Quality badge colours ──────────────────────────────────────────────────
+var QUALITY_COLOR = { excellent: '#6DBF7E', good: '#6DBF7E', fair: '#D4AF37', poor: '#C0392B', offline: '#C0392B' };
 
 // ── VideoTile ──────────────────────────────────────────────────────────────
 // Attaches a MediaStream to a <video> element.
 // This is the core SFU→DOM binding: videoEl.srcObject = stream.
-function VideoTile({ participant, isLocal, isLarge, isHighlighted }) {
+function VideoTile({ participant, isLocal, isLarge, isHighlighted, peerConnection }) {
   var videoRef = useRef(null);
   var [videoLoaded, setVideoLoaded] = useState(false);
+  // Per-tile connection quality — uses the RTCPeerConnection from peersRef
+  var { quality, bars } = useConnectionQuality(peerConnection || null, 5000);
 
   // Wire the SFU track (MediaStream) → <video>.srcObject
   // In LiveKit: track.publication.track.attach(videoEl)
@@ -144,6 +150,26 @@ function VideoTile({ participant, isLocal, isLarge, isHighlighted }) {
         )}
       </div>
 
+      {/* Connection quality badge — only for remote peers, not local */}
+      {!isLocal && (
+        <div style={{
+          position: 'absolute', bottom: isLarge ? 36 : 24, right: isLarge ? 10 : 5,
+          display: 'flex', alignItems: 'center', gap: 2,
+        }}>
+          {[0, 1, 2, 3].map(function(i) {
+            return (
+              <div key={i} style={{
+                width: isLarge ? 3 : 2,
+                height: isLarge ? (4 + i * 3) : (3 + i * 2),
+                borderRadius: 1,
+                background: i < bars ? QUALITY_COLOR[quality] : 'rgba(255,255,255,0.15)',
+                alignSelf: 'flex-end',
+              }} />
+            );
+          })}
+        </div>
+      )}
+
       {/* Muted audio overlay — prominent mic-off badge per spec */}
       {showMuted && (
         <div style={{
@@ -184,7 +210,7 @@ function VideoTile({ participant, isLocal, isLarge, isHighlighted }) {
 }
 
 // ── Controls bar (panelists only) ──────────────────────────────────────────
-function ControlBar({ audioEnabled, videoEnabled, toggleAudio, toggleVideo, onLeave }) {
+function ControlBar({ audioEnabled, videoEnabled, toggleAudio, toggleVideo, onLeave, isSharingScreen, startScreenShare, stopScreenShare }) {
   function Btn({ onClick, active, Icon, InactiveIcon, label }) {
     return (
       <button
@@ -219,6 +245,14 @@ function ControlBar({ audioEnabled, videoEnabled, toggleAudio, toggleVideo, onLe
     }}>
       <Btn onClick={toggleAudio} active={audioEnabled}   Icon={Mic}   InactiveIcon={MicOff}  label={audioEnabled ? 'Mute'   : 'Unmute'} />
       <Btn onClick={toggleVideo} active={videoEnabled}   Icon={Video} InactiveIcon={VideoOff} label={videoEnabled ? 'Camera' : 'No Cam'} />
+      {startScreenShare && (
+        <Btn
+          onClick={isSharingScreen ? stopScreenShare : startScreenShare}
+          active={!isSharingScreen}
+          Icon={Monitor} InactiveIcon={MonitorOff}
+          label={isSharingScreen ? 'Stop' : 'Share'}
+        />
+      )}
       {onLeave && (
         <button onClick={onLeave}
           style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer', background: CRIMSON, minWidth: 44, minHeight: 44, userSelect: 'none' }}
@@ -246,6 +280,8 @@ export default function LiveStage({ roomId, role = 'viewer', userId, userName, o
     participants, screenShare,
     toggleAudio, toggleVideo,
     audioEnabled, videoEnabled,
+    startScreenShare, stopScreenShare, isSharingScreen,
+    peersRef,
     mediaError, isPanelist,
   } = useLiveStage({ roomId, role, userId, userName });
 
@@ -284,7 +320,8 @@ export default function LiveStage({ roomId, role = 'viewer', userId, userName, o
           <div style={{ display: 'flex', height: '100%', minHeight: minHeight }}>
             {/* Dominant 70% panel — screen share */}
             <div style={{ flex: '0 0 70%', padding: 8 }}>
-              <VideoTile participant={screenShare} isLarge isHighlighted />
+              <VideoTile participant={screenShare} isLarge isHighlighted
+                peerConnection={peersRef?.current?.get(screenShare.peerId)?.pc || null} />
             </div>
             {/* Sidebar 30% — vertical rail of webcam tiles */}
             <div style={{ flex: '0 0 30%', padding: '8px 8px 8px 0', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto' }}>
@@ -294,6 +331,7 @@ export default function LiveStage({ roomId, role = 'viewer', userId, userName, o
                     key={p.peerId}
                     participant={p}
                     isLocal={p.isLocal}
+                    peerConnection={peersRef?.current?.get(p.peerId)?.pc || null}
                   />
                 );
               })}
@@ -314,6 +352,7 @@ export default function LiveStage({ roomId, role = 'viewer', userId, userName, o
                       participant={p}
                       isLocal={p.isLocal}
                       isLarge={count === 1}
+                      peerConnection={peersRef?.current?.get(p.peerId)?.pc || null}
                     />
                   </motion.div>
                 );
@@ -345,6 +384,9 @@ export default function LiveStage({ roomId, role = 'viewer', userId, userName, o
           videoEnabled={videoEnabled}
           toggleAudio={toggleAudio}
           toggleVideo={toggleVideo}
+          isSharingScreen={isSharingScreen}
+          startScreenShare={startScreenShare}
+          stopScreenShare={stopScreenShare}
           onLeave={onLeave}
         />
       )}

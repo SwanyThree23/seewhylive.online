@@ -37,6 +37,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import LiveStage from '../components/live/LiveStage';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -331,6 +332,17 @@ export default function GreenroomEnhanced() {
 
         {/* ZEGO guest approval */}
         <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
+
+        {/* SFU live stage — shows when a room is active; panelists see the grid, viewers see the feed */}
+        {activeRoomId && user?.id && (
+          <LiveStage
+            roomId={activeRoomId}
+            role="panelist"
+            userId={user.id}
+            userName={user.full_name || user.email || 'Host'}
+            minHeight={240}
+          />
+        )}
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>
