@@ -868,6 +868,22 @@ router.post('/fanout-stop', function(req, res) {
   }
 });
 
+// Kill every active FFmpeg fanout process — admin/cleanup endpoint.
+router.post('/fanout-stop-all', function(req, res) {
+  var ids = Object.keys(activeFanouts);
+  var killed = 0;
+  ids.forEach(function(id) {
+    var entry = activeFanouts[id];
+    if (entry && entry.process) {
+      entry.process.kill('SIGTERM');
+      killed++;
+    }
+    delete activeFanouts[id];
+  });
+  console.log('[fanout] stop-all: killed %d processes', killed);
+  res.json({ ok: true, killed: killed, stream_ids: ids });
+});
+
 router.get('/fanout-status', function(req, res) {
   var streamId = req.query.stream_id;
   if (streamId) {
