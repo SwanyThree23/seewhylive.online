@@ -746,8 +746,10 @@ var RESTART_DELAY_MS = 5000;
 function buildFfmpegArgs(ingestUrl, resolvedDests) {
   var args = ['-re', '-i', ingestUrl, '-loglevel', 'warning'];
   resolvedDests.forEach(function(d) {
-    // transmux only — no re-encoding
-    args.push('-c', 'copy', '-f', 'flv', d.url + d.key);
+    // transmux only — no re-encoding; separate url and key with / if needed
+    var url = d.url.replace(/\/$/, '');
+    var dest = url + '/' + d.key;
+    args.push('-c', 'copy', '-f', 'flv', dest);
   });
   return args;
 }

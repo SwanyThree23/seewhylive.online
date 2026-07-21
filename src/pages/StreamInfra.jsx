@@ -753,7 +753,8 @@ function FanoutEngineTab({ user }) {
       .catch(function() { setVaultOk(false); });
   }, [API_BASE]);
 
-  var activeStreams = (fanoutStatus && fanoutStatus.active_streams) || 0;
+  // fanout-status returns { count, active_streams: [] } — use count for the number
+  var activeStreams = (fanoutStatus && fanoutStatus.count) || 0;
   var activePods = Math.max(3, Math.ceil(activeStreams / 22));
 
   return (

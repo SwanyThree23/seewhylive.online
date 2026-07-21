@@ -157,7 +157,6 @@ import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamWebSourceManager from '../components/streaming/StreamWebSourceManager';
 import DualStreamManager from '../components/streaming/DualStreamManager';
 import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
@@ -2177,9 +2176,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
-                {members[0]?.user_id && (
-                  <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
-                )}
                 <VdoNinjaGuestLink roomId={partyId} />
                 {user?.id && (
                   <GuestInviteGenerator userId={user.id} roomId={partyId} streamId={partyId} />
@@ -3075,7 +3071,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
-      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
