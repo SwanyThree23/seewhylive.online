@@ -327,7 +327,7 @@ export default function GreenroomEnhanced() {
         <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
 
         {/* Guest destinations panel */}
-        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <GuestDestinationsPanel participantUserId={user?.id || null} guestName={user?.full_name || 'Guest'} />
 
         {/* ZEGO guest approval */}
         <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />

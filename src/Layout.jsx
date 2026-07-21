@@ -383,7 +383,7 @@ export default function Layout({ children, currentPageName }) {
               style={{ background: 'rgba(8,11,24,0.99)', borderRight: '1px solid rgba(212,175,55,0.12)' }}>
 
               {/* Drawer header */}
-              <div className="flex items-center justify-between px-4 pt-10 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center justify-between px-4 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center"
                     style={{ background: 'linear-gradient(135deg, #6B4423, #d4af37)' }}>

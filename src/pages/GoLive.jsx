@@ -139,6 +139,7 @@ import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -1160,6 +1161,7 @@ export default function GoLive() {
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {user?.id && <FanoutEnginePanel members={members} isHost={true} roomId={partyId} />}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
