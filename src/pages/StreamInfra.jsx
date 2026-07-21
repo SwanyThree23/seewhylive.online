@@ -726,13 +726,163 @@ function StudioTab({ user }) {
 }
 
 /* ═══════════════════════════════════════
+   FANOUT ENGINE TAB
+═══════════════════════════════════════ */
+
+function FanoutEngineTab({ user }) {
+  var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001');
+  var [fanoutStatus, setFanoutStatus] = useState(null);
+  var [vaultOk, setVaultOk] = useState(null);
+
+  useEffect(function() {
+    var cancelled = false;
+    function poll() {
+      fetch(API_BASE + '/fanout-status')
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) { if (!cancelled && d) setFanoutStatus(d); })
+        .catch(function() {});
+    }
+    poll();
+    var id = setInterval(poll, 8000);
+    return function() { cancelled = true; clearInterval(id); };
+  }, [API_BASE]);
+
+  useEffect(function() {
+    fetch(API_BASE + '/vault/key-meta?guestId=health&destId=health')
+      .then(function(r) { setVaultOk(r.status !== 503); })
+      .catch(function() { setVaultOk(false); });
+  }, [API_BASE]);
+
+  var activeStreams = (fanoutStatus && fanoutStatus.active_streams) || 0;
+  var activePods = Math.max(3, Math.ceil(activeStreams / 22));
+
+  return (
+    <div className="space-y-4">
+      {/* Live stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Active Streams', val: String(activeStreams), c: '#C0392B' },
+          { label: 'Pods Running', val: activePods + ' / 20', c: '#d4af37' },
+          { label: 'Streams / Pod', val: '~22', c: '#C9A84C' },
+          { label: 'Max Concurrent', val: '80', c: '#6DBF7E' },
+        ].map(function(s) {
+          return (
+            <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <p className="text-2xl font-bold" style={{ fontFamily: 'Orbitron, monospace', color: s.c }}>{s.val}</p>
+              <p className="text-[10px] text-white/30 uppercase mt-1">{s.label}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* K8s HPA configuration */}
+      <PanelCard title="Kubernetes HPA Configuration" icon={Server} color="#C9A84C">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <p className="text-[10px] text-white/35 uppercase tracking-wider mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Pod Resources</p>
+            {[
+              { label: 'CPU Request',    val: '4 cores' },
+              { label: 'CPU Limit',      val: '8 cores' },
+              { label: 'RAM Request',    val: '8 GiB' },
+              { label: 'RAM Limit',      val: '16 GiB' },
+              { label: 'Streams / Pod',  val: '20–25' },
+              { label: 'CPU / Stream',   val: '0.5–1.0 cores' },
+            ].map(function(row) {
+              return (
+                <div key={row.label} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span className="text-xs text-white/45" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{row.label}</span>
+                  <span className="text-xs font-bold text-[#6DBF7E]" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{row.val}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] text-white/35 uppercase tracking-wider mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.1em' }}>Auto-Scaling Policy</p>
+            {[
+              { label: 'Min Pods',               val: '3' },
+              { label: 'Max Pods',               val: '20' },
+              { label: 'Scale-Up Threshold',     val: '70% CPU' },
+              { label: 'Scale-Down Cooldown',    val: '300 s' },
+              { label: 'Baseline Instance',      val: 'c6i.4xlarge' },
+              { label: 'High-Traffic Instance',  val: 'c6i.12xlarge' },
+            ].map(function(row) {
+              return (
+                <div key={row.label} className="flex items-center justify-between py-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span className="text-xs text-white/45" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{row.label}</span>
+                  <span className="text-xs font-bold text-[#C9A84C]" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{row.val}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </PanelCard>
+
+      {/* FFmpeg transmux settings */}
+      <PanelCard title="FFmpeg Transmux Engine" icon={Zap} color="#d4af37">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { label: 'Video Codec',      val: '-c:v copy',        desc: 'Passthrough — zero re-encoding CPU' },
+            { label: 'Audio Codec',      val: '-c:a copy',        desc: 'Bit-perfect passthrough' },
+            { label: 'Startup Latency',  val: '< 2 s',            desc: 'Per-process spawn target' },
+            { label: 'Auto-Restart',     val: '3 × 5 s delay',    desc: 'Per-destination auto-recovery' },
+            { label: 'Process Isolation',val: 'Per-destination',  desc: 'Failure never cascades' },
+            { label: 'Hardware Accel',   val: 'VA-API / NVENC',   desc: 'GPU nodes auto-enabled' },
+          ].map(function(item) {
+            return (
+              <div key={item.label} className="rounded-lg p-3" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                <p className="text-[10px] text-white/35 uppercase tracking-wider">{item.label}</p>
+                <p className="text-sm font-bold mt-0.5" style={{ fontFamily: 'Share Tech Mono, monospace', color: '#d4af37' }}>{item.val}</p>
+                <p className="text-[10px] text-white/30 mt-0.5">{item.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </PanelCard>
+
+      {/* Vault Pro status + RTMPFanoutPanel */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <PanelCard title="Vault Pro — Key Security" icon={Shield} color="#800020">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-3 rounded-lg" style={{ background: vaultOk === false ? 'rgba(192,57,43,0.08)' : 'rgba(109,191,126,0.07)', border: '1px solid ' + (vaultOk === false ? 'rgba(192,57,43,0.2)' : 'rgba(109,191,126,0.2)') }}>
+              <StatusDot
+                active={vaultOk !== false}
+                pulse={vaultOk === null}
+                label={vaultOk === null ? 'Checking…' : vaultOk ? 'Vault Online' : 'Vault Offline'}
+              />
+            </div>
+            {[
+              { label: 'Encryption',      val: 'AES-256-GCM' },
+              { label: 'Key Storage',     val: 'Server SQLite' },
+              { label: 'Frontend Access', val: 'Zero — sentinel' },
+              { label: 'FFmpeg Decrypt',  val: 'At stream-time' },
+            ].map(function(row) {
+              return (
+                <div key={row.label} className="flex items-center justify-between">
+                  <span className="text-[11px] text-white/40" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{row.label}</span>
+                  <span className="text-[11px] font-bold text-white/70" style={{ fontFamily: 'Share Tech Mono, monospace' }}>{row.val}</span>
+                </div>
+              );
+            })}
+          </div>
+        </PanelCard>
+
+        <div className="md:col-span-2">
+          <RTMPFanoutPanel userId={user?.id} streamId={null} isStreaming={false} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
    MAIN PAGE
 ═══════════════════════════════════════ */
 
 var TABS = [
-  { id: 'stream', label: '🔴 STREAM', sub: 'LiveKit Infrastructure' },
-  { id: 'liveroom', label: '🎙 LIVE ROOM', sub: 'Social Audio Space' },
-  { id: 'studio', label: '🎬 STUDIO', sub: 'Room Management' },
+  { id: 'stream',  label: '🔴 STREAM',         sub: 'LiveKit Infrastructure' },
+  { id: 'liveroom',label: '🎙 LIVE ROOM',       sub: 'Social Audio Space' },
+  { id: 'studio',  label: '🎬 STUDIO',          sub: 'Room Management' },
+  { id: 'fanout',  label: '⚡ FANOUT ENGINE',   sub: 'K8s · HPA · Vault Pro' },
 ];
 
 export default function StreamInfra() {
@@ -809,6 +959,7 @@ export default function StreamInfra() {
             {activeTab === 'stream' && <StreamTab user={user} />}
             {activeTab === 'liveroom' && <LiveRoomTab user={user} />}
             {activeTab === 'studio' && <StudioTab user={user} />}
+            {activeTab === 'fanout' && <FanoutEngineTab user={user} />}
           </motion.div>
         </AnimatePresence>
       </div>

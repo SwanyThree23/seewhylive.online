@@ -114,6 +114,7 @@ import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestDestinationsDashboard from '../components/streaming/GuestDestinationsDashboard';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
@@ -2142,7 +2143,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-2 space-y-3">
                 <GuestQueue roomId={partyId} isHost={canManage} />
                 {user?.id && (
-                  <GuestRTMPPanel participantId={user.id} userId={user.id} />
+                  <GuestDestinationsDashboard
+                    userId={user.id}
+                    roomId={partyId}
+                    isHost={isHost}
+                    participants={members}
+                  />
                 )}
                 <ZEGOGuestApprovalPanel roomId={partyId} isHost={canManage} />
                 <GuestStreamMonitor guestName={user?.full_name || 'Host'} isStreaming={party?.status === 'live'} />

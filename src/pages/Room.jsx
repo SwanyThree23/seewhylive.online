@@ -115,6 +115,8 @@ import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
 import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
 import GuestDestinationsDashboard from '../components/streaming/GuestDestinationsDashboard';
+import LiveStage from '../components/live/LiveStage';
+import { useZegoToken } from '../hooks/useZegoToken';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
@@ -227,6 +229,7 @@ export default function RoomPage() {
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
+  const [showSFUStage, setShowSFUStage] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
@@ -361,6 +364,9 @@ export default function RoomPage() {
   const subCount = useSubscriptionCount(room?.host_id || user?.id);
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
+
+  // ZEGO SFU token — used by LiveStage when showSFUStage is enabled
+  const { token: zegoToken } = useZegoToken({ roomId, userId: user?.id, enabled: showSFUStage && !!user?.id });
 
   const { data: fetchedStages = [] } = useQuery({
     queryKey: ['stages', roomId],
@@ -707,6 +713,17 @@ export default function RoomPage() {
           )}
           {isHost && (
             <div className="flex items-center gap-1 ml-auto">
+              <button
+                onClick={() => setShowSFUStage(v => !v)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
+                style={{
+                  background: showSFUStage ? 'rgba(212,175,55,0.18)' : 'rgba(212,175,55,0.08)',
+                  border: `1px solid ${showSFUStage ? 'rgba(212,175,55,0.5)' : 'rgba(212,175,55,0.2)'}`,
+                  color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif'
+                }}
+              >
+                ⚡ SFU
+              </button>
               <Link to={`/ControlRoom?room_id=${roomId}`}>
                 <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
                   style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -731,6 +748,28 @@ export default function RoomPage() {
           <div className="lg:col-span-3 space-y-4">
             {/* Stage */}
             <div className="rounded-xl p-4" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+              {/* SFU LiveStage view — toggled by the SFU button */}
+              {showSFUStage && user?.id && roomId && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: 1, color: '#D4AF37', textTransform: 'uppercase' }}>
+                      ⚡ SFU Stage (ZEGOCLOUD)
+                    </span>
+                    <button onClick={() => setShowSFUStage(false)} style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      ✕ Close
+                    </button>
+                  </div>
+                  <div style={{ height: 420 }}>
+                    <LiveStage
+                      roomId={roomId}
+                      userId={user.id}
+                      userName={user.full_name || user.email || 'Guest'}
+                      role={isSpeaker ? 'panelist' : 'viewer'}
+                      token={zegoToken}
+                    />
+                  </div>
+                </div>
+              )}
               {stages.length > 0 ? (
                 <Tabs defaultValue={stages[0]?.id} className="space-y-4">
                   {stages.length > 1 && (
