@@ -237,10 +237,10 @@ export default function PollManager() {
         )}
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={false} />
-          <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
+          <EnhancedPollingSystem roomId={activeRoomId} hostId={user?.id} isHost={true} />
+          <InteractivePollingSystem roomId={activeRoomId} isHost={true} currentUser={user} />
           <PollCard poll={null} />
-          <LivePollOverlay roomId={activeRoomId} currentUser={user} isHost={false} />
+          <LivePollOverlay roomId={activeRoomId} currentUser={user} isHost={true} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         </div>
 
@@ -259,7 +259,7 @@ export default function PollManager() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={activeRoom?.viewer_count || 0} />
