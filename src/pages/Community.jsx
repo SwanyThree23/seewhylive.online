@@ -357,7 +357,7 @@ export default function CommunityPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={isAdmin} />
+      <SpotlightBanner communityId={community?.id || null} isAdmin={isAdmin} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -369,7 +369,7 @@ export default function CommunityPage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-      <OnlinePresence userId={null} />
+      <OnlinePresence userId={user?.id || null} />
 
       <CreatePollModal
         isOpen={showCreatePoll}

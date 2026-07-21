@@ -401,7 +401,7 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         <ContentRecommendations />
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <AutomatedClipGenerator streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
         <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />

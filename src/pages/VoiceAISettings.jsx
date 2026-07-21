@@ -79,6 +79,7 @@ export default function VoiceAISettings() {
   const userCommunityId = userCommunity?.id || null;
   const [vs, setVs] = useState(load);
   const [saved, setSaved] = useState(false);
+  const [showZEGOSettings, setShowZEGOSettings] = useState(false);
 
   const update = useCallback((key, val) => {
     setVs(prev => {
@@ -245,7 +246,7 @@ export default function VoiceAISettings() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
-          <ZEGOSettingsDrawer isOpen={false} onClose={() => {}} roomId={activeRoomId} />
+          <ZEGOSettingsDrawer isOpen={showZEGOSettings} onClose={() => setShowZEGOSettings(false)} roomId={activeRoomId} />
           <BackgroundCustomizer onBackgroundChange={() => {}} />
           <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
           <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />

@@ -327,7 +327,7 @@ export default function CommunitySettingsPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SpotlightBanner communityId={communityId} isAdmin={true} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
