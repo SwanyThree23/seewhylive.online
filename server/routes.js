@@ -731,6 +731,27 @@ router.get('/vault/key-meta', function(req, res) {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
+// Dedicated health check — tests whether VAULT_SECRET is configured and
+// encryption is operational without reading or writing any real key data.
+router.get('/vault/health', function(req, res) {
+  if (!vault) {
+    return res.status(503).json({ ok: false, ready: false, reason: 'vault module not loaded' });
+  }
+  var secret = process.env.VAULT_SECRET || '';
+  if (!secret || secret.length !== 64) {
+    return res.status(503).json({ ok: false, ready: false, reason: 'VAULT_SECRET not configured (need 64-char hex)' });
+  }
+  try {
+    // Round-trip a test value to confirm encrypt/decrypt works
+    var testCipher = vault.encrypt('__vault_health_check__');
+    var testPlain  = vault.decrypt(testCipher);
+    if (testPlain !== '__vault_health_check__') throw new Error('round-trip mismatch');
+    res.json({ ok: true, ready: true, reason: 'AES-256-GCM operational' });
+  } catch(e) {
+    res.status(503).json({ ok: false, ready: false, reason: e.message });
+  }
+});
+
 // ── RTMP FANOUT ENGINE ────────────────────────────────────────
 // Each guest gets their own isolated FFmpeg process (failure isolation).
 // Keys are resolved from Vault Pro; plaintext keys in body are only a fallback.

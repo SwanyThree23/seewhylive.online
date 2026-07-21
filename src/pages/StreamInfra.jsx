@@ -730,7 +730,7 @@ function StudioTab({ user }) {
 ═══════════════════════════════════════ */
 
 function FanoutEngineTab({ user }) {
-  var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001');
+  var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
   var [fanoutStatus, setFanoutStatus] = useState(null);
   var [vaultOk, setVaultOk] = useState(null);
 
@@ -748,8 +748,9 @@ function FanoutEngineTab({ user }) {
   }, [API_BASE]);
 
   useEffect(function() {
-    fetch(API_BASE + '/vault/key-meta?guestId=health&destId=health')
-      .then(function(r) { setVaultOk(r.status !== 503); })
+    fetch(API_BASE + '/vault/health')
+      .then(function(r) { return r.json(); })
+      .then(function(d) { setVaultOk(d.ready === true); })
       .catch(function() { setVaultOk(false); });
   }, [API_BASE]);
 
