@@ -202,7 +202,7 @@ export default function DataExportPage() {
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
-          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         </div>
       </div>
       <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />

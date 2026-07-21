@@ -249,7 +249,7 @@ export default function VoiceAISettings() {
           <ZEGOSettingsDrawer isOpen={showZEGOSettings} onClose={() => setShowZEGOSettings(false)} roomId={activeRoomId} />
           <BackgroundCustomizer onBackgroundChange={() => {}} />
           <AIPersonaCustomizer roomId={activeRoomId} sessionId={activeRoomId} onCustomized={() => {}} />
-          <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="" viewerCount={0} elapsedSeconds={0} />
+          <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="" viewerCount={0} elapsedSeconds={0} />
           <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} />
           <ContentRecommendations />
           <OnlineUsersGrid compact maxVisible={10} />

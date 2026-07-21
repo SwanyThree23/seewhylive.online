@@ -2169,14 +2169,14 @@ export default function SeeWhyLIVEv36() {
         <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <AudienceInsights creatorId={user?.id} />
         <SubscriptionManager creatorId={user?.id} />
-        <InteractivePollingSystem roomId={activeRoomId} isHost={false} currentUser={user} />
+        <InteractivePollingSystem roomId={activeRoomId} isHost={true} currentUser={user} />
         <VirtualGoodsStore userId={user?.id} />
         <EarningsBreakdown creatorId={user?.id} />
         <OnlineUsersGrid compact maxVisible={12} />
         <ContentRecommendations />
         <CollaborationMatcher />
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
       </div>
     </>
   );

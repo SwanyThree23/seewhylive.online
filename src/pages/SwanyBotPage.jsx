@@ -269,8 +269,8 @@ export default function SwanyBotPage() {
           SwanyBot · SeeWhy LIVE · SwanyThree EntTech LLC · Domino Culture AI
         </div>
         <SwanyBotEnhanced userId={user?.id} conversationId={null} onContextReady={() => {}} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={true} />
+        <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="SwanyBot Session" viewerCount={0} elapsedSeconds={0} />
         <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
         <div style={{ marginTop: 10 }}>
           <ShareToSocial />
