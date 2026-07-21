@@ -819,7 +819,9 @@ router.post('/fanout-start', async function(req, res) {
     var b = req.body;
     var streamId = b.stream_id || 'default';
     var guestId  = b.guest_id  || streamId;
-    var ingestUrl = 'rtmp://localhost:1935/live/' + (b.room_id || b.stream_key || 'stream');
+    var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
+    var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
+    var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
     var destinations = b.destinations || [];
 
     // Stop any existing fanout for this stream
