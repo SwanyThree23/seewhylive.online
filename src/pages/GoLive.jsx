@@ -140,6 +140,7 @@ import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
+import LiveStage from '../components/live/LiveStage';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -1162,6 +1163,16 @@ export default function GoLive() {
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {user?.id && <FanoutEnginePanel members={members} isHost={true} roomId={partyId} />}
+      {partyId && user?.id && (
+        <LiveStage
+          roomId={partyId}
+          role="panelist"
+          userId={user.id}
+          userName={user.full_name || user.email || 'Host'}
+          onLeave={function() { setPartyId(null); setStep('pick'); }}
+          minHeight={280}
+        />
+      )}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
