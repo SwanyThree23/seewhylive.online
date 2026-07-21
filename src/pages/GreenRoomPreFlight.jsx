@@ -204,7 +204,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       {/* Stream health */}
       <ZEGOStreamHealthCard roomId={activeRoomId} />
       <GuestQueue roomId={activeRoomId} isHost={false} />
-      <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
+      <LocalVideoTile stream={streamRef.current} audioEnabled={previewMicOn} videoEnabled={previewVideoOn} userName="You" isHost={false} />
       <OctagonalVideoWindow title="Preview" isMuted={!previewMicOn} isVideoOff={!previewVideoOn} onMicToggle={() => setPreviewMicOn(v => !v)} onVideoToggle={() => setPreviewVideoOn(v => !v)} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
       <DevicePreview user={user} onDeviceState={() => {}} />

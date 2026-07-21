@@ -2169,18 +2169,18 @@ export default function SeeWhyLIVEv41() {
       <SwanyBotWidget />
       <SwanyBotEnhanced />
       <NotificationBell />
-      <SwanDirectorHUD roomId={null} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
-      <GiftSystem roomId={null} userId={user?.id || null} isHost={true} />
-      <GiftLeaderboard roomId={null} />
+      <SwanDirectorHUD roomId={activeRoomId} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
+      <GiftSystem roomId={activeRoomId} userId={user?.id || null} isHost={true} />
+      <GiftLeaderboard roomId={activeRoomId} />
       <ViewerCount count={0} peakViewers={0} />
       <HostAlertCenter />
-      <StreamHealthMonitor isStreaming={false} />
-      <SwanAIRecommendations roomId={null} currentLayout='v41' viewerCount={0} />
+      <StreamHealthMonitor isStreaming={!!activeRoomId} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={0} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <MilestoneAlerts userId={user?.id || null} roomId={null} />
+      <MilestoneAlerts userId={user?.id || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <BackgroundCustomizer />
     </div>
   );
