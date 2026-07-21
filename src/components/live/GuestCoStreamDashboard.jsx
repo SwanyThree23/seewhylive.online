@@ -14,8 +14,9 @@ import {
   Wifi, WifiOff, Pin, Users, Zap, Crown, Lock, Unlock,
   BarChart2, Signal, Settings, X, Eye, EyeOff, Hand,
   Copy, RefreshCw, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
-  Timer, DollarSign,
+  Timer, DollarSign, Tv,
 } from 'lucide-react';
+import GuestRTMPPanel from '../streaming/GuestRTMPPanel';
 
 const G       = '#D4AF37';
 const CRIMSON = '#800020';
@@ -228,8 +229,37 @@ function GuestCard({ participant, isHost, roomId, onSpotlight, spotlitId, raised
           {!isHostP && isHost && (
             <CBtn icon={X} color="#C0392B" onClick={() => kick.mutate()} />
           )}
+          {isHost && !isHostP && (
+            <CBtn icon={Tv} color={showRTMP ? G : 'rgba(255,255,255,0.35)'} active={showRTMP}
+              onClick={() => setShowRTMP(v => !v)} title="Guest Destinations" />
+          )}
         </div>
       </div>
+
+      <AnimatePresence>
+        {showRTMP && !isHostP && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div style={{
+              padding: '8px 10px 10px',
+              borderTop: '1px solid rgba(255,255,255,0.05)',
+              background: 'rgba(0,0,0,0.3)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
+                <Tv style={{ width: 10, height: 10, color: G }} />
+                <span style={{ ...T, color: G, fontSize: 9, fontWeight: 900, letterSpacing: 0.5 }}>
+                  {participant.user_name}'s STREAM DESTINATIONS
+                </span>
+              </div>
+              <GuestRTMPPanel userId={participant.user_id} participantId={participant.id} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showTip && (
