@@ -983,7 +983,7 @@ export default function StateVsState() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <BattleMode roomId={roomId} hostId={user?.id} isHost={false} />
+        <BattleMode roomId={roomId} hostId={user?.id} isHost={true} />
         <SocialLeaderboard roomId={roomId} />
         <GiftShopTray roomId={roomId} currentUser={user} />
         <BattleScoreboard roomId={roomId} />
