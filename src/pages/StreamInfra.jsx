@@ -812,8 +812,8 @@ export default function StreamInfra() {
           </motion.div>
         </AnimatePresence>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="infra" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="infra" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
