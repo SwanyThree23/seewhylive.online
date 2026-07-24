@@ -358,8 +358,8 @@ export default function AIModerationPage() {
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="moderation" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />

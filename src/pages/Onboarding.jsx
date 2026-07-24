@@ -700,7 +700,7 @@ export default function OnboardingPage() {
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );
