@@ -565,6 +565,8 @@ export default function GoLive() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
+  const [noiseSupp,   setNoiseSupp]   = useState(true);
+  const [echoCan,     setEchoCan]     = useState(true);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const cameraRetryRef = useRef(null);
   // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them

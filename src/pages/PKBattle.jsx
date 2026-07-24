@@ -102,6 +102,7 @@ export default function PKBattlePage() {
 
   const battles = tab === 'active' ? activeBattles : endedBattles;
   const displayBattle = selectedBattle || activeBattles[0];
+  const activeBattle = displayBattle;
 
   const totalActiveBattles = activeBattles.filter(b => b.status === 'active').length;
   const pendingBattles = activeBattles.filter(b => b.status === 'pending').length;

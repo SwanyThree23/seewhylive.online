@@ -545,60 +545,6 @@ export default function PKBattlePage() {
     );
   }
 
-  const names = battle?.title?.split(' vs ') || [leftName || 'Left', rightName || 'Right'];
-  const [bLeftName, bRightName] = names;
-  const bLeftStream = leftStream;
-  const bRightStream = rightStream;
-
-  const prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  const prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  const [activeCamId, setActiveCamId] = useState(prefCamPK);
-  const [activeMicId, setActiveMicId] = useState(prefMicPK);
-  const { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
-  const handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
-  const { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
-  const announceJoinBattleRef = useRef(announceJoinBattle);
-  const leaveRoomBattleRef = useRef(leaveRoomBattle);
-  useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
-  useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
-  useEffect(() => {
-    if (!user?.id || !battleId) return;
-    announceJoinBattleRef.current?.(user.id);
-  }, [user?.id, battleId]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => () => leaveRoomBattleRef.current?.(), []);
-
-  const [activeBattlePc, setActiveBattlePc] = useState(null);
-  useEffect(() => {
-    const entries = Array.from(battlePeersRef.current.entries());
-    const connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
-    setActiveBattlePc(connected ? connected[1].pc : null);
-  }, [battleRemoteStreams]); // eslint-disable-line react-hooks/exhaustive-deps
-  const { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
-
-  const [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
-  const subCount = useSubscriptionCount(user?.id);
-  const [activeScene, setActiveScene] = useState('main');
-  const [selectedBitrate, setSelectedBitrate] = useState('auto');
-
-  const { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
-  const { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: user?.id || '', title: battle?.title || 'PK Battle', stream: localCamStream });
-  const [pkChatMessages, setPkChatMessages] = useState([]);
-  const [pkHypeLevel, setPkHypeLevel] = useState(0);
-  const [showPKCamSettings, setShowPKCamSettings] = useState(false);
-  const isHostBattle = !!(user?.id && battle?.creator_id === user?.id);
-  useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
-  useVoiceAgentRuntime({ chatMessage: pkChatMessages[pkChatMessages.length - 1] || null });
-
-  const [leftCaptureStream, setLeftCaptureStream] = React.useState(null);
-  const [rightCaptureStream, setRightCaptureStream] = React.useState(null);
-
-  React.useEffect(() => () => {
-    leftCaptureStream?.getTracks().forEach(t => t.stop());
-    rightCaptureStream?.getTracks().forEach(t => t.stop());
-  }, [leftCaptureStream, rightCaptureStream]);
-
   const battleCompositorSlots = [
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },

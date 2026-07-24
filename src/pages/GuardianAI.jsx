@@ -124,6 +124,13 @@ export default function GuardianAI() {
   const logEndRef = useRef(null);
   const { toasts: modToasts, push: pushModToast } = useModerationToasts();
 
+  function handleThresholdChange(key, value) {
+    if (key === 'flagT') setFlagT(value);
+    else if (key === 'muteT') setMuteT(value);
+    else if (key === 'banT') setBanT(value);
+    setThresholdSaved(false);
+  }
+
   const { data: moderations = [], isLoading } = useQuery({
     queryKey: ['guardian-moderations'],
     queryFn: () => base44.entities.ContentModeration.list('-created_date', 60),

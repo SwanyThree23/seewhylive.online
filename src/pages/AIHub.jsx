@@ -38,6 +38,7 @@ const PINK   = '#C0392B';
 const CYAN   = '#4A8A7A';
 const PURPLE = '#7B5DA6';
 const GREEN  = '#6DBF7E';
+const AMBER  = '#D4854A';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -153,6 +154,21 @@ export default function AIHub() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { data: recentRoomMessages = [] } = useQuery({
+    queryKey: ['aihub-recent-messages', activeRoomId],
+    queryFn: () => base44.entities.Message.filter({ room_id: activeRoomId }, '-created_date', 50),
+    enabled: !!activeRoomId,
+    refetchInterval: 10000,
+  });
+  const ariaPostMut = useMutation({
+    mutationFn: (msg) => base44.entities.Message.create({
+      room_id: activeRoomId,
+      user_id: user?.id,
+      user_name: 'ARIA AI',
+      content: msg,
+      is_moderator: true,
+    }),
+  });
   const [tipTotal, setTipTotal] = useState(0);
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [guardianOn, setGuardianOn]   = useState(true);

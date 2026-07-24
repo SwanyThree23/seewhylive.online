@@ -35,7 +35,9 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import CreatorBridge from '../components/social/CreatorBridge';
 const G = '#D4AF37';
+const GOLD = '#D4AF37';
 const BG = '#0A0710';
+const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 export default function OverlayEditorPage() {
   const [activeTab, setActiveTab] = useState('theme');
