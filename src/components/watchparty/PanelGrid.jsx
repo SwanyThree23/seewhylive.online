@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
+import { useAudioLevel } from '../../hooks/useAudioLevel';
 
 var COLORS = ['#8B6F47', '#6B7C4A', '#CC7755', '#4A6B3A', '#7C4A3A', '#6B4A4A'];
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
@@ -9,65 +10,6 @@ var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75
 function getColor(name) {
   var idx = (name ? name.charCodeAt(0) : 0) % COLORS.length;
   return COLORS[idx];
-}
-
-var AUDIO_HOLD_MS = 400; // keep speaking indicator on after last peak to avoid flicker
-
-function useAudioLevel(stream) {
-  var [isSpeaking, setIsSpeaking] = useState(false);
-  var ctxRef = useRef(null);
-  var rafRef = useRef(null);
-  var holdTimerRef = useRef(null);
-  var speakingRef = useRef(false);
-
-  useEffect(() => {
-    if (!stream) { setIsSpeaking(false); return; }
-    var audioTracks = stream.getAudioTracks();
-    if (!audioTracks.length) { setIsSpeaking(false); return; }
-
-    try {
-      var ctx = new (window.AudioContext || window.webkitAudioContext)();
-      ctxRef.current = ctx;
-      var analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      var source = ctx.createMediaStreamSource(stream);
-      source.connect(analyser);
-      var data = new Uint8Array(analyser.frequencyBinCount);
-
-      var check = function() {
-        analyser.getByteTimeDomainData(data);
-        var sum = 0;
-        for (var i = 0; i < data.length; i++) {
-          var v = (data[i] - 128) / 128;
-          sum += v * v;
-        }
-        var rms = Math.sqrt(sum / data.length);
-        if (rms > 0.01) {
-          clearTimeout(holdTimerRef.current);
-          if (!speakingRef.current) { speakingRef.current = true; setIsSpeaking(true); }
-        } else if (speakingRef.current) {
-          clearTimeout(holdTimerRef.current);
-          holdTimerRef.current = setTimeout(function() {
-            speakingRef.current = false;
-            setIsSpeaking(false);
-          }, AUDIO_HOLD_MS);
-        }
-        rafRef.current = requestAnimationFrame(check);
-      };
-      check();
-    } catch (e) {
-      setIsSpeaking(false);
-    }
-
-    return function() {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      clearTimeout(holdTimerRef.current);
-      speakingRef.current = false;
-      if (ctxRef.current) { try { ctxRef.current.close(); } catch (e) {} }
-    };
-  }, [stream]);
-
-  return isSpeaking;
 }
 
 function SignalBars({ bars }) {
@@ -86,7 +28,7 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
   var [menuOpen, setMenuOpen] = useState(false);
   var [volume, setVolume] = useState(1);
   var [showVolume, setShowVolume] = useState(false);
-  var audioSpeaking = useAudioLevel(stream);
+  var { isSpeaking: audioSpeaking } = useAudioLevel(stream);
   var speaking = stream ? audioSpeaking : (member.is_audio_enabled !== false);
   var color = getColor(member.user_name);
   var isHostMember = member.user_id === hostId;
@@ -340,7 +282,7 @@ function EmptyTile({ onClick, canInvite }) {
 
 function CompactTile({ member, hostId, stream, isLocal, isSpeaking: isSpeakingFallback }) {
   var videoRef = useRef(null);
-  var audioSpeaking = useAudioLevel(stream);
+  var { isSpeaking: audioSpeaking } = useAudioLevel(stream);
   var isSpeaking = stream ? audioSpeaking : isSpeakingFallback;
   useEffect(() => {
     if (videoRef.current) videoRef.current.srcObject = stream || null;
