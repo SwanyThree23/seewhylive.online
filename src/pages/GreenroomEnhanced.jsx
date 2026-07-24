@@ -38,6 +38,7 @@ import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
 import LiveStage from '../components/live/LiveStage';
+import { useZegoToken } from '../hooks/useZegoToken';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -53,6 +54,7 @@ export default function GreenroomEnhanced() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { token: zegoToken } = useZegoToken({ roomId: activeRoomId, userId: user?.id, enabled: !!activeRoomId && !!user?.id });
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -340,6 +342,7 @@ export default function GreenroomEnhanced() {
             role="panelist"
             userId={user.id}
             userName={user.full_name || user.email || 'Host'}
+            token={zegoToken}
             minHeight={240}
           />
         )}
