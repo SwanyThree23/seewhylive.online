@@ -766,6 +766,8 @@ export default function RoomPage() {
                       userName={user.full_name || user.email || 'Guest'}
                       role={isSpeaker ? 'panelist' : 'viewer'}
                       token={zegoToken}
+                      hostUserId={room?.host_id}
+                      hostName={hostParticipant?.user_name || room?.host_name || 'Creator'}
                     />
                   </div>
                 </div>

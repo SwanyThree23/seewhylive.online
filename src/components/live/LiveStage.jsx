@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import FollowButton from '@/components/shared/FollowButton';
+import { useZegoToken } from '@/hooks/useZegoToken';
 
 // Super tip threshold — transactions ≥ this amount trigger the hero card
 const SUPER_TIP_THRESHOLD = 25;
@@ -85,6 +86,15 @@ function makeStreamId(roomId, userId, type) {
  *   - sendChat() / sendReaction(): outgoing data channel messages
  */
 export function useLiveStage({ roomId, userId, userName, role, token }) {
+  // Auto-fetch ZEGO token when the caller hasn't provided one (GoLive, GreenroomEnhanced).
+  // When an external token IS provided this hook is disabled — zero extra requests.
+  const { token: fetchedToken } = useZegoToken({
+    roomId,
+    userId,
+    enabled: !token && !!roomId && !!userId,
+  });
+  const effectiveToken = token || fetchedToken;
+
   const [localStream,   setLocalStream]   = useState(null);
   const [remoteStreams, setRemoteStreams]  = useState([]); // [{ streamId, userId, userName, stream, type }]
   const [screenShare,   setScreenShare]   = useState(null);
@@ -103,7 +113,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
   const reactionSeq  = useRef(0);
 
   useEffect(() => {
-    if (!roomId || !userId || !token) return;
+    if (!roomId || !userId || !effectiveToken) return;
     let mounted = true;
 
     (async () => {
@@ -216,7 +226,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
       });
 
       // ── 6. Login room ─────────────────────────────────────────────────
-      await engine.loginRoom(roomId, token, { userID: userId, userName });
+      await engine.loginRoom(roomId, effectiveToken, { userID: userId, userName });
 
       // ── 6a. Sound level monitor → Stage/Others auto-spotlight ─────────
       // streamID format: {roomId}_{userId}_{type}; parts[1] is the userId.
@@ -269,7 +279,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
       })();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, userId, token]);
+  }, [roomId, userId, effectiveToken]);
 
   // ── Mic / camera toggles ───────────────────────────────────────────
   const toggleMic = useCallback(() => {
