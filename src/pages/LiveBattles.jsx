@@ -240,7 +240,7 @@ export default function LiveBattles() {
       <MilestoneAlerts userId={user?.id} roomId={roomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      {roomId && <BattleMode roomId={roomId} isHost={false} hostName={user?.full_name || ''} />}
+      {roomId && <BattleMode roomId={roomId} isHost={true} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={roomId != null} />}

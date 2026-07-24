@@ -276,7 +276,7 @@ export default function PKBattlePage() {
       <MilestoneAlerts userId={user?.id} roomId={activeBattle?.id || null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={false} hostName={user?.full_name || ''} />}
+      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={true} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={activeBattle?.status === 'active'} />}
