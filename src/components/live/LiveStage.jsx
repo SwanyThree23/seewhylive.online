@@ -32,6 +32,8 @@ import {
   MessageSquare, Send, X, Users, Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const GOLD  = '#D4AF37';
@@ -89,6 +91,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
   const [chatMessages,  setChatMessages]  = useState([]);
   const [lastReaction,  setLastReaction]  = useState(null); // { id, emoji, fromUser }
   const [isPublishing,  setIsPublishing]  = useState(role === 'panelist');
+  const [activeSpeakerId, setActiveSpeakerId] = useState(null); // userId of loudest speaker
 
   const engineRef    = useRef(null);
   const publishedRef = useRef(false);
@@ -202,6 +205,20 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
       // ── 6. Login room ─────────────────────────────────────────────────
       await engine.loginRoom(roomId, token, { userID: userId, userName });
 
+      // ── 6a. Sound level monitor → Stage/Others auto-spotlight ─────────
+      // streamID format: {roomId}_{userId}_{type}; parts[1] is the userId.
+      engine.startSoundLevelMonitor(500);
+      engine.on('soundLevelUpdate', (soundLevelList) => {
+        if (!mounted) return;
+        const loudest = [...(soundLevelList || [])]
+          .filter(s => s.soundLevel > 15)
+          .sort((a, b) => b.soundLevel - a.soundLevel)[0];
+        if (loudest) {
+          const parts = loudest.streamID.split('_');
+          if (parts.length >= 3) setActiveSpeakerId(parts[1]);
+        }
+      });
+
       // ── 7. Panelist: create + publish camera stream ───────────────────
       // Viewers never reach this block — zero getUserMedia for viewers.
       if (role === 'panelist') {
@@ -228,6 +245,8 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
           engine.stopPublishingStream(makeStreamId(roomId, userId, 'screen'));
           publishedRef.current = false;
         }
+        engine.stopSoundLevelMonitor();
+        engine.off('soundLevelUpdate');
         engine.off('roomStreamUpdate');
         engine.off('networkQuality');
         engine.off('roomUserUpdate');
@@ -322,7 +341,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
     localStream, remoteStreams, screenShare,
     micOn, camOn, quality, viewerCount,
     chatMessages, lastReaction,
-    isPublishing,
+    isPublishing, activeSpeakerId,
     toggleMic, toggleCam,
     startScreenShare, stopScreenShare,
     upgradeToParticipant,
@@ -336,7 +355,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
  * The SFU delivers each encoded track; assigning stream → srcObject
  * is the critical bridge from network transport to DOM rendering.
  */
-function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality }) {
+function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality, giftTotal }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -380,6 +399,12 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
         </span>
         {/* SFU downlink quality dot */}
         <div className="w-2 h-2 rounded-full shrink-0" style={{ background: qualityColor }} title={`Network: ${quality}`} />
+        {/* Per-seat gift total — real-time DB aggregate */}
+        {giftTotal > 0 && (
+          <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}>
+            🎁 {giftTotal}
+          </span>
+        )}
         {/* Muted badge */}
         {isMuted && (
           <span className="flex items-center gap-1 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(192,57,43,0.85)', fontFamily: FONT }}>
@@ -534,16 +559,31 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
     localStream, remoteStreams, screenShare,
     micOn, camOn, quality, viewerCount,
     chatMessages, lastReaction,
-    isPublishing,
+    isPublishing, activeSpeakerId,
     toggleMic, toggleCam,
     startScreenShare, stopScreenShare,
     upgradeToParticipant,
     sendChat, sendReaction,
   } = useLiveStage({ roomId, userId, userName, role, token });
 
-  const [pinnedId,         setPinnedId]         = useState(null);
-  const [showChat,         setShowChat]         = useState(false);
+  const [pinnedId,          setPinnedId]          = useState(null);
+  const [showChat,          setShowChat]          = useState(false);
   const [floatingReactions, setFloatingReactions] = useState([]);
+
+  // Per-seat gift totals keyed by userId — polled every 15s
+  const { data: giftRows = [] } = useQuery({
+    queryKey: ['stage-gifts', roomId],
+    queryFn:  () => base44.entities.Transaction.filter({ room_id: roomId }),
+    enabled:  !!roomId,
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+  const giftTotals = useMemo(() =>
+    giftRows.reduce((acc, row) => {
+      if (row.user_id) acc[row.user_id] = (acc[row.user_id] || 0) + (row.amount || 0);
+      return acc;
+    }, {}),
+  [giftRows]);
 
   // Build floating reaction list from incoming lastReaction events
   useEffect(() => {
@@ -563,11 +603,11 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
   const cameraTiles = useMemo(() => {
     const tiles = [];
     if (isPublishing && localStream) {
-      tiles.push({ id: `local_${userId}`, stream: localStream, label: userName, isLocal: true, isMuted: !micOn, isCamOff: !camOn });
+      tiles.push({ id: `local_${userId}`, userId, stream: localStream, label: userName, isLocal: true, isMuted: !micOn, isCamOff: !camOn });
     }
     for (const r of remoteStreams) {
       if (r.type !== 'camera') continue;
-      tiles.push({ id: r.streamId, stream: r.stream, label: r.userName, isLocal: false, isMuted: false, isCamOff: false });
+      tiles.push({ id: r.streamId, userId: r.userId, stream: r.stream, label: r.userName, isLocal: false, isMuted: false, isCamOff: false });
     }
     return tiles;
   }, [isPublishing, localStream, remoteStreams, userId, userName, micOn, camOn]);
@@ -580,14 +620,16 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           <div className="flex-[7] min-w-0 min-h-0">
             <VideoTile
               stream={screenShare.stream}
-              label={screenShare.local ? `${userName}'s Screen` : 'Shared Screen'}
+              label={screenShare.local
+                ? `${userName}'s Screen`
+                : `${remoteStreams.find(r => r.userId === screenShare.userId)?.userName || 'Guest'}'s Screen`}
               isMuted={false} isCamOff={false} quality={quality}
             />
           </div>
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {cameraTiles.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} />
+                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
               </div>
             ))}
           </div>
@@ -602,12 +644,12 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
       return (
         <div className="flex-1 flex gap-2 min-h-0">
           <div className="flex-[7] min-w-0 min-h-0">
-            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} />
+            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} giftTotal={giftTotals[pinnedTile.userId] || 0} />
           </div>
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {rest.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} />
+                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
               </div>
             ))}
           </div>
@@ -615,7 +657,52 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
       );
     }
 
-    // Standard dynamic grid
+    // Stage / Others split: 5+ panelists with no explicit pin or screen share.
+    // Auto-spotlights the loudest speaker (soundLevelUpdate); others collapse to
+    // a compact horizontal strip. Click any strip tile to pin them to spotlight.
+    if (cameraTiles.length >= 5) {
+      const spotlightTile = cameraTiles.find(t => t.userId === activeSpeakerId) || cameraTiles[0];
+      const otherTiles    = cameraTiles.filter(t => t !== spotlightTile);
+      return (
+        <div className="flex-1 flex flex-col gap-2 min-h-0">
+          <div className="flex-1 min-h-0">
+            <VideoTile
+              {...spotlightTile}
+              isPinned={false}
+              onPin={() => togglePin(spotlightTile.id)}
+              quality={quality}
+              giftTotal={giftTotals[spotlightTile.userId] || 0}
+            />
+          </div>
+          {/* Others strip — horizontal scroll, no scrollbar */}
+          <div
+            className="shrink-0 flex gap-1.5 overflow-x-auto"
+            style={{ height: 88, scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {otherTiles.map(tile => (
+              <div
+                key={tile.id}
+                className="shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all"
+                style={{
+                  width:  120,
+                  height: 88,
+                  border: tile.userId === activeSpeakerId
+                    ? `2px solid ${GOLD}`
+                    : '1px solid rgba(255,255,255,0.08)',
+                  transition: 'border-color 0.3s',
+                }}
+                onClick={() => togglePin(tile.id)}
+                title={`Pin ${tile.label}`}
+              >
+                <VideoTile {...tile} onPin={null} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Standard dynamic grid (≤4 tiles)
     return (
       <div className={`flex-1 grid gap-2 min-h-0 ${gridClass(cameraTiles.length)}`}>
         <AnimatePresence>
@@ -629,7 +716,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               transition={{ duration: 0.2 }}
               className="min-h-0 min-w-0"
             >
-              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} />
+              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
             </motion.div>
           ))}
         </AnimatePresence>
