@@ -29,11 +29,12 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MicOff, VideoOff, MonitorOff, Pin, Radio, Wifi,
-  MessageSquare, Send, X, Users, Zap, Trophy,
+  MessageSquare, Send, X, Users, Zap, Trophy, Share2, Volume2, VolumeX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import FollowButton from '@/components/shared/FollowButton';
 
 // Super tip threshold — transactions ≥ this amount trigger the hero card
 const SUPER_TIP_THRESHOLD = 25;
@@ -367,17 +368,23 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
  * The SFU delivers each encoded track; assigning stream → srcObject
  * is the critical bridge from network transport to DOM rendering.
  */
-function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality, giftTotal }) {
+function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality, giftTotal, forceMuted }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
-    // Attach SFU track bundle to video element
     el.srcObject = stream || null;
     if (stream) el.play().catch(() => {});
     return () => { el.srcObject = null; };
   }, [stream]);
+
+  // Viewer-side audio mute — applied via element property so it persists across re-renders
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el || isLocal) return;
+    el.muted = !!forceMuted;
+  }, [forceMuted, isLocal]);
 
   const qualityColor = quality === 'good' ? GREEN : quality === 'warning' ? GOLD : RED;
 
@@ -689,7 +696,7 @@ function GiftLeaderboard({ entries, onClose }) {
 }
 
 // ─── LiveStage (main export) ───────────────────────────────────────────────
-export default function LiveStage({ roomId, userId, userName, role = 'viewer', token }) {
+export default function LiveStage({ roomId, userId, userName, role = 'viewer', token, hostUserId, hostName }) {
   const {
     localStream, remoteStreams, screenShare,
     micOn, camOn, quality, viewerCount, viewers,
@@ -706,6 +713,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
   const [showLeaderboard,   setShowLeaderboard]   = useState(false);
   const [floatingReactions, setFloatingReactions] = useState([]);
   const [superTip,          setSuperTip]          = useState(null); // { amount, user_name }
+  const [viewerMuted,       setViewerMuted]       = useState(false); // mute all remote audio without leaving
   const seenTxIds = useRef(new Set());
 
   // Transactions polled at two rates:
@@ -802,7 +810,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {cameraTiles.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
+                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
               </div>
             ))}
           </div>
@@ -817,12 +825,12 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
       return (
         <div className="flex-1 flex gap-2 min-h-0">
           <div className="flex-[7] min-w-0 min-h-0">
-            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} giftTotal={giftTotals[pinnedTile.userId] || 0} />
+            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} giftTotal={giftTotals[pinnedTile.userId] || 0} forceMuted={viewerMuted} />
           </div>
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {rest.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
+                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
               </div>
             ))}
           </div>
@@ -845,6 +853,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               onPin={() => togglePin(spotlightTile.id)}
               quality={quality}
               giftTotal={giftTotals[spotlightTile.userId] || 0}
+              forceMuted={viewerMuted}
             />
           </div>
           {/* Others strip — horizontal scroll, no scrollbar */}
@@ -867,7 +876,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
                 onClick={() => togglePin(tile.id)}
                 title={`Pin ${tile.label}`}
               >
-                <VideoTile {...tile} onPin={null} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
+                <VideoTile {...tile} onPin={null} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
               </div>
             ))}
           </div>
@@ -891,7 +900,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               transition={{ duration: 0.2 }}
               className="min-h-0 min-w-0"
             >
-              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
+              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
             </motion.div>
           ))}
 
@@ -1077,16 +1086,61 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             </>
           )}
 
-          {/* Viewer upgrade button — shown when not yet publishing */}
+          {/* Viewer controls row */}
           {!isPublishing && (
-            <button
-              onClick={upgradeToParticipant}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
-              style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Go on Stage
-            </button>
+            <>
+              {/* Sticky "+ Follow [Host]" CTA — TikTok LIVE pattern */}
+              {hostUserId && (
+                <FollowButton
+                  targetUserId={hostUserId}
+                  targetUserName={hostName || 'Creator'}
+                />
+              )}
+
+              {/* Go on Stage */}
+              <button
+                onClick={upgradeToParticipant}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
+                style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD }}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Go on Stage
+              </button>
+
+              {/* Viewer audio mute toggle — mute all remote streams without leaving */}
+              <button
+                onClick={() => setViewerMuted(v => !v)}
+                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-all text-[10px] font-bold"
+                style={{
+                  fontFamily: FONT,
+                  background: viewerMuted ? 'rgba(192,57,43,0.14)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${viewerMuted ? 'rgba(192,57,43,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  color: viewerMuted ? RED : 'rgba(255,255,255,0.6)',
+                }}
+                title={viewerMuted ? 'Unmute stream' : 'Mute stream'}
+              >
+                {viewerMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {viewerMuted ? 'Unmute' : 'Mute'}
+              </button>
+
+              {/* Share stream */}
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    navigator.share({ title: `Watch ${hostName || 'this stream'} LIVE`, url }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(url).then(() => toast.success('Stream link copied!'));
+                  }
+                }}
+                className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl border transition-all text-[10px] font-bold"
+                style={{ fontFamily: FONT, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)' }}
+                title="Share stream"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+            </>
           )}
 
           {/* Emoji reaction bar — all users */}
