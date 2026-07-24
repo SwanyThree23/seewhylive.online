@@ -3171,16 +3171,45 @@ process.on('SIGINT', function() {
 
 module.exports = { app, server, io };
 
-// ZEGO token generation endpoint
+// ─── ZEGO Token 04 generation ────────────────────────────────────────────────
+// Format: "04" + base64( uint32LE(payloadLen) + payloadUTF8 + hmac32bytes )
+// ZEGO_SERVER_SECRET env var must be a 32-byte hex string (64 hex chars).
 app.post('/api/zego/token', function(req, res) {
-  var appId = parseInt(process.env.ZEGO_APP_ID);
-  var secret = process.env.ZEGO_SERVER_SECRET;
-  var userId = req.query.userId || 'guest_' + Date.now();
-  var roomId = req.query.roomId || 'room_1';
-  var expire = Math.floor(Date.now() / 1000) + 3600;
-  var nonce = Math.floor(Math.random() * 2147483647);
-  var crypto = require('crypto');
-  var plain = 'appid=' + appId + '&expire=' + expire + '&nonce=' + nonce + '&roomid=' + roomId + '&timestamp=' + Math.floor(Date.now() / 1000) + '&userid=' + userId + '&version=1';
-  var hmac = crypto.createHmac('sha256', secret).update(plain).digest('hex');
-  res.json({ token: hmac, appId: appId, userId: userId, roomId: roomId, expire: expire });
+  var appId  = parseInt(process.env.ZEGO_APP_ID  || '0');
+  var secret = process.env.ZEGO_SERVER_SECRET     || '';
+  if (!appId || !secret) {
+    return res.status(503).json({ error: 'ZEGO credentials not configured on server' });
+  }
+
+  var userId = (req.query.userId || req.body && req.body.userId || 'guest_anon').slice(0, 64);
+  var now    = Math.floor(Date.now() / 1000);
+  var nonce  = Math.floor(Math.random() * 0x7fffffff);
+
+  // Token body — matches ZEGO Token04 spec exactly
+  var body = JSON.stringify({
+    app_id:      appId,
+    user_id:     userId,
+    nonce:       nonce,
+    ctime:       now,
+    expire:      now + 3600,
+    payload_str: '',
+  });
+
+  // serverSecret is hex-encoded — convert to raw bytes before use as HMAC key
+  var keyBuf  = Buffer.from(secret, 'hex');
+  var hmac    = crypto.createHmac('sha256', keyBuf).update(body).digest();
+
+  // Pack: 4-byte LE payload length + payload UTF-8 bytes + 32-byte HMAC
+  var bodyBuf = Buffer.from(body, 'utf8');
+  var out     = Buffer.alloc(4 + bodyBuf.length + hmac.length);
+  out.writeUInt32LE(bodyBuf.length, 0);
+  bodyBuf.copy(out, 4);
+  hmac.copy(out, 4 + bodyBuf.length);
+
+  res.json({
+    token:  '04' + out.toString('base64'),
+    appId:  appId,
+    userId: userId,
+    expire: now + 3600,
+  });
 });

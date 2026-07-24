@@ -730,12 +730,60 @@ export default function GoLive() {
         updated_at_ms: Date.now(),
       });
       setPartyId(party.id);
+
+      // Kick off RTMP fanout for the host's enabled destinations (best-effort —
+      // failure here does NOT block going live; FFmpeg waits for the RTMP stream).
+      if (user?.id) {
+        try {
+          const dests = await base44.entities.RTMPDestination.filter({ creator_id: user.id, is_enabled: true });
+          if (dests && dests.length > 0) {
+            const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+            const r = await fetch(`${API_BASE}/fanout-start`, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({
+                stream_id:    party.id,
+                guest_id:     user.id,
+                room_id:      party.id,
+                // Vault keys looked up server-side via guest_id + dest_id —
+                // the frontend never holds or transmits plaintext stream keys.
+                destinations: dests.map(d => ({
+                  dest_id:  d.id,
+                  url:      d.server_url,
+                  platform: d.platform,
+                  label:    d.label || d.platform || 'custom',
+                  enabled:  true,
+                })),
+              }),
+            });
+            const json = await r.json();
+            if (json.ok) {
+              toast.success(`📡 Fanout live — ${json.destinations} platform${json.destinations !== 1 ? 's' : ''}`);
+            }
+          }
+        } catch {
+          // Fanout is best-effort; never block the stream itself
+        }
+      }
+
       setCountdown(true);
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);
     }
   }
+
+  // Stop fanout if the user navigates away before the redirect completes
+  useEffect(() => {
+    if (!partyId) return;
+    const stopFanout = () => {
+      const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+      const blob = new Blob([JSON.stringify({ stream_id: partyId })], { type: 'application/json' });
+      navigator.sendBeacon?.(`${API_BASE}/fanout-stop`, blob);
+    };
+    window.addEventListener('beforeunload', stopFanout);
+    return () => window.removeEventListener('beforeunload', stopFanout);
+  }, [partyId]);
 
   function onCountdownDone() {
     const dest = format?.dest || 'BroadcastStudio';

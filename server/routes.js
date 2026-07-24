@@ -24,6 +24,9 @@ var notifications = null;
 try { notifications = require('./notifications'); } catch (e) { console.warn('[routes] notifications module unavailable'); }
 if (notifications) { notifications.setVAPIDKeys(process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY, process.env.VAPID_SUBJECT); }
 
+var vault = null;
+try { vault = require('./vault'); } catch (e) { console.warn('[routes] vault module unavailable — stream keys will not be encrypted at rest'); }
+
 var aura = null;
 try { aura = require('./aura'); } catch (e) { console.warn('[routes] aura module unavailable'); }
 
@@ -685,45 +688,179 @@ router.post('/stream-end', async function(req, res) {
 });
 
 
+// ── VAULT PRO KEY ENDPOINTS ───────────────────────────────────
+// /vault/save-key  — client posts plaintext key once; server encrypts and stores
+// /vault/key-exists — client can check presence without getting the raw key
+// /vault/delete-key — remove stored key when destination is deleted
+
+router.post('/vault/save-key', function(req, res) {
+  if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
+  try {
+    var guestId = req.body.guest_id;
+    var destId  = req.body.dest_id;
+    var plainKey = req.body.plain_key;
+    if (!guestId || !destId || !plainKey) {
+      return res.status(400).json({ ok: false, error: 'guest_id, dest_id, plain_key are required' });
+    }
+    vault.saveKey(guestId, destId, plainKey);
+    res.json({ ok: true, stored: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/vault/key-exists', function(req, res) {
+  if (!vault) return res.json({ ok: true, exists: false });
+  try {
+    var exists = vault.hasKey(req.query.guest_id || '', req.query.dest_id || '');
+    res.json({ ok: true, exists: exists });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.post('/vault/delete-key', function(req, res) {
+  if (!vault) return res.json({ ok: true });
+  try {
+    vault.deleteKey(req.body.guest_id || '', req.body.dest_id || '');
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+router.get('/vault/key-meta', function(req, res) {
+  if (!vault) return res.json({ ok: true, keys: [] });
+  try {
+    var meta = vault.listGuestKeyMeta(req.query.guest_id || '');
+    res.json({ ok: true, keys: meta });
+  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+// Dedicated health check — tests whether VAULT_SECRET is configured and
+// encryption is operational without reading or writing any real key data.
+router.get('/vault/health', function(req, res) {
+  if (!vault) {
+    return res.status(503).json({ ok: false, ready: false, reason: 'vault module not loaded' });
+  }
+  var secret = process.env.VAULT_SECRET || '';
+  if (!secret || secret.length !== 64) {
+    return res.status(503).json({ ok: false, ready: false, reason: 'VAULT_SECRET not configured (need 64-char hex)' });
+  }
+  try {
+    // Round-trip a test value to confirm encrypt/decrypt works
+    var testCipher = vault.encrypt('__vault_health_check__');
+    var testPlain  = vault.decrypt(testCipher);
+    if (testPlain !== '__vault_health_check__') throw new Error('round-trip mismatch');
+    res.json({ ok: true, ready: true, reason: 'AES-256-GCM operational' });
+  } catch(e) {
+    res.status(503).json({ ok: false, ready: false, reason: e.message });
+  }
+});
+
 // ── RTMP FANOUT ENGINE ────────────────────────────────────────
+// Each guest gets their own isolated FFmpeg process (failure isolation).
+// Keys are resolved from Vault Pro; plaintext keys in body are only a fallback.
+// Transmuxing only: -c copy (no re-encoding), <2s startup latency.
+
 var { spawn } = require('child_process');
+
+// Map of streamId → { process, restarts, destCount, startedAt }
 var activeFanouts = {};
+var MAX_RESTARTS = 3;
+var RESTART_DELAY_MS = 5000;
+
+function buildFfmpegArgs(ingestUrl, resolvedDests) {
+  var args = ['-re', '-i', ingestUrl, '-loglevel', 'warning'];
+  resolvedDests.forEach(function(d) {
+    // transmux only — no re-encoding; separate url and key with / if needed
+    var url = d.url.replace(/\/$/, '');
+    var dest = url + '/' + d.key;
+    args.push('-c', 'copy', '-f', 'flv', dest);
+  });
+  return args;
+}
+
+function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
+  restartCount = restartCount || 0;
+  var args = buildFfmpegArgs(ingestUrl, resolvedDests);
+  var ffmpeg = spawn('ffmpeg', args, { detached: false });
+  var entry = activeFanouts[streamId] || {};
+  entry.process = ffmpeg;
+  entry.restarts = restartCount;
+  entry.destCount = resolvedDests.length;
+  entry.startedAt = Date.now();
+  activeFanouts[streamId] = entry;
+
+  ffmpeg.stderr.on('data', function(data) {
+    // Only log errors, not progress
+    var msg = data.toString();
+    if (msg.includes('Error') || msg.includes('error')) {
+      console.error('[fanout:%s]', streamId, msg.trim().substring(0, 120));
+    }
+  });
+
+  ffmpeg.on('exit', function(code, signal) {
+    console.log('[fanout:%s] exited code=%s signal=%s restarts=%d', streamId, code, signal, restartCount);
+    if (activeFanouts[streamId] && activeFanouts[streamId].process === ffmpeg) {
+      // Auto-restart on unexpected exit (not manual kill)
+      if (signal !== 'SIGTERM' && restartCount < MAX_RESTARTS) {
+        console.log('[fanout:%s] restarting in %dms (attempt %d/%d)', streamId, RESTART_DELAY_MS, restartCount + 1, MAX_RESTARTS);
+        setTimeout(function() {
+          if (activeFanouts[streamId]) {
+            spawnFanout(streamId, ingestUrl, resolvedDests, restartCount + 1);
+          }
+        }, RESTART_DELAY_MS);
+      } else {
+        delete activeFanouts[streamId];
+      }
+    }
+  });
+
+  return ffmpeg;
+}
 
 router.post('/fanout-start', async function(req, res) {
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
-    var ingestUrl = 'rtmp://localhost:1935/live/' + (b.stream_key || 'stream');
+    var guestId  = b.guest_id  || streamId;
+    var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
+    var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
+    var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
     var destinations = b.destinations || [];
-    if (activeFanouts[streamId]) {
-      activeFanouts[streamId].kill();
+
+    // Stop any existing fanout for this stream
+    if (activeFanouts[streamId] && activeFanouts[streamId].process) {
+      activeFanouts[streamId].process.kill('SIGTERM');
       delete activeFanouts[streamId];
     }
-    var ffmpegArgs = ['-re', '-i', ingestUrl];
-    var hasDestination = false;
-    destinations.forEach(function(d) {
-      if (d.url && d.key && d.enabled) {
-        ffmpegArgs.push('-c', 'copy', '-f', 'flv', d.url + d.key);
-        hasDestination = true;
+
+    // Resolve stream keys: Vault Pro first, fall back to body key
+    var resolvedDests = [];
+    for (var i = 0; i < destinations.length; i++) {
+      var d = destinations[i];
+      if (!d.url || !d.enabled) continue;
+      var resolvedKey = d.key || '';
+      if (vault && d.dest_id && guestId) {
+        try {
+          var vaultKey = vault.getDecryptedKey(guestId, d.dest_id);
+          if (vaultKey) resolvedKey = vaultKey;
+        } catch (_) { /* key not in vault, use body key */ }
       }
-    });
-    if (!hasDestination) {
-      return res.json({ ok: false, error: 'No enabled destinations with keys' });
+      if (!resolvedKey) continue;
+      resolvedDests.push({ url: d.url, key: resolvedKey, label: d.label || d.platform || 'custom' });
     }
-    var ffmpeg = spawn('ffmpeg', ffmpegArgs, { detached: false });
-    activeFanouts[streamId] = ffmpeg;
-    ffmpeg.on('exit', function(code) {
-      console.log('[fanout] exited:', code);
-      delete activeFanouts[streamId];
-    });
-    res.json({ ok: true, stream_id: streamId, destinations: destinations.filter(function(d) { return d.enabled && d.key; }).length });
+
+    if (resolvedDests.length === 0) {
+      return res.json({ ok: false, error: 'No enabled destinations with resolvable keys' });
+    }
+
+    spawnFanout(streamId, ingestUrl, resolvedDests, 0);
+    console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
+    res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
 router.post('/fanout-stop', function(req, res) {
   var streamId = req.body.stream_id || 'default';
-  if (activeFanouts[streamId]) {
-    activeFanouts[streamId].kill('SIGTERM');
+  var entry = activeFanouts[streamId];
+  if (entry && entry.process) {
+    entry.process.kill('SIGTERM');
     delete activeFanouts[streamId];
     res.json({ ok: true, stopped: streamId });
   } else {
@@ -731,9 +868,38 @@ router.post('/fanout-stop', function(req, res) {
   }
 });
 
+// Kill every active FFmpeg fanout process — admin/cleanup endpoint.
+router.post('/fanout-stop-all', function(req, res) {
+  var ids = Object.keys(activeFanouts);
+  var killed = 0;
+  ids.forEach(function(id) {
+    var entry = activeFanouts[id];
+    if (entry && entry.process) {
+      entry.process.kill('SIGTERM');
+      killed++;
+    }
+    delete activeFanouts[id];
+  });
+  console.log('[fanout] stop-all: killed %d processes', killed);
+  res.json({ ok: true, killed: killed, stream_ids: ids });
+});
+
 router.get('/fanout-status', function(req, res) {
-  var active = Object.keys(activeFanouts);
-  res.json({ ok: true, active_streams: active, count: active.length });
+  var streamId = req.query.stream_id;
+  if (streamId) {
+    var entry = activeFanouts[streamId];
+    if (entry) {
+      res.json({ ok: true, active: true, stream_id: streamId, destinations: entry.destCount, restarts: entry.restarts, uptime_ms: Date.now() - entry.startedAt });
+    } else {
+      res.json({ ok: true, active: false, stream_id: streamId });
+    }
+  } else {
+    var active = Object.keys(activeFanouts).map(function(id) {
+      var e = activeFanouts[id];
+      return { stream_id: id, destinations: e.destCount, restarts: e.restarts, uptime_ms: Date.now() - e.startedAt };
+    });
+    res.json({ ok: true, active_streams: active, count: active.length });
+  }
 });
 
 module.exports = router;

@@ -113,7 +113,7 @@ import CreatorBridge from '../components/social/CreatorBridge';
 import BattleMode from '../components/streaming/BattleMode';
 import BitratePresets from '../components/streaming/BitratePresets';
 import AdvancedEncoderSettings from '../components/streaming/AdvancedEncoderSettings';
-import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestDestinationsDashboard from '../components/streaming/GuestDestinationsDashboard';
 import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
@@ -156,7 +156,6 @@ import NewsBlockOverlay from '../components/live/NewsBlockOverlay';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
 import EvmuxWebSource from '../components/live/EvmuxWebSource';
-import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
 import StreamWebSourceManager from '../components/streaming/StreamWebSourceManager';
 import DualStreamManager from '../components/streaming/DualStreamManager';
 import LiveDestinationEditor from '../components/streaming/LiveDestinationEditor';
@@ -2142,7 +2141,12 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="p-2 space-y-3">
                 <GuestQueue roomId={partyId} isHost={canManage} />
                 {user?.id && (
-                  <GuestRTMPPanel participantId={user.id} userId={user.id} />
+                  <GuestDestinationsDashboard
+                    userId={user.id}
+                    roomId={partyId}
+                    isHost={isHost}
+                    participants={members}
+                  />
                 )}
                 <ZEGOGuestApprovalPanel roomId={partyId} isHost={canManage} />
                 <GuestStreamMonitor guestName={user?.full_name || 'Host'} isStreaming={party?.status === 'live'} />
@@ -2171,9 +2175,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   }}
                 />
                 <GuestConnector roomId={partyId} roomName={party?.title || 'SeeWhy Studio'} />
-                {members[0]?.user_id && (
-                  <GuestDestinationsPanel participantUserId={members[0].user_id} guestName={members[0].full_name || 'Guest'} />
-                )}
                 <VdoNinjaGuestLink roomId={partyId} />
                 {user?.id && (
                   <GuestInviteGenerator userId={user.id} roomId={partyId} streamId={partyId} />
@@ -3069,7 +3070,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       <PaywallGate isHost={isHost} streamTitle={party?.title || ''} onUnlock={() => {}} isUnlocked={true} />
       {partyId && <SubscriptionGate creatorId={party?.host_id || user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
-      {isHost && user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
       {isHost && partyId && <MultiStreamConfig roomId={partyId} isHost={isHost} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
@@ -3101,7 +3101,6 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
       {partyId && <BattleMode roomId={partyId} isHost={isHost} hostName={user?.full_name || ''} />}
       {isHost && <BitratePresets selected={selectedBitrate} onChange={handleBitrateChange} />}
-      {isHost && user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {isHost && <GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={partyId != null} />}
       {partyId && <TranscriptionPanel recordingUrl={''} roomTitle={''} />}
       <SwanyBotWidget />
