@@ -88,6 +88,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
   const [camOn,         setCamOn]         = useState(true);
   const [quality,       setQuality]       = useState('good');
   const [viewerCount,   setViewerCount]   = useState(0);
+  const [viewers,       setViewers]       = useState([]); // [{ userID, userName }] — from roomUserUpdate
   const [chatMessages,  setChatMessages]  = useState([]);
   const [lastReaction,  setLastReaction]  = useState(null); // { id, emoji, fromUser }
   const [isPublishing,  setIsPublishing]  = useState(role === 'panelist');
@@ -163,15 +164,23 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
         });
       });
 
-      // ── 3. Viewer count via roomUserUpdate ────────────────────────────
+      // ── 3. Viewer count + list via roomUserUpdate ─────────────────────
       // SFU fires this when any user joins or leaves the room.
+      // We track the full viewer list so we can render avatar strips.
       engine.on('roomUserUpdate', (rId, updateType, userList) => {
         if (rId !== roomId) return;
-        setViewerCount(prev =>
-          updateType === 'ADD'
-            ? prev + userList.length
-            : Math.max(0, prev - userList.length)
-        );
+        if (updateType === 'ADD') {
+          setViewers(prev => {
+            const ids = new Set(prev.map(u => u.userID));
+            const fresh = userList.filter(u => !ids.has(u.userID));
+            return [...prev, ...fresh];
+          });
+          setViewerCount(prev => prev + userList.length);
+        } else {
+          const leaveIds = new Set(userList.map(u => u.userID));
+          setViewers(prev => prev.filter(u => !leaveIds.has(u.userID)));
+          setViewerCount(prev => Math.max(0, prev - userList.length));
+        }
       });
 
       // ── 4. Data channel: broadcast chat messages ──────────────────────
@@ -339,7 +348,7 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
 
   return {
     localStream, remoteStreams, screenShare,
-    micOn, camOn, quality, viewerCount,
+    micOn, camOn, quality, viewerCount, viewers,
     chatMessages, lastReaction,
     isPublishing, activeSpeakerId,
     toggleMic, toggleCam,
@@ -557,7 +566,7 @@ function ChatPanel({ messages, onSend, onClose }) {
 export default function LiveStage({ roomId, userId, userName, role = 'viewer', token }) {
   const {
     localStream, remoteStreams, screenShare,
-    micOn, camOn, quality, viewerCount,
+    micOn, camOn, quality, viewerCount, viewers,
     chatMessages, lastReaction,
     isPublishing, activeSpeakerId,
     toggleMic, toggleCam,
@@ -611,6 +620,14 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
     }
     return tiles;
   }, [isPublishing, localStream, remoteStreams, userId, userName, micOn, camOn]);
+
+  // Resolve display name of active speaker for the header indicator
+  // Must be after cameraTiles to avoid TDZ reference errors
+  const activeSpeakerLabel = useMemo(() => {
+    if (!activeSpeakerId) return null;
+    const tile = cameraTiles.find(t => t.userId === activeSpeakerId);
+    return tile ? tile.label : null;
+  }, [activeSpeakerId, cameraTiles]);
 
   // ── Screen share: 70/30 split layout ──────────────────────────────
   const stageContent = (() => {
@@ -703,8 +720,10 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
     }
 
     // Standard dynamic grid (≤4 tiles)
+    const showRequestSlot = !isPublishing && cameraTiles.length > 0 && cameraTiles.length < 9;
+    const totalSlots = cameraTiles.length + (showRequestSlot ? 1 : 0);
     return (
-      <div className={`flex-1 grid gap-2 min-h-0 ${gridClass(cameraTiles.length)}`}>
+      <div className={`flex-1 grid gap-2 min-h-0 ${gridClass(totalSlots)}`}>
         <AnimatePresence>
           {cameraTiles.map(tile => (
             <motion.div
@@ -719,6 +738,39 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} />
             </motion.div>
           ))}
+
+          {/* "+ Request to Join" slot — TikTok LIVE / BIGO style */}
+          {showRequestSlot && (
+            <motion.div
+              key="request-slot"
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.25 }}
+              className="min-h-0 min-w-0"
+            >
+              <button
+                onClick={upgradeToParticipant}
+                className="w-full h-full flex flex-col items-center justify-center rounded-xl transition-all group"
+                style={{
+                  background: 'rgba(212,175,55,0.03)',
+                  border: '1.5px dashed rgba(212,175,55,0.25)',
+                  minHeight: 80,
+                }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-all group-hover:scale-110"
+                  style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}
+                >
+                  <span className="text-xl" style={{ color: GOLD }}>+</span>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ fontFamily: FONT, color: 'rgba(212,175,55,0.6)' }}>
+                  Request to Join
+                </span>
+              </button>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* Empty stage placeholder */}
@@ -728,6 +780,15 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             <p className="text-sm font-bold" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.2)' }}>
               {isPublishing ? 'Starting your camera…' : 'Waiting for the show to start'}
             </p>
+            {!isPublishing && (
+              <button
+                onClick={upgradeToParticipant}
+                className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs transition-all"
+                style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.35)', color: GOLD, fontFamily: FONT }}
+              >
+                <Zap className="w-3.5 h-3.5" /> Go on Stage
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -741,7 +802,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
       <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-0 relative">
 
         {/* Top status bar */}
-        <div className="flex items-center gap-2 shrink-0 px-1">
+        <div className="flex items-center gap-2 shrink-0 px-1 flex-wrap">
           {/* Viewer count — SFU roomUserUpdate */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <Users className="w-3 h-3" style={{ color: 'rgba(255,255,255,0.4)' }} />
@@ -749,6 +810,34 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               {viewerCount + cameraTiles.length}
             </span>
           </div>
+
+          {/* Stage capacity: N/20 */}
+          <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.18)' }}>
+            <Radio className="w-3 h-3" style={{ color: GOLD }} />
+            <span className="text-[10px] font-bold" style={{ color: GOLD }}>
+              Stage {cameraTiles.length}/20
+            </span>
+          </div>
+
+          {/* "X is speaking" live indicator */}
+          <AnimatePresence mode="wait">
+            {activeSpeakerLabel && (
+              <motion.div
+                key={activeSpeakerLabel}
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-lg"
+                style={{ background: 'rgba(109,191,126,0.08)', border: '1px solid rgba(109,191,126,0.22)' }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GREEN }} />
+                <span className="text-[10px] font-bold truncate max-w-[100px]" style={{ color: GREEN }}>
+                  {activeSpeakerLabel} speaking
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Network quality */}
           <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -826,6 +915,40 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
             ))}
           </div>
         </div>
+
+        {/* "Others watching" viewer avatar strip — Fanbase/Chatter style */}
+        {viewers.length > 0 && (
+          <div className="shrink-0 flex items-center gap-1.5 px-1 pb-0.5">
+            <span className="text-[9px] font-bold shrink-0" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: FONT }}>
+              Watching
+            </span>
+            <div className="flex items-center overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {viewers.slice(0, 20).map((v, i) => (
+                <div
+                  key={v.userID}
+                  title={v.userName || v.userID}
+                  className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[8px] font-black"
+                  style={{
+                    background: `hsl(${(v.userID.charCodeAt(0) * 47) % 360}, 45%, 28%)`,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    marginLeft: i === 0 ? 0 : -4,
+                    color: 'rgba(255,255,255,0.7)',
+                    fontFamily: FONT,
+                    zIndex: 20 - i,
+                    position: 'relative',
+                  }}
+                >
+                  {(v.userName || v.userID || '?')[0].toUpperCase()}
+                </div>
+              ))}
+              {viewers.length > 20 && (
+                <span className="text-[9px] font-bold ml-2 shrink-0" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: FONT }}>
+                  +{viewers.length - 20}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Chat panel (slides in from right) ── */}
