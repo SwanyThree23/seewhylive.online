@@ -563,7 +563,7 @@ function ChatPanel({ messages, onSend, onClose }) {
 }
 
 // ─── LiveStage (main export) ───────────────────────────────────────────────
-export default function LiveStage({ roomId, userId, userName, role = 'viewer', token }) {
+export default function LiveStage({ roomId, userId, userName, role = 'viewer', token, onLeave, minHeight }) {
   const {
     localStream, remoteStreams, screenShare,
     micOn, camOn, quality, viewerCount, viewers,
@@ -796,7 +796,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
   })();
 
   return (
-    <div className="w-full h-full flex min-h-0" style={{ fontFamily: FONT }}>
+    <div className="w-full h-full flex min-h-0" style={{ fontFamily: FONT, minHeight: minHeight || undefined }}>
 
       {/* ── Main stage column ── */}
       <div className="flex-1 flex flex-col gap-2 min-h-0 min-w-0 relative">
@@ -914,6 +914,17 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               </button>
             ))}
           </div>
+
+          {/* Leave button — only when caller provides onLeave callback */}
+          {onLeave && (
+            <button
+              onClick={onLeave}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-xs transition-all"
+              style={{ background: 'rgba(192,57,43,0.15)', border: '1px solid rgba(192,57,43,0.35)', color: '#C0392B' }}
+            >
+              Leave
+            </button>
+          )}
         </div>
 
         {/* "Others watching" viewer avatar strip — Fanbase/Chatter style */}
