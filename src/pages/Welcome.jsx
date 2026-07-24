@@ -222,7 +222,7 @@ export default function WelcomePage() {
         {/* new components here */}
         <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
         <CollaborationMatcher />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
         <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         <ChallengeLeaderboard challengeId={null} />
       </div>
