@@ -1379,7 +1379,7 @@ export default function LiveRoom() {
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
-      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {isHost && <BroadcastAnalyticsDashboard streamSession={party || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />

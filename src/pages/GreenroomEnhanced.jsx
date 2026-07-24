@@ -37,6 +37,7 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import LiveStage from '../components/live/LiveStage';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -305,7 +306,7 @@ export default function GreenroomEnhanced() {
         <StreamMetadataEditor />
 
         {/* Room branding (logo, banner colors) */}
-        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+        <RoomBrandingEditor roomData={activeRoom || null} onBrandingChange={(b) => { if (activeRoomId) base44.entities.Room.update(activeRoomId, b).catch(() => {}); }} isHost={true} />
 
         {/* Guest connector + queue */}
         <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
@@ -321,16 +322,27 @@ export default function GreenroomEnhanced() {
         <GuestRTMPPanel participantId={null} userId={user?.id} />
 
         {/* Guest stream monitor */}
-        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+        <GuestStreamMonitor guestName="Guest" isStreaming={isLive} />
 
         {/* Guest streaming permissions */}
         <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
 
         {/* Guest destinations panel */}
-        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <GuestDestinationsPanel participantUserId={user?.id || null} guestName={user?.full_name || 'Guest'} />
 
         {/* ZEGO guest approval */}
         <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
+
+        {/* SFU live stage — shows when a room is active; panelists see the grid, viewers see the feed */}
+        {activeRoomId && user?.id && (
+          <LiveStage
+            roomId={activeRoomId}
+            role="panelist"
+            userId={user.id}
+            userName={user.full_name || user.email || 'Host'}
+            minHeight={240}
+          />
+        )}
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

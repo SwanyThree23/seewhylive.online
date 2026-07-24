@@ -315,7 +315,7 @@ export default function CommunityAdminPage() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-          <StreamHealthDashboard roomId={communityId} isHost={false} />
+          <StreamHealthDashboard roomId={communityId} isHost={true} />
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>
@@ -323,7 +323,7 @@ export default function CommunityAdminPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SpotlightBanner communityId={communityId} isAdmin={true} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

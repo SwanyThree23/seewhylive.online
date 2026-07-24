@@ -339,11 +339,11 @@ export default function GuestJoin() {
           <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
-          <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+          <OctagonalVideoWindow stream={localStream} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamGoals isHost={false} />
-          {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+          {user && <PreStreamCountdown room={room || null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>

@@ -178,7 +178,7 @@ export default function DataExportPage() {
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <StreamGoals isHost={true} />
-          <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+          <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
@@ -199,14 +199,14 @@ export default function DataExportPage() {
           <AudienceInsights />
           <EarningsBreakdown userId={user?.id} />
           <ShareToSocial content={{ title: 'Export Data', url: window.location.href }} />
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={8} />
           <CollaborationMatcher />
-          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="default" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
@@ -216,7 +216,7 @@ export default function DataExportPage() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

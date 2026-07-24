@@ -350,7 +350,7 @@ export default function ActivityPage() {
         {user?.id && (
           <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <LeaderboardPanel roomId={activeRoomId} />
-            <StreamGoals isHost={false} />
+            <StreamGoals isHost={true} />
           </div>
         )}
 

@@ -498,7 +498,7 @@ export default function GoLiveStudio() {
         </div>
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <StreamHealthDashboard isLive={false} />
+        <StreamHealthDashboard isLive={isLive} />
         <BitratePresets selected={null} onChange={() => {}} />
         <DestinationsManager userId={user?.id} />
         <ChatModeration />
@@ -508,7 +508,7 @@ export default function GoLiveStudio() {
         <GreenroomQueue roomId={activeRoomId} isHost={true} />
         <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
         <StreamingPresets onApply={() => {}} />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={isLive} />
         {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={state.phase === 'live'} streamId={activeRoomId} />}
         {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
         <div style={{ padding: '0 16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>

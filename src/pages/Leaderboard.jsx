@@ -478,7 +478,7 @@ export default function LeaderboardPage() {
       <div className="max-w-4xl mx-auto px-4 pb-8 mt-4">
         <SocialLeaderboard />
         <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StreamGoals isHost={false} />
+          <StreamGoals isHost={true} />
           <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
           <TipWidget roomId={roomId} hostId={currentUser?.id} currentUser={currentUser} />
           <TippingOverlay roomId={roomId} creatorId={currentUser?.id} isVisible={true} />

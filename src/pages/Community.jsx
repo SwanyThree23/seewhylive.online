@@ -345,8 +345,8 @@ export default function CommunityPage() {
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
-        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
+        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={isOwner} />}
+        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={isOwner} />}
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
@@ -357,7 +357,7 @@ export default function CommunityPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={isAdmin} />
+      <SpotlightBanner communityId={community?.id || null} isAdmin={isAdmin} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -369,7 +369,7 @@ export default function CommunityPage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-      <OnlinePresence userId={null} />
+      <OnlinePresence userId={user?.id || null} />
 
       <CreatePollModal
         isOpen={showCreatePoll}

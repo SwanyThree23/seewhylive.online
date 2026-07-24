@@ -689,14 +689,14 @@ export default function TestMode() {
           <DevicePreview />
           <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
           <ZEGOStreamHealthCard roomId={activeRoomId} />
-          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={false} />
-        <StreamHealthDashboard roomId={null} isHost={false} />
+        <StreamGoals isHost={true} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -705,7 +705,7 @@ export default function TestMode() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

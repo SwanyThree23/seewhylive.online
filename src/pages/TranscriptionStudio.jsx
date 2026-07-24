@@ -420,13 +420,13 @@ export default function TranscriptionStudio() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={user?.id} />
-        <LiveTranslationWidget roomId={activeRoomId} isHost={false} targetLanguage="en" />
-        <LiveTranscription roomId={activeRoomId} isHost={false} />
+        <LiveTranslationWidget roomId={activeRoomId} isHost={true} targetLanguage="en" />
+        <LiveTranscription roomId={activeRoomId} isHost={true} />
         <OnlineUsersGrid compact maxVisible={8} />
-        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-        <AutomatedHighlightReels streamSession={null} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <CollaborationMatcher />
       </div>
       <SwanyBotWidget />

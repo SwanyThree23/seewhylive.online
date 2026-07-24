@@ -161,6 +161,7 @@ import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -1639,6 +1640,7 @@ export default function WatchPartyPage() {
         <MilestoneAlerts userId={user?.id} roomId={partyId} />
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
         {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} />}
+        {isHost && user?.id && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
         <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
         {partyId && party?.host_id && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />

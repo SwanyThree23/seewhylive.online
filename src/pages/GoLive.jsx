@@ -139,6 +139,8 @@ import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
+import LiveStage from '../components/live/LiveStage';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -575,6 +577,12 @@ export default function GoLive() {
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const { data: party } = useQuery({
+    queryKey: ['golive-party', partyId],
+    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 30000,
+  });
   const { data: members = [] } = useQuery({
     queryKey: ['golive-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
@@ -1148,7 +1156,7 @@ export default function GoLive() {
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
-      {<BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {<BroadcastAnalyticsDashboard streamSession={party || null} isLive={partyId != null} />}
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
@@ -1169,7 +1177,7 @@ export default function GoLive() {
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} triggerOpen={pollTick} />}
-      <RoomBrandingEditor roomData={null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
+      <RoomBrandingEditor roomData={party || null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
@@ -1192,7 +1200,7 @@ export default function GoLive() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
       {partyId && <GuestInviteGenerator roomId={partyId} isHost={true} />}
       {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
-      {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {partyId && <EnhancedRoomControls isHost={true} roomData={party || null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
@@ -1202,6 +1210,17 @@ export default function GoLive() {
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {user?.id && <FanoutEnginePanel members={members} isHost={true} roomId={partyId} />}
+      {partyId && user?.id && (
+        <LiveStage
+          roomId={partyId}
+          role="panelist"
+          userId={user.id}
+          userName={user.full_name || user.email || 'Host'}
+          onLeave={function() { setPartyId(null); setStep('pick'); }}
+          minHeight={280}
+        />
+      )}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}

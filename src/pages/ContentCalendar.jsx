@@ -278,7 +278,7 @@ export default function ContentCalendarPage() {
       )}
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <AutomatedHighlightReels streamSession={null} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <ShareToSocial />
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
@@ -289,15 +289,15 @@ export default function ContentCalendarPage() {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
+        {user && <PreStreamCountdown room={activeRoom || null} currentUser={user} onGoLive={() => {}} />}
       </div>
 
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
+        {user && <PreStreamCountdown room={activeRoom || null} currentUser={user} onGoLive={() => {}} />}
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 16px 28px' }}>

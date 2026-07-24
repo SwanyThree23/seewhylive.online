@@ -443,7 +443,7 @@ export default function DiscoverPage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
-          <StreamGoals isHost={false} />
+          <StreamGoals isHost={true} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
