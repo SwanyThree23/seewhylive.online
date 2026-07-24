@@ -172,8 +172,8 @@ export default function MonetizationWidgets() {
         <MonetizationDashboard roomId={activeRoom?.id || null} />
         <VirtualGoodsStore userId={user?.id} />
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="monetize" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoom?.id || null} currentLayout="monetize" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoom?.id || null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
@@ -183,7 +183,7 @@ export default function MonetizationWidgets() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoom?.id || null} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
