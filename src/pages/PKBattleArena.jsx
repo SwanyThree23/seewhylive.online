@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
@@ -30,8 +31,18 @@ const CRIMSON = '#800020';
 const RED   = '#C0392B';
 const GREEN = '#6DBF7E';
 const CYAN  = '#D4AF37';
+// SCARL (scarlet) and CRIM (crimson) — used throughout battle card UI
+const SCARL = '#C0392B';
+const CRIM  = '#800020';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
+
+// Format large numbers: 4710 → "4.7K", 1.2M → "1.2M"
+function formatK(n) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
 
 const OCT = 'polygon(50% 0%,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)';
 
@@ -66,14 +77,22 @@ function battleToUI(b) {
 
 function ScoreBar({ battle }) {
   const total = battle.a.score + battle.b.score;
-  const pct   = total > 0 ? (battle.a.score / total) * 100 : 50;
+  const pctA  = total > 0 ? (battle.a.score / total) * 100 : 50;
+  const pctB  = 100 - pctA;
   return (
-    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', background: 'rgba(212,133,74,0.2)', margin: '8px 0' }}>
-      <motion.div
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        style={{ height: '100%', background: `linear-gradient(90deg, ${SCARL}, ${SCARL}cc)`, borderRadius: 3 }}
-      />
+    <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', background: 'rgba(255,255,255,0.06)', margin: '10px 0 4px' }}>
+      <div style={{ display: 'flex', height: '100%' }}>
+        <motion.div
+          animate={{ width: `${pctA}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          style={{ height: '100%', background: `linear-gradient(90deg, ${GOLD}cc, ${GOLD})` }}
+        />
+        <motion.div
+          animate={{ width: `${pctB}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          style={{ height: '100%', background: `linear-gradient(90deg, ${SCARL}, ${SCARL}cc)` }}
+        />
+      </div>
     </div>
   );
 }
@@ -114,31 +133,65 @@ function BattleCard({ battle, onVote, myVote }) {
         )}
       </div>
 
-      {/* VS row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '6px 14px 0' }}>
-        {/* Side A */}
-        <div style={{ flex: 1 }}>
-          <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.a.name}</div>
-          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: SCARL, marginTop: 2 }}>
-            {battle.a.score.toLocaleString()}
+      {/* BIGO-style split score hero */}
+      <div style={{ display: 'flex', minHeight: 80, position: 'relative' }}>
+        {/* Side A — gold */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '10px 14px',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.18) 0%, rgba(8,11,24,0.6) 100%)',
+        }}>
+          <motion.div
+            key={battle.a.score}
+            initial={{ scale: 1.18 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{ ...MONO, fontSize: 30, fontWeight: 900, color: GOLD, lineHeight: 1 }}
+          >
+            {formatK(battle.a.score)}
+          </motion.div>
+          <div style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', marginTop: 3, maxWidth: 80, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {battle.a.name}
           </div>
-          <div style={{ ...T, fontSize: 10, color: TEXTM }}>{pctA}%</div>
+          <div style={{ ...T, fontSize: 9, color: `${GOLD}88`, marginTop: 1 }}>{pctA}%</div>
         </div>
 
-        {/* VS badge */}
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${CRIM}55`, border: `1.5px solid ${SCARL}66`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          animation: isLive ? 'pkPulse 2s ease infinite' : 'none' }}>
-          <span style={{ ...T, fontSize: 13, fontWeight: 900, color: TEXT }}>VS</span>
+        {/* Center: VS + timer */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 10px', flexShrink: 0, zIndex: 1 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: '50%',
+            background: `${CRIM}55`, border: `1.5px solid ${SCARL}66`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: isLive ? 'pkPulse 2s ease infinite' : 'none',
+          }}>
+            <span style={{ ...T, fontSize: 12, fontWeight: 900, color: TEXT }}>⚔️</span>
+          </div>
+          {isLive && battle.timeLeft != null && (
+            <div style={{ ...MONO, fontSize: 10, color: GOLD, marginTop: 4 }}>
+              {Math.floor(battle.timeLeft / 60)}:{String(battle.timeLeft % 60).padStart(2, '0')}
+            </div>
+          )}
         </div>
 
-        {/* Side B */}
-        <div style={{ flex: 1, textAlign: 'right' }}>
-          <div style={{ ...T, fontSize: 16, fontWeight: 900, color: TEXT, letterSpacing: '0.02em' }}>{battle.b.name}</div>
-          <div style={{ ...MONO, fontSize: 18, fontWeight: 700, color: '#D4854A', marginTop: 2 }}>
-            {battle.b.score.toLocaleString()}
+        {/* Side B — red */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: '10px 14px',
+          background: 'linear-gradient(225deg, rgba(192,57,43,0.18) 0%, rgba(8,11,24,0.6) 100%)',
+        }}>
+          <motion.div
+            key={battle.b.score}
+            initial={{ scale: 1.18 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{ ...MONO, fontSize: 30, fontWeight: 900, color: SCARL, lineHeight: 1 }}
+          >
+            {formatK(battle.b.score)}
+          </motion.div>
+          <div style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.55)', marginTop: 3, maxWidth: 80, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {battle.b.name}
           </div>
-          <div style={{ ...T, fontSize: 10, color: TEXTM }}>{100 - pctA}%</div>
+          <div style={{ ...T, fontSize: 9, color: `${SCARL}88`, marginTop: 1 }}>{100 - pctA}%</div>
         </div>
       </div>
 

@@ -29,11 +29,14 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MicOff, VideoOff, MonitorOff, Pin, Radio, Wifi,
-  MessageSquare, Send, X, Users, Zap,
+  MessageSquare, Send, X, Users, Zap, Trophy,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+
+// Super tip threshold — transactions ≥ this amount trigger the hero card
+const SUPER_TIP_THRESHOLD = 25;
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
 const GOLD  = '#D4AF37';
@@ -562,6 +565,129 @@ function ChatPanel({ messages, onSend, onClose }) {
   );
 }
 
+// ─── SuperTipHero ──────────────────────────────────────────────────────────
+// Full-width hero card that bursts onto screen when a large tip arrives.
+// YouTube Super Chat / TikTok Universe gift pattern.
+function SuperTipHero({ tip, onDone }) {
+  return (
+    <motion.div
+      className="absolute left-2 right-2 z-20 pointer-events-none"
+      style={{ top: 48 }}
+      initial={{ y: -30, opacity: 0, scale: 0.92 }}
+      animate={{ y: 0, opacity: 1, scale: 1 }}
+      exit={{ y: -20, opacity: 0, scale: 0.95 }}
+      transition={{ type: 'spring', damping: 18, stiffness: 260 }}
+      onAnimationComplete={() => setTimeout(onDone, 4200)}
+    >
+      <div
+        className="w-full rounded-xl px-4 py-3 flex items-center gap-3 overflow-hidden"
+        style={{
+          background: 'linear-gradient(90deg, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.08) 60%, rgba(8,11,24,0.85) 100%)',
+          border: `1px solid rgba(212,175,55,0.45)`,
+          boxShadow: '0 0 32px rgba(212,175,55,0.18)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        {/* Coin burst icon */}
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.5)' }}
+        >
+          <span className="text-xl">💰</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'rgba(212,175,55,0.65)', fontFamily: FONT }}>
+            Super Tip
+          </p>
+          <p className="text-white font-black truncate" style={{ fontFamily: FONT, fontSize: 17 }}>
+            ${tip.amount.toLocaleString()}
+            <span className="text-sm font-bold ml-2" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              — {tip.user_name || 'Anonymous'}
+            </span>
+          </p>
+        </div>
+        {/* Shimmer line */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          initial={{ x: '-100%' }}
+          animate={{ x: '200%' }}
+          transition={{ duration: 1.2, ease: 'easeInOut', delay: 0.2 }}
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.18), transparent)', width: '40%' }}
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── GiftLeaderboard ──────────────────────────────────────────────────────
+// Slide-in panel showing top gift givers for this stream.
+function GiftLeaderboard({ entries, onClose }) {
+  return (
+    <motion.div
+      className="absolute right-2 z-20 w-56"
+      style={{ top: 48 }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ type: 'spring', damping: 22, stiffness: 240 }}
+    >
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{
+          background: 'rgba(8,11,24,0.96)',
+          border: '1px solid rgba(212,175,55,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5" style={{ color: GOLD }} />
+            <span className="text-[11px] font-black uppercase tracking-widest" style={{ fontFamily: FONT, color: GOLD }}>
+              Top Gifters
+            </span>
+          </div>
+          <button onClick={onClose} style={{ color: 'rgba(255,255,255,0.3)' }}>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Entries */}
+        <div className="py-1">
+          {entries.length === 0 && (
+            <p className="text-center text-[10px] py-4" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.2)' }}>
+              No gifts yet — be the first!
+            </p>
+          )}
+          {entries.slice(0, 10).map((e, i) => (
+            <div key={e.userId} className="flex items-center gap-2 px-3 py-1.5">
+              {/* Rank */}
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[9px] font-black"
+                style={{
+                  background: i === 0 ? 'rgba(212,175,55,0.25)' : i === 1 ? 'rgba(192,192,192,0.15)' : i === 2 ? 'rgba(205,127,50,0.15)' : 'rgba(255,255,255,0.05)',
+                  color: i === 0 ? GOLD : i === 1 ? '#C0C0C0' : i === 2 ? '#CD7F32' : 'rgba(255,255,255,0.4)',
+                  fontFamily: FONT,
+                }}
+              >
+                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+              </div>
+              {/* Name */}
+              <span className="flex-1 text-[11px] font-bold truncate" style={{ fontFamily: FONT, color: 'rgba(255,255,255,0.75)' }}>
+                {e.userName}
+              </span>
+              {/* Amount */}
+              <span className="text-[11px] font-black shrink-0" style={{ fontFamily: FONT, color: GOLD }}>
+                ${e.total.toLocaleString()}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── LiveStage (main export) ───────────────────────────────────────────────
 export default function LiveStage({ roomId, userId, userName, role = 'viewer', token }) {
   const {
@@ -577,22 +703,52 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
 
   const [pinnedId,          setPinnedId]          = useState(null);
   const [showChat,          setShowChat]          = useState(false);
+  const [showLeaderboard,   setShowLeaderboard]   = useState(false);
   const [floatingReactions, setFloatingReactions] = useState([]);
+  const [superTip,          setSuperTip]          = useState(null); // { amount, user_name }
+  const seenTxIds = useRef(new Set());
 
-  // Per-seat gift totals keyed by userId — polled every 15s
+  // Transactions polled at two rates:
+  //   • 5s for super-tip detection (catches big gifts quickly)
+  //   • 15s stale cap for per-seat totals (same data, React Query dedupes)
   const { data: giftRows = [] } = useQuery({
     queryKey: ['stage-gifts', roomId],
     queryFn:  () => base44.entities.Transaction.filter({ room_id: roomId }),
     enabled:  !!roomId,
-    refetchInterval: 15000,
-    staleTime: 10000,
+    refetchInterval: 5000,
+    staleTime: 4000,
   });
+
+  // Detect new super tips on each poll cycle
+  useEffect(() => {
+    if (!giftRows.length) return;
+    for (const row of giftRows) {
+      if (!row.id || seenTxIds.current.has(row.id)) continue;
+      seenTxIds.current.add(row.id);
+      if ((row.amount || 0) >= SUPER_TIP_THRESHOLD) {
+        setSuperTip({ amount: row.amount, user_name: row.user_name || row.sender_name || 'Anonymous' });
+      }
+    }
+  }, [giftRows]);
+
+  // Per-seat gift totals keyed by userId
   const giftTotals = useMemo(() =>
     giftRows.reduce((acc, row) => {
       if (row.user_id) acc[row.user_id] = (acc[row.user_id] || 0) + (row.amount || 0);
       return acc;
     }, {}),
   [giftRows]);
+
+  // Gift leaderboard: top senders ranked by total, with display name
+  const leaderboardEntries = useMemo(() => {
+    const map = {};
+    for (const row of giftRows) {
+      if (!row.user_id) continue;
+      if (!map[row.user_id]) map[row.user_id] = { userId: row.user_id, userName: row.user_name || row.sender_name || row.user_id, total: 0 };
+      map[row.user_id].total += (row.amount || 0);
+    }
+    return Object.values(map).sort((a, b) => b.total - a.total);
+  }, [giftRows]);
 
   // Build floating reaction list from incoming lastReaction events
   useEffect(() => {
@@ -849,6 +1005,21 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
 
           <div className="flex-1" />
 
+          {/* Gift leaderboard toggle */}
+          <button
+            onClick={() => setShowLeaderboard(v => !v)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-all"
+            style={{
+              background: showLeaderboard ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)',
+              border:     `1px solid ${showLeaderboard ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'}`,
+            }}
+          >
+            <Trophy className="w-3.5 h-3.5" style={{ color: showLeaderboard ? GOLD : 'rgba(255,255,255,0.4)' }} />
+            {leaderboardEntries.length > 0 && (
+              <span className="text-[10px] font-bold" style={{ color: GOLD }}>{leaderboardEntries.length}</span>
+            )}
+          </button>
+
           {/* Chat toggle */}
           <button
             onClick={() => setShowChat(v => !v)}
@@ -867,6 +1038,23 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
 
         {/* Video grid / layouts */}
         {stageContent}
+
+        {/* Super tip hero card — bursts in when a large tip lands */}
+        <AnimatePresence>
+          {superTip && (
+            <SuperTipHero tip={superTip} onDone={() => setSuperTip(null)} />
+          )}
+        </AnimatePresence>
+
+        {/* Gift leaderboard panel */}
+        <AnimatePresence>
+          {showLeaderboard && (
+            <GiftLeaderboard
+              entries={leaderboardEntries}
+              onClose={() => setShowLeaderboard(false)}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Floating emoji reactions — data channel driven */}
         <AnimatePresence>
