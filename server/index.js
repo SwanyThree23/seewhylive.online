@@ -307,7 +307,6 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/', publicPreviewRoutes);
 
 app.use(express.json({ limit: '2mb' }));
-app.use('/api/vod', vodRoutes);
 var n8nRouter = require('./n8nWebhooks');
 app.use('/api/n8n', n8nRouter);
 app.use(xssClean());
