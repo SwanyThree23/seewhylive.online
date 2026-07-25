@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -400,3 +400,18 @@ export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode
     </div>
   );
 }
+
+// Re-render only when the props that affect visual output actually change.
+// Sibling cells' prop changes and unrelated parent re-renders are suppressed.
+function areOctCellPropsEqual(prev, next) {
+  var pg = prev.guest || {};
+  var ng = next.guest || {};
+  return (
+    pg.producerId === ng.producerId &&
+    pg.speaking   === ng.speaking   &&
+    prev.isMuted  === next.isMuted  &&
+    prev.isCamOff === next.isCamOff
+  );
+}
+
+export default React.memo(OctCell, areOctCellPropsEqual);

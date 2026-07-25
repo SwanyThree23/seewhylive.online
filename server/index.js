@@ -1701,6 +1701,9 @@ io.on('connection', function(socket) {
     var guestId = data.guestId || socket.data.guestId;
     if (!roomId) return;
     io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
+    // Upgrade active-speaker video to r2 (900 kbps) while speaking;
+    // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
+    mediasoup.setPreferredLayersByGuestId(guestId, data.speaking ? 2 : 0).catch(function() {});
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────
