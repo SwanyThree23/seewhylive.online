@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -400,3 +400,18 @@ export default function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode
     </div>
   );
 }
+
+function octCellEqual(prev, next) {
+  if (prev.isMuted !== next.isMuted) return false;
+  if (prev.isCamOff !== next.isCamOff) return false;
+  if (prev.sz !== next.sz || prev.fill !== next.fill) return false;
+  if (prev.guest === next.guest) return true;
+  if (!prev.guest || !next.guest) return false;
+  return (
+    prev.guest.producerId === next.guest.producerId &&
+    prev.guest.speaking   === next.guest.speaking   &&
+    prev.guest.isMuted    === next.guest.isMuted
+  );
+}
+
+export default React.memo(OctCell, octCellEqual);

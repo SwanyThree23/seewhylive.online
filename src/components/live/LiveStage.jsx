@@ -372,13 +372,16 @@ export function useLiveStage({ roomId, userId, userName, role, token }) {
   };
 }
 
+// Octagonal clip-path — matches SeeWhy brand identity from OctCell / StageView
+const OCT_CLIP = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
+
 // ─── VideoTile ─────────────────────────────────────────────────────────────
 /**
  * Maps a ZEGO SFU MediaStream to a <video> srcObject.
  * The SFU delivers each encoded track; assigning stream → srcObject
  * is the critical bridge from network transport to DOM rendering.
  */
-function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality, giftTotal, forceMuted }) {
+function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal, quality, giftTotal, forceMuted, isSpeaking }) {
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -399,7 +402,27 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
   const qualityColor = quality === 'good' ? GREEN : quality === 'warning' ? GOLD : RED;
 
   return (
-    <div className="relative w-full h-full rounded-xl overflow-hidden group" style={{ background: BG, border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div
+      className="relative w-full h-full rounded-xl overflow-hidden group"
+      style={{
+        background: BG,
+        border: isSpeaking ? `2px solid ${GOLD}` : '1px solid rgba(255,255,255,0.06)',
+        boxShadow: isSpeaking ? `0 0 16px ${GOLD}44` : 'none',
+        transition: 'border-color 0.25s, box-shadow 0.25s',
+      }}
+    >
+      {/* Speaking pulse ring — SeeWhy brand gold */}
+      {isSpeaking && (
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            border: `3px solid ${GOLD}66`,
+            borderRadius: 12,
+            animation: 'ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite',
+          }}
+        />
+      )}
+
       {/* SFU video output — muted on local to prevent echo */}
       <video
         ref={videoRef}
@@ -409,11 +432,33 @@ function VideoTile({ stream, label, isMuted, isCamOff, isPinned, onPin, isLocal,
         className={`w-full h-full object-cover transition-opacity duration-300 ${isCamOff ? 'opacity-0' : 'opacity-100'}`}
       />
 
-      {/* Camera-off avatar placeholder */}
+      {/* Camera-off avatar placeholder — octagonal shape (SeeWhy brand) */}
       {isCamOff && (
         <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: BG }}>
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <span className="text-2xl font-black text-white/25" style={{ fontFamily: FONT }}>
+          {/* Outer octagonal glow ring when speaking */}
+          {isSpeaking && (
+            <div
+              className="absolute"
+              style={{
+                width: 80, height: 80,
+                clipPath: OCT_CLIP,
+                background: `${GOLD}22`,
+                animation: 'ping 1s ease-in-out infinite',
+              }}
+            />
+          )}
+          <div
+            className="w-16 h-16 flex items-center justify-center mb-2"
+            style={{
+              clipPath: OCT_CLIP,
+              background: isSpeaking
+                ? `linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.08))`
+                : 'rgba(255,255,255,0.06)',
+              border: 'none',
+              transition: 'background 0.3s',
+            }}
+          >
+            <span className="text-2xl font-black" style={{ fontFamily: FONT, color: isSpeaking ? GOLD : 'rgba(255,255,255,0.25)' }}>
               {(label || '?')[0].toUpperCase()}
             </span>
           </div>
@@ -820,7 +865,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {cameraTiles.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
+                <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} isSpeaking={tile.userId === activeSpeakerId} />
               </div>
             ))}
           </div>
@@ -835,12 +880,12 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
       return (
         <div className="flex-1 flex gap-2 min-h-0">
           <div className="flex-[7] min-w-0 min-h-0">
-            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} giftTotal={giftTotals[pinnedTile.userId] || 0} forceMuted={viewerMuted} />
+            <VideoTile {...pinnedTile} isPinned onPin={() => togglePin(pinnedTile.id)} quality={quality} giftTotal={giftTotals[pinnedTile.userId] || 0} forceMuted={viewerMuted} isSpeaking={pinnedTile.userId === activeSpeakerId} />
           </div>
           <div className="flex-[3] flex flex-col gap-2 min-h-0 overflow-y-auto">
             {rest.map(tile => (
               <div key={tile.id} className="flex-1 min-h-0">
-                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
+                <VideoTile {...tile} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} isSpeaking={tile.userId === activeSpeakerId} />
               </div>
             ))}
           </div>
@@ -864,6 +909,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               quality={quality}
               giftTotal={giftTotals[spotlightTile.userId] || 0}
               forceMuted={viewerMuted}
+              isSpeaking={spotlightTile.userId === activeSpeakerId}
             />
           </div>
           {/* Others strip — horizontal scroll, no scrollbar */}
@@ -886,7 +932,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
                 onClick={() => togglePin(tile.id)}
                 title={`Pin ${tile.label}`}
               >
-                <VideoTile {...tile} onPin={null} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
+                <VideoTile {...tile} onPin={null} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} isSpeaking={tile.userId === activeSpeakerId} />
               </div>
             ))}
           </div>
@@ -910,7 +956,7 @@ export default function LiveStage({ roomId, userId, userName, role = 'viewer', t
               transition={{ duration: 0.2 }}
               className="min-h-0 min-w-0"
             >
-              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} />
+              <VideoTile {...tile} isPinned={pinnedId === tile.id} onPin={() => togglePin(tile.id)} quality={quality} giftTotal={giftTotals[tile.userId] || 0} forceMuted={viewerMuted} isSpeaking={tile.userId === activeSpeakerId} />
             </motion.div>
           ))}
 

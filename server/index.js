@@ -1697,10 +1697,17 @@ io.on('connection', function(socket) {
 
   // ── speaking ───────────────────────────────────────────────────────────
   socket.on('speaking', function(data) {
-    var roomId  = data.roomId || socket.data.roomId;
-    var guestId = data.guestId || socket.data.guestId;
+    var roomId   = data.roomId || socket.data.roomId;
+    var guestId  = data.guestId || socket.data.guestId;
+    var speaking = !!data.speaking;
     if (!roomId) return;
-    io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
+    io.to(roomId).emit('speaking', { guestId: guestId, speaking: speaking });
+    try {
+      var videoConsumers = mediasoup.getVideoConsumersByGuest(guestId);
+      videoConsumers.forEach(function(c) {
+        c.setPreferredLayers({ spatialLayer: speaking ? 2 : 0 }).catch(function() {});
+      });
+    } catch (e) { /* guest may have no video consumer or may have left */ }
   });
 
   // ── hand-raise ─────────────────────────────────────────────────────────

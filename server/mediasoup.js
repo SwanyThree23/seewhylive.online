@@ -11,11 +11,12 @@ var os = require('os');
 var ANNOUNCED_IP = process.env.MEDIASOUP_ANNOUNCED_IP || '2.24.194.112';
 
 // ─── Internal state maps ───────────────────────────────────────────────────
-var workers = [];       // mediasoup.Worker[]
-var routers = {};       // roomId → mediasoup.Router
-var transports = {};    // transportId → mediasoup.WebRtcTransport
-var producers = {};     // producerId → { producer, guestId, kind, roomId }
-var consumers = {};     // consumerId → mediasoup.Consumer
+var workers = [];             // mediasoup.Worker[]
+var routers = {};             // roomId → mediasoup.Router
+var transports = {};          // transportId → mediasoup.WebRtcTransport
+var producers = {};           // producerId → { producer, guestId, kind, roomId }
+var consumers = {};           // consumerId → mediasoup.Consumer
+var guestVideoConsumers = {}; // guestId → consumerId[] (video only, for setPreferredLayers)
 
 var workerIndex = 0;
 
@@ -257,7 +258,16 @@ async function createConsumer(routerId, transportId, producerId, rtpCapabilities
   });
 
   consumer.routerId = router.id;
+  consumer.guestId  = producerEntry.guestId;
   consumers[consumer.id] = consumer;
+
+  if (consumer.kind === 'video') {
+    if (!guestVideoConsumers[producerEntry.guestId]) {
+      guestVideoConsumers[producerEntry.guestId] = [];
+    }
+    guestVideoConsumers[producerEntry.guestId].push(consumer.id);
+    try { await consumer.setPreferredLayers({ spatialLayer: 0 }); } catch (e) { /* not simulcast */ }
+  }
 
   var params = {
     id: consumer.id,
@@ -315,6 +325,12 @@ function cleanupRoom(roomId) {
       }
     }
 
+    // Prune guestVideoConsumers of any IDs that no longer exist in consumers
+    Object.keys(guestVideoConsumers).forEach(function(gid) {
+      guestVideoConsumers[gid] = guestVideoConsumers[gid].filter(function(cid) { return !!consumers[cid]; });
+      if (guestVideoConsumers[gid].length === 0) delete guestVideoConsumers[gid];
+    });
+
     try { router.close(); } catch (e) { /* ignore */ }
     delete routers[roomId];
   }
@@ -322,6 +338,11 @@ function cleanupRoom(roomId) {
 
 function getWorkerCount() {
   return workers.length;
+}
+
+function getVideoConsumersByGuest(guestId) {
+  var ids = guestVideoConsumers[guestId] || [];
+  return ids.map(function(id) { return consumers[id]; }).filter(Boolean);
 }
 
 
@@ -363,6 +384,7 @@ module.exports = {
   pauseProducer: pauseProducer,
   resumeProducer: resumeProducer,
   getProducerIdsByGuest: getProducerIdsByGuest,
+  getVideoConsumersByGuest: getVideoConsumersByGuest,
   getRouterRtpCapabilities: getRouterRtpCapabilities,
   getRoomProducers: getRoomProducers,
   cleanupRoom: cleanupRoom,
