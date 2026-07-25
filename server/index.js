@@ -9,6 +9,7 @@ const vodRoutes = require('./routes/vod');
 const leaderboardRoutes = require('./routes/leaderboard');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
+const requireAuth = require('./middleware/auth');
 'use strict';
 
 /**
@@ -242,14 +243,6 @@ var app    = express();
 var server = createServer(app);
 app.set('trust proxy', 1);
 app.use(require('express').static(require('path').join(__dirname, '..', 'frontend', 'dist')));
-app.get('*', function(req, res) {
-  var indexPath = require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html');
-  if (!require('fs').existsSync(indexPath)) {
-    return res.status(503).send('<html><body style="font-family:sans-serif;text-align:center;padding:60px"><h2>Deploying update, back in a moment...</h2></body></html>');
-  }
-  res.sendFile(indexPath);
-});
-
 // Stripe webhook needs raw body - register BEFORE express.json()
 app.post(
   '/api/stripe/webhook',
@@ -296,6 +289,8 @@ var aiRateLimit = rateLimit({
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
 app.use('/api/ai', aiRateLimit);
+app.use(express.json({ limit: '2mb' }));
+app.use(xssClean());
 app.use('/api/battles', battleRoutes);
 app.use('/api/rewards', rewardsRoutes);
 app.use('/api/guests', guestRoutes);
@@ -306,10 +301,8 @@ app.use('/api/vod', vodRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/', publicPreviewRoutes);
 
-app.use(express.json({ limit: '2mb' }));
 var n8nRouter = require('./n8nWebhooks');
 app.use('/api/n8n', n8nRouter);
-app.use(xssClean());
 
 // ─── Socket.io ────────────────────────────────────────────────────────────
 var io = new Server(server, {
@@ -602,15 +595,15 @@ app.get('/api/metrics', function(req, res) {
 });
 
 // POST /api/ppv/create
-app.post('/api/ppv/create', function(req, res) {
+app.post('/api/ppv/create', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.roomId || !body.viewerId || !body.priceUsd || !body.creatorStripeAccountId) {
-    res.status(400).json({ error: 'Missing required fields: roomId, viewerId, priceUsd, creatorStripeAccountId' });
+  if (!body.roomId || !body.priceUsd || !body.creatorStripeAccountId) {
+    res.status(400).json({ error: 'Missing required fields: roomId, priceUsd, creatorStripeAccountId' });
     return;
   }
   stripeModule.createPPVPaymentIntent(
     body.roomId,
-    body.viewerId,
+    req.user.id,
     body.priceUsd,
     body.creatorStripeAccountId
   ).then(function(result) {
@@ -622,13 +615,13 @@ app.post('/api/ppv/create', function(req, res) {
 });
 
 // POST /api/ppv/verify
-app.post('/api/ppv/verify', function(req, res) {
+app.post('/api/ppv/verify', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.paymentIntentId || !body.roomId || !body.viewerId) {
-    res.status(400).json({ error: 'Missing required fields: paymentIntentId, roomId, viewerId' });
+  if (!body.paymentIntentId || !body.roomId) {
+    res.status(400).json({ error: 'Missing required fields: paymentIntentId, roomId' });
     return;
   }
-  stripeModule.verifyPPVPayment(body.paymentIntentId, body.roomId, body.viewerId)
+  stripeModule.verifyPPVPayment(body.paymentIntentId, body.roomId, req.user.id)
     .then(function(result) {
       res.json(result);
     }).catch(function(err) {
@@ -823,14 +816,14 @@ app.post('/api/turn/credentials', function(req, res) {
 });
 
 // POST /api/keys/save
-app.post('/api/keys/save', function(req, res) {
+app.post('/api/keys/save', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.guestId || !body.destId || !body.plainKey) {
-    res.status(400).json({ error: 'Missing required fields: guestId, destId, plainKey' });
+  if (!body.destId || !body.plainKey) {
+    res.status(400).json({ error: 'Missing required fields: destId, plainKey' });
     return;
   }
   try {
-    vault.saveKey(body.guestId, body.destId, body.plainKey);
+    vault.saveKey(req.user.id, body.destId, body.plainKey);
     res.json({ saved: true });
   } catch (err) {
     logger.error('[keys/save] ' + err.message);
@@ -839,14 +832,14 @@ app.post('/api/keys/save', function(req, res) {
 });
 
 // DELETE /api/keys/delete
-app.delete('/api/keys/delete', function(req, res) {
+app.delete('/api/keys/delete', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.guestId || !body.destId) {
-    res.status(400).json({ error: 'Missing required fields: guestId, destId' });
+  if (!body.destId) {
+    res.status(400).json({ error: 'Missing required field: destId' });
     return;
   }
   try {
-    vault.deleteKey(body.guestId, body.destId);
+    vault.deleteKey(req.user.id, body.destId);
     res.json({ deleted: true });
   } catch (err) {
     logger.error('[keys/delete] ' + err.message);
@@ -855,9 +848,9 @@ app.delete('/api/keys/delete', function(req, res) {
 });
 
 // GET /api/keys/meta/:guestId
-app.get('/api/keys/meta/:guestId', function(req, res) {
+app.get('/api/keys/meta/:guestId', requireAuth, function(req, res) {
   try {
-    var meta = vault.listGuestKeyMeta(req.params.guestId);
+    var meta = vault.listGuestKeyMeta(req.user.id);
     res.json(meta);
   } catch (err) {
     logger.error('[keys/meta] ' + err.message);
@@ -1065,6 +1058,15 @@ try {
 } catch (routesErr) {
   logger.warn('[routes] Failed to load routes.js: ' + routesErr.message);
 }
+
+// ─── SPA fallback — must be after all API routes ──────────────────────────
+app.get('*', function(req, res) {
+  var indexPath = require('path').join(__dirname, '..', 'frontend', 'dist', 'index.html');
+  if (!require('fs').existsSync(indexPath)) {
+    return res.status(503).send('<html><body style="font-family:sans-serif;text-align:center;padding:60px"><h2>Deploying update, back in a moment...</h2></body></html>');
+  }
+  res.sendFile(indexPath);
+});
 
 // ─── Socket.io Auth Middleware ────────────────────────────────────────────
 

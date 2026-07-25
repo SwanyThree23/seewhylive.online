@@ -9,7 +9,7 @@ const challengeService = require('../services/challengeService');
 const requireAuth      = require('../middleware/auth');
 
 function requireAdmin(req, res, next) {
-  if (!req.user || !req.user.isAdmin) return res.status(403).json({ error: 'admin only' });
+  if (!req.user || req.user.role !== 'admin') return res.status(403).json({ error: 'admin only' });
   next();
 }
 

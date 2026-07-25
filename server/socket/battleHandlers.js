@@ -59,8 +59,17 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:decline', async (payload, cb) => {
-    io.to(`user:${payload.challengerId}`).emit('battle:decline', { battleId: payload.battleId });
-    if (cb) cb({ ok: true });
+    try {
+      const battle = await battleService.getBattle(payload.battleId);
+      if (!battle || battle.defender_id !== socket.data.userId) {
+        if (cb) cb({ ok: false, error: 'forbidden' });
+        return;
+      }
+      io.to(`user:${battle.challenger_id}`).emit('battle:decline', { battleId: payload.battleId });
+      if (cb) cb({ ok: true });
+    } catch (err) {
+      if (cb) cb({ ok: false, error: err.message });
+    }
   });
 
   socket.on('battle:start', async (payload, cb) => {
