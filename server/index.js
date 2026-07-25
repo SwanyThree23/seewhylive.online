@@ -2873,6 +2873,20 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── spotlight-request — viewer asks host to spotlight their slot ────────
+  socket.on('spotlight-request', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var room = rooms.get(roomId);
+    if (!room || !room.hostSocketId) return;
+    io.to(room.hostSocketId).emit('spotlight-request', {
+      guestId:  socket.data.guestId || socket.data.userId,
+      userId:   socket.data.userId  || socket.data.guestId,
+      username: socket.data.username || 'Guest',
+      ts:       Math.floor(Date.now() / 1000),
+    });
+  });
+
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
   socket.on('set-guest-role', function(data) {
     var roomId  = data.roomId || socket.data.roomId;

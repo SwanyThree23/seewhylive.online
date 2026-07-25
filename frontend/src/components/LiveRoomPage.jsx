@@ -427,6 +427,8 @@ export default function LiveRoomPage({
   var [pinnedLink,         setPinnedLink]         = useState(null); // { url, label, emoji } | null
   var [confettiPieces,     setConfettiPieces]     = useState([]);   // [{ id, x, color, delay, dur }]
   var [mentionAlert,       setMentionAlert]       = useState(null); // { by } | null
+  var [spotlightRequests,  setSpotlightRequests]  = useState([]);   // [{guestId,username,ts}] — host only
+  var [watchMilestones,    setWatchMilestones]    = useState(new Set()); // milestones already shown
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -639,6 +641,15 @@ export default function LiveRoomPage({
       if (!data || !data.by) return;
       setMentionAlert({ by: data.by });
       setTimeout(function() { setMentionAlert(null); }, 3000);
+    });
+
+    socket.on('spotlight-request', function(data) {
+      if (!data || !data.username) return;
+      setSpotlightRequests(function(prev) {
+        var deduped = prev.filter(function(r) { return r.guestId !== data.guestId; });
+        return deduped.concat([data]).slice(-5);
+      });
+      if (addToast) addToast('✨ ' + data.username + ' wants to be spotlighted', 'info');
     });
 
     socket.on('room-tags', function(data) {
@@ -855,6 +866,7 @@ export default function LiveRoomPage({
       socket.off('emoji-tally');
       socket.off('celebrate');
       socket.off('chat-mention');
+      socket.off('spotlight-request');
       socket.off('room-tags');
       socket.off('link-pinned');
       socket.off('role-changed');
@@ -1010,8 +1022,10 @@ export default function LiveRoomPage({
     var id = setInterval(function() {
       setWatchSeconds(function(s) {
         var next = s + 1;
-        if (next === 300 && addToast) addToast('🔥 You\'ve been watching for 5 minutes — Loyal Viewer!', 'success');
-        if (next === 900 && addToast) addToast('⭐ 15 minutes of watch time — Super Viewer!', 'success');
+        if (next === 300  && addToast) addToast('🔥 5 minutes — Loyal Viewer badge earned!', 'success');
+        if (next === 900  && addToast) addToast('⭐ 15 minutes — Super Viewer!', 'success');
+        if (next === 1800 && addToast) addToast('💎 30 minutes — Diamond Viewer!', 'success');
+        if (next === 3600 && addToast) addToast('👑 1 hour watched — Legendary Viewer!', 'success');
         return next;
       });
     }, 1000);
@@ -1396,10 +1410,23 @@ export default function LiveRoomPage({
             <RolePill role={hostEntry ? hostEntry.role : role} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
-              👥 {viewerCount || allParticipants.length}
-            </span>
-            {watchSeconds >= 900 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
+                👥 {viewerCount || allParticipants.length}
+              </span>
+              {(viewerCount || 0) > 0 && (
+                <div style={{ width: 60, height: 3, background: 'rgba(255,255,255,.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: Math.min(100, ((viewerCount || 0) / 5000) * 100) + '%', background: (viewerCount || 0) > 4500 ? RED : TEAL, borderRadius: 3, transition: 'width .6s ease' }} />
+                </div>
+              )}
+            </div>
+            {watchSeconds >= 3600 && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>👑 LEGEND</span>
+            )}
+            {watchSeconds >= 1800 && watchSeconds < 3600 && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#88CCFF', background: 'rgba(136,204,255,.1)', border: '1px solid rgba(136,204,255,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>💎 DIAMOND</span>
+            )}
+            {watchSeconds >= 900 && watchSeconds < 1800 && (
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>⭐ SUPER</span>
             )}
             {watchSeconds >= 300 && watchSeconds < 900 && (
@@ -2514,6 +2541,17 @@ export default function LiveRoomPage({
               active={handRaised}
               activeColor={gold}
               onPress={raiseHand}
+            />
+          )}
+          {role === 'guest' && (
+            <IconBtn
+              icon="✨"
+              label="Spotlight"
+              active={false}
+              onPress={function() {
+                if (socket) socket.emit('spotlight-request', { roomId: roomId, guestId: userId, username: username });
+                if (addToast) addToast('✨ Spotlight request sent to host!', 'info');
+              }}
             />
           )}
           <IconBtn
@@ -3641,6 +3679,29 @@ export default function LiveRoomPage({
                 }} style={{ background: 'rgba(212,133,74,.2)', border: '1px solid rgba(212,133,74,.4)', borderRadius: 4, padding: '2px 5px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, cursor: 'pointer', flexShrink: 0 }}>
                   ADD
                 </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ SPOTLIGHT REQUEST QUEUE (host) ════════════════ */}
+      {(role === 'host' || role === 'cohost') && spotlightRequests.length > 0 && (
+        <div style={{ position: 'absolute', right: 8, top: 310, zIndex: 56, width: 170, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '8px 10px', backdropFilter: 'blur(8px)' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>✨ SPOTLIGHT REQUESTS</div>
+          {spotlightRequests.slice(0, 5).map(function(req) {
+            return (
+              <div key={req.guestId} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.username}</span>
+                <button onClick={function() {
+                  if (socket) socket.emit('set-spotlight', { roomId: roomId, guestId: req.guestId });
+                  setSpotlightRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                }} style={{ background: GOLD, border: 'none', borderRadius: 5, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: BG, cursor: 'pointer', letterSpacing: 1 }}>
+                  SPOT
+                </button>
+                <button onClick={function() {
+                  setSpotlightRequests(function(prev) { return prev.filter(function(r) { return r.guestId !== req.guestId; }); });
+                }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 11, cursor: 'pointer', lineHeight: 1 }}>✕</button>
               </div>
             );
           })}
