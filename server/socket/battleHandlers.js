@@ -48,6 +48,11 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:accept', async (payload, cb) => {
     try {
+      const existing = await battleService.getBattle(payload.battleId);
+      if (!existing || existing.defender_id !== socket.data.userId) {
+        if (cb) cb({ ok: false, error: 'forbidden' });
+        return;
+      }
       const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId);
       socket.join(roomName(payload.battleId));
       // Notify challenger so they can join the battle room too.
@@ -74,6 +79,11 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:start', async (payload, cb) => {
     try {
+      const existing = await battleService.getBattle(payload.battleId);
+      if (!existing || (existing.challenger_id !== socket.data.userId && existing.defender_id !== socket.data.userId)) {
+        if (cb) cb({ ok: false, error: 'forbidden' });
+        return;
+      }
       const battle = await battleService.startBattle(payload.battleId);
       const room = roomName(payload.battleId);
       io.to(room).emit('battle:start', battle);
@@ -105,6 +115,7 @@ function registerBattleHandlers(io, socket) {
 }
 
 function startCountdown(io, battle) {
+  if (activeTimers.has(battle.id)) return;
   const room = roomName(battle.id);
   const endTime = Date.now() + battle.duration_minutes * 60 * 1000;
 

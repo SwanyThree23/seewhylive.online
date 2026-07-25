@@ -71,6 +71,10 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:expand', async ({ roomId, slotIndex, expanded }, ack) => {
     try {
+      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+        ack?.({ ok: false, error: 'forbidden' });
+        return;
+      }
       const slot = await panelService.setExpandedSlot({ roomId, slotIndex, expanded });
       io.to(roomId).emit('panel:layout_update', { roomId, slot });
       ack?.({ ok: true });
