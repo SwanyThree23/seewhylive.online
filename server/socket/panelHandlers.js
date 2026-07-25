@@ -44,7 +44,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:resolve_join_request', async ({ roomId, userId, approve }, ack) => {
     try {
-      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -99,7 +99,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:kick', async ({ roomId, targetUserId }, ack) => {
     try {
-      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -117,7 +117,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:mute', async ({ roomId, targetUserId, isMuted }) => {
     try {
-      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
       await panelService.setMuted({ roomId, userId: targetUserId, isMuted });
       io.to(roomId).emit('panel:slot_muted', { roomId, userId: targetUserId, isMuted });
     } catch (err) {
@@ -138,11 +138,10 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:react', function(payload) {
     try {
-      var roomId  = payload && payload.roomId;
-      var guestId = payload && payload.guestId;
-      var emoji   = payload && payload.emoji;
-      if (!roomId || !guestId || !emoji) return;
-      io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: guestId, emoji: emoji });
+      var roomId = payload && payload.roomId;
+      var emoji  = payload && payload.emoji;
+      if (!roomId || !emoji) return;
+      io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: socket.data.userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
     }

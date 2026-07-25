@@ -24,7 +24,7 @@ async function assignSlot({ roomId, userId }) {
   const takenIndexes = new Set(taken.rows.map((r) => r.slot_index));
 
   let nextIndex = null;
-  for (let i = 0; i <= maxGuests; i++) {
+  for (let i = 0; i < maxGuests; i++) {
     if (!takenIndexes.has(i)) { nextIndex = i; break; }
   }
   if (nextIndex === null) {

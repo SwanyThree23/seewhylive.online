@@ -650,10 +650,11 @@ app.post('/api/schedule', requireAuth, function(req, res) {
   try {
     db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL, recurring TEXT)');
     try { db.exec('ALTER TABLE schedules ADD COLUMN recurring TEXT'); } catch(e) { /* column already exists */ }
+    try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(e) { /* column already exists */ }
     var id  = uuidv4();
     var now = Math.floor(Date.now() / 1000);
-    db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring) VALUES (?,?,?,?,?,?,?)')
-      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now, String(body.recurring||'none').slice(0,20));
+    db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring,creator_id) VALUES (?,?,?,?,?,?,?,?)')
+      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now, String(body.recurring||'none').slice(0,20), req.user.id);
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
@@ -664,8 +665,8 @@ app.post('/api/schedule', requireAuth, function(req, res) {
 // DELETE /api/schedule/:id
 app.delete('/api/schedule/:id', requireAuth, function(req, res) {
   try {
-    db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL)');
-    db.prepare('DELETE FROM schedules WHERE id = ?').run(req.params.id);
+    var info = db.prepare('DELETE FROM schedules WHERE id = ? AND creator_id = ?').run(req.params.id, req.user.id);
+    if (info.changes === 0) return res.status(403).json({ error: 'not found or forbidden' });
     res.json({ deleted: true });
   } catch (err) {
     logger.error('[schedule/delete] ' + err.message);
@@ -701,7 +702,7 @@ app.post('/api/push/unsubscribe', function(req, res) {
 });
 
 // GET /api/payout-history
-app.get('/api/payout-history', function(req, res) {
+app.get('/api/payout-history', requireAuth, function(req, res) {
   var roomId = req.query.roomId || null;
   var stmt;
   var rows;
@@ -772,7 +773,7 @@ app.get('/api/leaderboard', function(req, res) {
 });
 
 // POST /api/connect/onboard
-app.post('/api/connect/onboard', function(req, res) {
+app.post('/api/connect/onboard', requireAuth, function(req, res) {
   var body = req.body;
   if (!body.email) {
     res.status(400).json({ error: 'Missing required field: email' });
@@ -3186,14 +3187,14 @@ module.exports = { app, server, io };
 // ─── ZEGO Token 04 generation ────────────────────────────────────────────────
 // Format: "04" + base64( uint32LE(payloadLen) + payloadUTF8 + hmac32bytes )
 // ZEGO_SERVER_SECRET env var must be a 32-byte hex string (64 hex chars).
-app.post('/api/zego/token', function(req, res) {
+app.post('/api/zego/token', requireAuth, function(req, res) {
   var appId  = parseInt(process.env.ZEGO_APP_ID  || '0');
   var secret = process.env.ZEGO_SERVER_SECRET     || '';
   if (!appId || !secret) {
     return res.status(503).json({ error: 'ZEGO credentials not configured on server' });
   }
 
-  var userId = (req.query.userId || req.body && req.body.userId || 'guest_anon').slice(0, 64);
+  var userId = req.user.id.slice(0, 64);
   var now    = Math.floor(Date.now() / 1000);
   var nonce  = Math.floor(Math.random() * 0x7fffffff);
 
