@@ -136,3 +136,55 @@ updates without unnecessary full re-renders.
 - `frontend/src/components/LiveRoomPage.jsx`
 - `frontend/src/components/PanelGrid.jsx`
 - `frontend/src/components/OctCell.jsx`
+
+---
+
+# Phase 3 Plan — Stage/Others Split for Scale
+
+## Pre-implementation audit
+
+Date: 2026-07-25
+
+Files read fresh:
+
+| File | Key state found |
+|------|----------------|
+| `LiveRoomPage.jsx` | `speakingIds` (line ~316, `{[guestId]: bool}`), `pinnedId` (line ~340, `guestId|null`), `stageLayout` (line ~321, `'grid'|'featured'`), `onStage` (derived), grid rendering lines ~1219–1355, featured rendering lines ~1357–1450 |
+| `OctCell.jsx` | `giftTotal` prop + badge added in Phase 2 |
+| `PanelGrid.jsx` | `giftTotals` + `onCameraTrack` added in Phase 2 |
+
+## Gap analysis
+
+| Item | Status |
+|------|--------|
+| `stageLayout === 'split'` mode | Missing — only `'grid'` and `'featured'` exist |
+| Layout toggle has split button | Missing |
+| Split tile section (speakers + pinned) | Missing |
+| Others avatar strip (scrollable horizontal) | Missing |
+
+## Implementation plan
+
+### Change 1 — layout toggle button
+
+Add `{ id: 'split', icon: '⤢' }` to the existing layout switcher array (lines ~1120–1130).
+Result: 3 buttons — ⊞ Grid | ◻ Featured | ⤢ Split.
+
+### Change 2 — split mode rendering block
+
+Insert after grid-mode closing `)}` (line ~1355) and before `{/* Featured layout */}`.
+
+Logic:
+- `activeTileIds`: Set of `gid` where `speakingIds[gid] === true` OR `gid === pinnedId`
+- If set is empty, seed with `userId` (own cell is always visible)
+- `tileGuests` = `onStage` filtered to `activeTileIds`
+- `stripGuests` = `onStage` filtered to NOT `activeTileIds`
+- `tileCols` = `tileGuests.length <= 1 ? 1 : tileGuests.length <= 4 ? 2 : 3`
+- Tiles: same 16:9 OctCell grid pattern as grid mode, with speaking/pinned/hand badges
+- Strip: `OTHERS ON STAGE (N)` label + horizontal scrollable `AudienceCircle` row reusing existing component
+
+No new state variables needed.
+No server changes needed.
+
+## Files to change
+
+- `frontend/src/components/LiveRoomPage.jsx` only
