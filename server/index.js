@@ -217,6 +217,9 @@ db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
 
+// Additive migration: add to_guest_id column to gifts if it doesn't exist yet
+try { db.prepare('ALTER TABLE gifts ADD COLUMN to_guest_id TEXT').run(); } catch (e) { /* already exists */ }
+
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
 if (giftCount.c === 0) {
@@ -389,6 +392,7 @@ var loveCounts          = new Map();  // roomId → total love count
 var loveEarnings        = new Map();  // roomId → { creator: microcents, platform: microcents }
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
+var guestGiftTotals     = new Map();  // roomId → Map<guestId, totalCents>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -776,6 +780,17 @@ app.get('/api/leaderboard', function(req, res) {
   } catch (err) {
     logger.error('[leaderboard] ' + err.message);
     res.status(500).json({ error: 'Leaderboard query failed' });
+  }
+});
+
+// GET /api/gift-types — preset gift options for the tap-to-gift UI
+app.get('/api/gift-types', function(req, res) {
+  try {
+    var rows = db.prepare('SELECT id, name, icon, amount_cents, aura_message FROM gift_types WHERE is_active = 1 ORDER BY sort_order ASC').all();
+    res.json({ giftTypes: rows });
+  } catch (err) {
+    logger.error('[gift-types] ' + err.message);
+    res.status(500).json({ error: 'Could not load gift types' });
   }
 });
 
@@ -1578,12 +1593,12 @@ io.on('connection', function(socket) {
       });
   });
 
-  // ── send-gift ──────────────────────────────────────────────────────────
-  socket.on('send-gift', function(data) {
+  // ── merch-order — merch checkout payment rail (separated from tip gifts) ──
+  socket.on('merch-order', function(data) {
     var roomId                 = data.roomId || socket.data.roomId;
     var fromUser               = data.fromUser || socket.data.username || 'Guest';
-    var emoji                  = data.emoji || '';
-    var name                   = data.name || 'Gift';
+    var emoji                  = data.emoji || '🛍️';
+    var name                   = data.name || 'Merch Order';
     var valueCents             = Math.floor(data.valueCents || 0);
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
@@ -1591,17 +1606,82 @@ io.on('connection', function(socket) {
 
     var creatorCents  = Math.floor(valueCents * CREATOR);
     var platformCents = valueCents - creatorCents;
+    var orderId       = uuidv4();
+    var ts            = Math.floor(Date.now() / 1000);
+
+    try {
+      db.prepare(
+        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(orderId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts);
+    } catch (dbErr) { logger.error('[merch-order] DB insert failed: ' + dbErr.message); }
+
+    var merchAnalytics = getAnalytics(roomId);
+    merchAnalytics.sessionEarnings += valueCents;
+
+    io.to(roomId).emit('merch-sale', { id: orderId, fromUser: fromUser, emoji: emoji, name: name, valueCents: valueCents, creatorCents: creatorCents, platformCents: platformCents, ts: ts });
+
+    try {
+      var mRoom = rooms.get(roomId);
+      var mHostId = mRoom ? (mRoom.hostUserId || mRoom.hostSocketId) : roomId;
+      analytics.recordEarning(mHostId, roomId, 'merch', valueCents, name + ' from ' + fromUser);
+    } catch (aErr) { logger.warn('[merch-order] analytics: ' + aErr.message); }
+
+    try {
+      var mRoom2 = rooms.get(roomId);
+      if (mRoom2 && mRoom2.hostSocketId) {
+        io.to(mRoom2.hostSocketId).emit('earnings-update', { sessionCents: sessionRevenue.get(roomId) || 0, lastCents: valueCents, source: 'merch', username: fromUser });
+      }
+    } catch (eu) { logger.warn('[merch-order] earnings-update: ' + eu.message); }
+
+    var prevMRevenue = sessionRevenue.get(roomId) || 0;
+    sessionRevenue.set(roomId, prevMRevenue + valueCents);
+
+    if (creatorStripeAccountId) {
+      stripeModule.createGiftCharge(
+        socket.data.userId || fromUser, roomId, valueCents, creatorCents, platformCents, creatorStripeAccountId, 'merch'
+      ).then(function(piResult) {
+        io.to(roomId).emit('payment-intent', { clientSecret: piResult.clientSecret, paymentIntentId: piResult.paymentIntentId });
+      }).catch(function(err) { logger.error('[merch-order] createGiftCharge failed: ' + err.message); });
+    }
+  });
+
+  // ── send-gift — guest tipping (requires toGuestId) ─────────────────────
+  socket.on('send-gift', function(data) {
+    var roomId                 = data.roomId || socket.data.roomId;
+    var fromUser               = data.fromUser || socket.data.username || 'Guest';
+    var emoji                  = data.emoji || '';
+    var name                   = data.name || 'Gift';
+    var valueCents             = Math.floor(data.valueCents || 0);
+    var toGuestId              = data.toGuestId || '';
+    var creatorStripeAccountId = data.creatorStripeAccountId || '';
+
+    if (!roomId || valueCents <= 0 || !toGuestId) return;
+
+    // Validate toGuestId is an active guest in the room
+    var giftRoom = rooms.get(roomId);
+    if (giftRoom) {
+      var guestFound = false;
+      giftRoom.guests.forEach(function(g) { if (g.guestId === toGuestId) guestFound = true; });
+      if (!guestFound) return;
+    }
+
+    var creatorCents  = Math.floor(valueCents * CREATOR);
+    var platformCents = valueCents - creatorCents;
     var giftId        = uuidv4();
     var ts            = Math.floor(Date.now() / 1000);
 
     try {
-      db.prepare(`
-        INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts);
+      db.prepare(
+        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts, toGuestId);
     } catch (dbErr) {
       logger.error('[send-gift] DB insert failed: ' + dbErr.message);
     }
+
+    // Per-guest running total
+    if (!guestGiftTotals.has(roomId)) guestGiftTotals.set(roomId, new Map());
+    var roomTotals = guestGiftTotals.get(roomId);
+    roomTotals.set(toGuestId, (roomTotals.get(toGuestId) || 0) + valueCents);
 
     // Analytics: track session earnings
     var giftAnalytics = getAnalytics(roomId);
@@ -1610,16 +1690,17 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('gift-received', {
       id:            giftId,
       fromUser:      fromUser,
+      toGuestId:     toGuestId,
       emoji:         emoji,
       name:          name,
       valueCents:    valueCents,
       creatorCents:  creatorCents,
       platformCents: platformCents,
-      ts:            ts
+      ts:            ts,
+      guestTotals:   Object.fromEntries(roomTotals)
     });
 
     try {
-      var giftRoom = rooms.get(roomId);
       var hostId = giftRoom ? (giftRoom.hostUserId || giftRoom.hostSocketId) : roomId;
       analytics.recordEarning(hostId, roomId, 'gift', valueCents, name + ' from ' + fromUser);
     } catch (aErr) {
@@ -1630,9 +1711,8 @@ io.on('connection', function(socket) {
 
     // Push live earnings update to host
     try {
-      var gifRoom = rooms.get(roomId);
-      if (gifRoom && gifRoom.hostSocketId) {
-        io.to(gifRoom.hostSocketId).emit('earnings-update', {
+      if (giftRoom && giftRoom.hostSocketId) {
+        io.to(giftRoom.hostSocketId).emit('earnings-update', {
           sessionCents: sessionRevenue.get(roomId) || 0,
           lastCents:    valueCents,
           source:       'gift',

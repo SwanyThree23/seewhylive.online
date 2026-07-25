@@ -2,7 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
+var SERVER_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SERVER_URL) || '';
+
+function fmtCents(c) {
+  if (!c || c <= 0) return null;
+  if (c < 100) return c + '¢';
+  var d = c / 100;
+  if (d >= 1000) return '$' + (d / 1000).toFixed(1) + 'K';
+  return '$' + d.toFixed(d % 1 === 0 ? 0 : 2);
+}
+
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -17,6 +27,9 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
   var [streamReady,  setStreamReady]  = useState(false);
   var [retryCount,   setRetryCount]   = useState(0);
   var [flyReactions, setFlyReactions] = useState([]);
+  var [showGiftPicker, setShowGiftPicker] = useState(false);
+  var [giftTypes,      setGiftTypes]      = useState([]);
+  var [giftSending,    setGiftSending]    = useState(false);
 
   var size      = fill ? null : (sz || 200);
   var guestId   = guest && guest.guestId ? guest.guestId : (guest && guest.userId ? guest.userId : 'unknown');
@@ -249,6 +262,30 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
     socket.emit('speaking', { roomId: roomId, guestId: userId, speaking: speaking });
   }, [speaking]);
 
+  function openGiftPicker() {
+    setShowGiftPicker(true);
+    if (giftTypes.length === 0) {
+      fetch(SERVER_URL + '/api/gift-types')
+        .then(function(r) { return r.json(); })
+        .then(function(d) { if (d.giftTypes) setGiftTypes(d.giftTypes); })
+        .catch(function() {});
+    }
+  }
+
+  function sendGift(gt) {
+    if (!socket || !roomId || giftSending) return;
+    setGiftSending(true);
+    socket.emit('send-gift', {
+      roomId:    roomId,
+      fromUser:  userId,
+      toGuestId: guestId,
+      emoji:     gt.icon,
+      name:      gt.name,
+      valueCents: gt.amount_cents,
+    });
+    setTimeout(function() { setGiftSending(false); setShowGiftPicker(false); }, 600);
+  }
+
   var ringGlow = fill ? 'none'
     : fadesMode
       ? '0 0 0 3px #FF1A3C, 0 0 14px rgba(255,26,60,.6)'
@@ -397,13 +434,66 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           )}
         </div>
       )}
+
+      {/* Gift badge — running total this session for this guest */}
+      {fmtCents(giftTotal) && (
+        <div style={{ position: 'absolute', bottom: fill ? 4 : 0, left: 4, background: 'rgba(10,8,4,.82)', border: '1px solid #C9A84C55', borderRadius: 999, padding: '1px 6px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 9, color: '#C9A84C', zIndex: 11, pointerEvents: 'none', letterSpacing: '0.03em' }}>
+          💝 {fmtCents(giftTotal)}
+        </div>
+      )}
+
+      {/* Gift trigger button — shown on other guests' tiles (not own cell) */}
+      {!isOwnCell && socket && guestId && !guestId.startsWith('empty-') && (
+        <button
+          onClick={function(e) { e.stopPropagation(); openGiftPicker(); }}
+          style={{ position: 'absolute', bottom: fill ? 4 : 0, right: 4, width: 24, height: 24, borderRadius: '50%', background: 'rgba(201,168,76,.18)', border: '1px solid rgba(201,168,76,.5)', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 11 }}
+          title={'Send gift to ' + guestName}>
+          💝
+        </button>
+      )}
+
+      {/* Gift picker overlay */}
+      {showGiftPicker && (
+        <div
+          onClick={function(e) { e.stopPropagation(); setShowGiftPicker(false); }}
+          style={{ position: 'absolute', inset: 0, background: 'rgba(8,6,3,.88)', zIndex: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: fill ? 0 : 0 }}>
+          <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: '#C9A84C', letterSpacing: '0.08em' }}>SEND GIFT TO {guestName.toUpperCase()}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 5, padding: '0 8px', width: '100%', boxSizing: 'border-box' }}>
+            {(giftTypes.length > 0 ? giftTypes : [
+              { id: '1', name: 'Rose',    icon: '🌹', amount_cents: 99  },
+              { id: '2', name: 'Fire',    icon: '🔥', amount_cents: 299 },
+              { id: '3', name: 'Crown',   icon: '👑', amount_cents: 499 },
+              { id: '4', name: 'Diamond', icon: '💎', amount_cents: 999 },
+              { id: '5', name: 'Trophy',  icon: '🏆', amount_cents: 1999},
+            ]).map(function(gt) {
+              return (
+                <button
+                  key={gt.id}
+                  onClick={function(e) { e.stopPropagation(); sendGift(gt); }}
+                  disabled={giftSending}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '5px 2px', background: 'rgba(201,168,76,.12)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 6, cursor: giftSending ? 'not-allowed' : 'pointer', opacity: giftSending ? 0.5 : 1 }}>
+                  <span style={{ fontSize: 18 }}>{gt.icon}</span>
+                  <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 8, color: '#F0E8D4', fontWeight: 600 }}>{gt.name}</span>
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C' }}>{fmtCents(gt.amount_cents)}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={function(e) { e.stopPropagation(); setShowGiftPicker(false); }}
+            style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#8A7A62', background: 'none', border: 'none', cursor: 'pointer', marginTop: 2 }}>
+            CANCEL
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 function octCellEqual(prev, next) {
-  if (prev.isMuted !== next.isMuted) return false;
-  if (prev.isCamOff !== next.isCamOff) return false;
+  if (prev.isMuted    !== next.isMuted)    return false;
+  if (prev.isCamOff   !== next.isCamOff)   return false;
+  if (prev.giftTotal  !== next.giftTotal)  return false;
   if (prev.sz !== next.sz || prev.fill !== next.fill) return false;
   if (prev.guest === next.guest) return true;
   if (!prev.guest || !next.guest) return false;

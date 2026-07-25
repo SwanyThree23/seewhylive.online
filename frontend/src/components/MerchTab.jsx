@@ -114,7 +114,7 @@ export default function MerchTab({ addToast, isLive, socket, roomId, username })
     var totalCents = Math.floor(cartTotal * 100);
     var earned = Math.floor(cartCreator);
     if (socket && roomId && totalCents > 0) {
-      socket.emit('send-gift', { roomId: roomId, fromUser: username || 'Fan', emoji: '👕', name: 'Merch Order', valueCents: totalCents });
+      socket.emit('merch-order', { roomId: roomId, fromUser: username || 'Fan', emoji: '🛍️', name: 'Merch Order', valueCents: totalCents });
     }
     setCart([]);
     addToast('✅ Order placed! Creator gets $' + earned.toFixed(2), 'success');

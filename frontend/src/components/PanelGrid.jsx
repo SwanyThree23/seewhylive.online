@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import OctCell from './OctCell';
 
 var COLS = 5;
@@ -6,6 +6,25 @@ var ROWS = 4;
 var TOTAL = COLS * ROWS; // 20 seats
 
 export default function PanelGrid({ guests, socket, roomId, userId, rtcManager, mediaConfig, branding, onTap, isMutedMap, isCamOffMap }) {
+  var [giftTotals, setGiftTotals] = useState({}); // guestId → cents
+
+  useEffect(function() {
+    if (!socket) return;
+    function onGiftReceived(data) {
+      if (data.guestTotals) {
+        setGiftTotals(function(prev) { return Object.assign({}, prev, data.guestTotals); });
+      } else if (data.toGuestId && data.valueCents) {
+        setGiftTotals(function(prev) {
+          var next = Object.assign({}, prev);
+          next[data.toGuestId] = (next[data.toGuestId] || 0) + data.valueCents;
+          return next;
+        });
+      }
+    }
+    socket.on('gift-received', onGiftReceived);
+    return function() { socket.off('gift-received', onGiftReceived); };
+  }, [socket]);
+
   return (
     <div
       style={{
@@ -41,6 +60,7 @@ export default function PanelGrid({ guests, socket, roomId, userId, rtcManager, 
               branding={branding}
               isMuted={muted}
               isCamOff={camOff}
+              giftTotal={giftTotals[gid] || 0}
               onTap={guest.guestId && !guest.guestId.startsWith('empty-') ? onTap : undefined}
             />
           </div>
