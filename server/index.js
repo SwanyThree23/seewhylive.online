@@ -394,6 +394,8 @@ var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 var guestGiftTotals     = new Map();  // roomId → Map<guestId, totalCents>
 var joinRequests        = new Map();  // roomId → Map<userId, {socketId,userId,username,requestId,ts}>
+var engagementMap       = new Map();  // roomId → Map<userId, {username,chatCount,reactCount,giftCents}>
+var bannedWordsMap      = new Map();  // roomId → Set<string>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -548,6 +550,24 @@ setInterval(function() {
   if (top.length > 0) {
     io.emit('livehome:trending', { rooms: top, ts: Date.now() });
   }
+}, 30000);
+
+// ─── Top-fans leaderboard — broadcast top 5 per room every 30 s ────────────
+setInterval(function() {
+  engagementMap.forEach(function(engRoom, roomId) {
+    if (!engRoom.size) return;
+    var entries = [];
+    engRoom.forEach(function(e, uid) {
+      var score = e.chatCount + e.reactCount * 2 + Math.floor(e.giftCents / 100);
+      if (score === 0) return;
+      entries.push({ userId: uid, username: e.username, score: score, chatCount: e.chatCount, reactCount: e.reactCount, giftCents: e.giftCents });
+    });
+    entries.sort(function(a, b) { return b.score - a.score; });
+    var top5 = entries.slice(0, 5);
+    if (top5.length) {
+      io.to(roomId).emit('top-fans', { fans: top5, ts: Date.now() });
+    }
+  });
 }, 30000);
 
 // ─── Presence cleanup — evict sockets unseen for >90s ─────────────────────
@@ -1700,6 +1720,18 @@ io.on('connection', function(socket) {
 
     if (!roomId || !message.trim()) return;
 
+    // Banned words filter
+    var _bwSet = bannedWordsMap.get(roomId);
+    if (_bwSet && _bwSet.size > 0) {
+      var _msgLow = message.toLowerCase();
+      var _blocked = false;
+      _bwSet.forEach(function(w) { if (_msgLow.indexOf(w) >= 0) _blocked = true; });
+      if (_blocked) {
+        io.to(socket.id).emit('chat-blocked', { reason: 'Message contains a blocked word' });
+        return;
+      }
+    }
+
     // Spam check
     if (swanybot.isSocketMuted(socket.id)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
@@ -1711,6 +1743,16 @@ io.on('connection', function(socket) {
     var chatA = getAnalytics(roomId);
     var chatMinKey = Math.floor(Date.now() / 60000);
     chatA.msgCounts[chatMinKey] = (chatA.msgCounts[chatMinKey] || 0) + 1;
+
+    // Engagement tracking: chat count
+    var _engChatId = userId || socket.data.userId;
+    if (_engChatId) {
+      if (!engagementMap.has(roomId)) engagementMap.set(roomId, new Map());
+      var _engChatRoom = engagementMap.get(roomId);
+      var _engChatEntry = _engChatRoom.get(_engChatId) || { username: username, chatCount: 0, reactCount: 0, giftCents: 0 };
+      _engChatEntry.chatCount += 1;
+      _engChatRoom.set(_engChatId, _engChatEntry);
+    }
 
     // Detect and translate
     translation.detectAndTranslate(message)
@@ -1844,6 +1886,16 @@ io.on('connection', function(socket) {
     if (!guestGiftTotals.has(roomId)) guestGiftTotals.set(roomId, new Map());
     var roomTotals = guestGiftTotals.get(roomId);
     roomTotals.set(toGuestId, (roomTotals.get(toGuestId) || 0) + valueCents);
+
+    // Engagement tracking: gift spending by sender
+    var _engGiftId = socket.data.userId;
+    if (_engGiftId) {
+      if (!engagementMap.has(roomId)) engagementMap.set(roomId, new Map());
+      var _engGiftRoom = engagementMap.get(roomId);
+      var _engGiftEntry = _engGiftRoom.get(_engGiftId) || { username: fromUser, chatCount: 0, reactCount: 0, giftCents: 0 };
+      _engGiftEntry.giftCents += valueCents;
+      _engGiftRoom.set(_engGiftId, _engGiftEntry);
+    }
 
     // Analytics: track session earnings
     var giftAnalytics = getAnalytics(roomId);
@@ -2567,6 +2619,16 @@ io.on('connection', function(socket) {
     viewerReactThrottle.set(socket.id, now);
     io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
 
+    // Engagement tracking: react count
+    var _engReactId = socket.data.userId;
+    if (_engReactId) {
+      if (!engagementMap.has(roomId)) engagementMap.set(roomId, new Map());
+      var _engReactRoom = engagementMap.get(roomId);
+      var _engReactEntry = _engReactRoom.get(_engReactId) || { username: socket.data.username || 'Guest', chatCount: 0, reactCount: 0, giftCents: 0 };
+      _engReactEntry.reactCount += 1;
+      _engReactRoom.set(_engReactId, _engReactEntry);
+    }
+
     // Crowd-going-wild detection: 12+ reactions in 6 seconds → crowd-wild broadcast
     var rw = reactWindows.get(roomId) || { count: 0, windowStart: now, lastWildTs: 0 };
     if (now - rw.windowStart > 6000) { rw.count = 0; rw.windowStart = now; }
@@ -2667,6 +2729,21 @@ io.on('connection', function(socket) {
       desc:     (data.desc     || '').slice(0, 400),
       ts:       Math.floor(Date.now() / 1000)
     });
+  });
+
+  // ── set-banned-words — host/cohost manages chat word filter ─────────────
+  socket.on('set-banned-words', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var words = Array.isArray(data.words) ? data.words : [];
+    var cleaned = [];
+    words.forEach(function(w) {
+      var s = String(w).toLowerCase().trim();
+      if (s.length > 0 && s.length <= 50) cleaned.push(s);
+    });
+    bannedWordsMap.set(roomId, new Set(cleaned));
+    io.to(socket.id).emit('banned-words-updated', { words: cleaned });
   });
 
   // ── fades-event ────────────────────────────────────────────────────────

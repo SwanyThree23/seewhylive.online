@@ -403,6 +403,13 @@ export default function LiveRoomPage({
   var [watchSeconds,       setWatchSeconds]       = useState(0);   // this viewer's watch time
   var [hotPressed,         setHotPressed]         = useState(false);// debounce hot-moment button
   var milestoneRef = useRef(new Set()); // viewer count milestones already celebrated
+  var [topFans,            setTopFans]            = useState([]);
+  var [bannedWords,        setBannedWords]        = useState([]);
+  var [showBannedWords,    setShowBannedWords]    = useState(false);
+  var [newBanWord,         setNewBanWord]         = useState('');
+  var [localStreamTitle,   setLocalStreamTitle]   = useState('');
+  var [showTitleEdit,      setShowTitleEdit]      = useState(false);
+  var [titleInput,         setTitleInput]         = useState('');
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -541,6 +548,21 @@ export default function LiveRoomPage({
       if (!data) return;
       setHotMomentFlash({ count: data.count });
       setTimeout(function() { setHotMomentFlash(null); }, 3500);
+    });
+
+    socket.on('top-fans', function(data) {
+      if (!data || !Array.isArray(data.fans)) return;
+      setTopFans(data.fans);
+    });
+
+    socket.on('stream-info', function(data) {
+      if (!data) return;
+      if (data.title) setLocalStreamTitle(data.title);
+    });
+
+    socket.on('banned-words-updated', function(data) {
+      if (!data || !Array.isArray(data.words)) return;
+      setBannedWords(data.words);
     });
 
     socket.on('react-burst', function(data) {
@@ -703,6 +725,9 @@ export default function LiveRoomPage({
       socket.off('go-live-confirmed');
       socket.off('crowd-wild');
       socket.off('hot-moment-burst');
+      socket.off('top-fans');
+      socket.off('stream-info');
+      socket.off('banned-words-updated');
     };
   }, [socket]);
 
@@ -1705,6 +1730,8 @@ export default function LiveRoomPage({
               { emoji: '🛒', label: 'Spotlight', active: !!spotlightItem, onTap: function() { setShowSpotlightPick(true); } },
               { emoji: '📢', label: 'Announce',  active: pending.length > 0, onTap: function() { setShowAnnounce(true); } },
               { emoji: '🎉', label: 'New Follow', active: false, onTap: function() { if (socket) socket.emit('follow-trigger', { roomId: roomId, username: 'Fan' }); if (addToast) addToast('Follow alert triggered!', 'success'); } },
+              { emoji: '✏️', label: 'Title', active: !!localStreamTitle, onTap: function() { setTitleInput(localStreamTitle); setShowTitleEdit(true); } },
+              { emoji: '🚫', label: 'Filter', active: bannedWords.length > 0, onTap: function() { setShowBannedWords(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -1953,6 +1980,25 @@ export default function LiveRoomPage({
             })}
             <div ref={chatEndRef} />
           </div>
+          {/* Quick gift presets for viewers */}
+          {role !== 'host' && role !== 'cohost' && (
+            <div style={{ padding: '3px 12px 2px', display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+              {[{l:'💛 $1',c:100},{l:'🧡 $5',c:500},{l:'❤️ $10',c:1000},{l:'💜 $25',c:2500}].map(function(p) {
+                return (
+                  <button key={p.l} onClick={function() {
+                    if (!socket) return;
+                    socket.emit('super-chat', { roomId: roomId, userId: userId, username: username, message: '💝', amountCents: p.c });
+                    if (addToast) addToast(p.l + ' Super Chat sent!', 'success');
+                  }} style={{
+                    background: CARD2, border: '1px solid ' + BORDER, borderRadius: 999, padding: '3px 9px',
+                    fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: GOLD, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                  }}>
+                    {p.l}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {/* Input */}
           <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
             <input
@@ -3223,6 +3269,117 @@ export default function LiveRoomPage({
         }}>
         📤
       </button>
+
+      {/* ════════════════ TOP FANS LEADERBOARD (overlay) ════════════════ */}
+      {topFans.length > 0 && (
+        <div style={{ position: 'absolute', left: 8, bottom: 92, zIndex: 55, width: 158, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.22)', borderRadius: 10, padding: '8px 10px', backdropFilter: 'blur(8px)', pointerEvents: 'none' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2, marginBottom: 6 }}>🏆 TOP FANS</div>
+          {topFans.slice(0, 5).map(function(f, i) {
+            return (
+              <div key={f.userId || i} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: i < topFans.length - 1 ? 3 : 0 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: i === 0 ? GOLD : MUTED, width: 10, flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.username}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, flexShrink: 0 }}>{f.score}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ STREAM TITLE EDIT MODAL (host) ════════════════ */}
+      {showTitleEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowTitleEdit(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>✏️ Stream Title</div>
+              <button onClick={function() { setShowTitleEdit(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <input
+              value={titleInput}
+              onChange={function(e) { setTitleInput(e.target.value.slice(0, 120)); }}
+              onKeyDown={function(e) {
+                if (e.key === 'Enter' && titleInput.trim()) {
+                  if (socket) socket.emit('stream-info', { roomId: roomId, title: titleInput.trim() });
+                  setLocalStreamTitle(titleInput.trim());
+                  setShowTitleEdit(false);
+                  if (addToast) addToast('✏️ Title updated!', 'success');
+                }
+              }}
+              placeholder="Stream title (max 120 chars)..."
+              maxLength={120}
+              style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            />
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 6, marginBottom: 14 }}>{titleInput.length}/120 — broadcasts to all viewers in real time</div>
+            <button onClick={function() {
+              if (!titleInput.trim()) return;
+              if (socket) socket.emit('stream-info', { roomId: roomId, title: titleInput.trim() });
+              setLocalStreamTitle(titleInput.trim());
+              setShowTitleEdit(false);
+              if (addToast) addToast('✏️ Title updated!', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+              UPDATE TITLE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ BANNED WORDS MODAL (host) ════════════════ */}
+      {showBannedWords && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowBannedWords(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🚫 Chat Word Filter</div>
+              <button onClick={function() { setShowBannedWords(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14 }}>Messages containing these words are blocked before they appear. Case-insensitive.</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <input
+                value={newBanWord}
+                onChange={function(e) { setNewBanWord(e.target.value.toLowerCase()); }}
+                onKeyDown={function(e) {
+                  if (e.key === 'Enter') {
+                    var w = newBanWord.trim();
+                    if (!w || bannedWords.includes(w)) { setNewBanWord(''); return; }
+                    var updated = bannedWords.concat([w]);
+                    setBannedWords(updated);
+                    if (socket) socket.emit('set-banned-words', { roomId: roomId, words: updated });
+                    setNewBanWord('');
+                  }
+                }}
+                placeholder="Add word or phrase..."
+                style={{ flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '8px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }}
+              />
+              <button onClick={function() {
+                var w = newBanWord.trim();
+                if (!w || bannedWords.includes(w)) { setNewBanWord(''); return; }
+                var updated = bannedWords.concat([w]);
+                setBannedWords(updated);
+                if (socket) socket.emit('set-banned-words', { roomId: roomId, words: updated });
+                setNewBanWord('');
+              }} style={{ background: GOLD, border: 'none', borderRadius: 8, padding: '8px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: BG, cursor: 'pointer', flexShrink: 0 }}>
+                ADD
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 120, overflowY: 'auto' }}>
+              {bannedWords.map(function(w) {
+                return (
+                  <div key={w} style={{ background: CARD2, border: '1px solid rgba(255,26,60,.3)', borderRadius: 999, padding: '3px 10px 3px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: TEXT }}>{w}</span>
+                    <button onClick={function() {
+                      var updated = bannedWords.filter(function(x) { return x !== w; });
+                      setBannedWords(updated);
+                      if (socket) socket.emit('set-banned-words', { roomId: roomId, words: updated });
+                    }} style={{ background: 'none', border: 'none', color: RED, cursor: 'pointer', fontSize: 12, padding: 0, lineHeight: 1 }}>✕</button>
+                  </div>
+                );
+              })}
+              {bannedWords.length === 0 && (
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No words filtered yet.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ════════════════ SHARE SHEET ════════════════ */}
       {showShareSheet && (
