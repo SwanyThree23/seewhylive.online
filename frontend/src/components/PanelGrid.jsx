@@ -43,7 +43,10 @@ export default function PanelGrid({
   onMuteToggle,
   onCamToggle,
   onTap,
+  onCameraTrack,
+  giftTotals,
 }) {
+  if (!giftTotals) giftTotals = {};
   var seats = (guests || []).slice(0, MAX_SEATS);
 
   return (
@@ -98,6 +101,8 @@ export default function PanelGrid({
                 isCamOff={isOwn ? isCamOff : false}
                 onMuteToggle={isOwn ? onMuteToggle : null}
                 onCamToggle={isOwn ? onCamToggle : null}
+                onCameraTrack={isOwn ? onCameraTrack : null}
+                giftTotal={giftTotals[gid] || 0}
               />
             ) : (
               /* Empty seat placeholder */
