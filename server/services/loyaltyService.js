@@ -64,9 +64,12 @@ async function getRewardTiers() {
 // Global (all-time) leaderboard, top N by total points.
 async function getGlobalLeaderboard(limit) {
   const result = await db.query(
-    `SELECT user_id, total_points, level
-     FROM user_loyalty
-     ORDER BY total_points DESC
+    `SELECT ul.user_id, ul.total_points, ul.level,
+            COALESCE(u.display_name, ul.user_id::text) AS display_name,
+            u.avatar_url
+     FROM user_loyalty ul
+     LEFT JOIN users u ON u.id = ul.user_id
+     ORDER BY ul.total_points DESC
      LIMIT $1`,
     [limit || 50]
   );
@@ -76,11 +79,14 @@ async function getGlobalLeaderboard(limit) {
 // Weekly leaderboard, summed from the point-event ledger over the trailing 7 days.
 async function getWeeklyLeaderboard(limit) {
   const result = await db.query(
-    `SELECT user_id, SUM(points) AS points_this_week
-     FROM loyalty_point_events
-     WHERE created_at >= now() - interval '7 days'
-     GROUP BY user_id
-     ORDER BY points_this_week DESC
+    `SELECT e.user_id, SUM(e.points) AS total_points,
+            COALESCE(u.display_name, e.user_id::text) AS display_name,
+            u.avatar_url
+     FROM loyalty_point_events e
+     LEFT JOIN users u ON u.id = e.user_id
+     WHERE e.created_at >= now() - interval '7 days'
+     GROUP BY e.user_id, u.display_name, u.avatar_url
+     ORDER BY total_points DESC
      LIMIT $1`,
     [limit || 50]
   );
