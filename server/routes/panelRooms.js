@@ -15,6 +15,12 @@ const requireAuth  = require('../middleware/auth');
 router.post('/:id/privacy', requireAuth, async (req, res) => {
   try {
     const { isPrivate, gatingMode } = req.body; // gatingMode: 'invite_code' | 'approval'
+    const ownerCheck = await db.query(
+      'SELECT host_user_id FROM streams WHERE id = $1', [req.params.id]
+    );
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].host_user_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const result = await panelService.setPrivacy({ roomId: req.params.id, isPrivate, gatingMode });
     res.json(result);
   } catch (err) {

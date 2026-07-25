@@ -154,7 +154,7 @@ router.get('/streams/count', function(req, res) {
 
 router.get('/creator/analytics', requireAuth, function(req, res) {
   try {
-    var creatorId = req.headers['x-creator-id'] || 'default';
+    var creatorId = req.user.id;
     var period = req.query.period || 'month';
     if (analytics) {
       var result = analytics.getCreatorAnalytics(creatorId, period);
@@ -393,7 +393,7 @@ router.post('/payments/tip', requireAuth, function(req, res) {
 
 router.post('/payments/payout', requireAuth, function(req, res) {
   try {
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     var amountCents = req.body.amountCents || 0;
 
     if (Math.floor(amountCents) < 1000) {
@@ -433,6 +433,22 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
 
 // ─── USER routes ──────────────────────────────────────────────────────────────
 
+router.get('/users/me', function(req, res) {
+  try {
+    var profile = _userProfiles['default'] || {};
+    return res.json({
+      username: profile.username || 'SwanyThree',
+      displayName: profile.displayName || 'SwanyThree',
+      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
+      avatarEmoji: profile.avatarEmoji || '👑',
+      tier: 'pro',
+      isLive: false
+    });
+  } catch (err) {
+    return res.json({ success: false, error: err.message });
+  }
+});
+
 router.get('/users/:username', function(req, res) {
   try {
     var username = req.params.username;
@@ -447,22 +463,6 @@ router.get('/users/:username', function(req, res) {
       followerCount: 0,
       isLive: false,
       tier: 'free'
-    });
-  } catch (err) {
-    return res.json({ success: false, error: err.message });
-  }
-});
-
-router.get('/users/me', function(req, res) {
-  try {
-    var profile = _userProfiles['default'] || {};
-    return res.json({
-      username: profile.username || 'SwanyThree',
-      displayName: profile.displayName || 'SwanyThree',
-      bio: profile.bio || 'SeeWhy LIVE creator · Washington Classic host',
-      avatarEmoji: profile.avatarEmoji || '👑',
-      tier: 'pro',
-      isLive: false
     });
   } catch (err) {
     return res.json({ success: false, error: err.message });
@@ -697,40 +697,39 @@ router.post('/stream-end', requireAuth, async function(req, res) {
 // /vault/key-exists — client can check presence without getting the raw key
 // /vault/delete-key — remove stored key when destination is deleted
 
-router.post('/vault/save-key', function(req, res) {
+router.post('/vault/save-key', requireAuth, function(req, res) {
   if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
   try {
-    var guestId = req.body.guest_id;
-    var destId  = req.body.dest_id;
+    var destId   = req.body.dest_id;
     var plainKey = req.body.plain_key;
-    if (!guestId || !destId || !plainKey) {
-      return res.status(400).json({ ok: false, error: 'guest_id, dest_id, plain_key are required' });
+    if (!destId || !plainKey) {
+      return res.status(400).json({ ok: false, error: 'dest_id, plain_key are required' });
     }
-    vault.saveKey(guestId, destId, plainKey);
+    vault.saveKey(req.user.id, destId, plainKey);
     res.json({ ok: true, stored: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.get('/vault/key-exists', function(req, res) {
+router.get('/vault/key-exists', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true, exists: false });
   try {
-    var exists = vault.hasKey(req.query.guest_id || '', req.query.dest_id || '');
+    var exists = vault.hasKey(req.user.id, req.query.dest_id || '');
     res.json({ ok: true, exists: exists });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/vault/delete-key', function(req, res) {
+router.post('/vault/delete-key', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true });
   try {
-    vault.deleteKey(req.body.guest_id || '', req.body.dest_id || '');
+    vault.deleteKey(req.user.id, req.body.dest_id || '');
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.get('/vault/key-meta', function(req, res) {
+router.get('/vault/key-meta', requireAuth, function(req, res) {
   if (!vault) return res.json({ ok: true, keys: [] });
   try {
-    var meta = vault.listGuestKeyMeta(req.query.guest_id || '');
+    var meta = vault.listGuestKeyMeta(req.user.id);
     res.json({ ok: true, keys: meta });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
