@@ -708,11 +708,13 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
   var rows;
   try {
     if (roomId) {
+      var roomOwner = db.prepare('SELECT room_id FROM rooms WHERE room_id = ? AND host_id = ?').get(roomId, req.user.id);
+      if (!roomOwner) return res.status(403).json({ error: 'forbidden' });
       stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? GROUP BY day ORDER BY day DESC LIMIT 30');
       rows = stmt.all(roomId);
     } else {
-      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats GROUP BY day ORDER BY day DESC LIMIT 30');
-      rows = stmt.all();
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
+      rows = stmt.all(req.user.id);
     }
     var sessions = (rows || []).map(function(row, i) {
       return {
@@ -1406,6 +1408,7 @@ io.on('connection', function(socket) {
     var roomId  = data.roomId || socket.data.roomId;
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
   });
@@ -1415,6 +1418,7 @@ io.on('connection', function(socket) {
     var roomId  = data.roomId || socket.data.roomId;
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(roomId).emit('stage-remove', { guestId: guestId });
   });
 
@@ -2286,6 +2290,7 @@ io.on('connection', function(socket) {
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
   socket.on('pk-start', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     pkVotes.set(data.roomId, { challenger: 0, defender: 0 });
     io.to(data.roomId).emit('pk-start', data);
   });
@@ -2301,6 +2306,7 @@ io.on('connection', function(socket) {
 
   socket.on('pk-end', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     pkVotes.delete(data.roomId);
     io.to(data.roomId).emit('pk-end', data);
   });
@@ -2498,9 +2504,9 @@ io.on('connection', function(socket) {
       stageRooms.set(sRoomId, { speakers: [], listeners: [] });
     }
     var stage = stageRooms.get(sRoomId);
-    var uId   = String(data.userId || socket.id);
+    var uId   = String(socket.data.userId || socket.id);
     var uName = data.username || 'Guest';
-    var uRole = data.role || 'viewer';
+    var uRole = socket.data.role || 'viewer';
 
     // Remove from both arrays first (idempotent)
     stage.speakers  = stage.speakers.filter(function(s)  { return String(s.userId) !== uId; });
@@ -2550,10 +2556,10 @@ io.on('connection', function(socket) {
 
   socket.on('audio-stage-promote', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = String(data.roomId);
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    // Only host or cohost can promote
     var targetId = String(data.targetUserId);
     var lstIdx = stage.listeners.findIndex(function(l) { return String(l.userId) === targetId; });
     if (lstIdx === -1) return;
@@ -2565,6 +2571,7 @@ io.on('connection', function(socket) {
 
   socket.on('audio-stage-demote', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = String(data.roomId);
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;

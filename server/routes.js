@@ -178,6 +178,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
 
 router.get('/admin/metrics', requireAuth, function(req, res) {
   try {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
     if (analytics) {
       var metrics = analytics.getPlatformMetrics();
       return res.json(metrics);
@@ -210,7 +211,7 @@ router.get('/moderation/word-filters', function(req, res) {
 router.post('/moderation/word-filters', requireAuth, function(req, res) {
   try {
     var word = req.body.word || '';
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     if (!word) {
       return res.json({ success: false, error: 'word is required' });
     }
@@ -226,7 +227,7 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
 
 router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       moderation.removeWordFilter(creatorId, req.params.word);
     }
@@ -824,6 +825,9 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     var guestId  = b.guest_id  || streamId;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
+    if (b.ingest_url && !/^rtmps?:\/\//i.test(b.ingest_url)) {
+      return res.status(400).json({ ok: false, error: 'ingest_url must use rtmp:// or rtmps://' });
+    }
     var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
     var destinations = b.destinations || [];
 

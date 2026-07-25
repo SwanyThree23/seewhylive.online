@@ -84,7 +84,7 @@ router.post('/links/:id/revoke', requireAuth, async (req, res) => {
 
 router.get('/streams/:streamId/links', requireAuth, async (req, res) => {
   try {
-    const links = await inviteService.getStreamInviteLinks(req.params.streamId);
+    const links = await inviteService.getStreamInviteLinks(req.params.streamId, req.user.id);
     res.json(links);
   } catch (err) {
     res.status(500).json({ error: err.message });

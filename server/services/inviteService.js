@@ -87,10 +87,10 @@ async function revokeInviteLink(inviteId, createdBy) {
   return result.rows[0];
 }
 
-async function getStreamInviteLinks(streamId) {
+async function getStreamInviteLinks(streamId, createdBy) {
   const result = await db.query(
-    `SELECT * FROM stream_guest_invites WHERE stream_id = $1 ORDER BY created_at DESC`,
-    [streamId]
+    `SELECT * FROM stream_guest_invites WHERE stream_id = $1 AND created_by = $2 ORDER BY created_at DESC`,
+    [streamId, createdBy]
   );
   return result.rows;
 }
