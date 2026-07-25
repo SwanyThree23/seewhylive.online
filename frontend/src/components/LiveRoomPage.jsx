@@ -418,6 +418,10 @@ export default function LiveRoomPage({
   var [handQueue,          setHandQueue]          = useState([]);   // [{guestId,userId,username,ts}]
   var [milestoneOverlay,   setMilestoneOverlay]   = useState(null); // { count } | null
   var [showSlowMode,       setShowSlowMode]       = useState(false);
+  var [shoutout,           setShoutout]           = useState(null); // { shoutoutTo, message } | null
+  var [emojiTally,         setEmojiTally]         = useState([]);   // [{emoji, count}]
+  var [showShoutout,       setShowShoutout]       = useState(false);
+  var [shoutoutTarget,     setShoutoutTarget]     = useState('');
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -582,6 +586,22 @@ export default function LiveRoomPage({
     socket.on('hand-queue', function(data) {
       if (!data || !Array.isArray(data.queue)) return;
       setHandQueue(data.queue);
+    });
+
+    socket.on('gift-leaderboard', function(data) {
+      if (!data || !Array.isArray(data.leaders)) return;
+      setTipLeader(data.leaders);
+    });
+
+    socket.on('viewer-shoutout', function(data) {
+      if (!data || !data.shoutoutTo) return;
+      setShoutout({ shoutoutTo: data.shoutoutTo, message: data.message || ('🎉 ' + data.shoutoutTo + '!') });
+      setTimeout(function() { setShoutout(null); }, 5000);
+    });
+
+    socket.on('emoji-tally', function(data) {
+      if (!data || !Array.isArray(data.tally)) return;
+      setEmojiTally(data.tally);
     });
 
     socket.on('react-burst', function(data) {
@@ -770,6 +790,9 @@ export default function LiveRoomPage({
       socket.off('highlight-reel');
       socket.off('slow-mode-changed');
       socket.off('hand-queue');
+      socket.off('gift-leaderboard');
+      socket.off('viewer-shoutout');
+      socket.off('emoji-tally');
     };
   }, [socket]);
 
@@ -1779,6 +1802,7 @@ export default function LiveRoomPage({
               { emoji: '⭐', label: 'Sub Only', active: isSubOnly, onTap: function() { var next = !isSubOnly; setIsSubOnly(next); if (socket) socket.emit('subscriber-only-changed', { roomId: roomId, enabled: next }); if (addToast) addToast(next ? '⭐ Subscriber-only chat ON' : '💬 Subscriber-only chat OFF', 'success'); } },
               { emoji: '🎞️', label: 'Clips', active: highlights.length > 0, onTap: function() { if (socket) socket.emit('request-highlights', { roomId: roomId }); } },
               { emoji: '🐢', label: 'Slow', active: slowMode > 0, onTap: function() { setShowSlowMode(true); } },
+              { emoji: '📣', label: 'Shoutout', active: false, onTap: function() { setShoutoutTarget(''); setShowShoutout(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -3510,6 +3534,84 @@ export default function LiveRoomPage({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ════════════════ VIEWER SHOUTOUT OVERLAY ════════════════ */}
+      {shoutout && (
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 90, zIndex: 80, display: 'flex', justifyContent: 'center', pointerEvents: 'none', animation: 'slideUp .4s ease' }}>
+          <div style={{ background: 'linear-gradient(135deg,' + BURG + ',' + '#4A0010)', border: '2px solid ' + GOLD, borderRadius: 16, padding: '14px 24px', maxWidth: 280, textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,.7)', backdropFilter: 'blur(8px)' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 3, marginBottom: 5 }}>📣 SHOUTOUT</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, color: TEXT, letterSpacing: 2, lineHeight: 1.1 }}>{shoutout.shoutoutTo}</div>
+            {shoutout.message && shoutout.message !== '🎉 ' + shoutout.shoutoutTo + '!' && (
+              <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: GOLD, marginTop: 4, lineHeight: 1.3 }}>{shoutout.message}</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ EMOJI TALLY BAR ════════════════ */}
+      {emojiTally.length > 0 && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 78, zIndex: 50, display: 'flex', gap: 8, background: 'rgba(14,12,9,.72)', border: '1px solid rgba(201,168,76,.18)', borderRadius: 999, padding: '4px 12px', backdropFilter: 'blur(6px)', pointerEvents: 'none' }}>
+          {emojiTally.slice(0, 5).map(function(e) {
+            return (
+              <div key={e.emoji} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 14 }}>{e.emoji}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>{e.count >= 1000 ? (Math.floor(e.count / 100) / 10) + 'k' : e.count}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ GIFT LEADERBOARD (visible to all) ════════════════ */}
+      {tipLeader.length > 0 && isLive && (
+        <div style={{ position: 'absolute', left: 8, top: 78, zIndex: 52, background: 'rgba(14,12,9,.85)', border: '1px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '7px 10px', width: 150, backdropFilter: 'blur(6px)', pointerEvents: 'none' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2, marginBottom: 5 }}>💰 TOP GIFTERS</div>
+          {tipLeader.slice(0, 3).map(function(e, i) {
+            var medals = ['🥇', '🥈', '🥉'];
+            return (
+              <div key={e.username} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: i < 2 ? 3 : 0 }}>
+                <span style={{ fontSize: 11, flexShrink: 0 }}>{medals[i]}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.username}</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, flexShrink: 0 }}>${(Math.floor(e.totalCents) / 100).toFixed(0)}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ SHOUTOUT MODAL (host) ════════════════ */}
+      {showShoutout && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowShoutout(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>📣 Viewer Shoutout</div>
+              <button onClick={function() { setShowShoutout(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14 }}>Call out a viewer — their name pops up on screen for everyone for 5 seconds.</div>
+            <input
+              value={shoutoutTarget}
+              onChange={function(e) { setShoutoutTarget(e.target.value.slice(0, 60)); }}
+              onKeyDown={function(e) {
+                if (e.key === 'Enter' && shoutoutTarget.trim()) {
+                  if (socket) socket.emit('viewer-shoutout', { roomId: roomId, shoutoutTo: shoutoutTarget.trim() });
+                  setShowShoutout(false);
+                  if (addToast) addToast('📣 Shoutout sent!', 'success');
+                }
+              }}
+              placeholder="Viewer username..."
+              style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 14 }}
+            />
+            <button onClick={function() {
+              if (!shoutoutTarget.trim()) return;
+              if (socket) socket.emit('viewer-shoutout', { roomId: roomId, shoutoutTo: shoutoutTarget.trim() });
+              setShowShoutout(false);
+              if (addToast) addToast('📣 Shoutout sent!', 'success');
+            }} style={{ width: '100%', background: BURG, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: GOLD, cursor: 'pointer', letterSpacing: 2 }}>
+              📣 SHOUTOUT!
+            </button>
+          </div>
         </div>
       )}
 

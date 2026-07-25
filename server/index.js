@@ -401,6 +401,7 @@ var highlightMap        = new Map();  // roomId → Array<{ts, count}> hot-momen
 var slowModeMap         = new Map();  // roomId → cooldownSeconds (0 = off)
 var slowModeLastMsg     = new Map();  // roomId → Map<userId, lastMsgTs>
 var handQueues          = new Map();  // roomId → Array<{guestId, userId, username, ts}>
+var emojiTallyMap       = new Map();  // roomId → Map<emoji, count>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -575,6 +576,17 @@ setInterval(function() {
     }
   });
 }, 30000);
+
+// ─── Emoji reaction tally — broadcast per-room cumulative counts every 15 s ─
+setInterval(function() {
+  emojiTallyMap.forEach(function(emojiMap, roomId) {
+    if (!emojiMap.size) return;
+    var entries = [];
+    emojiMap.forEach(function(count, emoji) { entries.push({ emoji: emoji, count: count }); });
+    entries.sort(function(a, b) { return b.count - a.count; });
+    io.to(roomId).emit('emoji-tally', { tally: entries.slice(0, 5), ts: Date.now() });
+  });
+}, 15000);
 
 // ─── Presence cleanup — evict sockets unseen for >90s ─────────────────────
 setInterval(function() {
@@ -2676,6 +2688,11 @@ io.on('connection', function(socket) {
     viewerReactThrottle.set(socket.id, now);
     io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
 
+    // Cumulative emoji tally
+    if (!emojiTallyMap.has(roomId)) emojiTallyMap.set(roomId, new Map());
+    var _etRoom = emojiTallyMap.get(roomId);
+    _etRoom.set(emoji, (_etRoom.get(emoji) || 0) + 1);
+
     // Engagement tracking: react count
     var _engReactId = socket.data.userId;
     if (_engReactId) {
@@ -2810,6 +2827,22 @@ io.on('connection', function(socket) {
     });
     bannedWordsMap.set(roomId, new Set(cleaned));
     io.to(socket.id).emit('banned-words-updated', { words: cleaned });
+  });
+
+  // ── viewer-shoutout — host calls out a viewer by name ───────────────────
+  socket.on('viewer-shoutout', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var shoutoutTo = String(data.shoutoutTo || '').slice(0, 60).trim();
+    var message    = String(data.message || '').slice(0, 120).trim();
+    if (!shoutoutTo) return;
+    io.to(roomId).emit('viewer-shoutout', {
+      shoutoutTo: shoutoutTo,
+      message:    message || ('Shoutout to ' + shoutoutTo + '! 🎉'),
+      from:       socket.data.username || 'host',
+      ts:         Math.floor(Date.now() / 1000)
+    });
   });
 
   // ── set-slow-mode — host/cohost configures per-viewer message cooldown ──
