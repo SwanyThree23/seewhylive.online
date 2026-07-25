@@ -5,6 +5,7 @@ var router = express.Router();
 var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
+var requireAuth = require('./middleware/auth');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
 var CREATOR  = 0.90;
@@ -57,7 +58,7 @@ router.get('/aura/usage', function(req, res) {
   }
 });
 
-router.post('/aura/mode', function(req, res) {
+router.post('/aura/mode', requireAuth, function(req, res) {
   try {
     var mode = req.body.mode || 'hype';
     if (aura) {
@@ -69,7 +70,7 @@ router.post('/aura/mode', function(req, res) {
   }
 });
 
-router.post('/aura/trigger', function(req, res) {
+router.post('/aura/trigger', requireAuth, function(req, res) {
   try {
     var type = req.body.type || '';
     var streamId = req.body.streamId || '';
@@ -151,7 +152,7 @@ router.get('/streams/count', function(req, res) {
 
 // ─── ANALYTICS routes ─────────────────────────────────────────────────────────
 
-router.get('/creator/analytics', function(req, res) {
+router.get('/creator/analytics', requireAuth, function(req, res) {
   try {
     var creatorId = req.headers['x-creator-id'] || 'default';
     var period = req.query.period || 'month';
@@ -175,7 +176,7 @@ router.get('/creator/analytics', function(req, res) {
   }
 });
 
-router.get('/admin/metrics', function(req, res) {
+router.get('/admin/metrics', requireAuth, function(req, res) {
   try {
     if (analytics) {
       var metrics = analytics.getPlatformMetrics();
@@ -206,7 +207,7 @@ router.get('/moderation/word-filters', function(req, res) {
   }
 });
 
-router.post('/moderation/word-filters', function(req, res) {
+router.post('/moderation/word-filters', requireAuth, function(req, res) {
   try {
     var word = req.body.word || '';
     var creatorId = req.body.creatorId || 'default';
@@ -223,7 +224,7 @@ router.post('/moderation/word-filters', function(req, res) {
   }
 });
 
-router.delete('/moderation/word-filters/:word', function(req, res) {
+router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
   try {
     var creatorId = req.query.creatorId || 'default';
     if (moderation) {
@@ -235,7 +236,7 @@ router.delete('/moderation/word-filters/:word', function(req, res) {
   }
 });
 
-router.post('/moderation/subscriber-only', function(req, res) {
+router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
   try {
     var roomId = req.body.roomId || '';
     var creatorId = req.body.creatorId || 'default';
@@ -249,7 +250,7 @@ router.post('/moderation/subscriber-only', function(req, res) {
   }
 });
 
-router.post('/moderation/ban', function(req, res) {
+router.post('/moderation/ban', requireAuth, function(req, res) {
   try {
     var creatorId = req.body.creatorId || 'default';
     var bannedUserId = req.body.bannedUserId || '';
@@ -265,7 +266,7 @@ router.post('/moderation/ban', function(req, res) {
   }
 });
 
-router.delete('/moderation/ban/:userId', function(req, res) {
+router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
   try {
     var creatorId = req.query.creatorId || 'default';
     if (moderation) {
@@ -289,7 +290,7 @@ router.get('/moderation/bans', function(req, res) {
   }
 });
 
-router.post('/moderation/shadow-ban', function(req, res) {
+router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
   try {
     var userId = req.body.userId || '';
     var reason = req.body.reason || '';
@@ -334,12 +335,12 @@ router.get('/creator/onboard/link', function(req, res) {
   }
 });
 
-router.post('/payments/tip', function(req, res) {
+router.post('/payments/tip', requireAuth, function(req, res) {
   try {
     var streamId = req.body.streamId || '';
     var amountCents = req.body.amountCents || 0;
     var note = req.body.note || '';
-    var fromUserId = req.body.fromUserId || 'anon';
+    var fromUserId = req.user.id;
     var creatorStripeAccountId = req.body.creatorStripeAccountId || '';
 
     if (!amountCents || Math.floor(amountCents) < 50) {
@@ -390,7 +391,7 @@ router.post('/payments/tip', function(req, res) {
   }
 });
 
-router.post('/payments/payout', function(req, res) {
+router.post('/payments/payout', requireAuth, function(req, res) {
   try {
     var creatorId = req.body.creatorId || 'default';
     var amountCents = req.body.amountCents || 0;
@@ -410,7 +411,7 @@ router.post('/payments/payout', function(req, res) {
   }
 });
 
-router.post('/payments/subscribe', function(req, res) {
+router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
     var subscriberId = req.body.subscriberId || 'anon';
     var creatorId = req.body.creatorId || 'default';
@@ -468,7 +469,7 @@ router.get('/users/me', function(req, res) {
   }
 });
 
-router.put('/users/me', function(req, res) {
+router.put('/users/me', requireAuth, function(req, res) {
   try {
     var displayName = req.body.displayName || '';
     var bio = req.body.bio || '';
@@ -494,9 +495,9 @@ router.get('/users/me/earnings', function(req, res) {
 
 // ─── NOTIFICATION routes ──────────────────────────────────────────────────────
 
-router.post('/push/subscribe', function(req, res) {
+router.post('/push/subscribe', requireAuth, function(req, res) {
   try {
-    var userId = req.body.userId || 'default';
+    var userId = req.user.id;
     var subscription = req.body.subscription || {};
     _pushSubscriptions[userId] = subscription;
     if (notifications) {
@@ -510,9 +511,9 @@ router.post('/push/subscribe', function(req, res) {
   }
 });
 
-router.post('/users/me/notifications', function(req, res) {
+router.post('/users/me/notifications', requireAuth, function(req, res) {
   try {
-    var prefKey = req.body.userId || 'default';
+    var prefKey = req.user.id;
     _notificationPrefs[prefKey] = {
       notifyNewStream: req.body.notifyNewStream || false,
       notifyTip: req.body.notifyTip || false,
@@ -573,7 +574,7 @@ router.get('/leaderboard', function(req, res) {
 
 var _ppvTokens = {};
 
-router.post('/ppv/create', function(req, res) {
+router.post('/ppv/create', requireAuth, function(req, res) {
   try {
     var streamId = req.body.streamId || 'default';
     var priceCents = Math.floor(req.body.priceCents || 499);
@@ -609,7 +610,7 @@ router.post('/ppv/verify', function(req, res) {
 
 // ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
 
-router.post('/n8n/test', function(req, res) {
+router.post('/n8n/test', requireAuth, function(req, res) {
   try {
     var webhookUrl = req.body.webhookUrl || '';
     var payload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
@@ -648,7 +649,7 @@ router.post('/n8n/test', function(req, res) {
 var SUPA_URL = 'https://rxlgywvfclyjdfyvfvyc.supabase.co';
 var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
-router.post('/stream-sync', async function(req, res) {
+router.post('/stream-sync', requireAuth, async function(req, res) {
   try {
     var b = req.body;
     var creatorId = b.creator_id;
@@ -675,9 +676,12 @@ router.post('/stream-sync', async function(req, res) {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/stream-end', async function(req, res) {
+router.post('/stream-end', requireAuth, async function(req, res) {
   try {
     var stream_id = req.body.stream_id;
+    if (!stream_id || !/^[0-9a-f-]{36}$/i.test(stream_id)) {
+      return res.status(400).json({ ok: false, error: 'Invalid stream_id' });
+    }
     await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
@@ -814,7 +818,7 @@ function spawnFanout(streamId, ingestUrl, resolvedDests, restartCount) {
   return ffmpeg;
 }
 
-router.post('/fanout-start', async function(req, res) {
+router.post('/fanout-start', requireAuth, async function(req, res) {
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
@@ -856,7 +860,7 @@ router.post('/fanout-start', async function(req, res) {
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
 });
 
-router.post('/fanout-stop', function(req, res) {
+router.post('/fanout-stop', requireAuth, function(req, res) {
   var streamId = req.body.stream_id || 'default';
   var entry = activeFanouts[streamId];
   if (entry && entry.process) {
@@ -869,7 +873,7 @@ router.post('/fanout-stop', function(req, res) {
 });
 
 // Kill every active FFmpeg fanout process — admin/cleanup endpoint.
-router.post('/fanout-stop-all', function(req, res) {
+router.post('/fanout-stop-all', requireAuth, function(req, res) {
   var ids = Object.keys(activeFanouts);
   var killed = 0;
   ids.forEach(function(id) {
