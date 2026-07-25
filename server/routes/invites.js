@@ -5,12 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const inviteService = require('../services/inviteService');
-
-// TODO: replace with your real auth middleware import
-function requireAuth(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-  next();
-}
+const requireAuth   = require('../middleware/auth');
 
 // --- direct user-to-user invitations (guest_invitations) ---
 
