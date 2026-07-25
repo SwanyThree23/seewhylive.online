@@ -410,6 +410,10 @@ export default function LiveRoomPage({
   var [localStreamTitle,   setLocalStreamTitle]   = useState('');
   var [showTitleEdit,      setShowTitleEdit]      = useState(false);
   var [titleInput,         setTitleInput]         = useState('');
+  var [chatBannedIds,      setChatBannedIds]      = useState({});   // { [userId]: true }
+  var [isSubOnly,          setIsSubOnly]          = useState(false);
+  var [highlights,         setHighlights]         = useState([]);   // [{ts, count, windowKey}]
+  var [showHighlights,     setShowHighlights]     = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -677,7 +681,25 @@ export default function LiveRoomPage({
 
     socket.on('subscriber-only-changed', function(data) {
       if (!data) return;
-      if (addToast) addToast(data.enabled ? '⭐ This room is now subscriber-only' : 'Room is now open to all viewers', 'info');
+      setIsSubOnly(Boolean(data.enabled));
+      if (addToast) addToast(data.enabled ? '⭐ Chat is now subscriber-only' : '💬 Chat is open to all viewers', 'info');
+    });
+
+    socket.on('chat-banned', function(data) {
+      if (!data || !data.userId) return;
+      setChatBannedIds(function(prev) { var n = Object.assign({}, prev); n[data.userId] = true; return n; });
+      if ((role === 'host' || role === 'cohost') && addToast) addToast('🚫 ' + (data.username || data.userId) + ' banned from chat', 'info');
+    });
+
+    socket.on('chat-unbanned', function(data) {
+      if (!data || !data.userId) return;
+      setChatBannedIds(function(prev) { var n = Object.assign({}, prev); delete n[data.userId]; return n; });
+    });
+
+    socket.on('highlight-reel', function(data) {
+      if (!data || !Array.isArray(data.highlights)) return;
+      setHighlights(data.highlights);
+      setShowHighlights(true);
     });
 
     socket.on('user-banned', function(data) {
@@ -728,6 +750,9 @@ export default function LiveRoomPage({
       socket.off('top-fans');
       socket.off('stream-info');
       socket.off('banned-words-updated');
+      socket.off('chat-banned');
+      socket.off('chat-unbanned');
+      socket.off('highlight-reel');
     };
   }, [socket]);
 
@@ -1732,6 +1757,8 @@ export default function LiveRoomPage({
               { emoji: '🎉', label: 'New Follow', active: false, onTap: function() { if (socket) socket.emit('follow-trigger', { roomId: roomId, username: 'Fan' }); if (addToast) addToast('Follow alert triggered!', 'success'); } },
               { emoji: '✏️', label: 'Title', active: !!localStreamTitle, onTap: function() { setTitleInput(localStreamTitle); setShowTitleEdit(true); } },
               { emoji: '🚫', label: 'Filter', active: bannedWords.length > 0, onTap: function() { setShowBannedWords(true); } },
+              { emoji: '⭐', label: 'Sub Only', active: isSubOnly, onTap: function() { var next = !isSubOnly; setIsSubOnly(next); if (socket) socket.emit('subscriber-only-changed', { roomId: roomId, enabled: next }); if (addToast) addToast(next ? '⭐ Subscriber-only chat ON' : '💬 Subscriber-only chat OFF', 'success'); } },
+              { emoji: '🎞️', label: 'Clips', active: highlights.length > 0, onTap: function() { if (socket) socket.emit('request-highlights', { roomId: roomId }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -1973,6 +2000,18 @@ export default function LiveRoomPage({
                         style={{ background: 'none', border: 'none', color: GOLD, cursor: 'pointer', fontSize: 11, opacity: .7, lineHeight: 1 }} title="Pin message">📌</button>
                       <button onClick={function() { if (socket) socket.emit('chat-delete', { roomId: roomId, msgId: m.id }); }}
                         style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11, opacity: .6, lineHeight: 1 }} title="Delete message">🗑</button>
+                      {m.role !== 'host' && m.role !== 'cohost' && m.userId && (
+                        <button onClick={function() {
+                          var isBanned = chatBannedIds[m.userId];
+                          if (isBanned) {
+                            if (socket) socket.emit('chat-unban', { roomId: roomId, userId: m.userId, username: m.username });
+                          } else {
+                            if (socket) socket.emit('chat-ban', { roomId: roomId, userId: m.userId, username: m.username });
+                          }
+                        }} style={{ background: 'none', border: 'none', color: chatBannedIds[m.userId] ? TEAL : RED, cursor: 'pointer', fontSize: 11, opacity: .7, lineHeight: 1 }} title={chatBannedIds[m.userId] ? 'Unban from chat' : 'Ban from chat'}>
+                          {chatBannedIds[m.userId] ? '✅' : '🚫'}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -3377,6 +3416,39 @@ export default function LiveRoomPage({
                 <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No words filtered yet.</div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ HIGHLIGHT REEL MODAL (host) ════════════════ */}
+      {showHighlights && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowHighlights(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER, maxHeight: '60vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🎞️ Highlight Reel</div>
+              <button onClick={function() { setShowHighlights(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14 }}>Moments where viewers tagged 5+ hot moments in 10 seconds.</div>
+            {highlights.length === 0 ? (
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center', padding: '20px 0' }}>No hot moments recorded yet. Viewers tap ⚡ to tag a moment.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {highlights.map(function(h, i) {
+                  var elapsed = liveStartedAt ? Math.floor((h.ts / 1000) - liveStartedAt) : null;
+                  var timeStr = elapsed !== null ? fmtElapsed(elapsed) : new Date(h.ts).toLocaleTimeString();
+                  return (
+                    <div key={h.windowKey || i} style={{ background: CARD, border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: GOLD, letterSpacing: 1, minWidth: 60 }}>{timeStr}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT }}>🔥 {h.count}+ reactions</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 2 }}>10-second window · clip here</div>
+                      </div>
+                      <span style={{ fontSize: 20 }}>⚡</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -599,6 +599,11 @@ export default function App() {
       setChat(function(prev) { return [...prev.slice(-200), msg]; });
     });
 
+    socket.on('chat-blocked', function(data) {
+      if (!data) return;
+      addToast('🚫 ' + (data.reason || 'Message blocked'), 'error');
+    });
+
     socket.on('super-chat', function(sc) {
       if (!sc) return;
       if (role === 'host') {
@@ -871,6 +876,7 @@ export default function App() {
       socket.off('roster-update');
       socket.off('viewer-count');
       socket.off('chat-message');
+      socket.off('chat-blocked');
       socket.off('room-paywall');
       socket.off('bot-log');
       socket.off('go-live-confirmed');

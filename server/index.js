@@ -396,6 +396,8 @@ var guestGiftTotals     = new Map();  // roomId → Map<guestId, totalCents>
 var joinRequests        = new Map();  // roomId → Map<userId, {socketId,userId,username,requestId,ts}>
 var engagementMap       = new Map();  // roomId → Map<userId, {username,chatCount,reactCount,giftCents}>
 var bannedWordsMap      = new Map();  // roomId → Set<string>
+var chatBannedMap       = new Map();  // roomId → Set<userId>  — chat-only bans
+var highlightMap        = new Map();  // roomId → Array<{ts, count}> hot-moment timestamps
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -522,8 +524,9 @@ function getRoom(roomId) {
       hostUserId:   null,
       watchParty:   null,
       presence:     new Map(),
-      pinnedChat:   null,    // { id, username, message, ts }
-      spotlight:    null,    // { name, emoji, price, url, endsAt }
+      pinnedChat:    null,    // { id, username, message, ts }
+      spotlight:     null,    // { name, emoji, price, url, endsAt }
+      subscriberOnly: false,  // subscriber-only chat mode
     });
   }
   return rooms.get(roomId);
@@ -1732,6 +1735,20 @@ io.on('connection', function(socket) {
       }
     }
 
+    // Chat-ban check
+    var _cbSet = chatBannedMap.get(roomId);
+    if (_cbSet && _cbSet.has(userId)) {
+      io.to(socket.id).emit('chat-blocked', { reason: 'You are banned from chat in this room' });
+      return;
+    }
+
+    // Subscriber-only chat gate
+    var _chatRoom = rooms.get(roomId);
+    if (_chatRoom && _chatRoom.subscriberOnly && socket.data.role === 'viewer') {
+      io.to(socket.id).emit('chat-blocked', { reason: 'This room is in subscriber-only chat mode' });
+      return;
+    }
+
     // Spam check
     if (swanybot.isSocketMuted(socket.id)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
@@ -1772,6 +1789,7 @@ io.on('connection', function(socket) {
         var senderRole = socket.data.role || 'viewer';
         io.to(roomId).emit('chat-message', {
           id:         msgId,
+          userId:     userId,
           username:   username,
           role:       senderRole,
           message:    message,
@@ -1787,6 +1805,7 @@ io.on('connection', function(socket) {
         var ts    = Math.floor(Date.now() / 1000);
         io.to(roomId).emit('chat-message', {
           id:         msgId,
+          userId:     userId,
           username:   username,
           role:       socket.data.role || 'viewer',
           message:    message,
@@ -2659,6 +2678,15 @@ io.on('connection', function(socket) {
         io.to(hmRoom.hostSocketId).emit('hot-moment-alert', { roomId: roomId, count: count, windowKey: windowKey, ts: now });
       }
       io.to(roomId).emit('hot-moment-burst', { roomId: roomId, count: count, ts: now });
+      // Record to highlight reel (only at first threshold crossing per window)
+      if (count === 5) {
+        if (!highlightMap.has(roomId)) highlightMap.set(roomId, []);
+        var hlList = highlightMap.get(roomId);
+        if (hlList.length === 0 || hlList[hlList.length - 1].windowKey !== windowKey) {
+          hlList.push({ ts: now, count: count, windowKey: windowKey });
+          if (hlList.length > 100) hlList.shift(); // cap at 100 highlights
+        }
+      }
     }
   });
 
@@ -2744,6 +2772,35 @@ io.on('connection', function(socket) {
     });
     bannedWordsMap.set(roomId, new Set(cleaned));
     io.to(socket.id).emit('banned-words-updated', { words: cleaned });
+  });
+
+  // ── chat-ban / chat-unban — host/cohost bans user from chat only ────────
+  socket.on('chat-ban', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    var targetId = data.userId;
+    if (!roomId || !targetId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (!chatBannedMap.has(roomId)) chatBannedMap.set(roomId, new Set());
+    chatBannedMap.get(roomId).add(String(targetId));
+    io.to(roomId).emit('chat-banned', { userId: targetId, username: data.username || targetId, bannedBy: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
+  socket.on('chat-unban', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    var targetId = data.userId;
+    if (!roomId || !targetId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    if (chatBannedMap.has(roomId)) chatBannedMap.get(roomId).delete(String(targetId));
+    io.to(roomId).emit('chat-unbanned', { userId: targetId, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── request-highlights — host fetches collected hot-moment timestamps ────
+  socket.on('request-highlights', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var list = highlightMap.get(roomId) || [];
+    io.to(socket.id).emit('highlight-reel', { roomId: roomId, highlights: list, ts: Date.now() });
   });
 
   // ── fades-event ────────────────────────────────────────────────────────
@@ -3217,7 +3274,11 @@ io.on('connection', function(socket) {
   socket.on('subscriber-only-changed', function(data) {
     var sId = data.roomId || socket.data.roomId;
     if (!sId) return;
-    io.to(sId).emit('subscriber-only-changed', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var enabled = Boolean(data.enabled);
+    var soRoom = rooms.get(sId);
+    if (soRoom) soRoom.subscriberOnly = enabled;
+    io.to(sId).emit('subscriber-only-changed', { enabled: enabled, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── analytics-ping ────────────────────────────────────────────────────
