@@ -1517,6 +1517,48 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('chat-deleted', { roomId: roomId, msgId: msgId });
   });
 
+  // ── follow-trigger — host/system fires a new-follower celebration ────────
+  socket.on('follow-trigger', function(data) {
+    var roomId   = (data && data.roomId) || socket.data.roomId;
+    var follower = (data && data.username) || 'Someone';
+    if (!roomId) return;
+    io.to(roomId).emit('follow-alert', { roomId: roomId, username: follower, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── schedule-announce — host queues a system message to fire after a delay
+  socket.on('schedule-announce', function(data, ack) {
+    var roomId  = (data && data.roomId) || socket.data.roomId;
+    var message = data && typeof data.message === 'string' ? data.message.trim().slice(0, 300) : '';
+    var delayMs = Math.min(Math.max(parseInt(data && data.delayMs) || 0, 5000), 3600000);
+    if (!roomId || !message) { if (ack) ack({ error: 'missing params' }); return; }
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') { if (ack) ack({ error: 'forbidden' }); return; }
+
+    var announceId = uuidv4();
+    var timer = setTimeout(function() {
+      var msgId = uuidv4();
+      var ts = Math.floor(Date.now() / 1000);
+      io.to(roomId).emit('chat-message', { id: msgId, username: '📢 Announcement', role: 'system', message: message, ts: ts });
+    }, delayMs);
+
+    // Store timer ref so host can cancel; keyed by announceId on socket
+    if (!socket._announceTimers) socket._announceTimers = {};
+    socket._announceTimers[announceId] = timer;
+    if (ack) ack({ ok: true, announceId: announceId, firesAt: Date.now() + delayMs });
+  });
+
+  // ── cancel-announce — host cancels a pending scheduled announcement ────
+  socket.on('cancel-announce', function(data, ack) {
+    var announceId = data && data.announceId;
+    if (!announceId) { if (ack) ack({ error: 'missing announceId' }); return; }
+    if (socket._announceTimers && socket._announceTimers[announceId]) {
+      clearTimeout(socket._announceTimers[announceId]);
+      delete socket._announceTimers[announceId];
+      if (ack) ack({ ok: true });
+    } else {
+      if (ack) ack({ ok: false, error: 'not found' });
+    }
+  });
+
   // ── product-spotlight — host pins a buy-now overlay card for 30s ───────
   socket.on('product-spotlight', function(data) {
     var roomId   = data.roomId || socket.data.roomId;
@@ -1684,9 +1726,11 @@ io.on('connection', function(socket) {
           logger.error('[chat-message] DB insert failed: ' + dbErr.message);
         }
 
+        var senderRole = socket.data.role || 'viewer';
         io.to(roomId).emit('chat-message', {
           id:         msgId,
           username:   username,
+          role:       senderRole,
           message:    message,
           translated: result.translated,
           lang:       result.detectedLang,
@@ -1701,6 +1745,7 @@ io.on('connection', function(socket) {
         io.to(roomId).emit('chat-message', {
           id:         msgId,
           username:   username,
+          role:       socket.data.role || 'viewer',
           message:    message,
           translated: message,
           lang:       'UNK',

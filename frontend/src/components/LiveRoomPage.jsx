@@ -390,6 +390,12 @@ export default function LiveRoomPage({
   var [spEmoji,            setSpEmoji]            = useState('🛍️');
   var [spPrice,            setSpPrice]            = useState('');
   var [spUrl,              setSpUrl]              = useState('');
+  var [followAlerts,       setFollowAlerts]       = useState([]); // [{id,username,ts}]
+  var [showAnnounce,       setShowAnnounce]       = useState(false); // host scheduler modal
+  var [announceMsg,        setAnnounceMsg]        = useState('');
+  var [announceDelay,      setAnnounceDelay]      = useState('1'); // minutes
+  var [pending,            setPending]            = useState([]);  // [{announceId,message,firesAt}]
+  var [pinnedQa,           setPinnedQa]           = useState(null); // {id,username,text,upvotes}|null
   var milestoneRef = useRef(new Set()); // viewer count milestones already celebrated
 
   var chatEndRef      = useRef(null);
@@ -505,6 +511,15 @@ export default function LiveRoomPage({
       }
     });
 
+    socket.on('follow-alert', function(data) {
+      if (!data || !data.username) return;
+      var fid = Date.now() + Math.random();
+      setFollowAlerts(function(prev) { return prev.concat([{ id: fid, username: data.username, ts: data.ts }]); });
+      setTimeout(function() {
+        setFollowAlerts(function(prev) { return prev.filter(function(f) { return f.id !== fid; }); });
+      }, 4500);
+    });
+
     socket.on('react-burst', function(data) {
       if (!data || !data.emoji) return;
       var fid = Date.now() + Math.random();
@@ -567,6 +582,7 @@ export default function LiveRoomPage({
     socket.on('qa-dismissed', function(data) {
       if (!data || !data.id) return;
       setQaQueue(function(q) { return q.filter(function(item) { return item.id !== data.id; }); });
+      setPinnedQa(function(p) { return (p && p.id === data.id) ? null : p; });
     });
 
     socket.on('music-shared', function(data) {
@@ -660,6 +676,7 @@ export default function LiveRoomPage({
       socket.off('chat-pinned');
       socket.off('chat-deleted');
       socket.off('product-spotlight');
+      socket.off('follow-alert');
     };
   }, [socket]);
 
@@ -750,6 +767,28 @@ export default function LiveRoomPage({
     socket.on('panel:join_request_resolved', onResolved);
     return function() { socket.off('panel:join_request_resolved', onResolved); };
   }, [socket]);
+
+  function scheduleAnnounce() {
+    var delayMs = Math.max(5000, Math.floor(parseFloat(announceDelay) * 60000));
+    if (!announceMsg.trim() || !socket) { if (addToast) addToast('Enter a message', 'error'); return; }
+    socket.emit('schedule-announce', { roomId: roomId, message: announceMsg.trim(), delayMs: delayMs }, function(res) {
+      if (res && res.ok) {
+        setPending(function(p) { return p.concat([{ announceId: res.announceId, message: announceMsg.trim(), firesAt: res.firesAt }]); });
+        setAnnounceMsg('');
+        setShowAnnounce(false);
+        if (addToast) addToast('📢 Announcement scheduled in ' + announceDelay + ' min', 'success');
+      }
+    });
+  }
+
+  function cancelAnnounce(announceId) {
+    if (!socket) return;
+    socket.emit('cancel-announce', { announceId: announceId }, function(res) {
+      if (res && res.ok) setPending(function(p) { return p.filter(function(x) { return x.announceId !== announceId; }); });
+    });
+    // Also remove from local state optimistically
+    setPending(function(p) { return p.filter(function(x) { return x.announceId !== announceId; }); });
+  }
 
   // Viewer milestone celebrations
   useEffect(function() {
@@ -1588,6 +1627,8 @@ export default function LiveRoomPage({
             { emoji: '⚙',  label: 'Camera',  active: false, onTap: function() { setShowMediaConf(true); } },
             ...(role === 'host' || role === 'cohost' ? [
               { emoji: '🛒', label: 'Spotlight', active: !!spotlightItem, onTap: function() { setShowSpotlightPick(true); } },
+              { emoji: '📢', label: 'Announce',  active: pending.length > 0, onTap: function() { setShowAnnounce(true); } },
+              { emoji: '🎉', label: 'New Follow', active: false, onTap: function() { if (socket) socket.emit('follow-trigger', { roomId: roomId, username: 'Fan' }); if (addToast) addToast('Follow alert triggered!', 'success'); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -1652,6 +1693,32 @@ export default function LiveRoomPage({
           <button onClick={function() { setSpotlightItem(null); }} style={{ position: 'absolute', top: 6, right: 8, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>✕</button>
         </div>
       )}
+
+      {/* ════════════════ FOLLOW ALERTS ════════════════ */}
+      <div style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', zIndex: 55, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center', pointerEvents: 'none', minWidth: 0 }}>
+        {followAlerts.map(function(fa) {
+          return (
+            <div key={fa.id} style={{
+              background: 'linear-gradient(135deg,rgba(128,0,32,.95),rgba(36,28,18,.95))',
+              border: '1.5px solid rgba(201,168,76,.7)',
+              borderRadius: 999, padding: '8px 20px',
+              display: 'flex', alignItems: 'center', gap: 8,
+              animation: 'fadeSlideIn .4s ease',
+              boxShadow: '0 0 24px rgba(201,168,76,.3)',
+              whiteSpace: 'nowrap',
+            }}>
+              <span style={{ fontSize: 18 }}>🎉</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: GOLD, letterSpacing: 2 }}>
+                {fa.username}
+              </span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: TEXT, letterSpacing: 1 }}>
+                just followed!
+              </span>
+              <span style={{ fontSize: 18 }}>🎉</span>
+            </div>
+          );
+        })}
+      </div>
 
       {/* ════════════════ PANEL REACTION BAR ════════════════ */}
       <div style={{ position: 'absolute', bottom: 82, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
@@ -1739,10 +1806,19 @@ export default function LiveRoomPage({
                   </div>
                 );
               }
+              var roleBadge = m.role === 'host'   ? { label: '👑 HOST',    color: GOLD } :
+                              m.role === 'cohost' ? { label: '🎯 CO-HOST', color: TEAL } :
+                              m.role === 'system' ? { label: '📢',         color: GOLD } : null;
+              var userColor = m.role === 'host' ? GOLD : m.role === 'cohost' ? TEAL : gold;
               return (
                 <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', paddingRight: canMod ? 38 : 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
+                    {roleBadge && (
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: roleBadge.color, background: roleBadge.color + '18', border: '1px solid ' + roleBadge.color + '44', borderRadius: 3, padding: '1px 4px', letterSpacing: .5, flexShrink: 0 }}>
+                        {roleBadge.label}
+                      </span>
+                    )}
+                    <span style={{ fontWeight: 700, fontSize: 13, color: userColor }}>{m.username || 'Guest'}</span>
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
@@ -1751,7 +1827,7 @@ export default function LiveRoomPage({
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
                   )}
-                  {canMod && (
+                  {canMod && m.role !== 'system' && (
                     <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <button onClick={function() { if (socket) socket.emit('chat-pin', { roomId: roomId, msg: m }); setChatOpen(true); }}
                         style={{ background: 'none', border: 'none', color: GOLD, cursor: 'pointer', fontSize: 11, opacity: .7, lineHeight: 1 }} title="Pin message">📌</button>
@@ -1877,6 +1953,54 @@ export default function LiveRoomPage({
                 🛒 SPOTLIGHT FOR 30s
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SCHEDULED ANNOUNCEMENT MODAL (host) ════════════ */}
+      {showAnnounce && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER, maxHeight: '70vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>📢 Scheduled Announcement</div>
+              <button onClick={function() { setShowAnnounce(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 16 }}>Fires as a system chat message after the delay. Viewers see it as "📢 Announcement".</div>
+            <textarea
+              value={announceMsg}
+              onChange={function(e) { setAnnounceMsg(e.target.value); }}
+              maxLength={300}
+              placeholder="Type your announcement..."
+              rows={3}
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, outline: 'none', marginBottom: 10, resize: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, flexShrink: 0 }}>Delay (min):</span>
+              <input type="number" min="0.1" max="60" step="0.5" value={announceDelay} onChange={function(e) { setAnnounceDelay(e.target.value); }}
+                style={{ width: 80, background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '8px 12px', color: TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, outline: 'none', letterSpacing: 1, textAlign: 'center' }} />
+            </div>
+            <button onClick={scheduleAnnounce}
+              style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2, marginBottom: pending.length > 0 ? 16 : 0 }}>
+              SCHEDULE ANNOUNCEMENT
+            </button>
+            {pending.length > 0 && (
+              <div>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 8 }}>PENDING ({pending.length})</div>
+                {pending.map(function(p) {
+                  var mins = Math.max(0, Math.round((p.firesAt - Date.now()) / 60000));
+                  return (
+                    <div key={p.announceId} style={{ display: 'flex', alignItems: 'center', gap: 10, background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '8px 12px', marginBottom: 6 }}>
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, flexShrink: 0 }}>~{mins}m</span>
+                      <span style={{ flex: 1, fontSize: 13, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.message}</span>
+                      <button onClick={function() { cancelAnnounce(p.announceId); }}
+                        style={{ background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 6, padding: '3px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 7, cursor: 'pointer' }}>
+                        CANCEL
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2409,14 +2533,29 @@ export default function LiveRoomPage({
             </div>
           )}
 
+          {/* Pinned Q&A question */}
+          {pinnedQa && (
+            <div style={{ padding: '8px 14px', borderBottom: '1px solid ' + BORDER, background: 'rgba(201,168,76,.06)', flexShrink: 0, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 2 }}>📌</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, marginBottom: 2 }}>PINNED QUESTION</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: GOLD }}>{pinnedQa.username}</div>
+                <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{pinnedQa.text}</div>
+              </div>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() { setPinnedQa(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13, flexShrink: 0, padding: 0 }}>✕</button>
+              )}
+            </div>
+          )}
           {/* Q list */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch' }}>
             {qaQueue.length === 0 && (
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No questions yet — be the first!</div>
             )}
             {qaQueue.map(function(item) {
+              var isPinned = pinnedQa && pinnedQa.id === item.id;
               return (
-                <div key={item.id} style={{ marginBottom: 10, background: CARD, borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start', animation: 'qaIn .2s ease' }}>
+                <div key={item.id} style={{ marginBottom: 10, background: isPinned ? 'rgba(201,168,76,.1)' : CARD, border: isPinned ? '1px solid rgba(201,168,76,.35)' : '1px solid transparent', borderRadius: 10, padding: '10px 12px', display: 'flex', gap: 10, alignItems: 'flex-start', animation: 'qaIn .2s ease' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 12, color: GOLD, marginBottom: 3 }}>{item.username}</div>
                     <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.4 }}>{item.text}</div>
@@ -2431,7 +2570,11 @@ export default function LiveRoomPage({
                       ▲ {item.upvotes}
                     </button>
                     {role === 'host' && (
-                      <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); }}
+                      <button onClick={function() { setPinnedQa(isPinned ? null : item); }}
+                        style={{ background: 'none', border: 'none', color: isPinned ? GOLD : MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }} title="Pin question">📌</button>
+                    )}
+                    {role === 'host' && (
+                      <button onClick={function() { if (socket) socket.emit('qa-dismiss', { roomId: roomId, id: item.id }); setQaQueue(function(q) { return q.filter(function(x) { return x.id !== item.id; }); }); if (isPinned) setPinnedQa(null); }}
                         style={{ background: 'none', border: 'none', color: MUTED, fontSize: 10, cursor: 'pointer', padding: '2px 4px' }}>✕</button>
                     )}
                   </div>
