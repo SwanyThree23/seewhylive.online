@@ -18,6 +18,17 @@ function roomName(battleId) {
 }
 
 function registerBattleHandlers(io, socket) {
+  // Any client (viewer, participant) joins the battle room to receive live events.
+  socket.on('battle:watch', (payload, cb) => {
+    if (!payload || !payload.battleId) { if (cb) cb({ ok: false, error: 'battleId required' }); return; }
+    socket.join(roomName(payload.battleId));
+    if (cb) cb({ ok: true });
+  });
+
+  socket.on('battle:unwatch', (payload) => {
+    if (payload && payload.battleId) socket.leave(roomName(payload.battleId));
+  });
+
   socket.on('battle:challenge', async (payload, cb) => {
     try {
       const battle = await battleService.createChallenge({
@@ -39,6 +50,7 @@ function registerBattleHandlers(io, socket) {
     try {
       const battle = await battleService.acceptChallenge(payload.battleId, payload.roomId);
       socket.join(roomName(payload.battleId));
+      // Notify challenger so they can join the battle room too.
       io.to(`user:${battle.challenger_id}`).emit('battle:accept', battle);
       if (cb) cb({ ok: true, battle });
     } catch (err) {
