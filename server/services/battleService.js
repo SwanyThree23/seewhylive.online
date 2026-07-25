@@ -78,6 +78,11 @@ async function startBattle(battleId) {
 }
 
 async function castVote({ battleId, voterId, side, giftValueCents }) {
+  const active = await db.query(
+    `SELECT id FROM pk_battles WHERE id = $1 AND status = 'active'`, [battleId]
+  );
+  if (!active.rows[0]) throw new Error('battle not active');
+
   await db.query(
     `INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)
      VALUES ($1, $2, $3, $4)`,

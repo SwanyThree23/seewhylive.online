@@ -28,8 +28,8 @@ router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
 
 router.patch('/guests/:guestId', requireAuth, async (req, res) => {
   try {
-    const guest = await guestService.updateGuestState(req.params.guestId, req.body);
-    if (!guest) return res.status(400).json({ error: 'no valid fields to update' });
+    const guest = await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
+    if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(guest);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -73,8 +73,8 @@ router.post('/streams/:streamId/participants', requireAuth, async (req, res) => 
 
 router.patch('/participants/:participantId', requireAuth, async (req, res) => {
   try {
-    const participant = await guestService.updateParticipantState(req.params.participantId, req.body);
-    if (!participant) return res.status(400).json({ error: 'no valid fields to update' });
+    const participant = await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id);
+    if (!participant) return res.status(403).json({ error: 'not found or forbidden' });
     res.json(participant);
   } catch (err) {
     res.status(400).json({ error: err.message });

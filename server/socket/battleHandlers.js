@@ -96,11 +96,16 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:vote', async (payload, cb) => {
     try {
+      const cents = Math.floor(payload.giftValueCents);
+      if (!Number.isFinite(cents) || cents <= 0) {
+        if (cb) cb({ ok: false, error: 'giftValueCents must be a positive integer' });
+        return;
+      }
       const battle = await battleService.castVote({
         battleId: payload.battleId,
         voterId: socket.data.userId,
         side: payload.side, // 'challenger' | 'defender'
-        giftValueCents: payload.giftValueCents,
+        giftValueCents: cents,
       });
       io.to(roomName(payload.battleId)).emit('battle:score_update', {
         battleId: battle.id,
