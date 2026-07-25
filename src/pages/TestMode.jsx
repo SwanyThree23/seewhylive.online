@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
@@ -342,6 +344,7 @@ export default function TestMode() {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room_id');
   const activeRoomId = roomId;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
