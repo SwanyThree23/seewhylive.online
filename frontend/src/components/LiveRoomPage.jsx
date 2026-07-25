@@ -432,6 +432,10 @@ export default function LiveRoomPage({
   var [pinnedAnnouncement, setPinnedAnnouncement] = useState(null); // { text } | null
   var [showPinAnnounce,    setShowPinAnnounce]    = useState(false);
   var [pinAnnounceInput,   setPinAnnounceInput]   = useState('');
+  var [showCaptions,       setShowCaptions]       = useState(false);
+  var [latestCaption,      setLatestCaption]      = useState('');   // latest transcript text
+  var [myEngagement,       setMyEngagement]       = useState({ chat: 0, react: 0, gift: 0 });
+  var lastTapRef = useRef(0); // for double-tap detection
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -929,6 +933,7 @@ export default function LiveRoomPage({
     if (!msg || !socket) return;
     var msgId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId });
+    setMyEngagement(function(e) { return { chat: e.chat + 1, react: e.react, gift: e.gift }; });
     var mentions = msg.match(/@(\S+)/g);
     if (mentions) {
       mentions.forEach(function(m) {
@@ -1041,6 +1046,15 @@ export default function LiveRoomPage({
     return function() { clearInterval(id); };
   }, []);
 
+  // Live captions — update when a transcript message arrives
+  useEffect(function() {
+    if (!chat || chat.length === 0) return;
+    var last = chat[chat.length - 1];
+    if (last && last.isTranscript && last.message) {
+      setLatestCaption(last.message);
+    }
+  }, [chat]);
+
   function fmtElapsed(s) {
     if (!s || s < 0) return '0:00';
     var h = Math.floor(s / 3600);
@@ -1063,6 +1077,7 @@ export default function LiveRoomPage({
     setFloatReacts(function(r) { return r.concat([{ emoji: emoji, fid: fid }]); });
     setTimeout(function() { setFloatReacts(function(r) { return r.filter(function(x) { return x.fid !== fid; }); }); }, 2200);
     if (socket) socket.emit('viewer-react', { roomId: roomId, userId: userId, emoji: emoji });
+    setMyEngagement(function(e) { return { chat: e.chat, react: e.react + 1, gift: e.gift }; });
     setReactsOpen(false);
   }
 
@@ -1319,7 +1334,16 @@ export default function LiveRoomPage({
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', background: BG, overflow: 'hidden', position: 'relative', fontFamily: "'Barlow Condensed',sans-serif" }}
+      onClick={function() {
+        var now = Date.now();
+        if (now - lastTapRef.current < 320) {
+          sendReact('❤️');
+        }
+        lastTapRef.current = now;
+      }}
+    >
       <style dangerouslySetInnerHTML={{ __html: ANIM }} />
 
       <HostHUD
@@ -2626,6 +2650,13 @@ export default function LiveRoomPage({
             active={theaterMode}
             activeColor={gold}
             onPress={function() { setTheaterMode(function(v) { return !v; }); }}
+          />
+          <IconBtn
+            icon="CC"
+            label="Captions"
+            active={showCaptions}
+            activeColor={TEAL}
+            onPress={function() { setShowCaptions(function(v) { return !v; }); }}
           />
         </div>
       </div>
@@ -3948,6 +3979,36 @@ export default function LiveRoomPage({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ LIVE CAPTIONS OVERLAY ════════════════ */}
+      {showCaptions && latestCaption && (
+        <div style={{
+          position: 'absolute', bottom: 74, left: 10, right: 10, zIndex: 60,
+          background: 'rgba(0,0,0,.72)', borderRadius: 8, padding: '6px 12px',
+          pointerEvents: 'none', textAlign: 'center',
+        }}>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#fff', lineHeight: 1.4, letterSpacing: .3 }}>
+            {latestCaption}
+          </span>
+        </div>
+      )}
+
+      {/* ════════════════ PERSONAL ENGAGEMENT BADGE ════════════════ */}
+      {(myEngagement.chat > 0 || myEngagement.react > 0) && (
+        <div style={{
+          position: 'absolute', top: 10, right: 10, zIndex: 52,
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: 'rgba(14,12,9,.7)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 999,
+          padding: '3px 8px', pointerEvents: 'none',
+        }}>
+          {myEngagement.chat > 0 && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>💬{myEngagement.chat}</span>
+          )}
+          {myEngagement.react > 0 && (
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>⚡{myEngagement.react}</span>
+          )}
         </div>
       )}
 
