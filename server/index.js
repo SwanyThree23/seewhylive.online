@@ -398,6 +398,9 @@ var engagementMap       = new Map();  // roomId → Map<userId, {username,chatCo
 var bannedWordsMap      = new Map();  // roomId → Set<string>
 var chatBannedMap       = new Map();  // roomId → Set<userId>  — chat-only bans
 var highlightMap        = new Map();  // roomId → Array<{ts, count}> hot-moment timestamps
+var slowModeMap         = new Map();  // roomId → cooldownSeconds (0 = off)
+var slowModeLastMsg     = new Map();  // roomId → Map<userId, lastMsgTs>
+var handQueues          = new Map();  // roomId → Array<{guestId, userId, username, ts}>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -1749,6 +1752,21 @@ io.on('connection', function(socket) {
       return;
     }
 
+    // Slow mode check
+    var _smCooldown = slowModeMap.get(roomId) || 0;
+    if (_smCooldown > 0 && socket.data.role === 'viewer') {
+      if (!slowModeLastMsg.has(roomId)) slowModeLastMsg.set(roomId, new Map());
+      var _smRoom = slowModeLastMsg.get(roomId);
+      var _smLast = _smRoom.get(userId) || 0;
+      var _smNow = Date.now();
+      if (_smNow - _smLast < _smCooldown * 1000) {
+        var _smRemaining = Math.ceil((_smCooldown * 1000 - (_smNow - _smLast)) / 1000);
+        io.to(socket.id).emit('chat-blocked', { reason: 'Slow mode: wait ' + _smRemaining + 's before sending another message' });
+        return;
+      }
+      _smRoom.set(userId, _smNow);
+    }
+
     // Spam check
     if (swanybot.isSocketMuted(socket.id)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
@@ -2036,8 +2054,20 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId || socket.data.roomId;
     var guestId  = data.guestId  || socket.data.guestId;
     var username = data.username || socket.data.username || guestId;
+    var ts       = Math.floor(Date.now() / 1000);
     if (!roomId) return;
-    io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
+    io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: ts });
+    // Ordered speaker queue: add if not already present
+    if (!handQueues.has(roomId)) handQueues.set(roomId, []);
+    var hq = handQueues.get(roomId);
+    var exists = hq.some(function(e) { return e.guestId === guestId; });
+    if (!exists) {
+      hq.push({ guestId: guestId, userId: socket.data.userId || guestId, username: username, ts: ts });
+    }
+    var hrRoom = rooms.get(roomId);
+    if (hrRoom && hrRoom.hostSocketId) {
+      io.to(hrRoom.hostSocketId).emit('hand-queue', { queue: hq });
+    }
   });
 
   // ── hand-lower ─────────────────────────────────────────────────────────
@@ -2046,6 +2076,14 @@ io.on('connection', function(socket) {
     var guestId = (data && data.guestId) || socket.data.guestId || socket.id;
     if (!roomId) return;
     io.to(roomId).emit('hand-lower', { guestId: guestId });
+    // Remove from ordered queue
+    if (handQueues.has(roomId)) {
+      handQueues.set(roomId, handQueues.get(roomId).filter(function(e) { return e.guestId !== guestId; }));
+      var hlRoom = rooms.get(roomId);
+      if (hlRoom && hlRoom.hostSocketId) {
+        io.to(hlRoom.hostSocketId).emit('hand-queue', { queue: handQueues.get(roomId) });
+      }
+    }
   });
 
   // ── mute-all ───────────────────────────────────────────────────────────
@@ -2774,6 +2812,17 @@ io.on('connection', function(socket) {
     io.to(socket.id).emit('banned-words-updated', { words: cleaned });
   });
 
+  // ── set-slow-mode — host/cohost configures per-viewer message cooldown ──
+  socket.on('set-slow-mode', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var secs = Math.max(0, Math.min(120, Math.floor(data.seconds || 0)));
+    slowModeMap.set(roomId, secs);
+    if (secs === 0) slowModeLastMsg.delete(roomId);
+    io.to(roomId).emit('slow-mode-changed', { seconds: secs, ts: Math.floor(Date.now() / 1000) });
+  });
+
   // ── chat-ban / chat-unban — host/cohost bans user from chat only ────────
   socket.on('chat-ban', function(data) {
     var roomId = data.roomId || socket.data.roomId;
@@ -3463,6 +3512,18 @@ io.on('connection', function(socket) {
     room.guests.forEach(function(g) {
       guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
     });
+
+    // Remove disconnected user from speaker queue
+    if (handQueues.has(roomId)) {
+      var guestIdForQueue = socket.data.guestId || socket.data.userId;
+      var prevQLen = handQueues.get(roomId).length;
+      handQueues.set(roomId, handQueues.get(roomId).filter(function(e) {
+        return e.guestId !== guestIdForQueue && e.userId !== socket.data.userId;
+      }));
+      if (handQueues.get(roomId).length !== prevQLen && room.hostSocketId) {
+        io.to(room.hostSocketId).emit('hand-queue', { queue: handQueues.get(roomId) });
+      }
+    }
 
     io.to(roomId).emit('roster-update', { guests: guestList });
     io.to(roomId).emit('viewer-count', { count: viewerCount });

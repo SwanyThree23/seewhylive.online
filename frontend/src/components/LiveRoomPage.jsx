@@ -414,6 +414,10 @@ export default function LiveRoomPage({
   var [isSubOnly,          setIsSubOnly]          = useState(false);
   var [highlights,         setHighlights]         = useState([]);   // [{ts, count, windowKey}]
   var [showHighlights,     setShowHighlights]     = useState(false);
+  var [slowMode,           setSlowMode]           = useState(0);    // seconds (0 = off)
+  var [handQueue,          setHandQueue]          = useState([]);   // [{guestId,userId,username,ts}]
+  var [milestoneOverlay,   setMilestoneOverlay]   = useState(null); // { count } | null
+  var [showSlowMode,       setShowSlowMode]       = useState(false);
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -567,6 +571,17 @@ export default function LiveRoomPage({
     socket.on('banned-words-updated', function(data) {
       if (!data || !Array.isArray(data.words)) return;
       setBannedWords(data.words);
+    });
+
+    socket.on('slow-mode-changed', function(data) {
+      if (!data) return;
+      setSlowMode(data.seconds || 0);
+      if (addToast) addToast(data.seconds > 0 ? ('🐢 Slow mode: ' + data.seconds + 's between messages') : '💬 Slow mode off', 'info');
+    });
+
+    socket.on('hand-queue', function(data) {
+      if (!data || !Array.isArray(data.queue)) return;
+      setHandQueue(data.queue);
     });
 
     socket.on('react-burst', function(data) {
@@ -753,6 +768,8 @@ export default function LiveRoomPage({
       socket.off('chat-banned');
       socket.off('chat-unbanned');
       socket.off('highlight-reel');
+      socket.off('slow-mode-changed');
+      socket.off('hand-queue');
     };
   }, [socket]);
 
@@ -868,13 +885,15 @@ export default function LiveRoomPage({
 
   // Viewer milestone celebrations
   useEffect(function() {
-    if (!viewerCount || !addToast) return;
+    if (!viewerCount) return;
     var MILESTONES = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
     MILESTONES.forEach(function(m) {
       if (viewerCount >= m && !milestoneRef.current.has(m)) {
         milestoneRef.current.add(m);
         var emojis = m >= 1000 ? '🔥🔥🔥' : m >= 500 ? '🎉🔥' : '🎉';
-        addToast(emojis + ' ' + m.toLocaleString() + ' viewers watching live!', 'success');
+        if (addToast) addToast(emojis + ' ' + m.toLocaleString() + ' viewers watching live!', 'success');
+        setMilestoneOverlay({ count: m });
+        setTimeout(function() { setMilestoneOverlay(null); }, 3500);
       }
     });
   }, [viewerCount]);
@@ -1759,6 +1778,7 @@ export default function LiveRoomPage({
               { emoji: '🚫', label: 'Filter', active: bannedWords.length > 0, onTap: function() { setShowBannedWords(true); } },
               { emoji: '⭐', label: 'Sub Only', active: isSubOnly, onTap: function() { var next = !isSubOnly; setIsSubOnly(next); if (socket) socket.emit('subscriber-only-changed', { roomId: roomId, enabled: next }); if (addToast) addToast(next ? '⭐ Subscriber-only chat ON' : '💬 Subscriber-only chat OFF', 'success'); } },
               { emoji: '🎞️', label: 'Clips', active: highlights.length > 0, onTap: function() { if (socket) socket.emit('request-highlights', { roomId: roomId }); } },
+              { emoji: '🐢', label: 'Slow', active: slowMode > 0, onTap: function() { setShowSlowMode(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2019,6 +2039,13 @@ export default function LiveRoomPage({
             })}
             <div ref={chatEndRef} />
           </div>
+          {/* Slow mode indicator */}
+          {slowMode > 0 && (
+            <div style={{ padding: '3px 14px', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ fontSize: 11 }}>🐢</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: .5 }}>SLOW MODE · {slowMode}s</span>
+            </div>
+          )}
           {/* Quick gift presets for viewers */}
           {role !== 'host' && role !== 'cohost' && (
             <div style={{ padding: '3px 12px 2px', display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -3417,6 +3444,72 @@ export default function LiveRoomPage({
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ MILESTONE CELEBRATION OVERLAY ════════════════ */}
+      {milestoneOverlay && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 88, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ textAlign: 'center', background: 'rgba(14,12,9,.82)', border: '2px solid ' + GOLD, borderRadius: 20, padding: '28px 40px', backdropFilter: 'blur(12px)' }}>
+            <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 8 }}>{milestoneOverlay.count >= 1000 ? '🔥' : '🎉'}</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: GOLD, letterSpacing: 4, lineHeight: 1 }}>{milestoneOverlay.count.toLocaleString()}</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 18, color: TEXT, letterSpacing: 2, marginTop: 4 }}>VIEWERS</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SLOW MODE SETTER MODAL (host) ════════════════ */}
+      {showSlowMode && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowSlowMode(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🐢 Slow Mode</div>
+              <button onClick={function() { setShowSlowMode(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 18 }}>Viewers must wait the set number of seconds between chat messages.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 14 }}>
+              {[0, 3, 5, 10, 15, 30, 60, 120].map(function(s) {
+                return (
+                  <button key={s} onClick={function() {
+                    setSlowMode(s);
+                    if (socket) socket.emit('set-slow-mode', { roomId: roomId, seconds: s });
+                    setShowSlowMode(false);
+                    if (addToast) addToast(s > 0 ? ('🐢 Slow mode: ' + s + 's') : '💬 Slow mode off', 'success');
+                  }} style={{
+                    background: slowMode === s ? 'rgba(201,168,76,.2)' : CARD2,
+                    border: '1px solid ' + (slowMode === s ? GOLD : BORDER),
+                    borderRadius: 10, padding: '10px 4px',
+                    fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: slowMode === s ? GOLD : TEXT, cursor: 'pointer', letterSpacing: 1,
+                  }}>
+                    {s === 0 ? 'OFF' : s + 's'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SPEAKER QUEUE (host overlay) ════════════════ */}
+      {(role === 'host' || role === 'cohost') && handQueue.length > 0 && (
+        <div style={{ position: 'absolute', right: 8, top: 200, zIndex: 56, width: 170, background: 'rgba(14,12,9,.88)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 10, padding: '8px 10px', backdropFilter: 'blur(8px)' }}>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 2, marginBottom: 6 }}>✋ SPEAKER QUEUE</div>
+          {handQueue.slice(0, 8).map(function(h, i) {
+            return (
+              <div key={h.guestId} style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, width: 10, flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 11, color: TEXT, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.username}</span>
+                <button onClick={function() {
+                  if (socket) {
+                    socket.emit('stage-invite', { roomId: roomId, guestId: h.guestId });
+                    socket.emit('hand-lower', { roomId: roomId, guestId: h.guestId });
+                  }
+                }} style={{ background: 'rgba(212,133,74,.2)', border: '1px solid rgba(212,133,74,.4)', borderRadius: 4, padding: '2px 5px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, cursor: 'pointer', flexShrink: 0 }}>
+                  ADD
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
