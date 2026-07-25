@@ -393,6 +393,7 @@ var loveEarnings        = new Map();  // roomId → { creator: microcents, platf
 var giftLeaderboards    = new Map();  // roomId → [{username, totalCents}] top 10
 var triviaRooms         = new Map();  // roomId → { question, options:[{text}], answers:Map<socketId,idx>, correctIdx, timer, active }
 var guestGiftTotals     = new Map();  // roomId → Map<guestId, totalCents>
+var joinRequests        = new Map();  // roomId → Map<userId, {socketId,userId,username,requestId,ts}>
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -781,6 +782,14 @@ app.get('/api/leaderboard', function(req, res) {
     logger.error('[leaderboard] ' + err.message);
     res.status(500).json({ error: 'Leaderboard query failed' });
   }
+});
+
+// GET /api/rooms/:roomId/join-requests — pending stage join requests for a room
+app.get('/api/rooms/:roomId/join-requests', function(req, res) {
+  var roomId = req.params.roomId;
+  var roomMap = joinRequests.get(roomId);
+  var reqs = roomMap ? Array.from(roomMap.values()) : [];
+  res.json(reqs.map(function(r) { return { id: r.requestId, user_id: r.userId, display_name: r.username, avatar_url: r.avatarUrl || null }; }));
 });
 
 // GET /api/gift-types — preset gift options for the tap-to-gift UI
@@ -1404,6 +1413,53 @@ io.on('connection', function(socket) {
     if (!producerId) return;
     mediasoup.resumeProducer(producerId);
     if (roomId) io.to(roomId).emit('producer-resumed', { producerId: producerId });
+  });
+
+  // ── panel:request_join — viewer asks to come on stage ─────────────────
+  socket.on('panel:request_join', function(data, ack) {
+    var roomId   = (data && data.roomId) || socket.data.roomId;
+    var userId   = socket.data.userId || socket.id;
+    var username = socket.data.username || userId;
+    if (!roomId) { if (ack) ack({ error: 'no roomId' }); return; }
+
+    if (!joinRequests.has(roomId)) joinRequests.set(roomId, new Map());
+    var requestId = uuidv4();
+    joinRequests.get(roomId).set(userId, { socketId: socket.id, userId: userId, username: username, requestId: requestId, ts: Math.floor(Date.now() / 1000) });
+
+    // Notify host (and all cohosts) by broadcasting to room — JoinRequestQueue subscribes to panel:join_request_received
+    io.to(roomId).emit('panel:join_request_received', { roomId: roomId, userId: userId, requestId: requestId, displayName: username, avatarUrl: null });
+    // Also emit hand-raise so the host sees the ✋ badge on the viewer circle
+    io.to(roomId).emit('hand-raise', { guestId: userId, username: username });
+
+    if (ack) ack({ ok: true, requestId: requestId });
+  });
+
+  // ── panel:resolve_join_request — host approves or denies ──────────────
+  socket.on('panel:resolve_join_request', function(data, ack) {
+    var roomId  = (data && data.roomId) || socket.data.roomId;
+    var userId  = data && data.userId;
+    var approve = !!(data && data.approve);
+    if (!roomId || !userId) { if (ack) ack({ error: 'missing params' }); return; }
+
+    var roomMap = joinRequests.get(roomId);
+    var req     = roomMap && roomMap.get(userId);
+    if (req) roomMap.delete(userId);
+
+    if (approve) {
+      // Promote requester to stage
+      if (req && req.socketId) {
+        io.to(req.socketId).emit('panel:join_request_resolved', { approved: true, roomId: roomId });
+        io.to(req.socketId).emit('stage-invite', { guestId: userId, invitedBy: socket.data.userId });
+      }
+      // Broadcast stage-invite to room so everyone tracks the new panelist
+      io.to(roomId).emit('stage-invite', { guestId: userId, invitedBy: socket.data.userId });
+      io.to(roomId).emit('hand-lower',   { guestId: userId });
+    } else {
+      if (req && req.socketId) {
+        io.to(req.socketId).emit('panel:join_request_resolved', { approved: false, roomId: roomId });
+      }
+    }
+    if (ack) ack({ ok: true });
   });
 
   // ── stage-invite ───────────────────────────────────────────────────────

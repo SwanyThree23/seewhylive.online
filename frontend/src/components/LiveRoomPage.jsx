@@ -14,6 +14,7 @@ import GoldenWallPanel from './GoldenWallPanel.jsx';
 import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
 import ShareSheet from './share/ShareSheet.jsx';
 import PanelReactionBar from './panel/PanelReactionBar.jsx';
+import panelService from '../services/panelService.js';
 
 var MAX_STAGE = 20;
 
@@ -376,6 +377,7 @@ export default function LiveRoomPage({
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
   var [guestGiftTotals,    setGuestGiftTotals]    = useState({}); // guestId → cents running total
+  var [joinRequested,      setJoinRequested]      = useState(false); // viewer stage-join request pending
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
@@ -680,6 +682,38 @@ export default function LiveRoomPage({
     if (socket && !next) socket.emit('hand-lower', { roomId: roomId, guestId: userId });
     if (addToast) addToast(next ? '✋ Hand raised — waiting for host' : 'Hand lowered', 'info');
   }
+
+  function requestJoinStage() {
+    if (!socket || joinRequested) return;
+    panelService.requestJoin(socket, roomId)
+      .then(function() {
+        setJoinRequested(true);
+        setHandRaised(true);
+        if (addToast) addToast('🎤 Stage request sent — waiting for host approval', 'info');
+      })
+      .catch(function(e) {
+        if (addToast) addToast('Request failed: ' + e.message, 'error');
+      });
+  }
+
+  // Listen for host approval/denial of join request
+  useEffect(function() {
+    if (!socket) return;
+    function onResolved(data) {
+      if (!data) return;
+      setJoinRequested(false);
+      if (data.approved) {
+        setHandRaised(false);
+        if (addToast) addToast('✅ Host approved! You\'re on stage.', 'success');
+        // stage-invite is broadcast separately to the room — LiveRoomPage handles it already
+      } else {
+        setHandRaised(false);
+        if (addToast) addToast('Stage request declined', 'info');
+      }
+    }
+    socket.on('panel:join_request_resolved', onResolved);
+    return function() { socket.off('panel:join_request_resolved', onResolved); };
+  }, [socket]);
 
   function sendReact(emoji) {
     var fid = Date.now() + Math.random();
@@ -1824,13 +1858,24 @@ export default function LiveRoomPage({
             active={reactsOpen}
             onPress={function() { setReactsOpen(function(v) { return !v; }); }}
           />
-          <IconBtn
-            icon="✋"
-            label="Hand"
-            active={handRaised}
-            activeColor={gold}
-            onPress={raiseHand}
-          />
+          {role === 'viewer' && (
+            <IconBtn
+              icon={joinRequested ? '⏳' : '🎤'}
+              label={joinRequested ? 'Pending' : 'Join Stage'}
+              active={joinRequested}
+              activeColor={gold}
+              onPress={requestJoinStage}
+            />
+          )}
+          {role !== 'viewer' && (
+            <IconBtn
+              icon="✋"
+              label="Hand"
+              active={handRaised}
+              activeColor={gold}
+              onPress={raiseHand}
+            />
+          )}
           <IconBtn
             icon={isMuted ? '🔇' : '🎙'}
             label={isMuted ? 'Unmute' : 'Mute'}

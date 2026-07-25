@@ -608,6 +608,30 @@ export default function App() {
       }
     });
 
+    socket.on('gift-received', function(gift) {
+      if (!gift) return;
+      var floatId = Date.now() + Math.random();
+      setGiftFloats(function(prev) {
+        return prev.concat([{
+          floatId:     floatId,
+          emoji:       gift.emoji || '🎁',
+          name:        gift.name  || 'Gift',
+          from_user:   gift.fromUser || gift.from_user || 'Fan',
+          value_cents: gift.valueCents || gift.value_cents || 0,
+          toGuestId:   gift.toGuestId || null,
+        }]);
+      });
+      setTimeout(function() {
+        setGiftFloats(function(prev) { return prev.filter(function(g) { return g.floatId !== floatId; }); });
+      }, 5000);
+      if (role === 'host' && (gift.creatorCents || 0) > 0) {
+        var dollars = ((gift.creatorCents || 0) / 100).toFixed(2);
+        addToast('🎁 ' + (gift.fromUser || 'Fan') + ' — ' + (gift.name || 'Gift') + ' +$' + dollars, 'success');
+        var cc = Math.floor(gift.creatorCents || 0);
+        setSessionEarningsCents(function(prev) { sessionEarningsRef.current = prev + cc; return prev + cc; });
+      }
+    });
+
     socket.on('earnings-update', function(data) {
       if (!data || role !== 'host') return;
       var newTotal = Math.floor(data.sessionCents || 0);

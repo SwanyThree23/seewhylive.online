@@ -102,17 +102,19 @@ export default function GiftLayer(props) {
 
       {/* Gift floats */}
       {giftFloats.map(function(g) {
-        var left        = Math.floor(Math.abs(g.floatId || 0) % 65) + 5;
-        var valueCents  = Math.floor(g.value_cents || g.valueCents || 0);
+        var key         = g.floatId || g.id || Math.random();
+        var left        = Math.floor(Math.abs(g.floatId || g.id || 0) % 65) + 5;
+        var valueCents  = Math.floor(g.value_cents || g.valueCents || g.amount || 0);
         var isLegendary = valueCents >= 500;
         var isLarge     = valueCents >= 100;
-        var borderColor = isLegendary ? 'rgba(201,168,76,.85)' : isLarge ? 'rgba(201,168,76,.65)' : 'rgba(255,255,255,.14)';
+        var isDirect    = !!g.toGuestId;
+        var borderColor = isDirect    ? 'rgba(201,168,76,.9)'  : isLegendary ? 'rgba(201,168,76,.85)' : isLarge ? 'rgba(201,168,76,.65)' : 'rgba(255,255,255,.14)';
         var glowColor   = isLegendary ? 'rgba(201,168,76,.3)'  : isLarge ? 'rgba(201,168,76,.18)' : 'transparent';
-        var sender      = g.from_user || g.fromUser || 'anon';
+        var sender      = g.from_user || g.fromUser || g.from || 'anon';
         var amtColor    = isLegendary ? GOLD : isLarge ? TEAL : '#A89CC8';
         var animDur     = isLegendary ? '4.2s' : '3.5s';
         return (
-          <div key={g.floatId}
+          <div key={key}
             style={{
               position: 'absolute',
               left: left + '%',
@@ -136,6 +138,11 @@ export default function GiftLayer(props) {
               <AvatarPortrait username={sender} size={16} />
               <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: '#A89CC8', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sender}</span>
             </div>
+            {isDirect && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1, marginTop: 1, background: 'rgba(201,168,76,.15)', borderRadius: 4, padding: '1px 5px' }}>
+                ↗ DIRECT TIP
+              </span>
+            )}
             {valueCents > 0 && (
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: isLegendary ? 20 : 14, color: amtColor, letterSpacing: 1, marginTop: 1 }}>
                 ${(Math.floor(valueCents) / 100).toFixed(2)}
