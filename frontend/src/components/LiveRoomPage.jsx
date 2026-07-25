@@ -446,6 +446,9 @@ export default function LiveRoomPage({
   var [giftChain,          setGiftChain]          = useState(null); // { count } | null
   var [emojiMode,          setEmojiMode]          = useState(false); // emoji-burst vs text chat
   var [isSuperFan,         setIsSuperFan]         = useState(false); // earned superfan status
+  var [chatKeyword,        setChatKeyword]        = useState('');   // host highlight keyword
+  var [showKeywordSet,     setShowKeywordSet]     = useState(false);
+  var [keywordInput,       setKeywordInput]       = useState('');
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -686,6 +689,12 @@ export default function LiveRoomPage({
       setTimeout(function() { setGiftChain(null); }, 3000);
     });
 
+    socket.on('chat-keyword', function(data) {
+      if (!data) return;
+      setChatKeyword(data.keyword || '');
+      if (data.keyword && addToast) addToast('🔑 Host highlighted keyword: "' + data.keyword + '"', 'info');
+    });
+
     socket.on('host-alert', function(data) {
       if (!data || data.type !== 'revenue_milestone') return;
       var dollars = data.cents ? Math.floor(data.cents / 100) : 0;
@@ -916,6 +925,7 @@ export default function LiveRoomPage({
       socket.off('pin-announcement');
       socket.off('gift-notification');
       socket.off('gift-chain');
+      socket.off('chat-keyword');
       socket.off('host-alert');
       socket.off('private-dm');
       socket.off('room-tags');
@@ -1447,6 +1457,12 @@ export default function LiveRoomPage({
               <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '3px 8px' }}>
                 <span style={{ fontSize: 9 }}>🎤</span>
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>AUDIO</span>
+              </div>
+            )}
+            {isSubOnly && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'rgba(34,197,94,.1)', border: '1px solid rgba(34,197,94,.35)', borderRadius: 999, padding: '3px 8px' }}>
+                <span style={{ fontSize: 9 }}>⭐</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#22C55E', letterSpacing: 1 }}>SUB ONLY</span>
               </div>
             )}
             {isLive ? (
@@ -2025,6 +2041,7 @@ export default function LiveRoomPage({
               { emoji: '🎊', label: 'Celebrate', active: false, onTap: function() { if (socket) socket.emit('celebrate', { roomId: roomId, type: 'confetti' }); } },
               { emoji: '📌', label: 'Banner', active: !!pinnedAnnouncement, onTap: function() { setPinAnnounceInput(pinnedAnnouncement ? pinnedAnnouncement.text : ''); setShowPinAnnounce(true); } },
               { emoji: '🔇', label: 'Mute All', active: false, onTap: function() { setShowMuteAllConfirm(true); } },
+              { emoji: '🔑', label: 'Keyword', active: !!chatKeyword, onTap: function() { setKeywordInput(chatKeyword); setShowKeywordSet(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2276,7 +2293,7 @@ export default function LiveRoomPage({
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
                   </div>
-                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>
+                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45, background: chatKeyword && m.message && m.message.toLowerCase().includes(chatKeyword.toLowerCase()) ? 'rgba(201,168,76,.12)' : 'transparent', borderRadius: chatKeyword && m.message && m.message.toLowerCase().includes(chatKeyword.toLowerCase()) ? 4 : 0, padding: chatKeyword && m.message && m.message.toLowerCase().includes(chatKeyword.toLowerCase()) ? '1px 4px' : 0 }}>
                     {(function() {
                       var parts = m.message ? m.message.split(/(@\S+)/g) : [m.message || ''];
                       return parts.map(function(part, pi) {
@@ -4081,6 +4098,46 @@ export default function LiveRoomPage({
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ KEYWORD HIGHLIGHT MODAL (host) ════════════════ */}
+      {showKeywordSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 76, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowKeywordSet(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🔑 Chat Keyword</div>
+              <button onClick={function() { setShowKeywordSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 12 }}>Messages containing this word glow in chat for everyone.</div>
+            <input
+              value={keywordInput}
+              onChange={function(e) { setKeywordInput(e.target.value.slice(0, 30)); }}
+              placeholder="e.g. 'giveaway' or 'winner'..."
+              style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var kw = keywordInput.trim();
+                setChatKeyword(kw);
+                if (socket) socket.emit('chat-keyword', { roomId: roomId, keyword: kw });
+                setShowKeywordSet(false);
+                if (addToast) addToast(kw ? '🔑 Keyword "' + kw + '" set!' : '🔑 Keyword cleared', 'success');
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                SET KEYWORD
+              </button>
+              {chatKeyword && (
+                <button onClick={function() {
+                  setChatKeyword('');
+                  if (socket) socket.emit('chat-keyword', { roomId: roomId, keyword: '' });
+                  setShowKeywordSet(false);
+                  if (addToast) addToast('🔑 Keyword cleared', 'info');
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: MUTED, cursor: 'pointer', letterSpacing: 2 }}>
+                  CLEAR
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -2841,6 +2841,15 @@ io.on('connection', function(socket) {
       desc:     (data.desc     || '').slice(0, 400),
       ts:       Math.floor(Date.now() / 1000)
     });
+    if (data.title) {
+      io.to(roomId).emit('chat-message', {
+        id:       require('crypto').randomUUID ? require('crypto').randomUUID() : uuidv4(),
+        username: 'SYSTEM',
+        message:  '📌 Stream title updated: "' + String(data.title).slice(0, 80) + '"',
+        ts:       Math.floor(Date.now() / 1000),
+        role:     'system',
+      });
+    }
   });
 
   // ── set-banned-words — host/cohost manages chat word filter ─────────────
@@ -2895,6 +2904,15 @@ io.on('connection', function(socket) {
         io.to(s.id).emit('chat-mention', { by: socket.data.username || 'someone', msgId: msgId, ts: Math.floor(Date.now() / 1000) });
       }
     });
+  });
+
+  // ── chat-keyword — host sets a highlight keyword for the chat ───────────
+  socket.on('chat-keyword', function(data) {
+    var roomId  = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var keyword = data.keyword ? String(data.keyword).trim().slice(0, 30) : '';
+    io.to(roomId).emit('chat-keyword', { keyword: keyword, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── private-dm — host sends a private message to one guest socket ───────
