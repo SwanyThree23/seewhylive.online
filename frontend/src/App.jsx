@@ -1232,6 +1232,7 @@ export default function App() {
             socket={socketRef.current}
             guests={guests}
             chat={chat}
+            setChat={setChat}
             isLive={isLive}
             setIsLive={setIsLive}
             userId={userId}

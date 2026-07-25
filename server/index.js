@@ -490,6 +490,11 @@ function getJoinStateForRoom(roomId) {
   if (vp && vp.active) state.activeVsPoll = serializeVs(vp);
   state.judges = serializeJudges(roomId);
   state.sessionRevenueCents = sessionRevenue.get(roomId) || 0;
+  var joinRoom = rooms.get(roomId);
+  if (joinRoom && joinRoom.pinnedChat) state.pinnedChat = joinRoom.pinnedChat;
+  if (joinRoom && joinRoom.spotlight && joinRoom.spotlight.endsAt > Math.floor(Date.now() / 1000)) {
+    state.spotlight = joinRoom.spotlight;
+  }
   return state;
 }
 
@@ -513,7 +518,9 @@ function getRoom(roomId) {
       hostSocketId: null,
       hostUserId:   null,
       watchParty:   null,
-      presence:     new Map()
+      presence:     new Map(),
+      pinnedChat:   null,    // { id, username, message, ts }
+      spotlight:    null,    // { name, emoji, price, url, endsAt }
     });
   }
   return rooms.get(roomId);
@@ -1477,6 +1484,59 @@ io.on('connection', function(socket) {
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
     io.to(roomId).emit('stage-remove', { guestId: guestId });
+  });
+
+  // ── chat-pin — host pins a chat message for all viewers ───────────────
+  socket.on('chat-pin', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var pinMsg = data.msg ? { id: data.msg.id, username: data.msg.username, message: data.msg.message, ts: data.msg.ts || Math.floor(Date.now() / 1000) } : null;
+    var pinRoom = rooms.get(roomId);
+    if (pinRoom) pinRoom.pinnedChat = pinMsg;
+    io.to(roomId).emit('chat-pinned', { roomId: roomId, msg: pinMsg });
+  });
+
+  // ── chat-unpin — host clears the pinned message ────────────────────────
+  socket.on('chat-unpin', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var unpinRoom = rooms.get(roomId);
+    if (unpinRoom) unpinRoom.pinnedChat = null;
+    io.to(roomId).emit('chat-pinned', { roomId: roomId, msg: null });
+  });
+
+  // ── chat-delete — host/cohost removes a message from all clients ───────
+  socket.on('chat-delete', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    var msgId  = data.msgId;
+    if (!roomId || !msgId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    try { db.prepare('DELETE FROM chat_history WHERE id = ?').run(msgId); } catch(e) {}
+    io.to(roomId).emit('chat-deleted', { roomId: roomId, msgId: msgId });
+  });
+
+  // ── product-spotlight — host pins a buy-now overlay card for 30s ───────
+  socket.on('product-spotlight', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var dur = 30;
+    var endsAt = Math.floor(Date.now() / 1000) + dur;
+    var item = data.item ? { name: data.item.name || '', emoji: data.item.emoji || '🛍️', price: data.item.price || '', url: data.item.url || '', endsAt: endsAt } : null;
+    var spRoom = rooms.get(roomId);
+    if (spRoom) spRoom.spotlight = item;
+    io.to(roomId).emit('product-spotlight', { roomId: roomId, item: item });
+    if (item) {
+      setTimeout(function() {
+        var r2 = rooms.get(roomId);
+        if (r2 && r2.spotlight && r2.spotlight.endsAt === endsAt) {
+          r2.spotlight = null;
+          io.to(roomId).emit('product-spotlight', { roomId: roomId, item: null });
+        }
+      }, dur * 1000);
+    }
   });
 
   // ── mute-guest ─────────────────────────────────────────────────────────

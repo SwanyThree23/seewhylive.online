@@ -303,7 +303,7 @@ function OverlayCustomLT({ lowerThirds, guestId }) {
 // ─── Main Component ────────────────────────────────────────────────────────
 
 export default function LiveRoomPage({
-  socket, guests, chat, isLive, setIsLive,
+  socket, guests, chat, setChat, isLive, setIsLive,
   userId, username, role, roomId, branding,
   addToast, overlayConfig, viewerCount, mediaConfig,
   streamInfo, streamGoal, setStreamGoal, sessionEarningsCents, onLeave,
@@ -383,6 +383,14 @@ export default function LiveRoomPage({
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
+  var [pinnedMsg,          setPinnedMsg]          = useState(null);  // { id, username, message, ts } | null
+  var [spotlightItem,      setSpotlightItem]      = useState(null);  // { name, emoji, price, url, endsAt } | null
+  var [showSpotlightPick,  setShowSpotlightPick]  = useState(false); // host product-picker modal
+  var [spName,             setSpName]             = useState('');
+  var [spEmoji,            setSpEmoji]            = useState('🛍️');
+  var [spPrice,            setSpPrice]            = useState('');
+  var [spUrl,              setSpUrl]              = useState('');
+  var milestoneRef = useRef(new Set()); // viewer count milestones already celebrated
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -411,7 +419,7 @@ export default function LiveRoomPage({
         setChat(function(prev) { return prev.length > 0 ? prev : data.chatHistory; });
       }
       if (data.activePoll) {
-        setPoll(data.activePoll);
+        setActivePoll(data.activePoll);
         setShowQa(true);
       }
       if (data.activeVsPoll) {
@@ -421,6 +429,8 @@ export default function LiveRoomPage({
       if (Array.isArray(data.judges) && data.judges.length > 0) {
         setJudges(data.judges);
       }
+      if (data.pinnedChat) setPinnedMsg(data.pinnedChat);
+      if (data.spotlight && data.spotlight.endsAt > Math.floor(Date.now() / 1000)) setSpotlightItem(data.spotlight);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -470,6 +480,29 @@ export default function LiveRoomPage({
     socket.on('merch-sale', function(sale) {
       if (!sale || !addToast) return;
       addToast('🛍️ ' + (sale.fromUser || 'Fan') + ' bought merch — +$' + ((sale.creatorCents || 0) / 100).toFixed(2) + ' for you!', 'success');
+    });
+
+    socket.on('chat-pinned', function(data) {
+      if (!data) return;
+      setPinnedMsg(data.msg || null);
+    });
+
+    socket.on('chat-deleted', function(data) {
+      if (!data || !data.msgId) return;
+      setChat(function(prev) { return prev.filter(function(m) { return m.id !== data.msgId; }); });
+      setPinnedMsg(function(p) { return (p && p.id === data.msgId) ? null : p; });
+    });
+
+    socket.on('product-spotlight', function(data) {
+      if (!data) return;
+      var item = data.item;
+      if (item && item.endsAt > Math.floor(Date.now() / 1000)) {
+        setSpotlightItem(item);
+        var msLeft = (item.endsAt - Math.floor(Date.now() / 1000)) * 1000;
+        setTimeout(function() { setSpotlightItem(null); }, msLeft);
+      } else {
+        setSpotlightItem(null);
+      }
     });
 
     socket.on('react-burst', function(data) {
@@ -624,6 +657,9 @@ export default function LiveRoomPage({
       socket.off('subscriber-only-changed');
       socket.off('user-banned');
       socket.off('user-unbanned');
+      socket.off('chat-pinned');
+      socket.off('chat-deleted');
+      socket.off('product-spotlight');
     };
   }, [socket]);
 
@@ -714,6 +750,19 @@ export default function LiveRoomPage({
     socket.on('panel:join_request_resolved', onResolved);
     return function() { socket.off('panel:join_request_resolved', onResolved); };
   }, [socket]);
+
+  // Viewer milestone celebrations
+  useEffect(function() {
+    if (!viewerCount || !addToast) return;
+    var MILESTONES = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
+    MILESTONES.forEach(function(m) {
+      if (viewerCount >= m && !milestoneRef.current.has(m)) {
+        milestoneRef.current.add(m);
+        var emojis = m >= 1000 ? '🔥🔥🔥' : m >= 500 ? '🎉🔥' : '🎉';
+        addToast(emojis + ' ' + m.toLocaleString() + ' viewers watching live!', 'success');
+      }
+    });
+  }, [viewerCount]);
 
   function sendReact(emoji) {
     var fid = Date.now() + Math.random();
@@ -1537,6 +1586,9 @@ export default function LiveRoomPage({
             { emoji: '⚔',  label: 'VS',      active: false, onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
             { emoji: '⚖',  label: 'Judges',  active: false, onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
             { emoji: '⚙',  label: 'Camera',  active: false, onTap: function() { setShowMediaConf(true); } },
+            ...(role === 'host' || role === 'cohost' ? [
+              { emoji: '🛒', label: 'Spotlight', active: !!spotlightItem, onTap: function() { setShowSpotlightPick(true); } },
+            ] : []),
           ].map(function(tool) {
             return (
               <div key={tool.label} onClick={tool.onTap} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flexShrink: 0, cursor: 'pointer' }}>
@@ -1567,6 +1619,39 @@ export default function LiveRoomPage({
       })}
 
       <GiftLayer giftFloats={tipFeed} />
+
+      {/* ════════════════ PRODUCT SPOTLIGHT OVERLAY ════════════════ */}
+      {spotlightItem && (
+        <div style={{
+          position: 'absolute', bottom: 150, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(14,12,9,.97)', border: '2px solid rgba(201,168,76,.7)',
+          borderRadius: 16, padding: '12px 18px', zIndex: 46,
+          display: 'flex', alignItems: 'center', gap: 12,
+          boxShadow: '0 0 30px rgba(201,168,76,.3)',
+          animation: 'fadeSlideIn .35s ease',
+          pointerEvents: 'all',
+          maxWidth: 280,
+        }}>
+          <span style={{ fontSize: 36, flexShrink: 0 }}>{spotlightItem.emoji}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 2, marginBottom: 2 }}>🛒 FEATURED PRODUCT</div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 16, color: TEXT, lineHeight: 1.2 }}>{spotlightItem.name}</div>
+            {spotlightItem.price && <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, letterSpacing: 1 }}>{spotlightItem.price}</div>}
+          </div>
+          {spotlightItem.url ? (
+            <a href={spotlightItem.url} target="_blank" rel="noopener noreferrer"
+              style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, textDecoration: 'none', flexShrink: 0 }}>
+              BUY NOW
+            </a>
+          ) : (
+            <button onClick={function() { if (addToast) addToast('Check with the host for purchase details!', 'info'); }}
+              style={{ background: GOLD, border: 'none', borderRadius: 10, padding: '8px 14px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: BG, cursor: 'pointer', letterSpacing: 1, flexShrink: 0 }}>
+              TAP TO BUY
+            </button>
+          )}
+          <button onClick={function() { setSpotlightItem(null); }} style={{ position: 'absolute', top: 6, right: 8, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1 }}>✕</button>
+        </div>
+      )}
 
       {/* ════════════════ PANEL REACTION BAR ════════════════ */}
       <div style={{ position: 'absolute', bottom: 82, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
@@ -1615,28 +1700,47 @@ export default function LiveRoomPage({
             <button onClick={function() { setChatOpen(false); }}
               style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
           </div>
+          {/* Pinned message */}
+          {pinnedMsg && (
+            <div style={{ padding: '8px 14px', borderBottom: '1px solid ' + BORDER, background: 'rgba(201,168,76,.07)', flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>📌</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, letterSpacing: 1 }}>PINNED</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginTop: 1 }}>
+                  <span style={{ fontWeight: 700, fontSize: 12, color: gold }}>{pinnedMsg.username}</span>
+                </div>
+                <p style={{ fontSize: 12, color: TEXT, margin: '2px 0 0', lineHeight: 1.4 }}>{pinnedMsg.message}</p>
+              </div>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() { if (socket) socket.emit('chat-unpin', { roomId: roomId }); }}
+                  style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12, flexShrink: 0, padding: 0 }}>✕</button>
+              )}
+            </div>
+          )}
           {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 14px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
             {(!chat || chat.length === 0) && (
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
             {chat && chat.map(function(m, i) {
+              var canMod = (role === 'host' || role === 'cohost') && m.id;
               if (m.type === 'super') {
                 var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
                 return (
-                  <div key={m.id || i} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease' }}>
+                  <div key={m.id || i} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <span style={{ fontSize: 14 }}>💬</span>
                       <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: scColor, letterSpacing: 1 }}>{scDollars} SUPER CHAT</span>
                       <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: scColor, opacity: .8 }}>from {m.username}</span>
                     </div>
                     <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45, fontWeight: 600 }}>{m.message}</p>
+                    {canMod && <button onClick={function() { if (socket) socket.emit('chat-delete', { roomId: roomId, msgId: m.id }); }} style={{ position: 'absolute', top: 6, right: 8, background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11, opacity: .6 }} title="Delete message">🗑</button>}
                   </div>
                 );
               }
               return (
-                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
+                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', paddingRight: canMod ? 38 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
@@ -1646,6 +1750,14 @@ export default function LiveRoomPage({
                   <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
+                  )}
+                  {canMod && (
+                    <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <button onClick={function() { if (socket) socket.emit('chat-pin', { roomId: roomId, msg: m }); setChatOpen(true); }}
+                        style={{ background: 'none', border: 'none', color: GOLD, cursor: 'pointer', fontSize: 11, opacity: .7, lineHeight: 1 }} title="Pin message">📌</button>
+                      <button onClick={function() { if (socket) socket.emit('chat-delete', { roomId: roomId, msgId: m.id }); }}
+                        style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 11, opacity: .6, lineHeight: 1 }} title="Delete message">🗑</button>
+                    </div>
                   )}
                 </div>
               );
@@ -1726,6 +1838,45 @@ export default function LiveRoomPage({
             <button onClick={function() { setShowGoalSet(false); setGoalDraft({ label: '', amount: '' }); }} style={{ width: '100%', background: 'transparent', border: 'none', marginTop: 10, padding: '10px', fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 14, color: MUTED, cursor: 'pointer' }}>
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ PRODUCT SPOTLIGHT PICKER (host) ════════════════ */}
+      {showSpotlightPick && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 72, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER, maxHeight: '60vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🛒 Product Spotlight</div>
+              <button onClick={function() { setShowSpotlightPick(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 16 }}>Pin a product card for 30 seconds — all viewers see a "Buy Now" overlay.</div>
+            <div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                <input value={spEmoji} onChange={function(e) { setSpEmoji(e.target.value); }} maxLength={2}
+                  style={{ width: 50, background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 22, textAlign: 'center', outline: 'none' }} />
+                <input value={spName} onChange={function(e) { setSpName(e.target.value); }} maxLength={40} placeholder="Product name"
+                  style={{ flex: 1, background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 16, outline: 'none' }} />
+              </div>
+              <input value={spPrice} onChange={function(e) { setSpPrice(e.target.value); }} maxLength={20} placeholder="Price (e.g. $29.99) — optional"
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, outline: 'none', marginBottom: 10, letterSpacing: 1 }} />
+              <input value={spUrl} onChange={function(e) { setSpUrl(e.target.value); }} maxLength={200} placeholder="Buy link URL — optional"
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 11, outline: 'none', marginBottom: 16 }} />
+              {spotlightItem && (
+                <button onClick={function() { if (socket) socket.emit('product-spotlight', { roomId: roomId, item: null }); setShowSpotlightPick(false); }}
+                  style={{ width: '100%', background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 12, padding: '11px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: RED, cursor: 'pointer', letterSpacing: 1, marginBottom: 8 }}>
+                  CLEAR CURRENT SPOTLIGHT
+                </button>
+              )}
+              <button onClick={function() {
+                if (!spName.trim()) { if (addToast) addToast('Enter a product name', 'error'); return; }
+                if (socket) socket.emit('product-spotlight', { roomId: roomId, item: { name: spName.trim(), emoji: spEmoji, price: spPrice.trim(), url: spUrl.trim() } });
+                setShowSpotlightPick(false);
+                if (addToast) addToast('🛒 Product spotlight active for 30 seconds!', 'success');
+              }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                🛒 SPOTLIGHT FOR 30s
+              </button>
+            </div>
           </div>
         </div>
       )}
