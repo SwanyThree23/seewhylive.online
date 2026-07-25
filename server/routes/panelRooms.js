@@ -9,9 +9,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const panelService = require('../services/panelService');
+const requireAuth  = require('../middleware/auth');
 
 // Host sets a room to private and picks a gating mode.
-router.post('/:id/privacy', async (req, res) => {
+router.post('/:id/privacy', requireAuth, async (req, res) => {
   try {
     const { isPrivate, gatingMode } = req.body; // gatingMode: 'invite_code' | 'approval'
     const result = await panelService.setPrivacy({ roomId: req.params.id, isPrivate, gatingMode });
@@ -22,7 +23,7 @@ router.post('/:id/privacy', async (req, res) => {
 });
 
 // Host-facing list of pending join requests (approval-gated rooms).
-router.get('/:id/join-requests', async (req, res) => {
+router.get('/:id/join-requests', requireAuth, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT r.id, r.user_id, r.requested_at, u.display_name, u.avatar_url

@@ -1,7 +1,6 @@
 // server/routes/battles.js
 // INTEGRATION: mount this in your main router, e.g.:
 //   app.use('/api/battles', require('./routes/battles'));
-// Also wire your existing auth middleware in place of `requireAuth` below.
 // CORRECTED: uses defenderId (not opponentId) and durationMinutes (not durationSeconds),
 // matching the real pre-existing pk_battles schema.
 

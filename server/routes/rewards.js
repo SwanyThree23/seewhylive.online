@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const rewardsService = require('../services/rewardsService');
+const requireAuth    = require('../middleware/auth');
 
 router.get('/leaderboard', async (req, res) => {
   try {
@@ -39,11 +40,9 @@ router.get('/challenges', async (req, res) => {
   }
 });
 
-router.post('/challenges/:id/complete', async (req, res) => {
+router.post('/challenges/:id/complete', requireAuth, async (req, res) => {
   try {
-    const userId = req.body.userId;
-    if (!userId) return res.status(400).json({ error: 'userId required' });
-    const result = await rewardsService.completeChallenge(userId, req.params.id);
+    const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
