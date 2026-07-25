@@ -422,6 +422,14 @@ export default function LiveRoomPage({
   var [emojiTally,         setEmojiTally]         = useState([]);   // [{emoji, count}]
   var [showShoutout,       setShowShoutout]       = useState(false);
   var [shoutoutTarget,     setShoutoutTarget]     = useState('');
+  var [roomTags,           setRoomTags]           = useState([]);   // string[]
+  var [pinnedLink,         setPinnedLink]         = useState(null); // { url, label, emoji } | null
+  var [showTagEdit,        setShowTagEdit]        = useState(false);
+  var [tagInput,           setTagInput]           = useState('');
+  var [showLinkPin,        setShowLinkPin]        = useState(false);
+  var [linkUrl,            setLinkUrl]            = useState('');
+  var [linkLabel,          setLinkLabel]          = useState('');
+  var [linkEmoji,          setLinkEmoji]          = useState('🔗');
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -463,6 +471,9 @@ export default function LiveRoomPage({
       if (data.pinnedChat) setPinnedMsg(data.pinnedChat);
       if (data.spotlight && data.spotlight.endsAt > Math.floor(Date.now() / 1000)) setSpotlightItem(data.spotlight);
       if (data.liveStartedAt) setLiveStartedAt(data.liveStartedAt);
+      if (Array.isArray(data.roomTags)) setRoomTags(data.roomTags);
+      if (data.pinnedLink) setPinnedLink(data.pinnedLink);
+      if (data.slowMode) setSlowMode(data.slowMode);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -602,6 +613,29 @@ export default function LiveRoomPage({
     socket.on('emoji-tally', function(data) {
       if (!data || !Array.isArray(data.tally)) return;
       setEmojiTally(data.tally);
+    });
+
+    socket.on('room-tags', function(data) {
+      if (!data || !Array.isArray(data.tags)) return;
+      setRoomTags(data.tags);
+    });
+
+    socket.on('link-pinned', function(data) {
+      if (!data) return;
+      setPinnedLink(data.link || null);
+      if (data.link && addToast) addToast('🔗 Link pinned: ' + (data.link.label || data.link.url), 'info');
+    });
+
+    socket.on('role-changed', function(data) {
+      if (!data || !data.role) return;
+      if (addToast) addToast(data.role === 'cohost' ? '👑 You are now co-host!' : '✅ Role updated', 'success');
+    });
+
+    socket.on('guest-role-changed', function(data) {
+      if (!data) return;
+      if (addToast && (role === 'host' || role === 'cohost')) {
+        addToast((data.role === 'cohost' ? '👑 ' : '👤 ') + (data.guestId) + ' is now ' + data.role, 'info');
+      }
     });
 
     socket.on('react-burst', function(data) {
@@ -793,6 +827,10 @@ export default function LiveRoomPage({
       socket.off('gift-leaderboard');
       socket.off('viewer-shoutout');
       socket.off('emoji-tally');
+      socket.off('room-tags');
+      socket.off('link-pinned');
+      socket.off('role-changed');
+      socket.off('guest-role-changed');
     };
   }, [socket]);
 
@@ -1292,6 +1330,19 @@ export default function LiveRoomPage({
           </div>
         </div>
 
+        {/* Room tags */}
+        {roomTags.length > 0 && (
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 }}>
+            {roomTags.map(function(t) {
+              return (
+                <span key={t} style={{ background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.22)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: .5 }}>
+                  #{t}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
         {/* Host + viewer row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1601,6 +1652,7 @@ export default function LiveRoomPage({
                           { label: isPinned ? '📌 Unpin' : '📌 Spotlight', action: 'pin' },
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
+                          { label: g.role === 'cohost' ? '👤 Remove Co-Host' : '👑 Make Co-Host', action: 'cohost' },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -1614,6 +1666,9 @@ export default function LiveRoomPage({
                                   if (socket) socket.emit(g.remoteMuted ? 'unmute-guest' : 'mute-guest', { roomId: roomId, guestId: gid });
                                 } else if (item.action === 'invite') {
                                   if (socket) socket.emit('stage-invite', { roomId: roomId, guestId: gid });
+                                } else if (item.action === 'cohost') {
+                                  var nextRole = g.role === 'cohost' ? 'guest' : 'cohost';
+                                  if (socket) socket.emit('set-guest-role', { roomId: roomId, guestId: gid, role: nextRole });
                                 } else if (item.action === 'remove') {
                                   if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
                                 }
@@ -1803,6 +1858,8 @@ export default function LiveRoomPage({
               { emoji: '🎞️', label: 'Clips', active: highlights.length > 0, onTap: function() { if (socket) socket.emit('request-highlights', { roomId: roomId }); } },
               { emoji: '🐢', label: 'Slow', active: slowMode > 0, onTap: function() { setShowSlowMode(true); } },
               { emoji: '📣', label: 'Shoutout', active: false, onTap: function() { setShoutoutTarget(''); setShowShoutout(true); } },
+              { emoji: '🏷️', label: 'Tags', active: roomTags.length > 0, onTap: function() { setTagInput(roomTags.join(', ')); setShowTagEdit(true); } },
+              { emoji: '🔗', label: 'Pin Link', active: !!pinnedLink, onTap: function() { setLinkUrl(pinnedLink ? pinnedLink.url : ''); setLinkLabel(pinnedLink ? pinnedLink.label : ''); setLinkEmoji(pinnedLink ? pinnedLink.emoji : '🔗'); setShowLinkPin(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -3537,6 +3594,25 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ PINNED LINK CTA ════════════════ */}
+      {pinnedLink && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 66, zIndex: 58, animation: 'fadeSlideIn .3s ease' }}>
+          <a href={pinnedLink.url} target="_blank" rel="noopener noreferrer" style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            background: 'linear-gradient(135deg,rgba(128,0,32,.9),rgba(80,0,18,.9))',
+            border: '1.5px solid ' + GOLD, borderRadius: 999, padding: '7px 16px',
+            textDecoration: 'none', boxShadow: '0 4px 16px rgba(0,0,0,.5)',
+          }}>
+            <span style={{ fontSize: 16 }}>{pinnedLink.emoji || '🔗'}</span>
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: GOLD, letterSpacing: .5, whiteSpace: 'nowrap' }}>{pinnedLink.label || 'Visit Link'}</span>
+          </a>
+          {(role === 'host' || role === 'cohost') && (
+            <button onClick={function() { if (socket) socket.emit('pin-link', { roomId: roomId, url: null }); setPinnedLink(null); }}
+              style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', background: CARD, border: '1px solid ' + BORDER, color: MUTED, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>✕</button>
+          )}
+        </div>
+      )}
+
       {/* ════════════════ VIEWER SHOUTOUT OVERLAY ════════════════ */}
       {shoutout && (
         <div style={{ position: 'absolute', left: 0, right: 0, bottom: 90, zIndex: 80, display: 'flex', justifyContent: 'center', pointerEvents: 'none', animation: 'slideUp .4s ease' }}>
@@ -3578,6 +3654,82 @@ export default function LiveRoomPage({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ════════════════ ROOM TAGS EDITOR (host) ════════════════ */}
+      {showTagEdit && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowTagEdit(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🏷️ Room Tags</div>
+              <button onClick={function() { setShowTagEdit(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14 }}>Tags help viewers find your stream by topic. Comma-separated, up to 8 tags.</div>
+            <input
+              value={tagInput}
+              onChange={function(e) { setTagInput(e.target.value); }}
+              placeholder="music, gaming, talk show, ..."
+              style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.3)', borderRadius: 10, padding: '10px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 14 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var tags = tagInput.split(',').map(function(t) { return t.trim().toLowerCase(); }).filter(function(t) { return t.length > 0; }).slice(0, 8);
+                setRoomTags(tags);
+                if (socket) socket.emit('set-room-tags', { roomId: roomId, tags: tags });
+                setShowTagEdit(false);
+                if (addToast) addToast('🏷️ Tags updated!', 'success');
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                SAVE TAGS
+              </button>
+              {roomTags.length > 0 && (
+                <button onClick={function() {
+                  setRoomTags([]); setTagInput('');
+                  if (socket) socket.emit('set-room-tags', { roomId: roomId, tags: [] });
+                  setShowTagEdit(false);
+                }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '13px 16px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: MUTED, cursor: 'pointer', letterSpacing: 1 }}>
+                  CLEAR
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ PIN LINK MODAL (host) ════════════════ */}
+      {showLinkPin && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowLinkPin(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>🔗 Pin a Link</div>
+              <button onClick={function() { setShowLinkPin(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14 }}>Pins a clickable CTA button on the live stream for all viewers.</div>
+            <input value={linkEmoji} onChange={function(e) { setLinkEmoji(e.target.value.slice(0, 4)); }} placeholder="Emoji" style={{ width: 48, background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '9px', color: TEXT, fontFamily: 'sans-serif', fontSize: 18, outline: 'none', textAlign: 'center', marginBottom: 10 }} />
+            <input value={linkLabel} onChange={function(e) { setLinkLabel(e.target.value.slice(0, 40)); }} placeholder="Button label (e.g. Shop Now)" style={{ width: '100%', background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+            <input value={linkUrl} onChange={function(e) { setLinkUrl(e.target.value.slice(0, 300)); }} placeholder="https://..." style={{ width: '100%', background: CARD2, border: '1px solid ' + DIM, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none', boxSizing: 'border-box', marginBottom: 14 }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                if (!linkUrl.trim()) return;
+                var link = { url: linkUrl.trim(), label: linkLabel.trim() || 'Visit Link', emoji: linkEmoji || '🔗' };
+                if (socket) socket.emit('pin-link', { roomId: roomId, url: link.url, label: link.label, emoji: link.emoji });
+                setPinnedLink(link);
+                setShowLinkPin(false);
+                if (addToast) addToast('🔗 Link pinned!', 'success');
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                PIN LINK
+              </button>
+              {pinnedLink && (
+                <button onClick={function() {
+                  if (socket) socket.emit('pin-link', { roomId: roomId, url: null });
+                  setPinnedLink(null); setShowLinkPin(false);
+                  if (addToast) addToast('Link unpinned', 'info');
+                }} style={{ background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '13px 16px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: MUTED, cursor: 'pointer', letterSpacing: 1 }}>
+                  UNPIN
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

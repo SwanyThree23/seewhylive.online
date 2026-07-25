@@ -402,6 +402,8 @@ var slowModeMap         = new Map();  // roomId → cooldownSeconds (0 = off)
 var slowModeLastMsg     = new Map();  // roomId → Map<userId, lastMsgTs>
 var handQueues          = new Map();  // roomId → Array<{guestId, userId, username, ts}>
 var emojiTallyMap       = new Map();  // roomId → Map<emoji, count>
+var tagsMap             = new Map();  // roomId → string[]
+var pinnedLinkMap       = new Map();  // roomId → { url, label, emoji } | null
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -504,6 +506,9 @@ function getJoinStateForRoom(roomId) {
     state.spotlight = joinRoom.spotlight;
   }
   if (joinRoom && joinRoom.liveStartedAt) state.liveStartedAt = joinRoom.liveStartedAt;
+  state.roomTags  = tagsMap.get(roomId) || [];
+  state.pinnedLink = pinnedLinkMap.get(roomId) || null;
+  state.slowMode  = slowModeMap.get(roomId) || 0;
   return state;
 }
 
@@ -2843,6 +2848,49 @@ io.on('connection', function(socket) {
       from:       socket.data.username || 'host',
       ts:         Math.floor(Date.now() / 1000)
     });
+  });
+
+  // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
+  socket.on('set-guest-role', function(data) {
+    var roomId  = data.roomId || socket.data.roomId;
+    var guestId = data.guestId;
+    var newRole = data.role; // 'cohost' | 'guest'
+    if (!roomId || !guestId) return;
+    if (socket.data.role !== 'host') return;
+    if (newRole !== 'cohost' && newRole !== 'guest') return;
+    // Find the target socket by guestId
+    var targetSocket = null;
+    io.sockets.sockets.forEach(function(s) {
+      if ((s.data.guestId === guestId || s.data.userId === guestId) && s.data.roomId === roomId) {
+        targetSocket = s;
+      }
+    });
+    if (targetSocket) {
+      targetSocket.data.role = newRole;
+      io.to(targetSocket.id).emit('role-changed', { role: newRole, roomId: roomId });
+    }
+    io.to(roomId).emit('guest-role-changed', { guestId: guestId, role: newRole, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── set-room-tags — host sets topic tags for discoverability ────────────
+  socket.on('set-room-tags', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var tags = Array.isArray(data.tags) ? data.tags : [];
+    var cleaned = tags.map(function(t) { return String(t).toLowerCase().trim().replace(/[^a-z0-9 _-]/g, '').slice(0, 20); }).filter(function(t) { return t.length > 0; }).slice(0, 8);
+    tagsMap.set(roomId, cleaned);
+    io.to(roomId).emit('room-tags', { tags: cleaned, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── pin-link — host pins a clickable CTA link to the stream ─────────────
+  socket.on('pin-link', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var link = data.url ? { url: String(data.url).slice(0, 300), label: String(data.label || 'Visit Link').slice(0, 40), emoji: String(data.emoji || '🔗').slice(0, 4) } : null;
+    pinnedLinkMap.set(roomId, link);
+    io.to(roomId).emit('link-pinned', { link: link, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── set-slow-mode — host/cohost configures per-viewer message cooldown ──
