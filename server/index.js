@@ -2873,6 +2873,15 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── pin-announcement — host pins a persistent text banner above chat ────
+  socket.on('pin-announcement', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var text = data.text ? String(data.text).slice(0, 200) : null;
+    io.to(roomId).emit('pin-announcement', { text: text, by: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
   // ── spotlight-request — viewer asks host to spotlight their slot ────────
   socket.on('spotlight-request', function(data) {
     var roomId = data.roomId || socket.data.roomId;

@@ -429,6 +429,9 @@ export default function LiveRoomPage({
   var [mentionAlert,       setMentionAlert]       = useState(null); // { by } | null
   var [spotlightRequests,  setSpotlightRequests]  = useState([]);   // [{guestId,username,ts}] — host only
   var [watchMilestones,    setWatchMilestones]    = useState(new Set()); // milestones already shown
+  var [pinnedAnnouncement, setPinnedAnnouncement] = useState(null); // { text } | null
+  var [showPinAnnounce,    setShowPinAnnounce]    = useState(false);
+  var [pinAnnounceInput,   setPinAnnounceInput]   = useState('');
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -652,6 +655,11 @@ export default function LiveRoomPage({
       if (addToast) addToast('✨ ' + data.username + ' wants to be spotlighted', 'info');
     });
 
+    socket.on('pin-announcement', function(data) {
+      if (!data) return;
+      setPinnedAnnouncement(data.text ? { text: data.text } : null);
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -867,6 +875,7 @@ export default function LiveRoomPage({
       socket.off('celebrate');
       socket.off('chat-mention');
       socket.off('spotlight-request');
+      socket.off('pin-announcement');
       socket.off('room-tags');
       socket.off('link-pinned');
       socket.off('role-changed');
@@ -1924,6 +1933,7 @@ export default function LiveRoomPage({
               { emoji: '🏷️', label: 'Tags', active: roomTags.length > 0, onTap: function() { setTagInput(roomTags.join(', ')); setShowTagEdit(true); } },
               { emoji: '🔗', label: 'Pin Link', active: !!pinnedLink, onTap: function() { setLinkUrl(pinnedLink ? pinnedLink.url : ''); setLinkLabel(pinnedLink ? pinnedLink.label : ''); setLinkEmoji(pinnedLink ? pinnedLink.emoji : '🔗'); setShowLinkPin(true); } },
               { emoji: '🎊', label: 'Celebrate', active: false, onTap: function() { if (socket) socket.emit('celebrate', { roomId: roomId, type: 'confetti' }); } },
+              { emoji: '📌', label: 'Banner', active: !!pinnedAnnouncement, onTap: function() { setPinAnnounceInput(pinnedAnnouncement ? pinnedAnnouncement.text : ''); setShowPinAnnounce(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2099,6 +2109,19 @@ export default function LiveRoomPage({
             <button onClick={function() { setChatOpen(false); }}
               style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
           </div>
+          {/* Pinned announcement banner */}
+          {pinnedAnnouncement && (
+            <div style={{ padding: '7px 14px', borderBottom: '1px solid ' + BORDER, background: 'linear-gradient(90deg,rgba(128,0,32,.35),rgba(201,168,76,.08))', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>📢</span>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 13, color: TEXT, flex: 1, lineHeight: 1.3 }}>{pinnedAnnouncement.text}</span>
+              {(role === 'host' || role === 'cohost') && (
+                <button onClick={function() {
+                  setPinnedAnnouncement(null);
+                  if (socket) socket.emit('pin-announcement', { roomId: roomId, text: null });
+                }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 12, cursor: 'pointer', flexShrink: 0, padding: 0 }}>✕</button>
+              )}
+            </div>
+          )}
           {/* Pinned message */}
           {pinnedMsg && (
             <div style={{ padding: '8px 14px', borderBottom: '1px solid ' + BORDER, background: 'rgba(201,168,76,.07)', flexShrink: 0, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -2140,8 +2163,12 @@ export default function LiveRoomPage({
               }
               var roleBadge = m.role === 'host'   ? { label: '👑 HOST',    color: GOLD } :
                               m.role === 'cohost' ? { label: '🎯 CO-HOST', color: TEAL } :
+                              m.role === 'mod'    ? { label: '🛡 MOD',     color: '#60A5FA' } :
+                              m.role === 'vip'    ? { label: '💎 VIP',     color: '#A855F7' } :
+                              m.role === 'sub'    ? { label: '⭐ SUB',     color: '#22C55E' } :
+                              m.role === 'guest'  ? { label: '🎤 GUEST',   color: TEAL } :
                               m.role === 'system' ? { label: '📢',         color: GOLD } : null;
-              var userColor = m.role === 'host' ? GOLD : m.role === 'cohost' ? TEAL : gold;
+              var userColor = m.role === 'host' ? GOLD : m.role === 'cohost' ? TEAL : m.role === 'vip' ? '#A855F7' : m.role === 'sub' ? '#22C55E' : gold;
               return (
                 <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative', paddingRight: canMod ? 38 : 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2, flexWrap: 'wrap' }}>
@@ -2210,6 +2237,16 @@ export default function LiveRoomPage({
           {/* Quick gift presets for viewers */}
           {role !== 'host' && role !== 'cohost' && (
             <div style={{ padding: '3px 12px 2px', display: 'flex', gap: 5, overflowX: 'auto', scrollbarWidth: 'none' }}>
+              <button onClick={function() {
+                if (!socket) return;
+                socket.emit('follow-trigger', { roomId: roomId, username: username });
+                if (addToast) addToast('❤️ You followed this stream!', 'success');
+              }} style={{
+                background: 'linear-gradient(135deg,rgba(128,0,32,.85),rgba(80,0,18,.85))', border: '1px solid rgba(201,168,76,.4)', borderRadius: 999, padding: '3px 9px',
+                fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: GOLD, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+              }}>
+                ❤️ Follow
+              </button>
               {[{l:'💛 $1',c:100},{l:'🧡 $5',c:500},{l:'❤️ $10',c:1000},{l:'💜 $25',c:2500}].map(function(p) {
                 return (
                   <button key={p.l} onClick={function() {
@@ -3910,6 +3947,48 @@ export default function LiveRoomPage({
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ PIN ANNOUNCEMENT MODAL (host) ════════════════ */}
+      {showPinAnnounce && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 75, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowPinAnnounce(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>📌 Pin Announcement</div>
+              <button onClick={function() { setShowPinAnnounce(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 12 }}>Shows a persistent banner at the top of chat for all viewers.</div>
+            <textarea
+              value={pinAnnounceInput}
+              onChange={function(e) { setPinAnnounceInput(e.target.value.slice(0, 200)); }}
+              placeholder="Type your announcement..."
+              rows={3}
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, outline: 'none', marginBottom: 10, resize: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var text = pinAnnounceInput.trim();
+                if (!text) return;
+                setPinnedAnnouncement({ text: text });
+                if (socket) socket.emit('pin-announcement', { roomId: roomId, text: text });
+                setShowPinAnnounce(false);
+                if (addToast) addToast('📌 Announcement pinned!', 'success');
+              }} style={{ flex: 1, background: GOLD, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                PIN BANNER
+              </button>
+              {pinnedAnnouncement && (
+                <button onClick={function() {
+                  setPinnedAnnouncement(null);
+                  if (socket) socket.emit('pin-announcement', { roomId: roomId, text: null });
+                  setShowPinAnnounce(false);
+                  if (addToast) addToast('📌 Announcement cleared', 'info');
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: MUTED, cursor: 'pointer', letterSpacing: 2 }}>
+                  CLEAR
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
