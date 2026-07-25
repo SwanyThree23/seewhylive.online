@@ -135,7 +135,8 @@ db.exec(`
     value_cents     INTEGER NOT NULL,
     creator_cents   INTEGER NOT NULL,
     platform_cents  INTEGER NOT NULL,
-    ts              INTEGER NOT NULL
+    ts              INTEGER NOT NULL,
+    to_guest_id     TEXT
   );
 
   CREATE TABLE IF NOT EXISTS audit_logs (
@@ -217,6 +218,9 @@ db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
+
+// Add to_guest_id to gifts for existing DBs created before this column existed
+try { db.exec('ALTER TABLE gifts ADD COLUMN to_guest_id TEXT'); } catch(_) {}
 
 // Seed gift types if none exist
 var giftCount = db.prepare('SELECT COUNT(*) as c FROM gift_types').get();
@@ -1595,6 +1599,7 @@ io.on('connection', function(socket) {
     var emoji                  = data.emoji || '';
     var name                   = data.name || 'Gift';
     var valueCents             = Math.floor(data.valueCents || 0);
+    var toGuestId              = data.toGuestId || null;
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
     if (!roomId || valueCents <= 0) return;
@@ -1605,10 +1610,10 @@ io.on('connection', function(socket) {
     var ts            = Math.floor(Date.now() / 1000);
 
     try {
-      db.prepare(`
-        INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts);
+      db.prepare(
+        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
+        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(giftId, roomId, fromUser, emoji, name, valueCents, creatorCents, platformCents, ts, toGuestId);
     } catch (dbErr) {
       logger.error('[send-gift] DB insert failed: ' + dbErr.message);
     }
@@ -1625,6 +1630,7 @@ io.on('connection', function(socket) {
       valueCents:    valueCents,
       creatorCents:  creatorCents,
       platformCents: platformCents,
+      toGuestId:     toGuestId,
       ts:            ts
     });
 
@@ -1702,6 +1708,52 @@ io.on('connection', function(socket) {
       }).catch(function(err) {
         logger.error('[send-gift] createGiftCharge failed: ' + err.message);
       });
+    }
+  });
+
+  // ── merch-order ────────────────────────────────────────────────────────
+  socket.on('merch-order', function(data) {
+    var roomId     = data.roomId || socket.data.roomId;
+    var buyerUser  = data.buyerUser || socket.data.username || 'Guest';
+    var itemName   = String(data.itemName || 'Merch').slice(0, 80);
+    var priceCents = Math.floor(data.priceCents || 0);
+    var toGuestId  = data.toGuestId || null;
+
+    if (!roomId || priceCents <= 0) return;
+
+    var creatorCents  = Math.floor(priceCents * CREATOR);
+    var platformCents = priceCents - creatorCents;
+    var orderId       = uuidv4();
+    var ts            = Math.floor(Date.now() / 1000);
+
+    try {
+      db.prepare(
+        'INSERT INTO gifts (id, room_id, from_user, emoji, name, value_cents, creator_cents, platform_cents, ts, to_guest_id)' +
+        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(orderId, roomId, buyerUser, '👕', itemName, priceCents, creatorCents, platformCents, ts, toGuestId);
+    } catch (dbErr) {
+      logger.error('[merch-order] DB insert failed: ' + dbErr.message);
+    }
+
+    try {
+      var mRoom = rooms.get(roomId);
+      var hostId = mRoom ? (mRoom.hostUserId || mRoom.hostSocketId) : roomId;
+      analytics.recordEarning(hostId, roomId, 'merch', priceCents, itemName + ' by ' + buyerUser);
+    } catch(ae) { logger.warn('[merch-order] analytics: ' + ae.message); }
+
+    io.to(roomId).emit('merch-order-received', {
+      id:            orderId,
+      buyerUser:     buyerUser,
+      itemName:      itemName,
+      priceCents:    priceCents,
+      creatorCents:  creatorCents,
+      platformCents: platformCents,
+      toGuestId:     toGuestId,
+      ts:            ts
+    });
+
+    if (priceCents >= 100) {
+      autoAura(roomId, function(cb) { aura.triggerGift(roomId, buyerUser, itemName, priceCents, cb); });
     }
   });
 
