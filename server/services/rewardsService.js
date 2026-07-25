@@ -90,7 +90,10 @@ async function completeChallenge(userId, challengeId) {
   const { error: insErr } = await supabase
     .from('challenge_completions')
     .insert({ challenge_id: challengeId, user_id: userId });
-  if (insErr) throw insErr;
+  if (insErr) {
+    if (insErr.code === '23505') return { alreadyCompleted: true };
+    throw insErr;
+  }
 
   return awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
 }

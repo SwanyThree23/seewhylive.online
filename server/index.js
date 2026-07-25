@@ -1407,6 +1407,7 @@ io.on('connection', function(socket) {
 
   // ── stage-invite ───────────────────────────────────────────────────────
   socket.on('stage-invite', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId  = data.roomId || socket.data.roomId;
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
@@ -1416,6 +1417,7 @@ io.on('connection', function(socket) {
 
   // ── stage-remove ───────────────────────────────────────────────────────
   socket.on('stage-remove', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId  = data.roomId || socket.data.roomId;
     var guestId = data.guestId;
     if (!roomId || !guestId) return;
@@ -2601,11 +2603,11 @@ io.on('connection', function(socket) {
   });
 
   socket.on('audio-stage-promote', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     if (!data || !data.roomId) return;
     var sRoomId = String(data.roomId);
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    // Only host or cohost can promote
     var targetId = String(data.targetUserId);
     var lstIdx = stage.listeners.findIndex(function(l) { return String(l.userId) === targetId; });
     if (lstIdx === -1) return;
@@ -2616,6 +2618,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('audio-stage-demote', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     if (!data || !data.roomId) return;
     var sRoomId = String(data.roomId);
     var stage = stageRooms.get(sRoomId);
@@ -2892,6 +2895,7 @@ io.on('connection', function(socket) {
 
   // ── unban-user ─────────────────────────────────────────────────────────
   socket.on('unban-user', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = data.roomId || socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('user-unbanned', { username: data.username, ts: Math.floor(Date.now() / 1000) });

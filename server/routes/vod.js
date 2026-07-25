@@ -1,8 +1,9 @@
 'use strict';
 
-var express = require('express');
-var https   = require('https');
-var router  = express.Router();
+var express     = require('express');
+var https       = require('https');
+var router      = express.Router();
+var requireAuth = require('../middleware/auth');
 
 var multer = require('multer');
 var upload = multer({
@@ -75,15 +76,14 @@ function sbUpload(bucketPath, buffer, contentType, cb) {
 }
 
 // POST /api/vod/start
-// Body: { stream_id, creator_id, title? }
-router.post('/start', function(req, res) {
+// Body: { stream_id, title? }
+router.post('/start', requireAuth, function(req, res) {
   var body      = req.body || {};
   var streamId  = body.stream_id  || '';
-  var creatorId = body.creator_id || '';
+  var creatorId = req.user.id;
   var title     = body.title      || 'Live Recording';
 
-  if (!streamId)  return res.status(400).json({ error: 'stream_id is required' });
-  if (!creatorId) return res.status(400).json({ error: 'creator_id is required' });
+  if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
 
   var row = {
     stream_id:    streamId,
@@ -104,11 +104,19 @@ router.post('/start', function(req, res) {
 
 // POST /api/vod/:id/upload
 // multipart/form-data field "video"
-router.post('/:id/upload', upload.single('video'), function(req, res) {
+router.post('/:id/upload', requireAuth, upload.single('video'), function(req, res) {
   var vodId = req.params.id || '';
   if (!vodId) return res.status(400).json({ error: 'id is required' });
   if (!req.file) return res.status(400).json({ error: 'video file is required' });
-
+  // Verify VOD belongs to authenticated user before upload
+  sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
+    if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
+    var vod = Array.isArray(chkData) ? chkData[0] : chkData;
+    if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
+    doUpload(req, res, vodId);
+  });
+});
+function doUpload(req, res, vodId) {
   var bucket = 'vods';
   var safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
   var storagePath = vodId + '/' + Date.now() + '-' + safeName;
@@ -128,18 +136,25 @@ router.post('/:id/upload', upload.single('video'), function(req, res) {
       return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
     });
   });
-});
+}
 
 // POST /api/vod/stop
 // Body: { vod_id, duration_seconds, playback_url? }
-router.post('/stop', function(req, res) {
+router.post('/stop', requireAuth, function(req, res) {
   var body        = req.body || {};
   var vodId       = body.vod_id            || '';
   var durationSec = body.duration_seconds  || body.duration_sec || 0;
   var playbackUrl = body.playback_url      || '';
 
   if (!vodId) return res.status(400).json({ error: 'vod_id is required' });
-
+  sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
+    if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
+    var vod = Array.isArray(chkData) ? chkData[0] : chkData;
+    if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
+    doStop(res, vodId, durationSec, playbackUrl);
+  });
+});
+function doStop(res, vodId, durationSec, playbackUrl) {
   var patch = {
     duration_seconds: Math.floor(durationSec),
     is_public:        true,
@@ -152,7 +167,7 @@ router.post('/stop', function(req, res) {
     var updated = Array.isArray(data) ? data[0] : data;
     return res.json(updated || { ok: true });
   });
-});
+}
 
 // GET /api/vod/list
 // Query: ?stream_id=<uuid>&limit=20
@@ -175,13 +190,18 @@ router.get('/list', function(req, res) {
 });
 
 // DELETE /api/vod/:id
-router.delete('/:id', function(req, res) {
+router.delete('/:id', requireAuth, function(req, res) {
   var vodId = req.params.id || '';
   if (!vodId) return res.status(400).json({ error: 'id is required' });
-  sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), null, function(err, status, data) {
-    if (err) return res.status(500).json({ error: 'Database error' });
-    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
-    return res.json({ ok: true, deleted: vodId });
+  sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
+    if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
+    var vod = Array.isArray(chkData) ? chkData[0] : chkData;
+    if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
+    sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), null, function(err, status, data) {
+      if (err) return res.status(500).json({ error: 'Database error' });
+      if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+      return res.json({ ok: true, deleted: vodId });
+    });
   });
 });
 

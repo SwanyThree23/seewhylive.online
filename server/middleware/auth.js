@@ -21,6 +21,9 @@ function requireAuth(req, res, next) {
   }
 
   if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(500).json({ error: 'server misconfigured: JWT_SECRET not set' });
+    }
     req.user = { id: 'anon', userId: 'anon', role: 'viewer' };
     return next();
   }

@@ -71,7 +71,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:expand', async ({ roomId, slotIndex, expanded }, ack) => {
     try {
-      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
@@ -85,7 +85,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:toggle_audio_only', async ({ roomId, isAudioOnly }, ack) => {
     try {
-      if (socket.data.role !== 'host' && socket.data.role !== 'cohost') {
+      if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
