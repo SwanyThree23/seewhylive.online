@@ -404,6 +404,7 @@ var handQueues          = new Map();  // roomId → Array<{guestId, userId, user
 var emojiTallyMap       = new Map();  // roomId → Map<emoji, count>
 var tagsMap             = new Map();  // roomId → string[]
 var pinnedLinkMap       = new Map();  // roomId → { url, label, emoji } | null
+var giftChainMap        = new Map();  // roomId → { count, lastTs }
 
 var REVENUE_MILESTONES_CENTS = [1000, 2500, 5000, 10000, 25000, 50000]; // $10,$25,$50,$100,$250,$500
 
@@ -2032,6 +2033,20 @@ io.on('connection', function(socket) {
     // Auto-trigger AURA gift hype (threshold: $1+)
     if (valueCents >= 100) {
       autoAura(roomId, function(cb) { aura.triggerGift(roomId, fromUser, name, valueCents, cb); });
+    }
+
+    // Gift chain tracking — consecutive gifts within 10s
+    var now10 = Math.floor(Date.now() / 1000);
+    var chain = giftChainMap.get(roomId) || { count: 0, lastTs: 0 };
+    if (now10 - chain.lastTs <= 10) {
+      chain.count += 1;
+    } else {
+      chain.count = 1;
+    }
+    chain.lastTs = now10;
+    giftChainMap.set(roomId, chain);
+    if (chain.count >= 3) {
+      io.to(roomId).emit('gift-chain', { count: chain.count, emoji: emoji, ts: now10 });
     }
 
     // Optionally create a gift PaymentIntent if a Stripe account is provided

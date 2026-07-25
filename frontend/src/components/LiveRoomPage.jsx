@@ -443,6 +443,9 @@ export default function LiveRoomPage({
   var [showDmModal,        setShowDmModal]        = useState(false);
   var [dmTarget,           setDmTarget]           = useState(null); // { guestId, username } | null
   var [dmInput,            setDmInput]            = useState('');
+  var [giftChain,          setGiftChain]          = useState(null); // { count } | null
+  var [emojiMode,          setEmojiMode]          = useState(false); // emoji-burst vs text chat
+  var [isSuperFan,         setIsSuperFan]         = useState(false); // earned superfan status
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -677,6 +680,12 @@ export default function LiveRoomPage({
       if (addToast) addToast(data.emoji + ' ' + data.from + ' sent you ' + data.name + ' ($' + dollars + ')!', 'success');
     });
 
+    socket.on('gift-chain', function(data) {
+      if (!data || !data.count) return;
+      setGiftChain({ count: data.count, emoji: data.emoji || '🎁' });
+      setTimeout(function() { setGiftChain(null); }, 3000);
+    });
+
     socket.on('host-alert', function(data) {
       if (!data || data.type !== 'revenue_milestone') return;
       var dollars = data.cents ? Math.floor(data.cents / 100) : 0;
@@ -906,6 +915,7 @@ export default function LiveRoomPage({
       socket.off('spotlight-request');
       socket.off('pin-announcement');
       socket.off('gift-notification');
+      socket.off('gift-chain');
       socket.off('host-alert');
       socket.off('private-dm');
       socket.off('room-tags');
@@ -960,7 +970,7 @@ export default function LiveRoomPage({
     var msg = chatInput.trim();
     if (!msg || !socket) return;
     var msgId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId });
+    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId, isSuperFan: isSuperFan });
     setMyEngagement(function(e) { return { chat: e.chat + 1, react: e.react, gift: e.gift }; });
     var mentions = msg.match(/@(\S+)/g);
     if (mentions) {
@@ -1073,6 +1083,14 @@ export default function LiveRoomPage({
     }, 1000);
     return function() { clearInterval(id); };
   }, []);
+
+  // Award superfan status when engagement threshold is reached
+  useEffect(function() {
+    if (!isSuperFan && (myEngagement.chat >= 50 || myEngagement.react >= 30)) {
+      setIsSuperFan(true);
+      if (addToast) addToast('🏆 You earned Superfan status! Your messages now show a special badge.', 'success');
+    }
+  }, [myEngagement.chat, myEngagement.react]);
 
   // Track peak viewer count
   useEffect(function() {
@@ -2250,6 +2268,9 @@ export default function LiveRoomPage({
                         {roleBadge.label}
                       </span>
                     )}
+                    {m.isSuperFan && (
+                      <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#F59E0B', background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.35)', borderRadius: 3, padding: '1px 4px', letterSpacing: .5, flexShrink: 0 }}>🏆 SUPERFAN</span>
+                    )}
                     <span style={{ fontWeight: 700, fontSize: 13, color: userColor }}>{m.username || 'Guest'}</span>
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
@@ -2337,25 +2358,47 @@ export default function LiveRoomPage({
             </div>
           )}
           {/* Input */}
-          <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
-            <input
-              value={chatInput}
-              onChange={function(e) { setChatInput(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
-              placeholder="Say something..."
-              style={{
-                flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999,
-                padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none',
-                fontFamily: "'Barlow Condensed',sans-serif",
-              }}
-            />
-            <button onClick={sendChat} style={{
-              background: gold, border: 'none', borderRadius: 999,
-              padding: '9px 18px', fontWeight: 700, fontSize: 13, color: BG, cursor: 'pointer',
-            }}>
-              Send
-            </button>
-          </div>
+          {emojiMode ? (
+            <div style={{ padding: '6px 12px 8px', borderTop: '1px solid ' + BORDER, flexShrink: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, letterSpacing: 1 }}>⚡ EMOJI BURST MODE</span>
+                <button onClick={function() { setEmojiMode(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 11, cursor: 'pointer' }}>✕ Text</button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {['❤️','🔥','😂','😮','👏','💯','🙌','✨','😍','🎉','💪','👀','🤯','🥹','😭','💀'].map(function(em) {
+                  return (
+                    <button key={em} onClick={function() { sendReact(em); }} style={{
+                      background: CARD2, border: '1px solid ' + BORDER, borderRadius: 8, padding: '5px 8px',
+                      fontSize: 18, cursor: 'pointer', lineHeight: 1,
+                    }}>
+                      {em}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button onClick={function() { setEmojiMode(true); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', flexShrink: 0, lineHeight: 1, padding: 0 }} title="Emoji burst mode">⚡</button>
+              <input
+                value={chatInput}
+                onChange={function(e) { setChatInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }}
+                placeholder="Say something..."
+                style={{
+                  flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999,
+                  padding: '9px 16px', fontSize: 13, color: TEXT, outline: 'none',
+                  fontFamily: "'Barlow Condensed',sans-serif",
+                }}
+              />
+              <button onClick={sendChat} style={{
+                background: gold, border: 'none', borderRadius: 999,
+                padding: '9px 18px', fontWeight: 700, fontSize: 13, color: BG, cursor: 'pointer',
+              }}>
+                Send
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -3853,6 +3896,17 @@ export default function LiveRoomPage({
             {shoutout.message && shoutout.message !== '🎉 ' + shoutout.shoutoutTo + '!' && (
               <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: GOLD, marginTop: 4, lineHeight: 1.3 }}>{shoutout.message}</div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ GIFT CHAIN BANNER ════════════════ */}
+      {giftChain && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: 94, zIndex: 82, pointerEvents: 'none', animation: 'fadeSlideIn .25s ease' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(128,0,32,.92),rgba(201,168,76,.18))', border: '2px solid ' + GOLD, borderRadius: 999, padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 18px rgba(201,168,76,.3)' }}>
+            <span style={{ fontSize: 22 }}>{giftChain.emoji}</span>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: GOLD, letterSpacing: 3 }}>CHAIN x{giftChain.count}!</span>
+            <span style={{ fontSize: 18 }}>🔥</span>
           </div>
         </div>
       )}
