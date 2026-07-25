@@ -6,14 +6,8 @@
 const express = require('express');
 const router = express.Router();
 const challengeService = require('../services/challengeService');
+const requireAuth      = require('../middleware/auth');
 
-// TODO: replace with your real auth middleware import
-function requireAuth(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'unauthorized' });
-  next();
-}
-
-// TODO: replace with your real admin-role check
 function requireAdmin(req, res, next) {
   if (!req.user || !req.user.isAdmin) return res.status(403).json({ error: 'admin only' });
   next();
