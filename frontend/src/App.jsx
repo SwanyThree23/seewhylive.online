@@ -1603,6 +1603,9 @@ export default function App() {
           <PKBattleArenaPage
             battleId={APP_ID}
             socket={socketRef.current}
+            userId={userId}
+            guests={guests}
+            rtcManager={rtcManager}
           />
         )}
       </div>
