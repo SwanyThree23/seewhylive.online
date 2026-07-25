@@ -375,6 +375,7 @@ export default function LiveRoomPage({
   var [scAmt,              setScAmt]              = useState(100);
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
+  var [guestGiftTotals,    setGuestGiftTotals]    = useState({});  // { [guestId]: totalCents }
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
@@ -449,6 +450,26 @@ export default function LiveRoomPage({
     socket.on('gift-received', function(gift) {
       if (!gift) return;
       setGiftCount(function(c) { return c + 1; });
+      if (gift.toGuestId) {
+        var cents = Math.floor(gift.valueCents || 0);
+        setGuestGiftTotals(function(prev) {
+          var next = Object.assign({}, prev);
+          next[gift.toGuestId] = (next[gift.toGuestId] || 0) + cents;
+          return next;
+        });
+      }
+    });
+
+    socket.on('merch-order-received', function(order) {
+      if (!order) return;
+      if (order.toGuestId) {
+        var cents = Math.floor(order.priceCents || 0);
+        setGuestGiftTotals(function(prev) {
+          var next = Object.assign({}, prev);
+          next[order.toGuestId] = (next[order.toGuestId] || 0) + cents;
+          return next;
+        });
+      }
     });
 
     socket.on('react-burst', function(data) {
@@ -596,6 +617,7 @@ export default function LiveRoomPage({
       socket.off('super-chat');
       socket.off('react-burst');
       socket.off('gift-received');
+      socket.off('merch-order-received');
       socket.off('screen-share-active');
       socket.off('screen-share-ended');
       socket.off('mute-all');
@@ -1247,6 +1269,7 @@ export default function LiveRoomPage({
                             onCamToggle={isOwn ? toggleCam : null}
                             onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
                             handRaised={isHand}
+                            giftTotal={guestGiftTotals[gid] || 0}
                           />
                         )}
                       </div>
@@ -1353,6 +1376,7 @@ export default function LiveRoomPage({
                     isCamOff={(featuredGuest.guestId || featuredGuest.userId) === userId ? isCamOff : false}
                     onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
                     onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
+                    giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
@@ -1399,6 +1423,7 @@ export default function LiveRoomPage({
                           isCamOff={isOwn ? isCamOff : false}
                           onMuteToggle={null}
                           onCamToggle={null}
+                          giftTotal={guestGiftTotals[gid] || 0}
                         />
                         <div style={{ padding: '3px 5px 5px' }}>
                           <span style={{ fontSize: 10, color: MUTED, fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -2484,6 +2509,7 @@ export default function LiveRoomPage({
                     isCamOff={isOwn ? isCamOff : false}
                     onMuteToggle={isOwn ? toggleMute : null}
                     onCamToggle={isOwn ? toggleCam : null}
+                    giftTotal={guestGiftTotals[gid] || 0}
                   />
                 </div>
               )}

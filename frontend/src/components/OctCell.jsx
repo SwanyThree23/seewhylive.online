@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -329,6 +329,13 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
           </div>
         )}
 
+        {/* Gift total badge */}
+        {giftTotal > 0 && (
+          <div style={{ position: 'absolute', bottom: 6, left: 6, background: 'rgba(201,168,76,.85)', borderRadius: 999, padding: '2px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#0E0C09', zIndex: 5 }}>
+            {'🎁 $' + (giftTotal / 100).toFixed(2)}
+          </div>
+        )}
+
         {/* Connection quality dot */}
         <div style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: connDotColor, boxShadow: '0 0 4px ' + connDotColor, border: '1px solid rgba(0,0,0,.5)' }} />
         {isHost && (
@@ -407,10 +414,11 @@ function areOctCellPropsEqual(prev, next) {
   var pg = prev.guest || {};
   var ng = next.guest || {};
   return (
-    pg.producerId === ng.producerId &&
-    pg.speaking   === ng.speaking   &&
-    prev.isMuted  === next.isMuted  &&
-    prev.isCamOff === next.isCamOff
+    pg.producerId  === ng.producerId  &&
+    pg.speaking    === ng.speaking    &&
+    prev.isMuted   === next.isMuted   &&
+    prev.isCamOff  === next.isCamOff  &&
+    prev.giftTotal === next.giftTotal
   );
 }
 
