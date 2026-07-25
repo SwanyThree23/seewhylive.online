@@ -1790,6 +1790,14 @@ io.on('connection', function(socket) {
     } catch (e) { /* guest may have no video consumer or may have left */ }
   });
 
+  // ── panel:react — emoji reaction from any viewer ───────────────────────
+  socket.on('panel:react', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    var emoji  = data.emoji || '❤️';
+    if (!roomId) return;
+    io.to(roomId).emit('panel:reaction', { roomId: roomId, emoji: emoji, userId: socket.data.userId || socket.id });
+  });
+
   // ── hand-raise ─────────────────────────────────────────────────────────
   socket.on('hand-raise', function(data) {
     var roomId   = data.roomId || socket.data.roomId;

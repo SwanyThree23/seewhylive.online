@@ -13,6 +13,7 @@ import GiftLayer from './GiftLayer.jsx';
 import GoldenWallPanel from './GoldenWallPanel.jsx';
 import GlobalMicButtonV49 from './streaming/GlobalMicButtonV49.jsx';
 import ShareSheet from './share/ShareSheet.jsx';
+import PanelReactionBar from './panel/PanelReactionBar.jsx';
 
 var MAX_STAGE = 20;
 
@@ -334,7 +335,6 @@ export default function LiveRoomPage({
   var [qaInput,        setQaInput]        = useState('');
   var [showQa,         setShowQa]         = useState(false);
   var [qaMyVotes,      setQaMyVotes]      = useState({});
-  var [showShareSheet, setShowShareSheet] = useState(false);
   var [panelMode,      setPanelMode]      = useState('grid'); // grid | list — for 20-person layout hint
   var [raisedHands,    setRaisedHands]    = useState({});    // { [guestId]: true } — persistent raised-hand indicators
   var [pinnedId,       setPinnedId]       = useState(null);  // guestId | null — pinned/spotlight cell in grid
@@ -375,6 +375,7 @@ export default function LiveRoomPage({
   var [scAmt,              setScAmt]              = useState(100);
   var [giftCount,          setGiftCount]          = useState(0);
   var [superChatCount,     setSuperChatCount]     = useState(0);
+  var [guestGiftTotals,    setGuestGiftTotals]    = useState({}); // guestId → cents running total
   var [streamStats,        setStreamStats]        = useState(null); // { bitratekbps, rttMs, lossPct }
   var [theaterMode,        setTheaterMode]        = useState(false);
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
@@ -449,6 +450,24 @@ export default function LiveRoomPage({
     socket.on('gift-received', function(gift) {
       if (!gift) return;
       setGiftCount(function(c) { return c + 1; });
+      // Populate tip feed so GiftLayer animations fire and tip feed panel shows
+      var entry = { id: gift.id || Date.now(), from: gift.fromUser || 'Fan', amount: gift.valueCents || 0, emoji: gift.emoji || '🎁', toGuestId: gift.toGuestId || null, ts: gift.ts || Math.floor(Date.now() / 1000) };
+      setTipFeed(function(prev) { return [entry].concat(prev).slice(0, 20); });
+      // Merge per-guest gift totals from server snapshot (guestTotals) or compute locally
+      if (gift.guestTotals) {
+        setGuestGiftTotals(function(prev) { return Object.assign({}, prev, gift.guestTotals); });
+      } else if (gift.toGuestId && gift.valueCents) {
+        setGuestGiftTotals(function(prev) {
+          var n = Object.assign({}, prev);
+          n[gift.toGuestId] = (n[gift.toGuestId] || 0) + gift.valueCents;
+          return n;
+        });
+      }
+    });
+
+    socket.on('merch-sale', function(sale) {
+      if (!sale || !addToast) return;
+      addToast('🛍️ ' + (sale.fromUser || 'Fan') + ' bought merch — +$' + ((sale.creatorCents || 0) / 100).toFixed(2) + ' for you!', 'success');
     });
 
     socket.on('react-burst', function(data) {
@@ -1247,6 +1266,7 @@ export default function LiveRoomPage({
                             onCamToggle={isOwn ? toggleCam : null}
                             onCameraTrack={isOwn ? function(t) { cameraTrackRef.current = t; } : null}
                             handRaised={isHand}
+                            giftTotal={guestGiftTotals[gid] || 0}
                           />
                         )}
                       </div>
@@ -1353,6 +1373,7 @@ export default function LiveRoomPage({
                     isCamOff={(featuredGuest.guestId || featuredGuest.userId) === userId ? isCamOff : false}
                     onMuteToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleMute : null}
                     onCamToggle={(featuredGuest.guestId || featuredGuest.userId) === userId ? toggleCam : null}
+                    giftTotal={guestGiftTotals[featuredGuest.guestId || featuredGuest.userId] || 0}
                   />
                   <OverlayCustomLT lowerThirds={overlayConfig && overlayConfig.lowerThirds} guestId={featuredGuest.guestId || featuredGuest.userId} />
                 </div>
@@ -1512,6 +1533,11 @@ export default function LiveRoomPage({
       })}
 
       <GiftLayer giftFloats={tipFeed} />
+
+      {/* ════════════════ PANEL REACTION BAR ════════════════ */}
+      <div style={{ position: 'absolute', bottom: 82, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
+        <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
+      </div>
 
       {/* ════════════════ AUDIO-ONLY BANNER ════════════════ */}
       {audioOnly && (
