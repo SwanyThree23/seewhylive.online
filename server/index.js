@@ -2850,6 +2850,29 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── celebrate — host fires a celebration effect to all viewers ───────────
+  socket.on('celebrate', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var type = (data.type === 'fireworks' || data.type === 'hearts') ? data.type : 'confetti';
+    io.to(roomId).emit('celebrate', { type: type, from: socket.data.username || 'host', ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── chat-mention — broadcast mention alert to mentioned user ─────────────
+  socket.on('chat-mention', function(data) {
+    var roomId     = data.roomId || socket.data.roomId;
+    var mentionedUser = String(data.mentionedUsername || '').trim();
+    var msgId      = data.msgId;
+    if (!roomId || !mentionedUser || !msgId) return;
+    // Find the target socket by username
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.roomId === roomId && (s.data.username || '').toLowerCase() === mentionedUser.toLowerCase()) {
+        io.to(s.id).emit('chat-mention', { by: socket.data.username || 'someone', msgId: msgId, ts: Math.floor(Date.now() / 1000) });
+      }
+    });
+  });
+
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────
   socket.on('set-guest-role', function(data) {
     var roomId  = data.roomId || socket.data.roomId;

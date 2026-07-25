@@ -34,6 +34,7 @@ var DIM     = '#3D3020';
 
 // ─── Animation CSS ─────────────────────────────────────────────────────────
 var ANIM = [
+  '@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(120vh) rotate(720deg);opacity:0}}',
   '@keyframes speakBar{0%{transform:scaleY(.25)}100%{transform:scaleY(1)}}',
   '@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}',
   '@keyframes fadeSlideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}',
@@ -424,6 +425,8 @@ export default function LiveRoomPage({
   var [shoutoutTarget,     setShoutoutTarget]     = useState('');
   var [roomTags,           setRoomTags]           = useState([]);   // string[]
   var [pinnedLink,         setPinnedLink]         = useState(null); // { url, label, emoji } | null
+  var [confettiPieces,     setConfettiPieces]     = useState([]);   // [{ id, x, color, delay, dur }]
+  var [mentionAlert,       setMentionAlert]       = useState(null); // { by } | null
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -613,6 +616,29 @@ export default function LiveRoomPage({
     socket.on('emoji-tally', function(data) {
       if (!data || !Array.isArray(data.tally)) return;
       setEmojiTally(data.tally);
+    });
+
+    socket.on('celebrate', function(data) {
+      if (!data) return;
+      var colors = ['#C9A84C','#FF1A3C','#800020','#D4854A','#F0E8D4','#fff'];
+      var pieces = Array.from({ length: 32 }, function(_, i) {
+        return {
+          id: i,
+          x: Math.random() * 100,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          delay: Math.random() * 1.2,
+          dur: 2 + Math.random() * 1.5,
+        };
+      });
+      setConfettiPieces(pieces);
+      if (addToast) addToast('🎊 ' + (data.from || 'Host') + ' is celebrating!', 'success');
+      setTimeout(function() { setConfettiPieces([]); }, 4000);
+    });
+
+    socket.on('chat-mention', function(data) {
+      if (!data || !data.by) return;
+      setMentionAlert({ by: data.by });
+      setTimeout(function() { setMentionAlert(null); }, 3000);
     });
 
     socket.on('room-tags', function(data) {
@@ -827,6 +853,8 @@ export default function LiveRoomPage({
       socket.off('gift-leaderboard');
       socket.off('viewer-shoutout');
       socket.off('emoji-tally');
+      socket.off('celebrate');
+      socket.off('chat-mention');
       socket.off('room-tags');
       socket.off('link-pinned');
       socket.off('role-changed');
@@ -878,7 +906,15 @@ export default function LiveRoomPage({
   function sendChat() {
     var msg = chatInput.trim();
     if (!msg || !socket) return;
-    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg });
+    var msgId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId });
+    var mentions = msg.match(/@(\S+)/g);
+    if (mentions) {
+      mentions.forEach(function(m) {
+        var mentionedUsername = m.slice(1);
+        socket.emit('chat-mention', { roomId: roomId, mentionedUsername: mentionedUsername, msgId: msgId });
+      });
+    }
     setChatInput('');
   }
 
@@ -1860,6 +1896,7 @@ export default function LiveRoomPage({
               { emoji: '📣', label: 'Shoutout', active: false, onTap: function() { setShoutoutTarget(''); setShowShoutout(true); } },
               { emoji: '🏷️', label: 'Tags', active: roomTags.length > 0, onTap: function() { setTagInput(roomTags.join(', ')); setShowTagEdit(true); } },
               { emoji: '🔗', label: 'Pin Link', active: !!pinnedLink, onTap: function() { setLinkUrl(pinnedLink ? pinnedLink.url : ''); setLinkLabel(pinnedLink ? pinnedLink.label : ''); setLinkEmoji(pinnedLink ? pinnedLink.emoji : '🔗'); setShowLinkPin(true); } },
+              { emoji: '🎊', label: 'Celebrate', active: false, onTap: function() { if (socket) socket.emit('celebrate', { roomId: roomId, type: 'confetti' }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2091,9 +2128,25 @@ export default function LiveRoomPage({
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
                   </div>
-                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
+                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>
+                    {(function() {
+                      var parts = m.message ? m.message.split(/(@\S+)/g) : [m.message || ''];
+                      return parts.map(function(part, pi) {
+                        return /^@\S+/.test(part)
+                          ? <span key={pi} style={{ color: GOLD, fontWeight: 700 }}>{part}</span>
+                          : part;
+                      });
+                    })()}
+                  </p>
                   {m.translated && m.translated !== m.message && (
-                    <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
+                    <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>
+                      {m.lang && m.lang !== 'EN' && (
+                        <span style={{ display: 'inline-block', background: TEAL + '33', border: '1px solid ' + TEAL + '66', borderRadius: 3, padding: '0 4px', fontSize: 7, color: TEAL, marginRight: 4, verticalAlign: 'middle', letterSpacing: .5 }}>
+                          {m.lang}
+                        </span>
+                      )}
+                      {m.translated}
+                    </p>
                   )}
                   {canMod && m.role !== 'system' && (
                     <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -3797,6 +3850,42 @@ export default function LiveRoomPage({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ CONFETTI OVERLAY ════════════════ */}
+      {confettiPieces.length > 0 && (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 95 }}>
+          {confettiPieces.map(function(p) {
+            return (
+              <div key={p.id} style={{
+                position: 'absolute',
+                top: 0,
+                left: p.x + '%',
+                width: 8 + (p.id % 5) * 2,
+                height: 8 + (p.id % 4) * 2,
+                background: p.color,
+                borderRadius: p.id % 3 === 0 ? '50%' : 2,
+                animation: 'confettiFall ' + p.dur + 's ease-in ' + p.delay + 's forwards',
+              }} />
+            );
+          })}
+        </div>
+      )}
+
+      {/* ════════════════ MENTION ALERT ════════════════ */}
+      {mentionAlert && (
+        <div style={{
+          position: 'absolute', bottom: 90, left: '50%', transform: 'translateX(-50%)',
+          background: CARD, border: '1.5px solid ' + GOLD, borderRadius: 12,
+          padding: '8px 18px', zIndex: 90, animation: 'fadeSlideIn .25s ease',
+          display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none',
+          boxShadow: '0 4px 18px rgba(0,0,0,.5)',
+        }}>
+          <span style={{ fontSize: 16 }}>🔔</span>
+          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, letterSpacing: .5 }}>
+            <b style={{ color: GOLD }}>{mentionAlert.by}</b> mentioned you
+          </span>
         </div>
       )}
 
