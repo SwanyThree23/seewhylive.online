@@ -28,6 +28,9 @@ router.post('/', requireAuth, async (req, res) => {
 
 router.post('/:id/accept', requireAuth, async (req, res) => {
   try {
+    const existing = await battleService.getBattle(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'battle not found' });
+    if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     const { roomId } = req.body;
     const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
@@ -39,10 +42,13 @@ router.post('/:id/accept', requireAuth, async (req, res) => {
 
 router.post('/:id/start', requireAuth, async (req, res) => {
   try {
+    const existing = await battleService.getBattle(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'battle not found' });
+    if (existing.challenger_id !== req.user.id && existing.defender_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const battle = await battleService.startBattle(req.params.id);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
-    // Socket broadcast happens in battleHandlers.js — call it from here if you
-    // prefer REST-triggered start, or drive entirely from sockets instead.
     res.json(battle);
   } catch (err) {
     res.status(400).json({ error: err.message });

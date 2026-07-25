@@ -19,14 +19,14 @@ async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHou
   return result.rows[0];
 }
 
-async function respondToInvitation(inviteId, status) {
+async function respondToInvitation(inviteId, status, userId) {
   if (status !== 'accepted' && status !== 'declined') {
     throw new Error('status must be "accepted" or "declined"');
   }
   const result = await db.query(
     `UPDATE guest_invitations SET status = $2
-     WHERE id = $1 AND status = 'pending' AND expires_at > now() RETURNING *`,
-    [inviteId, status]
+     WHERE id = $1 AND to_user_id = $3 AND status = 'pending' AND expires_at > now() RETURNING *`,
+    [inviteId, status, userId]
   );
   return result.rows[0];
 }

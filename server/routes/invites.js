@@ -28,7 +28,7 @@ router.post('/', requireAuth, async (req, res) => {
 router.post('/:id/respond', requireAuth, async (req, res) => {
   try {
     const { status } = req.body; // 'accepted' | 'declined'
-    const invite = await inviteService.respondToInvitation(req.params.id, status);
+    const invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id);
     if (!invite) return res.status(404).json({ error: 'invite not found, expired, or already responded' });
     res.json(invite);
   } catch (err) {

@@ -641,7 +641,7 @@ app.get('/api/schedule', function(req, res) {
 });
 
 // POST /api/schedule
-app.post('/api/schedule', function(req, res) {
+app.post('/api/schedule', requireAuth, function(req, res) {
   var body = req.body;
   if (!body.title || !body.scheduled_at) {
     res.status(400).json({ error: 'title and scheduled_at required' });
@@ -662,7 +662,7 @@ app.post('/api/schedule', function(req, res) {
 });
 
 // DELETE /api/schedule/:id
-app.delete('/api/schedule/:id', function(req, res) {
+app.delete('/api/schedule/:id', requireAuth, function(req, res) {
   try {
     db.exec('CREATE TABLE IF NOT EXISTS schedules (id TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT, desc TEXT, scheduled_at INTEGER NOT NULL, created_at INTEGER NOT NULL)');
     db.prepare('DELETE FROM schedules WHERE id = ?').run(req.params.id);
@@ -788,19 +788,14 @@ app.post('/api/connect/onboard', function(req, res) {
 });
 
 // POST /api/turn/credentials
-app.post('/api/turn/credentials', function(req, res) {
-  var body = req.body;
-  if (!body.userId) {
-    res.status(400).json({ error: 'Missing required field: userId' });
-    return;
-  }
+app.post('/api/turn/credentials', requireAuth, function(req, res) {
   if (!process.env.TURN_SECRET) {
     res.status(500).json({ error: 'TURN_SECRET not configured' });
     return;
   }
   try {
     var ttl      = Math.floor(Date.now() / 1000) + 300;
-    var username = ttl + ':' + body.userId;
+    var username = ttl + ':' + req.user.id;
     var hmac     = crypto.createHmac('sha256', process.env.TURN_SECRET);
     var credential = hmac.update(username).digest('base64');
 
@@ -859,7 +854,7 @@ app.get('/api/keys/meta/:guestId', requireAuth, function(req, res) {
 });
 
 // ─── AI Chat proxy ───────────────────────────────────────────────────────
-app.post('/api/ai/chat', function(req, res) {
+app.post('/api/ai/chat', requireAuth, function(req, res) {
   var body    = req.body;
   var system  = typeof body.system  === 'string' ? body.system.slice(0, 2000) : '';
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
@@ -903,7 +898,7 @@ app.post('/api/translate', function(req, res) {
 
 // ─── Live Streams — active ingest + fanout status ────────────────────────
 // ─── AI Chat Summary ─────────────────────────────────────────────────────
-app.post('/api/summarize-chat', function(req, res) {
+app.post('/api/summarize-chat', requireAuth, function(req, res) {
   var messages = typeof req.body.messages === 'string' ? req.body.messages.slice(0, 4000) : '';
   if (!messages) { res.json({ summary: 'No chat to summarize.' }); return; }
   try {
@@ -1121,6 +1116,19 @@ io.on('connection', function(socket) {
       if (!data.token && !socket.data.decoded) {
         if (ack) ack({ error: 'Token required for host/guest role' });
         return;
+      }
+    }
+
+    // If claiming host, verify this user actually owns the room (if it exists)
+    if (role === 'host') {
+      try {
+        var existingRoom = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(roomId);
+        if (existingRoom && existingRoom.host_id !== socket.data.userId) {
+          if (ack) ack({ error: 'forbidden' });
+          return;
+        }
+      } catch (ownerErr) {
+        logger.warn('[join-room] ownership check error: ' + ownerErr.message);
       }
     }
 
