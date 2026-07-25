@@ -495,6 +495,7 @@ function getJoinStateForRoom(roomId) {
   if (joinRoom && joinRoom.spotlight && joinRoom.spotlight.endsAt > Math.floor(Date.now() / 1000)) {
     state.spotlight = joinRoom.spotlight;
   }
+  if (joinRoom && joinRoom.liveStartedAt) state.liveStartedAt = joinRoom.liveStartedAt;
   return state;
 }
 
@@ -2555,6 +2556,7 @@ io.on('connection', function(socket) {
   });
 
   // ── viewer-react ───────────────────────────────────────────────────────
+  var reactWindows = new Map(); // roomId → { count, windowStart, lastWildTs }
   socket.on('viewer-react', function(data) {
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.emoji) return;
@@ -2564,6 +2566,38 @@ io.on('connection', function(socket) {
     if (now - lastTs < 2000) return;
     viewerReactThrottle.set(socket.id, now);
     io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
+
+    // Crowd-going-wild detection: 12+ reactions in 6 seconds → crowd-wild broadcast
+    var rw = reactWindows.get(roomId) || { count: 0, windowStart: now, lastWildTs: 0 };
+    if (now - rw.windowStart > 6000) { rw.count = 0; rw.windowStart = now; }
+    rw.count += 1;
+    reactWindows.set(roomId, rw);
+    if (rw.count >= 12 && now - rw.lastWildTs > 15000) {
+      rw.lastWildTs = now;
+      rw.count = 0;
+      io.to(roomId).emit('crowd-wild', { roomId: roomId, ts: now });
+    }
+  });
+
+  // ── hot-moment — viewer tags a timestamp as a highlight ────────────────
+  var hotMomentWindows = new Map(); // roomId → { windowKey → count }
+  socket.on('hot-moment', function(data) {
+    var roomId = (data && data.roomId) || socket.data.roomId;
+    if (!roomId) return;
+    var now = Date.now();
+    var windowKey = Math.floor(now / 10000); // 10-second buckets
+    if (!hotMomentWindows.has(roomId)) hotMomentWindows.set(roomId, new Map());
+    var rMap = hotMomentWindows.get(roomId);
+    rMap.set(windowKey, (rMap.get(windowKey) || 0) + 1);
+    var count = rMap.get(windowKey);
+    // Broadcast to host on threshold (5, 10, 20 unique tags in 10s)
+    if (count === 5 || count === 10 || count === 20) {
+      var hmRoom = rooms.get(roomId);
+      if (hmRoom && hmRoom.hostSocketId) {
+        io.to(hmRoom.hostSocketId).emit('hot-moment-alert', { roomId: roomId, count: count, windowKey: windowKey, ts: now });
+      }
+      io.to(roomId).emit('hot-moment-burst', { roomId: roomId, count: count, ts: now });
+    }
   });
 
   // ── collab events ─────────────────────────────────────────────────────

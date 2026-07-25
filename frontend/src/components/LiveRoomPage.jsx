@@ -396,6 +396,12 @@ export default function LiveRoomPage({
   var [announceDelay,      setAnnounceDelay]      = useState('1'); // minutes
   var [pending,            setPending]            = useState([]);  // [{announceId,message,firesAt}]
   var [pinnedQa,           setPinnedQa]           = useState(null); // {id,username,text,upvotes}|null
+  var [liveElapsed,        setLiveElapsed]        = useState(0);   // seconds since going live
+  var [liveStartedAt,      setLiveStartedAt]      = useState(null);// unix ts
+  var [crowdWildBanner,    setCrowdWildBanner]    = useState(false);
+  var [hotMomentFlash,     setHotMomentFlash]     = useState(null);// { count } | null
+  var [watchSeconds,       setWatchSeconds]       = useState(0);   // this viewer's watch time
+  var [hotPressed,         setHotPressed]         = useState(false);// debounce hot-moment button
   var milestoneRef = useRef(new Set()); // viewer count milestones already celebrated
 
   var chatEndRef      = useRef(null);
@@ -437,6 +443,7 @@ export default function LiveRoomPage({
       }
       if (data.pinnedChat) setPinnedMsg(data.pinnedChat);
       if (data.spotlight && data.spotlight.endsAt > Math.floor(Date.now() / 1000)) setSpotlightItem(data.spotlight);
+      if (data.liveStartedAt) setLiveStartedAt(data.liveStartedAt);
       try {
         await rtcManager.connect(socket, roomId, userId, role);
         setRtcReady(true);
@@ -518,6 +525,22 @@ export default function LiveRoomPage({
       setTimeout(function() {
         setFollowAlerts(function(prev) { return prev.filter(function(f) { return f.id !== fid; }); });
       }, 4500);
+    });
+
+    socket.on('go-live-confirmed', function(data) {
+      if (!data || !data.ts) return;
+      setLiveStartedAt(data.ts);
+    });
+
+    socket.on('crowd-wild', function() {
+      setCrowdWildBanner(true);
+      setTimeout(function() { setCrowdWildBanner(false); }, 4000);
+    });
+
+    socket.on('hot-moment-burst', function(data) {
+      if (!data) return;
+      setHotMomentFlash({ count: data.count });
+      setTimeout(function() { setHotMomentFlash(null); }, 3500);
     });
 
     socket.on('react-burst', function(data) {
@@ -677,6 +700,9 @@ export default function LiveRoomPage({
       socket.off('chat-deleted');
       socket.off('product-spotlight');
       socket.off('follow-alert');
+      socket.off('go-live-confirmed');
+      socket.off('crowd-wild');
+      socket.off('hot-moment-burst');
     };
   }, [socket]);
 
@@ -802,6 +828,46 @@ export default function LiveRoomPage({
       }
     });
   }, [viewerCount]);
+
+  // Stream elapsed clock — ticks every second while live
+  useEffect(function() {
+    if (!isLive || !liveStartedAt) return;
+    var id = setInterval(function() {
+      setLiveElapsed(Math.floor(Date.now() / 1000) - liveStartedAt);
+    }, 1000);
+    setLiveElapsed(Math.floor(Date.now() / 1000) - liveStartedAt);
+    return function() { clearInterval(id); };
+  }, [isLive, liveStartedAt]);
+
+  // Personal watch timer — awards loyalty badge at 5 and 15 min
+  useEffect(function() {
+    var id = setInterval(function() {
+      setWatchSeconds(function(s) {
+        var next = s + 1;
+        if (next === 300 && addToast) addToast('🔥 You\'ve been watching for 5 minutes — Loyal Viewer!', 'success');
+        if (next === 900 && addToast) addToast('⭐ 15 minutes of watch time — Super Viewer!', 'success');
+        return next;
+      });
+    }, 1000);
+    return function() { clearInterval(id); };
+  }, []);
+
+  function fmtElapsed(s) {
+    if (!s || s < 0) return '0:00';
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) return h + ':' + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function sendHotMoment() {
+    if (hotPressed || !socket) return;
+    setHotPressed(true);
+    socket.emit('hot-moment', { roomId: roomId });
+    setTimeout(function() { setHotPressed(false); }, 3000);
+    if (addToast) addToast('⚡ You marked this as a hot moment!', 'info');
+  }
 
   function sendReact(emoji) {
     var fid = Date.now() + Math.random();
@@ -1110,10 +1176,17 @@ export default function LiveRoomPage({
               </div>
             )}
             {isLive ? (
-              <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <button onClick={endStream} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.4)', borderRadius: 999, padding: '4px 10px', cursor: 'pointer' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: RED, letterSpacing: 1 }}>LIVE</span>
+                </button>
+                {liveElapsed > 0 && (
+                  <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>
+                    {fmtElapsed(liveElapsed)}
+                  </span>
+                )}
+              </div>
             ) : role === 'host' ? (
               <button onClick={function() { setShowLiveModal(true); }} style={{ display: 'flex', alignItems: 'center', gap: 5, background: RED, border: 'none', borderRadius: 999, padding: '5px 12px', cursor: 'pointer' }}>
                 <span style={{ fontSize: 9 }}>▶</span>
@@ -1147,9 +1220,12 @@ export default function LiveRoomPage({
             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
               👥 {viewerCount || allParticipants.length}
             </span>
-            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
-              {allParticipants.length} here now
-            </span>
+            {watchSeconds >= 900 && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD, background: 'rgba(201,168,76,.15)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>⭐ SUPER</span>
+            )}
+            {watchSeconds >= 300 && watchSeconds < 900 && (
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, background: 'rgba(212,133,74,.12)', border: '1px solid rgba(212,133,74,.3)', borderRadius: 4, padding: '1px 5px', letterSpacing: .5 }}>🔥 LOYAL</span>
+            )}
           </div>
         </div>
 
@@ -1720,6 +1796,43 @@ export default function LiveRoomPage({
         })}
       </div>
 
+      {/* ════════════════ CROWD GOING WILD ════════════════ */}
+      {crowdWildBanner && (
+        <div style={{
+          position: 'absolute', top: '22%', left: '50%', transform: 'translateX(-50%)',
+          background: 'linear-gradient(135deg,rgba(128,0,32,.97),rgba(36,28,18,.95))',
+          border: '2px solid rgba(201,168,76,.8)', borderRadius: 999,
+          padding: '10px 28px', zIndex: 56, pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'legendBurst .4s ease',
+          boxShadow: '0 0 40px rgba(201,168,76,.4)',
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontSize: 22 }}>🔥</span>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: GOLD, letterSpacing: 4 }}>THE CROWD IS WILD!</span>
+          <span style={{ fontSize: 22 }}>🔥</span>
+        </div>
+      )}
+
+      {/* ════════════════ HOT MOMENT FLASH ════════════════ */}
+      {hotMomentFlash && (
+        <div style={{
+          position: 'absolute', top: '32%', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(14,12,9,.96)', border: '1.5px solid rgba(255,160,0,.8)',
+          borderRadius: 999, padding: '7px 20px', zIndex: 56, pointerEvents: 'none',
+          display: 'flex', alignItems: 'center', gap: 8,
+          animation: 'comboPop .3s ease',
+          boxShadow: '0 0 24px rgba(255,160,0,.3)',
+          whiteSpace: 'nowrap',
+        }}>
+          <span style={{ fontSize: 18 }}>⚡</span>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: '#FFA500', letterSpacing: 3 }}>
+            HOT MOMENT  ×{hotMomentFlash.count}
+          </span>
+          <span style={{ fontSize: 18 }}>⚡</span>
+        </div>
+      )}
+
       {/* ════════════════ PANEL REACTION BAR ════════════════ */}
       <div style={{ position: 'absolute', bottom: 82, left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
         <PanelReactionBar socket={socket} roomId={roomId} userId={userId} />
@@ -2132,6 +2245,12 @@ export default function LiveRoomPage({
             label="React"
             active={reactsOpen}
             onPress={function() { setReactsOpen(function(v) { return !v; }); }}
+          />
+          <IconBtn
+            icon={hotPressed ? '✅' : '⚡'}
+            label="Hot!"
+            active={hotPressed}
+            onPress={sendHotMoment}
           />
           {role === 'viewer' && (
             <IconBtn
