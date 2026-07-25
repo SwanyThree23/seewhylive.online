@@ -437,6 +437,12 @@ export default function LiveRoomPage({
   var [myEngagement,       setMyEngagement]       = useState({ chat: 0, react: 0, gift: 0 });
   var lastTapRef = useRef(0); // for double-tap detection
   var [showMuteAllConfirm, setShowMuteAllConfirm] = useState(false);
+  var [revenueOverlay,     setRevenueOverlay]     = useState(null); // { dollars } | null
+  var [endScreen,          setEndScreen]          = useState(null); // { duration, peak } | null
+  var peakViewersRef = useRef(0);
+  var [showDmModal,        setShowDmModal]        = useState(false);
+  var [dmTarget,           setDmTarget]           = useState(null); // { guestId, username } | null
+  var [dmInput,            setDmInput]            = useState('');
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -671,6 +677,18 @@ export default function LiveRoomPage({
       if (addToast) addToast(data.emoji + ' ' + data.from + ' sent you ' + data.name + ' ($' + dollars + ')!', 'success');
     });
 
+    socket.on('host-alert', function(data) {
+      if (!data || data.type !== 'revenue_milestone') return;
+      var dollars = data.cents ? Math.floor(data.cents / 100) : 0;
+      setRevenueOverlay({ dollars: dollars });
+      setTimeout(function() { setRevenueOverlay(null); }, 4000);
+    });
+
+    socket.on('private-dm', function(data) {
+      if (!data || !data.from || !data.message) return;
+      if (addToast) addToast('💌 ' + data.from + ': ' + data.message, 'info');
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -888,6 +906,8 @@ export default function LiveRoomPage({
       socket.off('spotlight-request');
       socket.off('pin-announcement');
       socket.off('gift-notification');
+      socket.off('host-alert');
+      socket.off('private-dm');
       socket.off('room-tags');
       socket.off('link-pinned');
       socket.off('role-changed');
@@ -1053,6 +1073,21 @@ export default function LiveRoomPage({
     }, 1000);
     return function() { clearInterval(id); };
   }, []);
+
+  // Track peak viewer count
+  useEffect(function() {
+    var cur = viewerCount || 0;
+    if (cur > peakViewersRef.current) peakViewersRef.current = cur;
+  }, [viewerCount]);
+
+  // End screen when stream goes from live → offline
+  var wasLiveRef = useRef(false);
+  useEffect(function() {
+    if (wasLiveRef.current && !isLive && role === 'host') {
+      setEndScreen({ duration: liveElapsed, peak: peakViewersRef.current });
+    }
+    wasLiveRef.current = isLive;
+  }, [isLive]);
 
   // Live captions — update when a transcript message arrives
   useEffect(function() {
@@ -1757,6 +1792,7 @@ export default function LiveRoomPage({
                           { label: g.remoteMuted ? '🎙 Unmute' : '🔇 Mute', action: 'mute' },
                           { label: isHand ? '✋ Invite to Stage' : null, action: 'invite', hide: !isHand },
                           { label: g.role === 'cohost' ? '👤 Remove Co-Host' : '👑 Make Co-Host', action: 'cohost' },
+                          { label: !isOwn ? '💌 Message' : null, action: 'dm', hide: isOwn },
                           { label: '🚫 Remove from Stage', action: 'remove' },
                         ].filter(function(item) { return !item.hide; }).map(function(item) {
                           return (
@@ -1773,6 +1809,10 @@ export default function LiveRoomPage({
                                 } else if (item.action === 'cohost') {
                                   var nextRole = g.role === 'cohost' ? 'guest' : 'cohost';
                                   if (socket) socket.emit('set-guest-role', { roomId: roomId, guestId: gid, role: nextRole });
+                                } else if (item.action === 'dm') {
+                                  setDmTarget({ guestId: gid, username: g.username || gid });
+                                  setDmInput('');
+                                  setShowDmModal(true);
                                 } else if (item.action === 'remove') {
                                   if (socket) socket.emit('stage-remove', { roomId: roomId, guestId: gid });
                                 }
@@ -3987,6 +4027,75 @@ export default function LiveRoomPage({
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ REVENUE MILESTONE OVERLAY ════════════════ */}
+      {revenueOverlay && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 91, pointerEvents: 'none', animation: 'fadeSlideIn .3s ease' }}>
+          <div style={{ textAlign: 'center', background: 'rgba(14,12,9,.88)', border: '2px solid ' + GOLD, borderRadius: 20, padding: '28px 36px', boxShadow: '0 0 40px rgba(201,168,76,.4)' }}>
+            <div style={{ fontSize: 40, marginBottom: 6 }}>💰</div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 48, color: GOLD, letterSpacing: 4, lineHeight: 1 }}>${revenueOverlay.dollars}</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 3, marginTop: 8 }}>SESSION MILESTONE</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ END SCREEN (host only) ════════════════ */}
+      {endScreen && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,12,9,.94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 95, animation: 'fadeSlideIn .4s ease' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🎬</div>
+          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: TEXT, letterSpacing: 3, marginBottom: 4 }}>STREAM ENDED</div>
+          <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: 2, marginBottom: 24 }}>THANKS FOR GOING LIVE ON SEEWHY!</div>
+          <div style={{ display: 'flex', gap: 20, marginBottom: 28 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: GOLD, letterSpacing: 2 }}>{fmtElapsed(endScreen.duration || 0)}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2 }}>DURATION</div>
+            </div>
+            <div style={{ width: 1, background: BORDER }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: TEAL, letterSpacing: 2 }}>{(endScreen.peak || 0).toLocaleString()}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2 }}>PEAK VIEWERS</div>
+            </div>
+            <div style={{ width: 1, background: BORDER }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: GOLD, letterSpacing: 2 }}>${((sessionEarningsCents || 0) / 100).toFixed(2)}</div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED, letterSpacing: 2 }}>EARNED</div>
+            </div>
+          </div>
+          <button onClick={function() { setEndScreen(null); }} style={{ background: BURG, border: 'none', borderRadius: 12, padding: '12px 32px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, cursor: 'pointer', letterSpacing: 3 }}>
+            CLOSE
+          </button>
+        </div>
+      )}
+
+      {/* ════════════════ PRIVATE DM MODAL (host) ════════════════ */}
+      {showDmModal && dmTarget && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', display: 'flex', alignItems: 'flex-end', zIndex: 78, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowDmModal(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>💌 Message {dmTarget.username}</div>
+              <button onClick={function() { setShowDmModal(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 12 }}>Only {dmTarget.username} will see this message.</div>
+            <textarea
+              value={dmInput}
+              onChange={function(e) { setDmInput(e.target.value.slice(0, 300)); }}
+              placeholder="Type a private message..."
+              rows={3}
+              style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 9, padding: '11px 14px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 600, fontSize: 15, outline: 'none', marginBottom: 12, resize: 'none' }}
+            />
+            <button onClick={function() {
+              var msg = dmInput.trim();
+              if (!msg || !socket) return;
+              socket.emit('private-dm', { roomId: roomId, toGuestId: dmTarget.guestId, message: msg });
+              setShowDmModal(false);
+              setDmInput('');
+              if (addToast) addToast('💌 Message sent to ' + dmTarget.username, 'success');
+            }} style={{ width: '100%', background: BURG, border: 'none', borderRadius: 12, padding: '13px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: GOLD, cursor: 'pointer', letterSpacing: 2 }}>
+              SEND MESSAGE
+            </button>
           </div>
         </div>
       )}

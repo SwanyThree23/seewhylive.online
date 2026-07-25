@@ -2882,6 +2882,20 @@ io.on('connection', function(socket) {
     });
   });
 
+  // ── private-dm — host sends a private message to one guest socket ───────
+  socket.on('private-dm', function(data) {
+    var roomId    = data.roomId || socket.data.roomId;
+    var toGuestId = data.toGuestId;
+    var message   = String(data.message || '').trim().slice(0, 300);
+    if (!roomId || !toGuestId || !message) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.sockets.sockets.forEach(function(s) {
+      if (s.data.roomId === roomId && (s.data.userId === toGuestId || s.data.guestId === toGuestId)) {
+        io.to(s.id).emit('private-dm', { from: socket.data.username || 'Host', message: message, ts: Math.floor(Date.now() / 1000) });
+      }
+    });
+  });
+
   // ── pin-announcement — host pins a persistent text banner above chat ────
   socket.on('pin-announcement', function(data) {
     var roomId = data.roomId || socket.data.roomId;
