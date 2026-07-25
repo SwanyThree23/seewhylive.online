@@ -78,15 +78,13 @@ export default function PanelGrid({
               border: g
                 ? '1px solid rgba(201,168,76,0.12)'
                 : '1px dashed rgba(255,255,255,0.06)',
-              // Square aspect ratio — OctCell's clip-path looks best in square cells
-              aspectRatio: '1 / 1',
+              minHeight: 0,
             }}
           >
             {g ? (
               <OctCell
                 guest={g}
-                fill={false}
-                sz={undefined}
+                fill={true}
                 isHost={isHost}
                 fadesMode={fadesMode}
                 branding={branding}
