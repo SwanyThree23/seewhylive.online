@@ -1968,6 +1968,15 @@ io.on('connection', function(socket) {
       guestTotals:   Object.fromEntries(roomTotals)
     });
 
+    // Notify the gifted guest directly
+    if (toGuestId) {
+      io.sockets.sockets.forEach(function(s) {
+        if (s.data.roomId === roomId && (s.data.userId === toGuestId || s.data.guestId === toGuestId)) {
+          io.to(s.id).emit('gift-notification', { from: fromUser, emoji: emoji, name: name, valueCents: valueCents, ts: ts });
+        }
+      });
+    }
+
     try {
       var hostId = giftRoom ? (giftRoom.hostUserId || giftRoom.hostSocketId) : roomId;
       analytics.recordEarning(hostId, roomId, 'gift', valueCents, name + ' from ' + fromUser);

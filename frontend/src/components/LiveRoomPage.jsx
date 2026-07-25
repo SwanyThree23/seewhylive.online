@@ -436,6 +436,7 @@ export default function LiveRoomPage({
   var [latestCaption,      setLatestCaption]      = useState('');   // latest transcript text
   var [myEngagement,       setMyEngagement]       = useState({ chat: 0, react: 0, gift: 0 });
   var lastTapRef = useRef(0); // for double-tap detection
+  var [showMuteAllConfirm, setShowMuteAllConfirm] = useState(false);
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -664,6 +665,12 @@ export default function LiveRoomPage({
       setPinnedAnnouncement(data.text ? { text: data.text } : null);
     });
 
+    socket.on('gift-notification', function(data) {
+      if (!data || !data.from) return;
+      var dollars = (data.valueCents / 100).toFixed(2);
+      if (addToast) addToast(data.emoji + ' ' + data.from + ' sent you ' + data.name + ' ($' + dollars + ')!', 'success');
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -880,6 +887,7 @@ export default function LiveRoomPage({
       socket.off('chat-mention');
       socket.off('spotlight-request');
       socket.off('pin-announcement');
+      socket.off('gift-notification');
       socket.off('room-tags');
       socket.off('link-pinned');
       socket.off('role-changed');
@@ -1958,6 +1966,7 @@ export default function LiveRoomPage({
               { emoji: '🔗', label: 'Pin Link', active: !!pinnedLink, onTap: function() { setLinkUrl(pinnedLink ? pinnedLink.url : ''); setLinkLabel(pinnedLink ? pinnedLink.label : ''); setLinkEmoji(pinnedLink ? pinnedLink.emoji : '🔗'); setShowLinkPin(true); } },
               { emoji: '🎊', label: 'Celebrate', active: false, onTap: function() { if (socket) socket.emit('celebrate', { roomId: roomId, type: 'confetti' }); } },
               { emoji: '📌', label: 'Banner', active: !!pinnedAnnouncement, onTap: function() { setPinAnnounceInput(pinnedAnnouncement ? pinnedAnnouncement.text : ''); setShowPinAnnounce(true); } },
+              { emoji: '🔇', label: 'Mute All', active: false, onTap: function() { setShowMuteAllConfirm(true); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -3978,6 +3987,29 @@ export default function LiveRoomPage({
                 })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ MUTE ALL CONFIRM ════════════════ */}
+      {showMuteAllConfirm && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90, animation: 'fadeSlideIn .2s ease' }}>
+          <div style={{ background: SURF, border: '1px solid ' + BORDER, borderRadius: 16, padding: '24px 28px', textAlign: 'center', maxWidth: 300 }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🔇</div>
+            <div style={{ fontWeight: 700, fontSize: 18, color: TEXT, marginBottom: 6 }}>Mute Everyone?</div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, marginBottom: 20, lineHeight: 1.5 }}>This will silence all guests immediately. They can unmute themselves.</div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={function() { setShowMuteAllConfirm(false); }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: MUTED, cursor: 'pointer', letterSpacing: 1 }}>
+                CANCEL
+              </button>
+              <button onClick={function() {
+                if (socket) socket.emit('mute-all', { roomId: roomId });
+                setShowMuteAllConfirm(false);
+                if (addToast) addToast('🔇 All guests muted', 'info');
+              }} style={{ flex: 1, background: RED, border: 'none', borderRadius: 10, padding: '11px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#fff', cursor: 'pointer', letterSpacing: 1 }}>
+                MUTE ALL
+              </button>
+            </div>
           </div>
         </div>
       )}
