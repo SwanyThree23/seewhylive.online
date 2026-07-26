@@ -57,7 +57,11 @@ router.post('/:id/start', requireAuth, async (req, res) => {
 
 router.post('/:id/vote', requireAuth, async (req, res) => {
   try {
-    const { side, giftValueCents } = req.body; // side: 'challenger' | 'defender'
+    const { side } = req.body;
+    const giftValueCents = Math.floor(req.body.giftValueCents);
+    if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) {
+      return res.status(400).json({ error: 'giftValueCents must be between 1 and 50000' });
+    }
     const battle = await battleService.castVote({
       battleId: req.params.id,
       voterId: req.user.id,
