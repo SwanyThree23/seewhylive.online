@@ -179,6 +179,7 @@ router.get('/list', function(req, res) {
 
   var path = '/rest/v1/vods'
            + '?stream_id=eq.' + encodeURIComponent(streamId)
+           + '&is_public=eq.true'
            + '&order=created_at.desc'
            + '&limit=' + limit;
 
