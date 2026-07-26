@@ -11,12 +11,12 @@ const requireAuth  = require('../middleware/auth');
 
 router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
   try {
-    const { displayName, role, vdoStreamId, mediasoupProducerId } = req.body;
+    const { displayName, vdoStreamId, mediasoupProducerId } = req.body;
     const guest = await guestService.joinStreamAsGuest({
       streamId: req.params.streamId,
       userId: req.user.id,
       displayName,
-      role,
+      role: 'guest',
       vdoStreamId,
       mediasoupProducerId,
     });
@@ -59,11 +59,10 @@ router.get('/streams/:streamId', async (req, res) => {
 
 router.post('/streams/:streamId/participants', requireAuth, async (req, res) => {
   try {
-    const { role } = req.body;
     const participant = await guestService.joinRoomAsParticipant({
       streamId: req.params.streamId,
       userId: req.user.id,
-      role,
+      role: 'viewer',
     });
     res.status(201).json(participant);
   } catch (err) {

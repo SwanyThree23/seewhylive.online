@@ -177,6 +177,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
 });
 
 router.get('/admin/metrics', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     if (analytics) {
       var metrics = analytics.getPlatformMetrics();
@@ -195,9 +196,9 @@ router.get('/admin/metrics', requireAuth, function(req, res) {
 
 // ─── MODERATION routes ────────────────────────────────────────────────────────
 
-router.get('/moderation/word-filters', function(req, res) {
+router.get('/moderation/word-filters', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       return res.json({ filters: moderation.getWordFilters(creatorId) });
     }
@@ -210,7 +211,7 @@ router.get('/moderation/word-filters', function(req, res) {
 router.post('/moderation/word-filters', requireAuth, function(req, res) {
   try {
     var word = req.body.word || '';
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     if (!word) {
       return res.json({ success: false, error: 'word is required' });
     }
@@ -226,7 +227,7 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
 
 router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       moderation.removeWordFilter(creatorId, req.params.word);
     }
@@ -239,7 +240,7 @@ router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) 
 router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
   try {
     var roomId = req.body.roomId || '';
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     var enabled = req.body.enabled || false;
     if (moderation) {
       moderation.setSubscriberOnly(roomId, creatorId, enabled);
@@ -252,7 +253,7 @@ router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
 
 router.post('/moderation/ban', requireAuth, function(req, res) {
   try {
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = req.user.id;
     var bannedUserId = req.body.bannedUserId || '';
     var bannedUsername = req.body.bannedUsername || '';
     var reason = req.body.reason || '';
@@ -268,7 +269,7 @@ router.post('/moderation/ban', requireAuth, function(req, res) {
 
 router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       moderation.unbanUser(creatorId, req.params.userId);
     }
@@ -278,9 +279,9 @@ router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
   }
 });
 
-router.get('/moderation/bans', function(req, res) {
+router.get('/moderation/bans', requireAuth, function(req, res) {
   try {
-    var creatorId = req.query.creatorId || 'default';
+    var creatorId = req.user.id;
     if (moderation) {
       return res.json({ bans: moderation.getBannedUsers(creatorId) });
     }
@@ -291,10 +292,11 @@ router.get('/moderation/bans', function(req, res) {
 });
 
 router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var userId = req.body.userId || '';
     var reason = req.body.reason || '';
-    var bannedBy = req.body.bannedBy || 'system';
+    var bannedBy = req.user.id;
     if (moderation) {
       moderation.shadowBanUser(userId, reason, bannedBy);
     }
@@ -413,7 +415,7 @@ router.post('/payments/payout', requireAuth, function(req, res) {
 
 router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
-    var subscriberId = req.body.subscriberId || 'anon';
+    var subscriberId = req.user.id;
     var creatorId = req.body.creatorId || 'default';
     var tier = req.body.tier || 'fan';
     var amountCents = req.body.amountCents || 0;
@@ -599,7 +601,7 @@ router.post('/ppv/verify', function(req, res) {
       delete _ppvTokens[token];
       return res.json({ valid: false, error: 'PPV token expired' });
     }
-    if (entry.streamId !== streamId && streamId) {
+    if (!streamId || entry.streamId !== streamId) {
       return res.json({ valid: false, error: 'Token not valid for this stream' });
     }
     return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
@@ -618,10 +620,16 @@ router.post('/n8n/test', requireAuth, function(req, res) {
       return res.json({ success: false, error: 'webhookUrl is required' });
     }
     var https = require('https');
-    var http = require('http');
     var url = require('url');
     var parsed = url.parse(webhookUrl);
     var isHttps = parsed.protocol === 'https:';
+    if (!isHttps) {
+      return res.status(400).json({ success: false, error: 'webhookUrl must use https://' });
+    }
+    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+    if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
+      return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
+    }
     var bodyStr = JSON.stringify(payload);
     var options = {
       hostname: parsed.hostname,
@@ -630,7 +638,7 @@ router.post('/n8n/test', requireAuth, function(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr) }
     };
-    var reqLib = isHttps ? https : http;
+    var reqLib = https;
     var outReq = reqLib.request(options, function(outRes) {
       return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
     });
@@ -652,20 +660,8 @@ var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 router.post('/stream-sync', requireAuth, async function(req, res) {
   try {
     var b = req.body;
-    var creatorId = b.creator_id;
-    // If not a UUID, look up by username
-    if (creatorId && !creatorId.match(/^[0-9a-f-]{36}$/i)) {
-      var uResp = await fetch(SUPA_URL + '/rest/v1/users?username=eq.' + encodeURIComponent(creatorId) + '&select=id&limit=1', {
-        headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
-      });
-      var uData = await uResp.json();
-      if (uData && uData[0] && uData[0].id) { creatorId = uData[0].id; }
-      else { creatorId = null; }
-      // fallback: hardcoded known users
-      if (!creatorId && b.creator_id === 'swanythree23') { creatorId = 'fa691550-9019-4f89-8a25-b1f88c10ac9e'; }
-    }
-    var payload = { title: b.title, status: b.status || 'live', viewer_count: b.viewer_count || 0, started_at: new Date().toISOString(), category: b.category || 'live', is_live: true, host_user_id: creatorId || null };
-    if (creatorId) payload.creator_id = creatorId;
+    var creatorId = req.user.id;
+    var payload = { title: b.title, status: b.status || 'live', viewer_count: b.viewer_count || 0, started_at: new Date().toISOString(), category: b.category || 'live', is_live: true, host_user_id: creatorId, creator_id: creatorId };
     var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
@@ -681,6 +677,13 @@ router.post('/stream-end', requireAuth, async function(req, res) {
     var stream_id = req.body.stream_id;
     if (!stream_id || !/^[0-9a-f-]{36}$/i.test(stream_id)) {
       return res.status(400).json({ ok: false, error: 'Invalid stream_id' });
+    }
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id + '&select=host_user_id&limit=1', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    var ownerData = await ownerResp.json();
+    if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
     }
     await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id, {
       method: 'PATCH',
@@ -825,6 +828,17 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
     var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));
+    if (b.ingest_url) {
+      var parsedIngest;
+      try { parsedIngest = new URL(b.ingest_url); } catch (_) { return res.status(400).json({ ok: false, error: 'ingest_url is not a valid URL' }); }
+      if (!/^rtmps?:$/i.test(parsedIngest.protocol)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url must use rtmp:// or rtmps://' });
+      }
+      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+      if (!parsedIngest.hostname || PRIV.test(parsedIngest.hostname)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url hostname not allowed' });
+      }
+    }
     var destinations = b.destinations || [];
 
     // Stop any existing fanout for this stream
@@ -854,6 +868,8 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     }
 
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
+    activeFanouts[streamId] = activeFanouts[streamId] || {};
+    activeFanouts[streamId].ownerId = req.user.id;
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
   } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
@@ -862,7 +878,11 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
 router.post('/fanout-stop', requireAuth, function(req, res) {
   var streamId = req.body.stream_id || 'default';
   var entry = activeFanouts[streamId];
-  if (entry && entry.process) {
+  if (!entry) return res.json({ ok: false, error: 'No active fanout for ' + streamId });
+  if (entry.ownerId && entry.ownerId !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  if (entry.process) {
     entry.process.kill('SIGTERM');
     delete activeFanouts[streamId];
     res.json({ ok: true, stopped: streamId });
@@ -873,6 +893,7 @@ router.post('/fanout-stop', requireAuth, function(req, res) {
 
 // Kill every active FFmpeg fanout process — admin/cleanup endpoint.
 router.post('/fanout-stop-all', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   var ids = Object.keys(activeFanouts);
   var killed = 0;
   ids.forEach(function(id) {
@@ -887,7 +908,7 @@ router.post('/fanout-stop-all', requireAuth, function(req, res) {
   res.json({ ok: true, killed: killed, stream_ids: ids });
 });
 
-router.get('/fanout-status', function(req, res) {
+router.get('/fanout-status', requireAuth, function(req, res) {
   var streamId = req.query.stream_id;
   if (streamId) {
     var entry = activeFanouts[streamId];

@@ -13,8 +13,11 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-router.get('/me/:userId', async (req, res) => {
+router.get('/me/:userId', requireAuth, async (req, res) => {
   try {
+    if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const data = await rewardsService.getUserPoints(req.params.userId);
     res.json(data);
   } catch (err) {

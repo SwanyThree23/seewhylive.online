@@ -31,6 +31,12 @@ router.post('/:id/privacy', requireAuth, async (req, res) => {
 // Host-facing list of pending join requests (approval-gated rooms).
 router.get('/:id/join-requests', requireAuth, async (req, res) => {
   try {
+    const ownerCheck = await db.query(
+      'SELECT creator_id FROM streams WHERE id = $1', [req.params.id]
+    );
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const result = await db.query(
       `SELECT r.id, r.user_id, r.requested_at, u.display_name, u.avatar_url
        FROM room_join_requests r JOIN users u ON u.id = r.user_id

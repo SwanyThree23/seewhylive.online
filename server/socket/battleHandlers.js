@@ -101,6 +101,12 @@ function registerBattleHandlers(io, socket) {
         if (cb) cb({ ok: false, error: 'giftValueCents must be a positive integer' });
         return;
       }
+      // Cap at $500 per vote to limit score inflation from unverified client values
+      const MAX_VOTE_CENTS = 50000;
+      if (cents > MAX_VOTE_CENTS) {
+        if (cb) cb({ ok: false, error: 'giftValueCents exceeds maximum' });
+        return;
+      }
       const battle = await battleService.castVote({
         battleId: payload.battleId,
         voterId: socket.data.userId,

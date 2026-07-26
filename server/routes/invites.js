@@ -4,6 +4,7 @@
 
 const express = require('express');
 const router = express.Router();
+const db          = require('../db');
 const inviteService = require('../services/inviteService');
 const requireAuth   = require('../middleware/auth');
 
@@ -49,6 +50,10 @@ router.get('/me', requireAuth, async (req, res) => {
 
 router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
   try {
+    const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [req.params.streamId]);
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const { displayName, role, maxUses } = req.body;
     const link = await inviteService.createInviteLink({
       streamId: req.params.streamId,
@@ -63,7 +68,7 @@ router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/links/:token/redeem', async (req, res) => {
+router.post('/links/:token/redeem', requireAuth, async (req, res) => {
   try {
     const link = await inviteService.redeemInviteLink(req.params.token);
     res.json(link);
@@ -84,6 +89,10 @@ router.post('/links/:id/revoke', requireAuth, async (req, res) => {
 
 router.get('/streams/:streamId/links', requireAuth, async (req, res) => {
   try {
+    const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [req.params.streamId]);
+    if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
     const links = await inviteService.getStreamInviteLinks(req.params.streamId);
     res.json(links);
   } catch (err) {
