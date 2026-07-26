@@ -308,7 +308,7 @@ router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
 
 // ─── STRIPE / PAYMENT routes ──────────────────────────────────────────────────
 
-router.get('/creator/onboard/status', function(req, res) {
+router.get('/creator/onboard/status', requireAuth, function(req, res) {
   try {
     return res.json({
       connected: !!(process.env.STRIPE_SECRET_KEY),
@@ -350,6 +350,9 @@ router.post('/payments/tip', requireAuth, function(req, res) {
     }
 
     var amtCents = Math.floor(amountCents);
+    if (!Number.isFinite(amtCents) || amtCents > 50000) {
+      return res.status(400).json({ success: false, error: 'Tip amount exceeds maximum of $500.00' });
+    }
     var creatorCents = Math.floor(amtCents * CREATOR);
     var platformCents = amtCents - creatorCents;
 
@@ -420,6 +423,10 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
     var tier = req.body.tier || 'fan';
     var amountCents = req.body.amountCents || 0;
     var id = uuidv4();
+
+    if (!Number.isFinite(amountCents) || amountCents < 0 || amountCents > 50000) {
+      return res.status(400).json({ success: false, error: 'amountCents must be between 0 and 50000' });
+    }
 
     if (moderation) {
       try {
@@ -740,7 +747,8 @@ router.get('/vault/key-meta', requireAuth, function(req, res) {
 
 // Dedicated health check — tests whether VAULT_SECRET is configured and
 // encryption is operational without reading or writing any real key data.
-router.get('/vault/health', function(req, res) {
+router.get('/vault/health', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
   if (!vault) {
     return res.status(503).json({ ok: false, ready: false, reason: 'vault module not loaded' });
   }

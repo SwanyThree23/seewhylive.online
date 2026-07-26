@@ -7,7 +7,7 @@ const db = require('../db'); // <-- verify this matches your actual db module
 // caller's responsibility — pass a stable sourceId if the same event could
 // fire twice (e.g. don't award a battle win twice for the same battle).
 async function awardPoints({ userId, points, source, sourceId }) {
-  if (!userId || !points) return null;
+  if (!userId || !points || points <= 0 || !Number.isFinite(points)) return null;
 
   await db.query(
     `INSERT INTO loyalty_point_events (user_id, points, source, source_id)

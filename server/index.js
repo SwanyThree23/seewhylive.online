@@ -1498,7 +1498,7 @@ io.on('connection', function(socket) {
 
   // ── update-username ────────────────────────────────────────────────────
   socket.on('update-username', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
+    var roomId   = socket.data.roomId;
     var newName  = String(data.username || '').trim().slice(0, 32);
     if (!roomId || !newName) return;
 
@@ -1523,7 +1523,7 @@ io.on('connection', function(socket) {
 
   // ── chat-message ───────────────────────────────────────────────────────
   socket.on('chat-message', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
+    var roomId   = socket.data.roomId;
     var username = socket.data.username || 'Guest';
     var message  = data.message || '';
     var userId   = socket.data.userId;
@@ -1752,9 +1752,9 @@ io.on('connection', function(socket) {
 
   // ── speaking ───────────────────────────────────────────────────────────
   socket.on('speaking', function(data) {
-    var roomId  = data.roomId || socket.data.roomId;
-    var guestId = data.guestId || socket.data.guestId;
-    if (!roomId) return;
+    var roomId  = socket.data.roomId;
+    var guestId = socket.data.guestId;
+    if (!roomId || !guestId) return;
     io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
@@ -1772,8 +1772,10 @@ io.on('connection', function(socket) {
 
   // ── hand-lower ─────────────────────────────────────────────────────────
   socket.on('hand-lower', function(data) {
-    var roomId  = (data && data.roomId) || socket.data.roomId;
-    var guestId = (data && data.guestId) || socket.data.guestId || socket.id;
+    var roomId  = socket.data.roomId;
+    var guestId = (socket.data.role === 'host' || socket.data.role === 'cohost')
+      ? ((data && data.guestId) || socket.data.guestId)
+      : socket.data.guestId;
     if (!roomId) return;
     io.to(roomId).emit('hand-lower', { guestId: guestId });
   });
@@ -2035,7 +2037,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('poll-vote', function(data) {
-    var roomId    = data.roomId || socket.data.roomId;
+    var roomId    = socket.data.roomId;
     if (!roomId) return;
     var optionIdx = Math.floor(data.optionIdx || 0);
     var poll      = polls.get(roomId);
@@ -2059,11 +2061,11 @@ io.on('connection', function(socket) {
 
   // ── Q&A queue ─────────────────────────────────────────────────────────
   socket.on('qa-question', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
     var text = String(data.text).slice(0, 300);
-    var id   = data.id || uuidv4();
-    var user = socket.data.username || data.username || 'Guest';
+    var id   = uuidv4();
+    var user = socket.data.username || 'Guest';
     if (!qaQueues.has(roomId)) qaQueues.set(roomId, new Map());
     var queue = qaQueues.get(roomId);
     queue.set(id, { id: id, username: user, text: text, upvotes: 0, ts: Date.now() });
@@ -2135,7 +2137,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('vs-vote', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) return;
     var vp = vsPolls.get(roomId);
     if (!vp || !vp.active) return;
@@ -2378,8 +2380,8 @@ io.on('connection', function(socket) {
 
   // ── collab events ─────────────────────────────────────────────────────
   socket.on('collab-request', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
-    var fromUser = data.fromUser || socket.data.username || 'Creator';
+    var roomId   = socket.data.roomId;
+    var fromUser = socket.data.username || 'Creator';
     if (!roomId) return;
     io.to(roomId).emit('collab-request', {
       from:    fromUser,
@@ -2392,8 +2394,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('collab-accept', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
-    var fromUser = data.fromUser || socket.data.username || 'Host';
+    var roomId   = socket.data.roomId;
+    var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
     io.to(roomId).emit('collab-accept', {
       from:      fromUser,
@@ -2404,8 +2406,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('collab-message', function(data) {
-    var roomId   = data.roomId || socket.data.roomId;
-    var fromUser = data.fromUser || socket.data.username || 'Host';
+    var roomId   = socket.data.roomId;
+    var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
     io.to(roomId).emit('collab-message', {
       collabId: data.collabId || '',
@@ -2549,8 +2551,8 @@ io.on('connection', function(socket) {
 
   // ── Audio Stage handlers ───────────────────────────────────────────────
   socket.on('audio-stage-join', function(data) {
-    if (!data || !data.roomId) return;
-    var sRoomId = String(data.roomId);
+    var sRoomId = socket.data.roomId;
+    if (!sRoomId) return;
     if (!stageRooms.has(sRoomId)) {
       stageRooms.set(sRoomId, { speakers: [], listeners: [] });
     }
@@ -2573,8 +2575,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('audio-stage-leave', function(data) {
-    if (!data || !data.roomId) return;
-    var sRoomId = String(data.roomId);
+    var sRoomId = socket.data.stageRoomId || socket.data.roomId;
+    if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
@@ -2584,8 +2586,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('audio-stage-hand-raise', function(data) {
-    if (!data || !data.roomId) return;
-    var sRoomId = String(data.roomId);
+    var sRoomId = socket.data.stageRoomId || socket.data.roomId;
+    if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
@@ -2595,8 +2597,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('audio-stage-speaking', function(data) {
-    if (!data || !data.roomId) return;
-    var sRoomId = String(data.roomId);
+    var sRoomId = socket.data.stageRoomId || socket.data.roomId;
+    if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
@@ -2659,8 +2661,8 @@ io.on('connection', function(socket) {
 
   // ── PK cheer handler ──────────────────────────────────────────────────
   socket.on('pk-cheer', function(data) {
-    if (!data || !data.roomId) return;
-    var cheerRoomId = String(data.roomId);
+    var cheerRoomId = socket.data.roomId;
+    if (!cheerRoomId) return;
     var battle = vsPolls.get(cheerRoomId);
     if (!battle || !battle.active) return;
     var cheerSide = data.side === 'B' ? 'B' : 'A';
@@ -2689,8 +2691,8 @@ io.on('connection', function(socket) {
   // ── Love micro-tip handler ─────────────────────────────────────────────
   socket.on('love-send', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
-    if (!data || !data.roomId) return;
-    var loveRoomId = String(data.roomId);
+    var loveRoomId = socket.data.roomId;
+    if (!loveRoomId) return;
     var prev = loveCounts.get(loveRoomId) || 0;
     var newTotal = prev + 1;
     loveCounts.set(loveRoomId, newTotal);
@@ -2750,8 +2752,8 @@ io.on('connection', function(socket) {
   });
 
   socket.on('trivia-answer', function(data) {
-    if (!data || !data.roomId) return;
-    var tRoomId = String(data.roomId);
+    var tRoomId = socket.data.roomId;
+    if (!tRoomId) return;
     var trivia = triviaRooms.get(tRoomId);
     if (!trivia || !trivia.active) return;
     var idx = parseInt(data.answerIdx, 10);
@@ -3008,7 +3010,7 @@ io.on('connection', function(socket) {
 
   // ── poll-vote ─────────────────────────────────────────────────────────
   socket.on('poll-vote', function(data) {
-    var voteRoomId = data.roomId || socket.data.roomId;
+    var voteRoomId = socket.data.roomId;
     if (!voteRoomId) return;
     var pollToVote = activePolls.get(voteRoomId);
     if (!pollToVote || pollToVote.id !== data.pollId) return;
