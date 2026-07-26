@@ -861,6 +861,12 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
         } catch (_) { /* key not in vault, use body key */ }
       }
       if (!resolvedKey) continue;
+      // Validate destination URL to prevent SSRF via FFmpeg output targets
+      var destParsed;
+      try { destParsed = new URL(d.url); } catch (_) { continue; }
+      if (!/^rtmps?:$/i.test(destParsed.protocol)) continue;
+      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+      if (!destParsed.hostname || PRIV2.test(destParsed.hostname)) continue;
       resolvedDests.push({ url: d.url, key: resolvedKey, label: d.label || d.platform || 'custom' });
     }
 
