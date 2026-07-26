@@ -582,7 +582,8 @@ app.get('/api/health', function(req, res) {
 });
 
 // GET /api/metrics
-app.get('/api/metrics', function(req, res) {
+app.get('/api/metrics', requireAuth, function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var totalViews = db.prepare('SELECT COUNT(*) as cnt FROM chat_history').get().cnt;
     var giftsSum   = db.prepare('SELECT COALESCE(SUM(value_cents),0) as total FROM gifts').get().total;
@@ -1096,7 +1097,7 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId;
     var guestId  = data.guestId || socket.data.userId;
     var username = data.username || 'Guest';
-    var role     = data.role || socket.data.role || 'viewer';
+    var role     = socket.data.role || 'viewer';
 
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
@@ -1585,10 +1586,11 @@ io.on('connection', function(socket) {
   socket.on('send-gift', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId                 = data.roomId || socket.data.roomId;
-    var fromUser               = data.fromUser || socket.data.username || 'Guest';
+    var fromUser               = socket.data.username || 'Guest';
     var emoji                  = data.emoji || '';
     var name                   = data.name || 'Gift';
     var valueCents             = Math.floor(data.valueCents || 0);
+    if (valueCents > 50000) return;
     var toGuestId              = data.toGuestId || null;
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
@@ -1705,7 +1707,7 @@ io.on('connection', function(socket) {
   socket.on('merch-order', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId     = data.roomId || socket.data.roomId;
-    var buyerUser  = data.buyerUser || socket.data.username || 'Guest';
+    var buyerUser  = socket.data.username || 'Guest';
     var itemName   = String(data.itemName || 'Merch').slice(0, 80);
     var priceCents = Math.floor(data.priceCents || 0);
     var toGuestId  = data.toGuestId || null;
@@ -1987,8 +1989,9 @@ io.on('connection', function(socket) {
   });
 
   socket.on('subscribe', function(data) {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId     = data.roomId || socket.data.roomId;
-    var fromUser   = data.username || socket.data.username || 'Guest';
+    var fromUser   = socket.data.username || 'Guest';
     var tier       = String(data.tier || 'bronze');
     var priceCents = Math.floor(data.price_cents || 0);
     var CREATOR    = 0.90;
@@ -2194,6 +2197,7 @@ io.on('connection', function(socket) {
 
   // ── clip-marker ────────────────────────────────────────────────────────
   socket.on('clip-marker', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId   = data.roomId || socket.data.roomId;
     if (!roomId) return;
     var label    = data.label ? String(data.label).slice(0, 60) : 'Clip Marker';
@@ -2488,8 +2492,9 @@ io.on('connection', function(socket) {
       }
     }
 
+    var wasAlreadyLive = !!room.isLive;
     room.isLive        = true;
-    room.liveStartedAt = now;
+    room.liveStartedAt = room.liveStartedAt || now;
     room.streamTitle   = (data && data.streamTitle) ? String(data.streamTitle).slice(0, 80) : '';
 
     io.to(roomId).emit('go-live-confirmed', {
@@ -2514,7 +2519,8 @@ io.on('connection', function(socket) {
 
     if (ack) ack({ started: true });
 
-    // Send push notifications to all subscribers
+    // Send push notifications to all subscribers (once per go-live, not on replay)
+    if (wasAlreadyLive) return;
     try {
       var pushSubs = db.prepare('SELECT endpoint, p256dh, auth FROM push_subscriptions').all();
       if (pushSubs && pushSubs.length > 0) {
@@ -2677,6 +2683,7 @@ io.on('connection', function(socket) {
 
   // ── Love micro-tip handler ─────────────────────────────────────────────
   socket.on('love-send', function(data) {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     if (!data || !data.roomId) return;
     var loveRoomId = String(data.roomId);
     var prev = loveCounts.get(loveRoomId) || 0;
@@ -3163,7 +3170,11 @@ rtmp.on('fanout-restarted', function(data) {
 app.post('/api/webhooks/deploy', function(req, res) {
   var token    = req.headers['x-deploy-token'] || '';
   var expected = process.env.DEPLOY_TOKEN || '';
-  if (!expected || token !== expected) {
+  var authorized = false;
+  if (expected && token.length === expected.length) {
+    try { authorized = require('crypto').timingSafeEqual(Buffer.from(token), Buffer.from(expected)); } catch (_) {}
+  }
+  if (!authorized) {
     logger.warn('[deploy-webhook] unauthorized attempt from ' + req.ip);
     return res.status(401).json({ error: 'unauthorized' });
   }
