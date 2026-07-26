@@ -60,21 +60,14 @@ async function createInviteLink({ streamId, createdBy, displayName, role, maxUse
 // Validates and consumes one use of an invite link. Does not itself create a
 // stream_guests row — call guestService.joinStreamAsGuest() after this succeeds.
 async function redeemInviteLink(token) {
-  const invite = await db.query(
-    `SELECT * FROM stream_guest_invites WHERE guest_token = $1`,
-    [token]
-  );
-  const row = invite.rows[0];
-  if (!row) throw new Error('invite link not found');
-  if (row.revoked_at) throw new Error('invite link has been revoked');
-  if (row.use_count >= row.max_uses) throw new Error('invite link has reached its use limit');
-
   const result = await db.query(
     `UPDATE stream_guest_invites
      SET use_count = use_count + 1, used_at = now()
-     WHERE id = $1 RETURNING *`,
-    [row.id]
+     WHERE guest_token = $1 AND use_count < max_uses AND revoked_at IS NULL
+     RETURNING *`,
+    [token]
   );
+  if (!result.rows[0]) throw new Error('invite link not found, exhausted, or revoked');
   return result.rows[0];
 }
 
