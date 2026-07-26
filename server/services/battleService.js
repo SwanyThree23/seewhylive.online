@@ -78,10 +78,14 @@ async function startBattle(battleId) {
 }
 
 async function castVote({ battleId, voterId, side, giftValueCents }) {
+  if (!Number.isFinite(giftValueCents) || giftValueCents < 1) throw new Error('invalid giftValueCents');
   const active = await db.query(
-    `SELECT id FROM pk_battles WHERE id = $1 AND status = 'active'`, [battleId]
+    `SELECT id, challenger_id, defender_id FROM pk_battles WHERE id = $1 AND status = 'active'`, [battleId]
   );
   if (!active.rows[0]) throw new Error('battle not active');
+  if (voterId === active.rows[0].challenger_id || voterId === active.rows[0].defender_id) {
+    throw new Error('battle participants may not vote');
+  }
 
   await db.query(
     `INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)

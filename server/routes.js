@@ -319,7 +319,7 @@ router.get('/creator/onboard/status', function(req, res) {
   }
 });
 
-router.get('/creator/onboard/link', function(req, res) {
+router.get('/creator/onboard/link', requireAuth, function(req, res) {
   try {
     if (stripe) {
       stripe.createConnectAccount('creator@seewhylive.online')
@@ -604,6 +604,7 @@ router.post('/ppv/verify', function(req, res) {
     if (!streamId || entry.streamId !== streamId) {
       return res.json({ valid: false, error: 'Token not valid for this stream' });
     }
+    delete _ppvTokens[token];
     return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
   } catch (err) {
     return res.json({ success: false, error: err.message });

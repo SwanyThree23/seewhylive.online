@@ -377,7 +377,7 @@ var vsPolls             = new Map();  // roomId → { id, sideA, sideB, votesA:S
 var judgeRosters        = new Map();  // roomId → Map<userId, { userId, username, scores:[] }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
-var pkVotes             = new Map();  // roomId → { challenger: n, defender: n }
+var pkVotes             = new Map();  // roomId → { challenger: Set<socketId>, defender: Set<socketId> }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
 var stageRooms          = new Map();  // roomId → { speakers:[], listeners:[] }
@@ -678,20 +678,6 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
   }
 });
 
-// POST /api/push/subscribe
-app.post('/api/push/subscribe', function(req, res) {
-  var sub = req.body.subscription;
-  var username = req.body.username || 'viewer';
-  if (!sub || !sub.endpoint) return res.status(400).json({ error: 'Invalid subscription' });
-  var p256dh = (sub.keys && sub.keys.p256dh) ? sub.keys.p256dh : '';
-  var auth   = (sub.keys && sub.keys.auth)   ? sub.keys.auth   : '';
-  try {
-    db.prepare('INSERT OR REPLACE INTO push_subscriptions (endpoint, username, p256dh, auth) VALUES (?, ?, ?, ?)').run(sub.endpoint, username, p256dh, auth);
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // POST /api/push/unsubscribe
 app.post('/api/push/unsubscribe', function(req, res) {
@@ -708,15 +694,16 @@ app.post('/api/push/unsubscribe', function(req, res) {
 // GET /api/payout-history
 app.get('/api/payout-history', requireAuth, function(req, res) {
   var roomId = req.query.roomId || null;
+  var userId = req.user.id;
   var stmt;
   var rows;
   try {
     if (roomId) {
-      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? GROUP BY day ORDER BY day DESC LIMIT 30');
-      rows = stmt.all(roomId);
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? AND room_id IN (SELECT id FROM rooms WHERE host_user_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
+      rows = stmt.all(roomId, userId);
     } else {
-      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats GROUP BY day ORDER BY day DESC LIMIT 30');
-      rows = stmt.all();
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id IN (SELECT id FROM rooms WHERE host_user_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
+      rows = stmt.all(userId);
     }
     var sessions = (rows || []).map(function(row, i) {
       return {
@@ -882,7 +869,7 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
 // ─── On-demand translation endpoint ──────────────────────────────────────
 var VALID_TRANSLATE_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT','NL','PL','TR','VI'];
 
-app.post('/api/translate', function(req, res) {
+app.post('/api/translate', requireAuth, function(req, res) {
   var body       = req.body;
   var text       = typeof body.text === 'string' ? body.text.slice(0, 500) : '';
   var targetLang = typeof body.targetLang === 'string' ? body.targetLang.slice(0, 5).toUpperCase() : 'EN';
@@ -1538,7 +1525,7 @@ io.on('connection', function(socket) {
     var roomId   = data.roomId || socket.data.roomId;
     var username = data.username || socket.data.username || 'Guest';
     var message  = data.message || '';
-    var userId   = data.userId  || socket.data.userId;
+    var userId   = socket.data.userId;
 
     if (!roomId || !message.trim()) return;
 
@@ -1596,7 +1583,7 @@ io.on('connection', function(socket) {
 
   // ── send-gift ──────────────────────────────────────────────────────────
   socket.on('send-gift', function(data) {
-    if (!socket.data.userId || socket.data.userId === 'anon') return;
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId                 = data.roomId || socket.data.roomId;
     var fromUser               = data.fromUser || socket.data.username || 'Guest';
     var emoji                  = data.emoji || '';
@@ -1716,7 +1703,7 @@ io.on('connection', function(socket) {
 
   // ── merch-order ────────────────────────────────────────────────────────
   socket.on('merch-order', function(data) {
-    if (!socket.data.userId || socket.data.userId === 'anon') return;
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId     = data.roomId || socket.data.roomId;
     var buyerUser  = data.buyerUser || socket.data.username || 'Guest';
     var itemName   = String(data.itemName || 'Merch').slice(0, 80);
@@ -1954,12 +1941,14 @@ io.on('connection', function(socket) {
   });
 
   socket.on('bot-add-trigger', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.trigger) return;
     io.to(roomId).emit('bot-trigger-added', { trigger: data.trigger });
   });
 
   socket.on('bot-remove-trigger', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId || !data.triggerId) return;
     io.to(roomId).emit('bot-trigger-removed', { triggerId: data.triggerId });
@@ -2250,9 +2239,10 @@ io.on('connection', function(socket) {
 
   // ── super-chat ─────────────────────────────────────────────────────────
   socket.on('super-chat', function(data) {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId      = data.roomId || socket.data.roomId;
-    var username    = data.username || socket.data.username || 'Guest';
-    var userId      = data.userId  || socket.data.userId;
+    var username    = socket.data.username || 'Guest';
+    var userId      = socket.data.userId;
     var message     = String(data.message || '').slice(0, 200).trim();
     var amountCents = Math.floor(data.amountCents || 0);
     var VALID_SC    = [100, 200, 500, 1000, 2000, 5000];
@@ -2343,17 +2333,17 @@ io.on('connection', function(socket) {
   socket.on('pk-start', function(data) {
     if (!data || !data.roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    pkVotes.set(data.roomId, { challenger: 0, defender: 0 });
+    pkVotes.set(data.roomId, { challenger: new Set(), defender: new Set() });
     io.to(data.roomId).emit('pk-start', data);
   });
 
   socket.on('pk-vote', function(data) {
     if (!data || !data.roomId || !data.side) return;
-    var votes = pkVotes.get(data.roomId) || { challenger: 0, defender: 0 };
-    if (data.side === 'challenger') votes.challenger = (votes.challenger || 0) + 1;
-    if (data.side === 'defender')   votes.defender   = (votes.defender   || 0) + 1;
-    pkVotes.set(data.roomId, votes);
-    io.to(data.roomId).emit('pk-vote-update', { challengerVotes: votes.challenger, defenderVotes: votes.defender });
+    var votes = pkVotes.get(data.roomId);
+    if (!votes) return;
+    if (data.side === 'challenger') votes.challenger.add(socket.id);
+    if (data.side === 'defender')   votes.defender.add(socket.id);
+    io.to(data.roomId).emit('pk-vote-update', { challengerVotes: votes.challenger.size, defenderVotes: votes.defender.size });
   });
 
   socket.on('pk-end', function(data) {
@@ -2452,6 +2442,7 @@ io.on('connection', function(socket) {
 
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = data.roomId || socket.data.roomId;
     if (!roomId) return;
     io.to(roomId).emit('fades-event', {
@@ -2645,6 +2636,7 @@ io.on('connection', function(socket) {
 
   socket.on('screen-share-stop', function(data) {
     if (!data || !data.roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = String(data.roomId);
     io.to(sRoomId).emit('screen-share-ended', {});
   });
@@ -2834,6 +2826,7 @@ io.on('connection', function(socket) {
 
   // ── audio-chunk ────────────────────────────────────────────────────────
   socket.on('audio-chunk', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = data.roomId || socket.data.roomId;
     var chunk  = data.chunk;
 
@@ -2855,6 +2848,7 @@ io.on('connection', function(socket) {
 
   // ── aura-trigger ───────────────────────────────────────────────────────
   socket.on('aura-trigger', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = data.streamId || socket.data.roomId;
     if (!sId || !aura) return;
     var triggerFn = null;
@@ -2965,6 +2959,7 @@ io.on('connection', function(socket) {
 
   // ── poll-create ───────────────────────────────────────────────────────
   socket.on('poll-create', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var pollRoomId = data.roomId || socket.data.roomId;
     if (!pollRoomId) return;
     var duration = data.duration || 60;
@@ -3025,6 +3020,7 @@ io.on('connection', function(socket) {
 
   // ── poll-end (manual) ─────────────────────────────────────────────────
   socket.on('poll-end', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var endRoomId = data.roomId || socket.data.roomId;
     if (!endRoomId) return;
     var endPoll = activePolls.get(endRoomId);
