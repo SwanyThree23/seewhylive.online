@@ -28,6 +28,7 @@ async function completeChallenge(challengeId, userId) {
   const row = challenge.rows[0];
   if (!row) throw new Error('challenge not found');
   if (row.status !== 'active') throw new Error('challenge is not active');
+  if (row.ends_at && new Date(row.ends_at) < new Date()) throw new Error('challenge has expired');
 
   let inserted;
   try {
