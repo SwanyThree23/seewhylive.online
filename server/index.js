@@ -377,6 +377,8 @@ var vsPolls             = new Map();  // roomId → { id, sideA, sideB, votesA:S
 var judgeRosters        = new Map();  // roomId → Map<userId, { userId, username, scores:[] }>
 var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<socketId>>>
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
+var sendGiftThrottle    = new Map();  // socketId → lastGiftTs ms (1s throttle)
+var qaQuestionThrottle  = new Map();  // socketId → lastQuestionTs ms (3s throttle)
 var pkVotes             = new Map();  // roomId → { challenger: Set<socketId>, defender: Set<socketId> }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
@@ -666,7 +668,7 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
 
 
 // POST /api/push/unsubscribe
-app.post('/api/push/unsubscribe', function(req, res) {
+app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = req.body.endpoint;
   if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
   try {
@@ -1079,7 +1081,7 @@ io.on('connection', function(socket) {
   // ── join-room ──────────────────────────────────────────────────────────
   socket.on('join-room', function(data, ack) {
     var roomId   = data.roomId;
-    var guestId  = data.guestId || socket.data.userId;
+    var guestId  = socket.data.userId;
     var username = data.username || 'Guest';
     var role     = socket.data.role || 'viewer';
 
@@ -1569,6 +1571,9 @@ io.on('connection', function(socket) {
   // ── send-gift ──────────────────────────────────────────────────────────
   socket.on('send-gift', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
+    var _sgNow = Date.now();
+    if (_sgNow - (sendGiftThrottle.get(socket.id) || 0) < 1000) return;
+    sendGiftThrottle.set(socket.id, _sgNow);
     var roomId                 = socket.data.roomId;
     var fromUser               = socket.data.username || 'Guest';
     var emoji                  = data.emoji || '';
@@ -1839,7 +1844,8 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var now = Date.now();
-    var position = data.position || 0;
+    var _rawPos = Number(data.position);
+    var position = (Number.isFinite(_rawPos) && _rawPos >= 0) ? _rawPos : 0;
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.playing  = true;
     room.watchParty.position = position;
@@ -1852,7 +1858,8 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
-    var position = data.position || 0;
+    var _rawPausePos = Number(data.position);
+    var position = (Number.isFinite(_rawPausePos) && _rawPausePos >= 0) ? _rawPausePos : 0;
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.playing  = false;
     room.watchParty.position = position;
@@ -1985,6 +1992,7 @@ io.on('connection', function(socket) {
     var fromUser   = socket.data.username || 'Guest';
     var tier       = String(data.tier || 'bronze');
     var priceCents = Math.floor(data.price_cents || 0);
+    if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
     var CREATOR    = 0.90;
     var creatorCents = Math.floor(priceCents * CREATOR);
     if (!roomId) return;
@@ -2005,7 +2013,7 @@ io.on('connection', function(socket) {
 
   // ── live polls (server-side vote tracking) ────────────────────────────
   socket.on('poll-start', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var question = String(data.question || '').slice(0, 200);
     var options  = (data.options || []).slice(0, 4).map(function(o) { return String(o).slice(0, 80); });
@@ -2016,7 +2024,8 @@ io.on('connection', function(socket) {
     polls.set(roomId, poll);
     io.to(roomId).emit('poll-update', serializePoll(poll));
     io.to(roomId).emit('bot-log', { event: 'poll_created', message: 'Poll: ' + question, ts: Date.now() });
-    var pollDur = Math.min(Math.max(Math.floor(data.durationSec || 60), 5), 300);
+    var _rawDur = Number(data.durationSec);
+    var pollDur = Math.min(Math.max(Number.isFinite(_rawDur) ? Math.floor(_rawDur) : 60, 5), 300);
     poll.autoEndT = setTimeout(function() {
       if (polls.get(roomId) !== poll) return;
       poll.active = false;
@@ -2038,7 +2047,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('poll-end', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var poll = polls.get(roomId);
     if (!poll) return;
@@ -2052,6 +2061,9 @@ io.on('connection', function(socket) {
   socket.on('qa-question', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
+    var _qaNow = Date.now();
+    if (_qaNow - (qaQuestionThrottle.get(socket.id) || 0) < 3000) return;
+    qaQuestionThrottle.set(socket.id, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = uuidv4();
     var user = socket.data.username || 'Guest';
@@ -2062,7 +2074,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('qa-upvote', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.id) return;
     var queue = qaQueues.get(roomId);
     if (!queue) return;
@@ -2076,7 +2088,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('qa-dismiss', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.id || socket.data.role !== 'host') return;
     var queue = qaQueues.get(roomId);
     if (queue) queue.delete(data.id);
@@ -2085,8 +2097,9 @@ io.on('connection', function(socket) {
 
   // ── share-music ────────────────────────────────────────────────────────
   socket.on('share-music', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.title) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var title = String(data.title).slice(0, 120);
     var style = String(data.style || '').slice(0, 60);
     var emoji = String(data.emoji || '🎵').slice(0, 4);
@@ -2096,7 +2109,7 @@ io.on('connection', function(socket) {
 
   // ── watch-react ────────────────────────────────────────────────────────
   socket.on('watch-react', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.emoji) return;
     var emoji  = String(data.emoji).slice(0, 4);
     var now    = Date.now();
@@ -2108,11 +2121,12 @@ io.on('connection', function(socket) {
 
   // ── VS Poll ───────────────────────────────────────────────────────────
   socket.on('vs-start', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var sideA = String(data.sideA || 'Side A').slice(0, 60);
     var sideB = String(data.sideB || 'Side B').slice(0, 60);
-    var dur   = Math.min(Math.max(Math.floor(data.durationSec || 60), 10), 300);
+    var _rawVsDur = Number(data.durationSec);
+    var dur   = Math.min(Math.max(Number.isFinite(_rawVsDur) ? Math.floor(_rawVsDur) : 60, 10), 300);
     var id    = uuidv4();
     var vp    = { id: id, sideA: sideA, sideB: sideB, votesA: new Set(), votesB: new Set(), active: true, createdAt: Date.now(), endsAt: Date.now() + dur * 1000 };
     vsPolls.set(roomId, vp);
@@ -2140,7 +2154,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('vs-end', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var vp = vsPolls.get(roomId);
     if (!vp) return;
@@ -2152,7 +2166,7 @@ io.on('connection', function(socket) {
 
   // ── Judges ────────────────────────────────────────────────────────────
   socket.on('judge-assign', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var uid  = String(data.userId || '').slice(0, 80);
     var uname = String(data.username || 'Judge').slice(0, 40);
@@ -2164,7 +2178,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('judge-remove', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
     var uid = String(data.userId || '').slice(0, 80);
     var roster = judgeRosters.get(roomId);
@@ -2173,7 +2187,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('judge-score', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) return;
     var uid = socket.data.userId || socket.id;
     var roster = judgeRosters.get(roomId);
@@ -2190,7 +2204,7 @@ io.on('connection', function(socket) {
   // ── clip-marker ────────────────────────────────────────────────────────
   socket.on('clip-marker', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var roomId   = data.roomId || socket.data.roomId;
+    var roomId   = socket.data.roomId;
     if (!roomId) return;
     var label    = data.label ? String(data.label).slice(0, 60) : 'Clip Marker';
     var markerId = uuidv4();
@@ -2208,7 +2222,7 @@ io.on('connection', function(socket) {
 
   // ── chat-react ─────────────────────────────────────────────────────────
   socket.on('chat-react', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId || !data.msgId || !data.emoji) return;
     var emoji = String(data.emoji).slice(0, 4);
 
@@ -2427,7 +2441,7 @@ io.on('connection', function(socket) {
 
   // ── stream-info ────────────────────────────────────────────────────────
   socket.on('stream-info', function(data) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = rooms.get(roomId);
@@ -2446,7 +2460,7 @@ io.on('connection', function(socket) {
   // ── fades-event ────────────────────────────────────────────────────────
   socket.on('fades-event', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) return;
     io.to(roomId).emit('fades-event', {
       event:  data.event,
@@ -2766,7 +2780,7 @@ io.on('connection', function(socket) {
 
   // ── end-broadcast ──────────────────────────────────────────────────────
   socket.on('end-broadcast', function(data, ack) {
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
 
     if (!roomId) {
       if (ack) ack({ error: 'roomId required' });
@@ -2837,7 +2851,7 @@ io.on('connection', function(socket) {
   // ── audio-chunk ────────────────────────────────────────────────────────
   socket.on('audio-chunk', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var roomId = data.roomId || socket.data.roomId;
+    var roomId = socket.data.roomId;
     var chunk  = data.chunk;
 
     if (!roomId || !chunk) return;
@@ -2859,7 +2873,7 @@ io.on('connection', function(socket) {
   // ── aura-trigger ───────────────────────────────────────────────────────
   socket.on('aura-trigger', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var sId = data.streamId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId || !aura) return;
     var triggerFn = null;
     if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, data.streamTitle || 'SeeWhy LIVE', data.viewerCount || 0, cb); };
@@ -2877,7 +2891,7 @@ io.on('connection', function(socket) {
 
   // ── mute-user ──────────────────────────────────────────────────────────
   socket.on('mute-user', function(data) {
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     io.to(sId).emit('user-muted', { userId: data.targetUser, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
@@ -2885,7 +2899,7 @@ io.on('connection', function(socket) {
 
   // ── ban-user ───────────────────────────────────────────────────────────
   socket.on('ban-user', function(data) {
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var bannedId = data.userId || data.targetUser;
@@ -2905,7 +2919,7 @@ io.on('connection', function(socket) {
   // ── unban-user ─────────────────────────────────────────────────────────
   socket.on('unban-user', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('user-unbanned', { username: data.username, ts: Math.floor(Date.now() / 1000) });
   });
@@ -2913,7 +2927,7 @@ io.on('connection', function(socket) {
   // ── mod-rules ──────────────────────────────────────────────────────────
   socket.on('mod-rules', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('mod-rules-updated', { rules: data.rules, ts: Math.floor(Date.now() / 1000) });
   });
@@ -2921,7 +2935,7 @@ io.on('connection', function(socket) {
   // ── bot-rule-toggle ────────────────────────────────────────────────────
   socket.on('bot-rule-toggle', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('bot-rule-changed', { rule: data.rule, enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
@@ -2929,7 +2943,7 @@ io.on('connection', function(socket) {
   // ── subscriber-only-changed ────────────────────────────────────────────
   socket.on('subscriber-only-changed', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var sId = data.roomId || socket.data.roomId;
+    var sId = socket.data.roomId;
     if (!sId) return;
     io.to(sId).emit('subscriber-only-changed', { enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
@@ -2971,9 +2985,10 @@ io.on('connection', function(socket) {
   // ── poll-create ───────────────────────────────────────────────────────
   socket.on('poll-create', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var pollRoomId = data.roomId || socket.data.roomId;
+    var pollRoomId = socket.data.roomId;
     if (!pollRoomId) return;
-    var duration = Math.min(Math.max(Math.floor(data.duration || 60), 5), 300);
+    var _rawPcDur = Number(data.duration);
+    var duration = Math.min(Math.max(Number.isFinite(_rawPcDur) ? Math.floor(_rawPcDur) : 60, 5), 300);
     var newPoll = {
       id: Date.now().toString(),
       question: String(data.question || '').slice(0, 200),
@@ -3145,6 +3160,8 @@ io.on('connection', function(socket) {
     }
 
     viewerReactThrottle.delete(socket.id);
+    sendGiftThrottle.delete(socket.id);
+    qaQuestionThrottle.delete(socket.id);
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {
