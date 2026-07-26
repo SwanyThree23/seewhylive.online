@@ -41,9 +41,9 @@ var _pushSubscriptions = {};
 
 // ─── AURA routes ──────────────────────────────────────────────────────────────
 
-router.get('/aura/usage', function(req, res) {
+router.get('/aura/usage', requireAuth, function(req, res) {
   try {
-    var streamId = req.query.streamId || req.body.streamId || '';
+    var streamId = req.query.streamId || '';
     if (aura) {
       var usage = aura.getUsage(streamId);
       return res.json({
@@ -442,9 +442,9 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
 
 // ─── USER routes ──────────────────────────────────────────────────────────────
 
-router.get('/users/me', function(req, res) {
+router.get('/users/me', requireAuth, function(req, res) {
   try {
-    var profile = _userProfiles['default'] || {};
+    var profile = _userProfiles[req.user.id] || {};
     return res.json({
       username: profile.username || 'SwanyThree',
       displayName: profile.displayName || 'SwanyThree',
@@ -483,7 +483,7 @@ router.put('/users/me', requireAuth, function(req, res) {
     var displayName = req.body.displayName || '';
     var bio = req.body.bio || '';
     var avatarEmoji = req.body.avatarEmoji || '';
-    _userProfiles['default'] = {
+    _userProfiles[req.user.id] = {
       displayName: displayName,
       bio: bio,
       avatarEmoji: avatarEmoji
@@ -494,7 +494,7 @@ router.put('/users/me', requireAuth, function(req, res) {
   }
 });
 
-router.get('/users/me/earnings', function(req, res) {
+router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
   } catch (err) {
@@ -587,6 +587,9 @@ router.post('/ppv/create', requireAuth, function(req, res) {
   try {
     var streamId = req.body.streamId || 'default';
     var priceCents = Math.floor(req.body.priceCents || 499);
+    if (!Number.isFinite(priceCents) || priceCents < 100 || priceCents > 50000) {
+      return res.status(400).json({ success: false, error: 'priceCents must be between 100 and 50000' });
+    }
     var token = require('crypto').randomBytes(16).toString('hex');
     var expiresAt = Date.now() + (24 * 60 * 60 * 1000);
     _ppvTokens[token] = { streamId: streamId, priceCents: priceCents, expiresAt: expiresAt };
@@ -596,7 +599,7 @@ router.post('/ppv/create', requireAuth, function(req, res) {
   }
 });
 
-router.post('/ppv/verify', function(req, res) {
+router.post('/ppv/verify', requireAuth, function(req, res) {
   try {
     var token = req.body.token || '';
     var streamId = req.body.streamId || '';
