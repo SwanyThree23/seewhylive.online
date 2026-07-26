@@ -568,7 +568,7 @@ router.get('/metrics', function(req, res) {
 
 router.get('/leaderboard', function(req, res) {
   try {
-    var limit = parseInt(req.query.limit || '20', 10);
+    var limit = Math.min(parseInt(req.query.limit || '20', 10), 100);
     if (analytics && analytics.getTopCreators) {
       var top = analytics.getTopCreators(limit);
       return res.json({ leaderboard: top, updatedAt: Date.now() });
@@ -637,7 +637,7 @@ router.post('/n8n/test', requireAuth, function(req, res) {
     if (!isHttps) {
       return res.status(400).json({ success: false, error: 'webhookUrl must use https://' });
     }
-    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
     if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
       return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
     }
@@ -846,15 +846,18 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       if (!/^rtmps?:$/i.test(parsedIngest.protocol)) {
         return res.status(400).json({ ok: false, error: 'ingest_url must use rtmp:// or rtmps://' });
       }
-      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       if (!parsedIngest.hostname || PRIV.test(parsedIngest.hostname)) {
         return res.status(400).json({ ok: false, error: 'ingest_url hostname not allowed' });
       }
     }
     var destinations = b.destinations || [];
 
-    // Stop any existing fanout for this stream
+    // Stop any existing fanout for this stream — only the owner or admin may replace it
     if (activeFanouts[streamId] && activeFanouts[streamId].process) {
+      if (activeFanouts[streamId].ownerId && activeFanouts[streamId].ownerId !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ ok: false, error: 'forbidden' });
+      }
       activeFanouts[streamId].process.kill('SIGTERM');
       delete activeFanouts[streamId];
     }
@@ -876,7 +879,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       var destParsed;
       try { destParsed = new URL(d.url); } catch (_) { continue; }
       if (!/^rtmps?:$/i.test(destParsed.protocol)) continue;
-      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|fc00:|fd[0-9a-f]{2}:)/i;
+      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       if (!destParsed.hostname || PRIV2.test(destParsed.hostname)) continue;
       resolvedDests.push({ url: d.url, key: resolvedKey, label: d.label || d.platform || 'custom' });
     }

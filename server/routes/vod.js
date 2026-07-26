@@ -2,13 +2,22 @@
 
 var express     = require('express');
 var https       = require('https');
+var fs          = require('fs');
+var os          = require('os');
 var router      = express.Router();
 var requireAuth = require('../middleware/auth');
 
+var ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 var multer = require('multer');
 var upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 500 * 1024 * 1024 }
+  storage: multer.diskStorage({ destination: os.tmpdir() }),
+  limits: { fileSize: 200 * 1024 * 1024 },
+  fileFilter: function(req, file, cb) {
+    if (!ALLOWED_VIDEO_TYPES.includes(file.mimetype)) {
+      return cb(new Error('unsupported file type'));
+    }
+    cb(null, true);
+  }
 });
 
 
@@ -121,19 +130,25 @@ function doUpload(req, res, vodId) {
   var safeName = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
   var storagePath = vodId + '/' + Date.now() + '-' + safeName;
   var contentType = req.file.mimetype || 'video/mp4';
+  var tmpPath = req.file.path;
 
-  sbUpload(bucket + '/' + storagePath, req.file.buffer, contentType, function(err, status, data) {
-    if (err) return res.status(500).json({ error: 'Upload error' });
-    if (status >= 400) return res.status(status).json({ error: 'Supabase storage error', detail: data });
+  fs.readFile(tmpPath, function(readErr, buffer) {
+    fs.unlink(tmpPath, function() {});
+    if (readErr) return res.status(500).json({ error: 'Failed to read upload' });
 
-    var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
-    var patch = { storage_path: storagePath, playback_url: publicUrl };
+    sbUpload(bucket + '/' + storagePath, buffer, contentType, function(err, status, data) {
+      if (err) return res.status(500).json({ error: 'Upload error' });
+      if (status >= 400) return res.status(status).json({ error: 'Supabase storage error', detail: data });
 
-    sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), patch, function(err2, status2, data2) {
-      if (err2) return res.status(500).json({ error: 'Database error' });
-      if (status2 >= 400) return res.status(status2).json({ error: 'Supabase error', detail: data2 });
-      var updated = Array.isArray(data2) ? data2[0] : data2;
-      return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
+      var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
+      var patch = { storage_path: storagePath, playback_url: publicUrl };
+
+      sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), patch, function(err2, status2, data2) {
+        if (err2) return res.status(500).json({ error: 'Database error' });
+        if (status2 >= 400) return res.status(status2).json({ error: 'Supabase error', detail: data2 });
+        var updated = Array.isArray(data2) ? data2[0] : data2;
+        return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
+      });
     });
   });
 }

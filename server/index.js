@@ -1082,7 +1082,7 @@ io.on('connection', function(socket) {
   socket.on('join-room', function(data, ack) {
     var roomId   = data.roomId;
     var guestId  = socket.data.userId;
-    var username = data.username || 'Guest';
+    var username = String(data.username || 'Guest').slice(0, 32);
     var role     = socket.data.role || 'viewer';
 
     if (!roomId) {
@@ -1239,9 +1239,9 @@ io.on('connection', function(socket) {
 
   // ── get-rtp-capabilities ───────────────────────────────────────────────
   socket.on('get-rtp-capabilities', function(data, ack) {
-    var roomId = data.roomId;
+    var roomId = socket.data.roomId;
     if (!roomId) {
-      if (ack) ack({ error: 'roomId required' });
+      if (ack) ack({ error: 'Must join room first' });
       return;
     }
     try {
@@ -1297,11 +1297,15 @@ io.on('connection', function(socket) {
     var transportId    = data.transportId;
     var rtpParameters  = data.rtpParameters;
     var kind           = data.kind;
-    var guestId        = socket.data.guestId || data.guestId;
+    var guestId        = socket.data.guestId;
     var roomId         = socket.data.roomId;
 
     if (!transportId || !rtpParameters || !kind) {
       if (ack) ack({ error: 'transportId, rtpParameters and kind required' });
+      return;
+    }
+    if (!guestId) {
+      if (ack) ack({ error: 'Not a guest — cannot produce' });
       return;
     }
 
@@ -1331,7 +1335,7 @@ io.on('connection', function(socket) {
     var transportId    = data.transportId;
     var producerId     = data.producerId;
     var rtpCapabilities = data.rtpCapabilities;
-    var roomId         = socket.data.roomId || data.roomId;
+    var roomId         = socket.data.roomId;
 
     if (!transportId || !producerId || !rtpCapabilities || !roomId) {
       if (ack) ack({ error: 'transportId, producerId, rtpCapabilities and roomId required' });
@@ -1511,7 +1515,7 @@ io.on('connection', function(socket) {
   socket.on('chat-message', function(data) {
     var roomId   = socket.data.roomId;
     var username = socket.data.username || 'Guest';
-    var message  = data.message || '';
+    var message  = String(data.message || '').slice(0, 500);
     var userId   = socket.data.userId;
 
     if (!roomId || !message.trim()) return;
@@ -1576,8 +1580,8 @@ io.on('connection', function(socket) {
     sendGiftThrottle.set(socket.id, _sgNow);
     var roomId                 = socket.data.roomId;
     var fromUser               = socket.data.username || 'Guest';
-    var emoji                  = data.emoji || '';
-    var name                   = data.name || 'Gift';
+    var emoji                  = String(data.emoji || '').slice(0, 4);
+    var name                   = String(data.name || 'Gift').slice(0, 60);
     var valueCents             = Math.floor(data.valueCents || 0);
     if (valueCents > 50000) return;
     var toGuestId              = data.toGuestId || null;
@@ -2471,7 +2475,7 @@ io.on('connection', function(socket) {
 
   // ── go-live ────────────────────────────────────────────────────────────
   socket.on('go-live', function(data, ack) {
-    var roomId      = data.roomId || socket.data.roomId;
+    var roomId      = socket.data.roomId;
     var destinations = data.destinations;
 
     if (!roomId) {

@@ -13,12 +13,13 @@ const requireAuth   = require('../middleware/auth');
 router.post('/', requireAuth, async (req, res) => {
   try {
     const { toUserId, roomId, message, expiryHours } = req.body;
+    const safeExpiryHours = Math.min(parseInt(expiryHours, 10) || 24, 168);
     const invite = await inviteService.sendInvitation({
       fromUserId: req.user.id,
       toUserId,
       roomId,
       message,
-      expiryHours,
+      expiryHours: safeExpiryHours,
     });
     res.status(201).json(invite);
   } catch (err) {
@@ -55,12 +56,15 @@ router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'forbidden' });
     }
     const { displayName, role, maxUses } = req.body;
+    const ALLOWED_ROLES = ['guest', 'cohost', 'viewer'];
+    const safeRole = ALLOWED_ROLES.includes(role) ? role : 'guest';
+    const safeMaxUses = Math.min(Math.floor(maxUses || 1), 100);
     const link = await inviteService.createInviteLink({
       streamId: req.params.streamId,
       createdBy: req.user.id,
       displayName,
-      role,
-      maxUses,
+      role: safeRole,
+      maxUses: safeMaxUses,
     });
     res.status(201).json(link);
   } catch (err) {
