@@ -46,7 +46,7 @@ router.post('/streams/:streamId/leave', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/streams/:streamId', async (req, res) => {
+router.get('/streams/:streamId', requireAuth, async (req, res) => {
   try {
     const guests = await guestService.getStreamGuests(req.params.streamId);
     res.json(guests);
@@ -90,7 +90,7 @@ router.post('/streams/:streamId/participants/leave', requireAuth, async (req, re
   }
 });
 
-router.get('/streams/:streamId/participants', async (req, res) => {
+router.get('/streams/:streamId/participants', requireAuth, async (req, res) => {
   try {
     const participants = await guestService.getRoomParticipants(req.params.streamId);
     res.json(participants);

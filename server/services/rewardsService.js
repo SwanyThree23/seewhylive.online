@@ -86,6 +86,8 @@ async function completeChallenge(userId, challengeId) {
     .eq('id', challengeId)
     .single();
   if (chErr) throw chErr;
+  if (!challenge || challenge.status !== 'active') throw new Error('challenge is not active');
+  if (challenge.ends_at && new Date(challenge.ends_at) < new Date()) throw new Error('challenge has expired');
 
   const { error: insErr } = await supabase
     .from('challenge_completions')

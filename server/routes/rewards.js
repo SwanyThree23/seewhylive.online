@@ -3,10 +3,11 @@ const router = express.Router();
 const rewardsService = require('../services/rewardsService');
 const requireAuth    = require('../middleware/auth');
 
-router.get('/leaderboard', async (req, res) => {
+router.get('/leaderboard', requireAuth, async (req, res) => {
   try {
     const period = req.query.period === 'weekly' ? 'weekly' : 'alltime';
-    const data = await rewardsService.getLeaderboard(period);
+    const rows = await rewardsService.getLeaderboard(period);
+    const data = rows.map(function(r) { return { points: r.points || r.total_points, level: r.level }; });
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
