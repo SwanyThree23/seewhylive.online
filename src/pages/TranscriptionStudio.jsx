@@ -222,6 +222,18 @@ export default function TranscriptionStudio() {
     return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
   }
 
+  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+  const srtText = lines.map((l, i) => `${i + 1}\n${l.time},000 --> ${l.time},999\n${l.text}\n`).join('\n');
+
+  function downloadSRT() {
+    const blob = new Blob([srtText], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'transcript.srt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   useEffect(() => () => stopDeepgram(), []);
 
   // ── Export helpers ────────────────────────────────────────────────────────────

@@ -29,6 +29,7 @@ export default function UnifiedRoom() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get('id');
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
   const [isMicOn, setIsMicOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
