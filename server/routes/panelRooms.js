@@ -50,7 +50,7 @@ router.get('/:id/join-requests', requireAuth, async (req, res) => {
 });
 
 // Current panel seating + privacy mode (used on initial page load before sockets connect).
-router.get('/:id/panel', async (req, res) => {
+router.get('/:id/panel', requireAuth, async (req, res) => {
   try {
     const [slots, privacyResult] = await Promise.all([
       panelService.getPanelState(req.params.id),
