@@ -95,6 +95,15 @@ router.post('/start', requireAuth, function(req, res) {
 
   if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
 
+  // Verify this user owns the stream before creating a VOD record
+  sbReq('GET', '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&creator_id=eq.' + encodeURIComponent(creatorId) + '&select=id&limit=1', null, function(chkErr, chkStatus, chkData) {
+    if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
+    var stream = Array.isArray(chkData) ? chkData[0] : chkData;
+    if (!stream || !stream.id) return res.status(403).json({ error: 'forbidden' });
+    doStartVod(res, streamId, creatorId, title);
+  });
+});
+function doStartVod(res, streamId, creatorId, title) {
   var row = {
     stream_id:    streamId,
     creator_id:   creatorId,
@@ -103,14 +112,13 @@ router.post('/start', requireAuth, function(req, res) {
     is_public:    false,
     view_count:   0,
   };
-
   sbReq('POST', '/rest/v1/vods', row, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Database error' });
     if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
     var created = Array.isArray(data) ? data[0] : data;
     return res.json(created);
   });
-});
+}
 
 // POST /api/vod/:id/upload
 // multipart/form-data field "video"

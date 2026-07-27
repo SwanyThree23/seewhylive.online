@@ -11,6 +11,8 @@ const DEFAULT_EXPIRY_HOURS = 1;
 
 async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHours }) {
   const hours = expiryHours || DEFAULT_EXPIRY_HOURS;
+  const target = await db.query('SELECT id FROM users WHERE id = $1', [toUserId]);
+  if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at)
      VALUES ($1, $2, $3, $4, 'pending', now() + ($5 || ' hours')::interval) RETURNING *`,

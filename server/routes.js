@@ -84,25 +84,34 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
 
     var triggerFn = null;
 
+    var _vn  = String(data.viewerName  || 'Viewer').slice(0, 80);
+    var _st  = String(data.streamTitle || 'SeeWhy LIVE').slice(0, 120);
+    var _gn  = String(data.giftName   || 'Gift').slice(0, 60);
+    var _nt  = String(data.note       || '').slice(0, 200);
+    var _ac  = Math.min(Math.max(Math.floor(Number(data.amountCents)  || 0), 0), 5000000);
+    var _pv  = Math.min(Math.max(Math.floor(Number(data.peakViewers)  || 0), 0), 1000000);
+    var _tec = Math.min(Math.max(Math.floor(Number(data.totalEarningsCents) || 0), 0), 5000000);
+    var _vc  = Math.min(Math.max(Math.floor(Number(data.viewerCount)  || 0), 0), 1000000);
+
     if (type === 'stream_start') {
       triggerFn = function(cb) {
-        aura.triggerStreamStart(streamId, data.streamTitle || 'SeeWhy LIVE', data.viewerCount || 0, cb);
+        aura.triggerStreamStart(streamId, _st, _vc, cb);
       };
     } else if (type === 'tip_received') {
       triggerFn = function(cb) {
-        aura.triggerTip(streamId, data.viewerName || 'Viewer', data.amountCents || 500, data.note || '', cb);
+        aura.triggerTip(streamId, _vn, _ac || 500, _nt, cb);
       };
     } else if (type === 'gift_received') {
       triggerFn = function(cb) {
-        aura.triggerGift(streamId, data.viewerName || 'Viewer', data.giftName || 'Gift', data.amountCents || 100, cb);
+        aura.triggerGift(streamId, _vn, _gn, _ac || 100, cb);
       };
     } else if (type === 'new_viewer') {
       triggerFn = function(cb) {
-        aura.triggerNewViewer(streamId, data.viewerName || 'Viewer', data.isReturning || false, cb);
+        aura.triggerNewViewer(streamId, _vn, data.isReturning || false, cb);
       };
     } else if (type === 'stream_end') {
       triggerFn = function(cb) {
-        aura.triggerStreamEnd(streamId, data.peakViewers || 0, data.totalEarningsCents || 0, cb);
+        aura.triggerStreamEnd(streamId, _pv, _tec, cb);
       };
     }
 
@@ -629,7 +638,12 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
 router.post('/n8n/test', requireAuth, async function(req, res) {
   try {
     var webhookUrl = req.body.webhookUrl || '';
-    var payload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    var _rawPayload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
+    var _payloadStr = JSON.stringify(_rawPayload);
+    if (_payloadStr.length > 10240) {
+      return res.status(400).json({ success: false, error: 'payload exceeds 10 KB limit' });
+    }
+    var payload = JSON.parse(_payloadStr);
     if (!webhookUrl) {
       return res.json({ success: false, error: 'webhookUrl is required' });
     }
