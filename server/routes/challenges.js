@@ -62,7 +62,9 @@ router.post('/:id/complete', requireAuth, async (req, res) => {
     const completion = await challengeService.completeChallenge(req.params.id, req.user.id);
     res.json(completion);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    const USER_MSGS = ['challenge is not active', 'challenge has expired'];
+    const msg = USER_MSGS.includes(err.message) ? err.message : 'Unable to complete challenge';
+    res.status(400).json({ error: msg });
   }
 });
 

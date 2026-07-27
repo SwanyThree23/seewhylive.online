@@ -24,7 +24,7 @@ router.post('/:id/privacy', requireAuth, async (req, res) => {
     const result = await panelService.setPrivacy({ roomId: req.params.id, isPrivate, gatingMode });
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -45,7 +45,7 @@ router.get('/:id/join-requests', requireAuth, async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -60,7 +60,7 @@ router.get('/:id/panel', requireAuth, async (req, res) => {
     const gatingMode = row.privacy === 'private' ? (row.private_gating_mode || null) : null;
     res.json({ slots, gatingMode });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

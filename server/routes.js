@@ -54,7 +54,7 @@ router.get('/aura/usage', requireAuth, function(req, res) {
     }
     return res.json({ callsThisHour: 0, limit: 20, streamId: streamId });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -67,7 +67,7 @@ router.post('/aura/mode', requireAuth, function(req, res) {
     }
     return res.json({ mode: mode, success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -114,7 +114,7 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
       res.json({ success: true, text: text || 'AURA response', mode: mode });
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -131,7 +131,7 @@ router.get('/search', function(req, res) {
     }
     return res.json({ results: [], total: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -147,7 +147,7 @@ router.get('/streams/count', function(req, res) {
     }
     return res.json({ liveCount: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -173,7 +173,7 @@ router.get('/creator/analytics', requireAuth, function(req, res) {
       peakViewers: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -191,7 +191,7 @@ router.get('/admin/metrics', requireAuth, function(req, res) {
       platformCutCents: 0
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -205,13 +205,13 @@ router.get('/moderation/word-filters', requireAuth, function(req, res) {
     }
     return res.json({ filters: [] });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 router.post('/moderation/word-filters', requireAuth, function(req, res) {
   try {
-    var word = req.body.word || '';
+    var word = String(req.body.word || '').slice(0, 200);
     var creatorId = req.user.id;
     if (!word) {
       return res.json({ success: false, error: 'word is required' });
@@ -222,7 +222,7 @@ router.post('/moderation/word-filters', requireAuth, function(req, res) {
     }
     return res.json({ success: false, error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -234,7 +234,7 @@ router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) 
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -248,7 +248,7 @@ router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
     }
     return res.json({ success: true, enabled: enabled });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -264,7 +264,7 @@ router.post('/moderation/ban', requireAuth, function(req, res) {
     }
     return res.json({ success: false, error: 'moderation module unavailable' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -276,7 +276,7 @@ router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -288,7 +288,7 @@ router.get('/moderation/bans', requireAuth, function(req, res) {
     }
     return res.json({ bans: [] });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -303,7 +303,7 @@ router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -316,7 +316,7 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
       accountId: null
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -334,7 +334,7 @@ router.get('/creator/onboard/link', requireAuth, function(req, res) {
     }
     return res.json({ url: 'https://stripe.com/connect' });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -374,7 +374,7 @@ router.post('/payments/tip', requireAuth, function(req, res) {
           });
         })
         .catch(function(err) {
-          res.json({ success: false, error: err.message });
+          res.json({ success: false, error: 'Internal server error' });
         });
       return;
     }
@@ -393,7 +393,7 @@ router.post('/payments/tip', requireAuth, function(req, res) {
       platformCents: platformCents
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -402,18 +402,20 @@ router.post('/payments/payout', requireAuth, function(req, res) {
     var creatorId = req.user.id;
     var amountCents = req.body.amountCents || 0;
 
-    if (Math.floor(amountCents) < 1000) {
+    var flooredCents = Math.floor(amountCents);
+    if (!Number.isFinite(flooredCents) || flooredCents < 1000) {
       return res.status(400).json({ success: false, error: 'Minimum payout is $10.00' });
     }
-
-    var flooredCents = Math.floor(amountCents);
+    if (flooredCents > 5000000) {
+      return res.status(400).json({ success: false, error: 'Payout amount exceeds maximum' });
+    }
     return res.json({
       success: true,
       amountCents: flooredCents,
       message: 'Payout of $' + (flooredCents / 100).toFixed(2) + ' initiated'
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -437,7 +439,7 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
 
     return res.json({ success: true, tier: tier, id: id });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -455,7 +457,7 @@ router.get('/users/me', requireAuth, function(req, res) {
       isLive: false
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -475,15 +477,15 @@ router.get('/users/:username', function(req, res) {
       tier: 'free'
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
 router.put('/users/me', requireAuth, function(req, res) {
   try {
-    var displayName = req.body.displayName || '';
-    var bio = req.body.bio || '';
-    var avatarEmoji = req.body.avatarEmoji || '';
+    var displayName = String(req.body.displayName || '').slice(0, 80);
+    var bio         = String(req.body.bio         || '').slice(0, 500);
+    var avatarEmoji = String(req.body.avatarEmoji || '').slice(0, 8);
     _userProfiles[req.user.id] = {
       displayName: displayName,
       bio: bio,
@@ -491,7 +493,7 @@ router.put('/users/me', requireAuth, function(req, res) {
     };
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -499,7 +501,7 @@ router.get('/users/me/earnings', requireAuth, function(req, res) {
   try {
     return res.json({ availableCents: 0, totalEarnedCents: 0, pendingCents: 0 });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -517,7 +519,7 @@ router.post('/push/subscribe', requireAuth, function(req, res) {
     }
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -532,7 +534,7 @@ router.post('/users/me/notifications', requireAuth, function(req, res) {
     };
     return res.json({ success: true });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -563,7 +565,7 @@ router.get('/metrics', function(req, res) {
       recentEarnings: []
     });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -576,7 +578,7 @@ router.get('/leaderboard', function(req, res) {
     }
     return res.json({ leaderboard: [], updatedAt: Date.now() });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -596,7 +598,7 @@ router.post('/ppv/create', requireAuth, function(req, res) {
     _ppvTokens[token] = { streamId: streamId, priceCents: priceCents, expiresAt: expiresAt };
     return res.json({ token: token, priceCents: priceCents, expiresAt: expiresAt });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -618,7 +620,7 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
     delete _ppvTokens[token];
     return res.json({ valid: true, streamId: entry.streamId, priceCents: entry.priceCents });
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -672,7 +674,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
     outReq.write(bodyStr);
     outReq.end();
   } catch (err) {
-    return res.json({ success: false, error: err.message });
+    return res.json({ success: false, error: 'Internal server error' });
   }
 });
 
@@ -685,7 +687,12 @@ router.post('/stream-sync', requireAuth, async function(req, res) {
   try {
     var b = req.body;
     var creatorId = req.user.id;
-    var payload = { title: b.title, status: b.status || 'live', viewer_count: b.viewer_count || 0, started_at: new Date().toISOString(), category: b.category || 'live', is_live: true, host_user_id: creatorId, creator_id: creatorId };
+    var STREAM_STATUSES = ['live', 'offline'];
+    var safeStatus = STREAM_STATUSES.includes(b.status) ? b.status : 'live';
+    var safeTitle = String(b.title || '').slice(0, 120);
+    var safeCategory = String(b.category || 'live').slice(0, 40);
+    var safeViewerCount = Math.max(0, Math.min(Math.floor(Number(b.viewer_count) || 0), 1000000));
+    var payload = { title: safeTitle, status: safeStatus, viewer_count: safeViewerCount, started_at: new Date().toISOString(), category: safeCategory, is_live: true, host_user_id: creatorId, creator_id: creatorId };
     var resp = await fetch(SUPA_URL + '/rest/v1/streams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Prefer': 'return=representation' },
@@ -791,7 +798,8 @@ router.get('/vault/health', requireAuth, function(req, res) {
 var { spawn } = require('child_process');
 
 // Map of streamId → { process, restarts, destCount, startedAt }
-var activeFanouts = {};
+var activeFanouts = Object.create(null); // null prototype prevents __proto__ pollution
+var FANOUT_KEY_BLOCKLIST = new Set(['__proto__', 'constructor', 'prototype']);
 var MAX_RESTARTS = 3;
 var RESTART_DELAY_MS = 5000;
 
@@ -849,7 +857,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
-    if (!/^[\w.\-]{1,128}$/.test(streamId)) {
+    if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
       return res.status(400).json({ ok: false, error: 'invalid stream_id' });
     }
     var guestId  = b.guest_id  || streamId;
@@ -907,6 +915,14 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       return res.json({ ok: false, error: 'No enabled destinations with resolvable keys' });
     }
 
+    // Per-user fanout cap — prevent FFmpeg process flood
+    var userFanoutCount = Object.keys(activeFanouts).filter(function(id) {
+      return activeFanouts[id] && activeFanouts[id].ownerId === req.user.id;
+    }).length;
+    if (userFanoutCount >= 5) {
+      return res.status(429).json({ ok: false, error: 'Maximum 5 active fanout streams per user' });
+    }
+
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
     activeFanouts[streamId] = activeFanouts[streamId] || {};
     activeFanouts[streamId].ownerId = req.user.id;
@@ -949,15 +965,20 @@ router.post('/fanout-stop-all', requireAuth, function(req, res) {
 });
 
 router.get('/fanout-status', requireAuth, function(req, res) {
+  var isAdmin = req.user.role === 'admin';
   var streamId = req.query.stream_id;
   if (streamId) {
     var entry = activeFanouts[streamId];
     if (entry) {
+      if (!isAdmin && entry.ownerId !== req.user.id) {
+        return res.status(403).json({ ok: false, error: 'forbidden' });
+      }
       res.json({ ok: true, active: true, stream_id: streamId, destinations: entry.destCount, restarts: entry.restarts, uptime_ms: Date.now() - entry.startedAt });
     } else {
       res.json({ ok: true, active: false, stream_id: streamId });
     }
   } else {
+    if (!isAdmin) return res.status(403).json({ ok: false, error: 'admin only' });
     var active = Object.keys(activeFanouts).map(function(id) {
       var e = activeFanouts[id];
       return { stream_id: id, destinations: e.destCount, restarts: e.restarts, uptime_ms: Date.now() - e.startedAt };

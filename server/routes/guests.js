@@ -51,7 +51,7 @@ router.get('/streams/:streamId', requireAuth, async (req, res) => {
     const guests = await guestService.getStreamGuests(req.params.streamId);
     res.json(guests);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -95,7 +95,7 @@ router.get('/streams/:streamId/participants', requireAuth, async (req, res) => {
     const participants = await guestService.getRoomParticipants(req.params.streamId);
     res.json(participants);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
