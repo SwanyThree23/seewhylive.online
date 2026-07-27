@@ -54,6 +54,7 @@ router.get('/me', requireAuth, async (req, res) => {
 // --- shareable invite links (stream_guest_invites) ---
 
 router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [req.params.streamId]);
     if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {
@@ -97,6 +98,7 @@ router.post('/links/:id/revoke', requireAuth, async (req, res) => {
 });
 
 router.get('/streams/:streamId/links', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const ownerCheck = await db.query('SELECT creator_id FROM streams WHERE id = $1', [req.params.streamId]);
     if (!ownerCheck.rows[0] || ownerCheck.rows[0].creator_id !== req.user.id) {

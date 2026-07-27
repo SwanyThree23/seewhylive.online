@@ -59,6 +59,9 @@ router.get('/aura/usage', requireAuth, function(req, res) {
 });
 
 router.post('/aura/mode', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'forbidden' });
+  }
   try {
     var VALID_MODES = ['hype', 'chill', 'professional', 'comedy'];
     var mode = VALID_MODES.includes(req.body.mode) ? req.body.mode : 'hype';
@@ -907,19 +910,31 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       if (!parsedIngest.hostname || PRIV.test(parsedIngest.hostname)) {
         return res.status(400).json({ ok: false, error: 'ingest_url hostname not allowed' });
       }
+      // Resolve hostname to guard against DNS rebinding (FFmpeg re-resolves on connect)
+      var _dnsLookup;
+      try { _dnsLookup = await require('dns').promises.lookup(parsedIngest.hostname); } catch(_) { return res.status(400).json({ ok: false, error: 'ingest_url hostname DNS resolution failed' }); }
+      if (PRIV.test(_dnsLookup.address)) {
+        return res.status(400).json({ ok: false, error: 'ingest_url hostname resolves to disallowed address' });
+      }
     }
     var destinations = b.destinations || [];
     if (destinations.length > 10) {
       return res.status(400).json({ ok: false, error: 'maximum 10 destinations per fanout' });
     }
 
-    // Stop any existing fanout for this stream — only the owner or admin may replace it
-    if (activeFanouts[streamId] && activeFanouts[streamId].process) {
+    // Ownership check and atomic reservation (JS event loop: no await here, so race-free)
+    if (activeFanouts[streamId]) {
       if (activeFanouts[streamId].ownerId && activeFanouts[streamId].ownerId !== req.user.id && req.user.role !== 'admin') {
         return res.status(403).json({ ok: false, error: 'forbidden' });
       }
-      activeFanouts[streamId].process.kill('SIGTERM');
-      delete activeFanouts[streamId];
+      if (activeFanouts[streamId].process) {
+        activeFanouts[streamId].process.kill('SIGTERM');
+        delete activeFanouts[streamId];
+      }
+    }
+    // Claim this stream_id before any async operations to prevent first-come-first-served bypass
+    if (!activeFanouts[streamId]) {
+      activeFanouts[streamId] = { ownerId: req.user.id };
     }
 
     // Resolve stream keys: Vault Pro first, fall back to body key
@@ -957,8 +972,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     }
 
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
-    activeFanouts[streamId] = activeFanouts[streamId] || {};
-    activeFanouts[streamId].ownerId = req.user.id;
+    activeFanouts[streamId] = activeFanouts[streamId] || { ownerId: req.user.id };
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
   } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }

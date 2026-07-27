@@ -544,7 +544,6 @@ setInterval(function() {
       viewers:   viewers,
       guests:    guests,
       score:     viewers * 2 + guests * 3,
-      hostId:    room.hostUserId || null,
     });
   });
   ranked.sort(function(a, b) { return b.score - a.score; });

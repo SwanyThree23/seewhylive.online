@@ -6,9 +6,9 @@
 const panelService = require('../services/panelService');
 const loyaltyService = require('../services/loyaltyService');
 
-const panelJoinThrottle    = new Map(); // socket.id -> last join timestamp
-const panelRequestThrottle = new Map(); // socket.id -> last request timestamp
-const panelReactThrottle   = new Map(); // socket.id -> last react/hand timestamp
+const panelJoinThrottle    = new Map(); // userId -> last join timestamp
+const panelRequestThrottle = new Map(); // userId -> last request timestamp
+const panelReactThrottle   = new Map(); // userId -> last react/hand timestamp
 
 function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
@@ -23,11 +23,11 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       var _pjNow = Date.now();
-      if (_pjNow - (panelJoinThrottle.get(socket.id) || 0) < 3000) {
+      if (_pjNow - (panelJoinThrottle.get(userId) || 0) < 3000) {
         ack?.({ ok: false, error: 'too many requests' });
         return;
       }
-      panelJoinThrottle.set(socket.id, _pjNow);
+      panelJoinThrottle.set(userId, _pjNow);
       const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode });
       if (!gate.allowed) {
         ack?.({ ok: false, reason: gate.reason });
@@ -51,11 +51,11 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       var _prjNow = Date.now();
-      if (_prjNow - (panelRequestThrottle.get(socket.id) || 0) < 2000) {
+      if (_prjNow - (panelRequestThrottle.get(userId) || 0) < 2000) {
         ack?.({ ok: false, error: 'too many requests' });
         return;
       }
-      panelRequestThrottle.set(socket.id, _prjNow);
+      panelRequestThrottle.set(userId, _prjNow);
       const request = await panelService.requestJoin({ roomId, userId });
       // Emit only to host sockets in this room — not all viewers
       const roomSockets = await io.in(roomId).fetchSockets();
@@ -167,8 +167,8 @@ function registerPanelHandlers(io, socket) {
       var raised  = !!(payload && payload.raised);
       if (!roomId) return;
       var _prNow = Date.now();
-      if (_prNow - (panelReactThrottle.get(socket.id) || 0) < 1000) return;
-      panelReactThrottle.set(socket.id, _prNow);
+      if (_prNow - (panelReactThrottle.get(socket.data.userId) || 0) < 1000) return;
+      panelReactThrottle.set(socket.data.userId, _prNow);
       io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
@@ -181,8 +181,8 @@ function registerPanelHandlers(io, socket) {
       var emoji  = payload && String(payload.emoji || '').slice(0, 4);
       if (!roomId || !emoji) return;
       var _preNow = Date.now();
-      if (_preNow - (panelReactThrottle.get(socket.id) || 0) < 1000) return;
-      panelReactThrottle.set(socket.id, _preNow);
+      if (_preNow - (panelReactThrottle.get(socket.data.userId) || 0) < 1000) return;
+      panelReactThrottle.set(socket.data.userId, _preNow);
       io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: socket.data.userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
@@ -190,9 +190,10 @@ function registerPanelHandlers(io, socket) {
   });
 
   socket.on('disconnect', function() {
-    panelJoinThrottle.delete(socket.id);
-    panelRequestThrottle.delete(socket.id);
-    panelReactThrottle.delete(socket.id);
+    var _tKey = socket.data.userId || socket.id;
+    panelJoinThrottle.delete(_tKey);
+    panelRequestThrottle.delete(_tKey);
+    panelReactThrottle.delete(_tKey);
   });
 }
 
