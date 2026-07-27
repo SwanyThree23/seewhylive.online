@@ -109,16 +109,17 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
 async function endBattle(battleId) {
   const battle = await getBattle(battleId);
   if (!battle) throw new Error('Battle not found');
+  if (battle.status === 'ended') return battle;  // idempotent — already ended
 
   let winnerId = null;
   if (battle.challenger_points > battle.defender_points) winnerId = battle.challenger_id;
   else if (battle.defender_points > battle.challenger_points) winnerId = battle.defender_id;
 
   const result = await db.query(
-    `UPDATE pk_battles SET status = 'ended', winner_id = $1 WHERE id = $2 RETURNING *`,
+    `UPDATE pk_battles SET status = 'ended', winner_id = $1 WHERE id = $2 AND status = 'active' RETURNING *`,
     [winnerId, battleId]
   );
-  return result.rows[0];
+  return result.rows[0] || battle;
 }
 
 // Legacy alias kept for any direct createBattle callers

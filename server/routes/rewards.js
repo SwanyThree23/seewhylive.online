@@ -10,7 +10,7 @@ router.get('/leaderboard', requireAuth, async (req, res) => {
     const data = rows.map(function(r) { return { points: r.points || r.total_points, level: r.level }; });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -22,7 +22,7 @@ router.get('/me/:userId', requireAuth, async (req, res) => {
     const data = await rewardsService.getUserPoints(req.params.userId);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -31,7 +31,7 @@ router.get('/tiers', async (req, res) => {
     const data = await rewardsService.getTiers();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -40,7 +40,7 @@ router.get('/challenges', async (req, res) => {
     const data = await rewardsService.getActiveChallenges();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -49,7 +49,7 @@ router.post('/challenges/:id/complete', requireAuth, async (req, res) => {
     const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

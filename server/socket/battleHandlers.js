@@ -12,6 +12,11 @@ const MAX_DRIFT_MS = 300;
 const BATTLE_WIN_POINTS = 100; // adjust to taste
 
 const activeTimers = new Map(); // battleId -> interval handle
+const BATTLE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function validBattleId(id) {
+  return typeof id === 'string' && BATTLE_UUID_RE.test(id);
+}
 
 function roomName(battleId) {
   return `battle:${battleId}`;
@@ -20,7 +25,7 @@ function roomName(battleId) {
 function registerBattleHandlers(io, socket) {
   // Any client (viewer, participant) joins the battle room to receive live events.
   socket.on('battle:watch', (payload, cb) => {
-    if (!payload || !payload.battleId) { if (cb) cb({ ok: false, error: 'battleId required' }); return; }
+    if (!payload || !validBattleId(payload.battleId)) { if (cb) cb({ ok: false, error: 'battleId required' }); return; }
     socket.join(roomName(payload.battleId));
     if (cb) cb({ ok: true });
   });
@@ -47,6 +52,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:accept', async (payload, cb) => {
+    if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const existing = await battleService.getBattle(payload.battleId);
       if (!existing || existing.defender_id !== socket.data.userId) {
@@ -64,6 +70,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:decline', async (payload, cb) => {
+    if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const battle = await battleService.getBattle(payload.battleId);
       if (!battle || battle.defender_id !== socket.data.userId) {
@@ -78,6 +85,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:start', async (payload, cb) => {
+    if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const existing = await battleService.getBattle(payload.battleId);
       if (!existing || (existing.challenger_id !== socket.data.userId && existing.defender_id !== socket.data.userId)) {
@@ -95,6 +103,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:vote', async (payload, cb) => {
+    if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const cents = Math.floor(payload.giftValueCents);
       if (!Number.isFinite(cents) || cents <= 0) {

@@ -15,7 +15,7 @@ router.get('/global', async (req, res) => {
     const rows = await loyaltyService.getGlobalLeaderboard(limit);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -27,7 +27,7 @@ router.get('/weekly', async (req, res) => {
     const rows = await loyaltyService.getWeeklyLeaderboard(limit);
     res.json(rows);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -37,7 +37,7 @@ router.get('/me', requireAuth, async (req, res) => {
     const rank = await loyaltyService.getUserRank(req.user.id);
     res.json(Object.assign({}, loyalty, { rank }));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -46,7 +46,7 @@ router.get('/tiers', async (req, res) => {
     const tiers = await loyaltyService.getRewardTiers();
     res.json(tiers);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

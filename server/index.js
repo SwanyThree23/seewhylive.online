@@ -292,7 +292,18 @@ var aiRateLimit = rateLimit({
   validate: { xForwardedForHeader: false },
   message: { error: 'Too many AI requests — please wait before trying again.' }
 });
+/* Aura and translate endpoints also invoke external AI APIs — apply same limit */
+var aiCostRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many requests — please wait before trying again.' }
+});
 app.use('/api/ai', aiRateLimit);
+app.use('/api/aura', aiCostRateLimit);
+app.use('/api/translate', aiCostRateLimit);
 app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 app.use('/api/battles', battleRoutes);
@@ -628,7 +639,7 @@ app.post('/api/ppv/verify', requireAuth, function(req, res) {
       res.json(result);
     }).catch(function(err) {
       logger.error('[ppv/verify] ' + err.message);
-      res.status(400).json({ error: err.message });
+      res.status(400).json({ error: 'Payment verification failed' });
     });
 });
 
@@ -721,15 +732,6 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
   }
 });
 
-// POST /api/n8n/test
-app.post('/api/n8n/test', requireAuth, function(req, res) {
-  var body = req.body;
-  var workflowId = String(body.workflowId || 'unknown').slice(0, 80);
-  var event      = String(body.event || 'test').slice(0, 40);
-  var ts         = Math.floor(body.ts || Date.now());
-  logger.info('[n8n/test] workflow=' + workflowId + ' event=' + event);
-  res.json({ triggered: true, workflowId: workflowId, event: event, ts: ts });
-});
 
 // GET /api/leaderboard
 app.get('/api/leaderboard', function(req, res) {
@@ -1074,10 +1076,8 @@ io.use(function(socket, next) {
     socket.data.decoded = decoded;
     return next();
   } catch (err) {
-    // Invalid token falls back to viewer
-    socket.data.role = 'viewer';
-    socket.data.userId = 'anon-' + uuidv4();
-    return next();
+    // A token was supplied but failed verification — reject rather than downgrade
+    return next(new Error('invalid token'));
   }
 });
 
@@ -1671,6 +1671,7 @@ io.on('connection', function(socket) {
         lb.push({ username: fromUser, totalCents: valueCents });
       }
       lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+      if (lb.length > 500) lb = lb.slice(0, 500);
       giftLeaderboards.set(roomId, lb);
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: lb.slice(0, 10) });
     } catch(lbErr) { logger.warn('[gift-lb] ' + lbErr.message); }
@@ -1825,7 +1826,13 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.overlay) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    io.to(roomId).emit('overlay-update', { overlay: data.overlay });
+    var safeOverlay;
+    try {
+      var _ovStr = JSON.stringify(data.overlay);
+      if (!_ovStr || _ovStr.length > 4096) return;
+      safeOverlay = JSON.parse(_ovStr);
+    } catch(e) { return; }
+    io.to(roomId).emit('overlay-update', { overlay: safeOverlay });
   });
 
   // ── watch-party ────────────────────────────────────────────────────────
@@ -2351,6 +2358,7 @@ io.on('connection', function(socket) {
       if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; }
       else { scLb.push({ username: username, totalCents: amountCents }); }
       scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
+      if (scLb.length > 500) scLb = scLb.slice(0, 500);
       giftLeaderboards.set(roomId, scLb);
       io.to(roomId).emit('gift-leaderboard', { roomId: roomId, leaders: scLb.slice(0, 10) });
     } catch(scLbErr) { logger.warn('[gift-lb-sc] ' + scLbErr.message); }
@@ -3017,7 +3025,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = socket.data.roomId;
     if (!sId) return;
-    io.to(sId).emit('bot-rule-changed', { rule: data.rule, enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
+    io.to(sId).emit('bot-rule-changed', { rule: String(data.rule || '').slice(0, 100), enabled: Boolean(data.enabled), ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── subscriber-only-changed ────────────────────────────────────────────
