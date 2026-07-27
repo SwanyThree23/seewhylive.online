@@ -101,7 +101,7 @@ async function resolveJoinRequest({ roomId, userId, approve }) {
   const result = await db.query(
     `UPDATE room_join_requests SET status = $3, resolved_at = now()
      WHERE stream_id = $1 AND user_id = $2 RETURNING *`,
-    [roomId, userId, approve ? 'approved' : 'denied']
+    [roomId, userId, approve === true ? 'approved' : 'denied']
   );
   return result.rows[0];
 }

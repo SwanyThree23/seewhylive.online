@@ -1322,7 +1322,7 @@ io.on('connection', function(socket) {
       })
       .catch(function(err) {
         logger.error('[transport-connect] ' + err.message);
-        if (ack) ack({ error: err.message });
+        if (ack) ack({ error: 'Transport connection failed' });
       });
   });
 
