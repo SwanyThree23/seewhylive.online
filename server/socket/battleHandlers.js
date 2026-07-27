@@ -107,10 +107,14 @@ function registerBattleHandlers(io, socket) {
         if (cb) cb({ ok: false, error: 'giftValueCents exceeds maximum' });
         return;
       }
+      if (payload.side !== 'challenger' && payload.side !== 'defender') {
+        if (cb) cb({ ok: false, error: 'side must be challenger or defender' });
+        return;
+      }
       const battle = await battleService.castVote({
         battleId: payload.battleId,
         voterId: socket.data.userId,
-        side: payload.side, // 'challenger' | 'defender'
+        side: payload.side,
         giftValueCents: cents,
       });
       io.to(roomName(payload.battleId)).emit('battle:score_update', {

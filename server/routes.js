@@ -836,6 +836,9 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
   try {
     var b = req.body;
     var streamId = b.stream_id || 'default';
+    if (!/^[\w.\-]{1,128}$/.test(streamId)) {
+      return res.status(400).json({ ok: false, error: 'invalid stream_id' });
+    }
     var guestId  = b.guest_id  || streamId;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
