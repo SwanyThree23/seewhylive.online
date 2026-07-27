@@ -725,6 +725,9 @@ var SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
 router.post('/stream-sync', requireAuth, async function(req, res) {
   try {
+    if (req.user.role !== 'host' && req.user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
     var b = req.body;
     var creatorId = req.user.id;
     var STREAM_STATUSES = ['live', 'offline'];
