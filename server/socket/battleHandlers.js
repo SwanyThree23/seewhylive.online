@@ -24,10 +24,16 @@ function roomName(battleId) {
 
 function registerBattleHandlers(io, socket) {
   // Any client (viewer, participant) joins the battle room to receive live events.
-  socket.on('battle:watch', (payload, cb) => {
+  socket.on('battle:watch', async (payload, cb) => {
     if (!payload || !validBattleId(payload.battleId)) { if (cb) cb({ ok: false, error: 'battleId required' }); return; }
-    socket.join(roomName(payload.battleId));
-    if (cb) cb({ ok: true });
+    try {
+      const battle = await battleService.getBattle(payload.battleId);
+      if (!battle) { if (cb) cb({ ok: false, error: 'battle not found' }); return; }
+      socket.join(roomName(payload.battleId));
+      if (cb) cb({ ok: true });
+    } catch (err) {
+      if (cb) cb({ ok: false, error: 'Battle error' });
+    }
   });
 
   socket.on('battle:unwatch', (payload) => {
@@ -37,13 +43,14 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:challenge', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     try {
+      const rawDur = Math.floor(Number(payload.durationMinutes) || 5);
       const battle = await battleService.createChallenge({
         challengerId: socket.data.userId,
         defenderId: payload.defenderId,
         challengerName: payload.challengerName,
         defenderName: payload.defenderName,
         roomId: payload.roomId,
-        durationMinutes: payload.durationMinutes,
+        durationMinutes: Math.min(Math.max(rawDur, 1), 60),
       });
       io.to(`user:${payload.defenderId}`).emit('battle:challenge', battle);
       if (cb) cb({ ok: true, battle });
@@ -78,6 +85,7 @@ function registerBattleHandlers(io, socket) {
         if (cb) cb({ ok: false, error: 'forbidden' });
         return;
       }
+      await battleService.declineBattle(payload.battleId, socket.data.userId);
       io.to(`user:${battle.challenger_id}`).emit('battle:decline', { battleId: payload.battleId });
       if (cb) cb({ ok: true });
     } catch (err) {

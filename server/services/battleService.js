@@ -102,18 +102,33 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
   return result.rows[0];
 }
 
+async function declineBattle(battleId, defenderId) {
+  const result = await db.query(
+    `UPDATE pk_battles SET status = 'declined'
+     WHERE id = $1 AND defender_id = $2 AND status = 'pending'
+     RETURNING *`,
+    [battleId, defenderId]
+  );
+  return result.rows[0] || null;
+}
+
 async function endBattle(battleId) {
   const battle = await getBattle(battleId);
   if (!battle) throw new Error('Battle not found');
   if (battle.status === 'ended') return battle;  // idempotent — already ended
 
-  let winnerId = null;
-  if (battle.challenger_points > battle.defender_points) winnerId = battle.challenger_id;
-  else if (battle.defender_points > battle.challenger_points) winnerId = battle.defender_id;
-
+  // Determine winner atomically from live DB values (not stale snapshot)
   const result = await db.query(
-    `UPDATE pk_battles SET status = 'ended', winner_id = $1 WHERE id = $2 AND status = 'active' RETURNING *`,
-    [winnerId, battleId]
+    `UPDATE pk_battles
+     SET status = 'ended',
+         winner_id = CASE
+           WHEN challenger_points > defender_points THEN challenger_id
+           WHEN defender_points > challenger_points THEN defender_id
+           ELSE NULL
+         END
+     WHERE id = $1 AND status = 'active'
+     RETURNING *`,
+    [battleId]
   );
   return result.rows[0] || battle;
 }
@@ -134,6 +149,7 @@ module.exports = {
   startBattle,
   castVote,
   recordVote,
+  declineBattle,
   endBattle,
   CREATOR_SPLIT,
 };

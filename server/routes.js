@@ -133,7 +133,7 @@ router.get('/search', function(req, res) {
   try {
     var q = req.query.q || '';
     var type = req.query.type || 'all';
-    var limit = parseInt(req.query.limit || '20', 10);
+    var limit = Math.min(parseInt(req.query.limit || '20', 10) || 20, 100);
     if (search) {
       var data = search.search(q, type, limit);
       return res.json({ results: data, total: data.length });
@@ -436,8 +436,8 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
     var amountCents = req.body.amountCents || 0;
     var id = uuidv4();
 
-    if (!Number.isFinite(amountCents) || amountCents < 0 || amountCents > 50000) {
-      return res.status(400).json({ success: false, error: 'amountCents must be between 0 and 50000' });
+    if (!Number.isFinite(amountCents) || amountCents < 1 || amountCents > 50000) {
+      return res.status(400).json({ success: false, error: 'amountCents must be between 1 and 50000' });
     }
 
     if (moderation) {
@@ -595,12 +595,31 @@ router.get('/leaderboard', function(req, res) {
 
 var _ppvTokens = {};
 
-router.post('/ppv/create', requireAuth, function(req, res) {
+// Evict expired PPV tokens every 30 minutes
+setInterval(function() {
+  var now = Date.now();
+  Object.keys(_ppvTokens).forEach(function(k) {
+    if (_ppvTokens[k] && now > _ppvTokens[k].expiresAt) delete _ppvTokens[k];
+  });
+}, 30 * 60 * 1000);
+
+router.post('/ppv/create', requireAuth, async function(req, res) {
   try {
-    var streamId = req.body.streamId || 'default';
+    var streamId = req.body.streamId || '';
+    if (!streamId || !/^[0-9a-f-]{36}$/i.test(streamId)) {
+      return res.status(400).json({ success: false, error: 'valid streamId is required' });
+    }
     var priceCents = Math.floor(req.body.priceCents || 499);
     if (!Number.isFinite(priceCents) || priceCents < 100 || priceCents > 50000) {
       return res.status(400).json({ success: false, error: 'priceCents must be between 100 and 50000' });
+    }
+    // Verify the caller owns this stream
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&select=host_user_id&limit=1', {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+    });
+    var ownerData = await ownerResp.json();
+    if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
+      return res.status(403).json({ success: false, error: 'forbidden' });
     }
     var token = require('crypto').randomBytes(16).toString('hex');
     var expiresAt = Date.now() + (24 * 60 * 60 * 1000);
@@ -683,7 +702,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
       return res.json({ success: true, statusCode: outRes.statusCode, webhookUrl: webhookUrl });
     });
     outReq.on('error', function(e) {
-      return res.json({ success: false, error: e.message });
+      return res.json({ success: false, error: 'Webhook request failed' });
     });
     outReq.write(bodyStr);
     outReq.end();
@@ -714,7 +733,7 @@ router.post('/stream-sync', requireAuth, async function(req, res) {
     });
     var data = await resp.json();
     res.json({ ok: true, stream: data });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 router.post('/stream-end', requireAuth, async function(req, res) {
@@ -736,7 +755,7 @@ router.post('/stream-end', requireAuth, async function(req, res) {
       body: JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() })
     });
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 
@@ -755,7 +774,7 @@ router.post('/vault/save-key', requireAuth, function(req, res) {
     }
     vault.saveKey(req.user.id, destId, plainKey);
     res.json({ ok: true, stored: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 router.get('/vault/key-exists', requireAuth, function(req, res) {
@@ -763,7 +782,7 @@ router.get('/vault/key-exists', requireAuth, function(req, res) {
   try {
     var exists = vault.hasKey(req.user.id, req.query.dest_id || '');
     res.json({ ok: true, exists: exists });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 router.post('/vault/delete-key', requireAuth, function(req, res) {
@@ -771,7 +790,7 @@ router.post('/vault/delete-key', requireAuth, function(req, res) {
   try {
     vault.deleteKey(req.user.id, req.body.dest_id || '');
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 router.get('/vault/key-meta', requireAuth, function(req, res) {

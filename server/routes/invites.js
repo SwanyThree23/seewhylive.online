@@ -8,6 +8,8 @@ const db          = require('../db');
 const inviteService = require('../services/inviteService');
 const requireAuth   = require('../middleware/auth');
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // --- direct user-to-user invitations (guest_invitations) ---
 
 router.post('/', requireAuth, async (req, res) => {
@@ -29,6 +31,7 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 router.post('/:id/respond', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite id' });
   try {
     const { status } = req.body; // 'accepted' | 'declined'
     const invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id);
@@ -44,7 +47,7 @@ router.get('/me', requireAuth, async (req, res) => {
     const invites = await inviteService.getPendingInvitations(req.user.id);
     res.json(invites);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -83,6 +86,7 @@ router.post('/links/:token/redeem', requireAuth, async (req, res) => {
 });
 
 router.post('/links/:id/revoke', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite link id' });
   try {
     const link = await inviteService.revokeInviteLink(req.params.id, req.user.id);
     if (!link) return res.status(404).json({ error: 'not found, not yours, or already revoked' });
@@ -101,7 +105,7 @@ router.get('/streams/:streamId/links', requireAuth, async (req, res) => {
     const links = await inviteService.getStreamInviteLinks(req.params.streamId);
     res.json(links);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
