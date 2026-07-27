@@ -3,6 +3,7 @@
 //   app.use('/api/invites', require('./routes/invites'));
 
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const db          = require('../db');
 const inviteService = require('../services/inviteService');
@@ -10,9 +11,18 @@ const requireAuth   = require('../middleware/auth');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const inviteRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many invitations — please wait before sending more.' },
+});
+
 // --- direct user-to-user invitations (guest_invitations) ---
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, inviteRateLimit, async (req, res) => {
   const { toUserId, roomId, message, expiryHours } = req.body;
   if (!toUserId || !UUID_RE.test(toUserId)) return res.status(400).json({ error: 'invalid toUserId' });
   if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
@@ -66,10 +76,11 @@ router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
     const ALLOWED_ROLES = ['guest', 'cohost', 'viewer'];
     const safeRole = ALLOWED_ROLES.includes(role) ? role : 'guest';
     const safeMaxUses = Math.min(Math.floor(maxUses || 1), 100);
+    const safeDisplayName = displayName ? String(displayName).slice(0, 80) : null;
     const link = await inviteService.createInviteLink({
       streamId: req.params.streamId,
       createdBy: req.user.id,
-      displayName,
+      displayName: safeDisplayName,
       role: safeRole,
       maxUses: safeMaxUses,
     });

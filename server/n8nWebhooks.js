@@ -7,10 +7,15 @@ var n8nRouter = express.Router();
 // When N8N_SECRET is unset (dev mode), the guard is skipped.
 n8nRouter.use(function(req, res, next) {
   var secret = process.env.N8N_SECRET || '';
-  if (!secret) return next();
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    return next();
+  }
   var sig = req.headers['x-n8n-secret'] || '';
-  var hmac = function(s) { return crypto.createHmac('sha256', 'n8n-cmp').update(String(s)).digest(); };
-  if (!crypto.timingSafeEqual(hmac(sig), hmac(secret))) {
+  var hash = function(s) { return crypto.createHash('sha256').update(String(s)).digest(); };
+  if (!crypto.timingSafeEqual(hash(sig), hash(secret))) {
     return res.status(401).json({ error: 'unauthorized' });
   }
   next();
