@@ -52,7 +52,8 @@ n8nRouter.post('/gem-transaction', function(req, res) {
 
 n8nRouter.post('/guardian-flag', function(req, res) {
   var d = req.body;
-  var action = d.score >= 95 ? 'ban' : d.score >= 75 ? 'mute' : 'flag';
+  var score = Number(d.score) || 0;
+  var action = score >= 95 ? 'ban' : score >= 75 ? 'mute' : 'flag';
   var target = d.roomId ? global.io.to(String(d.roomId)) : null;
   if (global.io && target) target.emit('moderation-action', { user:d.user, score:d.score, action:action, ts:Date.now() });
   res.json({ ok: true, action: action });
