@@ -128,9 +128,9 @@ router.post('/:id/upload', requireAuth, upload.single('video'), function(req, re
   if (!req.file) return res.status(400).json({ error: 'video file is required' });
   // Verify VOD belongs to authenticated user before upload
   sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
-    if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
+    if (chkErr || chkStatus >= 400) { fs.unlink(req.file.path, function() {}); return res.status(500).json({ error: 'Database error' }); }
     var vod = Array.isArray(chkData) ? chkData[0] : chkData;
-    if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
+    if (!vod || vod.creator_id !== req.user.id) { fs.unlink(req.file.path, function() {}); return res.status(403).json({ error: 'forbidden' }); }
     doUpload(req, res, vodId);
   });
 });

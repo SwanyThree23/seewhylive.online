@@ -656,7 +656,7 @@ app.post('/api/ppv/verify', requireAuth, function(req, res) {
 // GET /api/schedule
 app.get('/api/schedule', function(req, res) {
   try {
-    var rows = db.prepare('SELECT * FROM schedules ORDER BY scheduled_at ASC').all();
+    var rows = db.prepare('SELECT id, title, category, desc, scheduled_at, created_at, recurring FROM schedules ORDER BY scheduled_at ASC').all();
     res.json({ events: rows });
   } catch (err) {
     res.json({ events: [] });
@@ -1632,7 +1632,8 @@ io.on('connection', function(socket) {
     var name                   = String(data.name || 'Gift').slice(0, 60);
     var valueCents             = Math.floor(data.valueCents || 0);
     if (valueCents > 50000) return;
-    var toGuestId              = data.toGuestId || null;
+    var _tgRaw = data.toGuestId || null;
+    var toGuestId = (_tgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_tgRaw))) ? String(_tgRaw) : null;
     var creatorStripeAccountId = data.creatorStripeAccountId || '';
 
     if (!roomId || valueCents <= 0) return;
@@ -1756,7 +1757,8 @@ io.on('connection', function(socket) {
     var buyerUser  = socket.data.username || 'Guest';
     var itemName   = String(data.itemName || 'Merch').slice(0, 80);
     var priceCents = Math.floor(data.priceCents || 0);
-    var toGuestId  = data.toGuestId || null;
+    var _moTgRaw = data.toGuestId || null;
+    var toGuestId = (_moTgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_moTgRaw))) ? String(_moTgRaw) : null;
 
     if (!roomId || priceCents <= 0 || priceCents > 50000) return;
 
@@ -1955,7 +1957,7 @@ io.on('connection', function(socket) {
     if (data.videoId !== undefined) room.watchParty.videoId = data.videoId;
     if (data.url !== undefined) {
       if (!/^https?:\/\//i.test(String(data.url))) return;
-      room.watchParty.url = data.url;
+      room.watchParty.url = String(data.url).slice(0, 500);
     }
     if (data.type !== undefined) {
       var SYNC_PARTY_TYPES = ['youtube', 'twitch', 'direct'];
@@ -2298,6 +2300,8 @@ io.on('connection', function(socket) {
   socket.on('chat-react', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.msgId || !data.emoji) return;
+    var _msgIdStr = String(data.msgId);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_msgIdStr)) return;
     var emoji = String(data.emoji).slice(0, 4);
 
     if (!chatReactions.has(roomId)) chatReactions.set(roomId, new Map());
@@ -2385,9 +2389,9 @@ io.on('connection', function(socket) {
     // Gift leaderboard — super-chat counts too
     try {
       var scLb = giftLeaderboards.get(roomId) || [];
-      var scLbIdx = scLb.findIndex(function(e) { return e.username === username; });
-      if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; }
-      else { scLb.push({ username: username, totalCents: amountCents }); }
+      var scLbIdx = scLb.findIndex(function(e) { return e.userId === userId; });
+      if (scLbIdx >= 0) { scLb[scLbIdx].totalCents += amountCents; scLb[scLbIdx].username = username; }
+      else { scLb.push({ userId: userId, username: username, totalCents: amountCents }); }
       scLb.sort(function(a, b) { return b.totalCents - a.totalCents; });
       if (scLb.length > 500) scLb = scLb.slice(0, 500);
       giftLeaderboards.set(roomId, scLb);

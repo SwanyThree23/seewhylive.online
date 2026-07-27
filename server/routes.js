@@ -75,6 +75,9 @@ router.post('/aura/mode', requireAuth, function(req, res) {
 });
 
 router.post('/aura/trigger', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, error: 'forbidden' });
+  }
   try {
     var type = req.body.type || '';
     var streamId = req.body.streamId || '';
@@ -658,6 +661,7 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
 // ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
 
 router.post('/n8n/test', requireAuth, async function(req, res) {
+  if (req.user.role !== 'admin') return res.status(403).json({ success: false, error: 'forbidden' });
   try {
     var webhookUrl = req.body.webhookUrl || '';
     var _rawPayload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };

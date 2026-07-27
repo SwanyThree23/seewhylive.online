@@ -414,11 +414,13 @@ function areOctCellPropsEqual(prev, next) {
   var pg = prev.guest || {};
   var ng = next.guest || {};
   return (
-    pg.producerId  === ng.producerId  &&
-    pg.speaking    === ng.speaking    &&
-    prev.isMuted   === next.isMuted   &&
-    prev.isCamOff  === next.isCamOff  &&
-    prev.giftTotal === next.giftTotal
+    pg.producerId      === ng.producerId      &&
+    pg.audioProducerId === ng.audioProducerId  &&
+    pg.speaking        === ng.speaking         &&
+    prev.rtcManager    === next.rtcManager     &&
+    prev.isMuted       === next.isMuted        &&
+    prev.isCamOff      === next.isCamOff       &&
+    prev.giftTotal     === next.giftTotal
   );
 }
 

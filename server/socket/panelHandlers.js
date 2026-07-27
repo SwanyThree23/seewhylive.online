@@ -39,7 +39,7 @@ function registerPanelHandlers(io, socket) {
       if (isNew) loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(() => {});
       ack?.({ ok: true, slot });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -71,7 +71,7 @@ function registerPanelHandlers(io, socket) {
       });
       ack?.({ ok: true, status: 'pending' });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -88,7 +88,7 @@ function registerPanelHandlers(io, socket) {
       if (targetSocket) targetSocket.emit('panel:join_request_resolved', { roomId, userId, approve, resolved });
       ack?.({ ok: true });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -102,7 +102,7 @@ function registerPanelHandlers(io, socket) {
       io.to(roomId).emit('panel:slot_released', { roomId, userId });
       ack?.({ ok: true });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -116,7 +116,7 @@ function registerPanelHandlers(io, socket) {
       io.to(roomId).emit('panel:layout_update', { roomId, slot });
       ack?.({ ok: true });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -130,7 +130,7 @@ function registerPanelHandlers(io, socket) {
       io.to(roomId).emit('panel:audio_only_changed', { roomId, isAudioOnly: room.is_audio_only });
       ack?.({ ok: true });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
@@ -147,7 +147,7 @@ function registerPanelHandlers(io, socket) {
       if (kickedSocket) kickedSocket.emit('panel:kicked', { roomId });
       ack?.({ ok: true });
     } catch (err) {
-      ack?.({ ok: false, error: err.message });
+      ack?.({ ok: false, error: 'Panel error' });
     }
   });
 
