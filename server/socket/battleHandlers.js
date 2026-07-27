@@ -154,7 +154,7 @@ function startCountdown(io, battle) {
           });
         }
       } catch (err) {
-        io.to(room).emit('battle:error', { message: err.message });
+        io.to(room).emit('battle:error', { message: 'Battle error' });
       }
       return;
     }
@@ -182,7 +182,7 @@ async function endBattleAndBroadcast(io, room, battleId) {
       });
     }
   } catch (err) {
-    io.to(room).emit('battle:error', { message: err.message });
+    io.to(room).emit('battle:error', { message: 'Battle error' });
   }
 }
 

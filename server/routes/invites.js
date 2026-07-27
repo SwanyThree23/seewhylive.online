@@ -14,11 +14,12 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const { toUserId, roomId, message, expiryHours } = req.body;
     const safeExpiryHours = Math.min(parseInt(expiryHours, 10) || 24, 168);
+    const safeMessage = message ? String(message).slice(0, 500) : null;
     const invite = await inviteService.sendInvitation({
       fromUserId: req.user.id,
       toUserId,
       roomId,
-      message,
+      message: safeMessage,
       expiryHours: safeExpiryHours,
     });
     res.status(201).json(invite);

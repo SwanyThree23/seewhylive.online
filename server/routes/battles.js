@@ -88,7 +88,7 @@ router.get('/active', async (req, res) => {
     const battles = await battleService.getActiveBattles();
     res.json(battles);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -98,7 +98,7 @@ router.get('/:id', validateId, async (req, res) => {
     if (!battle) return res.status(404).json({ error: 'battle not found' });
     res.json(battle);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
