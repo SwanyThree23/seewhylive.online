@@ -704,7 +704,7 @@ app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = req.body.endpoint;
   if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
   try {
-    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint);
+    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?').run(endpoint, req.user.id);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -921,11 +921,15 @@ app.post('/api/summarize-chat', requireAuth, function(req, res) {
   }
 });
 
+var _liveStreamsCache = { data: null, ts: 0 };
 app.get('/api/streams/live', function(req, res) {
   var fsModule = require('fs');
   var pathModule = require('path');
   var HLS_DIR = '/var/www/html/hls';
   var now = Date.now();
+  if (_liveStreamsCache.data && now - _liveStreamsCache.ts < 5000) {
+    return res.json(_liveStreamsCache.data);
+  }
   var STALE_MS = 15000; // segment older than 15s = not actively streaming
 
   // Streams IN: scan HLS dir for active m3u8/ts files
@@ -993,12 +997,14 @@ app.get('/api/streams/live', function(req, res) {
     }
   });
 
-  res.json({
+  var _liveResult = {
     ts:          now,
     streamsIn:   streamsIn,
     streamsOut:  streamsOut,
     rooms:       roomSummaries
-  });
+  };
+  _liveStreamsCache = { data: _liveResult, ts: now };
+  res.json(_liveResult);
 });
 
 // ─── Live Rooms — active rooms with viewer counts for DiscoverTab ─────────
@@ -1179,6 +1185,8 @@ io.on('connection', function(socket) {
         .then(function(results) {
           var sendTransport = results[0];
           var recvTransport = results[1];
+          if (!socket.data.ownedTransportIds) socket.data.ownedTransportIds = [];
+          socket.data.ownedTransportIds.push(sendTransport.params.id, recvTransport.params.id);
 
           var existingProducers = mediasoup.getRoomProducers(roomId);
           var routerCaps = mediasoup.getRouterRtpCapabilities(roomId);
@@ -1285,11 +1293,13 @@ io.on('connection', function(socket) {
     }
     mediasoup.createWebRtcTransport(roomId)
       .then(function(transport) {
+        if (!socket.data.ownedTransportIds) socket.data.ownedTransportIds = [];
+        socket.data.ownedTransportIds.push(transport.params.id);
         if (ack) ack(transport.params);
       })
       .catch(function(err) {
         logger.error('[create-transport] ' + err.message);
-        if (ack) ack({ error: err.message });
+        if (ack) ack({ error: 'Failed to create transport' });
       });
   });
 
@@ -1300,6 +1310,10 @@ io.on('connection', function(socket) {
 
     if (!transportId || !dtlsParameters) {
       if (ack) ack({ error: 'transportId and dtlsParameters required' });
+      return;
+    }
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(transportId)) {
+      if (ack) ack({ error: 'forbidden' });
       return;
     }
 
@@ -3002,9 +3016,9 @@ io.on('connection', function(socket) {
     // Disconnect the banned socket if it is connected to this room
     var room = rooms.get(sId);
     if (room) {
-      room.guests.forEach(function(g) {
-        if ((g.guestId === bannedId || g.userId === bannedId) && g.socketId) {
-          var bannedSocket = io.sockets.sockets.get(g.socketId);
+      room.guests.forEach(function(g, sid) {
+        if (g.guestId === bannedId || g.userId === bannedId) {
+          var bannedSocket = io.sockets.sockets.get(sid);
           if (bannedSocket) { bannedSocket.disconnect(true); }
         }
       });
@@ -3091,7 +3105,7 @@ io.on('connection', function(socket) {
     var _rawPcDur = Number(data.duration);
     var duration = Math.min(Math.max(Number.isFinite(_rawPcDur) ? Math.floor(_rawPcDur) : 60, 5), 300);
     var newPoll = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       question: String(data.question || '').slice(0, 200),
       options: (Array.isArray(data.options) ? data.options : []).map(function(o) { return String(o).slice(0, 80); }),
       votes: {},
@@ -3305,8 +3319,10 @@ app.post('/api/webhooks/deploy', function(req, res) {
   var token    = req.headers['x-deploy-token'] || '';
   var expected = process.env.DEPLOY_TOKEN || '';
   var authorized = false;
-  if (expected && token.length === expected.length) {
-    try { authorized = require('crypto').timingSafeEqual(Buffer.from(token), Buffer.from(expected)); } catch (_) {}
+  if (expected) {
+    var _dc = require('crypto');
+    var _dh = function(s) { return _dc.createHmac('sha256', 'deploy-cmp').update(String(s)).digest(); };
+    try { authorized = _dc.timingSafeEqual(_dh(token), _dh(expected)); } catch (_) {}
   }
   if (!authorized) {
     logger.warn('[deploy-webhook] unauthorized attempt from ' + req.ip);
@@ -3401,7 +3417,7 @@ app.post('/api/zego/token', requireAuth, function(req, res) {
 
   var userId = req.user.id.slice(0, 64);
   var now    = Math.floor(Date.now() / 1000);
-  var nonce  = Math.floor(Math.random() * 0x7fffffff);
+  var nonce  = require('crypto').randomInt(0, 0x7fffffff);
 
   // Token body — matches ZEGO Token04 spec exactly
   var body = JSON.stringify({

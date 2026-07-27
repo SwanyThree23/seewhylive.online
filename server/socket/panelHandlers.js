@@ -33,10 +33,10 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, reason: gate.reason });
         return;
       }
-      const slot = await panelService.assignSlot({ roomId, userId });
+      const { slot, isNew } = await panelService.assignSlot({ roomId, userId });
       socket.join(roomId);
       io.to(roomId).emit('panel:slot_assigned', { roomId, slot });
-      loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(() => {});
+      if (isNew) loyaltyService.awardPoints({ userId, points: 25, source: 'panel_join', sourceId: roomId }).catch(() => {});
       ack?.({ ok: true, slot });
     } catch (err) {
       ack?.({ ok: false, error: err.message });

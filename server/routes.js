@@ -798,7 +798,7 @@ router.get('/vault/key-meta', requireAuth, function(req, res) {
   try {
     var meta = vault.listGuestKeyMeta(req.user.id);
     res.json({ ok: true, keys: meta });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 // Dedicated health check — tests whether VAULT_SECRET is configured and
@@ -961,7 +961,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     activeFanouts[streamId].ownerId = req.user.id;
     console.log('[fanout:%s] started → %d destinations (guest=%s)', streamId, resolvedDests.length, guestId);
     res.json({ ok: true, stream_id: streamId, destinations: resolvedDests.length });
-  } catch(e) { res.status(500).json({ ok: false, error: e.message }); }
+  } catch(e) { res.status(500).json({ ok: false, error: 'Internal server error' }); }
 });
 
 router.post('/fanout-stop', requireAuth, function(req, res) {
