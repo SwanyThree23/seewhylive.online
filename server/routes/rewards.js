@@ -45,6 +45,7 @@ router.get('/challenges', async (req, res) => {
 });
 
 router.post('/challenges/:id/complete', requireAuth, async (req, res) => {
+  if (!/^[0-9a-f-]{36}$/i.test(req.params.id)) return res.status(400).json({ error: 'invalid challenge id' });
   try {
     const result = await rewardsService.completeChallenge(req.user.id, req.params.id);
     res.json(result);

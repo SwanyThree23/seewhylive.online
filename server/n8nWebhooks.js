@@ -1,5 +1,20 @@
+var crypto = require('crypto');
 var express = require('express');
 var n8nRouter = express.Router();
+
+// HMAC-based shared-secret check. Set N8N_SECRET env var to a random string and
+// configure n8n to send it as the x-n8n-secret request header.
+// When N8N_SECRET is unset (dev mode), the guard is skipped.
+n8nRouter.use(function(req, res, next) {
+  var secret = process.env.N8N_SECRET || '';
+  if (!secret) return next();
+  var sig = req.headers['x-n8n-secret'] || '';
+  var hmac = function(s) { return crypto.createHmac('sha256', 'n8n-cmp').update(String(s)).digest(); };
+  if (!crypto.timingSafeEqual(hmac(sig), hmac(secret))) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  next();
+});
 
 n8nRouter.get('/ping', function(req, res) {
   res.json({ pong: true, ts: Date.now() });

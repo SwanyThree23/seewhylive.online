@@ -107,7 +107,7 @@ async function resolveJoinRequest({ roomId, userId, approve }) {
 }
 
 function generateInviteCode() {
-  return crypto.randomBytes(4).toString('hex').toUpperCase();
+  return crypto.randomBytes(12).toString('hex').toUpperCase();
 }
 
 async function setExpandedSlot({ roomId, slotIndex, expanded }) {
