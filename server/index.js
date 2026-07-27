@@ -332,7 +332,7 @@ var io = new Server(server, {
   maxHttpBufferSize:  1e6,
   connectionStateRecovery: {
     maxDisconnectionDuration: 120000,
-    skipMiddlewares: true
+    skipMiddlewares: false
   }
 });
 
@@ -1271,7 +1271,7 @@ io.on('connection', function(socket) {
       else io.to(socket.id).emit('rtp-capabilities', { routerRtpCapabilities: caps });
     } catch (err) {
       logger.error('[get-rtp-capabilities] ' + err.message);
-      if (ack) ack({ error: err.message });
+      if (ack) ack({ error: 'Failed to get capabilities' });
     }
   });
 
@@ -2165,6 +2165,7 @@ io.on('connection', function(socket) {
   socket.on('watch-react', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.emoji) return;
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var emoji  = String(data.emoji).slice(0, 4);
     var now    = Date.now();
     var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
@@ -2446,6 +2447,7 @@ io.on('connection', function(socket) {
   socket.on('viewer-react', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.emoji) return;
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var emoji  = String(data.emoji).slice(0, 4);
     var now    = Date.now();
     var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
@@ -2581,7 +2583,7 @@ io.on('connection', function(socket) {
         rtmp.startFanout(roomId, socket.data.guestId, destinations);
       } catch (err) {
         logger.error('[go-live] startFanout failed: ' + err.message);
-        if (ack) ack({ error: 'Failed to start RTMP fanout: ' + err.message });
+        if (ack) ack({ error: 'Failed to start RTMP fanout' });
         return;
       }
     }
@@ -3173,6 +3175,7 @@ io.on('connection', function(socket) {
 
   // ── platform health check ────────────────────────────────────────────────
   socket.on('platform-health-check', function() {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var status = { server: 'ok', mediasoup: 'ok', database: 'ok', rtmp: 'ok', cdn: 'ok' };
     try { db.prepare('SELECT 1').get(); } catch (e) { status.database = 'error'; }
     socket.emit('platform-health', status);

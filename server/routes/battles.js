@@ -17,7 +17,9 @@ function validateId(req, res, next) {
 
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { defenderId, challengerName, defenderName, roomId, durationMinutes } = req.body;
+    const { defenderId, challengerName, defenderName, roomId } = req.body;
+    const rawDuration = Math.floor(Number(req.body.durationMinutes) || 5);
+    const durationMinutes = Math.min(Math.max(rawDuration, 1), 60);
     const battle = await battleService.createChallenge({
       challengerId: req.user.id,
       defenderId,

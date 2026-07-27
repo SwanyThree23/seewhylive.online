@@ -8,6 +8,7 @@ const loyaltyService = require('../services/loyaltyService');
 
 const panelJoinThrottle    = new Map(); // socket.id -> last join timestamp
 const panelRequestThrottle = new Map(); // socket.id -> last request timestamp
+const panelReactThrottle   = new Map(); // socket.id -> last react/hand timestamp
 
 function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
@@ -81,8 +82,10 @@ function registerPanelHandlers(io, socket) {
         return;
       }
       const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
-      // Broadcast to room — requesting client filters by its own userId
-      io.to(roomId).emit('panel:join_request_resolved', { roomId, userId, approve, resolved });
+      // Emit only to the requesting user, not the entire room
+      const roomSockets = await io.in(roomId).fetchSockets();
+      const targetSocket = roomSockets.find(function(s) { return s.data && s.data.userId === userId; });
+      if (targetSocket) targetSocket.emit('panel:join_request_resolved', { roomId, userId, approve, resolved });
       ack?.({ ok: true });
     } catch (err) {
       ack?.({ ok: false, error: err.message });
@@ -163,6 +166,9 @@ function registerPanelHandlers(io, socket) {
       var roomId = socket.data.roomId;
       var raised  = !!(payload && payload.raised);
       if (!roomId) return;
+      var _prNow = Date.now();
+      if (_prNow - (panelReactThrottle.get(socket.id) || 0) < 1000) return;
+      panelReactThrottle.set(socket.id, _prNow);
       io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
@@ -174,6 +180,9 @@ function registerPanelHandlers(io, socket) {
       var roomId = socket.data.roomId;
       var emoji  = payload && String(payload.emoji || '').slice(0, 4);
       if (!roomId || !emoji) return;
+      var _preNow = Date.now();
+      if (_preNow - (panelReactThrottle.get(socket.id) || 0) < 1000) return;
+      panelReactThrottle.set(socket.id, _preNow);
       io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: socket.data.userId, emoji: emoji });
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
@@ -183,6 +192,7 @@ function registerPanelHandlers(io, socket) {
   socket.on('disconnect', function() {
     panelJoinThrottle.delete(socket.id);
     panelRequestThrottle.delete(socket.id);
+    panelReactThrottle.delete(socket.id);
   });
 }
 

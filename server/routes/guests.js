@@ -7,9 +7,12 @@ const router = express.Router();
 const guestService = require('../services/guestService');
 const requireAuth  = require('../middleware/auth');
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // --- on-stream guests (stream_guests) ---
 
 router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const { displayName, vdoStreamId, mediasoupProducerId } = req.body;
     const guest = await guestService.joinStreamAsGuest({
@@ -27,6 +30,7 @@ router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
 });
 
 router.patch('/guests/:guestId', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.guestId)) return res.status(400).json({ error: 'invalid guest id' });
   try {
     const guest = await guestService.updateGuestState(req.params.guestId, req.body, req.user.id);
     if (!guest) return res.status(403).json({ error: 'not found or forbidden' });
@@ -37,6 +41,7 @@ router.patch('/guests/:guestId', requireAuth, async (req, res) => {
 });
 
 router.post('/streams/:streamId/leave', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const result = await guestService.leaveStreamAsGuest(req.params.streamId, req.user.id);
     if (!result) return res.status(404).json({ error: 'not an active guest in this stream' });
@@ -47,6 +52,7 @@ router.post('/streams/:streamId/leave', requireAuth, async (req, res) => {
 });
 
 router.get('/streams/:streamId', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const guests = await guestService.getStreamGuests(req.params.streamId);
     res.json(guests);
@@ -58,6 +64,7 @@ router.get('/streams/:streamId', requireAuth, async (req, res) => {
 // --- broader room roster (room_participants) ---
 
 router.post('/streams/:streamId/participants', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const participant = await guestService.joinRoomAsParticipant({
       streamId: req.params.streamId,
@@ -71,6 +78,7 @@ router.post('/streams/:streamId/participants', requireAuth, async (req, res) => 
 });
 
 router.patch('/participants/:participantId', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.participantId)) return res.status(400).json({ error: 'invalid participant id' });
   try {
     const participant = await guestService.updateParticipantState(req.params.participantId, req.body, req.user.id);
     if (!participant) return res.status(403).json({ error: 'not found or forbidden' });
@@ -81,6 +89,7 @@ router.patch('/participants/:participantId', requireAuth, async (req, res) => {
 });
 
 router.post('/streams/:streamId/participants/leave', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const result = await guestService.leaveRoom(req.params.streamId, req.user.id);
     if (!result) return res.status(404).json({ error: 'not an active participant in this stream' });
@@ -91,6 +100,7 @@ router.post('/streams/:streamId/participants/leave', requireAuth, async (req, re
 });
 
 router.get('/streams/:streamId/participants', requireAuth, async (req, res) => {
+  if (!UUID_RE.test(req.params.streamId)) return res.status(400).json({ error: 'invalid stream id' });
   try {
     const participants = await guestService.getRoomParticipants(req.params.streamId);
     res.json(participants);

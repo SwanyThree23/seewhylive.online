@@ -91,7 +91,7 @@ router.post('/start', requireAuth, function(req, res) {
   var body      = req.body || {};
   var streamId  = body.stream_id  || '';
   var creatorId = req.user.id;
-  var title     = body.title      || 'Live Recording';
+  var title     = String(body.title || 'Live Recording').slice(0, 200);
 
   if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
 
@@ -114,7 +114,7 @@ function doStartVod(res, streamId, creatorId, title) {
   };
   sbReq('POST', '/rest/v1/vods', row, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Database error' });
-    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
     var created = Array.isArray(data) ? data[0] : data;
     return res.json(created);
   });
@@ -147,14 +147,14 @@ function doUpload(req, res, vodId) {
 
     sbUpload(bucket + '/' + storagePath, buffer, contentType, function(err, status, data) {
       if (err) return res.status(500).json({ error: 'Upload error' });
-      if (status >= 400) return res.status(status).json({ error: 'Supabase storage error', detail: data });
+      if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
 
       var publicUrl = 'https://' + SB_HOST + '/storage/v1/object/public/' + bucket + '/' + storagePath;
       var patch = { storage_path: storagePath, playback_url: publicUrl };
 
       sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), patch, function(err2, status2, data2) {
         if (err2) return res.status(500).json({ error: 'Database error' });
-        if (status2 >= 400) return res.status(status2).json({ error: 'Supabase error', detail: data2 });
+        if (status2 >= 400) return res.status(500).json({ error: 'Internal server error' });
         var updated = Array.isArray(data2) ? data2[0] : data2;
         return res.json(updated || { ok: true, storage_path: storagePath, playback_url: publicUrl });
       });
@@ -180,14 +180,14 @@ router.post('/stop', requireAuth, function(req, res) {
 });
 function doStop(res, vodId, durationSec, playbackUrl) {
   var patch = {
-    duration_seconds: Math.floor(durationSec),
+    duration_seconds: Math.max(0, Math.floor(durationSec)),
     is_public:        true,
   };
   if (playbackUrl) patch.playback_url = playbackUrl;
 
   sbReq('PATCH', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), patch, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Database error' });
-    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
     var updated = Array.isArray(data) ? data[0] : data;
     return res.json(updated || { ok: true });
   });
@@ -209,7 +209,7 @@ router.get('/list', function(req, res) {
 
   sbReq('GET', path, null, function(err, status, data) {
     if (err) return res.status(500).json({ error: 'Database error' });
-    if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+    if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
     return res.json(Array.isArray(data) ? data : []);
   });
 });
@@ -224,7 +224,7 @@ router.delete('/:id', requireAuth, function(req, res) {
     if (!vod || vod.creator_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     sbReq('DELETE', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId), null, function(err, status, data) {
       if (err) return res.status(500).json({ error: 'Database error' });
-      if (status >= 400) return res.status(status).json({ error: 'Supabase error', detail: data });
+      if (status >= 400) return res.status(500).json({ error: 'Internal server error' });
       return res.json({ ok: true, deleted: vodId });
     });
   });
