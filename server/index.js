@@ -263,7 +263,7 @@ app.post(
       })
       .catch(function(err) {
         logger.error('[webhook] ' + err.message);
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ error: 'Webhook processing failed' });
       });
   }
 );
@@ -382,7 +382,10 @@ var qaQuestionThrottle  = new Map();  // socketId → lastQuestionTs ms (3s thro
 var loveThrottle        = new Map();  // socketId → lastLoveTs ms (1s throttle)
 var audioChunkThrottle  = new Map();  // socketId → lastChunkTs ms (500ms throttle)
 var collabThrottle      = new Map();  // socketId → lastCollabTs ms (2s throttle)
-var pkVotes             = new Map();  // roomId → { challenger: Set<socketId>, defender: Set<socketId> }
+var superChatThrottle   = new Map();  // socketId → lastSuperChatTs ms (2s throttle)
+var merchOrderThrottle  = new Map();  // socketId → lastMerchOrderTs ms (2s throttle)
+var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
+var pkVotes             = new Map();  // roomId → { voters: Map<userId, side>, challenger: 0, defender: 0 }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
 var stageRooms          = new Map();  // roomId → { speakers:[], listeners:[] }
@@ -595,6 +598,10 @@ app.post('/api/ppv/create', requireAuth, function(req, res) {
   if (!body.roomId || !body.priceUsd || !body.creatorStripeAccountId) {
     res.status(400).json({ error: 'Missing required fields: roomId, priceUsd, creatorStripeAccountId' });
     return;
+  }
+  var priceUsd = parseFloat(body.priceUsd);
+  if (!Number.isFinite(priceUsd) || priceUsd < 0.50 || priceUsd > 500) {
+    return res.status(400).json({ error: 'priceUsd must be between 0.50 and 500' });
   }
   stripeModule.createPPVPaymentIntent(
     body.roomId,
@@ -852,7 +859,7 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
     res.json({ text: text });
   }).catch(function(err) {
     logger.error('[ai/chat] ' + err.message);
-    res.status(500).json({ error: 'AI error: ' + err.message });
+    res.status(500).json({ error: 'Internal server error' });
   });
 });
 
@@ -1316,6 +1323,11 @@ io.on('connection', function(socket) {
       .then(function(result) {
         var producerId = result.producerId;
 
+        // Track producer ownership for close/pause/resume guards
+        producerOwners.set(producerId, guestId);
+        if (!socket.data.ownedProducerIds) socket.data.ownedProducerIds = [];
+        socket.data.ownedProducerIds.push(producerId);
+
         // Notify everyone in the room about the new producer
         if (roomId) {
           io.to(roomId).emit('new-producer', {
@@ -1360,7 +1372,9 @@ io.on('connection', function(socket) {
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
+    if (producerOwners.get(producerId) !== socket.data.guestId) return;
 
+    producerOwners.delete(producerId);
     mediasoup.closeProducer(producerId);
 
     if (roomId) {
@@ -1373,6 +1387,7 @@ io.on('connection', function(socket) {
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
+    if (producerOwners.get(producerId) !== socket.data.guestId) return;
     mediasoup.pauseProducer(producerId);
     if (roomId) io.to(roomId).emit('producer-paused', { producerId: producerId });
   });
@@ -1382,6 +1397,7 @@ io.on('connection', function(socket) {
     var producerId = data.producerId;
     var roomId     = socket.data.roomId;
     if (!producerId) return;
+    if (producerOwners.get(producerId) !== socket.data.guestId) return;
     mediasoup.resumeProducer(producerId);
     if (roomId) io.to(roomId).emit('producer-resumed', { producerId: producerId });
   });
@@ -1702,6 +1718,9 @@ io.on('connection', function(socket) {
   // ── merch-order ────────────────────────────────────────────────────────
   socket.on('merch-order', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
+    var _moThNow = Date.now();
+    if (_moThNow - (merchOrderThrottle.get(socket.id) || 0) < 2000) return;
+    merchOrderThrottle.set(socket.id, _moThNow);
     var roomId     = socket.data.roomId;
     var buyerUser  = socket.data.username || 'Guest';
     var itemName   = String(data.itemName || 'Merch').slice(0, 80);
@@ -1901,7 +1920,10 @@ io.on('connection', function(socket) {
       if (!/^https?:\/\//i.test(String(data.url))) return;
       room.watchParty.url = data.url;
     }
-    if (data.type !== undefined)    room.watchParty.type    = data.type;
+    if (data.type !== undefined) {
+      var SYNC_PARTY_TYPES = ['youtube', 'twitch', 'direct'];
+      room.watchParty.type = SYNC_PARTY_TYPES.includes(String(data.type)) ? String(data.type) : 'direct';
+    }
     room.watchParty.playing  = !!data.playing;
     room.watchParty.position = typeof data.position === 'number' ? data.position : 0;
     room.watchParty.ts       = Date.now();
@@ -2004,7 +2026,8 @@ io.on('connection', function(socket) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId     = socket.data.roomId;
     var fromUser   = socket.data.username || 'Guest';
-    var tier       = String(data.tier || 'bronze');
+    var VALID_TIERS = ['bronze', 'silver', 'gold'];
+    var tier        = VALID_TIERS.includes(String(data.tier || '')) ? String(data.tier) : 'bronze';
     var priceCents = Math.floor(data.price_cents || 0);
     if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
     var creatorCents = Math.floor(priceCents * CREATOR);
@@ -2266,6 +2289,9 @@ io.on('connection', function(socket) {
   // ── super-chat ─────────────────────────────────────────────────────────
   socket.on('super-chat', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
+    var _scThNow = Date.now();
+    if (_scThNow - (superChatThrottle.get(socket.id) || 0) < 2000) return;
+    superChatThrottle.set(socket.id, _scThNow);
     var roomId      = socket.data.roomId;
     var username    = socket.data.username || 'Guest';
     var userId      = socket.data.userId;
@@ -2364,7 +2390,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    pkVotes.set(roomId, { challenger: new Set(), defender: new Set() });
+    pkVotes.set(roomId, { voters: new Map(), challenger: 0, defender: 0 });
     io.to(roomId).emit('pk-start', data);
   });
 
@@ -2373,9 +2399,13 @@ io.on('connection', function(socket) {
     if (!roomId || !data || !data.side) return;
     var votes = pkVotes.get(roomId);
     if (!votes) return;
-    if (data.side === 'challenger') votes.challenger.add(socket.id);
-    if (data.side === 'defender')   votes.defender.add(socket.id);
-    io.to(roomId).emit('pk-vote-update', { challengerVotes: votes.challenger.size, defenderVotes: votes.defender.size });
+    var pkUserId = socket.data.userId;
+    if (!pkUserId || pkUserId.startsWith('anon')) return;
+    if (votes.voters.has(pkUserId)) return;
+    if (data.side !== 'challenger' && data.side !== 'defender') return;
+    votes.voters.set(pkUserId, data.side);
+    votes[data.side]++;
+    io.to(roomId).emit('pk-vote-update', { challengerVotes: votes.challenger, defenderVotes: votes.defender });
   });
 
   socket.on('pk-end', function(data) {
@@ -2488,9 +2518,15 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     var fadesEvent = /^[a-z0-9-]{1,32}$/i.test(String(data.event || '')) ? String(data.event) : '';
     if (!fadesEvent) return;
+    var fadesScores;
+    try {
+      var _fStr = JSON.stringify(data.scores);
+      if (_fStr && _fStr.length > 4096) return;
+      fadesScores = JSON.parse(_fStr);
+    } catch(e) { fadesScores = null; }
     io.to(roomId).emit('fades-event', {
       event:  fadesEvent,
-      scores: data.scores,
+      scores: fadesScores,
       ts:     Math.floor(Date.now() / 1000)
     });
   });
@@ -2750,11 +2786,14 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sgRoomId = socket.data.roomId;
     if (!sgRoomId) return;
+    var GOAL_TYPES = ['viewers', 'revenue', 'duration', 'gifts'];
+    var goalType  = GOAL_TYPES.includes(String(data.type || '')) ? String(data.type) : 'viewers';
+    var goalLabel = data.label ? String(data.label).slice(0, 80) : null;
     io.to(sgRoomId).emit('stream-goal-set', {
       roomId:  sgRoomId,
-      type:    data.type   || 'viewers',
+      type:    goalType,
       target:  Math.floor(data.target || 0),
-      label:   data.label  || null
+      label:   goalLabel
     });
   });
 
@@ -2770,7 +2809,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sfxRoomId = socket.data.roomId;
     if (!sfxRoomId) return;
-    io.to(sfxRoomId).emit('sound-fx', { sfxId: data.sfxId, sfxLabel: data.sfxLabel || '' });
+    var sfxId    = String(data.sfxId    || '').slice(0, 40);
+    var sfxLabel = String(data.sfxLabel || '').slice(0, 80);
+    io.to(sfxRoomId).emit('sound-fx', { sfxId: sfxId, sfxLabel: sfxLabel });
   });
 
   // ── trivia ─────────────────────────────────────────────────────────────
@@ -2962,7 +3003,13 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = socket.data.roomId;
     if (!sId) return;
-    io.to(sId).emit('mod-rules-updated', { rules: data.rules, ts: Math.floor(Date.now() / 1000) });
+    var safeRules;
+    try {
+      var _mrStr = JSON.stringify(data.rules);
+      if (_mrStr && _mrStr.length > 8192) return;
+      safeRules = JSON.parse(_mrStr);
+    } catch(e) { return; }
+    io.to(sId).emit('mod-rules-updated', { rules: safeRules, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── bot-rule-toggle ────────────────────────────────────────────────────
@@ -3200,6 +3247,11 @@ io.on('connection', function(socket) {
     loveThrottle.delete(socket.id);
     audioChunkThrottle.delete(socket.id);
     collabThrottle.delete(socket.id);
+    superChatThrottle.delete(socket.id);
+    merchOrderThrottle.delete(socket.id);
+    if (socket.data.ownedProducerIds) {
+      socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
+    }
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {

@@ -60,7 +60,8 @@ router.get('/aura/usage', requireAuth, function(req, res) {
 
 router.post('/aura/mode', requireAuth, function(req, res) {
   try {
-    var mode = req.body.mode || 'hype';
+    var VALID_MODES = ['hype', 'chill', 'professional', 'comedy'];
+    var mode = VALID_MODES.includes(req.body.mode) ? req.body.mode : 'hype';
     if (aura) {
       aura.setMode(mode);
     }
@@ -654,7 +655,8 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
     }
     var bodyStr = JSON.stringify(payload);
     var options = {
-      hostname: parsed.hostname,
+      hostname: lookupResult.address,  // use resolved IP to prevent TOCTOU re-resolution
+      servername: parsed.hostname,     // preserve SNI for TLS certificate validation
       port: parsed.port || (isHttps ? 443 : 80),
       path: parsed.path,
       method: 'POST',
@@ -866,6 +868,9 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       }
     }
     var destinations = b.destinations || [];
+    if (destinations.length > 10) {
+      return res.status(400).json({ ok: false, error: 'maximum 10 destinations per fanout' });
+    }
 
     // Stop any existing fanout for this stream — only the owner or admin may replace it
     if (activeFanouts[streamId] && activeFanouts[streamId].process) {

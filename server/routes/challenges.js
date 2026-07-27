@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     const challenges = await challengeService.getActiveChallenges();
     res.json(challenges);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -71,7 +71,7 @@ router.get('/me/completions', requireAuth, async (req, res) => {
     const completions = await challengeService.getUserCompletions(req.user.id);
     res.json(completions);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

@@ -8,6 +8,7 @@ var router      = express.Router();
 var requireAuth = require('../middleware/auth');
 
 var ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 var multer = require('multer');
 var upload = multer({
   storage: multer.diskStorage({ destination: os.tmpdir() }),
@@ -115,7 +116,7 @@ router.post('/start', requireAuth, function(req, res) {
 // multipart/form-data field "video"
 router.post('/:id/upload', requireAuth, upload.single('video'), function(req, res) {
   var vodId = req.params.id || '';
-  if (!vodId) return res.status(400).json({ error: 'id is required' });
+  if (!vodId || !UUID_RE.test(vodId)) return res.status(400).json({ error: 'invalid vod id' });
   if (!req.file) return res.status(400).json({ error: 'video file is required' });
   // Verify VOD belongs to authenticated user before upload
   sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
@@ -161,7 +162,7 @@ router.post('/stop', requireAuth, function(req, res) {
   var durationSec = body.duration_seconds  || body.duration_sec || 0;
   var playbackUrl = body.playback_url      || '';
 
-  if (!vodId) return res.status(400).json({ error: 'vod_id is required' });
+  if (!vodId || !UUID_RE.test(vodId)) return res.status(400).json({ error: 'invalid vod id' });
   sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
     if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
     var vod = Array.isArray(chkData) ? chkData[0] : chkData;
@@ -208,7 +209,7 @@ router.get('/list', function(req, res) {
 // DELETE /api/vod/:id
 router.delete('/:id', requireAuth, function(req, res) {
   var vodId = req.params.id || '';
-  if (!vodId) return res.status(400).json({ error: 'id is required' });
+  if (!vodId || !UUID_RE.test(vodId)) return res.status(400).json({ error: 'invalid vod id' });
   sbReq('GET', '/rest/v1/vods?id=eq.' + encodeURIComponent(vodId) + '&select=creator_id&limit=1', null, function(chkErr, chkStatus, chkData) {
     if (chkErr || chkStatus >= 400) return res.status(500).json({ error: 'Database error' });
     var vod = Array.isArray(chkData) ? chkData[0] : chkData;
