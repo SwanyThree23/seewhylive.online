@@ -26,7 +26,8 @@ n8nRouter.get('/health', function(req, res) {
 
 n8nRouter.post('/stream-live', function(req, res) {
   var d = req.body;
-  if (global.io) global.io.emit('stream-alert', { type:'live', streamId:d.streamId, title:d.title||'SeeWhy LIVE is streaming!', ts:Date.now() });
+  var title = String(d.title || 'SeeWhy LIVE is streaming!').slice(0, 120);
+  if (global.io) global.io.emit('stream-alert', { type:'live', streamId:d.streamId, title:title, ts:Date.now() });
   res.json({ ok: true, event: 'stream-live' });
 });
 
@@ -47,7 +48,8 @@ n8nRouter.post('/gem-transaction', function(req, res) {
 n8nRouter.post('/guardian-flag', function(req, res) {
   var d = req.body;
   var action = d.score >= 95 ? 'ban' : d.score >= 75 ? 'mute' : 'flag';
-  if (global.io) global.io.emit('moderation-action', { user:d.user, score:d.score, action:action, ts:Date.now() });
+  var target = d.roomId ? global.io.to(String(d.roomId)) : null;
+  if (global.io && target) target.emit('moderation-action', { user:d.user, score:d.score, action:action, ts:Date.now() });
   res.json({ ok: true, action: action });
 });
 

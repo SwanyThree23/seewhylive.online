@@ -13,8 +13,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // --- direct user-to-user invitations (guest_invitations) ---
 
 router.post('/', requireAuth, async (req, res) => {
+  const { toUserId, roomId, message, expiryHours } = req.body;
+  if (!toUserId || !UUID_RE.test(toUserId)) return res.status(400).json({ error: 'invalid toUserId' });
+  if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
   try {
-    const { toUserId, roomId, message, expiryHours } = req.body;
     const safeExpiryHours = Math.min(parseInt(expiryHours, 10) || 24, 168);
     const safeMessage = message ? String(message).slice(0, 500) : null;
     const invite = await inviteService.sendInvitation({
