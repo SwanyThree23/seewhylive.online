@@ -379,6 +379,9 @@ var chatReactions       = new Map();  // roomId → Map<msgId, Map<emoji, Set<so
 var viewerReactThrottle = new Map();  // socketId → lastReactTs ms (2s per-socket throttle)
 var sendGiftThrottle    = new Map();  // socketId → lastGiftTs ms (1s throttle)
 var qaQuestionThrottle  = new Map();  // socketId → lastQuestionTs ms (3s throttle)
+var loveThrottle        = new Map();  // socketId → lastLoveTs ms (1s throttle)
+var audioChunkThrottle  = new Map();  // socketId → lastChunkTs ms (500ms throttle)
+var collabThrottle      = new Map();  // socketId → lastCollabTs ms (2s throttle)
 var pkVotes             = new Map();  // roomId → { challenger: Set<socketId>, defender: Set<socketId> }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
@@ -687,10 +690,10 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
   var rows;
   try {
     if (roomId) {
-      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? AND room_id IN (SELECT id FROM rooms WHERE host_user_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id = ? AND room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
       rows = stmt.all(roomId, userId);
     } else {
-      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id IN (SELECT id FROM rooms WHERE host_user_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
+      stmt = db.prepare('SELECT date(ts, "unixepoch") as day, SUM(amount_cents) as totalCents, COUNT(*) as events FROM super_chats WHERE room_id IN (SELECT room_id FROM rooms WHERE host_id = ?) GROUP BY day ORDER BY day DESC LIMIT 30');
       rows = stmt.all(userId);
     }
     var sessions = (rows || []).map(function(row, i) {
@@ -1890,7 +1893,10 @@ io.on('connection', function(socket) {
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
     if (data.videoId !== undefined) room.watchParty.videoId = data.videoId;
-    if (data.url !== undefined)     room.watchParty.url     = data.url;
+    if (data.url !== undefined) {
+      if (!/^https?:\/\//i.test(String(data.url))) return;
+      room.watchParty.url = data.url;
+    }
     if (data.type !== undefined)    room.watchParty.type    = data.type;
     room.watchParty.playing  = !!data.playing;
     room.watchParty.position = typeof data.position === 'number' ? data.position : 0;
@@ -2232,7 +2238,10 @@ io.on('connection', function(socket) {
 
     if (!chatReactions.has(roomId)) chatReactions.set(roomId, new Map());
     var roomRxns = chatReactions.get(roomId);
-    if (!roomRxns.has(data.msgId)) roomRxns.set(data.msgId, new Map());
+    if (!roomRxns.has(data.msgId)) {
+      if (roomRxns.size >= 500) return;
+      roomRxns.set(data.msgId, new Map());
+    }
     var msgRxns = roomRxns.get(data.msgId);
     if (!msgRxns.has(emoji)) msgRxns.set(emoji, new Set());
     var emojiSet = msgRxns.get(emoji);
@@ -2334,7 +2343,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    io.to(roomId).emit('bracket-update', Object.assign({}, data, { roomId: roomId }));
+    var safe; try { safe = JSON.parse(JSON.stringify(data)); } catch(e) { return; }
+    io.to(roomId).emit('bracket-update', Object.assign(safe, { roomId: roomId }));
   });
 
   // ── chyron-update ──────────────────────────────────────────────────────
@@ -2342,7 +2352,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    io.to(roomId).emit('chyron-update', Object.assign({}, data, { roomId: roomId }));
+    var safe; try { safe = JSON.parse(JSON.stringify(data)); } catch(e) { return; }
+    io.to(roomId).emit('chyron-update', Object.assign(safe, { roomId: roomId }));
   });
 
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
@@ -2393,9 +2404,13 @@ io.on('connection', function(socket) {
 
   // ── collab events ─────────────────────────────────────────────────────
   socket.on('collab-request', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId   = socket.data.roomId;
     var fromUser = socket.data.username || 'Creator';
     if (!roomId) return;
+    var _cNow = Date.now();
+    if (_cNow - (collabThrottle.get(socket.id) || 0) < 2000) return;
+    collabThrottle.set(socket.id, _cNow);
     io.to(roomId).emit('collab-request', {
       from:    fromUser,
       to:      (data.toCreator || '').slice(0, 80),
@@ -2407,6 +2422,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('collab-accept', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId   = socket.data.roomId;
     var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
@@ -2419,6 +2435,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('collab-message', function(data) {
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId   = socket.data.roomId;
     var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
@@ -2706,6 +2723,9 @@ io.on('connection', function(socket) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var loveRoomId = socket.data.roomId;
     if (!loveRoomId) return;
+    var _lsNow = Date.now();
+    if (_lsNow - (loveThrottle.get(socket.id) || 0) < 1000) return;
+    loveThrottle.set(socket.id, _lsNow);
     var prev = loveCounts.get(loveRoomId) || 0;
     var newTotal = prev + 1;
     loveCounts.set(loveRoomId, newTotal);
@@ -2859,6 +2879,10 @@ io.on('connection', function(socket) {
     var chunk  = data.chunk;
 
     if (!roomId || !chunk) return;
+    if (typeof chunk !== 'string' || chunk.length > 65536) return;
+    var _acNow = Date.now();
+    if (_acNow - (audioChunkThrottle.get(socket.id) || 0) < 500) return;
+    audioChunkThrottle.set(socket.id, _acNow);
 
     whisper.processChunk(roomId, chunk, function(text) {
       var ts = Math.floor(Date.now() / 1000);
@@ -3166,6 +3190,9 @@ io.on('connection', function(socket) {
     viewerReactThrottle.delete(socket.id);
     sendGiftThrottle.delete(socket.id);
     qaQuestionThrottle.delete(socket.id);
+    loveThrottle.delete(socket.id);
+    audioChunkThrottle.delete(socket.id);
+    collabThrottle.delete(socket.id);
 
     // Remove empty rooms
     if (room.viewers.size === 0 && room.guests.size === 0) {

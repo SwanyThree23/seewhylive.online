@@ -10,6 +10,10 @@ function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
     try {
       const userId = socket.data.userId;
+      if (!userId || userId.startsWith('anon')) {
+        ack?.({ ok: false, error: 'auth required' });
+        return;
+      }
       const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode });
       if (!gate.allowed) {
         ack?.({ ok: false, reason: gate.reason });
@@ -127,7 +131,7 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:raise_hand', function(payload) {
     try {
-      var roomId = payload && payload.roomId;
+      var roomId = socket.data.roomId;
       var raised  = !!(payload && payload.raised);
       if (!roomId) return;
       io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
@@ -138,8 +142,8 @@ function registerPanelHandlers(io, socket) {
 
   socket.on('panel:react', function(payload) {
     try {
-      var roomId = payload && payload.roomId;
-      var emoji  = payload && payload.emoji;
+      var roomId = socket.data.roomId;
+      var emoji  = payload && String(payload.emoji || '').slice(0, 4);
       if (!roomId || !emoji) return;
       io.to(roomId).emit('panel:reaction', { roomId: roomId, guestId: socket.data.userId, emoji: emoji });
     } catch (err) {
