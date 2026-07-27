@@ -18,7 +18,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-is', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler'],
+    include: ['react', 'react-dom', 'react-is', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler', 'lodash', 'lodash-es'],
     exclude: ['recharts'],
     esbuildOptions: {
       // Ensure pre-bundled deps resolve React from the app's single copy
