@@ -9,7 +9,12 @@ const db = require('../db'); // <-- verify this matches your actual db module
 async function joinStreamAsGuest({ streamId, userId, displayName, role, vdoStreamId, mediasoupProducerId }) {
   const result = await db.query(
     `INSERT INTO stream_guests (stream_id, user_id, display_name, role, vdo_stream_id, mediasoup_producer_id, is_host)
-     VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING *`,
+     VALUES ($1, $2, $3, $4, $5, $6, false)
+     ON CONFLICT (stream_id, user_id) DO UPDATE
+       SET display_name = EXCLUDED.display_name,
+           role = EXCLUDED.role,
+           joined_at = now()
+     RETURNING *`,
     [streamId, userId, displayName || null, role || 'guest', vdoStreamId || null, mediasoupProducerId || null]
   );
   return result.rows[0];
@@ -60,7 +65,11 @@ async function getStreamGuests(streamId) {
 
 async function joinRoomAsParticipant({ streamId, userId, role }) {
   const result = await db.query(
-    `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3) RETURNING *`,
+    `INSERT INTO room_participants (stream_id, user_id, role) VALUES ($1, $2, $3)
+     ON CONFLICT (stream_id, user_id) DO UPDATE
+       SET role = EXCLUDED.role,
+           joined_at = now()
+     RETURNING *`,
     [streamId, userId, role || 'viewer']
   );
   return result.rows[0];

@@ -43,6 +43,7 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:challenge', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!payload || !validBattleId(payload.defenderId)) { if (cb) cb({ ok: false, error: 'invalid defenderId' }); return; }
+    if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     try {
       const rawDur = Math.floor(Number(payload.durationMinutes) || 5);
       const battle = await battleService.createChallenge({
@@ -95,6 +96,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:start', async (payload, cb) => {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const existing = await battleService.getBattle(payload.battleId);

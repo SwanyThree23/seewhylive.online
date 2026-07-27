@@ -87,6 +87,7 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
     throw new Error('battle participants may not vote');
   }
 
+  if (side !== 'challenger' && side !== 'defender') throw new Error('invalid side');
   const insert = await db.query(
     `INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)
      VALUES ($1, $2, $3, $4)
@@ -94,7 +95,6 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
     [battleId, voterId, side, giftValueCents]
   );
   if (insert.rowCount === 0) throw new Error('already voted in this battle');
-  if (side !== 'challenger' && side !== 'defender') throw new Error('invalid side');
   const column = side === 'challenger' ? 'challenger_points' : 'defender_points';
   const result = await db.query(
     `UPDATE pk_battles SET ${column} = ${column} + $1 WHERE id = $2 RETURNING *`,
