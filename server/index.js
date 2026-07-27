@@ -605,7 +605,7 @@ app.post('/api/ppv/create', requireAuth, function(req, res) {
     res.json(result);
   }).catch(function(err) {
     logger.error('[ppv/create] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   });
 });
 
@@ -653,7 +653,7 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -665,7 +665,7 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
     res.json({ deleted: true });
   } catch (err) {
     logger.error('[schedule/delete] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -675,10 +675,10 @@ app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = req.body.endpoint;
   if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
   try {
-    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint);
+    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?').run(endpoint, req.user.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -710,7 +710,7 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
     });
     res.json({ sessions: sessions });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -766,7 +766,7 @@ app.post('/api/connect/onboard', requireAuth, function(req, res) {
       res.json(result);
     }).catch(function(err) {
       logger.error('[connect/onboard] ' + err.message);
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Internal server error' });
     });
 });
 
@@ -805,7 +805,7 @@ app.post('/api/keys/save', requireAuth, function(req, res) {
     res.json({ saved: true });
   } catch (err) {
     logger.error('[keys/save] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -821,7 +821,7 @@ app.delete('/api/keys/delete', requireAuth, function(req, res) {
     res.json({ deleted: true });
   } catch (err) {
     logger.error('[keys/delete] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -832,7 +832,7 @@ app.get('/api/keys/meta/:guestId', requireAuth, function(req, res) {
     res.json(meta);
   } catch (err) {
     logger.error('[keys/meta] ' + err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -874,7 +874,7 @@ app.post('/api/translate', requireAuth, function(req, res) {
     .then(function(result) { res.json(result); })
     .catch(function(err) {
       logger.error('[/api/translate] ' + err.message);
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'Internal server error' });
     });
 });
 
@@ -1838,7 +1838,9 @@ io.on('connection', function(socket) {
     }
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = { playing: false, position: 0, ts: Date.now() };
-    var type = data.type || (data.videoId ? 'youtube' : 'direct');
+    var WATCH_PARTY_TYPES = ['youtube', 'twitch', 'direct'];
+    var rawType = data.type || (data.videoId ? 'youtube' : 'direct');
+    var type = WATCH_PARTY_TYPES.includes(String(rawType)) ? String(rawType) : 'direct';
     room.watchParty.videoId = data.videoId || null;
     room.watchParty.url  = safeUrl;
     room.watchParty.type = type;
@@ -1876,13 +1878,15 @@ io.on('connection', function(socket) {
 
   socket.on('watch-party-seek', function(data) {
     var roomId = socket.data.roomId;
-    if (!roomId || typeof data.position !== 'number') return;
+    if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var seekPos = Number(data.position);
+    if (!Number.isFinite(seekPos) || seekPos < 0) return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
-    room.watchParty.position = data.position;
+    room.watchParty.position = seekPos;
     room.watchParty.ts       = Date.now();
-    io.to(roomId).emit('watch-party-seek', { position: data.position });
+    io.to(roomId).emit('watch-party-seek', { position: seekPos });
   });
 
   // Host pushes a full sync to all room viewers
@@ -2003,7 +2007,6 @@ io.on('connection', function(socket) {
     var tier       = String(data.tier || 'bronze');
     var priceCents = Math.floor(data.price_cents || 0);
     if (!Number.isFinite(priceCents) || priceCents < 0 || priceCents > 50000) return;
-    var CREATOR    = 0.90;
     var creatorCents = Math.floor(priceCents * CREATOR);
     if (!roomId) return;
     io.to(roomId).emit('new-subscription', {
@@ -2483,8 +2486,10 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId) return;
+    var fadesEvent = /^[a-z0-9-]{1,32}$/i.test(String(data.event || '')) ? String(data.event) : '';
+    if (!fadesEvent) return;
     io.to(roomId).emit('fades-event', {
-      event:  data.event,
+      event:  fadesEvent,
       scores: data.scores,
       ts:     Math.floor(Date.now() / 1000)
     });
@@ -2735,7 +2740,7 @@ io.on('connection', function(socket) {
     loveEarnings.set(loveRoomId, loveRoomEarnings);
     io.to(loveRoomId).emit('love-update', {
       total:      newTotal,
-      lastSender: data.username || 'Someone',
+      lastSender: socket.data.username || 'Someone',
       roomId:     loveRoomId
     });
   });
@@ -3055,7 +3060,9 @@ io.on('connection', function(socket) {
     if (!pollToVote || pollToVote.id !== data.pollId) return;
     var voteKey = socket.id;
     if (pollToVote.votes[voteKey] !== undefined) return;
-    pollToVote.votes[voteKey] = data.option;
+    var option = String(data.option || '');
+    if (!pollToVote.options || !pollToVote.options.includes(option)) return;
+    pollToVote.votes[voteKey] = option;
     pollToVote.totalVotes = (pollToVote.totalVotes || 0) + 1;
     var voteCounts = {};
     Object.keys(pollToVote.votes).forEach(function(k) {

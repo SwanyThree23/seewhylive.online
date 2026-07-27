@@ -15,7 +15,7 @@ router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
     const guest = await guestService.joinStreamAsGuest({
       streamId: req.params.streamId,
       userId: req.user.id,
-      displayName,
+      displayName: displayName ? String(displayName).slice(0, 80) : null,
       role: 'guest',
       vdoStreamId,
       mediasoupProducerId,

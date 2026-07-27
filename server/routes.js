@@ -623,7 +623,7 @@ router.post('/ppv/verify', requireAuth, function(req, res) {
 
 // ─── N8N / AUTOMATION routes ──────────────────────────────────────────────────
 
-router.post('/n8n/test', requireAuth, function(req, res) {
+router.post('/n8n/test', requireAuth, async function(req, res) {
   try {
     var webhookUrl = req.body.webhookUrl || '';
     var payload = req.body.payload || { test: true, source: 'seewhy-live', ts: Date.now() };
@@ -632,6 +632,7 @@ router.post('/n8n/test', requireAuth, function(req, res) {
     }
     var https = require('https');
     var url = require('url');
+    var dns = require('dns');
     var parsed = url.parse(webhookUrl);
     var isHttps = parsed.protocol === 'https:';
     if (!isHttps) {
@@ -640,6 +641,16 @@ router.post('/n8n/test', requireAuth, function(req, res) {
     var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
     if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
       return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
+    }
+    // DNS rebinding guard: resolve hostname and verify the IP is not private
+    var lookupResult;
+    try {
+      lookupResult = await dns.promises.lookup(parsed.hostname);
+    } catch (dnsErr) {
+      return res.status(400).json({ success: false, error: 'DNS lookup failed' });
+    }
+    if (PRIVATE_HOST.test(lookupResult.address)) {
+      return res.status(400).json({ success: false, error: 'webhookUrl resolves to disallowed IP' });
     }
     var bodyStr = JSON.stringify(payload);
     var options = {

@@ -22,6 +22,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const APP_NAME = 'SeeWhy LIVE';
 const SITE_URL = 'https://www.seewhylive.online';
 
@@ -77,6 +79,7 @@ function renderPreviewPage({ title, description, thumbnailUrl, videoUrl, canonic
 }
 
 router.get('/watch/:id', async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(
       `SELECT r.id, r.title, r.thumbnail_url, r.hls_url, r.status,
@@ -103,6 +106,7 @@ router.get('/watch/:id', async (req, res) => {
 });
 
 router.get('/post/:id', async (req, res) => {
+  if (!UUID_RE.test(req.params.id)) return res.status(400).send('Invalid ID');
   try {
     const result = await db.query(
       `SELECT p.id, p.caption, p.thumbnail_url, p.video_url, u.display_name AS creator_name
