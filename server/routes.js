@@ -336,9 +336,14 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
 });
 
 router.get('/creator/onboard/link', requireAuth, function(req, res) {
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  var email = req.query.email ? String(req.query.email) : '';
+  if (!email || !EMAIL_RE.test(email)) {
+    return res.status(400).json({ error: 'valid email query param is required' });
+  }
   try {
     if (stripe) {
-      stripe.createConnectAccount('creator@seewhylive.online')
+      stripe.createConnectAccount(email)
         .then(function(result) {
           res.json({ url: result.onboardingUrl });
         })

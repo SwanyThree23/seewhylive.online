@@ -105,6 +105,7 @@ function registerBattleHandlers(io, socket) {
         return;
       }
       const battle = await battleService.startBattle(payload.battleId);
+      if (!battle) { if (cb) cb({ ok: false, error: 'Battle could not be started' }); return; }
       const room = roomName(payload.battleId);
       io.to(room).emit('battle:start', battle);
       startCountdown(io, battle);

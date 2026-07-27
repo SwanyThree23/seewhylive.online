@@ -307,6 +307,16 @@ app.use('/api/ai', aiRateLimit);
 app.use('/api/aura', aiCostRateLimit);
 app.use('/api/translate', aiCostRateLimit);
 app.use('/api/summarize-chat', aiCostRateLimit);
+var stripeOnboardRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: function(req) { return (req.user && req.user.id) || req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+  message: { error: 'Too many onboard requests — please try again later.' }
+});
+app.use('/api/connect/onboard', stripeOnboardRateLimit);
 app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 app.use('/api/battles', battleRoutes);
@@ -694,6 +704,9 @@ app.post('/api/schedule', requireAuth, function(req, res) {
 
 // DELETE /api/schedule/:id
 app.delete('/api/schedule/:id', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
   try {
     var info = db.prepare('DELETE FROM schedules WHERE id = ? AND creator_id = ?').run(req.params.id, req.user.id);
     if (info.changes === 0) return res.status(403).json({ error: 'not found or forbidden' });
@@ -2317,6 +2330,9 @@ io.on('connection', function(socket) {
   socket.on('chat-react', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.msgId || !data.emoji) return;
+    var _crNow = Date.now();
+    if (_crNow - (viewerReactThrottle.get(socket.id) || 0) < 500) return;
+    viewerReactThrottle.set(socket.id, _crNow);
     var _msgIdStr = String(data.msgId);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_msgIdStr)) return;
     var emoji = String(data.emoji).slice(0, 4);
@@ -2746,6 +2762,9 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-speaking', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _asNow = Date.now();
+    if (_asNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
+    speakingThrottle.set(socket.data.userId, _asNow);
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
