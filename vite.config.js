@@ -18,8 +18,25 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-is', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler', 'lodash', 'lodash-es'],
-    exclude: ['recharts'],
+    include: [
+      'react', 'react-dom', 'react-is', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'scheduler',
+      'lodash', 'lodash-es',
+      // Deep lodash paths imported by recharts (excluded below) — pre-bundle for CJS→ESM interop
+      'lodash/get', 'lodash/merge', 'lodash/throttle', 'lodash/debounce', 'lodash/uniq',
+      'lodash/isEmpty', 'lodash/isFunction', 'lodash/omit', 'lodash/pick', 'lodash/cloneDeep',
+      'lodash/some', 'lodash/every', 'lodash/find', 'lodash/findIndex', 'lodash/map',
+      'lodash/filter', 'lodash/reduce', 'lodash/flatten', 'lodash/keys', 'lodash/values',
+      'lodash/assign', 'lodash/has', 'lodash/isArray', 'lodash/isObject', 'lodash/isString',
+      'lodash/isNumber', 'lodash/isNil', 'lodash/max', 'lodash/min', 'lodash/range',
+      'lodash/once', 'lodash/noop', 'lodash/identity', 'lodash/stubFalse', 'lodash/stubTrue',
+      'lodash/first', 'lodash/flatMap', 'lodash/isBoolean', 'lodash/isEqual', 'lodash/isNaN',
+      'lodash/isPlainObject', 'lodash/last', 'lodash/mapValues', 'lodash/maxBy', 'lodash/memoize',
+      'lodash/minBy', 'lodash/sortBy', 'lodash/sumBy', 'lodash/uniqBy', 'lodash/upperFirst',
+      'lodash/findLast', 'lodash/clone', 'lodash/without', 'lodash/chunk', 'lodash/compact',
+    ],
+    // recharts no longer excluded — React dedupe + aliases above prevent the
+    // duplicate-React "Should have a queue" error while letting Vite pre-bundle
+    // recharts's lodash deep imports (fixes "does not provide an export named 'default'").
     esbuildOptions: {
       // Ensure pre-bundled deps resolve React from the app's single copy
       resolveExtensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
