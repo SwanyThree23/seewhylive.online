@@ -60,9 +60,9 @@ async function checkJoinGate({ roomId, userId, inviteCode = null }) {
 
   if (r.private_gating_mode === 'invite_code') {
     if (inviteCode && r.invite_code) {
-      const a = Buffer.from(String(inviteCode));
-      const b = Buffer.from(String(r.invite_code));
-      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return { allowed: true };
+      const h1 = crypto.createHash('sha256').update(String(inviteCode)).digest();
+      const h2 = crypto.createHash('sha256').update(String(r.invite_code)).digest();
+      if (crypto.timingSafeEqual(h1, h2)) return { allowed: true };
     }
     return { allowed: false, reason: 'invalid_code' };
   }

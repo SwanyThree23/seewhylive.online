@@ -56,12 +56,17 @@ function registerPanelHandlers(io, socket) {
       }
       panelRequestThrottle.set(socket.id, _prjNow);
       const request = await panelService.requestJoin({ roomId, userId });
-      io.to(roomId).emit('panel:join_request_received', {
-        roomId,
-        userId,
-        requestId: request.id,
-        displayName: request.display_name || null,
-        avatarUrl: request.avatar_url || null,
+      // Emit only to host sockets in this room — not all viewers
+      const roomSockets = await io.in(roomId).fetchSockets();
+      const hostSockets = roomSockets.filter(function(s) { return s.data && s.data.role === 'host'; });
+      hostSockets.forEach(function(hs) {
+        hs.emit('panel:join_request_received', {
+          roomId,
+          userId,
+          requestId: request.id,
+          displayName: request.display_name || null,
+          avatarUrl: request.avatar_url || null,
+        });
       });
       ack?.({ ok: true, status: 'pending' });
     } catch (err) {

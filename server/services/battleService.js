@@ -87,17 +87,13 @@ async function castVote({ battleId, voterId, side, giftValueCents }) {
     throw new Error('battle participants may not vote');
   }
 
-  const existing = await db.query(
-    'SELECT id FROM pk_battle_votes WHERE battle_id = $1 AND voter_id = $2',
-    [battleId, voterId]
-  );
-  if (existing.rows[0]) throw new Error('already voted in this battle');
-
-  await db.query(
+  const insert = await db.query(
     `INSERT INTO pk_battle_votes (battle_id, voter_id, side, gift_value_cents)
-     VALUES ($1, $2, $3, $4)`,
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (battle_id, voter_id) DO NOTHING`,
     [battleId, voterId, side, giftValueCents]
   );
+  if (insert.rowCount === 0) throw new Error('already voted in this battle');
   const column = side === 'challenger' ? 'challenger_points' : 'defender_points';
   const result = await db.query(
     `UPDATE pk_battles SET ${column} = ${column} + $1 WHERE id = $2 RETURNING *`,

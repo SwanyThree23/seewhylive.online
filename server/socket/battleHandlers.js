@@ -35,6 +35,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:challenge', async (payload, cb) => {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     try {
       const battle = await battleService.createChallenge({
         challengerId: socket.data.userId,
@@ -103,6 +104,7 @@ function registerBattleHandlers(io, socket) {
   });
 
   socket.on('battle:vote', async (payload, cb) => {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
     try {
       const cents = Math.floor(payload.giftValueCents);

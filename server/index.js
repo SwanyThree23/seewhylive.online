@@ -213,8 +213,10 @@ db.exec(`CREATE TABLE IF NOT EXISTS push_subscriptions (
   username TEXT,
   p256dh TEXT,
   auth TEXT,
+  user_id TEXT,
   created_at INTEGER DEFAULT (strftime('%s','now'))
 )`);
+try { db.exec('ALTER TABLE push_subscriptions ADD COLUMN user_id TEXT'); } catch(_) {}
 
 // Initialise vault with same db (vault.initDb() will open its own handle to the same file)
 vault.initDb();
@@ -269,7 +271,7 @@ app.post(
 );
 
 app.use(helmet());
-var _corsOrigins = (process.env.FRONTEND_ORIGIN || '*').split(',').map(function(s) { return s.trim(); });
+var _corsOrigins = (process.env.FRONTEND_ORIGIN || 'https://seewhylive.online').split(',').map(function(s) { return s.trim(); });
 var _corsOrigin  = _corsOrigins.length === 1 ? _corsOrigins[0] : _corsOrigins;
 app.use(cors({ origin: _corsOrigin }));
 
@@ -614,6 +616,15 @@ app.post('/api/ppv/create', requireAuth, function(req, res) {
   if (!Number.isFinite(priceUsd) || priceUsd < 0.50 || priceUsd > 500) {
     return res.status(400).json({ error: 'priceUsd must be between 0.50 and 500' });
   }
+  // Verify the authenticated user owns this room
+  try {
+    var _ppvRoom = db.prepare('SELECT host_id FROM rooms WHERE room_id = ?').get(body.roomId);
+    if (!_ppvRoom || _ppvRoom.host_id !== req.user.id) {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+  } catch (_ppvErr) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
   stripeModule.createPPVPaymentIntent(
     body.roomId,
     req.user.id,
@@ -693,7 +704,7 @@ app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
   var endpoint = req.body.endpoint;
   if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
   try {
-    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?').run(endpoint, req.user.id);
+    db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ?').run(endpoint);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -1095,7 +1106,7 @@ io.on('connection', function(socket) {
     var username = String(data.username || 'Guest').slice(0, 32);
     var role     = socket.data.role || 'viewer';
 
-    if (!roomId) {
+    if (!roomId || typeof roomId !== 'string' || !/^[0-9a-f-]{36}$/i.test(roomId)) {
       if (ack) ack({ error: 'roomId required' });
       return;
     }
@@ -1595,8 +1606,8 @@ io.on('connection', function(socket) {
   socket.on('send-gift', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var _sgNow = Date.now();
-    if (_sgNow - (sendGiftThrottle.get(socket.id) || 0) < 1000) return;
-    sendGiftThrottle.set(socket.id, _sgNow);
+    if (_sgNow - (sendGiftThrottle.get(socket.data.userId) || 0) < 1000) return;
+    sendGiftThrottle.set(socket.data.userId, _sgNow);
     var roomId                 = socket.data.roomId;
     var fromUser               = socket.data.username || 'Guest';
     var emoji                  = String(data.emoji || '').slice(0, 4);
@@ -1720,8 +1731,8 @@ io.on('connection', function(socket) {
   socket.on('merch-order', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var _moThNow = Date.now();
-    if (_moThNow - (merchOrderThrottle.get(socket.id) || 0) < 2000) return;
-    merchOrderThrottle.set(socket.id, _moThNow);
+    if (_moThNow - (merchOrderThrottle.get(socket.data.userId) || 0) < 2000) return;
+    merchOrderThrottle.set(socket.data.userId, _moThNow);
     var roomId     = socket.data.roomId;
     var buyerUser  = socket.data.username || 'Guest';
     var itemName   = String(data.itemName || 'Merch').slice(0, 80);
@@ -2105,8 +2116,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
     var _qaNow = Date.now();
-    if (_qaNow - (qaQuestionThrottle.get(socket.id) || 0) < 3000) return;
-    qaQuestionThrottle.set(socket.id, _qaNow);
+    if (_qaNow - (qaQuestionThrottle.get(socket.data.userId) || 0) < 3000) return;
+    qaQuestionThrottle.set(socket.data.userId, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = uuidv4();
     var user = socket.data.username || 'Guest';
@@ -2156,9 +2167,9 @@ io.on('connection', function(socket) {
     if (!roomId || !data.emoji) return;
     var emoji  = String(data.emoji).slice(0, 4);
     var now    = Date.now();
-    var lastTs = viewerReactThrottle.get(socket.id) || 0;
+    var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
     if (now - lastTs < 1000) return;
-    viewerReactThrottle.set(socket.id, now);
+    viewerReactThrottle.set(socket.data.userId, now);
     io.to(roomId).emit('watch-react', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
   });
 
@@ -2297,8 +2308,8 @@ io.on('connection', function(socket) {
   socket.on('super-chat', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var _scThNow = Date.now();
-    if (_scThNow - (superChatThrottle.get(socket.id) || 0) < 2000) return;
-    superChatThrottle.set(socket.id, _scThNow);
+    if (_scThNow - (superChatThrottle.get(socket.data.userId) || 0) < 2000) return;
+    superChatThrottle.set(socket.data.userId, _scThNow);
     var roomId      = socket.data.roomId;
     var username    = socket.data.username || 'Guest';
     var userId      = socket.data.userId;
@@ -2437,9 +2448,9 @@ io.on('connection', function(socket) {
     if (!roomId || !data.emoji) return;
     var emoji  = String(data.emoji).slice(0, 4);
     var now    = Date.now();
-    var lastTs = viewerReactThrottle.get(socket.id) || 0;
+    var lastTs = viewerReactThrottle.get(socket.data.userId) || 0;
     if (now - lastTs < 2000) return;
-    viewerReactThrottle.set(socket.id, now);
+    viewerReactThrottle.set(socket.data.userId, now);
     io.to(roomId).emit('react-burst', { emoji: emoji, userId: socket.data.userId || socket.id, ts: now });
   });
 
@@ -2450,8 +2461,8 @@ io.on('connection', function(socket) {
     var fromUser = socket.data.username || 'Creator';
     if (!roomId) return;
     var _cNow = Date.now();
-    if (_cNow - (collabThrottle.get(socket.id) || 0) < 2000) return;
-    collabThrottle.set(socket.id, _cNow);
+    if (_cNow - (collabThrottle.get(socket.data.userId) || 0) < 2000) return;
+    collabThrottle.set(socket.data.userId, _cNow);
     io.to(roomId).emit('collab-request', {
       from:    fromUser,
       to:      (data.toCreator || '').slice(0, 80),
@@ -2773,8 +2784,8 @@ io.on('connection', function(socket) {
     var loveRoomId = socket.data.roomId;
     if (!loveRoomId) return;
     var _lsNow = Date.now();
-    if (_lsNow - (loveThrottle.get(socket.id) || 0) < 1000) return;
-    loveThrottle.set(socket.id, _lsNow);
+    if (_lsNow - (loveThrottle.get(socket.data.userId) || 0) < 1000) return;
+    loveThrottle.set(socket.data.userId, _lsNow);
     var prev = loveCounts.get(loveRoomId) || 0;
     var newTotal = prev + 1;
     loveCounts.set(loveRoomId, newTotal);
@@ -2935,8 +2946,8 @@ io.on('connection', function(socket) {
     if (!roomId || !chunk) return;
     if (typeof chunk !== 'string' || chunk.length > 65536) return;
     var _acNow = Date.now();
-    if (_acNow - (audioChunkThrottle.get(socket.id) || 0) < 500) return;
-    audioChunkThrottle.set(socket.id, _acNow);
+    if (_acNow - (audioChunkThrottle.get(socket.data.userId) || 0) < 500) return;
+    audioChunkThrottle.set(socket.data.userId, _acNow);
 
     whisper.processChunk(roomId, chunk, function(text) {
       var ts = Math.floor(Date.now() / 1000);
@@ -3249,14 +3260,15 @@ io.on('connection', function(socket) {
       }
     }
 
-    viewerReactThrottle.delete(socket.id);
-    sendGiftThrottle.delete(socket.id);
-    qaQuestionThrottle.delete(socket.id);
-    loveThrottle.delete(socket.id);
-    audioChunkThrottle.delete(socket.id);
-    collabThrottle.delete(socket.id);
-    superChatThrottle.delete(socket.id);
-    merchOrderThrottle.delete(socket.id);
+    var _tKey = socket.data.userId || socket.id;
+    viewerReactThrottle.delete(_tKey);
+    sendGiftThrottle.delete(_tKey);
+    qaQuestionThrottle.delete(_tKey);
+    loveThrottle.delete(_tKey);
+    audioChunkThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey);
+    superChatThrottle.delete(_tKey);
+    merchOrderThrottle.delete(_tKey);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
