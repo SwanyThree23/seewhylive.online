@@ -669,6 +669,9 @@ app.get('/api/schedule', function(req, res) {
 
 // POST /api/schedule
 app.post('/api/schedule', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
   var body = req.body;
   if (!body.title || !body.scheduled_at) {
     res.status(400).json({ error: 'title and scheduled_at required' });
