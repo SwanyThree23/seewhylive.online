@@ -1216,8 +1216,8 @@ io.on('connection', function(socket) {
         })
         .catch(function(err) {
           logger.error('[join-room] mediasoup setup failed: ' + err.message);
-          io.to(socket.id).emit('join-room-ack', { error: 'MediaSoup setup failed: ' + err.message });
-          if (ack) ack({ error: 'MediaSoup setup failed: ' + err.message });
+          io.to(socket.id).emit('join-room-ack', { error: 'MediaSoup setup failed' });
+          if (ack) ack({ error: 'MediaSoup setup failed' });
         });
     } else {
       // Viewer — ensure router exists so they can subscribe to producers
@@ -1365,7 +1365,7 @@ io.on('connection', function(socket) {
       })
       .catch(function(err) {
         logger.error('[produce] ' + err.message);
-        if (ack) ack({ error: err.message });
+        if (ack) ack({ error: 'Failed to produce' });
       });
   });
 
@@ -1380,6 +1380,10 @@ io.on('connection', function(socket) {
       if (ack) ack({ error: 'transportId, producerId, rtpCapabilities and roomId required' });
       return;
     }
+    if (!socket.data.ownedTransportIds || !socket.data.ownedTransportIds.includes(transportId)) {
+      if (ack) ack({ error: 'forbidden' });
+      return;
+    }
 
     mediasoup.createConsumer(roomId, transportId, producerId, rtpCapabilities)
       .then(function(result) {
@@ -1387,7 +1391,7 @@ io.on('connection', function(socket) {
       })
       .catch(function(err) {
         logger.error('[consume] ' + err.message);
-        if (ack) ack({ error: err.message });
+        if (ack) ack({ error: 'Failed to consume' });
       });
   });
 
@@ -1623,6 +1627,7 @@ io.on('connection', function(socket) {
     sendGiftThrottle.set(socket.data.userId, _sgNow);
     var roomId                 = socket.data.roomId;
     var fromUser               = socket.data.username || 'Guest';
+    var fromUserId             = socket.data.userId;
     var emoji                  = String(data.emoji || '').slice(0, 4);
     var name                   = String(data.name || 'Gift').slice(0, 60);
     var valueCents             = Math.floor(data.valueCents || 0);
@@ -1688,11 +1693,12 @@ io.on('connection', function(socket) {
     // Gift leaderboard update
     try {
       var lb = giftLeaderboards.get(roomId) || [];
-      var existingIdx = lb.findIndex(function(e) { return e.username === fromUser; });
+      var existingIdx = lb.findIndex(function(e) { return e.userId === fromUserId; });
       if (existingIdx >= 0) {
         lb[existingIdx].totalCents += valueCents;
+        lb[existingIdx].username = fromUser;
       } else {
-        lb.push({ username: fromUser, totalCents: valueCents });
+        lb.push({ userId: fromUserId, username: fromUser, totalCents: valueCents });
       }
       lb.sort(function(a, b) { return b.totalCents - a.totalCents; });
       if (lb.length > 500) lb = lb.slice(0, 500);
@@ -2566,7 +2572,7 @@ io.on('connection', function(socket) {
   });
 
   // ── go-live ────────────────────────────────────────────────────────────
-  socket.on('go-live', function(data, ack) {
+  socket.on('go-live', async function(data, ack) {
     var roomId      = socket.data.roomId;
     var destinations = data.destinations;
 
@@ -2592,8 +2598,23 @@ io.on('connection', function(socket) {
     }
 
     if (destinations && destinations.length > 0) {
+      var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      var _validDests = [];
+      for (var _gdi = 0; _gdi < destinations.length; _gdi++) {
+        var _gd = destinations[_gdi];
+        if (!_gd || !_gd.url) continue;
+        var _gdp;
+        try { _gdp = new URL(_gd.url); } catch(_) { continue; }
+        if (!/^rtmps?:$/i.test(_gdp.protocol)) continue;
+        if (!_gdp.hostname || _PRIV_GL.test(_gdp.hostname)) continue;
+        try {
+          var _gdDns = await require('dns').promises.lookup(_gdp.hostname);
+          if (_PRIV_GL.test(_gdDns.address)) continue;
+        } catch(_) { continue; }
+        _validDests.push(_gd);
+      }
       try {
-        rtmp.startFanout(roomId, socket.data.guestId, destinations);
+        rtmp.startFanout(roomId, socket.data.guestId, _validDests);
       } catch (err) {
         logger.error('[go-live] startFanout failed: ' + err.message);
         if (ack) ack({ error: 'Failed to start RTMP fanout' });
@@ -2984,10 +3005,14 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId || !aura) return;
     var triggerFn = null;
-    if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, data.streamTitle || 'SeeWhy LIVE', data.viewerCount || 0, cb); };
-    if (data.type === 'tip_received') triggerFn = function(cb) { aura.triggerTip(sId, data.viewerName || 'Viewer', data.amountCents || 500, data.note || '', cb); };
-    if (data.type === 'gift_received') triggerFn = function(cb) { aura.triggerGift(sId, data.viewerName || 'Viewer', data.giftName || 'Gift', data.amountCents || 100, cb); };
-    if (data.type === 'new_viewer') triggerFn = function(cb) { aura.triggerNewViewer(sId, data.viewerName || 'Viewer', data.isReturning || false, cb); };
+    var _at_st = String(data.streamTitle  || '').slice(0, 120);
+    var _at_vn = String(data.viewerName   || '').slice(0, 80);
+    var _at_gn = String(data.giftName     || '').slice(0, 60);
+    var _at_nt = String(data.note         || '').slice(0, 200);
+    if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, _at_st || 'SeeWhy LIVE', data.viewerCount || 0, cb); };
+    if (data.type === 'tip_received') triggerFn = function(cb) { aura.triggerTip(sId, _at_vn || 'Viewer', data.amountCents || 500, _at_nt, cb); };
+    if (data.type === 'gift_received') triggerFn = function(cb) { aura.triggerGift(sId, _at_vn || 'Viewer', _at_gn || 'Gift', data.amountCents || 100, cb); };
+    if (data.type === 'new_viewer') triggerFn = function(cb) { aura.triggerNewViewer(sId, _at_vn || 'Viewer', data.isReturning || false, cb); };
     if (data.type === 'stream_end') triggerFn = function(cb) { aura.triggerStreamEnd(sId, data.peakViewers || 0, data.totalEarningsCents || 0, cb); };
     if (!triggerFn) return;
     triggerFn(function(err, text) {
@@ -3002,7 +3027,12 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    io.to(sId).emit('user-muted', { userId: data.targetUser, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
+    var _muteId = data.targetUser || data.userId;
+    if (_muteId) {
+      var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId);
+      _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
+    }
+    io.to(sId).emit('user-muted', { userId: _muteId, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── ban-user ───────────────────────────────────────────────────────────

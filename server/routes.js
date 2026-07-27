@@ -956,6 +956,10 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       if (!/^rtmps?:$/i.test(destParsed.protocol)) continue;
       var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       if (!destParsed.hostname || PRIV2.test(destParsed.hostname)) continue;
+      try {
+        var _destDns = await require('dns').promises.lookup(destParsed.hostname);
+        if (PRIV2.test(_destDns.address)) continue;
+      } catch(_) { continue; }
       resolvedDests.push({ url: d.url, key: resolvedKey, label: d.label || d.platform || 'custom' });
     }
 
