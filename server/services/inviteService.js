@@ -64,6 +64,7 @@ async function redeemInviteLink(token) {
     `UPDATE stream_guest_invites
      SET use_count = use_count + 1, used_at = now()
      WHERE guest_token = $1 AND use_count < max_uses AND revoked_at IS NULL
+       AND (expires_at IS NULL OR expires_at > now())
      RETURNING *`,
     [token]
   );

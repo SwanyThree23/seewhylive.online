@@ -6,6 +6,9 @@
 const panelService = require('../services/panelService');
 const loyaltyService = require('../services/loyaltyService');
 
+const panelJoinThrottle    = new Map(); // socket.id -> last join timestamp
+const panelRequestThrottle = new Map(); // socket.id -> last request timestamp
+
 function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
     try {
@@ -14,6 +17,16 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'auth required' });
         return;
       }
+      if (roomId !== socket.data.roomId) {
+        ack?.({ ok: false, error: 'forbidden' });
+        return;
+      }
+      var _pjNow = Date.now();
+      if (_pjNow - (panelJoinThrottle.get(socket.id) || 0) < 3000) {
+        ack?.({ ok: false, error: 'too many requests' });
+        return;
+      }
+      panelJoinThrottle.set(socket.id, _pjNow);
       const gate = await panelService.checkJoinGate({ roomId, userId, inviteCode });
       if (!gate.allowed) {
         ack?.({ ok: false, reason: gate.reason });
@@ -32,6 +45,16 @@ function registerPanelHandlers(io, socket) {
   socket.on('panel:request_join', async ({ roomId }, ack) => {
     try {
       const userId = socket.data.userId;
+      if (!userId || userId.startsWith('anon')) {
+        ack?.({ ok: false, error: 'auth required' });
+        return;
+      }
+      var _prjNow = Date.now();
+      if (_prjNow - (panelRequestThrottle.get(socket.id) || 0) < 2000) {
+        ack?.({ ok: false, error: 'too many requests' });
+        return;
+      }
+      panelRequestThrottle.set(socket.id, _prjNow);
       const request = await panelService.requestJoin({ roomId, userId });
       io.to(roomId).emit('panel:join_request_received', {
         roomId,
@@ -61,9 +84,11 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
-  socket.on('panel:leave', async ({ roomId }, ack) => {
+  socket.on('panel:leave', async (payload, ack) => {
     try {
       const userId = socket.data.userId;
+      const roomId = socket.data.roomId;
+      if (!roomId) { ack?.({ ok: false, error: 'not in a room' }); return; }
       await panelService.releaseSlot({ roomId, userId });
       socket.leave(roomId);
       io.to(roomId).emit('panel:slot_released', { roomId, userId });
@@ -109,9 +134,8 @@ function registerPanelHandlers(io, socket) {
       }
       await panelService.releaseSlot({ roomId, userId: targetUserId });
       io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
-      // Notify the kicked user's socket directly if possible
-      const kickedSocket = Array.from(io.sockets.sockets.values())
-        .find(s => s.data && s.data.userId === targetUserId);
+      const roomSockets = await io.in(roomId).fetchSockets();
+      const kickedSocket = roomSockets.find(s => s.data && s.data.userId === targetUserId);
       if (kickedSocket) kickedSocket.emit('panel:kicked', { roomId });
       ack?.({ ok: true });
     } catch (err) {
@@ -149,6 +173,11 @@ function registerPanelHandlers(io, socket) {
     } catch (err) {
       console.error('[panelHandlers] panel:react error:', err);
     }
+  });
+
+  socket.on('disconnect', function() {
+    panelJoinThrottle.delete(socket.id);
+    panelRequestThrottle.delete(socket.id);
   });
 }
 
