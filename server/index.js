@@ -306,6 +306,7 @@ var aiCostRateLimit = rateLimit({
 app.use('/api/ai', aiRateLimit);
 app.use('/api/aura', aiCostRateLimit);
 app.use('/api/translate', aiCostRateLimit);
+app.use('/api/summarize-chat', aiCostRateLimit);
 app.use(express.json({ limit: '2mb' }));
 app.use(xssClean());
 app.use('/api/battles', battleRoutes);
@@ -396,7 +397,10 @@ var loveThrottle        = new Map();  // socketId → lastLoveTs ms (1s throttle
 var audioChunkThrottle  = new Map();  // socketId → lastChunkTs ms (500ms throttle)
 var collabThrottle      = new Map();  // socketId → lastCollabTs ms (2s throttle)
 var superChatThrottle   = new Map();  // socketId → lastSuperChatTs ms (2s throttle)
-var merchOrderThrottle  = new Map();  // socketId → lastMerchOrderTs ms (2s throttle)
+var merchOrderThrottle      = new Map();  // socketId → lastMerchOrderTs ms (2s throttle)
+var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s throttle)
+var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
+var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
 var pkVotes             = new Map();  // roomId → { voters: Map<userId, side>, challenger: 0, defender: 0 }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
@@ -776,8 +780,9 @@ app.get('/api/leaderboard', function(req, res) {
 // POST /api/connect/onboard
 app.post('/api/connect/onboard', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.email) {
-    res.status(400).json({ error: 'Missing required field: email' });
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!body.email || !EMAIL_RE.test(String(body.email))) {
+    res.status(400).json({ error: 'valid email is required' });
     return;
   }
   stripeModule.createConnectAccount(body.email)
@@ -1538,6 +1543,9 @@ io.on('connection', function(socket) {
     var roomId   = socket.data.roomId;
     var newName  = String(data.username || '').trim().slice(0, 32);
     if (!roomId || !newName) return;
+    var _unNow = Date.now();
+    if (_unNow - (updateUsernameThrottle.get(socket.data.userId) || 0) < 2000) return;
+    updateUsernameThrottle.set(socket.data.userId, _unNow);
 
     socket.data.username = newName;
 
@@ -1803,6 +1811,9 @@ io.on('connection', function(socket) {
     var roomId  = socket.data.roomId;
     var guestId = socket.data.guestId;
     if (!roomId || !guestId) return;
+    var _spNow = Date.now();
+    if (_spNow - (speakingThrottle.get(socket.data.userId) || 0) < 250) return;
+    speakingThrottle.set(socket.data.userId, _spNow);
     io.to(roomId).emit('speaking', { guestId: guestId, speaking: data.speaking });
     // Upgrade active-speaker video to r2 (900 kbps) while speaking;
     // drop back to r0 (100 kbps) when silent — O(subscribers) but fine for ≤20 seats.
@@ -1815,6 +1826,9 @@ io.on('connection', function(socket) {
     var guestId  = socket.data.guestId;
     var username = socket.data.username || guestId;
     if (!roomId) return;
+    var _hrNow = Date.now();
+    if (_hrNow - (handRaiseThrottle.get(socket.data.userId) || 0) < 500) return;
+    handRaiseThrottle.set(socket.data.userId, _hrNow);
     io.to(roomId).emit('hand-raise', { guestId: guestId, username: username, ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -2137,8 +2151,8 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
     var _qaNow = Date.now();
-    if (_qaNow - (qaQuestionThrottle.get(socket.data.userId) || 0) < 3000) return;
-    qaQuestionThrottle.set(socket.data.userId, _qaNow);
+    if (_qaNow - (qaQuestionThrottle.get(socket.id) || 0) < 3000) return;
+    qaQuestionThrottle.set(socket.id, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = uuidv4();
     var user = socket.data.username || 'Guest';
@@ -3009,15 +3023,19 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId || !aura) return;
     var triggerFn = null;
-    var _at_st = String(data.streamTitle  || '').slice(0, 120);
-    var _at_vn = String(data.viewerName   || '').slice(0, 80);
-    var _at_gn = String(data.giftName     || '').slice(0, 60);
-    var _at_nt = String(data.note         || '').slice(0, 200);
-    if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, _at_st || 'SeeWhy LIVE', data.viewerCount || 0, cb); };
-    if (data.type === 'tip_received') triggerFn = function(cb) { aura.triggerTip(sId, _at_vn || 'Viewer', data.amountCents || 500, _at_nt, cb); };
-    if (data.type === 'gift_received') triggerFn = function(cb) { aura.triggerGift(sId, _at_vn || 'Viewer', _at_gn || 'Gift', data.amountCents || 100, cb); };
+    var _at_st  = String(data.streamTitle  || '').slice(0, 120);
+    var _at_vn  = String(data.viewerName   || '').slice(0, 80);
+    var _at_gn  = String(data.giftName     || '').slice(0, 60);
+    var _at_nt  = String(data.note         || '').slice(0, 200);
+    var _at_vc  = Math.min(Math.max(Math.floor(Number(data.viewerCount)        || 0), 0), 1000000);
+    var _at_ac  = Math.min(Math.max(Math.floor(Number(data.amountCents)        || 0), 0), 5000000);
+    var _at_pv  = Math.min(Math.max(Math.floor(Number(data.peakViewers)        || 0), 0), 1000000);
+    var _at_tec = Math.min(Math.max(Math.floor(Number(data.totalEarningsCents) || 0), 0), 5000000);
+    if (data.type === 'stream_start') triggerFn = function(cb) { aura.triggerStreamStart(sId, _at_st || 'SeeWhy LIVE', _at_vc, cb); };
+    if (data.type === 'tip_received') triggerFn = function(cb) { aura.triggerTip(sId, _at_vn || 'Viewer', _at_ac || 500, _at_nt, cb); };
+    if (data.type === 'gift_received') triggerFn = function(cb) { aura.triggerGift(sId, _at_vn || 'Viewer', _at_gn || 'Gift', _at_ac || 100, cb); };
     if (data.type === 'new_viewer') triggerFn = function(cb) { aura.triggerNewViewer(sId, _at_vn || 'Viewer', data.isReturning || false, cb); };
-    if (data.type === 'stream_end') triggerFn = function(cb) { aura.triggerStreamEnd(sId, data.peakViewers || 0, data.totalEarningsCents || 0, cb); };
+    if (data.type === 'stream_end') triggerFn = function(cb) { aura.triggerStreamEnd(sId, _at_pv, _at_tec, cb); };
     if (!triggerFn) return;
     triggerFn(function(err, text) {
       if (text) {
@@ -3313,12 +3331,15 @@ io.on('connection', function(socket) {
     var _tKey = socket.data.userId || socket.id;
     viewerReactThrottle.delete(_tKey);
     sendGiftThrottle.delete(_tKey);
-    qaQuestionThrottle.delete(_tKey);
+    qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey);
     audioChunkThrottle.delete(_tKey);
     collabThrottle.delete(_tKey);
     superChatThrottle.delete(_tKey);
     merchOrderThrottle.delete(_tKey);
+    updateUsernameThrottle.delete(_tKey);
+    handRaiseThrottle.delete(_tKey);
+    speakingThrottle.delete(_tKey);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
@@ -3354,7 +3375,7 @@ app.post('/api/webhooks/deploy', function(req, res) {
   var authorized = false;
   if (expected) {
     var _dc = require('crypto');
-    var _dh = function(s) { return _dc.createHmac('sha256', 'deploy-cmp').update(String(s)).digest(); };
+    var _dh = function(s) { return _dc.createHash('sha256').update(String(s)).digest(); };
     try { authorized = _dc.timingSafeEqual(_dh(token), _dh(expected)); } catch (_) {}
   }
   if (!authorized) {
