@@ -15,7 +15,7 @@ async function assignSlot({ roomId, userId }) {
     'SELECT * FROM room_panel_slots WHERE stream_id = $1 AND user_id = $2',
     [roomId, userId]
   );
-  if (existing.rows.length) return existing.rows[0];
+  if (existing.rows.length) return { slot: existing.rows[0], isNew: false };
 
   const taken = await db.query(
     'SELECT slot_index FROM room_panel_slots WHERE stream_id = $1 ORDER BY slot_index',
@@ -38,7 +38,7 @@ async function assignSlot({ roomId, userId }) {
      VALUES ($1, $2, $3) RETURNING *`,
     [roomId, nextIndex, userId]
   );
-  return result.rows[0];
+  return { slot: result.rows[0], isNew: true };
 }
 
 async function releaseSlot({ roomId, userId }) {
