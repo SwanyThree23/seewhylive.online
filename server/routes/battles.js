@@ -44,6 +44,7 @@ router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     const { roomId } = req.body;
+    if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);

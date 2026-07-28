@@ -41,11 +41,14 @@ n8nRouter.post('/stream-end', function(req, res) {
   res.json({ ok: true, event: 'stream-end' });
 });
 
+var CREATOR_SPLIT = 0.90;
+var PLATFORM_FEE  = 0.10;
+
 n8nRouter.post('/gem-transaction', function(req, res) {
   var d = req.body;
   var usd = Math.floor(Number(d.amount) * 10) / 100;
-  var creator = Math.floor(usd * 0.90 * 100) / 100;
-  var platform = Math.floor(usd * 0.10 * 100) / 100;
+  var creator = Math.floor(usd * CREATOR_SPLIT * 100) / 100;
+  var platform = Math.floor(usd * PLATFORM_FEE * 100) / 100;
   if (global.io) global.io.to(d.streamId||'main').emit('gem-send', { user:d.from, amount:d.amount, usd:usd, creatorShare:creator, ts:Date.now() });
   res.json({ ok: true, usd: usd, creatorShare: creator, platformFee: platform });
 });
