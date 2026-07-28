@@ -67,6 +67,7 @@ var PanelGrid           = React.lazy(function() { return import('./components/pa
 var LiveSyncTab         = React.lazy(function() { return import('./components/LiveSyncTab.jsx'); });
 var PlatformHealthTab   = React.lazy(function() { return import('./components/PlatformHealthTab.jsx'); });
 var CreatorDashboard    = React.lazy(function() { return import('./components/CreatorDashboard.jsx'); });
+var DesktopStudioTab   = React.lazy(function() { return import('./components/DesktopStudioTab.jsx'); });
 
 var APP_ID = '6990f5f24823b53e21fcdc9d';
 var TABS = [
@@ -123,6 +124,7 @@ var TABS = [
   { id: "vsbattle", label: "VS Battle" },
   { id: "livesync", label: "Live Sync" },
   { id: "health", label: "Platform Health" },
+  { id: 'desktop-studio', label: '🖥 DESKTOP STUDIO' },
 ];
 
 function CountdownClock({ targetTs }) {
@@ -1433,6 +1435,9 @@ export default function App() {
             socket={socketRef.current}
             roomId={APP_ID}
           />
+        )}
+        {activeTab === 'desktop-studio' && (
+          <DesktopStudioTab />
         )}
         {activeTab === 'discover' && (
           <DiscoverTab
