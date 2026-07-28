@@ -743,6 +743,9 @@ app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
 // GET /api/payout-history
 app.get('/api/payout-history', requireAuth, function(req, res) {
   var roomId = req.query.roomId || null;
+  if (roomId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
+    return res.status(400).json({ error: 'invalid roomId' });
+  }
   var userId = req.user.id;
   var stmt;
   var rows;
@@ -777,6 +780,9 @@ app.get('/api/payout-history', requireAuth, function(req, res) {
 app.get('/api/leaderboard', function(req, res) {
   try {
     var roomId = req.query.roomId || '';
+    if (roomId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
+      return res.status(400).json({ error: 'invalid roomId' });
+    }
     var rows;
     if (roomId) {
       rows = db.prepare(
@@ -1465,8 +1471,8 @@ io.on('connection', function(socket) {
   socket.on('stage-invite', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
-    if (!roomId || !guestId) return;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     io.to(roomId).emit('stage-invite', { guestId: guestId, invitedBy: socket.data.userId });
     io.to(roomId).emit('hand-lower',   { guestId: guestId });
   });
@@ -1475,16 +1481,16 @@ io.on('connection', function(socket) {
   socket.on('stage-remove', function(data) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
-    if (!roomId || !guestId) return;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     io.to(roomId).emit('stage-remove', { guestId: guestId });
   });
 
   // ── mute-guest ─────────────────────────────────────────────────────────
   socket.on('mute-guest', function(data) {
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
-    if (!roomId || !guestId) return;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
     var producerIds = mediasoup.getProducerIdsByGuest(guestId);
     producerIds.forEach(function(pid) { mediasoup.pauseProducer(pid); });
@@ -1494,8 +1500,8 @@ io.on('connection', function(socket) {
   // ── unmute-guest ───────────────────────────────────────────────────────
   socket.on('unmute-guest', function(data) {
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
-    if (!roomId || !guestId) return;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
     var producerIds = mediasoup.getProducerIdsByGuest(guestId);
     producerIds.forEach(function(pid) { mediasoup.resumeProducer(pid); });
@@ -1505,8 +1511,8 @@ io.on('connection', function(socket) {
   // ── kick-guest ─────────────────────────────────────────────────────────
   socket.on('kick-guest', function(data) {
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
-    if (!roomId || !guestId) return;
+    var guestId = String(data.guestId || '');
+    if (!roomId || !guestId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
 
     var producerIds = mediasoup.getProducerIdsByGuest(guestId);
@@ -1986,7 +1992,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var seekPos = Number(data.position);
-    if (!Number.isFinite(seekPos) || seekPos < 0) return;
+    if (!Number.isFinite(seekPos) || seekPos < 0 || seekPos > 86400) return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.position = seekPos;
@@ -2067,7 +2073,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.trigger) return;
-    io.to(roomId).emit('bot-trigger-added', { trigger: data.trigger });
+    io.to(roomId).emit('bot-trigger-added', { trigger: String(data.trigger).slice(0, 300) });
   });
 
   socket.on('bot-remove-trigger', function(data) {
@@ -2476,7 +2482,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var safe; try { safe = JSON.parse(JSON.stringify(data)); } catch(e) { return; }
+    var _bStr; try { _bStr = JSON.stringify(data); } catch(e) { return; }
+    if (!_bStr || _bStr.length > 8192) return;
+    var safe; try { safe = JSON.parse(_bStr); } catch(e) { return; }
     io.to(roomId).emit('bracket-update', Object.assign(safe, { roomId: roomId }));
   });
 
@@ -2485,7 +2493,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var safe; try { safe = JSON.parse(JSON.stringify(data)); } catch(e) { return; }
+    var _cStr; try { _cStr = JSON.stringify(data); } catch(e) { return; }
+    if (!_cStr || _cStr.length > 8192) return;
+    var safe; try { safe = JSON.parse(_cStr); } catch(e) { return; }
     io.to(roomId).emit('chyron-update', Object.assign(safe, { roomId: roomId }));
   });
 
@@ -2566,7 +2576,7 @@ io.on('connection', function(socket) {
     if (!roomId) return;
     io.to(roomId).emit('collab-accept', {
       from:      fromUser,
-      collabId:  data.collabId || '',
+      collabId:  String(data.collabId || '').slice(0, 80),
       partner:   (data.partner || '').slice(0, 80),
       ts:        Math.floor(Date.now() / 1000)
     });
@@ -2852,7 +2862,11 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    io.to(sRoomId).emit('watch-sync', { action: data.action, position: data.position, timestamp: Date.now() });
+    var WATCH_SYNC_ACTIONS = ['play', 'pause', 'seek', 'stop'];
+    var safeWsAction = WATCH_SYNC_ACTIONS.includes(String(data.action || '')) ? String(data.action) : 'play';
+    var _wsRawPos = Number(data.position);
+    var safeWsPos = (Number.isFinite(_wsRawPos) && _wsRawPos >= 0 && _wsRawPos <= 86400) ? _wsRawPos : 0;
+    io.to(sRoomId).emit('watch-sync', { action: safeWsAction, position: safeWsPos, timestamp: Date.now() });
   });
 
   // ── PK cheer handler ──────────────────────────────────────────────────
@@ -2881,7 +2895,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    io.to(sRoomId).emit('watch-stage-pin', { ytId: data.ytId || '' });
+    io.to(sRoomId).emit('watch-stage-pin', { ytId: String(data.ytId || '').slice(0, 20) });
   });
 
   // ── Love micro-tip handler ─────────────────────────────────────────────
@@ -3105,12 +3119,12 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var _muteId = data.targetUser || data.userId;
-    if (_muteId) {
-      var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId);
-      _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
-    }
-    io.to(sId).emit('user-muted', { userId: _muteId, reason: data.reason, ts: Math.floor(Date.now() / 1000) });
+    var _muteId = String(data.targetUser || data.userId || '');
+    if (!_muteId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_muteId)) return;
+    var _muteReason = String(data.reason || '').slice(0, 200);
+    var _muteProducers = mediasoup.getProducerIdsByGuest(_muteId);
+    _muteProducers.forEach(function(pid) { mediasoup.pauseProducer(pid); });
+    io.to(sId).emit('user-muted', { userId: _muteId, reason: _muteReason, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── ban-user ───────────────────────────────────────────────────────────
@@ -3118,7 +3132,8 @@ io.on('connection', function(socket) {
     var sId = socket.data.roomId;
     if (!sId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var bannedId = data.userId || data.targetUser;
+    var bannedId = String(data.userId || data.targetUser || '');
+    if (!bannedId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bannedId)) return;
     io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
     // Disconnect the banned socket if it is connected to this room
     var room = rooms.get(sId);

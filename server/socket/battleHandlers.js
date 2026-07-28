@@ -45,6 +45,7 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:challenge', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!payload || !validBattleId(payload.defenderId)) { if (cb) cb({ ok: false, error: 'invalid defenderId' }); return; }
+    if (payload.defenderId === socket.data.userId) { if (cb) cb({ ok: false, error: 'cannot challenge yourself' }); return; }
     if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     const _ctNow = Date.now();
     if (_ctNow - (challengeThrottle.get(socket.data.userId) || 0) < 10000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
