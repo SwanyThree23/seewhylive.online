@@ -703,8 +703,10 @@ app.post('/api/schedule', requireAuth, function(req, res) {
     try { db.exec('ALTER TABLE schedules ADD COLUMN creator_id TEXT'); } catch(e) { /* column already exists */ }
     var id  = uuidv4();
     var now = Math.floor(Date.now() / 1000);
+    var _schedAt = Math.floor(Number(body.scheduled_at));
+    if (!Number.isFinite(_schedAt) || _schedAt <= 0) return res.status(400).json({ error: 'scheduled_at must be a positive integer (Unix ms)' });
     db.prepare('INSERT INTO schedules (id,title,category,desc,scheduled_at,created_at,recurring,creator_id) VALUES (?,?,?,?,?,?,?,?)')
-      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), Math.floor(body.scheduled_at), now, String(body.recurring||'none').slice(0,20), req.user.id);
+      .run(id, String(body.title).slice(0,120), String(body.category||'').slice(0,40), String(body.desc||'').slice(0,400), _schedAt, now, String(body.recurring||'none').slice(0,20), req.user.id);
     res.json({ id: id, saved: true });
   } catch (err) {
     logger.error('[schedule/post] ' + err.message);
@@ -716,6 +718,9 @@ app.post('/api/schedule', requireAuth, function(req, res) {
 app.delete('/api/schedule/:id', requireAuth, function(req, res) {
   if (req.user.role !== 'host' && req.user.role !== 'admin') {
     return res.status(403).json({ error: 'forbidden' });
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(req.params.id)) {
+    return res.status(400).json({ error: 'invalid id' });
   }
   try {
     var info = db.prepare('DELETE FROM schedules WHERE id = ? AND creator_id = ?').run(req.params.id, req.user.id);
@@ -1546,9 +1551,10 @@ io.on('connection', function(socket) {
   // ── promote-guest ──────────────────────────────────────────────────────
   socket.on('promote-guest', function(data) {
     var roomId  = socket.data.roomId;
-    var guestId = data.guestId;
+    var guestId = String(data.guestId || '');
     var newRole = data.role;
     if (!roomId || !guestId || !newRole) return;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)) return;
     if (socket.data.role !== 'host') return;
     var validRoles = ['cohost', 'guest', 'viewer'];
     if (validRoles.indexOf(newRole) === -1) return;
@@ -1875,10 +1881,15 @@ io.on('connection', function(socket) {
     var _hlNow = Date.now();
     if (_hlNow - (handRaiseThrottle.get(socket.data.userId) || 0) < 500) return;
     handRaiseThrottle.set(socket.data.userId, _hlNow);
-    var guestId = (socket.data.role === 'host' || socket.data.role === 'cohost')
-      ? ((data && data.guestId) || socket.data.guestId)
-      : socket.data.guestId;
-    io.to(roomId).emit('hand-lower', { guestId: guestId });
+    var _hlGuest;
+    if (socket.data.role === 'host' || socket.data.role === 'cohost') {
+      var _hlRaw = String((data && data.guestId) || socket.data.guestId || '');
+      if (_hlRaw && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_hlRaw)) return;
+      _hlGuest = _hlRaw || socket.data.guestId;
+    } else {
+      _hlGuest = socket.data.guestId;
+    }
+    io.to(roomId).emit('hand-lower', { guestId: _hlGuest });
   });
 
   // ── mute-all ───────────────────────────────────────────────────────────
@@ -1952,10 +1963,11 @@ io.on('connection', function(socket) {
     var WATCH_PARTY_TYPES = ['youtube', 'twitch', 'direct'];
     var rawType = data.type || (data.videoId ? 'youtube' : 'direct');
     var type = WATCH_PARTY_TYPES.includes(String(rawType)) ? String(rawType) : 'direct';
-    room.watchParty.videoId = data.videoId || null;
+    var _wpVideoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
+    room.watchParty.videoId = _wpVideoId;
     room.watchParty.url  = safeUrl;
     room.watchParty.type = type;
-    io.to(roomId).emit('watch-party-url', { videoId: data.videoId || null, url: safeUrl, type: type });
+    io.to(roomId).emit('watch-party-url', { videoId: _wpVideoId, url: safeUrl, type: type });
   });
 
   socket.on('watch-party-play', function(data) {
@@ -2007,7 +2019,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
-    if (data.videoId !== undefined) room.watchParty.videoId = data.videoId;
+    if (data.videoId !== undefined) room.watchParty.videoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
     if (data.url !== undefined) {
       if (!/^https?:\/\//i.test(String(data.url))) return;
       room.watchParty.url = String(data.url).slice(0, 500);
@@ -2080,7 +2092,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var roomId = socket.data.roomId;
     if (!roomId || !data.triggerId) return;
-    io.to(roomId).emit('bot-trigger-removed', { triggerId: data.triggerId });
+    var _triggerId = String(data.triggerId).slice(0, 100);
+    if (!_triggerId) return;
+    io.to(roomId).emit('bot-trigger-removed', { triggerId: _triggerId });
   });
 
   // ── room settings (audio-only, private, paywall) ──────────────────────
@@ -2308,9 +2322,9 @@ io.on('connection', function(socket) {
   socket.on('judge-assign', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
-    var uid  = String(data.userId || '').slice(0, 80);
+    var uid  = String(data.userId || '');
+    if (!uid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) return;
     var uname = String(data.username || 'Judge').slice(0, 40);
-    if (!uid) return;
     if (!judgeRosters.has(roomId)) judgeRosters.set(roomId, new Map());
     var roster = judgeRosters.get(roomId);
     roster.set(uid, { userId: uid, username: uname, scores: [] });
@@ -2588,7 +2602,7 @@ io.on('connection', function(socket) {
     var fromUser = socket.data.username || 'Host';
     if (!roomId) return;
     io.to(roomId).emit('collab-message', {
-      collabId: data.collabId || '',
+      collabId: String(data.collabId || '').slice(0, 80),
       from:     fromUser,
       text:     (data.text || '').slice(0, 500),
       ts:       Math.floor(Date.now() / 1000)
@@ -3152,7 +3166,9 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sId = socket.data.roomId;
     if (!sId) return;
-    io.to(sId).emit('user-unbanned', { username: data.username, ts: Math.floor(Date.now() / 1000) });
+    var _unbanUsername = String(data.username || '').slice(0, 100);
+    if (!_unbanUsername) return;
+    io.to(sId).emit('user-unbanned', { username: _unbanUsername, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── mod-rules ──────────────────────────────────────────────────────────

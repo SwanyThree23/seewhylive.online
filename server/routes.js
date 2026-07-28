@@ -459,7 +459,8 @@ router.post('/payments/payout', requireAuth, function(req, res) {
 router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
     var subscriberId = req.user.id;
-    var creatorId = req.body.creatorId || 'default';
+    var creatorId = String(req.body.creatorId || '');
+    if (!ROUTES_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
     var VALID_TIERS = ['fan', 'supporter', 'ride_or_die'];
     var tier = VALID_TIERS.includes(String(req.body.tier || '')) ? String(req.body.tier) : 'fan';
     var amountCents = req.body.amountCents || 0;
@@ -800,8 +801,8 @@ router.post('/stream-end', requireAuth, async function(req, res) {
 router.post('/vault/save-key', requireAuth, function(req, res) {
   if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
   try {
-    var destId   = req.body.dest_id;
-    var plainKey = req.body.plain_key;
+    var destId   = String(req.body.dest_id  || '').slice(0, 200);
+    var plainKey = String(req.body.plain_key || '').slice(0, 2000);
     if (!destId || !plainKey) {
       return res.status(400).json({ ok: false, error: 'dest_id, plain_key are required' });
     }
