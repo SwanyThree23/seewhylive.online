@@ -11,8 +11,9 @@ const HEARTBEAT_MS = 5000;
 const MAX_DRIFT_MS = 300;
 const BATTLE_WIN_POINTS = 100; // adjust to taste
 
-const activeTimers  = new Map(); // battleId -> interval handle
-const voteThrottle  = new Map(); // userId -> last vote timestamp (2s)
+const activeTimers       = new Map(); // battleId -> interval handle
+const voteThrottle       = new Map(); // userId -> last vote timestamp (2s)
+const challengeThrottle  = new Map(); // userId -> last challenge timestamp (10s)
 const BATTLE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function validBattleId(id) {
@@ -45,6 +46,9 @@ function registerBattleHandlers(io, socket) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!payload || !validBattleId(payload.defenderId)) { if (cb) cb({ ok: false, error: 'invalid defenderId' }); return; }
     if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
+    const _ctNow = Date.now();
+    if (_ctNow - (challengeThrottle.get(socket.data.userId) || 0) < 10000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
+    challengeThrottle.set(socket.data.userId, _ctNow);
     try {
       const rawDur = Math.floor(Number(payload.durationMinutes) || 5);
       const battle = await battleService.createChallenge({
@@ -153,6 +157,13 @@ function registerBattleHandlers(io, socket) {
       if (cb) cb({ ok: true, battle });
     } catch (err) {
       if (cb) cb({ ok: false, error: 'Battle error' });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.data.userId) {
+      voteThrottle.delete(socket.data.userId);
+      challengeThrottle.delete(socket.data.userId);
     }
   });
 }
