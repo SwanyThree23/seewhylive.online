@@ -2084,9 +2084,10 @@ io.on('connection', function(socket) {
 
   // ── subscribe ──────────────────────────────────────────────────────────
   socket.on('follow-creator', function(data) {
+    if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
     var roomId   = socket.data.roomId;
-    var follower = socket.data.username || data.username || 'Viewer';
-    var creator  = String(data.username || '').slice(0, 80);
+    var follower = socket.data.username || 'Viewer';
+    var creator  = String((data && data.username) || '').slice(0, 80);
     if (!roomId || !creator) return;
     io.to(roomId).emit('creator-followed', { follower: follower, creator: creator, ts: Math.floor(Date.now() / 1000) });
   });

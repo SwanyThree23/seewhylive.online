@@ -443,7 +443,8 @@ router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
     var subscriberId = req.user.id;
     var creatorId = req.body.creatorId || 'default';
-    var tier = req.body.tier || 'fan';
+    var VALID_TIERS = ['fan', 'supporter', 'ride_or_die'];
+    var tier = VALID_TIERS.includes(String(req.body.tier || '')) ? String(req.body.tier) : 'fan';
     var amountCents = req.body.amountCents || 0;
     var id = uuidv4();
 
@@ -686,7 +687,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
     if (!isHttps) {
       return res.status(400).json({ success: false, error: 'webhookUrl must use https://' });
     }
-    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
     if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
       return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
     }
