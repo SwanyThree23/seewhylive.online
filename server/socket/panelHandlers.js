@@ -84,6 +84,10 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
+      if (!userId || !PANEL_UUID_RE.test(String(userId))) {
+        ack?.({ ok: false, error: 'invalid userId' });
+        return;
+      }
       const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
       // Emit only to the requesting user, not the entire room
       const roomSockets = await io.in(roomId).fetchSockets();

@@ -64,6 +64,7 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:accept', async (payload, cb) => {
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
+    if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     try {
       const existing = await battleService.getBattle(payload.battleId);
       if (!existing || existing.defender_id !== socket.data.userId) {

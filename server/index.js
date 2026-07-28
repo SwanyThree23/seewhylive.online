@@ -412,6 +412,7 @@ var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s thro
 var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
 var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
+var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
 var pkVotes             = new Map();  // roomId → { voters: Map<userId, side>, challenger: 0, defender: 0 }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
@@ -1132,7 +1133,7 @@ io.on('connection', function(socket) {
     var username = String(data.username || 'Guest').slice(0, 32);
     var role     = socket.data.role || 'viewer';
 
-    if (!roomId || typeof roomId !== 'string' || !/^[0-9a-f-]{36}$/i.test(roomId)) {
+    if (!roomId || typeof roomId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomId)) {
       if (ack) ack({ error: 'roomId required' });
       return;
     }
@@ -1591,6 +1592,10 @@ io.on('connection', function(socket) {
 
     if (!roomId || !message.trim()) return;
 
+    var _cmNow = Date.now();
+    if (_cmNow - (chatMsgThrottle.get(socket.id) || 0) < 500) return;
+    chatMsgThrottle.set(socket.id, _cmNow);
+
     // Spam check
     if (swanybot.isSocketMuted(socket.id)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
@@ -1994,7 +1999,8 @@ io.on('connection', function(socket) {
       room.watchParty.type = SYNC_PARTY_TYPES.includes(String(data.type)) ? String(data.type) : 'direct';
     }
     room.watchParty.playing  = !!data.playing;
-    room.watchParty.position = typeof data.position === 'number' ? data.position : 0;
+    var _syncRawPos = Number(data.position);
+    room.watchParty.position = (Number.isFinite(_syncRawPos) && _syncRawPos >= 0 && _syncRawPos <= 86400) ? _syncRawPos : 0;
     room.watchParty.ts       = Date.now();
     io.to(roomId).emit('watch-party-sync', {
       videoId:  room.watchParty.videoId,
@@ -2780,7 +2786,8 @@ io.on('connection', function(socket) {
     if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    var targetId = String(data.targetUserId);
+    var targetId = String(data.targetUserId || '');
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)) return;
     var lstIdx = stage.listeners.findIndex(function(l) { return String(l.userId) === targetId; });
     if (lstIdx === -1) return;
     if (stage.speakers.length >= 20) return;
@@ -2795,7 +2802,8 @@ io.on('connection', function(socket) {
     if (!sRoomId) return;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
-    var targetId = String(data.targetUserId);
+    var targetId = String(data.targetUserId || '');
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetId)) return;
     var spkIdx = stage.speakers.findIndex(function(s) { return String(s.userId) === targetId; });
     if (spkIdx === -1) return;
     var spk = stage.speakers.splice(spkIdx, 1)[0];
@@ -2917,9 +2925,11 @@ io.on('connection', function(socket) {
     if (!tRoomId) return;
     var question = (data.question || '').trim().slice(0, 200);
     var options  = Array.isArray(data.options) ? data.options.slice(0, 4).map(function(o) { return { text: String(o.text || o).slice(0, 80) }; }) : [];
-    var correctIdx = typeof data.correctIdx === 'number' ? data.correctIdx : 0;
+    var _rawCorrectIdx = parseInt(data.correctIdx, 10);
+    var correctIdx = (Number.isFinite(_rawCorrectIdx) && _rawCorrectIdx >= 0) ? _rawCorrectIdx : 0;
     var durationMs = Math.min(Math.max(data.durationMs || 20000, 5000), 60000);
     if (!question || options.length < 2) return;
+    if (correctIdx >= options.length) correctIdx = 0;
     var trivia = { question: question, options: options, answers: new Map(), correctIdx: correctIdx, active: true, startTs: Date.now(), durationMs: durationMs };
     triviaRooms.set(tRoomId, trivia);
     io.to(tRoomId).emit('trivia-question', { roomId: tRoomId, question: question, options: options.map(function(o) { return { text: o.text }; }), durationMs: durationMs });
@@ -3363,6 +3373,7 @@ io.on('connection', function(socket) {
     updateUsernameThrottle.delete(_tKey);
     handRaiseThrottle.delete(_tKey);
     speakingThrottle.delete(_tKey);
+    chatMsgThrottle.delete(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
