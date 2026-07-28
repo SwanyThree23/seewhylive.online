@@ -297,7 +297,9 @@ router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, r
   }
 });
 
-router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
+router.delete('/moderation/ban/:userId', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (!ROUTES_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
     var creatorId = req.user.id;
     if (moderation) {
@@ -924,7 +926,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
       return res.status(400).json({ ok: false, error: 'invalid stream_id' });
     }
-    var guestId  = b.guest_id  || streamId;
+    var guestId  = req.user.id;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
     var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));

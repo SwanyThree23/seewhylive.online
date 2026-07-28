@@ -413,6 +413,9 @@ var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500m
 var speakingThrottle        = new Map();  // userId → lastSpeakingTs ms (250ms throttle)
 var producerOwners      = new Map();  // producerId → guestId (ownership for close/pause/resume)
 var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throttle)
+var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
+var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
+var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
 var pkVotes             = new Map();  // roomId → { voters: Map<userId, side>, challenger: 0, defender: 0 }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
@@ -625,6 +628,12 @@ app.post('/api/ppv/create', requireAuth, function(req, res) {
   if (!body.roomId || !body.priceUsd || !body.creatorStripeAccountId) {
     res.status(400).json({ error: 'Missing required fields: roomId, priceUsd, creatorStripeAccountId' });
     return;
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(body.roomId))) {
+    return res.status(400).json({ error: 'invalid roomId' });
+  }
+  if (!/^acct_[a-zA-Z0-9]{16,}$/.test(String(body.creatorStripeAccountId))) {
+    return res.status(400).json({ error: 'invalid creatorStripeAccountId' });
   }
   var priceUsd = parseFloat(body.priceUsd);
   if (!Number.isFinite(priceUsd) || priceUsd < 0.50 || priceUsd > 500) {
@@ -1856,10 +1865,13 @@ io.on('connection', function(socket) {
   // ── hand-lower ─────────────────────────────────────────────────────────
   socket.on('hand-lower', function(data) {
     var roomId  = socket.data.roomId;
+    if (!roomId) return;
+    var _hlNow = Date.now();
+    if (_hlNow - (handRaiseThrottle.get(socket.data.userId) || 0) < 500) return;
+    handRaiseThrottle.set(socket.data.userId, _hlNow);
     var guestId = (socket.data.role === 'host' || socket.data.role === 'cohost')
       ? ((data && data.guestId) || socket.data.guestId)
       : socket.data.guestId;
-    if (!roomId) return;
     io.to(roomId).emit('hand-lower', { guestId: guestId });
   });
 
@@ -1947,7 +1959,7 @@ io.on('connection', function(socket) {
     var room = getRoom(roomId);
     var now = Date.now();
     var _rawPos = Number(data.position);
-    var position = (Number.isFinite(_rawPos) && _rawPos >= 0) ? _rawPos : 0;
+    var position = (Number.isFinite(_rawPos) && _rawPos >= 0 && _rawPos <= 86400) ? _rawPos : 0;
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.playing  = true;
     room.watchParty.position = position;
@@ -1961,7 +1973,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     var _rawPausePos = Number(data.position);
-    var position = (Number.isFinite(_rawPausePos) && _rawPausePos >= 0) ? _rawPausePos : 0;
+    var position = (Number.isFinite(_rawPausePos) && _rawPausePos >= 0 && _rawPausePos <= 86400) ? _rawPausePos : 0;
     if (!room.watchParty) room.watchParty = {};
     room.watchParty.playing  = false;
     room.watchParty.position = position;
@@ -2149,6 +2161,9 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var roomId    = socket.data.roomId;
     if (!roomId) return;
+    var _pvNow = Date.now();
+    if (_pvNow - (pollVoteThrottle.get(socket.id) || 0) < 500) return;
+    pollVoteThrottle.set(socket.id, _pvNow);
     var optionIdx = Math.floor(data.optionIdx || 0);
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
@@ -2188,6 +2203,9 @@ io.on('connection', function(socket) {
   socket.on('qa-upvote', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.id) return;
+    var _quNow = Date.now();
+    if (_quNow - (qaUpvoteThrottle.get(socket.id) || 0) < 500) return;
+    qaUpvoteThrottle.set(socket.id, _quNow);
     var queue = qaQueues.get(roomId);
     if (!queue) return;
     var item = queue.get(data.id);
@@ -2255,6 +2273,9 @@ io.on('connection', function(socket) {
   socket.on('vs-vote', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
+    var _vvNow = Date.now();
+    if (_vvNow - (vsVoteThrottle.get(socket.id) || 0) < 500) return;
+    vsVoteThrottle.set(socket.id, _vvNow);
     var vp = vsPolls.get(roomId);
     if (!vp || !vp.active) return;
     var side = data.side; // 'A' or 'B'
@@ -2893,10 +2914,12 @@ io.on('connection', function(socket) {
     var GOAL_TYPES = ['viewers', 'revenue', 'duration', 'gifts'];
     var goalType  = GOAL_TYPES.includes(String(data.type || '')) ? String(data.type) : 'viewers';
     var goalLabel = data.label ? String(data.label).slice(0, 80) : null;
+    var _rawTarget = Number(data.target);
+    var goalTarget = (Number.isFinite(_rawTarget) && _rawTarget > 0) ? Math.min(Math.floor(_rawTarget), 10000000) : 0;
     io.to(sgRoomId).emit('stream-goal-set', {
       roomId:  sgRoomId,
       type:    goalType,
-      target:  Math.floor(data.target || 0),
+      target:  goalTarget,
       label:   goalLabel
     });
   });
@@ -3222,6 +3245,9 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var voteRoomId = socket.data.roomId;
     if (!voteRoomId) return;
+    var _pv2Now = Date.now();
+    if (_pv2Now - (pollVoteThrottle.get(socket.id) || 0) < 500) return;
+    pollVoteThrottle.set(socket.id, _pv2Now);
     var pollToVote = activePolls.get(voteRoomId);
     if (!pollToVote || pollToVote.id !== data.pollId) return;
     var voteKey = socket.id;
@@ -3363,6 +3389,7 @@ io.on('connection', function(socket) {
 
     var _tKey = socket.data.userId || socket.id;
     viewerReactThrottle.delete(_tKey);
+    viewerReactThrottle.delete(socket.id);
     sendGiftThrottle.delete(_tKey);
     qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey);
@@ -3374,6 +3401,9 @@ io.on('connection', function(socket) {
     handRaiseThrottle.delete(_tKey);
     speakingThrottle.delete(_tKey);
     chatMsgThrottle.delete(socket.id);
+    pollVoteThrottle.delete(socket.id);
+    vsVoteThrottle.delete(socket.id);
+    qaUpvoteThrottle.delete(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
