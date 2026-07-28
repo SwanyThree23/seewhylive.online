@@ -19,6 +19,7 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const { defenderId, roomId } = req.body;
     if (!UUID_RE.test(defenderId)) return res.status(400).json({ error: 'invalid defenderId' });
+    if (defenderId === req.user.id) return res.status(400).json({ error: 'cannot challenge yourself' });
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     const challengerName = String(req.body.challengerName || '').slice(0, 80);
     const defenderName   = String(req.body.defenderName  || '').slice(0, 80);

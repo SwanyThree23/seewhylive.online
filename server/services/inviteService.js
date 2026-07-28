@@ -10,6 +10,7 @@ const DEFAULT_EXPIRY_HOURS = 1;
 // ---- guest_invitations (direct, user-to-user) ----
 
 async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHours }) {
+  if (fromUserId === toUserId) { const e = new Error('cannot invite yourself'); e.status = 400; throw e; }
   const hours = expiryHours || DEFAULT_EXPIRY_HOURS;
   const target = await db.query('SELECT id FROM users WHERE id = $1', [toUserId]);
   if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }

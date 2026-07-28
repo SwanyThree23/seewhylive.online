@@ -93,7 +93,7 @@ router.post('/start', requireAuth, function(req, res) {
   var creatorId = req.user.id;
   var title     = String(body.title || 'Live Recording').slice(0, 200);
 
-  if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
+  if (!streamId || !UUID_RE.test(streamId)) return res.status(400).json({ error: 'stream_id must be a valid UUID' });
 
   // Verify this user owns the stream before creating a VOD record
   sbReq('GET', '/rest/v1/streams?id=eq.' + encodeURIComponent(streamId) + '&creator_id=eq.' + encodeURIComponent(creatorId) + '&select=id&limit=1', null, function(chkErr, chkStatus, chkData) {
