@@ -46,11 +46,16 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
-  socket.on('panel:request_join', async ({ roomId }, ack) => {
+  socket.on('panel:request_join', async ({ roomId: _ignored }, ack) => {
     try {
       const userId = socket.data.userId;
+      const roomId = socket.data.roomId;
       if (!userId || userId.startsWith('anon')) {
         ack?.({ ok: false, error: 'auth required' });
+        return;
+      }
+      if (!roomId) {
+        ack?.({ ok: false, error: 'not in a room' });
         return;
       }
       var _prjNow = Date.now();
@@ -119,7 +124,12 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
-      const slot = await panelService.setExpandedSlot({ roomId, slotIndex, expanded });
+      const _si = Math.floor(Number(slotIndex));
+      if (!Number.isFinite(_si) || _si < 0 || _si > 7) {
+        ack?.({ ok: false, error: 'invalid slotIndex' });
+        return;
+      }
+      const slot = await panelService.setExpandedSlot({ roomId, slotIndex: _si, expanded });
       io.to(roomId).emit('panel:layout_update', { roomId, slot });
       ack?.({ ok: true });
     } catch (err) {
