@@ -208,7 +208,7 @@ router.get('/list', function(req, res) {
   var streamId = req.query.stream_id || '';
   var limit    = Math.min(parseInt(req.query.limit, 10) || 20, 100);
 
-  if (!streamId) return res.status(400).json({ error: 'stream_id is required' });
+  if (!streamId || !UUID_RE.test(streamId)) return res.status(400).json({ error: 'stream_id must be a valid UUID' });
 
   var path = '/rest/v1/vods'
            + '?stream_id=eq.' + encodeURIComponent(streamId)

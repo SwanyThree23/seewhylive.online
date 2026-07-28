@@ -6,10 +6,22 @@ var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
 var requireAuth = require('./middleware/auth');
+var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
+
+var ROUTES_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+var moderationRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many requests' },
+});
 
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
@@ -267,12 +279,14 @@ router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
   }
 });
 
-router.post('/moderation/ban', requireAuth, function(req, res) {
+router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var creatorId = req.user.id;
-    var bannedUserId = req.body.bannedUserId || '';
-    var bannedUsername = req.body.bannedUsername || '';
-    var reason = req.body.reason || '';
+    var bannedUserId = String(req.body.bannedUserId || '');
+    if (!ROUTES_UUID_RE.test(bannedUserId)) return res.status(400).json({ error: 'invalid bannedUserId' });
+    var bannedUsername = String(req.body.bannedUsername || '').slice(0, 80);
+    var reason = String(req.body.reason || '').slice(0, 200);
     if (moderation) {
       var ban = moderation.banUser(creatorId, bannedUserId, bannedUsername, reason);
       return res.json({ success: true, ban: ban });
@@ -307,11 +321,12 @@ router.get('/moderation/bans', requireAuth, function(req, res) {
   }
 });
 
-router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
+router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function(req, res) {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var userId = req.body.userId || '';
-    var reason = req.body.reason || '';
+    var userId = String(req.body.userId || '');
+    if (!ROUTES_UUID_RE.test(userId)) return res.status(400).json({ error: 'invalid userId' });
+    var reason = String(req.body.reason || '').slice(0, 200);
     var bannedBy = req.user.id;
     if (moderation) {
       moderation.shadowBanUser(userId, reason, bannedBy);
