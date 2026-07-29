@@ -857,12 +857,14 @@ app.post('/api/turn/credentials', requireAuth, function(req, res) {
 // POST /api/keys/save
 app.post('/api/keys/save', requireAuth, function(req, res) {
   var body = req.body;
-  if (!body.destId || !body.plainKey) {
+  var destId   = String(body.destId   || '').slice(0, 200);
+  var plainKey = String(body.plainKey || '').slice(0, 2000);
+  if (!destId || !plainKey) {
     res.status(400).json({ error: 'Missing required fields: destId, plainKey' });
     return;
   }
   try {
-    vault.saveKey(req.user.id, body.destId, body.plainKey);
+    vault.saveKey(req.user.id, destId, plainKey);
     res.json({ saved: true });
   } catch (err) {
     logger.error('[keys/save] ' + err.message);
@@ -2116,7 +2118,7 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
-    var amountCents = Math.floor(data.amountCents || 0);
+    var amountCents = Math.min(50000, Math.floor(data.amountCents || 0));
     io.to(roomId).emit('room-paywall', { enabled: Boolean(data.enabled), amountCents: amountCents, ts: Math.floor(Date.now() / 1000) });
   });
 
@@ -2343,6 +2345,9 @@ io.on('connection', function(socket) {
   socket.on('judge-score', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
+    var _jsNow = Date.now();
+    if (_jsNow - (socket.data._lastJudgeScore || 0) < 500) return;
+    socket.data._lastJudgeScore = _jsNow;
     var uid = socket.data.userId || socket.id;
     var roster = judgeRosters.get(roomId);
     if (!roster || !roster.has(uid)) return;
@@ -2518,8 +2523,11 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _pksStr; try { _pksStr = JSON.stringify(data); } catch(e) { return; }
+    if (!_pksStr || _pksStr.length > 4096) return;
+    var _pksSafe; try { _pksSafe = JSON.parse(_pksStr); } catch(e) { return; }
     pkVotes.set(roomId, { voters: new Map(), challenger: 0, defender: 0 });
-    io.to(roomId).emit('pk-start', data);
+    io.to(roomId).emit('pk-start', _pksSafe);
   });
 
   socket.on('pk-vote', function(data) {
@@ -2540,8 +2548,11 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var _pkeStr; try { _pkeStr = JSON.stringify(data); } catch(e) { return; }
+    if (!_pkeStr || _pkeStr.length > 4096) return;
+    var _pkeSafe; try { _pkeSafe = JSON.parse(_pkeStr); } catch(e) { return; }
     pkVotes.delete(roomId);
-    io.to(roomId).emit('pk-end', data);
+    io.to(roomId).emit('pk-end', _pkeSafe);
   });
 
   socket.on('pk-sudden-death', function(data) {
@@ -2768,6 +2779,9 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-join', function(data) {
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
+    var _asjNow = Date.now();
+    if (_asjNow - (socket.data._lastAudioJoin || 0) < 2000) return;
+    socket.data._lastAudioJoin = _asjNow;
     if (!stageRooms.has(sRoomId)) {
       stageRooms.set(sRoomId, { speakers: [], listeners: [] });
     }
@@ -2792,6 +2806,9 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-leave', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _aslNow = Date.now();
+    if (_aslNow - (socket.data._lastAudioLeave || 0) < 1000) return;
+    socket.data._lastAudioLeave = _aslNow;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
@@ -2803,6 +2820,9 @@ io.on('connection', function(socket) {
   socket.on('audio-stage-hand-raise', function(data) {
     var sRoomId = socket.data.stageRoomId || socket.data.roomId;
     if (!sRoomId) return;
+    var _ashrNow = Date.now();
+    if (_ashrNow - (socket.data._lastAudioHandRaise || 0) < 1000) return;
+    socket.data._lastAudioHandRaise = _ashrNow;
     var stage = stageRooms.get(sRoomId);
     if (!stage) return;
     var uId = String(socket.data.userId || socket.id);
