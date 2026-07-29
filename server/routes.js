@@ -55,7 +55,8 @@ var _pushSubscriptions = {};
 
 router.get('/aura/usage', requireAuth, function(req, res) {
   try {
-    var streamId = req.query.streamId || '';
+    var streamId = String(req.query.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     if (aura) {
       var usage = aura.getUsage(streamId);
       return res.json({
@@ -92,7 +93,8 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
   }
   try {
     var type = req.body.type || '';
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var mode = req.body.mode || 'hype';
     var data = req.body.data || {};
 
@@ -266,8 +268,10 @@ router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) 
 });
 
 router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var roomId = req.body.roomId || '';
+    var roomId = String(req.body.roomId || '');
+    if (!ROUTES_UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     var creatorId = req.user.id;
     var enabled = req.body.enabled || false;
     if (moderation) {
@@ -377,9 +381,10 @@ router.get('/creator/onboard/link', requireAuth, function(req, res) {
 
 router.post('/payments/tip', requireAuth, function(req, res) {
   try {
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var amountCents = req.body.amountCents || 0;
-    var note = req.body.note || '';
+    var note = String(req.body.note || '').slice(0, 200);
     var fromUserId = req.user.id;
     var creatorStripeAccountId = req.body.creatorStripeAccountId || '';
 
