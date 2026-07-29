@@ -8,7 +8,10 @@ const loyaltyService = require('../services/loyaltyService');
 
 const panelJoinThrottle    = new Map(); // userId -> last join timestamp
 const panelRequestThrottle = new Map(); // userId -> last request timestamp
-const panelReactThrottle   = new Map(); // userId -> last react/hand timestamp
+const panelReactThrottle   = new Map(); // userId -> last react timestamp
+const panelHandThrottle    = new Map(); // userId -> last hand-raise timestamp
+
+const PANEL_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function registerPanelHandlers(io, socket) {
   socket.on('panel:join', async ({ roomId, inviteCode }, ack) => {
@@ -43,11 +46,16 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
-  socket.on('panel:request_join', async ({ roomId }, ack) => {
+  socket.on('panel:request_join', async ({ roomId: _ignored }, ack) => {
     try {
       const userId = socket.data.userId;
+      const roomId = socket.data.roomId;
       if (!userId || userId.startsWith('anon')) {
         ack?.({ ok: false, error: 'auth required' });
+        return;
+      }
+      if (!roomId) {
+        ack?.({ ok: false, error: 'not in a room' });
         return;
       }
       var _prjNow = Date.now();
@@ -81,6 +89,10 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
+      if (!userId || !PANEL_UUID_RE.test(String(userId))) {
+        ack?.({ ok: false, error: 'invalid userId' });
+        return;
+      }
       const resolved = await panelService.resolveJoinRequest({ roomId, userId, approve });
       // Emit only to the requesting user, not the entire room
       const roomSockets = await io.in(roomId).fetchSockets();
@@ -112,7 +124,12 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
-      const slot = await panelService.setExpandedSlot({ roomId, slotIndex, expanded });
+      const _si = Math.floor(Number(slotIndex));
+      if (!Number.isFinite(_si) || _si < 0 || _si > 7) {
+        ack?.({ ok: false, error: 'invalid slotIndex' });
+        return;
+      }
+      const slot = await panelService.setExpandedSlot({ roomId, slotIndex: _si, expanded });
       io.to(roomId).emit('panel:layout_update', { roomId, slot });
       ack?.({ ok: true });
     } catch (err) {
@@ -140,6 +157,10 @@ function registerPanelHandlers(io, socket) {
         ack?.({ ok: false, error: 'forbidden' });
         return;
       }
+      if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) {
+        ack?.({ ok: false, error: 'invalid targetUserId' });
+        return;
+      }
       await panelService.releaseSlot({ roomId, userId: targetUserId });
       io.to(roomId).emit('panel:slot_released', { roomId, userId: targetUserId });
       const roomSockets = await io.in(roomId).fetchSockets();
@@ -154,6 +175,7 @@ function registerPanelHandlers(io, socket) {
   socket.on('panel:mute', async ({ roomId, targetUserId, isMuted }) => {
     try {
       if ((socket.data.role !== 'host' && socket.data.role !== 'cohost') || socket.data.roomId !== roomId) return;
+      if (!targetUserId || !PANEL_UUID_RE.test(String(targetUserId))) return;
       await panelService.setMuted({ roomId, userId: targetUserId, isMuted });
       io.to(roomId).emit('panel:slot_muted', { roomId, userId: targetUserId, isMuted });
     } catch (err) {
@@ -167,8 +189,8 @@ function registerPanelHandlers(io, socket) {
       var raised  = !!(payload && payload.raised);
       if (!roomId) return;
       var _prNow = Date.now();
-      if (_prNow - (panelReactThrottle.get(socket.data.userId) || 0) < 1000) return;
-      panelReactThrottle.set(socket.data.userId, _prNow);
+      if (_prNow - (panelHandThrottle.get(socket.data.userId) || 0) < 1000) return;
+      panelHandThrottle.set(socket.data.userId, _prNow);
       io.to(roomId).emit('panel:hand_update', { roomId: roomId, userId: socket.data.userId, raised: raised });
     } catch (err) {
       console.error('[panelHandlers] panel:raise_hand error:', err);
@@ -194,6 +216,7 @@ function registerPanelHandlers(io, socket) {
     panelJoinThrottle.delete(_tKey);
     panelRequestThrottle.delete(_tKey);
     panelReactThrottle.delete(_tKey);
+    panelHandThrottle.delete(_tKey);
   });
 }
 

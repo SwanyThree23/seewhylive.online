@@ -11,7 +11,10 @@ const HEARTBEAT_MS = 5000;
 const MAX_DRIFT_MS = 300;
 const BATTLE_WIN_POINTS = 100; // adjust to taste
 
-const activeTimers = new Map(); // battleId -> interval handle
+const activeTimers       = new Map(); // battleId -> interval handle
+const voteThrottle       = new Map(); // userId -> last vote timestamp (2s)
+const challengeThrottle  = new Map(); // userId -> last challenge timestamp (10s)
+const startThrottle      = new Map(); // userId -> last battle:start timestamp (5s)
 const BATTLE_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function validBattleId(id) {
@@ -43,7 +46,11 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:challenge', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!payload || !validBattleId(payload.defenderId)) { if (cb) cb({ ok: false, error: 'invalid defenderId' }); return; }
+    if (payload.defenderId === socket.data.userId) { if (cb) cb({ ok: false, error: 'cannot challenge yourself' }); return; }
     if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
+    const _ctNow = Date.now();
+    if (_ctNow - (challengeThrottle.get(socket.data.userId) || 0) < 10000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
+    challengeThrottle.set(socket.data.userId, _ctNow);
     try {
       const rawDur = Math.floor(Number(payload.durationMinutes) || 5);
       const battle = await battleService.createChallenge({
@@ -63,6 +70,7 @@ function registerBattleHandlers(io, socket) {
 
   socket.on('battle:accept', async (payload, cb) => {
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
+    if (payload.roomId && !BATTLE_UUID_RE.test(payload.roomId)) { if (cb) cb({ ok: false, error: 'invalid roomId' }); return; }
     try {
       const existing = await battleService.getBattle(payload.battleId);
       if (!existing || existing.defender_id !== socket.data.userId) {
@@ -98,6 +106,9 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:start', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
+    const _stNow = Date.now();
+    if (_stNow - (startThrottle.get(socket.data.userId) || 0) < 5000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
+    startThrottle.set(socket.data.userId, _stNow);
     try {
       const existing = await battleService.getBattle(payload.battleId);
       if (!existing || (existing.challenger_id !== socket.data.userId && existing.defender_id !== socket.data.userId)) {
@@ -118,6 +129,9 @@ function registerBattleHandlers(io, socket) {
   socket.on('battle:vote', async (payload, cb) => {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) { if (cb) cb({ ok: false, error: 'auth required' }); return; }
     if (!validBattleId(payload && payload.battleId)) { if (cb) cb({ ok: false, error: 'invalid battleId' }); return; }
+    const _vtNow = Date.now();
+    if (_vtNow - (voteThrottle.get(socket.data.userId) || 0) < 2000) { if (cb) cb({ ok: false, error: 'too many requests' }); return; }
+    voteThrottle.set(socket.data.userId, _vtNow);
     try {
       const cents = Math.floor(payload.giftValueCents);
       if (!Number.isFinite(cents) || cents <= 0) {
@@ -148,6 +162,14 @@ function registerBattleHandlers(io, socket) {
       if (cb) cb({ ok: true, battle });
     } catch (err) {
       if (cb) cb({ ok: false, error: 'Battle error' });
+    }
+  });
+
+  socket.on('disconnect', () => {
+    if (socket.data.userId) {
+      voteThrottle.delete(socket.data.userId);
+      challengeThrottle.delete(socket.data.userId);
+      startThrottle.delete(socket.data.userId);
     }
   });
 }

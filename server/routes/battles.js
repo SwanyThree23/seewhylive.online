@@ -19,6 +19,7 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const { defenderId, roomId } = req.body;
     if (!UUID_RE.test(defenderId)) return res.status(400).json({ error: 'invalid defenderId' });
+    if (defenderId === req.user.id) return res.status(400).json({ error: 'cannot challenge yourself' });
     if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     const challengerName = String(req.body.challengerName || '').slice(0, 80);
     const defenderName   = String(req.body.defenderName  || '').slice(0, 80);
@@ -44,6 +45,7 @@ router.post('/:id/accept', requireAuth, validateId, async (req, res) => {
     if (!existing) return res.status(404).json({ error: 'battle not found' });
     if (existing.defender_id !== req.user.id) return res.status(403).json({ error: 'forbidden' });
     const { roomId } = req.body;
+    if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     const battle = await battleService.acceptChallenge(req.params.id, roomId);
     if (!battle) return res.status(404).json({ error: 'battle not found or not pending' });
     res.json(battle);

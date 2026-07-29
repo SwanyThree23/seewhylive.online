@@ -6,10 +6,22 @@ var uuidv4 = require('uuid').v4;
 var Database = require('better-sqlite3');
 var jwt = require('jsonwebtoken');
 var requireAuth = require('./middleware/auth');
+var { rateLimit } = require('express-rate-limit');
 
 // ─── Revenue split constants (immutable) ──────────────────────────────────────
 var CREATOR  = 0.90;
 var PLATFORM = 0.10;
+
+var ROUTES_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+var moderationRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many requests' },
+});
 
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
@@ -43,7 +55,8 @@ var _pushSubscriptions = {};
 
 router.get('/aura/usage', requireAuth, function(req, res) {
   try {
-    var streamId = req.query.streamId || '';
+    var streamId = String(req.query.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     if (aura) {
       var usage = aura.getUsage(streamId);
       return res.json({
@@ -80,7 +93,8 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
   }
   try {
     var type = req.body.type || '';
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var mode = req.body.mode || 'hype';
     var data = req.body.data || {};
 
@@ -254,8 +268,10 @@ router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) 
 });
 
 router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var roomId = req.body.roomId || '';
+    var roomId = String(req.body.roomId || '');
+    if (!ROUTES_UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
     var creatorId = req.user.id;
     var enabled = req.body.enabled || false;
     if (moderation) {
@@ -267,12 +283,14 @@ router.post('/moderation/subscriber-only', requireAuth, function(req, res) {
   }
 });
 
-router.post('/moderation/ban', requireAuth, function(req, res) {
+router.post('/moderation/ban', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
     var creatorId = req.user.id;
-    var bannedUserId = req.body.bannedUserId || '';
-    var bannedUsername = req.body.bannedUsername || '';
-    var reason = req.body.reason || '';
+    var bannedUserId = String(req.body.bannedUserId || '');
+    if (!ROUTES_UUID_RE.test(bannedUserId)) return res.status(400).json({ error: 'invalid bannedUserId' });
+    var bannedUsername = String(req.body.bannedUsername || '').slice(0, 80);
+    var reason = String(req.body.reason || '').slice(0, 200);
     if (moderation) {
       var ban = moderation.banUser(creatorId, bannedUserId, bannedUsername, reason);
       return res.json({ success: true, ban: ban });
@@ -283,7 +301,9 @@ router.post('/moderation/ban', requireAuth, function(req, res) {
   }
 });
 
-router.delete('/moderation/ban/:userId', requireAuth, function(req, res) {
+router.delete('/moderation/ban/:userId', requireAuth, moderationRateLimit, function(req, res) {
+  if (req.user.role !== 'host' && req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  if (!ROUTES_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
     var creatorId = req.user.id;
     if (moderation) {
@@ -307,11 +327,12 @@ router.get('/moderation/bans', requireAuth, function(req, res) {
   }
 });
 
-router.post('/moderation/shadow-ban', requireAuth, function(req, res) {
+router.post('/moderation/shadow-ban', requireAuth, moderationRateLimit, function(req, res) {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   try {
-    var userId = req.body.userId || '';
-    var reason = req.body.reason || '';
+    var userId = String(req.body.userId || '');
+    if (!ROUTES_UUID_RE.test(userId)) return res.status(400).json({ error: 'invalid userId' });
+    var reason = String(req.body.reason || '').slice(0, 200);
     var bannedBy = req.user.id;
     if (moderation) {
       moderation.shadowBanUser(userId, reason, bannedBy);
@@ -360,9 +381,10 @@ router.get('/creator/onboard/link', requireAuth, function(req, res) {
 
 router.post('/payments/tip', requireAuth, function(req, res) {
   try {
-    var streamId = req.body.streamId || '';
+    var streamId = String(req.body.streamId || '');
+    if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
     var amountCents = req.body.amountCents || 0;
-    var note = req.body.note || '';
+    var note = String(req.body.note || '').slice(0, 200);
     var fromUserId = req.user.id;
     var creatorStripeAccountId = req.body.creatorStripeAccountId || '';
 
@@ -442,8 +464,10 @@ router.post('/payments/payout', requireAuth, function(req, res) {
 router.post('/payments/subscribe', requireAuth, function(req, res) {
   try {
     var subscriberId = req.user.id;
-    var creatorId = req.body.creatorId || 'default';
-    var tier = req.body.tier || 'fan';
+    var creatorId = String(req.body.creatorId || '');
+    if (!ROUTES_UUID_RE.test(creatorId)) return res.status(400).json({ error: 'invalid creatorId' });
+    var VALID_TIERS = ['fan', 'supporter', 'ride_or_die'];
+    var tier = VALID_TIERS.includes(String(req.body.tier || '')) ? String(req.body.tier) : 'fan';
     var amountCents = req.body.amountCents || 0;
     var id = uuidv4();
 
@@ -686,7 +710,7 @@ router.post('/n8n/test', requireAuth, async function(req, res) {
     if (!isHttps) {
       return res.status(400).json({ success: false, error: 'webhookUrl must use https://' });
     }
-    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+    var PRIVATE_HOST = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
     if (!parsed.hostname || PRIVATE_HOST.test(parsed.hostname)) {
       return res.status(400).json({ success: false, error: 'webhookUrl hostname not allowed' });
     }
@@ -782,8 +806,8 @@ router.post('/stream-end', requireAuth, async function(req, res) {
 router.post('/vault/save-key', requireAuth, function(req, res) {
   if (!vault) return res.status(501).json({ ok: false, error: 'Vault not available on this server' });
   try {
-    var destId   = req.body.dest_id;
-    var plainKey = req.body.plain_key;
+    var destId   = String(req.body.dest_id  || '').slice(0, 200);
+    var plainKey = String(req.body.plain_key || '').slice(0, 2000);
     if (!destId || !plainKey) {
       return res.status(400).json({ ok: false, error: 'dest_id, plain_key are required' });
     }
@@ -908,7 +932,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
       return res.status(400).json({ ok: false, error: 'invalid stream_id' });
     }
-    var guestId  = b.guest_id  || streamId;
+    var guestId  = req.user.id;
     var rtmpHost  = process.env.RTMP_INGEST_HOST || 'localhost';
     var rtmpPort  = process.env.RTMP_INGEST_PORT || '1935';
     var ingestUrl = b.ingest_url || ('rtmp://' + rtmpHost + ':' + rtmpPort + '/live/' + (b.room_id || b.stream_key || 'stream'));

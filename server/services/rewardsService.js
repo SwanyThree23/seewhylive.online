@@ -94,7 +94,14 @@ async function completeChallenge(userId, challengeId) {
     throw insErr;
   }
 
-  return awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
+  try {
+    return await awardPoints(userId, challenge.points_reward, 'challenge_complete', challengeId);
+  } catch (awardErr) {
+    await supabase.from('challenge_completions')
+      .delete().eq('challenge_id', challengeId).eq('user_id', userId)
+      .catch(function() {});
+    throw awardErr;
+  }
 }
 
 module.exports = {
