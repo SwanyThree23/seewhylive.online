@@ -7,6 +7,7 @@ const panelRoomRoutes = require('./routes/panelRooms');
 const challengeRoutes = require('./routes/challenges');
 const vodRoutes = require('./routes/vod');
 const leaderboardRoutes = require('./routes/leaderboard');
+const loginRoutes = require('./routes/login');
 const { registerBattleHandlers } = require('./socket/battleHandlers');
 const { registerPanelHandlers } = require('./socket/panelHandlers');
 const requireAuth = require('./middleware/auth');
@@ -327,6 +328,7 @@ app.use('/api/rooms', panelRoomRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/vod', vodRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api', loginRoutes);
 app.use('/', publicPreviewRoutes);
 
 var n8nRouter = require('./n8nWebhooks');
