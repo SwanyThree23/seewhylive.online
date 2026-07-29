@@ -57,3 +57,5 @@ data/*.db-wal
 base44/.app.jsonc
 repo-latest/
 frontend/dist/
+*.save
+*.local-backup
