@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
 const battleRoutes = require('./routes/battles');
 const rewardsRoutes = require('./routes/rewards');
 const publicPreviewRoutes = require('./routes/publicPreview');
@@ -18,7 +19,7 @@ const requireAuth = require('./middleware/auth');
  * Express + Socket.io + mediasoup SFU + Stripe + SwanyBot
  */
 
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
 
 var express       = require('express');
 var { createServer } = require('http');

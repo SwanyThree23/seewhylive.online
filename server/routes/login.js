@@ -6,6 +6,7 @@ const router = express.Router();
 
 // Anon-key client — this is the client used to authenticate end users,
 // separate from the service-role client used elsewhere for admin ops.
+console.error("[DEBUG login.js] URL=" + process.env.SUPABASE_URL + " ANON_KEY_LEN=" + (process.env.SUPABASE_ANON_KEY ? process.env.SUPABASE_ANON_KEY.length : "MISSING") + " ANON_KEY_START=" + (process.env.SUPABASE_ANON_KEY ? process.env.SUPABASE_ANON_KEY.slice(0,15) : ""));
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY,
