@@ -905,7 +905,19 @@ app.get('/api/keys/meta/:guestId', requireAuth, function(req, res) {
 });
 
 // ─── AI Chat proxy ───────────────────────────────────────────────────────
+// Per-user throttle maps for the three AI proxy endpoints.
+// Keys are user IDs; values are the timestamp of the last allowed call.
+var _aiChatThrottle       = new Map(); // 5 s cooldown
+var _translateThrottle    = new Map(); // 1 s cooldown
+var _summarizeThrottle    = new Map(); // 10 s cooldown
+
 app.post('/api/ai/chat', requireAuth, function(req, res) {
+  var _acNow = Date.now();
+  var _acKey = req.user.id;
+  if (_acNow - (_aiChatThrottle.get(_acKey) || 0) < 5000) {
+    return res.status(429).json({ error: 'too many requests' });
+  }
+  _aiChatThrottle.set(_acKey, _acNow);
   var body    = req.body;
   var message = typeof body.message === 'string' ? body.message.slice(0, 1000) : '';
   if (!message) { res.status(400).json({ error: 'message required' }); return; }
@@ -928,6 +940,12 @@ app.post('/api/ai/chat', requireAuth, function(req, res) {
 var VALID_TRANSLATE_LANGS = ['EN','ES','PT','FR','DE','JA','ZH','KO','AR','RU','HI','IT','NL','PL','TR','VI'];
 
 app.post('/api/translate', requireAuth, function(req, res) {
+  var _trNow = Date.now();
+  var _trKey = req.user.id;
+  if (_trNow - (_translateThrottle.get(_trKey) || 0) < 1000) {
+    return res.status(429).json({ error: 'too many requests' });
+  }
+  _translateThrottle.set(_trKey, _trNow);
   var body       = req.body;
   var text       = typeof body.text === 'string' ? body.text.slice(0, 500) : '';
   var targetLang = typeof body.targetLang === 'string' ? body.targetLang.slice(0, 5).toUpperCase() : 'EN';
@@ -949,6 +967,12 @@ app.post('/api/translate', requireAuth, function(req, res) {
 // ─── Live Streams — active ingest + fanout status ────────────────────────
 // ─── AI Chat Summary ─────────────────────────────────────────────────────
 app.post('/api/summarize-chat', requireAuth, function(req, res) {
+  var _scNow = Date.now();
+  var _scKey = req.user.id;
+  if (_scNow - (_summarizeThrottle.get(_scKey) || 0) < 10000) {
+    return res.status(429).json({ error: 'too many requests' });
+  }
+  _summarizeThrottle.set(_scKey, _scNow);
   var messages = typeof req.body.messages === 'string' ? req.body.messages.slice(0, 4000) : '';
   if (!messages) { res.json({ summary: 'No chat to summarize.' }); return; }
   try {
@@ -1130,6 +1154,11 @@ io.use(function(socket, next) {
     return next();
   }
   if (!process.env.JWT_SECRET) {
+    // Mirror the HTTP requireAuth behaviour: hard-fail in production so a
+    // mis-deploy that drops JWT_SECRET does not silently open all socket events.
+    if (process.env.NODE_ENV === 'production') {
+      return next(new Error('server misconfigured'));
+    }
     socket.data.role = 'viewer';
     socket.data.userId = 'anon-' + uuidv4();
     return next();
