@@ -71,7 +71,12 @@ function _esc(str) {
 }
 
 function _safeUrl(url) {
-  return typeof url === 'string' && url.startsWith('https://') ? _esc(url) : '#';
+  if (typeof url !== 'string') return '#';
+  try {
+    var parsed = new URL(url);
+    if (parsed.protocol !== 'https:') return '#';
+    return _esc(url);
+  } catch (_) { return '#'; }
 }
 
 function sendWelcomeEmail(toEmail, displayName) {

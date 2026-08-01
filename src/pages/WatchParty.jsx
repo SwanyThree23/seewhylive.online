@@ -1656,6 +1656,7 @@ export default function WatchPartyPage() {
         { key: '?',     label: 'Show keyboard shortcuts' },
       ]} />
 
+
       {/* Spotlight overlay — double-tap any octagon in the participant strip */}
       <AnimatePresence>
         {spotlightMember && (

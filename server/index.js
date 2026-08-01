@@ -1623,6 +1623,16 @@ io.on('connection', function(socket) {
     if (_cmNow - (chatMsgThrottle.get(socket.id) || 0) < 500) return;
     chatMsgThrottle.set(socket.id, _cmNow);
 
+    // Detect external links — flag so frontends can display a safety indicator
+    var _EXT_URL = /https?:\/\/([^\s/]+)/gi;
+    var _ownHosts = /^(www\.)?seewhylive\.online$/i;
+    var _hasExternalLinks = false;
+    var _urlMatch;
+    _EXT_URL.lastIndex = 0;
+    while ((_urlMatch = _EXT_URL.exec(message)) !== null) {
+      if (!_ownHosts.test(_urlMatch[1])) { _hasExternalLinks = true; break; }
+    }
+
     // Spam check
     if (swanybot.isSocketMuted(socket.id)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
@@ -1651,12 +1661,13 @@ io.on('connection', function(socket) {
         }
 
         io.to(roomId).emit('chat-message', {
-          id:         msgId,
-          username:   username,
-          message:    message,
-          translated: result.translated,
-          lang:       result.detectedLang,
-          ts:         ts
+          id:              msgId,
+          username:        username,
+          message:         message,
+          translated:      result.translated,
+          lang:            result.detectedLang,
+          hasExternalLinks: _hasExternalLinks,
+          ts:              ts
         });
       })
       .catch(function(err) {
@@ -1665,12 +1676,13 @@ io.on('connection', function(socket) {
         var msgId = uuidv4();
         var ts    = Math.floor(Date.now() / 1000);
         io.to(roomId).emit('chat-message', {
-          id:         msgId,
-          username:   username,
-          message:    message,
-          translated: message,
-          lang:       'UNK',
-          ts:         ts
+          id:              msgId,
+          username:        username,
+          message:         message,
+          translated:      message,
+          lang:            'UNK',
+          hasExternalLinks: _hasExternalLinks,
+          ts:              ts
         });
       });
   });
@@ -1961,20 +1973,31 @@ io.on('connection', function(socket) {
     if (!data.videoId && !data.url) return;
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var safeUrl = '';
+    var urlDomain = '';
     if (data.url) {
-      if (!/^https?:\/\//i.test(String(data.url))) return;
+      if (!/^https:\/\//i.test(String(data.url))) return;
       safeUrl = String(data.url).slice(0, 500);
+      try {
+        urlDomain = new URL(safeUrl).hostname.replace(/^www\./, '');
+      } catch (_) { urlDomain = ''; }
+    }
+    // Validate YouTube video IDs (11 alphanumeric/dash/underscore chars)
+    var _wpVideoId = null;
+    if (data.videoId) {
+      var _rawVid = String(data.videoId).slice(0, 200);
+      _wpVideoId = /^[A-Za-z0-9_-]{11}$/.test(_rawVid) ? _rawVid : null;
+      if (!_wpVideoId && !safeUrl) return;
     }
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = { playing: false, position: 0, ts: Date.now() };
     var WATCH_PARTY_TYPES = ['youtube', 'twitch', 'direct'];
     var rawType = data.type || (data.videoId ? 'youtube' : 'direct');
     var type = WATCH_PARTY_TYPES.includes(String(rawType)) ? String(rawType) : 'direct';
-    var _wpVideoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
-    room.watchParty.videoId = _wpVideoId;
-    room.watchParty.url  = safeUrl;
-    room.watchParty.type = type;
-    io.to(roomId).emit('watch-party-url', { videoId: _wpVideoId, url: safeUrl, type: type });
+    room.watchParty.videoId   = _wpVideoId;
+    room.watchParty.url       = safeUrl;
+    room.watchParty.type      = type;
+    room.watchParty.urlDomain = urlDomain;
+    io.to(roomId).emit('watch-party-url', { videoId: _wpVideoId, url: safeUrl, type: type, urlDomain: urlDomain });
   });
 
   socket.on('watch-party-play', function(data) {
