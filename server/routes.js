@@ -151,7 +151,7 @@ router.post('/aura/trigger', requireAuth, function(req, res) {
 
 router.get('/search', function(req, res) {
   try {
-    var q = req.query.q || '';
+    var q = String(req.query.q || '').slice(0, 200);
     var type = req.query.type || 'all';
     var limit = Math.min(parseInt(req.query.limit || '20', 10) || 20, 100);
     if (search) {
@@ -259,7 +259,7 @@ router.delete('/moderation/word-filters/:word', requireAuth, function(req, res) 
   try {
     var creatorId = req.user.id;
     if (moderation) {
-      moderation.removeWordFilter(creatorId, req.params.word);
+      moderation.removeWordFilter(creatorId, String(req.params.word || '').slice(0, 200));
     }
     return res.json({ success: true });
   } catch (err) {
@@ -358,7 +358,7 @@ router.get('/creator/onboard/status', requireAuth, function(req, res) {
 
 router.get('/creator/onboard/link', requireAuth, function(req, res) {
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  var email = req.query.email ? String(req.query.email) : '';
+  var email = req.query.email ? String(req.query.email).slice(0, 254) : '';
   if (!email || !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'valid email query param is required' });
   }
@@ -507,7 +507,7 @@ router.get('/users/me', requireAuth, function(req, res) {
 
 router.get('/users/:username', function(req, res) {
   try {
-    var username = req.params.username;
+    var username = String(req.params.username || '').slice(0, 80);
     var profile = _userProfiles[username] || null;
     if (profile) {
       return res.json(profile);
