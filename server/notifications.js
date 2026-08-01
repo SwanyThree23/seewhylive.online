@@ -184,6 +184,13 @@ function sendPushNotification(subscription, title, body, data) {
       resolve(null);
       return;
     }
+    // Defence-in-depth: reject any non-https endpoint before dispatching
+    var endpoint = subscription && String(subscription.endpoint || '');
+    if (!endpoint || !/^https:\/\//.test(endpoint)) {
+      console.warn('[notifications] Push skipped — invalid endpoint: ' + endpoint);
+      resolve(null);
+      return;
+    }
     var payload = JSON.stringify({ title: title, body: body, data: data || {} });
     try {
       webPush.sendNotification(subscription, payload).then(function(result) {

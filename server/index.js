@@ -3424,7 +3424,9 @@ io.on('connection', function(socket) {
     sendGiftThrottle.delete(_tKey);
     qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey); audioChunkThrottle.delete(_tKey);
-    collabThrottle.delete(_tKey); superChatThrottle.delete(_tKey); subscribeThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey);
+    // superChatThrottle and subscribeThrottle are intentionally NOT cleared on disconnect:
+    // clearing them allows rapid-reconnect bypass of the per-user cooldown windows (2s / 60s).
     merchOrderThrottle.delete(_tKey); updateUsernameThrottle.delete(_tKey);
     handRaiseThrottle.delete(_tKey); speakingThrottle.delete(_tKey);
     chatMsgThrottle.delete(socket.id); pollVoteThrottle.delete(socket.id);

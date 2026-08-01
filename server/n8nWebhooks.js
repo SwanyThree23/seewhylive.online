@@ -50,7 +50,8 @@ var PLATFORM_FEE  = 0.10;
 n8nRouter.post('/gem-transaction', function(req, res) {
   var d = req.body;
   var rawAmount = Number(d.amount);
-  var safeAmount = (Number.isFinite(rawAmount) && rawAmount >= 0 && rawAmount <= 50000) ? rawAmount : 0;
+  var safeAmount = (Number.isFinite(rawAmount) && rawAmount > 0 && rawAmount <= 50000) ? rawAmount : 0;
+  if (safeAmount === 0) { res.json({ ok: true, skipped: true }); return; }
   var usd = Math.floor(safeAmount * 10) / 100;
   var creator = Math.floor(usd * CREATOR_SPLIT * 100) / 100;
   var platform = Math.floor(usd * PLATFORM_FEE * 100) / 100;
