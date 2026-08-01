@@ -23,6 +23,24 @@ var moderationRateLimit = rateLimit({
   message: { error: 'too many requests' },
 });
 
+var tipRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many tip requests' },
+});
+
+var ppvCreateRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  keyGenerator: function(req) { return req.user ? req.user.id : req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'too many PPV token requests' },
+});
+
 // ─── Optional module loading (graceful fallback) ──────────────────────────────
 var analytics = null;
 try { analytics = require('./analytics'); } catch (e) { console.warn('[routes] analytics module unavailable'); }
@@ -384,7 +402,7 @@ router.get('/creator/onboard/link', requireAuth, function(req, res) {
   }
 });
 
-router.post('/payments/tip', requireAuth, function(req, res) {
+router.post('/payments/tip', requireAuth, tipRateLimit, function(req, res) {
   try {
     var streamId = String(req.body.streamId || '');
     if (!ROUTES_UUID_RE.test(streamId)) return res.status(400).json({ success: false, error: 'invalid streamId' });
@@ -404,7 +422,13 @@ router.post('/payments/tip', requireAuth, function(req, res) {
     var creatorCents = Math.floor(amtCents * CREATOR);
     var platformCents = amtCents - creatorCents;
 
-    if (stripe && creatorStripeAccountId) {
+    // A Stripe account is required — without one there is no actual charge,
+    // so we must not record earnings (prevents fake analytics injection).
+    if (!creatorStripeAccountId) {
+      return res.status(400).json({ success: false, error: 'creatorStripeAccountId is required to process a tip' });
+    }
+
+    if (stripe) {
       stripe.createGiftCharge(fromUserId, streamId, amtCents, creatorStripeAccountId)
         .then(function(result) {
           if (analytics) {
@@ -426,19 +450,7 @@ router.post('/payments/tip', requireAuth, function(req, res) {
       return;
     }
 
-    if (analytics) {
-      try {
-        analytics.recordEarning(streamId, fromUserId, 'tip', amtCents, creatorCents, platformCents, note);
-      } catch (e) { /* ignore analytics error */ }
-    }
-
-    return res.json({
-      success: true,
-      clientSecret: null,
-      amountCents: amtCents,
-      creatorCents: creatorCents,
-      platformCents: platformCents
-    });
+    return res.status(503).json({ success: false, error: 'Payment processing unavailable' });
   } catch (err) {
     return res.json({ success: false, error: 'Internal server error' });
   }
@@ -651,7 +663,7 @@ setInterval(function() {
   });
 }, 30 * 60 * 1000);
 
-router.post('/ppv/create', requireAuth, async function(req, res) {
+router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, res) {
   try {
     var streamId = req.body.streamId || '';
     if (!streamId || !/^[0-9a-f-]{36}$/i.test(streamId)) {
@@ -668,6 +680,9 @@ router.post('/ppv/create', requireAuth, async function(req, res) {
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
       return res.status(403).json({ success: false, error: 'forbidden' });
+    }
+    if (Object.keys(_ppvTokens).length >= 1000) {
+      return res.status(429).json({ success: false, error: 'Too many active PPV tokens — try again later' });
     }
     var token = require('crypto').randomBytes(16).toString('hex');
     var expiresAt = Date.now() + (24 * 60 * 60 * 1000);
@@ -971,6 +986,16 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       return res.status(400).json({ ok: false, error: 'maximum 10 destinations per fanout' });
     }
 
+    // Per-user fanout cap checked BEFORE claiming the stream-ID entry.
+    // Checking after the claim leaves orphaned entries that permanently block the user
+    // from starting any new fanout (concurrent requests each claim a slot then all fail).
+    var userFanoutCount = Object.keys(activeFanouts).filter(function(id) {
+      return activeFanouts[id] && activeFanouts[id].ownerId === req.user.id;
+    }).length;
+    if (userFanoutCount >= 5) {
+      return res.status(429).json({ ok: false, error: 'Maximum 5 active fanout streams per user' });
+    }
+
     // Ownership check and atomic reservation (JS event loop: no await here, so race-free)
     if (activeFanouts[streamId]) {
       if (activeFanouts[streamId].ownerId && activeFanouts[streamId].ownerId !== req.user.id && req.user.role !== 'admin') {
@@ -981,7 +1006,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
         delete activeFanouts[streamId];
       }
     }
-    // Claim this stream_id before any async operations to prevent first-come-first-served bypass
+    // Claim this stream_id before async dest-resolution to prevent first-come-first-served bypass
     if (!activeFanouts[streamId]) {
       activeFanouts[streamId] = { ownerId: req.user.id };
     }
@@ -1013,15 +1038,9 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
     }
 
     if (resolvedDests.length === 0) {
+      // Clean up the claim slot so the user's cap count is not inflated
+      if (activeFanouts[streamId] && !activeFanouts[streamId].process) delete activeFanouts[streamId];
       return res.json({ ok: false, error: 'No enabled destinations with resolvable keys' });
-    }
-
-    // Per-user fanout cap — prevent FFmpeg process flood
-    var userFanoutCount = Object.keys(activeFanouts).filter(function(id) {
-      return activeFanouts[id] && activeFanouts[id].ownerId === req.user.id;
-    }).length;
-    if (userFanoutCount >= 5) {
-      return res.status(429).json({ ok: false, error: 'Maximum 5 active fanout streams per user' });
     }
 
     spawnFanout(streamId, ingestUrl, resolvedDests, 0);
