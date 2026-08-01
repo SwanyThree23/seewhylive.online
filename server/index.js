@@ -3359,7 +3359,7 @@ io.on('connection', function(socket) {
     var newPoll = {
       id: uuidv4(),
       question: String(data.question || '').slice(0, 200),
-      options: (Array.isArray(data.options) ? data.options : []).map(function(o) { return String(o).slice(0, 80); }),
+      options: (Array.isArray(data.options) ? data.options : []).slice(0, 8).map(function(o) { return String(o).slice(0, 80); }),
       votes: {},
       totalVotes: 0,
       endsAt: Date.now() + duration * 1000
@@ -3391,11 +3391,12 @@ io.on('connection', function(socket) {
     var voteRoomId = socket.data.roomId;
     if (!voteRoomId) return;
     var _pv2Now = Date.now();
-    if (_pv2Now - (pollVoteThrottle.get(socket.id) || 0) < 500) return;
-    pollVoteThrottle.set(socket.id, _pv2Now);
+    var _pv2Key = socket.data.userId || socket.id;
+    if (_pv2Now - (pollVoteThrottle.get(_pv2Key) || 0) < 500) return;
+    pollVoteThrottle.set(_pv2Key, _pv2Now);
     var pollToVote = activePolls.get(voteRoomId);
     if (!pollToVote || pollToVote.id !== data.pollId) return;
-    var voteKey = socket.id;
+    var voteKey = _pv2Key;
     if (pollToVote.votes[voteKey] !== undefined) return;
     var option = String(data.option || '');
     if (!pollToVote.options || !pollToVote.options.includes(option)) return;
@@ -3458,15 +3459,19 @@ io.on('connection', function(socket) {
     var _tKey = socket.data.userId || socket.id;
     viewerReactThrottle.delete(_tKey); viewerReactThrottle.delete(socket.id);
     sendGiftThrottle.delete(_tKey);
-    qaQuestionThrottle.delete(socket.id);
+    qaQuestionThrottle.delete(_tKey); qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey); audioChunkThrottle.delete(_tKey);
     collabThrottle.delete(_tKey);
     // superChatThrottle and subscribeThrottle are intentionally NOT cleared on disconnect:
     // clearing them allows rapid-reconnect bypass of the per-user cooldown windows (2s / 60s).
     merchOrderThrottle.delete(_tKey); updateUsernameThrottle.delete(_tKey);
     handRaiseThrottle.delete(_tKey); speakingThrottle.delete(_tKey);
-    chatMsgThrottle.delete(socket.id); pollVoteThrottle.delete(socket.id);
-    vsVoteThrottle.delete(socket.id); qaUpvoteThrottle.delete(socket.id);
+    // These throttles were re-keyed to userId in phase-110; delete both the userId
+    // key (normal case) and the socket.id key (anon / pre-upgrade sockets).
+    chatMsgThrottle.delete(_tKey);    chatMsgThrottle.delete(socket.id);
+    pollVoteThrottle.delete(_tKey);   pollVoteThrottle.delete(socket.id);
+    vsVoteThrottle.delete(_tKey);     vsVoteThrottle.delete(socket.id);
+    qaUpvoteThrottle.delete(_tKey);   qaUpvoteThrottle.delete(socket.id);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
