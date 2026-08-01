@@ -1962,7 +1962,7 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var safeUrl = '';
     if (data.url) {
-      if (!/^https?:\/\//i.test(String(data.url))) return;
+      if (!/^https:\/\//i.test(String(data.url))) return;
       safeUrl = String(data.url).slice(0, 500);
     }
     var room = getRoom(roomId);

@@ -781,14 +781,14 @@ router.post('/stream-end', requireAuth, async function(req, res) {
     if (!stream_id || !/^[0-9a-f-]{36}$/i.test(stream_id)) {
       return res.status(400).json({ ok: false, error: 'Invalid stream_id' });
     }
-    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id + '&select=host_user_id&limit=1', {
+    var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id) + '&select=host_user_id&limit=1', {
       headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
     });
     var ownerData = await ownerResp.json();
     if (!Array.isArray(ownerData) || !ownerData[0] || ownerData[0].host_user_id !== req.user.id) {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }
-    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + stream_id, {
+    await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY },
       body: JSON.stringify({ status: 'ended', ended_at: new Date().toISOString() })
@@ -942,7 +942,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       if (!/^rtmps?:$/i.test(parsedIngest.protocol)) {
         return res.status(400).json({ ok: false, error: 'ingest_url must use rtmp:// or rtmps://' });
       }
-      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      var PRIV = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       if (!parsedIngest.hostname || PRIV.test(parsedIngest.hostname)) {
         return res.status(400).json({ ok: false, error: 'ingest_url hostname not allowed' });
       }
@@ -990,7 +990,7 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
       var destParsed;
       try { destParsed = new URL(d.url); } catch (_) { continue; }
       if (!/^rtmps?:$/i.test(destParsed.protocol)) continue;
-      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      var PRIV2 = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       if (!destParsed.hostname || PRIV2.test(destParsed.hostname)) continue;
       try {
         var _destDns = await require('dns').promises.lookup(destParsed.hostname);
