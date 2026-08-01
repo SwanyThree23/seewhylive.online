@@ -1,22 +1,25 @@
 'use strict';
-var express = require('express');
-var router  = express.Router();
-var https   = require('https');
+var express     = require('express');
+var router      = express.Router();
+var https       = require('https');
+var requireAuth = require('./middleware/auth');
 
 var TTS_MODEL = process.env.TTS_MODEL || 'tts-1';
 var TTS_VOICE = process.env.TTS_VOICE || 'nova';
+
+var ALLOWED_VOICES = ['alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sage', 'shimmer'];
 
 router.get('/health', function(req, res) {
   res.json({ ok: true, model: TTS_MODEL, voice: TTS_VOICE });
 });
 
-router.post('/', function(req, res) {
+router.post('/', requireAuth, function(req, res) {
   var apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) { return res.status(503).json({ error: 'OPENAI_API_KEY not set' }); }
 
   var text  = (req.body && req.body.text)  || '';
-  var voice = (req.body && req.body.voice) || TTS_VOICE;
-  var speed = (req.body && req.body.speed) || 1;
+  var voice = ALLOWED_VOICES.includes(req.body && req.body.voice) ? req.body.voice : TTS_VOICE;
+  var speed = Math.min(Math.max(parseFloat((req.body && req.body.speed) || 1) || 1, 0.25), 4.0);
 
   if (!text.trim()) { return res.status(400).json({ error: 'text required' }); }
 

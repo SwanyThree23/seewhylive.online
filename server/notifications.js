@@ -62,12 +62,25 @@ function _formatDollars(amountCents) {
   return '$' + str;
 }
 
+function _esc(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function _safeUrl(url) {
+  return typeof url === 'string' && url.startsWith('https://') ? _esc(url) : '#';
+}
+
 function sendWelcomeEmail(toEmail, displayName) {
-  var subject = 'Welcome to SeeWhy LIVE, ' + displayName + '!';
+  var safeName = _esc(displayName);
+  var subject = 'Welcome to SeeWhy LIVE, ' + safeName + '!';
   var html =
     '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">' +
     '<h1 style="color:#7c3aed;">Welcome to SeeWhy LIVE!</h1>' +
-    '<p>Hey ' + displayName + ',</p>' +
+    '<p>Hey ' + safeName + ',</p>' +
     '<p>We\'re thrilled to have you join the SeeWhy LIVE community. ' +
     'Start exploring live streams, connect with creators, and share your own moments.</p>' +
     '<p>Happy watching (and streaming)!</p>' +
@@ -77,26 +90,31 @@ function sendWelcomeEmail(toEmail, displayName) {
 }
 
 function sendStreamStartEmail(toEmail, viewerName, creatorName, streamTitle, streamUrl) {
-  var subject = '🔴 ' + creatorName + ' is LIVE now!';
+  var safeViewer  = _esc(viewerName);
+  var safeCreator = _esc(creatorName);
+  var safeTitle   = _esc(streamTitle);
+  var safeUrl     = _safeUrl(streamUrl);
+  var subject = '🔴 ' + safeCreator + ' is LIVE now!';
   var html =
     '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">' +
-    '<h1 style="color:#ef4444;">🔴 ' + creatorName + ' just went LIVE!</h1>' +
-    '<p>Hey ' + viewerName + ',</p>' +
-    '<p><strong>' + creatorName + '</strong> is streaming now: <em>' + streamTitle + '</em></p>' +
-    '<p><a href="' + streamUrl + '" style="background:#7c3aed;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">Watch Now</a></p>' +
+    '<h1 style="color:#ef4444;">🔴 ' + safeCreator + ' just went LIVE!</h1>' +
+    '<p>Hey ' + safeViewer + ',</p>' +
+    '<p><strong>' + safeCreator + '</strong> is streaming now: <em>' + safeTitle + '</em></p>' +
+    '<p><a href="' + safeUrl + '" style="background:#7c3aed;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;display:inline-block;">Watch Now</a></p>' +
     '<p>— The SeeWhy LIVE Team</p>' +
     '</div>';
   return _sendEmail(toEmail, subject, html);
 }
 
 function sendPayoutEmail(toEmail, displayName, amountCents) {
+  var safeName  = _esc(displayName);
   var formatted = _formatDollars(amountCents);
   var subject = 'Your payout of ' + formatted + ' has been processed';
   var html =
     '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">' +
     '<h1 style="color:#059669;">Payout Processed!</h1>' +
-    '<p>Hey ' + displayName + ',</p>' +
-    '<p>Your payout of <strong>' + formatted + '</strong> has been processed and is on its way.</p>' +
+    '<p>Hey ' + safeName + ',</p>' +
+    '<p>Your payout of <strong>' + _esc(formatted) + '</strong> has been processed and is on its way.</p>' +
     '<p>Thank you for creating amazing content on SeeWhy LIVE!</p>' +
     '<p>— The SeeWhy LIVE Team</p>' +
     '</div>';
@@ -104,14 +122,17 @@ function sendPayoutEmail(toEmail, displayName, amountCents) {
 }
 
 function sendSubscriptionEmail(toEmail, displayName, creatorName, tier, amountCents) {
-  var formatted = _formatDollars(amountCents);
-  var subject = 'You\'re subscribed to ' + creatorName + '!';
+  var safeName    = _esc(displayName);
+  var safeCreator = _esc(creatorName);
+  var safeTier    = _esc(tier);
+  var formatted   = _formatDollars(amountCents);
+  var subject = 'You\'re subscribed to ' + safeCreator + '!';
   var html =
     '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">' +
     '<h1 style="color:#7c3aed;">Subscription Confirmed!</h1>' +
-    '<p>Hey ' + displayName + ',</p>' +
-    '<p>You are now subscribed to <strong>' + creatorName + '</strong> at the ' +
-    '<strong>' + tier + '</strong> tier for <strong>' + formatted + '/month</strong>.</p>' +
+    '<p>Hey ' + safeName + ',</p>' +
+    '<p>You are now subscribed to <strong>' + safeCreator + '</strong> at the ' +
+    '<strong>' + safeTier + '</strong> tier for <strong>' + _esc(formatted) + '/month</strong>.</p>' +
     '<p>Enjoy exclusive perks and support your favourite creator!</p>' +
     '<p>— The SeeWhy LIVE Team</p>' +
     '</div>';
@@ -119,6 +140,7 @@ function sendSubscriptionEmail(toEmail, displayName, creatorName, tier, amountCe
 }
 
 function sendWeeklyDigest(toEmail, displayName, stats) {
+  var safeName     = _esc(displayName);
   var subject = 'Your SeeWhy LIVE week in review';
   var earnings = _formatDollars(stats.totalEarningsCents || 0);
   var newFollowers = stats.newFollowers || 0;
@@ -126,11 +148,11 @@ function sendWeeklyDigest(toEmail, displayName, stats) {
   var html =
     '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">' +
     '<h1 style="color:#7c3aed;">Your Week in Review</h1>' +
-    '<p>Hey ' + displayName + ', here\'s how your week looked on SeeWhy LIVE:</p>' +
+    '<p>Hey ' + safeName + ', here\'s how your week looked on SeeWhy LIVE:</p>' +
     '<table style="width:100%;border-collapse:collapse;">' +
-    '<tr style="background:#f3f4f6;"><td style="padding:12px;">Total Earnings</td><td style="padding:12px;font-weight:bold;">' + earnings + '</td></tr>' +
-    '<tr><td style="padding:12px;">New Followers</td><td style="padding:12px;font-weight:bold;">' + newFollowers + '</td></tr>' +
-    '<tr style="background:#f3f4f6;"><td style="padding:12px;">Peak Viewers</td><td style="padding:12px;font-weight:bold;">' + peakViewers + '</td></tr>' +
+    '<tr style="background:#f3f4f6;"><td style="padding:12px;">Total Earnings</td><td style="padding:12px;font-weight:bold;">' + _esc(earnings) + '</td></tr>' +
+    '<tr><td style="padding:12px;">New Followers</td><td style="padding:12px;font-weight:bold;">' + parseInt(newFollowers, 10) + '</td></tr>' +
+    '<tr style="background:#f3f4f6;"><td style="padding:12px;">Peak Viewers</td><td style="padding:12px;font-weight:bold;">' + parseInt(peakViewers, 10) + '</td></tr>' +
     '</table>' +
     '<p>Keep up the great work — see you next week!</p>' +
     '<p>— The SeeWhy LIVE Team</p>' +
