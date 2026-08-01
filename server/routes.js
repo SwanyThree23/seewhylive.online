@@ -597,7 +597,7 @@ router.post('/users/me/notifications', requireAuth, function(req, res) {
 
 // ─── METRICS / LEADERBOARD routes ────────────────────────────────────────────
 
-router.get('/metrics', function(req, res) {
+router.get('/metrics', requireAuth, function(req, res) {
   try {
     var roomId = req.query.roomId || 'default';
     if (analytics) {
@@ -1033,6 +1033,9 @@ router.post('/fanout-start', requireAuth, async function(req, res) {
 
 router.post('/fanout-stop', requireAuth, function(req, res) {
   var streamId = req.body.stream_id || 'default';
+  if (!/^[\w.\-]{1,128}$/.test(streamId) || FANOUT_KEY_BLOCKLIST.has(streamId)) {
+    return res.status(400).json({ ok: false, error: 'invalid stream_id' });
+  }
   var entry = activeFanouts[streamId];
   if (!entry) return res.json({ ok: false, error: 'No active fanout for ' + streamId });
   if (entry.ownerId && entry.ownerId !== req.user.id && req.user.role !== 'admin') {

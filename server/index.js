@@ -1601,11 +1601,11 @@ io.on('connection', function(socket) {
     if (room && room.guests.has(socket.id)) {
       var g = room.guests.get(socket.id);
       room.guests.set(socket.id, Object.assign({}, g, { username: newName }));
-    }
 
-    io.to(roomId).emit('username-updated', { userId: socket.data.userId || socket.data.guestId, username: newName });
+      // Only broadcast room-wide events for sockets that are panel guests/hosts — not
+      // pure viewer sockets which could otherwise spam username-updated to the room.
+      io.to(roomId).emit('username-updated', { userId: socket.data.userId || socket.data.guestId, username: newName });
 
-    if (room) {
       var guestList = [];
       room.guests.forEach(function(g) {
         guestList.push({ guestId: g.guestId, username: g.username, role: g.role });
@@ -1624,8 +1624,9 @@ io.on('connection', function(socket) {
     if (!roomId || !message.trim()) return;
 
     var _cmNow = Date.now();
-    if (_cmNow - (chatMsgThrottle.get(socket.id) || 0) < 500) return;
-    chatMsgThrottle.set(socket.id, _cmNow);
+    var _cmKey = socket.data.userId || socket.id;
+    if (_cmNow - (chatMsgThrottle.get(_cmKey) || 0) < 500) return;
+    chatMsgThrottle.set(_cmKey, _cmNow);
 
     // Detect external links — flag so frontends can display a safety indicator
     var _EXT_URL = /https?:\/\/([^\s/]+)/gi;
