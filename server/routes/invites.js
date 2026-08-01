@@ -91,8 +91,10 @@ router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
 });
 
 router.post('/links/:token/redeem', requireAuth, async (req, res) => {
+  const token = String(req.params.token || '');
+  if (!/^[0-9a-f]{32}$/i.test(token)) return res.status(400).json({ error: 'invalid invite token' });
   try {
-    const link = await inviteService.redeemInviteLink(req.params.token);
+    const link = await inviteService.redeemInviteLink(token);
     res.json(link);
   } catch (err) {
     res.status(400).json({ error: err.message });
