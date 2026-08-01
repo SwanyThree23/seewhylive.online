@@ -410,6 +410,7 @@ var loveThrottle        = new Map();  // socketId → lastLoveTs ms (1s throttle
 var audioChunkThrottle  = new Map();  // socketId → lastChunkTs ms (500ms throttle)
 var collabThrottle      = new Map();  // socketId → lastCollabTs ms (2s throttle)
 var superChatThrottle   = new Map();  // socketId → lastSuperChatTs ms (2s throttle)
+var subscribeThrottle   = new Map();  // userId → lastSubscribeTs ms (60s throttle)
 var merchOrderThrottle      = new Map();  // socketId → lastMerchOrderTs ms (2s throttle)
 var updateUsernameThrottle  = new Map();  // userId → lastUpdateTs ms (2s throttle)
 var handRaiseThrottle       = new Map();  // userId → lastHandRaiseTs ms (500ms throttle)
@@ -1571,6 +1572,9 @@ io.on('connection', function(socket) {
     room.guests.forEach(function(g, sid) {
       if (g.guestId === guestId) {
         g.role = newRole;
+        // Sync socket.data.role on the live socket so per-event guards see the new role immediately
+        var targetSocket = io.sockets.sockets.get(sid);
+        if (targetSocket) targetSocket.data.role = newRole;
         io.to(sid).emit('role-changed', { guestId: guestId, role: newRole });
       }
     });
@@ -1705,7 +1709,9 @@ io.on('connection', function(socket) {
     var _rawSAId = String(data.creatorStripeAccountId || '');
     var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawSAId) ? _rawSAId : '';
 
-    if (!roomId || valueCents <= 0) return;
+    if (!roomId || valueCents < 0) return;
+    // Monetary gifts require a Stripe account — prevents analytics inflation from unverified amounts
+    if (valueCents > 0 && !creatorStripeAccountId) return;
 
     var creatorCents  = Math.floor(valueCents * CREATOR);
     var platformCents = valueCents - creatorCents;
@@ -2162,6 +2168,10 @@ io.on('connection', function(socket) {
 
   socket.on('subscribe', function(data) {
     if (!socket.data.userId || socket.data.userId.startsWith('anon')) return;
+    // Rate-limit: one subscription announcement per user per 60 s to prevent AURA-call spam
+    var _subNow = Date.now();
+    if (_subNow - (subscribeThrottle.get(socket.data.userId) || 0) < 60000) return;
+    subscribeThrottle.set(socket.data.userId, _subNow);
     var roomId     = socket.data.roomId;
     var fromUser   = socket.data.username || 'Guest';
     var VALID_TIERS = ['bronze', 'silver', 'gold'];
@@ -2548,6 +2558,13 @@ io.on('connection', function(socket) {
     if (!_cStr || _cStr.length > 8192) return;
     var safe; try { safe = JSON.parse(_cStr); } catch(e) { return; }
     io.to(roomId).emit('chyron-update', Object.assign(safe, { roomId: roomId }));
+  });
+
+  socket.on('chyron-clear', function() {
+    var roomId = socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    io.to(roomId).emit('chyron-clear', { roomId: roomId, ts: Math.floor(Date.now() / 1000) });
   });
 
   // ── PK Battle v2 vote aggregation ──────────────────────────────────────
@@ -3202,7 +3219,7 @@ io.on('connection', function(socket) {
     var bannedId = String(data.userId || data.targetUser || '');
     if (!bannedId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bannedId)) return;
     io.to(sId).emit('user-banned', { userId: bannedId, ts: Math.floor(Date.now() / 1000) });
-    // Disconnect the banned socket if it is connected to this room
+    // Disconnect every socket in this room whose userId matches the ban target
     var room = rooms.get(sId);
     if (room) {
       room.guests.forEach(function(g, sid) {
@@ -3211,6 +3228,14 @@ io.on('connection', function(socket) {
           if (bannedSocket) { bannedSocket.disconnect(true); }
         }
       });
+      // Also catch viewer-role sockets not stored in room.guests
+      var roomSockets = io.sockets.adapter.rooms.get(sId);
+      if (roomSockets) {
+        roomSockets.forEach(function(sid) {
+          var s = io.sockets.sockets.get(sid);
+          if (s && s.data.userId === bannedId) { s.disconnect(true); }
+        });
+      }
     }
   });
 
@@ -3399,7 +3424,7 @@ io.on('connection', function(socket) {
     sendGiftThrottle.delete(_tKey);
     qaQuestionThrottle.delete(socket.id);
     loveThrottle.delete(_tKey); audioChunkThrottle.delete(_tKey);
-    collabThrottle.delete(_tKey); superChatThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey); superChatThrottle.delete(_tKey); subscribeThrottle.delete(_tKey);
     merchOrderThrottle.delete(_tKey); updateUsernameThrottle.delete(_tKey);
     handRaiseThrottle.delete(_tKey); speakingThrottle.delete(_tKey);
     chatMsgThrottle.delete(socket.id); pollVoteThrottle.delete(socket.id);
