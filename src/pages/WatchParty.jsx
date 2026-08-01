@@ -20,6 +20,8 @@ import ReactionOverlay from '../components/watchparty/ReactionOverlay';
 import ShareButtons from '../components/shared/ShareButtons';
 import PanelGrid from '../components/watchparty/PanelGrid';
 import BattleTiers from '../components/watchparty/BattleTiers';
+import PKBattleHostControls from '../components/pk/PKBattleHostControls';
+import PKLiveScoreboard from '../components/pk/PKLiveScoreboard';
 import WatchQueue from '../components/watchparty/WatchQueue';
 import SocialLeaderboard from '../components/watchparty/SocialLeaderboard';
 import HostControls from '../components/watchparty/HostControls';
@@ -609,6 +611,22 @@ export default function WatchPartyPage() {
     enabled: !!partyId,
     refetchInterval: 5000,
   });
+
+  const { data: activeBattle } = useQuery({
+    queryKey: ['pk-battle-active', partyId],
+    queryFn: () => base44.entities.PKBattle.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 3000,
+  });
+
+  useEffect(() => {
+    if (!partyId) return;
+    const unsub = base44.entities.PKBattle.subscribe((event) => {
+      if (event.data?.room_id !== partyId) return;
+      qc.invalidateQueries({ queryKey: ['pk-battle-active', partyId] });
+    });
+    return unsub;
+  }, [partyId, qc]);
 
   const isHost = party?.host_id === user?.id;
   const subCount = useSubscriptionCount(party?.host_id || user?.id);
@@ -1459,6 +1477,9 @@ export default function WatchPartyPage() {
 
         <div className={`shrink-0 overflow-hidden ${theaterMode ? 'hidden md:block md:w-[160px] relative' : 'hidden md:block'}`}
           style={{ width: theaterMode ? undefined : '220px', borderRight: '1px solid rgba(255,255,255,0.06)', ...(theaterMode ? { position: 'absolute', right: 0, top: 0, bottom: 0, zIndex: 10, background: 'rgba(8,11,24,0.95)' } : {}) }}>
+          <AnimatePresence>
+            {activeBattle && <PKLiveScoreboard battle={activeBattle} />}
+          </AnimatePresence>
           <PanelGrid
             members={members}
             currentUser={user}
@@ -1588,7 +1609,10 @@ export default function WatchPartyPage() {
               </div>
             )}
             {activePanel === 'battle' && (
-              <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+              <div className="space-y-2">
+                <PKBattleHostControls partyId={partyId} hostUser={user} hostName={user?.full_name || user?.email} isHost={isHost} />
+                <BattleTiers partyId={partyId} currentUser={user} members={members} hostId={party.host_id} />
+              </div>
             )}
             {activePanel === 'leaderboard' && (
               <SocialLeaderboard members={members} />

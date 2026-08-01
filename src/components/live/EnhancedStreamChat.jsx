@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, AlertCircle, Shield, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import EmojiReactionBar from './EmojiReactionBar';
 
 const OFFENSIVE_WORDS = [
   'spam', 'scam', 'hack', 'inappropriate', 'offensive',
@@ -319,6 +320,7 @@ export default function EnhancedStreamChat({ roomId, userId, userName, userRole 
           </button>
         </div>
       </div>
+      <EmojiReactionBar roomId={roomId} userId={userId} userName={userName} />
     </div>
   );
 }

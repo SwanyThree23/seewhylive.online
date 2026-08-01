@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { Crown, Mic, MicOff, Video, VideoOff, Maximize2, MoreHorizontal, UserPlus, Pin, Volume2 } from 'lucide-react';
 import PanelMusicPlayer from '../live/PanelMusicPlayer';
 import { useAudioLevel } from '../../hooks/useAudioLevel';
@@ -64,16 +64,17 @@ function PanelTile({ member, isHost, isCurrentUser, hostId, onSpotlight, canMana
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.85 }}
+      initial={{ opacity: 0, scale: 0.5, y: 20 }}
       animate={{
         opacity: 1,
         scale: 1,
+        y: 0,
         boxShadow: speaking
           ? ['0 0 0 2px rgba(212,175,55,0.8)', '0 0 0 6px rgba(212,175,55,0.15)']
           : '0 0 0 0px rgba(212,175,55,0)',
       }}
-      transition={speaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}}
-      exit={{ opacity: 0, scale: 0.85 }}
+      transition={{ layout: { type: 'spring', stiffness: 350, damping: 30 }, default: { type: 'spring', stiffness: 420, damping: 26 }, ...(speaking ? { boxShadow: { duration: 1, ease: 'easeInOut', repeat: Infinity, repeatType: 'reverse' } } : {}) }}
+      exit={{ opacity: 0, scale: 0.6, y: -10 }}
       className="relative group aspect-square"
     >
       <div
@@ -260,7 +261,9 @@ function SpotlitView({ member, hostId, stream, isLocal, onUnpin }) {
 function EmptyTile({ onClick, canInvite }) {
   return (
     <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 0.3 }}
+      layout
+      initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 0.3, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.6 }}
       onClick={canInvite ? onClick : undefined}
       className="aspect-square flex items-center justify-center cursor-pointer hover:opacity-50 transition-opacity"
     >
@@ -435,6 +438,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
         </div>
       ) : (
         <div className={'flex-1 p-2 grid ' + gridCols + ' gap-2 content-start overflow-auto'}>
+          <LayoutGroup>
           <AnimatePresence>
             {rest.slice(0, slots).map(function(m) {
               var { stream, isLocal } = resolveStream(m, currentUser, localStream, remoteStreams, peerUserIds);
@@ -453,6 +457,7 @@ export default function PanelGrid({ members = [], currentUser, hostId, maxSlots 
               return <EmptyTile key={'empty-' + i} onClick={onInvite} canInvite={!!isHost} />;
             })}
           </AnimatePresence>
+          </LayoutGroup>
         </div>
       )}
 

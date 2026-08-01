@@ -6,15 +6,8 @@ import { useEffect, useRef } from 'react';
  * - DRIFT_THRESHOLD 0.3s: if viewer is off by more than 300ms they get snapped.
  * - HEARTBEAT_INTERVAL 5s: viewers independently re-check sync even if no new
  *   syncData event arrives (catches stale subscriptions / missed updates).
- *
- * Usage:
- *   useWatchPartySync({
- *     isHost, syncData,
- *     onSeek: (t) => player.seekTo(t),
- *     onPlay: () => player.play(),
- *     onPause: () => player.pause(),
- *     getCurrentTime: () => player.currentTime,
- *   });
+ * - Play/pause are only applied when the desired state changes, preventing
+ *   feedback loops where re-asserting the same state fights the player.
  */
 
 const DRIFT_THRESHOLD    = 0.3;  // seconds (300ms)
@@ -30,11 +23,13 @@ export function useWatchPartySync({
 }) {
   const syncDataRef = useRef(syncData);
   syncDataRef.current = syncData;
+  const lastStateRef = useRef(null); // 'playing' | 'paused' | null
 
   // Apply sync correction whenever syncData changes
   useEffect(() => {
     if (isHost || !syncData || typeof getCurrentTime !== 'function') return;
 
+    const desiredState = syncData.playback_state === 'playing' ? 'playing' : 'paused';
     const lagMs      = Date.now() - (syncData.updated_at_ms || Date.now());
     const serverTime = (syncData.current_time || 0) + lagMs / 1000;
     const current    = getCurrentTime();
@@ -43,10 +38,11 @@ export function useWatchPartySync({
       onSeek?.(serverTime);
     }
 
-    if (syncData.playback_state === 'playing') {
-      onPlay?.();
-    } else {
-      onPause?.();
+    // Only flip play state when it actually changes — avoids loops
+    if (lastStateRef.current !== desiredState) {
+      if (desiredState === 'playing') onPlay?.();
+      else onPause?.();
+      lastStateRef.current = desiredState;
     }
   }, [syncData, isHost]); // eslint-disable-line react-hooks/exhaustive-deps
 
