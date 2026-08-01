@@ -47,6 +47,9 @@ var ANIM = [
   '@keyframes scoreReveal{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}',
   '@keyframes scoreFade{from{opacity:1}to{opacity:0;transform:scale(.9)}}',
   '@keyframes cellExpand{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes cellLeave{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.88)}}',
+  '@keyframes pkPulse{0%,100%{text-shadow:0 0 8px rgba(255,26,60,.7)}50%{text-shadow:0 0 20px rgba(255,26,60,1),0 0 40px rgba(255,26,60,.5)}}',
+  '@keyframes wpIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}',
   '@keyframes recPulse{0%,100%{opacity:1;background:rgba(255,26,60,.9)}50%{opacity:.6;background:rgba(255,26,60,.5)}}',
   '@keyframes waveBar{0%{height:4px}100%{height:20px}}',
   '@keyframes speakPulseGrid{0%,100%{box-shadow:0 0 0 2px '+TEAL+'99,0 0 8px '+TEAL+'22}50%{box-shadow:0 0 0 3px '+TEAL+',0 0 18px '+TEAL+'44}}',
@@ -381,6 +384,13 @@ export default function LiveRoomPage({
   var [theaterChatVisible, setTheaterChatVisible] = useState(true);
   var [isScreenSharing,    setIsScreenSharing]    = useState(false);
   var [screenShareHost,    setScreenShareHost]    = useState(null);  // { username } when remote host is sharing
+  var [pkBattle,       setPkBattle]       = useState(null);   // { active, challenger, defender, challengerVotes, defenderVotes, pctC, pctD, suddenDeath, winner }
+  var [pkDraft,        setPkDraft]        = useState({ challenger: '', defender: '', duration: '120' });
+  var [showPkCreate,   setShowPkCreate]   = useState(false);
+  var [pkVoted,        setPkVoted]        = useState(null);   // 'challenger' | 'defender' | null
+  var [watchParty,     setWatchParty]     = useState(null);   // { url, videoId, type, playing, position, ts }
+  var [showWatchParty, setShowWatchParty] = useState(false);
+  var [wpInput,        setWpInput]        = useState('');
 
   var chatEndRef      = useRef(null);
   var cameraTrackRef  = useRef(null);
@@ -600,6 +610,68 @@ export default function LiveRoomPage({
       }
     });
 
+    // ── PK Battle ──
+    socket.on('pk-start', function(data) {
+      if (!data) return;
+      setPkBattle({ active: true, challenger: String(data.challenger || ''), defender: String(data.defender || ''), challengerVotes: 0, defenderVotes: 0, pctC: 50, pctD: 50, suddenDeath: false, winner: null });
+      setPkVoted(null);
+      if (addToast) addToast('🥊 PK Battle started!', 'success');
+    });
+    socket.on('pk-vote-update', function(data) {
+      if (!data) return;
+      var cVotes = Number(data.challengerVotes) || 0;
+      var dVotes = Number(data.defenderVotes)   || 0;
+      var total  = cVotes + dVotes;
+      setPkBattle(function(prev) {
+        if (!prev) return prev;
+        return Object.assign({}, prev, { challengerVotes: cVotes, defenderVotes: dVotes, pctC: total > 0 ? Math.round(cVotes / total * 100) : 50, pctD: total > 0 ? Math.round(dVotes / total * 100) : 50 });
+      });
+    });
+    socket.on('pk-end', function(data) {
+      if (!data) return;
+      setPkBattle(function(prev) { return prev ? Object.assign({}, prev, { active: false, winner: String(data.winner || '') }) : prev; });
+      if (addToast && data.winner) addToast('🏆 ' + data.winner + ' wins the PK Battle!', 'success');
+      setTimeout(function() { setPkBattle(null); setPkVoted(null); }, 8000);
+    });
+    socket.on('pk-sudden-death', function() {
+      setPkBattle(function(prev) { return prev ? Object.assign({}, prev, { suddenDeath: true }) : prev; });
+      if (addToast) addToast('⚡ SUDDEN DEATH — cast your final votes!', 'error');
+    });
+    socket.on('pk-gift-boost', function(data) {
+      if (!data) return;
+      setTipFeed(function(f) { return f.concat([{ id: Date.now(), from: String(data.from || ''), amount: Math.floor(Number(data.valueCents) || 0), emoji: data.emoji || '🎁', name: String(data.name || 'Gift'), ts: Date.now() }]).slice(-10); });
+    });
+
+    // ── Watch Party ──
+    socket.on('watch-party-started', function() {
+      setShowWatchParty(true);
+      if (addToast) addToast('📺 Watch party started!', 'success');
+    });
+    socket.on('watch-party-url', function(data) {
+      if (!data) return;
+      setWatchParty(function(prev) { return Object.assign({}, prev || {}, { url: String(data.url || ''), videoId: String(data.videoId || ''), type: String(data.type || 'direct'), urlDomain: String(data.urlDomain || '') }); });
+      setShowWatchParty(true);
+    });
+    socket.on('watch-party-play', function(data) {
+      if (!data) return;
+      setWatchParty(function(prev) { return Object.assign({}, prev || {}, { playing: true, position: Number(data.position) || 0, ts: Number(data.timestamp) || Date.now() }); });
+    });
+    socket.on('watch-party-pause', function(data) {
+      setWatchParty(function(prev) { return Object.assign({}, prev || {}, { playing: false, position: (data && Number(data.position)) || 0 }); });
+      if (data && data.reason === 'host_disconnected' && addToast) addToast('Host disconnected — watch party paused', 'info');
+    });
+    socket.on('watch-party-seek', function(data) {
+      if (!data) return;
+      setWatchParty(function(prev) { return Object.assign({}, prev || {}, { position: Number(data.position) || 0 }); });
+    });
+    socket.on('watch-party-sync', function(data) {
+      if (!data) return;
+      setWatchParty(function(prev) {
+        return Object.assign({}, prev || {}, { url: String(data.url || (prev && prev.url) || ''), videoId: String(data.videoId || (prev && prev.videoId) || ''), type: String(data.type || 'direct'), playing: !!data.playing, position: Number(data.position) || 0, ts: Number(data.ts) || Date.now() });
+      });
+      setShowWatchParty(true);
+    });
+
     return function() {
       socket.off('join-room-ack');
       socket.off('speaking');
@@ -625,6 +697,17 @@ export default function LiveRoomPage({
       socket.off('subscriber-only-changed');
       socket.off('user-banned');
       socket.off('user-unbanned');
+      socket.off('pk-start');
+      socket.off('pk-vote-update');
+      socket.off('pk-end');
+      socket.off('pk-sudden-death');
+      socket.off('pk-gift-boost');
+      socket.off('watch-party-started');
+      socket.off('watch-party-url');
+      socket.off('watch-party-play');
+      socket.off('watch-party-pause');
+      socket.off('watch-party-seek');
+      socket.off('watch-party-sync');
     };
   }, [socket]);
 
@@ -766,6 +849,28 @@ export default function LiveRoomPage({
     setShowVsCreate(false);
     setVsDraft({ sideA: '', sideB: '', duration: '60' });
     if (addToast) addToast('VS Poll launched!', 'success');
+  }
+
+  function startPk() {
+    if (!socket || !pkDraft.challenger.trim() || !pkDraft.defender.trim()) return;
+    var dur = Math.min(300, Math.max(30, parseInt(pkDraft.duration) || 120));
+    socket.emit('pk-start', { roomId: roomId, challenger: pkDraft.challenger.trim(), defender: pkDraft.defender.trim(), durationSec: dur });
+    setShowPkCreate(false);
+    setPkDraft({ challenger: '', defender: '', duration: '120' });
+    if (addToast) addToast('🥊 PK Battle started!', 'success');
+  }
+
+  function endPk() {
+    if (!socket) return;
+    socket.emit('pk-end', { roomId: roomId });
+  }
+
+  function sendWatchPartyUrl() {
+    var url = wpInput.trim();
+    if (!url || !socket) return;
+    socket.emit('watch-party-url', { roomId: roomId, url: url });
+    setWpInput('');
+    if (addToast) addToast('📺 Watch party URL set!', 'success');
   }
 
   function submitJudgeScore() {
@@ -1132,6 +1237,24 @@ export default function LiveRoomPage({
               </div>
             </div>
           </div>
+
+          {/* ── PK Battle score banner (visible on stage while battle is live) ── */}
+          {pkBattle && pkBattle.active && (
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10, background: 'rgba(255,26,60,.06)', border: '1px solid rgba(255,26,60,.18)', borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ flex: 1, padding: '6px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1 }}>{pkBattle.pctC}%</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkBattle.challenger}</div>
+              </div>
+              <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: RED, letterSpacing: 2, lineHeight: 1 }}>🥊 LIVE</div>
+                {pkBattle.suddenDeath && <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, animation: 'pkPulse 1s infinite', marginTop: 2 }}>SUDDEN DEATH</div>}
+              </div>
+              <div style={{ flex: 1, padding: '6px 10px', textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: RED, lineHeight: 1 }}>{pkBattle.pctD}%</div>
+                <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pkBattle.defender}</div>
+              </div>
+            </div>
+          )}
 
           {/* ── LIST MODE ── */}
           {stageLayout === 'grid' && panelMode === 'list' && (
@@ -1611,8 +1734,10 @@ export default function LiveRoomPage({
             { emoji: privateMode ? '🔒' : '🔓', label: 'Private', active: privateMode, onTap: function() { if (role === 'host') { setShowPrivateSet(true); } else { if (addToast) addToast(privateMode ? 'Room is private — invite only' : 'Room is open', 'info'); } } },
             { emoji: '📹', label: 'Record',   active: recState === 'recording', onTap: function() { setShowRecorder(true); } },
             { emoji: '📊', label: 'Poll',     active: false, onTap: function() { setShowQa(true); setShowPollCreate(true); setShowVsCreate(false); setShowJudges(false); setChatOpen(false); } },
-            { emoji: '⚔',  label: 'VS',      active: false, onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } },
-            { emoji: '⚖',  label: 'Judges',  active: false, onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setChatOpen(false); } },
+            { emoji: '⚔',  label: 'VS',      active: false, onTap: function() { setShowQa(true); setShowVsCreate(true); setShowPollCreate(false); setShowJudges(false); setShowPkCreate(false); setChatOpen(false); } },
+            { emoji: '🥊', label: 'PK',      active: !!pkBattle && pkBattle.active, onTap: function() { if (role === 'host') { setShowQa(true); setShowPkCreate(true); setShowVsCreate(false); setShowPollCreate(false); setShowJudges(false); setChatOpen(false); } } },
+            { emoji: '📺', label: 'Watch',   active: showWatchParty, onTap: function() { setShowWatchParty(function(v) { return !v; }); } },
+            { emoji: '⚖',  label: 'Judges',  active: false, onTap: function() { setShowQa(true); setShowJudges(true); setShowPollCreate(false); setShowVsCreate(false); setShowPkCreate(false); setChatOpen(false); } },
             { emoji: '⚙',  label: 'Camera',  active: false, onTap: function() { setShowMediaConf(true); } },
           ].map(function(tool) {
             return (
@@ -1723,6 +1848,17 @@ export default function LiveRoomPage({
               );
             })}
             <div ref={chatEndRef} />
+          </div>
+          {/* Emoji reaction strip — quick reacts without typing */}
+          <div style={{ padding: '7px 12px 3px', display: 'flex', gap: 2, flexShrink: 0, borderTop: '1px solid ' + BORDER }}>
+            {['❤️','🔥','👏','😂','💯','🎉','👑','💰'].map(function(e) {
+              return (
+                <button key={e} onClick={function() { sendReact(e); setReactsOpen(false); }}
+                  style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', padding: '2px 5px', borderRadius: 8, lineHeight: 1, transition: 'transform .1s', flexShrink: 0 }}>
+                  {e}
+                </button>
+              );
+            })}
           </div>
           {/* Input */}
           <div style={{ padding: '8px 12px', borderTop: '1px solid ' + BORDER, display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -2121,6 +2257,81 @@ export default function LiveRoomPage({
         </div>
       )}
 
+      {/* ════════════════ PK BATTLE OVERLAY ════════════════ */}
+      {pkBattle && (
+        <div style={{
+          position: 'absolute', left: 10, right: 10,
+          bottom: (activePoll ? 228 : 0) + (vsPoll ? 155 : 0) + 74, zIndex: 54,
+          background: 'rgba(9,7,14,.97)',
+          border: '1px solid rgba(255,26,60,.25)',
+          borderRadius: 14, overflow: 'hidden',
+          animation: 'vsIn .3s ease',
+          boxShadow: '0 8px 36px rgba(0,0,0,.65)',
+        }}>
+          {/* PK header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px 4px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: RED, letterSpacing: 2 }}>🥊 PK BATTLE</span>
+              {pkBattle.active && !pkBattle.suddenDeath && <div style={{ width: 5, height: 5, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />}
+              {pkBattle.suddenDeath && <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 10, color: RED, letterSpacing: 1, animation: 'pkPulse 1s infinite' }}>⚡ SUDDEN DEATH</span>}
+              {!pkBattle.active && pkBattle.winner && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD }}>🏆 {pkBattle.winner} WINS</span>}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{pkBattle.challengerVotes + pkBattle.defenderVotes} votes</span>
+              {role === 'host' && pkBattle.active && (
+                <button onClick={endPk} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 9, padding: '0 2px', letterSpacing: .5, fontFamily: "'DM Mono',monospace" }}>END</button>
+              )}
+            </div>
+          </div>
+          {/* Score split bar */}
+          <div style={{ margin: '0 14px 6px', height: 7, background: 'rgba(255,255,255,.07)', borderRadius: 999, overflow: 'hidden', position: 'relative' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(90deg,#C9A84C,#A07830)', width: (pkBattle.pctC || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, borderRadius: 999, background: 'linear-gradient(270deg,' + RED + ',#C01230)', width: (pkBattle.pctD || 50) + '%', transition: 'width .7s cubic-bezier(.4,0,.2,1)' }} />
+          </div>
+          {/* Challenger / Defender cards */}
+          <div style={{ display: 'flex', padding: '0 10px 10px', gap: 8 }}>
+            <button onClick={function() {
+              if (!socket || pkVoted || !pkBattle.active) return;
+              socket.emit('pk-vote', { roomId: roomId, side: 'challenger' });
+              setPkVoted('challenger');
+            }} style={{
+              flex: 1, background: pkVoted === 'challenger' ? 'rgba(201,168,76,.22)' : 'rgba(201,168,76,.07)',
+              border: '1.5px solid ' + (pkVoted === 'challenger' ? '#C9A84C' : 'rgba(201,168,76,.28)'),
+              borderRadius: 10, padding: '8px 6px',
+              cursor: (pkBattle.active && !pkVoted) ? 'pointer' : 'default',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
+            }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2 }}>{pkBattle.challenger}</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: '#C9A84C', letterSpacing: 1, lineHeight: 1 }}>{pkBattle.pctC}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{pkBattle.challengerVotes} vote{pkBattle.challengerVotes !== 1 ? 's' : ''}</span>
+              {pkVoted === 'challenger' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', marginTop: 1 }}>✓ YOUR PICK</span>}
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: RED, letterSpacing: 3 }}>VS</span>
+            </div>
+            <button onClick={function() {
+              if (!socket || pkVoted || !pkBattle.active) return;
+              socket.emit('pk-vote', { roomId: roomId, side: 'defender' });
+              setPkVoted('defender');
+            }} style={{
+              flex: 1, background: pkVoted === 'defender' ? 'rgba(255,26,60,.22)' : 'rgba(255,26,60,.07)',
+              border: '1.5px solid ' + (pkVoted === 'defender' ? RED : 'rgba(255,26,60,.28)'),
+              borderRadius: 10, padding: '8px 6px',
+              cursor: (pkBattle.active && !pkVoted) ? 'pointer' : 'default',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, transition: 'background .2s, border-color .2s',
+            }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 13, color: TEXT, textAlign: 'center', lineHeight: 1.2 }}>{pkBattle.defender}</span>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: RED, letterSpacing: 1, lineHeight: 1 }}>{pkBattle.pctD}%</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>{pkBattle.defenderVotes} vote{pkBattle.defenderVotes !== 1 ? 's' : ''}</span>
+              {pkVoted === 'defender' && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: RED, marginTop: 1 }}>✓ YOUR PICK</span>}
+            </button>
+          </div>
+          {!pkVoted && pkBattle.active && (
+            <div style={{ padding: '0 14px 8px', textAlign: 'center', fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>Tap a side to back your fighter</div>
+          )}
+        </div>
+      )}
+
       {/* ════════════════ ACTIVE POLL ════════════════ */}
       {activePoll && (
         <div style={{
@@ -2187,9 +2398,15 @@ export default function LiveRoomPage({
                 </button>
               )}
               {role === 'host' && (
-                <button onClick={function() { setShowVsCreate(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowJudges(false); } return next; }); }}
+                <button onClick={function() { setShowVsCreate(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowJudges(false); setShowPkCreate(false); } return next; }); }}
                   style={{ background: showVsCreate ? 'rgba(255,26,60,.25)' : 'rgba(255,26,60,.1)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 8, padding: '5px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
                   ⚔ VS
+                </button>
+              )}
+              {role === 'host' && (
+                <button onClick={function() { setShowPkCreate(function(v) { var next = !v; if (next) { setShowPollCreate(false); setShowVsCreate(false); setShowJudges(false); } return next; }); }}
+                  style={{ background: showPkCreate ? 'rgba(255,26,60,.3)' : 'rgba(255,26,60,.08)', border: '1px solid ' + (showPkCreate ? RED : 'rgba(255,26,60,.3)'), borderRadius: 8, padding: '5px 8px', color: RED, fontFamily: "'DM Mono',monospace", fontSize: 8, cursor: 'pointer' }}>
+                  🥊 PK
                 </button>
               )}
               {(role === 'host' || judges.some(function(j) { return j.userId === userId; })) && (
@@ -2245,6 +2462,36 @@ export default function LiveRoomPage({
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>10–300s</span>
               </div>
               <button onClick={startVs} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(212,133,74,.8),rgba(255,26,60,.8))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>LAUNCH VS POLL</button>
+            </div>
+          )}
+
+          {/* PK Battle creator (host only) */}
+          {showPkCreate && role === 'host' && (
+            <div style={{ padding: '12px 14px', borderBottom: '1px solid ' + BORDER, background: CARD, flexShrink: 0 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 12, color: RED, letterSpacing: 2, marginBottom: 8 }}>🥊 PK BATTLE</div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input value={pkDraft.challenger}
+                  onChange={function(e) { var v = e.target.value; setPkDraft(function(d) { return { challenger: v, defender: d.defender, duration: d.duration }; }); }}
+                  placeholder="Challenger name"
+                  style={{ flex: 1, background: 'rgba(201,168,76,.08)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+                <div style={{ display: 'flex', alignItems: 'center', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: RED, padding: '0 2px' }}>VS</div>
+                <input value={pkDraft.defender}
+                  onChange={function(e) { var v = e.target.value; setPkDraft(function(d) { return { challenger: d.challenger, defender: v, duration: d.duration }; }); }}
+                  placeholder="Defender name"
+                  style={{ flex: 1, background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.35)', borderRadius: 8, padding: '8px 10px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, flexShrink: 0 }}>DURATION (sec)</span>
+                <input type="number" min="30" max="300" value={pkDraft.duration}
+                  onChange={function(e) { var v = e.target.value; setPkDraft(function(d) { return { challenger: d.challenger, defender: d.defender, duration: v }; }); }}
+                  style={{ width: 70, background: CARD2, border: '1px solid ' + DIM, borderRadius: 6, padding: '6px 10px', color: TEXT, fontFamily: "'DM Mono',monospace", fontSize: 12, outline: 'none', textAlign: 'center' }} />
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>30–300s</span>
+              </div>
+              {pkBattle && pkBattle.active ? (
+                <button onClick={endPk} style={{ width: '100%', background: 'rgba(255,26,60,.2)', border: '1.5px solid rgba(255,26,60,.5)', borderRadius: 8, padding: '9px', color: RED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>END PK BATTLE</button>
+              ) : (
+                <button onClick={startPk} style={{ width: '100%', background: 'linear-gradient(90deg,rgba(201,168,76,.8),rgba(255,26,60,.9))', border: 'none', borderRadius: 8, padding: '9px', color: '#fff', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, cursor: 'pointer', letterSpacing: 2 }}>START PK BATTLE</button>
+              )}
             </div>
           )}
 
@@ -2780,6 +3027,106 @@ export default function LiveRoomPage({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ WATCH PARTY PANEL ════════════════ */}
+      {showWatchParty && (
+        <div style={{
+          position: 'absolute', left: 0, right: 0, bottom: 62,
+          height: '62%', background: 'rgba(8,11,18,.98)',
+          borderTop: '2px solid rgba(255,26,60,.25)',
+          display: 'flex', flexDirection: 'column',
+          animation: 'wpIn .25s ease', zIndex: 49,
+        }}>
+          {/* Header */}
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid ' + BORDER, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 17, color: TEXT }}>📺 Watch Party</span>
+              {watchParty && watchParty.playing && <div style={{ width: 6, height: 6, borderRadius: '50%', background: RED, animation: 'livePulse 1.2s infinite' }} />}
+            </div>
+            <button onClick={function() { setShowWatchParty(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}>✕</button>
+          </div>
+
+          {/* Video area */}
+          <div style={{ flex: 1, overflow: 'hidden', position: 'relative', background: '#000' }}>
+            {watchParty && watchParty.url ? (
+              watchParty.type === 'youtube' && watchParty.videoId ? (
+                <iframe
+                  key={watchParty.videoId}
+                  src={'https://www.youtube.com/embed/' + watchParty.videoId + '?autoplay=' + (watchParty.playing ? 1 : 0) + '&start=' + Math.floor(watchParty.position || 0) + '&enablejsapi=1&rel=0'}
+                  style={{ width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  key={watchParty.url}
+                  src={watchParty.url}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  controls={role !== 'host' && role !== 'cohost'}
+                  autoPlay={watchParty.playing}
+                />
+              )
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <span style={{ fontSize: 36 }}>📺</span>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, textAlign: 'center' }}>Waiting for host to set the video URL</span>
+              </div>
+            )}
+          </div>
+
+          {/* Host controls */}
+          {(role === 'host' || role === 'cohost') && (
+            <div style={{ padding: '10px 14px', borderTop: '1px solid ' + BORDER, flexShrink: 0 }}>
+              {/* URL input */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+                  value={wpInput}
+                  onChange={function(e) { setWpInput(e.target.value); }}
+                  onKeyDown={function(e) { if (e.key === 'Enter') sendWatchPartyUrl(); }}
+                  placeholder="Video URL (YouTube, direct mp4…)"
+                  style={{ flex: 1, background: CARD2, border: '1px solid ' + DIM, borderRadius: 999, padding: '8px 14px', fontSize: 12, color: TEXT, outline: 'none', fontFamily: "'Barlow Condensed',sans-serif" }}
+                />
+                <button onClick={sendWatchPartyUrl} style={{ background: RED, border: 'none', borderRadius: 999, padding: '8px 16px', fontWeight: 700, fontSize: 12, color: '#fff', cursor: 'pointer', flexShrink: 0 }}>Set</button>
+              </div>
+              {/* Playback controls */}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button onClick={function() {
+                  if (!socket) return;
+                  var pos = watchParty ? (watchParty.position || 0) : 0;
+                  socket.emit('watch-party-play', { roomId: roomId, position: pos });
+                  setWatchParty(function(p) { return Object.assign({}, p || {}, { playing: true }); });
+                }} style={{ flex: 1, background: watchParty && watchParty.playing ? 'rgba(201,168,76,.1)' : 'rgba(201,168,76,.2)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, padding: '7px', color: GOLD, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  ▶ PLAY
+                </button>
+                <button onClick={function() {
+                  if (!socket) return;
+                  var pos = watchParty ? (watchParty.position || 0) : 0;
+                  socket.emit('watch-party-pause', { roomId: roomId, position: pos });
+                  setWatchParty(function(p) { return Object.assign({}, p || {}, { playing: false }); });
+                }} style={{ flex: 1, background: watchParty && !watchParty.playing ? 'rgba(201,168,76,.1)' : 'rgba(201,168,76,.05)', border: '1px solid rgba(201,168,76,.2)', borderRadius: 8, padding: '7px', color: MUTED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  ⏸ PAUSE
+                </button>
+                <button onClick={function() {
+                  if (!socket || !watchParty) return;
+                  socket.emit('watch-party-sync', { roomId: roomId });
+                }} style={{ flex: 1, background: 'rgba(255,26,60,.08)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 8, padding: '7px', color: RED, fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', letterSpacing: 1 }}>
+                  ⟳ SYNC ALL
+                </button>
+              </div>
+            </div>
+          )}
+          {/* Viewer sync indicator */}
+          {role === 'viewer' && watchParty && (
+            <div style={{ padding: '8px 14px', borderTop: '1px solid ' + BORDER, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: watchParty.playing ? RED : MUTED }} />
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>
+                {watchParty.playing ? 'SYNCED WITH HOST' : 'PAUSED'}
+                {watchParty.url && watchParty.urlDomain ? ' · ' + watchParty.urlDomain : ''}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
