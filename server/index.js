@@ -2087,7 +2087,7 @@ io.on('connection', function(socket) {
     if (!room.watchParty) room.watchParty = {};
     if (data.videoId !== undefined) room.watchParty.videoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
     if (data.url !== undefined) {
-      if (!/^https?:\/\//i.test(String(data.url))) return;
+      if (!/^https:\/\//i.test(String(data.url))) return;
       room.watchParty.url = String(data.url).slice(0, 500);
     }
     if (data.type !== undefined) {
@@ -2252,8 +2252,9 @@ io.on('connection', function(socket) {
     var roomId    = socket.data.roomId;
     if (!roomId) return;
     var _pvNow = Date.now();
-    if (_pvNow - (pollVoteThrottle.get(socket.id) || 0) < 500) return;
-    pollVoteThrottle.set(socket.id, _pvNow);
+    var _pvKey = socket.data.userId || socket.id;
+    if (_pvNow - (pollVoteThrottle.get(_pvKey) || 0) < 500) return;
+    pollVoteThrottle.set(_pvKey, _pvNow);
     var optionIdx = Math.floor(data.optionIdx || 0);
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
@@ -2279,8 +2280,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
     var _qaNow = Date.now();
-    if (_qaNow - (qaQuestionThrottle.get(socket.id) || 0) < 3000) return;
-    qaQuestionThrottle.set(socket.id, _qaNow);
+    var _qaKey = socket.data.userId || socket.id;
+    if (_qaNow - (qaQuestionThrottle.get(_qaKey) || 0) < 3000) return;
+    qaQuestionThrottle.set(_qaKey, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = uuidv4();
     var user = socket.data.username || 'Guest';
@@ -2296,15 +2298,16 @@ io.on('connection', function(socket) {
     var _quId = String(data.id);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_quId)) return;
     var _quNow = Date.now();
-    if (_quNow - (qaUpvoteThrottle.get(socket.id) || 0) < 500) return;
-    qaUpvoteThrottle.set(socket.id, _quNow);
+    var _quKey = socket.data.userId || socket.id;
+    if (_quNow - (qaUpvoteThrottle.get(_quKey) || 0) < 500) return;
+    qaUpvoteThrottle.set(_quKey, _quNow);
     var queue = qaQueues.get(roomId);
     if (!queue) return;
     var item = queue.get(_quId);
     if (!item) return;
     if (!item.upvoters) item.upvoters = new Set();
-    if (item.upvoters.has(socket.id)) return;
-    item.upvoters.add(socket.id);
+    if (item.upvoters.has(_quKey)) return;
+    item.upvoters.add(_quKey);
     item.upvotes += 1;
     io.to(roomId).emit('qa-upvote', { id: _quId, upvotes: item.upvotes });
   });
@@ -2368,16 +2371,17 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     var _vvNow = Date.now();
-    if (_vvNow - (vsVoteThrottle.get(socket.id) || 0) < 500) return;
-    vsVoteThrottle.set(socket.id, _vvNow);
+    var _vvKey = socket.data.userId || socket.id;
+    if (_vvNow - (vsVoteThrottle.get(_vvKey) || 0) < 500) return;
+    vsVoteThrottle.set(_vvKey, _vvNow);
     var vp = vsPolls.get(roomId);
     if (!vp || !vp.active) return;
     var side = data.side; // 'A' or 'B'
     if (side !== 'A' && side !== 'B') return;
-    vp.votesA.delete(socket.id);
-    vp.votesB.delete(socket.id);
-    if (side === 'A') vp.votesA.add(socket.id);
-    else vp.votesB.add(socket.id);
+    vp.votesA.delete(_vvKey);
+    vp.votesB.delete(_vvKey);
+    if (side === 'A') vp.votesA.add(_vvKey);
+    else vp.votesB.add(_vvKey);
     io.to(roomId).emit('vs-update', serializeVs(vp));
   });
 
@@ -2456,8 +2460,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.msgId || !data.emoji) return;
     var _crNow = Date.now();
-    if (_crNow - (viewerReactThrottle.get(socket.id) || 0) < 500) return;
-    viewerReactThrottle.set(socket.id, _crNow);
+    var _crKey = socket.data.userId || socket.id;
+    if (_crNow - (viewerReactThrottle.get(_crKey) || 0) < 500) return;
+    viewerReactThrottle.set(_crKey, _crNow);
     var _msgIdStr = String(data.msgId);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_msgIdStr)) return;
     var emoji = String(data.emoji).slice(0, 4);
@@ -2472,10 +2477,10 @@ io.on('connection', function(socket) {
     if (!msgRxns.has(emoji)) msgRxns.set(emoji, new Set());
     var emojiSet = msgRxns.get(emoji);
 
-    if (emojiSet.has(socket.id)) {
-      emojiSet.delete(socket.id);
+    if (emojiSet.has(_crKey)) {
+      emojiSet.delete(_crKey);
     } else {
-      emojiSet.add(socket.id);
+      emojiSet.add(_crKey);
     }
 
     var serialized = {};
@@ -2777,7 +2782,7 @@ io.on('connection', function(socket) {
     }
 
     if (destinations && destinations.length > 0) {
-      var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       var _validDests = [];
       var _destList = Array.isArray(destinations) ? destinations.slice(0, 10) : [];
       for (var _gdi = 0; _gdi < _destList.length; _gdi++) {
@@ -2993,8 +2998,9 @@ io.on('connection', function(socket) {
     if (!battle.cheerA) battle.cheerA = [];
     if (!battle.cheerB) battle.cheerB = [];
     if (!battle.cheerSids) battle.cheerSids = new Set();
-    if (battle.cheerSids.has(socket.id)) return;
-    battle.cheerSids.add(socket.id);
+    var _cheerKey = socket.data.userId || socket.id;
+    if (battle.cheerSids.has(_cheerKey)) return;
+    battle.cheerSids.add(_cheerKey);
     var user = socket.data.username || 'Viewer';
     var list = cheerSide === 'A' ? battle.cheerA : battle.cheerB;
     list.push(user);
