@@ -23,6 +23,16 @@ import ShareToSocial from '../components/social/ShareToSocial';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -106,6 +116,11 @@ export default function SearchPage() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [query, setQuery]     = useState('');
   const [activeTab, setActiveTab] = useState('rooms');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [recentSearches, setRecentSearches] = useState(() => { try { return JSON.parse(localStorage.getItem('sw_recent_searches') || '[]'); } catch { return []; } });
+  const inputRef = useRef(null);
+
+  useEffect(() => { const t = setTimeout(() => setDebouncedQuery(query), 300); return () => clearTimeout(t); }, [query]);
 
   const { data: rooms = [] } = useQuery({
     queryKey: ['search-rooms'],
@@ -144,6 +159,8 @@ export default function SearchPage() {
     enabled: !!currentUser?.id,
   });
   const userCommunityId = userCommunity?.id || null;
+
+  const liveRooms = rooms.filter(r => r.status === 'live');
 
   const q = debouncedQuery.toLowerCase().trim();
 

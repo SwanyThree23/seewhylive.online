@@ -17,6 +17,11 @@ import ChallengeLeaderboard from '../components/community/ChallengeLeaderboard';
 import StreamGoals from '../components/live/StreamGoals';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 function Toggle({ checked, onChange }) {
   return (
@@ -258,9 +263,9 @@ export default function CreateCommunityPage() {
         </form>
 
         <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <SpotlightBanner communityId={null} isAdmin={false} />
-          <AnnouncementFeed communityId={null} />
-          <ReferralProgram communityId={null} />
+          <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
+          <AnnouncementFeed communityId={userCommunityId} />
+          <ReferralProgram communityId={userCommunityId} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '8px 0 28px' }}>

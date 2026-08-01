@@ -24,6 +24,7 @@ import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyt
 import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 import RewardShop from '../components/loyalty/RewardShop';
 import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import NativeSelect from '../components/ui/NativeSelect';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -2093,6 +2094,13 @@ const TABS = [
 
 export default function SeeWhyLIVEv41() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activeRoom } = useQuery({
+    queryKey: ['activeRoom', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user?.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
   const [activeTab, setActiveTab] = useState('stage');
 
   const panelMap = {
@@ -2168,18 +2176,18 @@ export default function SeeWhyLIVEv41() {
       <SwanyBotWidget />
       <SwanyBotEnhanced />
       <NotificationBell />
-      <SwanDirectorHUD roomId={null} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
-      <GiftSystem roomId={null} userId={null} isHost={true} />
-      <GiftLeaderboard roomId={null} />
+      <SwanDirectorHUD roomId={activeRoomId} participants={[]} onAdmit={() => {}} onRemove={() => {}} />
+      <GiftSystem roomId={activeRoomId} userId={user?.id || null} isHost={true} />
+      <GiftLeaderboard roomId={activeRoomId} />
       <ViewerCount count={0} peakViewers={0} />
       <HostAlertCenter />
-      <StreamHealthMonitor isStreaming={false} />
-      <SwanAIRecommendations roomId={null} currentLayout='v41' viewerCount={0} />
+      <StreamHealthMonitor isStreaming={!!activeRoomId} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout='v41' viewerCount={0} />
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
-      <MilestoneAlerts userId={user?.id || null} roomId={null} />
+      <MilestoneAlerts userId={user?.id || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard />
       <StreamerMonetizationCenter />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <BackgroundCustomizer />
     </div>
   );

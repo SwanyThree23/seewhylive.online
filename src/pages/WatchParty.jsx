@@ -39,31 +39,150 @@ import { useHighlightDetector } from '../hooks/useHighlightDetector';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import WatchPartyTab from '../components/watchparty/WatchPartyTab';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import ZEGOStreamHealthCard from '../components/zego/ZEGOStreamHealthCard';
+import ZEGOConfigPanel from '../components/zego/ZEGOConfigPanel';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
+import ActivitySidebar from '../components/shared/ActivitySidebar';
+import GlobalSearch from '../components/shared/GlobalSearch';
+import AudioPanel from '../components/live/AudioPanel';
+import EvmuxWebSource from '../components/live/EvmuxWebSource';
+import LivePollOverlay from '../components/live/LivePollOverlay';
+import StripeConnectButton from '../components/monetization/StripeConnectButton';
+import StripeSubscribeButton from '../components/monetization/StripeSubscribeButton';
+import SubscriptionTiers from '../components/monetization/SubscriptionTiers';
+import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
+
+import ClipCreator from '../components/live/ClipCreator';
+import RealtimeLeaderboard from '../components/live/RealtimeLeaderboard';
+import LiveTranscription from '../components/live/LiveTranscription';
+import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
+import VirtualCurrencyTips from '../components/live/VirtualCurrencyTips';
+import StreamHighlightCapture from '../components/live/StreamHighlightCapture';
+import GoldenWall from '../components/live/GoldenWall';
+import QuickPollLauncher from '../components/live/QuickPollLauncher';
+import GiftTray from '../components/live/GiftTray';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import SwanDirectorPanel, { SwanDirectorHUD } from '../components/live/SwanDirectorPanel';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import AICopilotSidebar from '../components/live/AICopilotSidebar';
+import EnhancedPollingSystem from '../components/live/EnhancedPollingSystem';
+import ViewerCount from '../components/live/ViewerCount';
+import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
+import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboard';
+import AIStreamSummary from '../components/live/AIStreamSummary';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import SceneSwitcher from '../components/live/SceneSwitcher';
+import NotificationHub from '../components/live/NotificationHub';
+import SoundboardWidget from '../components/live/SoundboardWidget';
+import RaidPanelButton from '../components/live/RaidPanel';
+import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import PerformanceDashboard from '../components/streaming/PerformanceDashboard';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import QuickTip from '../components/rooms/QuickTip';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import AnimatedGiftShop from '../components/monetization/AnimatedGiftShop';
+import VirtualGoodsStore from '../components/monetization/VirtualGoodsStore';
+import SoundAlertsManager from '../components/monetization/SoundAlertsManager';
+import ShareToSocial from '../components/social/ShareToSocial';
+import VideoShortRecorder from '../components/vod/VideoShortRecorder';
+import RecordingManager from '../components/content/RecordingManager';
+import OBSBridge from '../components/obs/OBSBridge';
+import ZEGOMobileAppBanner from '../components/zego/ZEGOMobileAppBanner';
+import AutomatedClipGenerator from '../components/streaming/AutomatedClipGenerator';
+import InteractivePollWidget from '../components/streaming/InteractivePollWidget';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import EmbedPlayer from '../components/streaming/EmbedPlayer';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
+import RedemptionQueue from '../components/loyalty/RedemptionQueue';
+import RewardShop from '../components/loyalty/RewardShop';
+import ViewerLoyaltyCard from '../components/loyalty/ViewerLoyaltyCard';
+import PKBattleInterface from '../components/pk/PKBattleInterface';
+import CoStreamPanel from '../components/collaboration/CoStreamPanel';
+import CollaborativeWhiteboard from '../components/collaboration/CollaborativeWhiteboard';
+import TipAlert from '../components/monetization/TipAlert';
+import TippingModal from '../components/monetization/TippingModal';
+import LiveAuctionWidget from '../components/monetization/LiveAuctionWidget';
+import { MerchStrip as MerchWidget } from '../components/merch/MerchWidget';
+import NotificationBell from '../components/shared/NotificationBell';
+import StreamerGoalsWidget from '../components/monetization/StreamerGoalsWidget';
+import PayPerViewManager from '../components/monetization/PayPerViewManager';
+import MonetizationDashboard from '../components/monetization/MonetizationDashboard';
+import GiftShopTray from '../components/live/GiftShopTray';
+import { GiftLeaderboard } from '../components/live/GiftSystem';
+import SubscriptionManager from '../components/monetization/SubscriptionManager';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import BattleMode from '../components/streaming/BattleMode';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
+import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
+import BattleScoreboard from '../components/live/BattleScoreboard';
+import EnhancedStreamChat from '../components/live/EnhancedStreamChat';
+import GlobalChatWidget from '../components/live/GlobalChatWidget';
+import GuestConnector from '../components/live/GuestConnector';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import LeaderboardPanel from '../components/live/LeaderboardPanel';
+import MobileStreamControls from '../components/live/MobileStreamControls';
+import PointsNotification from '../components/live/PointsNotification';
+import EngagementBadgesDisplay from '../components/live/EngagementBadgesDisplay';
+import ChatOverlay from '../components/live/ChatOverlay';
+import PKBattleSoundboard from '../components/live/PKBattleSoundboard';
+import PanelMusicPlayer from '../components/live/PanelMusicPlayer';
+import PollLaunchBar from '../components/live/PollLaunchBar';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import PrivatePanel from '../components/live/PrivatePanel';
+import StreamChatbot from '../components/live/StreamChatbot';
+import StreamEventBus from '../components/live/StreamEventBus';
+import TippingOverlay from '../components/live/TippingOverlay';
+import UnifiedChat from '../components/live/UnifiedChat';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AudioMixer from '../components/live/AudioMixer';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
+import PayPerViewGate from '../components/live/PayPerViewGate';
+import PaywallGate from '../components/live/PaywallGate';
+import SubscriptionGate from '../components/live/SubscriptionGate';
+import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import MultiStreamConfig from '../components/live/MultiStreamConfig';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import WebhookHooks from '../components/live/WebhookHooks';
+import CreatorTierManager from '../components/subscriptions/CreatorTierManager';
+import TierBadge from '../components/subscriptions/TierBadge';
+import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
+import GuestGrid from '../components/live/GuestGrid';
+import GuestInviteGenerator from '../components/live/GuestInviteGenerator';
+import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
 import CollabPlaylist from '../components/watchparty/CollabPlaylist';
 import WatchPartyAnalytics from '../components/watchparty/WatchPartyAnalytics';
-import AICopilotSidebar from '../components/live/AICopilotSidebar';
-import PointsEarnWidget from '../components/loyalty/PointsEarnWidget';
 import { MerchStrip } from '../components/merch/MerchWidget';
-import LiveAudiencePulse from '../components/live/LiveAudiencePulse';
-import ChatOverlay from '../components/live/ChatOverlay';
-import WatchPartyPlayer from '../components/streaming/WatchPartyPlayer';
-import YouTubeDiscovery from '../components/youtube/YouTubeDiscovery';
-import GiftTray from '../components/live/GiftTray';
 import GiftAnimation from '../components/live/GiftAnimation';
 import TipNowModal from '../components/live/TipNowModal';
-import ViewerControlsPanel from '../components/live/ViewerControlsPanel';
-import LivePollOverlay from '../components/live/LivePollOverlay';
-import UnifiedChat from '../components/live/UnifiedChat';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
-import ContentRecommendations from '../components/social/ContentRecommendations';
-import CollaborationMatcher from '../components/social/CollaborationMatcher';
-import ShareToSocial from '../components/social/ShareToSocial';
 import LoveTap from '../components/live/LoveTap';
 import TipWidget from '../components/live/TipWidget';
-import MilestoneAlerts from '../components/creator/MilestoneAlerts';
-import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
-import PollLaunchBar from '../components/live/PollLaunchBar';
 import SuperChatRail from '../components/live/SuperChatRail';
+import KeyboardShortcutsHelp from '../components/live/KeyboardShortcutsHelp';
 
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
@@ -412,7 +531,6 @@ export default function WatchPartyPage() {
   const [elapsed, setElapsed] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
   const [activeScene, setActiveScene] = useState('main');
@@ -482,6 +600,14 @@ export default function WatchPartyPage() {
     queryKey: ['watchparty-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
     enabled: !!partyId,
+  });
+  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', partyId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 5000,
   });
 
   const isHost = party?.host_id === user?.id;
@@ -1506,14 +1632,15 @@ export default function WatchPartyPage() {
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
-        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={false} onClose={() => {}} />}
+        {!isHost && party?.host_id && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} />}
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
         <SwanAIRecommendations roomId={partyId} currentLayout="default" viewerCount={0} />
         <MilestoneAlerts userId={user?.id} roomId={partyId} />
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
-        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} />}
+        {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} />}
+        {isHost && user?.id && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
         <ShareToSocial url={window.location.href} title={party?.title ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!'} />
         {partyId && party?.host_id && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
@@ -1522,6 +1649,13 @@ export default function WatchPartyPage() {
           <TipWidget roomId={partyId} recipient={{ id: party.host_id, name: party.host_name || 'Host' }} currentUser={user} />
         )}
       </div>
+
+      <KeyboardShortcutsHelp shortcuts={[
+        { key: 'M',     label: 'Toggle microphone' },
+        { key: 'Space', label: 'Push-to-talk (hold when muted)' },
+        { key: '?',     label: 'Show keyboard shortcuts' },
+      ]} />
+
 
       {/* Spotlight overlay — double-tap any octagon in the participant strip */}
       <AnimatePresence>

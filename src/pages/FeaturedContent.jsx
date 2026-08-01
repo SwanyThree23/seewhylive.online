@@ -17,6 +17,15 @@ import StreamGoals from '../components/live/StreamGoals';
 import AnnouncementPanel from '../components/community/AnnouncementPanel';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
 
 const CHANNELS = [
   {
@@ -119,6 +128,19 @@ function YouTubeEmbed({ videoId, title }) {
 export default function FeaturedContent() {
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [activeChannel, setActiveChannel] = useState(null);
+  const { data: userCommunity } = useQuery({
+    queryKey: ['userCommunity', user?.id],
+    queryFn: () => base44.entities.Community.filter({ owner_id: user?.id }).then(r => r[0] || null),
+    enabled: !!user?.id,
+  });
+  const userCommunityId = userCommunity?.id || null;
+  const { data: activeRoom } = useQuery({
+    queryKey: ['featured-active-room', user?.id],
+    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    enabled: !!user?.id,
+    refetchInterval: 30000,
+  });
+  const activeRoomId = activeRoom?.id || null;
 
   return (
     <div className="min-h-screen py-8 px-4" style={{ background: '#080B18' }}>
@@ -252,7 +274,7 @@ export default function FeaturedContent() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ShareToSocial content={{ title: 'SeeWhy LIVE', url: window.location.href }} />
-          <StreamGoals isHost={false} />
+          <StreamGoals isHost={true} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>

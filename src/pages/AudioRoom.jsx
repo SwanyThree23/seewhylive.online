@@ -57,6 +57,17 @@ import StreamAnalyticsDashboard from '../components/live/StreamAnalyticsDashboar
 import AIStreamSummary from '../components/live/AIStreamSummary';
 import AudioPanel from '../components/live/AudioPanel';
 import ChatModerationPanel from '../components/rooms/ChatModerationPanel';
+import ChatModeration from '../components/live/ChatModeration';
+import BrandChyron from '../components/live/BrandChyron';
+import LowerThirdsBanner from '../components/live/LowerThirdsBanner';
+import NotificationHub from '../components/live/NotificationHub';
+import { WhisperPanel } from '../components/live/DMWhisperPanel';
+import StreamEventBus from '../components/live/StreamEventBus';
+import UnifiedChat from '../components/live/UnifiedChat';
+import AIPersonaCustomizer from '../components/live/AIPersonaCustomizer';
+import AudioMixer from '../components/live/AudioMixer';
+import EnhancedAudioMixer from '../components/live/EnhancedAudioMixer';
+import ScreenSharePanel from '../components/live/ScreenSharePanel';
 import SoundboardWidget from '../components/live/SoundboardWidget';
 import RaidPanelButton from '../components/live/RaidPanel';
 import BroadcastAnalyticsDashboard from '../components/streaming/BroadcastAnalyticsDashboard';
@@ -126,7 +137,6 @@ import PrivatePanel from '../components/live/PrivatePanel';
 import StreamChatbot from '../components/live/StreamChatbot';
 import MultiGuestPanel from '../components/streaming/MultiGuestPanel';
 import EnhancedRoomControls from '../components/live/EnhancedRoomControls';
-import { MerchStrip } from '../components/merch/MerchWidget';
 import ReportModal from '../components/moderation/ReportModal';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import LoyaltyBadge from '../components/rooms/LoyaltyBadge';
@@ -177,6 +187,7 @@ import AuraPanel from '../components/live/AuraPanel';
 import LiveGoalWidget from '../components/live/LiveGoalWidget';
 import SuperChatRail from '../components/live/SuperChatRail';
 import OverlayThemeBuilder from '../components/live/OverlayThemeBuilder';
+import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
 const PINK    = '#C0392B';
@@ -281,15 +292,13 @@ export default function AudioRoom() {
   const [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   const { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
-  const { speakers: speakerDevices } = useCameraDevices();
-  const { remoteStreams, peerUserIds, peersRef } = useWebRTCPeers(roomId, localStream);
+  const { cameras: cameraDevices, speakers: speakerDevices } = useCameraDevices();
+  const { remoteStreams, peerUserIds, peersRef, announceJoin } = useWebRTCPeers(roomId, localStream);
   const { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
-  const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const [lastChatMsg, setLastChatMsg] = useState(null);
   const [chatMessages, setChatMessages] = useState([]);
   const [hypeLevel, setHypeLevel] = useState(0);
@@ -308,6 +317,7 @@ export default function AudioRoom() {
   const { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
   const { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
+  const speakingIds = localIsSpeaking && user?.id ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
 
   const { data: party } = useQuery({
     queryKey: ['audio-room', roomId],
@@ -328,12 +338,23 @@ export default function AudioRoom() {
     refetchInterval: 5000,
   });
 
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', roomId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!roomId,
+    refetchInterval: 5000,
+  });
+
   const [showActivitySidebar, setShowActivitySidebar] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
   const [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
   const [showTippingModal, setShowTippingModal] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
+  const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
+  const [reactEmoji, setReactEmoji] = useState(null);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showWhisperPanel, setShowWhisperPanel] = useState(false);
@@ -376,7 +397,7 @@ export default function AudioRoom() {
   useEffect(() => {
     if (!roomId || !user?.id) return;
     announceJoin(user.id);
-    return leavePeerRoom;
+    return leaveRoom;
   }, [roomId, user?.id]);
 
   const speakers = members.length > 0
@@ -395,6 +416,7 @@ export default function AudioRoom() {
   const myMember   = members.find(m => m.user_id === user?.id);
   const hostName   = hostMember?.user_name || party?.host_name || 'Host';
   const memberCount = members.length;
+  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
   const { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: user?.id || '', title: party?.title || 'Live Audio', stream: localStream });
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
@@ -655,6 +677,7 @@ export default function AudioRoom() {
             onSpotlight={(id) => setSpotlightId(prev => prev === id ? null : id)}
             roomId={roomId}
             isHost={isHost}
+            speakingIds={new Set(Object.keys(speakingIds).filter(k => speakingIds[k]))}
           />
         )}
       </div>
@@ -909,7 +932,7 @@ export default function AudioRoom() {
       {isHost && <SoundAlertsManager creatorId={party?.host_id || user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {isHost && roomId && user?.id && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
-      {isHost && <BroadcastAnalyticsDashboard streamSession={null} isLive={roomId != null} />}
+      {isHost && <BroadcastAnalyticsDashboard streamSession={party || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
@@ -918,7 +941,7 @@ export default function AudioRoom() {
       {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={setActiveScene} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
-      {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} />}
+      {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
       {roomId && <LiveAudiencePulse roomId={roomId} isHost={isHost} viewerCount={memberCount} />}
       {roomId && <StreamAnalyticsDashboard roomId={roomId} />}
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} elapsedSeconds={elapsed} />}
@@ -946,7 +969,7 @@ export default function AudioRoom() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
       {roomId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
@@ -960,13 +983,13 @@ export default function AudioRoom() {
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
-      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={() => {}} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={(id) => reacquireMedia({ cameraId: id })} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
       {isHost && <LiveCaptionOverlay stream={localStream} position="top" />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={false} onRetry={reacquireMedia} />
       {isHost && roomId && <WebhookHooks roomId={roomId} isHost={isHost} />}
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
-      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={null} isHost={isHost} />}
+      {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={user?.id} activePoll={activePoll} isHost={isHost} />}
       {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={party} />}
@@ -985,7 +1008,7 @@ export default function AudioRoom() {
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
       {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={() => {}} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
@@ -994,7 +1017,7 @@ export default function AudioRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={() => {}} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={roomId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {roomId && user?.id && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={party?.host_id || user?.id} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1012,7 +1035,7 @@ export default function AudioRoom() {
       <ViewerCount count={Math.max(busViewerCount, memberCount)} peakViewers={peakViewers} />
       {isHost && roomId && user?.id && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={party?.title || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {isHost && roomId && user?.id && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
-      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} />}
+      {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={user?.id} isHost={isHost} triggerOpen={pollTick} />}
       {!isHost && roomId && party?.host_id && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
       {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if (party?.id) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
@@ -1028,7 +1051,8 @@ export default function AudioRoom() {
       {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={party?.host_id || user?.id} onClose={() => setShowSwanPanel(false)} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={party?.title || ''} viewerCount={memberCount} isLive={roomId != null} userTier={'free'} />}
       {isHost && <OverlayThemeBuilder creatorId={user?.id} />}
-      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} />
+      <LiveGoalWidget memberCount={memberCount} tipTotal={tipTotal} subCount={subCount} triggerEdit={goalTick} />
+      {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
       <SuperChatRail superchats={[]} />
       {roomId && user?.id && party?.host_id && <LoveTap roomId={roomId} user={user} creatorId={party.host_id} creatorName={hostName} />}
 

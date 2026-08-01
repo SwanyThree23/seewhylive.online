@@ -32,6 +32,8 @@ import ViewerCount from '../components/live/ViewerCount';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import RoomReactionOverlay from '../components/live/RoomReactionOverlay';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -67,6 +69,7 @@ export default function ViewerDashboard() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState('following');
   const [notifFilter, setNotifFilter] = useState('all');
+  const [reactEmoji, setReactEmoji] = useState(null);
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
@@ -417,14 +420,15 @@ export default function ViewerDashboard() {
         <div style={{ padding: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {user?.id && <MilestoneAlerts creatorId={user.id} />}
           <PartyAnalyticsDashboard partyId={null} isHost={false} />
-          <QuickPollLauncher roomId={activeRoomId} hostId={user?.id} isHost={false} />
-          <LivePollWidget roomId={activeRoomId} currentUser={user} isHost={false} />
-          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={() => {}} onQuickTip={() => {}} roomId={activeRoomId} />
+          <QuickPollLauncher roomId={activeRoomId} hostId={user?.id} isHost={true} />
+          <LivePollWidget roomId={activeRoomId} currentUser={user} isHost={true} />
+          <MobileStreamControls micMuted={false} onMicToggle={() => {}} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} roomId={activeRoomId} />
+          {activeRoomId && user && <RoomReactionOverlay roomId={activeRoomId} currentUser={user} triggerReact={reactEmoji} />}
           {user?.id && <SubscriptionGate creatorId={user?.id} roomId={activeRoomId} />}
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="viewer" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="viewer" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />
@@ -434,7 +438,7 @@ export default function ViewerDashboard() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id} roomId={null} currentUser={user} />
+      <RewardShop creatorId={user?.id} roomId={activeRoomId} currentUser={user} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />

@@ -8,6 +8,7 @@ import {
   Tag, Image, AlignLeft, Layers, Sparkles,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { encryptStreamKey, decryptStreamKey } from '../lib/security';
 import GuestInviteGeneratorV49 from '../components/streaming/GuestInviteGeneratorV49';
 import RTMPFanoutPanelV49 from '../components/streaming/RTMPFanoutPanelV49';
 import { useQuery } from '@tanstack/react-query';
@@ -99,6 +100,7 @@ import { useConnectionQuality } from '../hooks/useConnectionQuality';
 import { useSubscriptionCount } from '../hooks/useSubscriptionCount';
 import NetworkQualityBanner from '../components/live/NetworkQualityBanner';
 import PartyHypeMeter from '../components/watchparty/PartyHypeMeter';
+import LiveEmoticonStorm from '../components/watchparty/LiveEmoticonStorm';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -137,6 +139,9 @@ import PaywallGate from '../components/live/PaywallGate';
 import SubscriptionGate from '../components/live/SubscriptionGate';
 import ModerationAppealPanel from '../components/live/ModerationAppealPanel';
 import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import FanoutEnginePanel from '../components/live/FanoutEnginePanel';
+import LiveStage from '../components/live/LiveStage';
+import { useZegoToken } from '../hooks/useZegoToken';
 import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
 import MultiStreamConfig from '../components/live/MultiStreamConfig';
 import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
@@ -308,6 +313,8 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   const [videoId,    setVideoId]    = useState(() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } });
   const [audioId,    setAudioId]    = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
   const [resolution, setResolution] = useState('720p');
+  const [noiseSupp, setNoiseSupp] = useState(true);
+  const [echoCan, setEchoCan] = useState(true);
   const { cameras } = useCameraDevices();
 
   const start = useCallback(async (opts = {}) => {
@@ -402,9 +409,37 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
 function RtmpKeyRow({ streamKey }) {
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const [vaultPayload, setVaultPayload] = useState(null);   // AES-256-GCM ciphertext
+  const [plainDisplay, setPlainDisplay] = useState('');      // transient — cleared on hide
 
-  function copy() {
-    navigator.clipboard?.writeText(streamKey);
+  // Encrypt on mount so plain key never sits in state long-term
+  useEffect(() => {
+    if (!streamKey) return;
+    encryptStreamKey(streamKey)
+      .then(p => setVaultPayload(p))
+      .catch(() => setVaultPayload(null));
+  }, [streamKey]);
+
+  async function toggleReveal() {
+    if (revealed) {
+      setRevealed(false);
+      setPlainDisplay('');
+    } else {
+      try {
+        const plain = vaultPayload
+          ? await decryptStreamKey(vaultPayload)
+          : streamKey;
+        setPlainDisplay(plain);
+        setRevealed(true);
+      } catch {
+        toast.error('Vault decryption failed');
+      }
+    }
+  }
+
+  async function copy() {
+    const plain = vaultPayload ? await decryptStreamKey(vaultPayload).catch(() => streamKey) : streamKey;
+    navigator.clipboard?.writeText(plain);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
     toast.success('Stream key copied');
@@ -417,8 +452,16 @@ function RtmpKeyRow({ streamKey }) {
       border: '1px solid rgba(255,255,255,0.08)',
       padding: '10px 12px',
     }}>
-      <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6 }}>
-        RTMP Stream Key
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)' }}>
+          RTMP Stream Key
+        </div>
+        {vaultPayload && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 4, background: 'rgba(109,191,126,0.1)', border: '1px solid rgba(109,191,126,0.2)' }}>
+            <Lock style={{ width: 8, height: 8, color: '#6DBF7E' }} />
+            <span style={{ fontSize: 9, fontWeight: 900, fontFamily: FONT, letterSpacing: '0.06em', color: '#6DBF7E', textTransform: 'uppercase' }}>Vault Pro</span>
+          </div>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <code style={{
@@ -431,9 +474,9 @@ function RtmpKeyRow({ streamKey }) {
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}>
-          {revealed ? streamKey : '●●●●●●●●●●●●●●●●●●●●'}
+          {revealed ? plainDisplay : '●●●●●●●●●●●●●●●●●●●●'}
         </code>
-        <button onClick={() => setRevealed(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <button onClick={toggleReveal} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           {revealed
             ? <Lock style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.3)' }} />
             : <Unlock style={{ width: 14, height: 14, color: 'rgba(255,255,255,0.3)' }} />}
@@ -512,6 +555,7 @@ export default function GoLive() {
   const [launching,   setLaunching]   = useState(false);
   const [countdown,   setCountdown]   = useState(false);
   const [partyId,     setPartyId]     = useState(null);
+  const { token: zegoToken } = useZegoToken({ roomId: partyId, userId: user?.id, enabled: !!partyId && !!user?.id });
   const [titleSuggestions, setTitleSuggestions] = useState([]);
   const [suggestingTitles, setSuggestingTitles] = useState(false);
   const [localStream,  setLocalStream]  = useState(null);
@@ -521,6 +565,8 @@ export default function GoLive() {
   const [peakViewers, setPeakViewers] = useState(0);
   const [tipTotal, setTipTotal] = useState(0);
   const [elapsed,     setElapsed]     = useState(0);
+  const [noiseSupp,   setNoiseSupp]   = useState(true);
+  const [echoCan,     setEchoCan]     = useState(true);
   const handleStreamReady = useCallback((s) => setLocalStream(s), []);
   const cameraRetryRef = useRef(null);
   // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them
@@ -529,11 +575,18 @@ export default function GoLive() {
     try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
     cameraRetryRef.current?.({ videoId: id });
   }, []);
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   const speakingIds = isSpeaking && user?.id ? { [user.id]: true } : {};
   const { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: user?.id || '', title: '', stream: localStream });
   const { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   const subCount = useSubscriptionCount(user?.id);
+  const { data: party } = useQuery({
+    queryKey: ['golive-party', partyId],
+    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 30000,
+  });
   const { data: members = [] } = useQuery({
     queryKey: ['golive-members', partyId],
     queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
@@ -554,6 +607,10 @@ export default function GoLive() {
   const [showClipCreator, setShowClipCreator] = useState(false);
   const [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
   const [showEvmux, setShowEvmux] = useState(false);
+  const [pollTick, setPollTick] = useState(0);
+  const [raidTick, setRaidTick] = useState(0);
+  const [goalTick, setGoalTick] = useState(0);
+  const [reactEmoji, setReactEmoji] = useState(null);
   const [showCamSettings, setShowCamSettings] = useState(false);
   const [showViewerControls, setShowViewerControls] = useState(false);
   const [showSwanPanel, setShowSwanPanel] = useState(false);
@@ -603,7 +660,13 @@ export default function GoLive() {
     return () => clearInterval(pollId);
   }, [partyId, user?.id]);
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: activePoll } = useQuery({
+    queryKey: ['active-poll', partyId],
+    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    enabled: !!partyId,
+    refetchInterval: 5000,
+  });
+
 
   const streamKey = user?.id
     ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
@@ -671,12 +734,60 @@ export default function GoLive() {
         updated_at_ms: Date.now(),
       });
       setPartyId(party.id);
+
+      // Kick off RTMP fanout for the host's enabled destinations (best-effort —
+      // failure here does NOT block going live; FFmpeg waits for the RTMP stream).
+      if (user?.id) {
+        try {
+          const dests = await base44.entities.RTMPDestination.filter({ creator_id: user.id, is_enabled: true });
+          if (dests && dests.length > 0) {
+            const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+            const r = await fetch(`${API_BASE}/fanout-start`, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify({
+                stream_id:    party.id,
+                guest_id:     user.id,
+                room_id:      party.id,
+                // Vault keys looked up server-side via guest_id + dest_id —
+                // the frontend never holds or transmits plaintext stream keys.
+                destinations: dests.map(d => ({
+                  dest_id:  d.id,
+                  url:      d.server_url,
+                  platform: d.platform,
+                  label:    d.label || d.platform || 'custom',
+                  enabled:  true,
+                })),
+              }),
+            });
+            const json = await r.json();
+            if (json.ok) {
+              toast.success(`📡 Fanout live — ${json.destinations} platform${json.destinations !== 1 ? 's' : ''}`);
+            }
+          }
+        } catch {
+          // Fanout is best-effort; never block the stream itself
+        }
+      }
+
       setCountdown(true);
     } catch {
       toast.error('Failed to create stream');
       setLaunching(false);
     }
   }
+
+  // Stop fanout if the user navigates away before the redirect completes
+  useEffect(() => {
+    if (!partyId) return;
+    const stopFanout = () => {
+      const API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
+      const blob = new Blob([JSON.stringify({ stream_id: partyId })], { type: 'application/json' });
+      navigator.sendBeacon?.(`${API_BASE}/fanout-stop`, blob);
+    };
+    window.addEventListener('beforeunload', stopFanout);
+    return () => window.removeEventListener('beforeunload', stopFanout);
+  }, [partyId]);
 
   function onCountdownDone() {
     const dest = format?.dest || 'BroadcastStudio';
@@ -1026,7 +1137,7 @@ export default function GoLive() {
       {<SubscriptionManager creatorId={user?.id} />}
       {partyId && <TipAlert roomId={partyId} recipientId={user?.id} />}
       {partyId && <LiveAuctionWidget creatorId={user?.id} roomId={partyId} isCreator={true} currentUser={user} />}
-      <MerchStrip roomId={partyId} currentUser={user} hostId={user?.id} />
+      <MerchWidget roomId={partyId} currentUser={user} hostId={user?.id} />
       <NotificationBell />
       {partyId && <PKBattleInterface roomId={partyId} />}
       {partyId && <CoStreamPanel roomId={partyId} />}
@@ -1049,7 +1160,7 @@ export default function GoLive() {
       {<SoundAlertsManager creatorId={user?.id} />}
       <ShareToSocial content={{text: ''}} />
       {partyId && user?.id && <VideoShortRecorder roomId={partyId} creatorId={user.id} />}
-      {<BroadcastAnalyticsDashboard streamSession={null} isLive={partyId != null} />}
+      {<BroadcastAnalyticsDashboard streamSession={party || null} isLive={partyId != null} />}
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
@@ -1057,7 +1168,7 @@ export default function GoLive() {
       {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
-      {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} />}
+      {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} triggerOpen={raidTick} />}
       {partyId && <LiveAudiencePulse roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <StreamAnalyticsDashboard roomId={partyId} />}
       {partyId && <AIStreamSummary roomId={partyId} isHost={true} streamTitle={''} viewerCount={viewerCount} elapsedSeconds={elapsed} />}
@@ -1069,8 +1180,8 @@ export default function GoLive() {
       {partyId && <GoldenWall roomId={partyId} />}
       {partyId && user?.id && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && user?.id && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
-      {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} />}
-      <RoomBrandingEditor roomData={null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
+      {partyId && <QuickPollLauncher roomId={partyId} hostId={user?.id} isHost={true} triggerOpen={pollTick} />}
+      <RoomBrandingEditor roomData={party || null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={user?.id} isHost={true} />}
@@ -1093,7 +1204,7 @@ export default function GoLive() {
       {user?.id && <LoyaltyBadge userId={user.id} creatorId={user?.id} />}
       {partyId && <GuestInviteGenerator roomId={partyId} isHost={true} />}
       {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={user?.id} speakingIds={speakingIds} />}
-      {partyId && <EnhancedRoomControls isHost={true} roomData={null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
+      {partyId && <EnhancedRoomControls isHost={true} roomData={party || null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
@@ -1103,6 +1214,18 @@ export default function GoLive() {
       {partyId && <SubscriptionGate creatorId={user?.id} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {user?.id && <GuestDestinationsPanel participantUserId={user.id} guestName={user?.full_name || ''} />}
+      {user?.id && <FanoutEnginePanel members={members} isHost={true} roomId={partyId} />}
+      {partyId && user?.id && (
+        <LiveStage
+          roomId={partyId}
+          role="panelist"
+          userId={user.id}
+          userName={user.full_name || user.email || 'Host'}
+          token={zegoToken}
+          onLeave={function() { setPartyId(null); setStep('pick'); }}
+          minHeight={280}
+        />
+      )}
       {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
@@ -1111,7 +1234,7 @@ export default function GoLive() {
       {partyId && <WebhookHooks roomId={partyId} isHost={true} />}
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
-      {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={null} isHost={true} />}
+      {partyId && <PollLaunchBar roomId={partyId} hostId={user?.id} activePoll={activePoll} isHost={true} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={elapsed} hostName={user?.full_name || ''} room={null} />}
       {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor(msg?.tip_amount || 0))} onMessageReceived={msg => { if (msg?.content) setChatMessages(prev => [...prev, msg]); }} />}
@@ -1119,7 +1242,7 @@ export default function GoLive() {
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => toast.success('AI persona configured!')} />}
       {<AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />}
-      {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={() => {}} />}
+      {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
@@ -1128,7 +1251,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={() => {}} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} onGoal={() => setGoalTick(t => t + 1)} roomId={partyId} />}
       {user?.id && <PointsNotification userId={user.id} />}
       {partyId && user?.id && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={user?.id} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1145,20 +1268,21 @@ export default function GoLive() {
       <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
-      {partyId && <GuestControls roomId={partyId} isHost={true} onMuteGuest={() => {}} onRemoveGuest={() => {}} guests={[]} />}
+      {partyId && <GuestControls roomId={partyId} isHost={true} participants={members} onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})} onRemoveGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(() => {})} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
+      {partyId && user && <LiveEmoticonStorm partyId={partyId} currentUser={user} triggerReact={reactEmoji} />}
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
       {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} speakingIds={speakingIds} />}
       {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => setTimeout(() => navigate('/'), 2000)} />}
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
-      {partyId && <LiveGoalWidget roomId={partyId} isHost={true} />}
+      {partyId && <LiveGoalWidget roomId={partyId} isHost={true} triggerEdit={goalTick} />}
       {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={user?.id} onClose={() => setShowAuraPanelDrawer(false)} />}
       {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={user?.id} onClose={() => setShowSwanPanel(false)} />}
       {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
       {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} />}
       {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}
-      {partyId && user?.id && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isOpen={showClipCreator} onClose={() => setShowClipCreator(false)} />}
+      {partyId && user?.id && showClipCreator && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} onClose={() => setShowClipCreator(false)} />}
       {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
 
       {/* ── DM WHISPER SYSTEM ── */}

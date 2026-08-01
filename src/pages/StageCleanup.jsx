@@ -218,7 +218,7 @@ export default function StageCleanupPage() {
           <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
           <StreamingPresets onPresetSelect={() => {}} currentPreset={null} />
           <GreenroomQueue roomId={activeRoomId} hostId={user?.id} onApprove={() => {}} />
-          <StreamHealthDashboard isLive={false} />
+          <StreamHealthDashboard isLive={!!activeRoomId} />
           <AIModeration roomId={activeRoomId} isHost={true} />
           <GreenroomWaitlistPanel roomId={activeRoomId} currentUser={user} onAdmit={() => {}} />
           <OnlineUsersGrid compact maxVisible={10} />

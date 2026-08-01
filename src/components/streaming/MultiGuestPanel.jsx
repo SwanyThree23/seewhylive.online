@@ -19,6 +19,7 @@ export default function MultiGuestPanel({
   isHost,
   currentUser,
   onStreamOut,
+  speakingIds,
 }) {
   const [layout, setLayout] = useState('grid');   // 'grid' | 'spotlight' | 'battle'
   const [tab, setTab] = useState('stage');         // 'stage' | 'greenroom' | 'rtmp'
@@ -119,6 +120,7 @@ export default function MultiGuestPanel({
             isHost={isHost}
             onStreamOut={onStreamOut}
             compactMode={layout === 'spotlight'}
+            speakingIds={speakingIds}
           />
         )}
       </div>

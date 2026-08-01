@@ -20,6 +20,13 @@ import AnnouncementPanel from '../components/community/AnnouncementPanel';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -335,7 +342,7 @@ export default function AIModerationPage() {
         )}
 
         <div className="mt-6 space-y-4 px-4 pb-6">
-          <AIModeration roomId={activeRoomId} isHost={false} />
+          <AIModeration roomId={activeRoomId} isHost={true} />
           <HostAlertCenter roomId={activeRoomId} />
           <ReportModal isOpen={false} onClose={() => {}} contentId={null} contentType="message" />
           <ModerationAppealPanel flagId={null} messageId={null} roomId={activeRoomId} onClose={() => {}} />
@@ -346,13 +353,13 @@ export default function AIModerationPage() {
 
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
-          <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
+          <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
           <EngagementBadgesDisplay roomId={activeRoomId} userId={user?.id} creatorId={user?.id} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
         </div>
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="moderation" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="moderation" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />

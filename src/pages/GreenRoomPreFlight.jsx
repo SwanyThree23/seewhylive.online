@@ -41,7 +41,7 @@ function genToken() {
   const rand = () => cryptoRandB36(8);
   const user = localStorage.getItem('seewhy_user_id') || 'sw_' + rand();
   const session = Date.now();
-  return `${uid}?session=${session}`;
+  return `${user}?session=${session}`;
 }
 
 function genVDOLink() {
@@ -110,6 +110,8 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
   }, [user?.id]);
   const activeRoomId = new URLSearchParams(window.location.search).get('room_id');
   const [showKey, setShowKey] = useState(false);
+  const [previewMicOn, setPreviewMicOn] = useState(true);
+  const [previewVideoOn, setPreviewVideoOn] = useState(true);
   const streamRef = useRef(null);
 
   const allReady = tests.mic === 'ready' && tests.camera === 'ready' && tests.network === 'ready';
@@ -201,9 +203,9 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
 
       {/* Stream health */}
       <ZEGOStreamHealthCard roomId={activeRoomId} />
-      <GuestQueue roomId={activeRoomId} isHost={false} />
-      <LocalVideoTile stream={null} audioEnabled={false} videoEnabled={false} userName="You" isHost={false} />
-      <OctagonalVideoWindow title="Preview" isMuted={false} isVideoOff={false} onMicToggle={() => {}} onVideoToggle={() => {}} />
+      <GuestQueue roomId={activeRoomId} isHost={true} />
+      <LocalVideoTile stream={streamRef.current} audioEnabled={previewMicOn} videoEnabled={previewVideoOn} userName="You" isHost={true} />
+      <OctagonalVideoWindow title="Preview" isMuted={!previewMicOn} isVideoOff={!previewVideoOn} onMicToggle={() => setPreviewMicOn(v => !v)} onVideoToggle={() => setPreviewVideoOn(v => !v)} />
       <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
       <DevicePreview user={user} onDeviceState={() => {}} />
 
@@ -266,7 +268,7 @@ export default function GreenRoomPreFlight({ asModal, onEnterStage, onClose }) {
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
         <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />
       </div>
     </div>

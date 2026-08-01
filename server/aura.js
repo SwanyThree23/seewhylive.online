@@ -208,14 +208,15 @@ function buildStreamStartPrompt(streamTitle, viewerCount) {
 
 function buildTipPrompt(viewerName, amountCents, note) {
   var dollars = (Math.floor(amountCents) / 100).toFixed(2);
+  var safeNote = note ? String(note).slice(0, 120) : '';
   var prompt = (
-    viewerName +
+    String(viewerName).slice(0, 80) +
     ' just tipped $' +
     dollars +
     ' on the SeeWhy LIVE stream!'
   );
-  if (note && note.length > 0) {
-    prompt = prompt + ' They left this note: "' + note + '"';
+  if (safeNote.length > 0) {
+    prompt = prompt + ' They left this note: "' + safeNote + '"';
   }
   prompt = prompt + ' Give them a personalized shoutout.';
   return prompt;
@@ -224,9 +225,9 @@ function buildTipPrompt(viewerName, amountCents, note) {
 function buildGiftPrompt(viewerName, giftName, amountCents) {
   var dollars = (Math.floor(amountCents) / 100).toFixed(2);
   return (
-    viewerName +
+    String(viewerName).slice(0, 80) +
     ' just sent a ' +
-    giftName +
+    String(giftName).slice(0, 40) +
     ' gift worth $' +
     dollars +
     ' on the SeeWhy LIVE domino stream! React with pure excitement!'
@@ -234,14 +235,15 @@ function buildGiftPrompt(viewerName, giftName, amountCents) {
 }
 
 function buildNewViewerPrompt(viewerName, isReturning) {
+  var safeName = String(viewerName).slice(0, 80);
   if (isReturning) {
     return (
-      viewerName +
+      safeName +
       ' is back! They are a returning viewer to SeeWhy LIVE. Give them an extra-warm welcome and make them feel like they never left.'
     );
   }
   return (
-    viewerName +
+    safeName +
     ' just joined SeeWhy LIVE for the first time! Welcome them to the community and make them feel at home.'
   );
 }
@@ -364,7 +366,7 @@ function generateGreeting(username) {
         role: 'user',
         content: (
           'Generate an energetic welcome for a new viewer named ' +
-          username +
+          String(username).slice(0, 80) +
           ' joining the Washington Classic domino stream.'
         )
       }
@@ -394,9 +396,9 @@ function generateHype(giftName, giftValue, username) {
         role: 'user',
         content: (
           'Generate hype for ' +
-          username +
+          String(username).slice(0, 80) +
           ' who just sent a ' +
-          giftName +
+          String(giftName).slice(0, 40) +
           ' worth $' +
           dollarAmount +
           ' on the SeeWhy LIVE domino stream!'
@@ -427,9 +429,9 @@ function generateShoutout(username, tier) {
         role: 'user',
         content: (
           'Generate a hype shoutout for ' +
-          username +
+          String(username).slice(0, 80) +
           ' who just subscribed at ' +
-          tier +
+          String(tier).slice(0, 20) +
           ' tier on SeeWhy LIVE!'
         )
       }

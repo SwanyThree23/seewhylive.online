@@ -25,6 +25,7 @@ import SoundboardWidget from '../components/live/SoundboardWidget';
 import ClipGeneratorAI from '../components/streaming/ClipGeneratorAI';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import CreatorBridge from '../components/social/CreatorBridge';
 import {
   Music, Play, Pause, Heart, Download, MoreHorizontal, Wand2,
   Mic2, Headphones, RefreshCw, X, ChevronRight, Zap,

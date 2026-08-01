@@ -28,6 +28,9 @@ import ShareToSocial from '../components/social/ShareToSocial';
 import StreamHealthDashboard from '../components/streaming/StreamHealthMonitor';
 import ActivitySidebar from '../components/shared/ActivitySidebar';
 import GlobalSearch from '../components/shared/GlobalSearch';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
+import SwanyBotEnhanced from '../components/guide/SwanyBotEnhanced';
 
 // ── Palette (earth-tone, no forbidden colors) ──────────────────────────────
 const C = {
@@ -1366,15 +1369,15 @@ export default function SeeWhyLIVEv37() {
         </div>
         {panelMap[activeTab]}
       </div>
-      <SwanAIRecommendations roomId={null} currentUser={user} isHost={true} />
+      <SwanAIRecommendations roomId={activeRoomId} currentUser={user} isHost={true} />
       <SwanyBotWidget />
       <SwanyBotEnhanced userId={user?.id || null} conversationId={null} onContextReady={() => {}} />
-      <StreamGoals hostId={user?.id || null} roomId={null} isHost={true} />
-      <ViewerCount roomId={null} />
-      <NotificationHub userId={null} roomId={null} />
-      <BroadcastAnalyticsDashboard roomId={null} isHost={true} />
-      <ShareToSocial roomId={null} streamTitle={''} isLive={false} />
-      <StreamHealthDashboard roomId={null} isHost={true} />
+      <StreamGoals hostId={user?.id || null} roomId={activeRoomId} isHost={true} />
+      <ViewerCount roomId={activeRoomId} />
+      <NotificationHub userId={user?.id || null} roomId={activeRoomId} />
+      <BroadcastAnalyticsDashboard roomId={activeRoomId} isHost={true} />
+      <ShareToSocial roomId={activeRoomId} streamTitle={''} isLive={!!activeRoomId} />
+      <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       <GlobalSearch onClose={() => {}} />
     </div>

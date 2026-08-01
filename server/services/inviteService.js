@@ -10,7 +10,10 @@ const DEFAULT_EXPIRY_HOURS = 1;
 // ---- guest_invitations (direct, user-to-user) ----
 
 async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHours }) {
+  if (fromUserId === toUserId) { const e = new Error('cannot invite yourself'); e.status = 400; throw e; }
   const hours = expiryHours || DEFAULT_EXPIRY_HOURS;
+  const target = await db.query('SELECT id FROM users WHERE id = $1', [toUserId]);
+  if (!target.rows[0]) { const e = new Error('user not found'); e.status = 404; throw e; }
   const result = await db.query(
     `INSERT INTO guest_invitations (from_user_id, to_user_id, room_id, message, status, expires_at)
      VALUES ($1, $2, $3, $4, 'pending', now() + ($5 || ' hours')::interval) RETURNING *`,
@@ -19,14 +22,14 @@ async function sendInvitation({ fromUserId, toUserId, roomId, message, expiryHou
   return result.rows[0];
 }
 
-async function respondToInvitation(inviteId, status) {
+async function respondToInvitation(inviteId, status, userId) {
   if (status !== 'accepted' && status !== 'declined') {
     throw new Error('status must be "accepted" or "declined"');
   }
   const result = await db.query(
     `UPDATE guest_invitations SET status = $2
-     WHERE id = $1 AND status = 'pending' AND expires_at > now() RETURNING *`,
-    [inviteId, status]
+     WHERE id = $1 AND to_user_id = $3 AND status = 'pending' AND expires_at > now() RETURNING *`,
+    [inviteId, status, userId]
   );
   return result.rows[0];
 }
@@ -60,21 +63,15 @@ async function createInviteLink({ streamId, createdBy, displayName, role, maxUse
 // Validates and consumes one use of an invite link. Does not itself create a
 // stream_guests row — call guestService.joinStreamAsGuest() after this succeeds.
 async function redeemInviteLink(token) {
-  const invite = await db.query(
-    `SELECT * FROM stream_guest_invites WHERE guest_token = $1`,
-    [token]
-  );
-  const row = invite.rows[0];
-  if (!row) throw new Error('invite link not found');
-  if (row.revoked_at) throw new Error('invite link has been revoked');
-  if (row.use_count >= row.max_uses) throw new Error('invite link has reached its use limit');
-
   const result = await db.query(
     `UPDATE stream_guest_invites
      SET use_count = use_count + 1, used_at = now()
-     WHERE id = $1 RETURNING *`,
-    [row.id]
+     WHERE guest_token = $1 AND use_count < max_uses AND revoked_at IS NULL
+       AND (expires_at IS NULL OR expires_at > now())
+     RETURNING *`,
+    [token]
   );
+  if (!result.rows[0]) throw new Error('invite link not found, exhausted, or revoked');
   return result.rows[0];
 }
 

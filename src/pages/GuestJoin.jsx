@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Radio, Video, Mic, MicOff, VideoOff, CheckCircle, Clock, AlertCircle, Wifi, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useLocalMedia } from '../hooks/useLocalMedia';
 import { createPageUrl } from '../utils';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import ContentRecommendations from '../components/social/ContentRecommendations';
@@ -18,6 +19,10 @@ import GuestLandingPanel from '../components/streaming/GuestLandingPanel';
 import GuestLandingPageV49 from '../components/streaming/GuestLandingPageV49';
 import AgeGate from '../components/AgeGate';
 import { getStoredAge } from '@/lib/ageVerification';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
+import PreStreamCountdown from '../components/live/PreStreamCountdown';
+import VdoNinjaGuestLink from '../components/live/VdoNinjaGuestLink';
 
 const GOLD = '#D4AF37';
 const CRIMSON = '#800020';
@@ -335,11 +340,11 @@ export default function GuestJoin() {
           <GuestConnector roomId={roomId || null} roomName="SeeWhy Studio" />
           <WebRTCSetupBanner error={null} audioEnabled={true} videoEnabled={true} onRetry={() => {}} />
           <VdoNinjaGuestLink roomId={roomId || null} guestName={user?.full_name || 'Guest'} />
-          <OctagonalVideoWindow stream={null} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
+          <OctagonalVideoWindow stream={localStream} label={user?.full_name || 'You'} isHost={false} isMuted={false} />
           <OnlineUsersGrid compact maxVisible={8} />
           <ContentRecommendations />
           <StreamGoals isHost={false} />
-          {user && <PreStreamCountdown room={null} currentUser={user} onGoLive={() => {}} />}
+          {user && <PreStreamCountdown room={room || null} currentUser={user} onGoLive={() => {}} />}
         </div>
 
         <p className="text-center text-[10px]" style={{ color: 'rgba(255,255,255,0.15)' }}>

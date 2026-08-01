@@ -28,6 +28,7 @@ async function completeChallenge(challengeId, userId) {
   const row = challenge.rows[0];
   if (!row) throw new Error('challenge not found');
   if (row.status !== 'active') throw new Error('challenge is not active');
+  if (row.ends_at && new Date(row.ends_at) < new Date()) throw new Error('challenge has expired');
 
   let inserted;
   try {
@@ -43,12 +44,20 @@ async function completeChallenge(challengeId, userId) {
     throw err;
   }
 
-  await loyaltyService.awardPoints({
-    userId,
-    points: row.points_reward,
-    source: 'challenge_complete',
-    sourceId: challengeId,
-  });
+  try {
+    await loyaltyService.awardPoints({
+      userId,
+      points: row.points_reward,
+      source: 'challenge_complete',
+      sourceId: challengeId,
+    });
+  } catch (err) {
+    await db.query(
+      `DELETE FROM challenge_completions WHERE challenge_id = $1 AND user_id = $2`,
+      [challengeId, userId]
+    ).catch(function() {});
+    throw err;
+  }
 
   return inserted.rows[0];
 }

@@ -28,6 +28,16 @@ import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 import StreamGoals from '../components/live/StreamGoals';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
 
 const PLATFORMS = [
   { name: 'OBS Studio', logo: '🎬', url: 'https://obsproject.com', port: 1935, protocol: 'RTMP' },
@@ -471,14 +481,14 @@ export default function RTMPServer() {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
-          <StreamHealthDashboard isLive={false} />
+          <StreamHealthDashboard isLive={!!activeRoomId} />
           <CoStreamPanel roomId={activeRoomId} />
           <WebhookHooks roomId={activeRoomId} userId={user?.id} isHost={true} />
           <EnhancedIngestPanel roomId={activeRoomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={user?.id} />
           {user?.id && <RTMPFanoutPanel userId={user.id} isStreaming={!!activeRoom} streamId={activeRoomId} />}
           {user?.id && <GuestInviteGenerator userId={user.id} roomId={activeRoomId} />}
-          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
+          <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
         </div>

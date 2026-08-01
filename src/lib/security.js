@@ -85,6 +85,56 @@ export function safeSrc(url) {
   return isSafeUrl(url) ? url : null;
 }
 
+// ── Vault Pro: AES-256-GCM envelope encryption ────────────────────────────
+// Used to protect stream keys and API credentials stored in state / IndexedDB.
+// Key is derived per-session from a 256-bit secret never persisted to disk.
+
+let _vaultKey = null;
+
+async function getVaultKey() {
+  if (_vaultKey) return _vaultKey;
+  const raw = crypto.getRandomValues(new Uint8Array(32));
+  _vaultKey = await crypto.subtle.importKey(
+    'raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']
+  );
+  return _vaultKey;
+}
+
+/**
+ * Encrypts a plain-text stream key or credential string.
+ * Returns a base64url-encoded payload: `<iv>.<ciphertext>` (both base64url).
+ */
+export async function encryptStreamKey(plaintext) {
+  if (typeof plaintext !== 'string') throw new TypeError('plaintext must be a string');
+  const key = await getVaultKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(plaintext);
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+  const toB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return `${toB64(iv)}.${toB64(cipher)}`;
+}
+
+/**
+ * Decrypts a payload produced by encryptStreamKey().
+ * Returns the original plain-text string, or throws on tampering.
+ */
+export async function decryptStreamKey(payload) {
+  if (typeof payload !== 'string') throw new TypeError('payload must be a string');
+  const [ivB64, cipherB64] = payload.split('.');
+  if (!ivB64 || !cipherB64) throw new Error('Invalid vault payload format');
+  const fromB64 = s => Uint8Array.from(
+    atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)
+  );
+  const key = await getVaultKey();
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: fromB64(ivB64) },
+    key,
+    fromB64(cipherB64)
+  );
+  return new TextDecoder().decode(plain);
+}
+
 /** Max lengths for user-generated content fields */
 export const LIMITS = {
   CHAT_MESSAGE: 500,

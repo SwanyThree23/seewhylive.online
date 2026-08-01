@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Settings, Flag, Megaphone, TrendingUp, Users } from 'lucide-react';
+import { Settings, Flag, Megaphone, TrendingUp, Users, ChevronDown, Shield, Crown } from 'lucide-react';
 import ReferralConfig from '../components/admin/ReferralConfig';
 import ReportsManager from '../components/admin/ReportsManager';
 import AnnouncementScheduler from '../components/admin/AnnouncementScheduler';
@@ -18,6 +20,18 @@ import ModerationActionModal from '../components/moderation/ModerationActionModa
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -301,7 +315,7 @@ export default function CommunityAdminPage() {
         <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
           <OnlineUsersGrid compact maxVisible={10} />
           <ContentRecommendations />
-          <StreamHealthDashboard roomId={communityId} isHost={false} />
+          <StreamHealthDashboard roomId={communityId} isHost={true} />
           <ModerationActionModal isOpen={false} onClose={() => {}} targetUser={null} roomId={communityId} communityId={communityId} moderatorId={user?.id} />
         </div>
       </div>
@@ -309,7 +323,7 @@ export default function CommunityAdminPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={true} />
+      <SpotlightBanner communityId={communityId} isAdmin={true} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />

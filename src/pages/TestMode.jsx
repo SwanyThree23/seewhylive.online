@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '../utils';
+import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import LocalVideoTile from '../components/live/LocalVideoTile';
 import OctagonalVideoWindow from '../components/live/OctagonalVideoWindow';
 import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
@@ -23,6 +25,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const BG     = '#080B18';
 const BG2    = '#0D1022';
@@ -341,6 +344,7 @@ export default function TestMode() {
   const [searchParams] = useSearchParams();
   const roomId = searchParams.get('room_id');
   const activeRoomId = roomId;
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const [scenarioKey, setScenarioKey] = useState('panel');
   const [scenarioData, setScenarioData] = useState(() => ({
     ...SCENARIOS.panel,
@@ -688,14 +692,14 @@ export default function TestMode() {
           <DevicePreview />
           <GuestStreamMonitor guestName="Test Guest" isStreaming={false} />
           <ZEGOStreamHealthCard roomId={activeRoomId} />
-          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={null} isHost={false} />
+          <MultiGuestPanel participants={[]} spotlightId={null} onSpotlight={() => {}} roomId={activeRoomId} isHost={true} />
         </div>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamGoals isHost={false} />
-        <StreamHealthDashboard roomId={null} isHost={false} />
+        <StreamGoals isHost={true} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -704,7 +708,7 @@ export default function TestMode() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

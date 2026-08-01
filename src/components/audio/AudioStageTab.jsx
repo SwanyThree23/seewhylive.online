@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Crown, Hand, Check, X } from 'lucide-react';
+import { useAudioLevel } from '../../hooks/useAudioLevel';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -12,63 +13,8 @@ function avatarColor(name) {
   return PALETTE[(name?.charCodeAt(0) ?? 0) % PALETTE.length];
 }
 
-const AUDIO_HOLD_MS = 400;
-
-function useAudioLevel(stream) {
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const ctxRef      = useRef(null);
-  const rafRef      = useRef(null);
-  const holdRef     = useRef(null);
-  const speakRef    = useRef(false);
-
-  useEffect(() => {
-    if (!stream) { setIsSpeaking(false); return; }
-    const tracks = stream.getAudioTracks();
-    if (!tracks.length) { setIsSpeaking(false); return; }
-
-    try {
-      const ctx      = new (window.AudioContext || window.webkitAudioContext)();
-      ctxRef.current = ctx;
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-      ctx.createMediaStreamSource(stream).connect(analyser);
-      const data = new Uint8Array(analyser.frequencyBinCount);
-
-      const check = () => {
-        analyser.getByteTimeDomainData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = (data[i] - 128) / 128;
-          sum += v * v;
-        }
-        const rms = Math.sqrt(sum / data.length);
-        if (rms > 0.01) {
-          clearTimeout(holdRef.current);
-          if (!speakRef.current) { speakRef.current = true; setIsSpeaking(true); }
-        } else if (speakRef.current) {
-          clearTimeout(holdRef.current);
-          holdRef.current = setTimeout(() => { speakRef.current = false; setIsSpeaking(false); }, AUDIO_HOLD_MS);
-        }
-        rafRef.current = requestAnimationFrame(check);
-      };
-      check();
-    } catch {
-      setIsSpeaking(false);
-    }
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      clearTimeout(holdRef.current);
-      speakRef.current = false;
-      if (ctxRef.current) { try { ctxRef.current.close(); } catch {} }
-    };
-  }, [stream]);
-
-  return isSpeaking;
-}
-
 function OctTile({ member, size, isHost, isMuted, stream, showControls, onRemove }) {
-  const speaking   = useAudioLevel(stream);
+  const { isSpeaking: speaking } = useAudioLevel(stream);
   const color      = avatarColor(member.display_name || 'A');
   const initial    = (member.display_name || '?').charAt(0).toUpperCase();
   const [popover, setPopover] = useState(false);

@@ -48,8 +48,10 @@ hlsDirectory: /var/www/html/hls
 # Paths — per-stream config
 ###############################################################################
 paths:
-  # Default: accept any stream key, call our backend to validate
-  "~^live/(.+)$":
+  # Default: accept only shell-safe stream keys (alphanum, underscore, hyphen, 4-128 chars).
+  # Restricting the regex prevents shell metacharacters from reaching the
+  # runOnPublish/runOnUnpublish curl commands below.
+  "~^live/([A-Za-z0-9_-]{4,128})$":
     source: publisher
     publishUser: ""
     publishPass: ""

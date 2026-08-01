@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, Mic, Monitor, RefreshCw, Volume2 } from 'lucide-react';
 import { useCameraDevices, RESOLUTION_PRESETS } from '../../hooks/useCameraDevices';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 
 const GOLD    = '#D4AF37';
 const CRIMSON = '#800020';
@@ -21,22 +22,12 @@ const LBL = {
 
 function NativeSelect({ value, onChange, options, placeholder }) {
   return (
-    <select
+    <MobileSelect
       value={value || ''}
-      onChange={e => onChange(e.target.value)}
-      style={{
-        flex: 1, background: 'transparent', border: 'none',
-        color: value ? '#fff' : 'rgba(255,255,255,0.3)',
-        fontSize: 12, ...T, outline: 'none', cursor: 'pointer',
-        backgroundImage: 'none', padding: 0,
-      }}>
-      {!value && <option value="" disabled>{placeholder}</option>}
-      {options.map(o => (
-        <option key={o.deviceId} value={o.deviceId} style={{ background: '#080B18', color: '#fff' }}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+      onChange={onChange}
+      options={options.map(o => ({ value: o.deviceId, label: o.label }))}
+      placeholder={placeholder}
+    />
   );
 }
 

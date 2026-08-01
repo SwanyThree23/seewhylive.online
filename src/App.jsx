@@ -9,11 +9,13 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { BackgroundProvider } from '@/lib/BackgroundManager';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import UnifiedRoom from '@/pages/UnifiedRoom';
+import { lazy } from 'react';
+const Login        = lazy(() => import('@/pages/Login'));
+const Register     = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword  = lazy(() => import('@/pages/ResetPassword'));
+const UnifiedRoom   = lazy(() => import('@/pages/UnifiedRoom'));
+const MomentDetail  = lazy(() => import('@/pages/MomentDetail'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -88,6 +90,7 @@ const AuthenticatedApp = () => {
         <Route path="/messages"    element={<LayoutWrapper currentPageName="Messages"><Pages.Messages /></LayoutWrapper>} />
         <Route path="/onboarding"  element={<Pages.Onboarding />} />
         <Route path="/clips"       element={<LayoutWrapper currentPageName="ClipsLibrary"><Pages.ClipsLibrary /></LayoutWrapper>} />
+        <Route path="/moments/:id" element={<MomentDetail />} />
         <Route path="/newsletter"  element={<LayoutWrapper currentPageName="NewsletterHub"><Pages.NewsletterHub /></LayoutWrapper>} />
         <Route path="/unified-room" element={<UnifiedRoom />} />
         <Route path="*"            element={<PageNotFound />} />

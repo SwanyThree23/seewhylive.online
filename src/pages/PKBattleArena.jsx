@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
@@ -28,6 +30,8 @@ const TEXTM = '#7A6E8A';
 const CRIMSON = '#800020';
 const RED   = '#C0392B';
 const GREEN = '#6DBF7E';
+const SCARL = '#C0392B';
+const CRIM = '#800020';
 const CYAN  = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
@@ -190,6 +194,20 @@ export default function PKBattleArena() {
   const roomId = new URLSearchParams(window.location.search).get('id') || null;
   const navigate = useNavigate();
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  const { data: battleMembers = [] } = useQuery({
+    queryKey: ['pk-members', roomId],
+    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    enabled: !!roomId,
+    refetchInterval: 10000,
+  });
+  const [tab, setTab] = useState('live');
+  const [votes, setVotes] = useState({});
+  const { data: rawBattles = [] } = useQuery({
+    queryKey: ['pk-arena-battles'],
+    queryFn: () => base44.entities.PKBattle.list('-created_date', 20),
+    refetchInterval: 5000,
+  });
+  const battles = rawBattles.map(battleToUI);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
   const [battleSecs, setBattleSecs]             = useState(0);
   const [hostVotes, setHostVotes]               = useState(50);
@@ -283,7 +301,7 @@ export default function PKBattleArena() {
       <BattleArenaManager roomId={roomId} isHost={true} onBattleEnd={() => { setTimeout(() => navigate('/'), 2000); }} />
       <PKBattleInterface roomId={roomId} />
       <StreamAnalyticsDashboard roomId={roomId} isHost={true} isLive={battleActive} />
-      <GuestControls participants={[]} onMuteGuest={() => {}} onRemoveGuest={() => {}} />
+      <GuestControls participants={battleMembers} onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})} onRemoveGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(() => {})} />
       <LivePoll roomId={roomId} isHost={true} />
     </div>
   );

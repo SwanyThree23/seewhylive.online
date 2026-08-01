@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,8 +12,12 @@ const QUICK_TEMPLATES = [
   { q: 'Should I do a giveaway?', opts: ['YES! 🎁', 'Maybe later', 'No thanks'] },
 ];
 
-export default function QuickPollLauncher({ roomId, hostId, isHost }) {
+export default function QuickPollLauncher({ roomId, hostId, isHost, triggerOpen }) {
   const [open, setOpen] = useState(false);
+  const prevTrigger = useRef(triggerOpen);
+  useEffect(() => {
+    if (triggerOpen !== prevTrigger.current) { setOpen(true); prevTrigger.current = triggerOpen; }
+  }, [triggerOpen]);
   const [custom, setCustom] = useState(false);
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '']);

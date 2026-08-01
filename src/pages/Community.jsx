@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, MessageSquare, Plus } from 'lucide-react';
+import { Users, MessageSquare, Plus, CheckCircle, Radio, Shield, Globe, Lock, Check, Copy, UserCheck, UserPlus } from 'lucide-react';;;
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { toast } from 'sonner';
@@ -26,6 +26,14 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import ContentRecommendations from '../components/social/ContentRecommendations';
 import CreatorBridge from '../components/social/CreatorBridge';
 import OnlinePresence from '../components/shared/OnlinePresence';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import UnifiedChat from '../components/live/UnifiedChat';
+import InteractivePollingSystem from '../components/live/InteractivePollingSystem';
+import ShareModal from '../components/live/ShareModal';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import ShareToSocial from '../components/social/ShareToSocial';
 const G = '#D4AF37';
 const BG = '#080B18';
 const CRIMSON = '#800020';
@@ -109,6 +117,13 @@ export default function CommunityPage() {
   const isOwner = membership?.role === 'owner' || community?.creator_id === user?.id;
 
   const [showCreatePoll, setShowCreatePoll] = useState(false);
+  const [activeTab, setActiveTab] = useState('feed');
+
+  const TABS = [
+    { id: 'feed',      label: 'Feed',      icon: MessageSquare },
+    { id: 'spotlight', label: 'Spotlight', icon: Globe         },
+    { id: 'rooms',     label: 'Live',      icon: Radio         },
+  ];
 
   const { data: polls = [] } = useQuery({
     queryKey: ['community-polls', community?.id],
@@ -205,7 +220,7 @@ export default function CommunityPage() {
               </button>
             )}
             {isMember && (
-              <button onClick={() => setPollModalOpen(true)}
+              <button onClick={() => setShowCreatePoll(true)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
                 style={{ ...T, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: G, cursor: 'pointer' }}>
                 <Plus className="w-3.5 h-3.5" /> Poll
@@ -326,12 +341,12 @@ export default function CommunityPage() {
       </div>
 
       {community?.id && (
-        <CreatePollModal isOpen={pollModalOpen} onClose={() => setPollModalOpen(false)} communityId={community.id} />
+        <CreatePollModal isOpen={showCreatePoll} onClose={() => setShowCreatePoll(false)} communityId={community.id} />
       )}
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={false} />}
-        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={false} />}
+        {community?.id && <InteractivePollingSystem communityId={community.id} userId={user?.id} isHost={isOwner} />}
+        {community?.id && <UnifiedChat roomId={community.id} currentUser={user} isHost={isOwner} />}
         <ShareModal isOpen={false} onClose={() => {}} url={window.location.href} title={community?.name || 'Community'} />
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
@@ -342,7 +357,7 @@ export default function CommunityPage() {
       <MilestoneAlerts userId={user?.id} roomId={null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      <SpotlightBanner communityId={null} isAdmin={isAdmin} />
+      <SpotlightBanner communityId={community?.id || null} isAdmin={isAdmin} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
@@ -354,7 +369,7 @@ export default function CommunityPage() {
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
       <BackgroundCustomizer />
-      <OnlinePresence userId={null} />
+      <OnlinePresence userId={user?.id || null} />
 
       <CreatePollModal
         isOpen={showCreatePoll}

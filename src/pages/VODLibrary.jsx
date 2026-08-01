@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown } from 'lucide-react';
+import { Film, Scissors, Archive, BookOpen, Sparkles, ChevronDown, Play, Eye } from 'lucide-react';
 import VODLibraryComponent from '@/components/vod/VODLibrary';
 import RecordingManager from '../components/content/RecordingManager';
 import ChapterEditor from '../components/vod/ChapterEditor';
@@ -13,6 +13,15 @@ import ClipCreatorVOD from '../components/vod/ClipCreator';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import CreatorBridge from '../components/social/CreatorBridge';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import VODCard from '../components/vod/VODCard';
+import VODPicker from '../components/vod/VODPicker';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -230,8 +239,8 @@ export default function VODLibraryPage() {
           </div>
         )}
       </div>
-      <SwanAIRecommendations roomId={null} currentLayout="vod" viewerCount={0} />
-      <MilestoneAlerts userId={user?.id} roomId={null} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout="vod" viewerCount={0} />
+      <MilestoneAlerts userId={user?.id} roomId={activeRoomId} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
       <SwanyBotWidget />

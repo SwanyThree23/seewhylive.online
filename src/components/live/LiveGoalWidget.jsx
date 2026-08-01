@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Check, Edit2 } from 'lucide-react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 
 const F = { fontFamily: 'Barlow Condensed, sans-serif' };
 
@@ -12,9 +13,13 @@ const PRESETS = [
   { label: '10 subs',     type: 'subs',    target: 10 },
 ];
 
-export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount = 0 }) {
+export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount = 0, triggerEdit }) {
   const [goal, setGoal] = useState(null);
   const [editing, setEditing] = useState(false);
+  const prevTriggerEdit = React.useRef(triggerEdit);
+  useEffect(() => {
+    if (triggerEdit !== prevTriggerEdit.current) { setEditing(true); prevTriggerEdit.current = triggerEdit; }
+  }, [triggerEdit]);
   const [customLabel, setCustomLabel] = useState('');
   const [customTarget, setCustomTarget] = useState('');
   const [customType, setCustomType] = useState('viewers');
@@ -77,15 +82,16 @@ export default function LiveGoalWidget({ memberCount = 0, tipTotal = 0, subCount
             style={{ width: '100%', height: 28, padding: '0 8px', fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 6, outline: 'none', boxSizing: 'border-box', ...F }}
           />
           <div style={{ display: 'flex', gap: 5 }}>
-            <select
+            <MobileSelect
               value={customType}
-              onChange={e => setCustomType(e.target.value)}
-              style={{ width: 90, height: 28, padding: '0 6px', fontSize: 11, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 6, outline: 'none', ...F }}
-            >
-              <option value="viewers">Viewers</option>
-              <option value="tips">Tips ($)</option>
-              <option value="subs">Subs</option>
-            </select>
+              onChange={(v) => setCustomType(v)}
+              options={[
+                { value: 'viewers', label: 'Viewers' },
+                { value: 'tips', label: 'Tips ($)' },
+                { value: 'subs', label: 'Subs' },
+              ]}
+              placeholder="Type"
+            />
             <input
               type="number"
               value={customTarget}

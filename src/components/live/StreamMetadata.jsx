@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Tag, Globe, AlertTriangle, X, Plus } from 'lucide-react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 
 const CATEGORIES = ['gaming','music','education','talk','fitness','cooking','art','tech','irl','other'];
@@ -150,10 +151,12 @@ export default function StreamMetadata({ room, isHost }) {
       {/* Language */}
       <div className="space-y-1.5">
         <label className="text-xs text-white/50">Stream Language</label>
-        <select value={language} onChange={e => setLanguage(e.target.value)}
-          className="w-full bg-white/5 border border-white/20 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-[#d4af37]/40">
-          {LANGUAGES.map(l => <option key={l} value={l} className="bg-[#080B18]">{l}</option>)}
-        </select>
+        <MobileSelect
+          value={language}
+          onChange={(v) => setLanguage(v)}
+          options={LANGUAGES.map(l => ({ value: l, label: l }))}
+          placeholder="Select language"
+        />
       </div>
     </div>
   );

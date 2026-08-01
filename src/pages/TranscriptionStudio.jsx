@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../utils';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -7,6 +11,16 @@ import AIStreamSummary from '../components/live/AIStreamSummary';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AIHighlightGenerator from '../components/content/AIHighlightGenerator';
 import StreamHealthMonitor from '../components/streaming/StreamHealthMonitor';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Copy, Download } from 'lucide-react';
+import ShareToSocial from '../components/social/ShareToSocial';
+import RecordingManager from '../components/content/RecordingManager';
+import LiveTranslationWidget from '../components/streaming/LiveTranslationWidget';
+import LiveTranscription from '../components/live/LiveTranscription';
+import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
+import StreamHealthDashboard from '../components/streaming/StreamHealthDashboard';
+import AutomatedHighlightReels from '../components/streaming/AutomatedHighlightReels';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
 
 const BG   = '#080B18';
 const BG2  = 'rgba(13,6,24,0.95)';
@@ -19,6 +33,7 @@ const TEXTD = '#B8AECF';
 const TEXTM = '#7A6E8A';
 const CYAN  = '#D4AF37';
 const GREEN = '#6DBF7E';
+const SCARL = '#C0392B';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
 
@@ -97,6 +112,10 @@ export default function TranscriptionStudio() {
   const bottomRef = useRef(null);
   const tickRef   = useRef(null);
   const idRef     = useRef(1);
+  const startMsRef = useRef(Date.now());
+  const [captionHistory, setCaptionHistory] = useState([]);
+  const [demoText, setDemoText] = useState('');
+  const activeLang = SUPPORTED_LANGS.find(l => l.label === lang)?.code || 'en';
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -191,6 +210,30 @@ export default function TranscriptionStudio() {
     setDgLive(false);
   }
 
+  function stopLive() {
+    setLive(false);
+    clearInterval(tickRef.current);
+    stopDeepgram();
+  }
+
+  function msToSrt(ms) {
+    const pad = (n, l=2) => String(Math.floor(n)).padStart(l,'0');
+    const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000),cs=Math.floor((ms%1000)/10);
+    return `${pad(h)}:${pad(m)}:${pad(s)},${pad(cs)}`;
+  }
+
+  const fullText = lines.map(l => `[${l.time}] ${l.text}`).join('\n');
+  const srtText = lines.map((l, i) => `${i + 1}\n${l.time},000 --> ${l.time},999\n${l.text}\n`).join('\n');
+
+  function downloadSRT() {
+    const blob = new Blob([srtText], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'transcript.srt';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
   useEffect(() => () => stopDeepgram(), []);
 
   // ── Export helpers ────────────────────────────────────────────────────────────
@@ -238,10 +281,12 @@ export default function TranscriptionStudio() {
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           {/* Language selector */}
-          <select value={lang} onChange={e => setLang(e.target.value)}
-            style={{ ...MONO, fontSize: 10, background: BG3, border: `1px solid rgba(255,255,255,0.1)`, borderRadius: 8, color: TEXTD, padding: '4px 8px', cursor: 'pointer', outline: 'none' }}>
-            {LANGS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <MobileSelect
+            value={lang}
+            onChange={v => setLang(v)}
+            options={LANGS.map(l => ({ value: l, label: l }))}
+            placeholder="Language"
+          />
 
           {/* Overlay toggle */}
           <button onClick={() => setShowOverlay(v => !v)}
@@ -404,21 +449,21 @@ export default function TranscriptionStudio() {
 
       <div style={{ padding: '0 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ShareToSocial />
-        <AIStreamSummary roomId={activeRoomId} isHost={false} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
+        <AIStreamSummary roomId={activeRoomId} isHost={true} streamTitle="Transcription Session" viewerCount={0} elapsedSeconds={0} />
         <RecordingManager userId={user?.id} />
-        <LiveTranslationWidget roomId={activeRoomId} isHost={false} targetLanguage="en" />
-        <LiveTranscription roomId={activeRoomId} isHost={false} />
+        <LiveTranslationWidget roomId={activeRoomId} isHost={true} targetLanguage="en" />
+        <LiveTranscription roomId={activeRoomId} isHost={true} />
         <OnlineUsersGrid compact maxVisible={8} />
-        <StreamHealthDashboard roomId={activeRoomId} isHost={false} />
-        <AutomatedHighlightReels streamSession={null} />
+        <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
         <CollaborationMatcher />
       </div>
       <SwanyBotWidget />
       <NotificationBell />
-      <AIStreamSummary roomId={null} isHost={true} />
-      <SwanAIRecommendations roomId={null} currentLayout='transcription' viewerCount={0} />
-      <AIHighlightGenerator roomId={null} isHost={true} />
-      <StreamHealthMonitor isStreaming={false} />
+      <AIStreamSummary roomId={activeRoomId} isHost={true} />
+      <SwanAIRecommendations roomId={activeRoomId} currentLayout='transcription' viewerCount={0} />
+      <AIHighlightGenerator roomId={activeRoomId} isHost={true} />
+      <StreamHealthMonitor isStreaming={live} />
     </div>
   );
 }

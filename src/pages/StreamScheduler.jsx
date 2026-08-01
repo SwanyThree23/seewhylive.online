@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, ChevronLeft, ChevronRight, Calendar, Clock, Bell,
-  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw
+  Radio, Share2, Pencil, Trash2, X, Check, RefreshCw, CalendarPlus, ExternalLink, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -21,6 +21,16 @@ import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import { createPageUrl } from '../utils';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
 
 const CATEGORIES = [
   { id: 'gaming', label: '🎮 Gaming' }, { id: 'music', label: '🎵 Music' },
@@ -45,6 +55,143 @@ function getDaysInMonth(year, month) {
 function getFirstDayOfMonth(year, month) {
   return new Date(year, month, 1).getDay();
 }
+
+// ── Calendar Invite helpers ──────────────────────────────────────────────────
+
+function toICSDate(d) {
+  return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function generateICS(s) {
+  const start = new Date(s.scheduled_start);
+  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  const url = `${window.location.origin}/${s.room_id ? 'Room/' + s.room_id : 'Discover'}`;
+  const desc = [
+    s.description,
+    `Join on SeeWhy LIVE: ${url}`,
+    `Category: ${s.category || 'General'}`,
+  ].filter(Boolean).join('\\n');
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//SeeWhy LIVE//Stream Scheduler//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${s.id}@seewhylive.online`,
+    `DTSTAMP:${toICSDate(new Date())}`,
+    `DTSTART:${toICSDate(start)}`,
+    `DTEND:${toICSDate(end)}`,
+    `SUMMARY:🔴 ${s.title}`,
+    `DESCRIPTION:${desc}`,
+    `URL:${url}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+}
+
+function downloadICS(s) {
+  const blob = new Blob([generateICS(s)], { type: 'text/calendar;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${s.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function getGoogleCalUrl(s) {
+  const start = new Date(s.scheduled_start);
+  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const url = `${window.location.origin}/Discover`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `🔴 ${s.title}`,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    details: `${s.description || ''}\n\nJoin: ${url}`,
+    location: url,
+  });
+  return `https://calendar.google.com/calendar/render?${params}`;
+}
+
+function getOutlookUrl(s) {
+  const start = new Date(s.scheduled_start);
+  const end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
+  const url = `${window.location.origin}/Discover`;
+  const params = new URLSearchParams({
+    rru: 'addevent',
+    summary: `🔴 ${s.title}`,
+    dtstart: start.toISOString(),
+    dtend: end.toISOString(),
+    description: `${s.description || ''} | Join: ${url}`,
+    location: url,
+  });
+  return `https://outlook.live.com/calendar/0/action/compose?${params}`;
+}
+
+function CalendarInviteMenu({ stream }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#7B5DA6]/20 flex items-center justify-center text-white/40 hover:text-[#7B5DA6] transition-all"
+        title="Add to Calendar"
+      >
+        <CalendarPlus className="w-4 h-4" />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -4 }}
+              transition={{ duration: 0.15 }}
+              className="absolute right-0 top-10 z-50 rounded-xl overflow-hidden shadow-xl"
+              style={{ background: '#0D1022', border: '1px solid rgba(212,175,55,0.25)', minWidth: 180 }}
+            >
+              <div className="px-3 py-2 border-b border-white/5">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 font-bold">Add to Calendar</p>
+              </div>
+              <button
+                onClick={() => { downloadICS(stream); setOpen(false); }}
+                className="flex items-center gap-2.5 w-full px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span className="text-sm text-white/80">Download .ics</span>
+              </button>
+              <a
+                href={getGoogleCalUrl(stream)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-white/5 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#4A8A7A]" />
+                <span className="text-sm text-white/80">Google Calendar</span>
+              </a>
+              <a
+                href={getOutlookUrl(stream)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-white/5 transition-colors"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#60a5fa]" />
+                <span className="text-sm text-white/80">Outlook / Office 365</span>
+              </a>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 
 function Toggle({ checked, onChange }) {
   return (
@@ -280,6 +427,7 @@ export default function StreamScheduler() {
                         <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
                           <Share2 className="w-3 h-3" />
                         </button>
+                        <CalendarInviteMenu stream={s} />
                       </div>
                     </div>
                   ))}
@@ -335,6 +483,7 @@ export default function StreamScheduler() {
                         <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
                           <Share2 className="w-4 h-4" />
                         </button>
+                        <CalendarInviteMenu stream={s} />
                         <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
                           <Pencil className="w-4 h-4" />
                         </button>

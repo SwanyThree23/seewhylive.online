@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { createPageUrl } from '../utils';
 import { speakReply } from '../utils/tts';
 import SwanyBotWidget from '../components/guide/ARIAWidget';
 import NotificationBell from '../components/shared/NotificationBell';
@@ -22,6 +24,8 @@ const PURPLE = '#7B5DA6';
 const CYAN   = '#D4AF37';
 const T = { fontFamily: 'Barlow Condensed, sans-serif' };
 const MONO = { fontFamily: 'Space Mono, monospace' };
+const PILL = 999;
+const GREEN = '#6DBF7E';
 
 const GLOBAL_CSS = `
 @keyframes aura-pulse{0%,100%{box-shadow:0 0 12px #7B5DA644;}50%{box-shadow:0 0 32px #7B5DA699;}}
@@ -162,7 +166,7 @@ export default function AuraAI() {
       });
       const reply = res || "Let me think on that — what's your vision for the stream?";
       setMessages(m => [...m, { role: 'assistant', text: reply }]);
-      speakText(reply);
+      speakReply(reply);
     } catch {
       setMessages(m => [...m, { role: 'assistant', text: "Stay with me — the connection flickered. Ask me again and we'll create something amazing. ✨" }]);
     }
@@ -172,6 +176,10 @@ export default function AuraAI() {
 
   function clearChat() {
     setMessages([{ role: 'assistant', text: "Fresh canvas. What would you like to create? ✨" }]);
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   }
 
   return (

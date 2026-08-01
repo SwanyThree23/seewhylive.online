@@ -301,16 +301,16 @@ export default function WisperFlo({ roomId, isHost, currentUser }) {
         </button>
       </div>
       <WhisperPanel roomId={roomId} currentUser={currentUser} />
-      <AggregatedChat roomId={roomId} currentUser={currentUser} isHost={false} onMessagesChange={() => {}} />
+      <AggregatedChat roomId={roomId} currentUser={currentUser} isHost={isHost} onMessagesChange={() => {}} />
       <GiftAnimation event={null} onDone={() => {}} />
       <EnhancedStreamChat roomId={roomId} userId={currentUser?.id} userName={currentUser?.full_name} userRole={null} />
       <OnlineUsersGrid compact maxVisible={12} />
       <ContentRecommendations />
-      <EnhancedPollingSystem roomId={roomId} hostId={currentUser?.id} isHost={false} />
+      <EnhancedPollingSystem roomId={roomId} hostId={currentUser?.id} isHost={isHost} />
       <CollaborationMatcher />
       <ShareToSocial content={{ title: 'WisperFlo Chat', url: window.location.href }} />
       <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={roomId} communityId={null} />
-      <StreamGoals isHost={false} />
+      <StreamGoals isHost={isHost} />
     </div>
   );
 }

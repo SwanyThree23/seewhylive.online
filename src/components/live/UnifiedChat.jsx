@@ -1,13 +1,68 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X
+  Send, Pin, Trash2, Ban, Reply, Smile, Sliders, ChevronDown, X, Languages, Shield
 } from 'lucide-react';
+import { Drawer } from 'vaul';
 
 const EMOJIS = ['😂','❤️','🔥','👏','😮','🎉','💯','🤩','😍','💪','🙏','👀','✨','🎶','😭','🤣','😊','🥳','💰','⭐'];
+
+const LANGUAGES = [
+  { code: 'es', label: 'Español',    flag: '🇪🇸' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { code: 'pt', label: 'Português',  flag: '🇧🇷' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'ar', label: 'العربية',    flag: '🇸🇦' },
+  { code: 'zh', label: '中文',       flag: '🇨🇳' },
+  { code: 'hi', label: 'हिन्दी',    flag: '🇮🇳' },
+  { code: 'ja', label: '日本語',     flag: '🇯🇵' },
+  { code: 'ko', label: '한국어',     flag: '🇰🇷' },
+  { code: 'ru', label: 'Русский',    flag: '🇷🇺' },
+  { code: 'sw', label: 'Kiswahili',  flag: '🇰🇪' },
+];
+
+// ── Guardian AI moderation ────────────────────────────────────────────────
+const OFFENSIVE = ['spam', 'scam', 'hack', 'inappropriate', 'offensive', 'violence', 'hate', 'abuse', 'exploit'];
+const SPAM_RX = [
+  /(.)\1{5,}/g,
+  /(?:visit|click|buy|now|free\s*\$)[^\s]*/gi,
+  /https?:\/\/(?!(?:youtube|youtu\.be|twitch\.tv))[^\s]+/gi, // block non-whitelisted links
+];
+const EMOTES = { ':)':'😊', ':(':'😢', ':D':'😄', ':O':'😲', 'PogU':'🎉', 'Kappa':'😏', 'GG':'👏', 'LUL':'😂', 'FIRE':'🔥', 'EZ':'💪' };
+
+function guardianFilter(text) {
+  let out = text;
+  OFFENSIVE.forEach(w => { out = out.replace(new RegExp(`\\b${w}\\b`, 'gi'), '***'); });
+  SPAM_RX.forEach(rx => { out = out.replace(rx, ''); });
+  return out.trim();
+}
+function processEmotes(text) {
+  let out = text;
+  Object.entries(EMOTES).forEach(([k, v]) => { out = out.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), v); });
+  return out;
+}
+function userColor(uid = '') {
+  let h = 0;
+  for (let i = 0; i < uid.length; i++) h = (h * 31 + uid.charCodeAt(i)) & 0xffff;
+  return `hsl(${h % 360}, 65%, 62%)`;
+}
+
+async function translateText(text, targetLang) {
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.responseData?.translatedText || null;
+  } catch {
+    return null;
+  }
+}
 
 const MSG_BG = {
   poll: { background: 'rgba(109,191,126,0.15)' },
@@ -48,6 +103,9 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const [msgPerMin, setMsgPerMin] = useState(0);
   const [activeChatters, setActiveChatters] = useState(0);
   const [lastSentAt, setLastSentAt] = useState(0);
+  const [translateLang, setTranslateLang] = useState(null);
+  const [translationMap, setTranslationMap] = useState({});
+  const [langSheetOpen, setLangSheetOpen] = useState(false);
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
   const qc = useQueryClient();
@@ -65,9 +123,11 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     const unsub = base44.entities.Message.subscribe((event) => {
       if (event.data?.room_id !== roomId) return;
       if (event.type === 'create') {
-        setMessages(prev => [...prev.slice(-199), event.data]);
-        const chatters = new Set([...messages.map(m => m.user_id), event.data.user_id]);
-        setActiveChatters(chatters.size);
+        setMessages(prev => {
+          const next = [...prev.slice(-199), event.data];
+          setActiveChatters(new Set(next.map(m => m.user_id)).size);
+          return next;
+        });
       } else if (event.type === 'delete') {
         setMessages(prev => prev.filter(m => m.id !== event.id));
       }
@@ -76,6 +136,22 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   }, [roomId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // Auto-translate new messages when a target language is selected
+  useEffect(() => {
+    if (!translateLang) return;
+    let cancelled = false;
+    const pending = messages.filter(
+      m => !translationMap[m.id] && m.content && m.message_type !== 'moderation'
+    );
+    pending.slice(-8).forEach(async msg => {
+      const translated = await translateText(msg.content, translateLang);
+      if (!cancelled && translated && translated.toLowerCase() !== msg.content.toLowerCase()) {
+        setTranslationMap(prev => ({ ...prev, [msg.id]: translated }));
+      }
+    });
+    return () => { cancelled = true; };
+  }, [messages, translateLang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const recent = messages.filter(m => Date.now() - new Date(m.created_date).getTime() < 60000);
@@ -96,12 +172,16 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
   const sendMessage = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed || !currentUser) return;
+    if (subOnly && !isHost) { toast.error('Subscriber-only mode — become a subscriber to chat'); return; }
     if (slowMode && Date.now() - lastSentAt < slowInterval * 1000) return;
+    const withEmotes = processEmotes(trimmed);
+    const filtered = guardianFilter(withEmotes);
+    if (!filtered) { toast.error('Message blocked by Guardian AI'); return; }
     sendMutation.mutate({
       room_id: roomId,
       user_id: currentUser.id,
       user_name: currentUser.full_name || currentUser.email,
-      content: replyTo ? `@${replyTo.user_name}: ${trimmed}` : trimmed,
+      content: replyTo ? `@${replyTo.user_name}: ${filtered}` : filtered,
       message_type: 'regular',
       reply_to_id: replyTo?.id,
     });
@@ -109,7 +189,7 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
     setReplyTo(null);
     setLastSentAt(Date.now());
     textareaRef.current?.focus();
-  }, [input, currentUser, roomId, slowMode, slowInterval, lastSentAt, replyTo]);
+  }, [input, currentUser, roomId, slowMode, slowInterval, lastSentAt, replyTo, subOnly, isHost]);
 
   const clearChat = () => {
     if (window.confirm('Clear all chat messages?')) {
@@ -119,6 +199,14 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
 
   return (
     <div className="flex flex-col h-full" style={{ background: 'rgba(8,11,24,0.97)' }}>
+
+      {/* Guardian AI badge — always visible */}
+      <div className="flex items-center gap-1.5 px-3 pt-2 pb-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        <Shield className="w-2.5 h-2.5 text-[#6DBF7E]" />
+        <span className="text-[9px] font-black uppercase tracking-wider" style={{ color: 'rgba(109,191,126,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          Guardian AI active
+        </span>
+      </div>
 
       {/* Host controls toggle */}
       {isHost && (
@@ -137,10 +225,12 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-white/50">Slow Mode</span>
                     {slowMode && (
-                      <select value={slowInterval} onChange={(e) => setSlowInterval(Number(e.target.value))}
-                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white px-1 py-0.5">
-                        {[3,5,10,30].map(s => <option key={s} value={s} className="bg-[#080B18]">{s}s</option>)}
-                      </select>
+                      <MobileSelect
+                        value={String(slowInterval)}
+                        onChange={(v) => setSlowInterval(Number(v))}
+                        options={[3,5,10,30].map(s => ({ value: String(s), label: `${s}s` }))}
+                        placeholder="Interval"
+                      />
                     )}
                   </div>
                   <div onClick={() => setSlowMode(!slowMode)} style={{ width:40, height:22, borderRadius:99, background: slowMode ? '#800020' : 'rgba(255,255,255,0.1)', position:'relative', cursor:'pointer', transition:'background 0.2s', flexShrink:0 }}>
@@ -202,7 +292,8 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-[11px] font-bold ${msg.user_id === currentUser?.id ? 'text-[#C9A84C]' : 'text-[#d4af37]'}`}>
+                    <span className="text-[11px] font-bold"
+                      style={{ color: msg.user_id === currentUser?.id ? '#C9A84C' : userColor(msg.user_id) }}>
                       {msg.user_name}
                     </span>
                     <MessageBadge type={msg.message_type} />
@@ -211,6 +302,11 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
                     )}
                   </div>
                   <p className="text-xs text-white/80 break-words leading-relaxed mt-0.5">{msg.content}</p>
+                  {translateLang && translationMap[msg.id] && (
+                    <p className="text-xs text-white/40 italic break-words leading-relaxed mt-0.5">
+                      {translationMap[msg.id]}
+                    </p>
+                  )}
                 </div>
                 {/* Touch-friendly action button */}
                 <button onClick={() => setReplyTo(msg)}
@@ -269,6 +365,17 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
             <Smile className="w-4 h-4" style={{ color: showEmojiPicker ? '#d4af37' : 'rgba(255,255,255,0.4)' }} />
           </button>
 
+          {/* Language translate toggle */}
+          <button onClick={() => setLangSheetOpen(true)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all active:scale-90"
+            title={translateLang ? `Translating to ${LANGUAGES.find(l => l.code === translateLang)?.label}` : 'Translate chat'}
+            style={{
+              background: translateLang ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${translateLang ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+            <Languages className="w-4 h-4" style={{ color: translateLang ? '#6DBF7E' : 'rgba(255,255,255,0.4)' }} />
+          </button>
+
           <div className="flex-1 relative">
             <textarea
               ref={textareaRef}
@@ -296,6 +403,58 @@ export default function UnifiedChat({ roomId, currentUser, isHost }) {
           </div>
         )}
       </div>
+
+      {/* Language picker — vaul bottom sheet */}
+      <Drawer.Root open={langSheetOpen} onOpenChange={setLangSheetOpen}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 z-[190]" style={{ background: 'rgba(0,0,0,0.6)' }} />
+          <Drawer.Content
+            className="fixed bottom-0 left-0 right-0 z-[200] rounded-t-2xl pb-8"
+            style={{ background: '#0D1022', border: '1px solid rgba(212,175,55,0.18)', maxHeight: '80vh', overflowY: 'auto' }}
+          >
+            <Drawer.Handle className="mx-auto mt-3 mb-4 w-10 h-1 rounded-full bg-white/15" />
+            <div className="px-4 pb-4 space-y-2">
+              <p className="text-sm font-black text-white mb-3" style={{ fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
+                Translate Chat <span className="text-white/30 font-normal text-xs">— powered by MyMemory</span>
+              </p>
+
+              {/* Off option */}
+              <button
+                onClick={() => { setTranslateLang(null); setTranslationMap({}); setLangSheetOpen(false); }}
+                className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
+                style={{
+                  background: !translateLang ? 'rgba(212,175,55,0.1)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${!translateLang ? '#D4AF37' : 'rgba(255,255,255,0.08)'}`,
+                }}
+              >
+                <span className="text-xl">🌐</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white">Original (no translation)</p>
+                  <p className="text-[11px] text-white/40">Show messages as sent</p>
+                </div>
+                {!translateLang && <div className="w-2 h-2 rounded-full bg-[#D4AF37] shrink-0" />}
+              </button>
+
+              {/* Language options */}
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => { setTranslateLang(lang.code); setTranslationMap({}); setLangSheetOpen(false); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl text-left transition-all"
+                  style={{
+                    background: translateLang === lang.code ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.04)',
+                    border: `1px solid ${translateLang === lang.code ? '#6DBF7E' : 'rgba(255,255,255,0.08)'}`,
+                  }}
+                >
+                  <span className="text-xl">{lang.flag}</span>
+                  <p className="text-sm font-bold text-white flex-1">{lang.label}</p>
+                  {translateLang === lang.code && <div className="w-2 h-2 rounded-full bg-[#6DBF7E] shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   );
 }

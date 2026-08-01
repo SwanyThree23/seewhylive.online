@@ -33,6 +33,15 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import AlertConfig from '../components/live/AlertConfig';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import TierSubscribeCard from '../components/subscriptions/TierSubscribeCard';
 
 const G       = '#D4AF37';
 const BG      = '#080B18';
@@ -831,7 +840,7 @@ export default function MonetizationPage() {
           {tab === 'tiers' && user?.id && (
             <motion.div key="tiers" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <CreatorTierManager creatorId={user.id} />
-              <TierEditor open={tierEditorOpen} onClose={() => setTierEditorOpen(false)} creatorId={user.id} existing={null} />
+              <TierEditor open={showTierEditor} onClose={() => setShowTierEditor(false)} creatorId={user.id} existing={null} />
               <SubscriptionTiers communityId={userCommunityId} userId={user.id} />
               <SubscriptionCard
                 tier="bronze"

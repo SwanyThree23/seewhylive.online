@@ -397,14 +397,14 @@ Write the content now. Make it authentic, platform-native, and ready to post. In
         )}
       </div>
       <div style={{ maxWidth: 480, margin: '0 auto', paddingBottom: 32 }}>
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} viewerCount={0} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={true} viewerCount={0} />
         <ContentRecommendations />
         <VODLibrary creatorId={user?.id} />
         <ShareToSocial content={null} />
-        <AutomatedHighlightReels streamSession={null} />
-        <AutomatedClipGenerator streamSession={null} isLive={false} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
+        <AutomatedClipGenerator streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <ClipGeneratorAI sessionId={activeRoomId} roomId={activeRoomId} creatorId={user?.id} />
-        <BroadcastAnalyticsDashboard streamSession={null} isLive={false} />
+        <BroadcastAnalyticsDashboard streamSession={activeRoom || null} isLive={!!activeRoomId} />
         <OnlineUsersGrid compact maxVisible={10} />
         <CollaborationMatcher />
       </div>

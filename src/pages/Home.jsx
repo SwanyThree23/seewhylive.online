@@ -108,6 +108,117 @@ function streamDuration(room) {
   return Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
 }
 
+// ── Top Live Strip ─────────────────────────────────────────────────────────
+// Horizontal scroller of the top 8 live rooms — first thing users see.
+function TopLiveStripSkeleton() {
+  return (
+    <div style={{ background: 'rgba(8,11,24,0.99)', borderBottom: '1px solid rgba(212,175,55,0.06)' }}>
+      <div className="flex items-center gap-2 px-4 pt-2.5 pb-1">
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+        <div className="h-2 w-16 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.06)' }} />
+      </div>
+      <div className="overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2.5 px-4" style={{ width: 'max-content' }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="rounded-xl overflow-hidden shrink-0 animate-pulse"
+              style={{ width: 116, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.06)' }}>
+              <div style={{ height: 72, background: 'rgba(255,255,255,0.04)' }} />
+              <div className="px-2 py-1.5 space-y-1.5">
+                <div className="h-2 rounded" style={{ background: 'rgba(255,255,255,0.06)', width: '80%' }} />
+                <div className="h-2 rounded" style={{ background: 'rgba(255,255,255,0.04)', width: '55%' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TopLiveStrip({ rooms, loading }) {
+  if (loading) return <TopLiveStripSkeleton />;
+  if (!rooms || rooms.length === 0) return null;
+  var top = rooms.slice(0, 8);
+
+  return (
+    <div style={{ background: 'rgba(8,11,24,0.99)', borderBottom: '1px solid rgba(212,175,55,0.06)' }}>
+      <div className="flex items-center gap-2 px-4 pt-2.5 pb-1">
+        <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#C0392B' }} />
+        <span className="text-[10px] font-black uppercase tracking-widest"
+          style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.15em' }}>
+          Live Now
+        </span>
+        <span className="text-[10px] font-bold" style={{ color: 'rgba(212,175,55,0.55)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          {rooms.length}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto pb-3" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-2.5 px-4" style={{ width: 'max-content' }}>
+          {top.map(function(room) {
+            var count = room.participant_count || room.viewer_count || 0;
+            var countLabel = count >= 1000 ? (count / 1000).toFixed(1) + 'k' : count > 0 ? String(count) : null;
+            return (
+              <Link key={room.id} to={'/LiveRoom?id=' + room.id}>
+                <motion.div
+                  whileTap={{ scale: 0.95 }}
+                  className="relative rounded-xl overflow-hidden shrink-0"
+                  style={{ width: 116, background: 'rgba(13,6,24,0.97)', border: '1px solid rgba(212,175,55,0.10)' }}>
+
+                  {/* Thumbnail / placeholder */}
+                  <div className="relative" style={{ height: 72, background: 'linear-gradient(135deg, #0F1428, #080B18)' }}>
+                    {room.thumbnail_url ? (
+                      <img src={room.thumbnail_url} alt={room.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Radio className="w-5 h-5" style={{ color: 'rgba(212,175,55,0.18)' }} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0"
+                      style={{ background: 'linear-gradient(to top, rgba(8,11,24,0.88) 0%, transparent 55%)' }} />
+
+                    {/* LIVE badge */}
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-0.5 px-1.5 py-0.5 rounded"
+                      style={{ background: '#C0392B' }}>
+                      <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                      <span className="text-[8px] font-black text-white"
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>LIVE</span>
+                    </div>
+
+                    {/* Viewer count */}
+                    {countLabel && (
+                      <div className="absolute bottom-1 right-1.5">
+                        <span className="text-[9px] font-bold text-white/80"
+                          style={{ fontFamily: 'Barlow Condensed, sans-serif', textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                          👁 {countLabel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="px-2 py-1.5">
+                    <p className="text-[10px] font-black text-white leading-tight"
+                      style={{ fontFamily: 'Barlow Condensed, sans-serif', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {room.title}
+                    </p>
+                    {room.host_name && (
+                      <p className="text-[9px] mt-0.5 truncate"
+                        style={{ color: 'rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {room.host_name}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Live ranking score ─────────────────────────────────────────────────────
 function scoreRoom(room) {
   var viewers = room.viewer_count || room.participant_count || 0;
@@ -780,6 +891,12 @@ export default function Home() {
           </motion.div>
         </Link>
       </div>
+
+      {/* ── TOP LIVE STRIP ── Rooms worth being in, the moment they go live */}
+      <TopLiveStrip rooms={liveRooms} loading={loadingLive} />
+
+      {/* ── MOMENTS STRIP ── Recent clips from the creators you follow */}
+      <MomentsStrip />
 
       {/* ── WASHINGTON CLASSIC 2026 HERO ── */}
       <div style={{ padding: '14px 0 10px' }}>

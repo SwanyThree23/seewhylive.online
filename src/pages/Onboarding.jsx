@@ -71,7 +71,7 @@ const inp = {
 };
 
 // ── Top progress bar ─────────────────────────────────────────────────────────
-function StepProgress({ step, onboarding }) {
+function ProgressBar({ step, onboarding }) {
   return (
     <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -674,7 +674,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, y: 0 }}
           style={{ background: 'rgba(8,11,24,0.97)', borderRadius: 16, border: '1px solid rgba(212,175,55,0.12)', overflow: 'hidden', margin: '0 12px' }}
         >
-          <StepProgress step={step} onboarding={onboarding} />
+          <ProgressBar step={step} onboarding={onboarding} />
           <AnimatePresence mode="wait">
             <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
               {step === 1 && <Step1 onboarding={onboarding} user={user} onDone={handleDone} setStep={setStep} />}
@@ -700,7 +700,7 @@ export default function OnboardingPage() {
         <ContentRecommendations />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
         <CollaborationMatcher />
-        <StreamGoals isHost={false} />
+        <StreamGoals isHost={true} />
       </div>
     </div>
   );

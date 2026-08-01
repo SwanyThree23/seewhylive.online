@@ -443,7 +443,7 @@ export default function DiscoverPage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 24 }}>
           <ShareToSocial content={{ title: 'Discover on SeeWhy LIVE', url: window.location.href }} />
-          <StreamGoals isHost={false} />
+          <StreamGoals isHost={true} />
           <AnnouncementPanel communityId={userCommunityId} userId={user?.id} />
           <ChallengeLeaderboard challengeId={null} />
         </div>
@@ -548,6 +548,7 @@ function CreatorCard({ creator }) {
 }
 
 function EmptyState({ icon: Icon, title, desc }) {
+  const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   return (
     <div className="text-center py-20">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(212,175,55,0.06)', border: '1px solid rgba(212,175,55,0.12)' }}>

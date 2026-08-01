@@ -10,6 +10,35 @@ import { useCameraDevices } from '../hooks/useCameraDevices';
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import DevicePreview from '../components/greenroom/DevicePreview';
+import WebRTCSetupBanner from '../components/live/WebRTCSetupBanner';
+import StreamingPresets from '../components/streaming/StreamingPresets';
+import StreamMetadataEditor from '../components/streaming/StreamMetadataEditor';
+import RoomBrandingEditor from '../components/live/RoomBrandingEditor';
+import GuestConnector from '../components/live/GuestConnector';
+import GuestQueue from '../components/live/GuestQueue';
+import GreenroomQueue from '../components/streaming/GreenroomQueue';
+import EnhancedIngestPanel from '../components/streaming/EnhancedIngestPanel';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import GuestStreamingPermissions from '../components/live/GuestStreamingPermissions';
+import GuestDestinationsPanel from '../components/live/GuestDestinationsPanel';
+import ZEGOGuestApprovalPanel from '../components/zego/ZEGOGuestApprovalPanel';
+import AlertConfig from '../components/live/AlertConfig';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import ContentRecommendations from '../components/social/ContentRecommendations';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import LiveStage from '../components/live/LiveStage';
+import { useZegoToken } from '../hooks/useZegoToken';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -25,6 +54,7 @@ export default function GreenroomEnhanced() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { token: zegoToken } = useZegoToken({ roomId: activeRoomId, userId: user?.id, enabled: !!activeRoomId && !!user?.id });
   const [cameraStream, setCameraStream] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const [webrtcError, setWebrtcError] = useState(null);
@@ -278,7 +308,7 @@ export default function GreenroomEnhanced() {
         <StreamMetadataEditor />
 
         {/* Room branding (logo, banner colors) */}
-        <RoomBrandingEditor roomData={null} onBrandingChange={() => {}} isHost={true} />
+        <RoomBrandingEditor roomData={activeRoom || null} onBrandingChange={(b) => { if (activeRoomId) base44.entities.Room.update(activeRoomId, b).catch(() => {}); }} isHost={true} />
 
         {/* Guest connector + queue */}
         <GuestConnector roomId={activeRoomId} roomName="SeeWhy Studio" />
@@ -294,16 +324,28 @@ export default function GreenroomEnhanced() {
         <GuestRTMPPanel participantId={null} userId={user?.id} />
 
         {/* Guest stream monitor */}
-        <GuestStreamMonitor guestName="Guest" isStreaming={false} />
+        <GuestStreamMonitor guestName="Guest" isStreaming={isLive} />
 
         {/* Guest streaming permissions */}
         <GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => {}} />
 
         {/* Guest destinations panel */}
-        <GuestDestinationsPanel participantUserId={null} guestName="Guest" />
+        <GuestDestinationsPanel participantUserId={user?.id || null} guestName={user?.full_name || 'Guest'} />
 
         {/* ZEGO guest approval */}
         <ZEGOGuestApprovalPanel roomId={activeRoomId} isHost={true} />
+
+        {/* SFU live stage — shows when a room is active; panelists see the grid, viewers see the feed */}
+        {activeRoomId && user?.id && (
+          <LiveStage
+            roomId={activeRoomId}
+            role="panelist"
+            userId={user.id}
+            userName={user.full_name || user.email || 'Host'}
+            token={zegoToken}
+            minHeight={240}
+          />
+        )}
 
         {/* Go Live button */}
         <div className="rounded-2xl p-4" style={{ background: allReady ? 'rgba(212,175,55,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${allReady ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.06)'}` }}>

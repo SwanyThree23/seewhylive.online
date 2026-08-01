@@ -26,6 +26,7 @@ import AuraEmotionDisplay from '../components/live/AuraEmotionDisplay';
 import AICopilotSidebar from '../components/live/AICopilotSidebar';
 import OnlineUsersGrid from '../components/presence/OnlineUsersGrid';
 import AuraPanelDrawer from '../components/live/AuraPanelDrawer';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 
 // ── Brand tokens ──────────────────────────────────────────────────────────────
@@ -37,6 +38,7 @@ const PINK   = '#C0392B';
 const CYAN   = '#4A8A7A';
 const PURPLE = '#7B5DA6';
 const GREEN  = '#6DBF7E';
+const AMBER  = '#D4854A';
 const T      = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 // ── Toggle Switch ─────────────────────────────────────────────────────────────
@@ -152,6 +154,21 @@ export default function AIHub() {
     refetchInterval: 30000,
   });
   const activeRoomId = activeRoom?.id || null;
+  const { data: recentRoomMessages = [] } = useQuery({
+    queryKey: ['aihub-recent-messages', activeRoomId],
+    queryFn: () => base44.entities.Message.filter({ room_id: activeRoomId }, '-created_date', 50),
+    enabled: !!activeRoomId,
+    refetchInterval: 10000,
+  });
+  const ariaPostMut = useMutation({
+    mutationFn: (msg) => base44.entities.Message.create({
+      room_id: activeRoomId,
+      user_id: user?.id,
+      user_name: 'ARIA AI',
+      content: msg,
+      is_moderator: true,
+    }),
+  });
   const [tipTotal, setTipTotal] = useState(0);
   const [busViewerCount, setBusViewerCount] = useState(0);
   const [guardianOn, setGuardianOn]   = useState(true);
@@ -1072,7 +1089,7 @@ Return JSON: { status: 'clean'|'warning'|'alert', message: string (1-2 sentences
       <div style={{ padding: '0 16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <AuraEmotionDisplay roomId={activeRoomId} sessionId={activeRoomId} auraPersona="calm" />
         <SwanAIRecommendations roomId={activeRoomId} currentLayout="default" viewerCount={0} />
-        <AICopilotSidebar roomId={activeRoomId} isHost={false} />
+        <AICopilotSidebar roomId={activeRoomId} isHost={true} />
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Camera, MessageSquare, Heart, DollarSign, MoreHorizontal, X, RotateCcw } from 'lucide-react';
 
-export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, roomId }) {
+export default function MobileStreamControls({ micMuted, onMicToggle, onReact, onQuickTip, onWebSource, onGoal, onClip, onRaid, onPoll, onQA, roomId }) {
   const [showChat, setShowChat] = useState(true);
   const [showMore, setShowMore] = useState(false);
   const [facing, setFacing] = useState('user');
@@ -120,11 +120,11 @@ export default function MobileStreamControls({ micMuted, onMicToggle, onReact, o
               <p className="text-sm font-semibold text-white/60 mb-3">Quick Actions</p>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { icon: '🎯', label: 'Goals', action: () => {} },
-                  { icon: '✂️', label: 'Clip', action: () => {} },
-                  { icon: '🚀', label: 'Raid', action: () => {} },
-                  { icon: '📊', label: 'Poll', action: () => {} },
-                  { icon: '❓', label: 'Q&A', action: () => {} },
+                  { icon: '🎯', label: 'Goals',      action: () => onGoal?.() },
+                  { icon: '✂️', label: 'Clip',       action: () => onClip?.() },
+                  { icon: '🚀', label: 'Raid',       action: () => onRaid?.() },
+                  { icon: '📊', label: 'Poll',       action: () => onPoll?.() },
+                  { icon: '❓', label: 'Q&A',        action: () => onQA?.() },
                   { icon: '🌐', label: 'Web Source', action: () => onWebSource?.() },
                 ].map(item => (
                   <button key={item.label} onClick={() => { item.action(); setShowMore(false); }}

@@ -20,6 +20,22 @@ import ContentRecommendations from '../components/social/ContentRecommendations'
 
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import AlertConfig from '../components/live/AlertConfig';
+import BackgroundCustomizer from '../components/settings/BackgroundCustomizer';
+import ShopDashboard from '../components/merch/ShopDashboard';
+import SwanyBotWidget from '../components/guide/ARIAWidget';
+import CreatorBridge from '../components/social/CreatorBridge';
+import StreamGoals from '../components/live/StreamGoals';
+import NotificationBell from '../components/shared/NotificationBell';
+import RewardShop from '../components/loyalty/RewardShop';
+import HostAlertCenter from '../components/live/HostAlertCenter';
+import ViewerCount from '../components/live/ViewerCount';
+import StreamerMonetizationCenter from '../components/monetization/StreamerMonetizationCenter';
+import CollaborationMatcher from '../components/social/CollaborationMatcher';
+import BitratePresets from '../components/streaming/BitratePresets';
+import GuestRTMPPanel from '../components/streaming/GuestRTMPPanel';
+import GuestStreamMonitor from '../components/streaming/GuestStreamMonitor';
+import TranscriptionPanel from '../components/streaming/TranscriptionPanel';
 
 const BG = '#080B18';
 const GOLD = '#D4AF37';
@@ -63,6 +79,8 @@ export default function PKBattlePage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [selectedBitrate, setSelectedBitrate] = useState(3000);
+  const [tab, setTab] = useState('active');
+  const [votes, setVotes] = useState({});
 
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
 
@@ -84,6 +102,7 @@ export default function PKBattlePage() {
 
   const battles = tab === 'active' ? activeBattles : endedBattles;
   const displayBattle = selectedBattle || activeBattles[0];
+  const activeBattle = displayBattle;
 
   const totalActiveBattles = activeBattles.filter(b => b.status === 'active').length;
   const pendingBattles = activeBattles.filter(b => b.status === 'pending').length;
@@ -258,7 +277,7 @@ export default function PKBattlePage() {
       <MilestoneAlerts userId={user?.id} roomId={activeBattle?.id || null} />
       {user?.id && <AlertConfig creatorId={user.id} />}
       {user?.id && <ShopDashboard creatorId={user.id} />}
-      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={false} hostName={user?.full_name || ''} />}
+      {activeBattle?.id && <BattleMode roomId={activeBattle.id} isHost={true} hostName={user?.full_name || ''} />}
       {<BitratePresets selected={selectedBitrate} onChange={setSelectedBitrate} />}
       {user?.id && <GuestRTMPPanel participantId={user.id} userId={user.id} />}
       {<GuestStreamMonitor guestName={user?.full_name || ''} isStreaming={activeBattle?.status === 'active'} />}

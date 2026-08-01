@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
@@ -21,9 +21,10 @@ function FloatingEmoji({ emoji, id, onDone }) {
   );
 }
 
-export default function LiveEmoticonStorm({ partyId, currentUser }) {
+export default function LiveEmoticonStorm({ partyId, currentUser, triggerReact }) {
   const [floating, setFloating] = useState([]);
   const [cooldown, setCooldown] = useState(false);
+  const prevTrigger = useRef(triggerReact);
 
   // Subscribe to party reactions in real-time
   useEffect(() => {
@@ -59,6 +60,15 @@ export default function LiveEmoticonStorm({ partyId, currentUser }) {
     setFloating(prev => [...prev.slice(-12), { id, emoji }]);
     sendMutation.mutate(emoji);
   }, [cooldown, sendMutation]);
+
+  useEffect(() => {
+    if (triggerReact !== prevTrigger.current && triggerReact?.emoji) {
+      prevTrigger.current = triggerReact;
+      const id = `ext-${Date.now()}`;
+      setFloating(prev => [...prev.slice(-12), { id, emoji: triggerReact.emoji }]);
+      sendMutation.mutate(triggerReact.emoji);
+    }
+  }, [triggerReact, sendMutation]);
 
   const removeFloat = useCallback((id) => {
     setFloating(prev => prev.filter(f => f.id !== id));

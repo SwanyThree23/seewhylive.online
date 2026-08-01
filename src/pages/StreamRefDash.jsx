@@ -25,6 +25,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -1031,13 +1032,13 @@ export default function StreamRefDash() {
       </div>
 
       <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <StreamHealthDashboard isLive={false} />
+        <StreamHealthDashboard isLive={!!activeRoomId} />
         <ZEGOConfigPanel roomId={activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={true} />
         <SwanDirectorPanel roomId={activeRoomId} hostId={user?.id} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={false} onStreamHealth={() => {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={user?.id} userName={user?.full_name || ""} isHost={true} onStreamHealth={() => {}} />
         <ChatModeration />
-        <StreamMetadata room={null} isHost={false} />
+        <StreamMetadata room={activeRoom || null} isHost={true} />
       </div>
 
       {/* Footer */}
@@ -1053,7 +1054,7 @@ export default function StreamRefDash() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

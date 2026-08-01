@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 import { Mic, Play, Square, Volume2, Save, Plus, Trash2, Zap, Bot, ChevronDown, ChevronUp, Link, Webhook, BarChart2, BookOpen, MessageSquare, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
@@ -207,13 +208,12 @@ function TriggerRow({ trigger, onChange, onRemove }) {
     <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          <select
+          <MobileSelect
             value={trigger.type}
-            onChange={e => onChange({ ...trigger, type: e.target.value })}
-            style={{ flex: 1, padding: '6px 8px', borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.2)', color: 'rgba(255,255,255,0.8)', fontSize: 11, fontFamily: 'inherit' }}
-          >
-            {TRIGGER_TYPES.map(tt => <option key={tt.id} value={tt.id}>{tt.label}</option>)}
-          </select>
+            onChange={v => onChange({ ...trigger, type: v })}
+            options={TRIGGER_TYPES.map(tt => ({ value: tt.id, label: tt.label }))}
+            placeholder="Trigger type"
+          />
           {(trigger.type === 'chat_command' || trigger.type === 'keyword') && (
             <input
               value={trigger.value || ''}
@@ -537,13 +537,12 @@ Output only the personality text, no labels or headers.`,
                   {/* Industry */}
                   <div>
                     <label style={{ fontSize: 11, color: DIM, ...T }}>Industry / Role</label>
-                    <select
+                    <MobileSelect
                       value={draft.industry || 'streaming'}
-                      onChange={e => setDraft(d => ({ ...d, industry: e.target.value }))}
-                      style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.25)', color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
-                    >
-                      {INDUSTRY_TEMPLATES.map(t => <option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}
-                    </select>
+                      onChange={v => setDraft(d => ({ ...d, industry: v }))}
+                      options={INDUSTRY_TEMPLATES.map(t => ({ value: t.id, label: `${t.icon} ${t.label}` }))}
+                      placeholder="Industry / Role"
+                    />
                   </div>
 
                   {/* Name */}

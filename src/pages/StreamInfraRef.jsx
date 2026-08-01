@@ -24,6 +24,7 @@ import SwanyBotWidget from '../components/guide/ARIAWidget';
 import CollaborationMatcher from '../components/social/CollaborationMatcher';
 import SwanAIRecommendations from '../components/live/SwanAIRecommendations';
 import MilestoneAlerts from '../components/creator/MilestoneAlerts';
+import CreatorBridge from '../components/social/CreatorBridge';
 
 const TABS = [
   { id: "rtmp",      icon: "📡", label: "RTMP" },
@@ -796,16 +797,16 @@ export default function StreamInfraRef() {
         <ZEGOConfigPanel roomId={activeRoomId} />
         <DestinationsManager userId={user?.id} />
         <BitratePresets onPresetSelect={() => {}} selectedPreset={null} />
-        <StreamHealthDashboard isLive={false} />
-        <OBSBridge roomId={activeRoomId} isHost={false} />
-        <StreamMetadata room={null} isHost={false} />
+        <StreamHealthDashboard isLive={!!activeRoomId} />
+        <OBSBridge roomId={activeRoomId} isHost={true} />
+        <StreamMetadata room={activeRoom || null} isHost={true} />
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px 24px' }}>
         {/* new components here */}
         <OnlineUsersGrid compact maxVisible={10} />
         <ContentRecommendations />
-        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={false} />
-        <AutomatedHighlightReels streamSession={null} />
+        <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={!!activeRoomId} />
+        <AutomatedHighlightReels streamSession={activeRoom || null} />
       </div>
       <SwanyBotWidget />
       <CollaborationMatcher />
@@ -814,7 +815,7 @@ export default function StreamInfraRef() {
       <StreamGoals isHost={true} currentTips={0} currentSubs={0} currentViewers={0} />
       <StreamerMonetizationCenter />
       <NotificationBell />
-      <RewardShop creatorId={user?.id || null} roomId={null} currentUser={user || null} />
+      <RewardShop creatorId={user?.id || null} roomId={activeRoomId} currentUser={user || null} />
       <HostAlertCenter />
       <ViewerCount count={0} peakViewers={0} />
     </div>

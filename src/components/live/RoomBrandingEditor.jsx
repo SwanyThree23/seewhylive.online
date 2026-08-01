@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Palette, Type, Image as ImageIcon, Settings2, Eye } from 'lucide-react';
+import { MobileSelect } from '@/components/ui/MobileSelect';
 
 export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost }) {
   const [open, setOpen] = useState(false);
@@ -122,16 +123,17 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
               <div className="space-y-3">
                 <div>
                   <label className="text-[10px] text-white/60 mb-1 block">Font Family</label>
-                  <select
+                  <MobileSelect
                     value={branding.fontFamily}
-                    onChange={(e) => handleChange('fontFamily', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none"
-                  >
-                    <option value="Barlow Condensed">Barlow Condensed</option>
-                    <option value="Orbitron">Orbitron</option>
-                    <option value="Rajdhani">Rajdhani</option>
-                    <option value="Share Tech Mono">Share Tech Mono</option>
-                  </select>
+                    onChange={(v) => handleChange('fontFamily', v)}
+                    options={[
+                      { value: 'Barlow Condensed', label: 'Barlow Condensed' },
+                      { value: 'Orbitron', label: 'Orbitron' },
+                      { value: 'Rajdhani', label: 'Rajdhani' },
+                      { value: 'Share Tech Mono', label: 'Share Tech Mono' },
+                    ]}
+                    placeholder="Select font"
+                  />
                 </div>
 
                 <div>
@@ -176,16 +178,17 @@ export default function RoomBrandingEditor({ roomData, onBrandingChange, isHost 
 
                 <div>
                   <label className="text-[10px] text-white/60 mb-1 block">Lower-Thirds Template</label>
-                  <select
+                  <MobileSelect
                     value={branding.lowerthirdsTemplate}
-                    onChange={(e) => handleChange('lowerthirdsTemplate', e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded px-2 py-1.5 text-xs text-white outline-none"
-                  >
-                    <option value="default">Default</option>
-                    <option value="minimal">Minimal</option>
-                    <option value="elegant">Elegant</option>
-                    <option value="neon">Neon</option>
-                  </select>
+                    onChange={(v) => handleChange('lowerthirdsTemplate', v)}
+                    options={[
+                      { value: 'default', label: 'Default' },
+                      { value: 'minimal', label: 'Minimal' },
+                      { value: 'elegant', label: 'Elegant' },
+                      { value: 'neon', label: 'Neon' },
+                    ]}
+                    placeholder="Select template"
+                  />
                 </div>
 
                 <div className="flex gap-3">
