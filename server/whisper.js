@@ -54,10 +54,18 @@ function flushBuffer(roomId, onTranscript) {
   entry.totalBytes = 0;
   entry.startedAt = Date.now();
 
-  var tmpFile = path.join(
-    os.tmpdir(),
-    'seewhy-audio-' + roomId + '-' + Date.now() + '.webm'
-  );
+  // Guard against path traversal: roomId must be safe alphanumeric characters only
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(roomId)) {
+    console.error('[whisper] Unsafe roomId rejected:', roomId);
+    return;
+  }
+  var tmpDir  = os.tmpdir();
+  var tmpFile = path.join(tmpDir, 'seewhy-audio-' + roomId + '-' + Date.now() + '.webm');
+  // Verify the resolved path is actually inside tmpdir (defense-in-depth)
+  if (path.resolve(tmpFile).indexOf(path.resolve(tmpDir)) !== 0) {
+    console.error('[whisper] Path traversal attempt blocked for room:', roomId);
+    return;
+  }
 
   fs.writeFile(tmpFile, combined, function(writeErr) {
     if (writeErr) {

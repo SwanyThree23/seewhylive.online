@@ -9,11 +9,28 @@ var TTS_VOICE = process.env.TTS_VOICE || 'nova';
 
 var ALLOWED_VOICES = ['alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sage', 'shimmer'];
 
+// Per-user sliding-window rate limit: 10 TTS calls per 60 seconds
+var _ttsWindow = new Map(); // userId → [timestamp, ...]
+var TTS_RATE_MAX = 10;
+var TTS_RATE_WINDOW_MS = 60000;
+
+function _ttsRateLimited(userId) {
+  var now = Date.now();
+  var times = (_ttsWindow.get(userId) || []).filter(function(t) { return now - t < TTS_RATE_WINDOW_MS; });
+  if (times.length >= TTS_RATE_MAX) return true;
+  times.push(now);
+  _ttsWindow.set(userId, times);
+  return false;
+}
+
 router.get('/health', function(req, res) {
-  res.json({ ok: true, model: TTS_MODEL, voice: TTS_VOICE });
+  res.json({ ok: true });
 });
 
 router.post('/', requireAuth, function(req, res) {
+  if (_ttsRateLimited(req.user.id)) {
+    return res.status(429).json({ error: 'Too many TTS requests — limit is ' + TTS_RATE_MAX + ' per minute' });
+  }
   var apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) { return res.status(503).json({ error: 'OPENAI_API_KEY not set' }); }
 

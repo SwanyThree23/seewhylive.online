@@ -185,7 +185,12 @@ router.get('/streams/count', function(req, res) {
 router.get('/creator/analytics', requireAuth, function(req, res) {
   try {
     var creatorId = req.user.id;
-    var period = req.query.period || 'month';
+    var _rawPeriod = req.query.period || 'month';
+    var VALID_PERIODS = ['today', 'week', 'month'];
+    if (!VALID_PERIODS.includes(_rawPeriod)) {
+      return res.status(400).json({ error: 'period must be one of: today, week, month' });
+    }
+    var period = _rawPeriod;
     if (analytics) {
       var result = analytics.getCreatorAnalytics(creatorId, period);
       return res.json(result);

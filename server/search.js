@@ -29,6 +29,28 @@ db.exec(
   ');'
 );
 
+// Keep stream_fts in sync with stream_index via triggers (replaces full rebuild on every write)
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS stream_index_ai AFTER INSERT ON stream_index BEGIN\n' +
+  '  INSERT INTO stream_fts(rowid,title,description,host_username,host_display_name,genre)\n' +
+  '  VALUES(new.rowid,new.title,new.description,new.host_username,new.host_display_name,new.genre);\n' +
+  'END;'
+);
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS stream_index_ad AFTER DELETE ON stream_index BEGIN\n' +
+  '  INSERT INTO stream_fts(stream_fts,rowid,title,description,host_username,host_display_name,genre)\n' +
+  '  VALUES(\'delete\',old.rowid,old.title,old.description,old.host_username,old.host_display_name,old.genre);\n' +
+  'END;'
+);
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS stream_index_au AFTER UPDATE ON stream_index BEGIN\n' +
+  '  INSERT INTO stream_fts(stream_fts,rowid,title,description,host_username,host_display_name,genre)\n' +
+  '  VALUES(\'delete\',old.rowid,old.title,old.description,old.host_username,old.host_display_name,old.genre);\n' +
+  '  INSERT INTO stream_fts(rowid,title,description,host_username,host_display_name,genre)\n' +
+  '  VALUES(new.rowid,new.title,new.description,new.host_username,new.host_display_name,new.genre);\n' +
+  'END;'
+);
+
 db.exec(
   'CREATE TABLE IF NOT EXISTS creator_index (' +
   '  user_id TEXT PRIMARY KEY,' +
@@ -45,6 +67,28 @@ db.exec(
   '  username, display_name, bio,' +
   '  content=\'creator_index\', content_rowid=\'rowid\'' +
   ');'
+);
+
+// Keep creator_fts in sync with creator_index via triggers
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS creator_index_ai AFTER INSERT ON creator_index BEGIN\n' +
+  '  INSERT INTO creator_fts(rowid,username,display_name,bio)\n' +
+  '  VALUES(new.rowid,new.username,new.display_name,new.bio);\n' +
+  'END;'
+);
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS creator_index_ad AFTER DELETE ON creator_index BEGIN\n' +
+  '  INSERT INTO creator_fts(creator_fts,rowid,username,display_name,bio)\n' +
+  '  VALUES(\'delete\',old.rowid,old.username,old.display_name,old.bio);\n' +
+  'END;'
+);
+db.exec(
+  'CREATE TRIGGER IF NOT EXISTS creator_index_au AFTER UPDATE ON creator_index BEGIN\n' +
+  '  INSERT INTO creator_fts(creator_fts,rowid,username,display_name,bio)\n' +
+  '  VALUES(\'delete\',old.rowid,old.username,old.display_name,old.bio);\n' +
+  '  INSERT INTO creator_fts(rowid,username,display_name,bio)\n' +
+  '  VALUES(new.rowid,new.username,new.display_name,new.bio);\n' +
+  'END;'
 );
 
 var stmtUpsertStream = db.prepare(
@@ -86,7 +130,7 @@ var stmtRebuildCreatorFts = db.prepare(
 function indexStream(streamId, title, desc, hostUsername, hostDisplayName, genre, status, viewerCount) {
   var now = Date.now();
   stmtUpsertStream.run(streamId, title, desc, hostUsername, hostDisplayName, genre, status, viewerCount || 0, now);
-  stmtRebuildStreamFts.run();
+  // FTS index is kept in sync by stream_index_ai/au triggers; no manual rebuild needed
 }
 
 function updateStreamStatus(streamId, status, viewerCount) {
@@ -95,11 +139,20 @@ function updateStreamStatus(streamId, status, viewerCount) {
 
 function indexCreator(userId, username, displayName, bio, isLive, followerCount) {
   stmtUpsertCreator.run(userId, username, displayName, bio, isLive ? 1 : 0, followerCount || 0);
-  stmtRebuildCreatorFts.run();
+  // FTS index is kept in sync by creator_index_ai/au triggers; no manual rebuild needed
+}
+
+// Sanitize FTS5 query: wrap in double quotes so the input is treated as a
+// phrase literal rather than an FTS5 expression. Internal double-quotes are
+// escaped as "" per SQLite FTS5 spec (prevents parse errors and injection).
+function _sanitizeFtsQuery(raw) {
+  var s = String(raw || '').slice(0, 200).trim();
+  return '"' + s.replace(/"/g, '""') + '"';
 }
 
 function searchStreams(query, limit) {
-  var maxRows = limit || 20;
+  var maxRows = Math.min(Math.floor(limit || 20), 100);
+  var safeQuery = _sanitizeFtsQuery(query);
   var stmt = db.prepare(
     'SELECT si.*' +
     ' FROM stream_fts sf' +
@@ -108,11 +161,12 @@ function searchStreams(query, limit) {
     ' ORDER BY (CASE WHEN si.status = \'live\' THEN 1 ELSE 0 END) DESC, si.viewer_count DESC' +
     ' LIMIT ?'
   );
-  return stmt.all(query, maxRows);
+  return stmt.all(safeQuery, maxRows);
 }
 
 function searchCreators(query, limit) {
-  var maxRows = limit || 20;
+  var maxRows = Math.min(Math.floor(limit || 20), 100);
+  var safeQuery = _sanitizeFtsQuery(query);
   var stmt = db.prepare(
     'SELECT ci.*' +
     ' FROM creator_fts cf' +
@@ -121,11 +175,11 @@ function searchCreators(query, limit) {
     ' ORDER BY ci.is_live DESC, ci.follower_count DESC' +
     ' LIMIT ?'
   );
-  return stmt.all(query, maxRows);
+  return stmt.all(safeQuery, maxRows);
 }
 
 function search(query, type, limit) {
-  var maxRows = limit || 20;
+  var maxRows = Math.min(Math.floor(limit || 20), 100);
   if (type === 'streams') {
     return searchStreams(query, maxRows);
   }
