@@ -738,7 +738,7 @@ app.delete('/api/schedule/:id', requireAuth, function(req, res) {
 
 // POST /api/push/unsubscribe
 app.post('/api/push/unsubscribe', requireAuth, function(req, res) {
-  var endpoint = req.body.endpoint;
+  var endpoint = String(req.body.endpoint || '').slice(0, 2000);
   if (!endpoint) return res.status(400).json({ error: 'Missing endpoint' });
   try {
     db.prepare('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?').run(endpoint, req.user.id);
@@ -821,11 +821,12 @@ app.get('/api/leaderboard', function(req, res) {
 app.post('/api/connect/onboard', requireAuth, function(req, res) {
   var body = req.body;
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!body.email || !EMAIL_RE.test(String(body.email))) {
+  var _ceEmail = String(body.email || '').slice(0, 254);
+  if (!_ceEmail || !EMAIL_RE.test(_ceEmail)) {
     res.status(400).json({ error: 'valid email is required' });
     return;
   }
-  stripeModule.createConnectAccount(body.email)
+  stripeModule.createConnectAccount(_ceEmail)
     .then(function(result) {
       res.json(result);
     }).catch(function(err) {
@@ -1689,7 +1690,8 @@ io.on('connection', function(socket) {
     if (valueCents > 50000) return;
     var _tgRaw = data.toGuestId || null;
     var toGuestId = (_tgRaw && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(_tgRaw))) ? String(_tgRaw) : null;
-    var creatorStripeAccountId = data.creatorStripeAccountId || '';
+    var _rawSAId = String(data.creatorStripeAccountId || '');
+    var creatorStripeAccountId = /^acct_[A-Za-z0-9]{8,32}$/.test(_rawSAId) ? _rawSAId : '';
 
     if (!roomId || valueCents <= 0) return;
 
@@ -2245,9 +2247,11 @@ io.on('connection', function(socket) {
   socket.on('qa-dismiss', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.id || socket.data.role !== 'host') return;
+    var _qdId = String(data.id);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_qdId)) return;
     var queue = qaQueues.get(roomId);
-    if (queue) queue.delete(data.id);
-    io.to(roomId).emit('qa-dismissed', { id: data.id });
+    if (queue) queue.delete(_qdId);
+    io.to(roomId).emit('qa-dismissed', { id: _qdId });
   });
 
   // ── share-music ────────────────────────────────────────────────────────
@@ -3363,6 +3367,21 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function(reason) {
     logger.info('[socket] Disconnected: ' + socket.id + ' reason=' + reason);
 
+    // Always purge throttle entries regardless of room state (prevents memory leak)
+    var _tKey = socket.data.userId || socket.id;
+    viewerReactThrottle.delete(_tKey); viewerReactThrottle.delete(socket.id);
+    sendGiftThrottle.delete(_tKey);
+    qaQuestionThrottle.delete(socket.id);
+    loveThrottle.delete(_tKey); audioChunkThrottle.delete(_tKey);
+    collabThrottle.delete(_tKey); superChatThrottle.delete(_tKey);
+    merchOrderThrottle.delete(_tKey); updateUsernameThrottle.delete(_tKey);
+    handRaiseThrottle.delete(_tKey); speakingThrottle.delete(_tKey);
+    chatMsgThrottle.delete(socket.id); pollVoteThrottle.delete(socket.id);
+    vsVoteThrottle.delete(socket.id); qaUpvoteThrottle.delete(socket.id);
+    if (socket.data.ownedProducerIds) {
+      socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
+    }
+
     var roomId = socket.data.roomId;
     if (!roomId) return;
 
@@ -3439,27 +3458,6 @@ io.on('connection', function(socket) {
           })(m);
         }
       }
-    }
-
-    var _tKey = socket.data.userId || socket.id;
-    viewerReactThrottle.delete(_tKey);
-    viewerReactThrottle.delete(socket.id);
-    sendGiftThrottle.delete(_tKey);
-    qaQuestionThrottle.delete(socket.id);
-    loveThrottle.delete(_tKey);
-    audioChunkThrottle.delete(_tKey);
-    collabThrottle.delete(_tKey);
-    superChatThrottle.delete(_tKey);
-    merchOrderThrottle.delete(_tKey);
-    updateUsernameThrottle.delete(_tKey);
-    handRaiseThrottle.delete(_tKey);
-    speakingThrottle.delete(_tKey);
-    chatMsgThrottle.delete(socket.id);
-    pollVoteThrottle.delete(socket.id);
-    vsVoteThrottle.delete(socket.id);
-    qaUpvoteThrottle.delete(socket.id);
-    if (socket.data.ownedProducerIds) {
-      socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
 
     // Remove empty rooms
