@@ -149,9 +149,12 @@ function getBannedUsers(creatorId) {
 }
 
 function addWordFilter(creatorId, word) {
+  var normalised = String(word || '').trim().toLowerCase();
+  if (!normalised || normalised.length > 100) {
+    throw new Error('addWordFilter: word must be 1–100 characters');
+  }
   var id = uuidv4();
   var now = Date.now();
-  var normalised = word.toLowerCase();
   stmtInsertWord.run(id, creatorId, normalised, now);
   return { id: id, word: normalised };
 }
@@ -206,6 +209,9 @@ function getShadowBans() {
 }
 
 function addSubscription(id, subscriberId, creatorId, tier, amountCents, stripeSubId) {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    throw new Error('addSubscription: invalid amountCents ' + amountCents);
+  }
   var now = Date.now();
   stmtInsertSubscription.run(id, subscriberId, creatorId, tier, amountCents, stripeSubId || null, now, now);
 }
