@@ -2230,18 +2230,20 @@ io.on('connection', function(socket) {
   socket.on('qa-upvote', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.id) return;
+    var _quId = String(data.id);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(_quId)) return;
     var _quNow = Date.now();
     if (_quNow - (qaUpvoteThrottle.get(socket.id) || 0) < 500) return;
     qaUpvoteThrottle.set(socket.id, _quNow);
     var queue = qaQueues.get(roomId);
     if (!queue) return;
-    var item = queue.get(data.id);
+    var item = queue.get(_quId);
     if (!item) return;
     if (!item.upvoters) item.upvoters = new Set();
     if (item.upvoters.has(socket.id)) return;
     item.upvoters.add(socket.id);
     item.upvotes += 1;
-    io.to(roomId).emit('qa-upvote', { id: data.id, upvotes: item.upvotes });
+    io.to(roomId).emit('qa-upvote', { id: _quId, upvotes: item.upvotes });
   });
 
   socket.on('qa-dismiss', function(data) {
@@ -2707,8 +2709,9 @@ io.on('connection', function(socket) {
     if (destinations && destinations.length > 0) {
       var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       var _validDests = [];
-      for (var _gdi = 0; _gdi < destinations.length; _gdi++) {
-        var _gd = destinations[_gdi];
+      var _destList = Array.isArray(destinations) ? destinations.slice(0, 10) : [];
+      for (var _gdi = 0; _gdi < _destList.length; _gdi++) {
+        var _gd = _destList[_gdi];
         if (!_gd || !_gd.url) continue;
         var _gdp;
         try { _gdp = new URL(_gd.url); } catch(_) { continue; }
