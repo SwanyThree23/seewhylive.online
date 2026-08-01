@@ -4,6 +4,7 @@ var express     = require('express');
 var https       = require('https');
 var fs          = require('fs');
 var os          = require('os');
+var path        = require('path');
 var router      = express.Router();
 var requireAuth = require('../middleware/auth');
 
