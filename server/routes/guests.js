@@ -20,8 +20,8 @@ router.post('/streams/:streamId/join', requireAuth, async (req, res) => {
       userId: req.user.id,
       displayName: displayName ? String(displayName).slice(0, 80) : null,
       role: 'guest',
-      vdoStreamId,
-      mediasoupProducerId,
+      vdoStreamId: vdoStreamId ? String(vdoStreamId).slice(0, 200) : null,
+      mediasoupProducerId: mediasoupProducerId ? String(mediasoupProducerId).slice(0, 200) : null,
     });
     res.status(201).json(guest);
   } catch (err) {
