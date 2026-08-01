@@ -1667,12 +1667,13 @@ io.on('connection', function(socket) {
       if (!_ownHosts.test(_urlMatch[1])) { _hasExternalLinks = true; break; }
     }
 
-    // Spam check
-    if (swanybot.isSocketMuted(socket.id)) {
+    // Spam check — keyed by userId so reconnect doesn't bypass a 60s mute
+    var _swKey = socket.data.userId || socket.id;
+    if (swanybot.isSocketMuted(_swKey)) {
       io.to(socket.id).emit('muted', { reason: 'Too many messages' });
       return;
     }
-    swanybot.onChatMessage(roomId, socket.id, message, { username: username, room: rooms.get(roomId) });
+    swanybot.onChatMessage(roomId, _swKey, message, { username: username, room: rooms.get(roomId) });
 
     // Analytics: increment per-minute message count
     var chatA = getAnalytics(roomId);
