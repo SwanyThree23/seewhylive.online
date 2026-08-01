@@ -1,20 +1,28 @@
 const express = require('express');
 const { createClient } = require('@supabase/supabase-js');
+const { rateLimit } = require('express-rate-limit');
 const ws = require('ws');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-// Anon-key client — this is the client used to authenticate end users,
-// separate from the service-role client used elsewhere for admin ops.
-console.error("[DEBUG login.js] URL=" + process.env.SUPABASE_URL + " ANON_KEY_LEN=" + (process.env.SUPABASE_ANON_KEY ? process.env.SUPABASE_ANON_KEY.length : "MISSING") + " ANON_KEY_START=" + (process.env.SUPABASE_ANON_KEY ? process.env.SUPABASE_ANON_KEY.slice(0,15) : ""));
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY,
   { realtime: { transport: ws } }
 );
 
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+const loginRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  keyGenerator: function(req) { return req.ip; },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts — please wait 15 minutes.' },
+});
+
+router.post('/login', loginRateLimit, async (req, res) => {
+  const email    = String(req.body.email    || '').slice(0, 254).trim();
+  const password = String(req.body.password || '').slice(0, 1000);
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password required' });
   }

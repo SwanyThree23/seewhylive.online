@@ -14,7 +14,10 @@ router.get('/leaderboard', requireAuth, async (req, res) => {
   }
 });
 
+const REWARDS_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 router.get('/me/:userId', requireAuth, async (req, res) => {
+  if (!REWARDS_UUID_RE.test(req.params.userId)) return res.status(400).json({ error: 'invalid userId' });
   try {
     if (req.user.id !== req.params.userId && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'forbidden' });
