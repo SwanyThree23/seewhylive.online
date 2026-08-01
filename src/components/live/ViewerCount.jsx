@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, Tooltip } from 'recharts';
+import SafeResponsiveContainer from '@/components/shared/SafeChart';
 import { Users } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -58,11 +59,11 @@ export default function ViewerCount({ count = 0, peakViewers = 0 }) {
       )}
       {history.length > 3 && (
         <div className="w-20 h-8 mt-1">
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer width="100%" height="100%">
             <LineChart data={history}>
               <Line type="monotone" dataKey="v" stroke="#D4AF37" strokeWidth={1.5} dot={false} />
             </LineChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       )}
     </div>

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { Activity, Users, TrendingUp, Zap, Eye } from 'lucide-react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import SafeResponsiveContainer from '@/components/shared/SafeChart';
 
 const G = '#d4af37';
 
@@ -79,7 +80,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
       {/* Chart */}
       {history.length > 1 && (
         <div className="mt-4 h-48 -mx-4 px-4">
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer width="100%" height="100%">
             <LineChart data={history.slice(-30)}>
               <CartesianGrid stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="timestamp" stroke="rgba(255,255,255,0.2)" style={{ fontSize: '10px' }} />
@@ -106,7 +107,7 @@ export default function PerformanceDashboard({ roomId, sessionId }) {
                 isAnimationActive={false}
               />
             </LineChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       )}
 
