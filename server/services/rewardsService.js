@@ -4,6 +4,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
 const db = require('../db');
 
 async function awardPoints(userId, points, source, sourceId) {
+  if (!Number.isFinite(points) || points <= 0) throw new Error('awardPoints: points must be a positive finite number');
   // Insert event record
   const { error: eventErr } = await supabase.from('loyalty_point_events').insert({
     user_id: userId,
