@@ -2057,7 +2057,7 @@ io.on('connection', function(socket) {
     if (!room.watchParty) room.watchParty = {};
     if (data.videoId !== undefined) room.watchParty.videoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
     if (data.url !== undefined) {
-      if (!/^https?:\/\//i.test(String(data.url))) return;
+      if (!/^https:\/\//i.test(String(data.url))) return;
       room.watchParty.url = String(data.url).slice(0, 500);
     }
     if (data.type !== undefined) {
@@ -2221,6 +2221,8 @@ io.on('connection', function(socket) {
   socket.on('poll-vote', function(data) {
     var roomId    = socket.data.roomId;
     if (!roomId) return;
+    // If client is targeting a named poll via pollId, let the second poll-vote handler (activePolls) process it
+    if (data.pollId) return;
     var _pvNow = Date.now();
     if (_pvNow - (pollVoteThrottle.get(socket.id) || 0) < 500) return;
     pollVoteThrottle.set(socket.id, _pvNow);
@@ -2249,13 +2251,15 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId || !data.text) return;
     var _qaNow = Date.now();
-    if (_qaNow - (qaQuestionThrottle.get(socket.id) || 0) < 3000) return;
-    qaQuestionThrottle.set(socket.id, _qaNow);
+    var _qaKey = socket.data.userId || socket.id;
+    if (_qaNow - (qaQuestionThrottle.get(_qaKey) || 0) < 3000) return;
+    qaQuestionThrottle.set(_qaKey, _qaNow);
     var text = String(data.text).slice(0, 300);
     var id   = uuidv4();
     var user = socket.data.username || 'Guest';
     if (!qaQueues.has(roomId)) qaQueues.set(roomId, new Map());
     var queue = qaQueues.get(roomId);
+    if (queue.size >= 200) return;
     queue.set(id, { id: id, username: user, text: text, upvotes: 0, ts: Date.now() });
     io.to(roomId).emit('qa-question', { id: id, username: user, text: text, upvotes: 0 });
   });
@@ -2378,7 +2382,8 @@ io.on('connection', function(socket) {
   socket.on('judge-remove', function(data) {
     var roomId = socket.data.roomId;
     if (!roomId || socket.data.role !== 'host') return;
-    var uid = String(data.userId || '').slice(0, 80);
+    var uid = String(data.userId || '');
+    if (!uid || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uid)) return;
     var roster = judgeRosters.get(roomId);
     if (roster) roster.delete(uid);
     io.to(roomId).emit('judges-update', serializeJudges(roomId));
@@ -2747,7 +2752,7 @@ io.on('connection', function(socket) {
     }
 
     if (destinations && destinations.length > 0) {
-      var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
+      var _PRIV_GL = /^(localhost$|127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|0\.0\.0\.0|169\.254\.|::1$|::ffff:|fc00:|fd[0-9a-f]{2}:|fe80:|2002:7f|100\.(6[4-9]|[7-9]\d|1[0-2]\d)\.|^\d+$|^0x)/i;
       var _validDests = [];
       var _destList = Array.isArray(destinations) ? destinations.slice(0, 10) : [];
       for (var _gdi = 0; _gdi < _destList.length; _gdi++) {
@@ -2847,7 +2852,7 @@ io.on('connection', function(socket) {
     if (uRole === 'host') {
       stage.speakers.push({ userId: uId, username: uName, speaking: false, muted: false });
     } else {
-      stage.listeners.push({ userId: uId, username: uName, handRaised: false });
+      if (stage.listeners.length < 500) stage.listeners.push({ userId: uId, username: uName, handRaised: false });
     }
     socket.data.stageRoomId = sRoomId;
     io.to(sRoomId).emit('audio-stage-state', { speakers: stage.speakers, listeners: stage.listeners });
@@ -3323,7 +3328,7 @@ io.on('connection', function(socket) {
     var newPoll = {
       id: uuidv4(),
       question: String(data.question || '').slice(0, 200),
-      options: (Array.isArray(data.options) ? data.options : []).map(function(o) { return String(o).slice(0, 80); }),
+      options: (Array.isArray(data.options) ? data.options.slice(0, 8) : []).map(function(o) { return String(o).slice(0, 80); }),
       votes: {},
       totalVotes: 0,
       endsAt: Date.now() + duration * 1000
