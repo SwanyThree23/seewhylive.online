@@ -157,6 +157,8 @@ function PointsBreakdownRow({ vp }) {
 
 export default function LoyaltyHubPage() {
   const [activeTab, setActiveTab] = useState('my_card');
+  const [showTierEditor, setShowTierEditor] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
   const { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   const { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', user?.id],

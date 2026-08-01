@@ -90,7 +90,7 @@ function genStreamKey() { return STREAM_KEY_PREFIX + Math.random().toString(36).
 // ─── REDUCER ──────────────────────────────────────────────────────────────────
 function appReducer(state, action) {
   switch (action.type) {
-    case 'SET_PAGE': return Object.assign({}, state, { page: action.payload, prevPage: state.page });
+    case 'SET_PAGE': if (!__POP && typeof window !== 'undefined' && (!window.history.state || window.history.state.page !== action.payload)) window.history.pushState({ page: action.payload }, '', ''); __POP = false; return Object.assign({}, state, { page: action.payload, prevPage: state.page });
     case 'SET_LIVE_ROOM': return Object.assign({}, state, { liveRoom: action.payload });
     case 'SET_VIEWER_COUNT': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { viewers: action.payload }) });
     case 'SET_STREAM_DURATION': return Object.assign({}, state, { liveRoom: Object.assign({}, state.liveRoom, { duration: action.payload }) });
@@ -266,7 +266,7 @@ function Btn(props) {
         padding: props.small ? '6px 14px' : '11px 22px',
         fontSize: props.small ? 12 : 14, letterSpacing: 0.5,
         opacity: props.disabled ? 0.5 : 1, width: props.full ? '100%' : undefined,
-        transition: 'opacity 0.15s, transform 0.1s',
+        transition: 'opacity 0.15s, transform 0.1s', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none',
       }, variants[variant], props.style || {})}
     >{props.children}</button>
   );
@@ -303,11 +303,11 @@ function Modal(props) {
         border: props.bottom ? 'none' : '1px solid rgba(201,168,76,0.25)',
         borderTop: props.bottom ? '2px solid ' + C.gold : undefined,
         borderRadius: props.bottom ? '18px 18px 0 0' : 18,
-        padding: 24, width: '100%', maxWidth: props.width || 420,
+        padding: props.bottom ? '24px 24px calc(20px + env(safe-area-inset-bottom,0px))' : 24, width: '100%', maxWidth: props.width || 420,
         maxHeight: '92vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 2 }}>{props.title}</div>
+          <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, letterSpacing: 2, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>{props.title}</div>
           <button onClick={props.onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 24, cursor: 'pointer' }}>×</button>
         </div>
         {props.children}
@@ -1253,7 +1253,7 @@ function NotificationsPanel(props) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, flex: 1 }}>🔔 NOTIFICATIONS</div>
         <button onClick={function() { dispatch({ type: 'MARK_NOTIFS_READ' }); }} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer' }}>Mark all read</button>
@@ -1291,7 +1291,7 @@ function WalletPage(props) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>💳 CREATOR WALLET</div>
       </div>
@@ -1379,7 +1379,7 @@ function AnalyticsDashboard(props) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2 }}>📊 ANALYTICS</div>
       </div>
@@ -1512,7 +1512,7 @@ function ScheduleManager(props) {
 
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, paddingBottom: 80 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 'calc(12px + env(safe-area-inset-top,0px)) 16px 12px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)', position: 'sticky', top: 0, zIndex: 100 }}>
         <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: C.gold, letterSpacing: 2, flex: 1 }}>📅 SCHEDULE</div>
         <Btn onClick={function() { setShowAdd(true); }} variant="gold" small>+ NEW</Btn>
@@ -1696,7 +1696,7 @@ function LiveRoom(props) {
   return (
     <div style={{ minHeight: '100vh', background: C.charcoal, display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 'calc(10px + env(safe-area-inset-top,0px)) 14px 10px', background: 'rgba(5,3,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
         <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'home' }); }} style={{ background: 'none', border: 'none', color: C.white, fontSize: 24, cursor: 'pointer' }}>‹</button>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ color: C.white, fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{room.title}</div>
@@ -1859,7 +1859,7 @@ function LiveRoom(props) {
       {/* Guest action sheet */}
       {guestAction && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 800, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'flex-end' }} onClick={function() { setGuestAction(null); }}>
-          <div style={{ width: '100%', background: C.slate, borderRadius: '20px 20px 0 0', padding: '24px 20px 32px', borderTop: '2px solid ' + C.gold }} onClick={function(e) { e.stopPropagation(); }}>
+          <div style={{ width: '100%', background: C.slate, borderRadius: '20px 20px 0 0', padding: '24px 20px calc(20px + env(safe-area-inset-bottom,0px))', borderTop: '2px solid ' + C.gold }} onClick={function(e) { e.stopPropagation(); }}>
             <div style={{ color: C.gold, fontWeight: 800, fontSize: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Avatar name={guestAction.name} size={28} isFM={guestAction.isFM} />
               {guestAction.name}
@@ -1900,7 +1900,7 @@ function HomePage(props) {
   return (
     <div style={{ paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(14px + env(safe-area-inset-top,0px)) 16px 0' }}>
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 4, color: C.gold }}>SeeWhy<span style={{ color: C.red }}>LIVE</span></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={function() { dispatch({ type: 'SET_PAGE', payload: 'notifications' }); }} style={{ background: 'none', border: 'none', color: unreadCount > 0 ? C.gold : C.muted, fontSize: 22, cursor: 'pointer', position: 'relative' }}>
@@ -2046,7 +2046,7 @@ function BattlesPage(props) {
 
   return (
     <div style={{ paddingBottom: 80 }}>
-      <div style={{ padding: '14px 14px 12px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: C.gold, letterSpacing: 3 }}>⚔️ BATTLES</div>
+      <div style={{ padding: 'calc(14px + env(safe-area-inset-top,0px)) 14px 12px', fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: C.gold, letterSpacing: 3 }}>⚔️ BATTLES</div>
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 14 }}>
         {['active', 'bracket', 'elite'].map(function(t) {
           return <button key={t} onClick={function() { setTab(t); }} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', color: tab === t ? C.gold : C.muted, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, cursor: 'pointer', borderBottom: tab === t ? '2px solid ' + C.gold : '2px solid transparent' }}>{t}</button>;
@@ -2150,7 +2150,7 @@ function ProfilePage(props) {
   return (
     <div style={{ paddingBottom: 80 }}>
       {/* Profile header */}
-      <div style={{ background: 'linear-gradient(180deg,' + C.burgundy + '44,' + C.charcoal + ')', padding: '24px 16px 16px' }}>
+      <div style={{ background: 'linear-gradient(180deg,' + C.burgundy + '44,' + C.charcoal + ')', padding: 'calc(24px + env(safe-area-inset-top,0px)) 16px 16px' }}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
           <div style={{ position: 'relative' }}>
             <Avatar name={user.name} size={64} isFM={user.isFM} url={user.avatar_url} isHost={user.isHost} />
@@ -2289,55 +2289,36 @@ function ProfilePage(props) {
 }
 
 // ─── BOTTOM NAV ───────────────────────────────────────────────────────────────
-function BottomNav(props) {
-  var page = props.page;
-  var dispatch = props.dispatch;
-  var notifications = props.notifications;
-  var unread = notifications.filter(function(n) { return !n.read; }).length;
-
-  var TABS = [
-    { id: 'home', icon: '🏠', label: 'Home' },
-    { id: 'battles', icon: '⚔️', label: 'Battles' },
-    { id: 'live', icon: '🔴', label: 'Go Live', highlight: true },
-    { id: 'notifications', icon: '🔔', label: 'Alerts', badge: unread },
-    { id: 'profile', icon: '👤', label: 'Profile' },
-  ];
-
-  var HIDE_ON = ['analytics', 'schedule', 'wallet', 'notifications'];
-  if (HIDE_ON.indexOf(page) !== -1) return null;
-
+function SheetSelect(props) {
+  var value = props.value;
+  var options = props.options || [];
+  var onChange = props.onChange;
+  var [open, setOpen] = useState(false);
+  var current = options.find(function(o) { return String(o.value) === String(value); });
+  var label = current ? current.label : (props.placeholder || 'Select...');
   return (
-    <div style={{
-      position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-      width: '100%', maxWidth: 430,
-      background: 'rgba(5,3,10,0.97)',
-      borderTop: '1px solid rgba(201,168,76,0.2)',
-      display: 'flex',
-      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      zIndex: 500,
-    }}>
-      {TABS.map(function(t) {
-        var active = page === t.id;
-        return (
-          <button key={t.id} onClick={function() { dispatch({ type: 'SET_PAGE', payload: t.id }); }} style={{
-            flex: 1, background: 'none', border: 'none', padding: '10px 0 8px', cursor: 'pointer',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, position: 'relative',
-          }}>
-            {t.highlight ? (
-              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,' + C.red + ',' + C.burgundy + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, marginTop: -14, boxShadow: '0 0 16px rgba(255,59,92,0.4)', border: '3px solid ' + C.charcoal }}>
-                {t.icon}
-              </div>
-            ) : (
-              <span style={{ fontSize: 22 }}>{t.icon}</span>
-            )}
-            <span style={{ color: active ? C.gold : C.muted, fontSize: 9, fontWeight: active ? 800 : 400, letterSpacing: 0.5 }}>{t.label}</span>
-            {t.badge > 0 && (
-              <div style={{ position: 'absolute', top: 6, right: '50%', transform: 'translateX(8px)', background: C.red, color: '#fff', fontSize: 8, fontWeight: 800, borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t.badge > 9 ? '9+' : t.badge}</div>
-            )}
-            {active && !t.highlight && <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 20, height: 2, background: C.gold, borderRadius: 1 }} />}
-          </button>
-        );
-      })}
+    <div style={Object.assign({ position: 'relative', flex: 1 }, props.style || {})}>
+      <button onClick={function() { setOpen(true); }} style={{ width: '100%', background: C.slate2, border: '1px solid #333', borderRadius: 3, padding: '8px 10px', color: C.white, fontSize: 13, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
+        <span>{label}</span>
+        <span style={{ color: C.muted, fontSize: 10 }}>▾</span>
+      </button>
+      {open && (
+        <div onClick={function() { setOpen(false); }} style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', animation: 'sheetFade 0.2s ease' }}>
+          <div onClick={function(e) { e.stopPropagation(); }} style={{ width: '100%', maxWidth: 430, margin: '0 auto', background: C.slate, borderRadius: '16px 16px 0 0', padding: '16px 16px calc(20px + env(safe-area-inset-bottom,0px))', borderTop: '2px solid ' + C.gold, animation: 'sheetUp 0.25s ease' }}>
+            <div style={{ color: C.gold, fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, letterSpacing: 2, marginBottom: 12, userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>{props.title || 'SELECT'}</div>
+            {options.map(function(o) {
+              var active = String(o.value) === String(value);
+              return (
+                <button key={String(o.value)} onClick={function() { onChange(o.value); setOpen(false); }} style={{ width: '100%', textAlign: 'left', background: active ? C.gold + '22' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (active ? C.gold + '66' : 'rgba(255,255,255,0.08)'), borderRadius: 8, padding: '12px 14px', marginBottom: 8, color: active ? C.gold : C.white, fontSize: 14, fontWeight: active ? 800 : 400, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
+                  <span>{o.label}</span>
+                  {active && <span style={{ color: C.gold }}>✓</span>}
+                </button>
+              );
+            })}
+            <button onClick={function() { setOpen(false); }} style={{ width: '100%', marginTop: 6, background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, color: C.muted, padding: '12px', fontSize: 14, cursor: 'pointer', userSelect: 'none', WebkitUserSelect: 'none' }}>Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2462,7 +2443,7 @@ function ModalDispatcher(props) {
 }
 
 // ─── CSS ANIMATIONS (injected once) ──────────────────────────────────────────
-var STYLES_INJECTED = false;
+var STYLES_INJECTED = false, __POP = false;
 function InjectStyles() {
   useEffect(function() {
     if (STYLES_INJECTED) return;
@@ -2472,9 +2453,9 @@ function InjectStyles() {
       "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');",
       '@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }',
       '@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }',
-      '* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }',
+      '* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; -webkit-overflow-scrolling: touch; }',
       'input, textarea, select { font-family: inherit; outline: none; }',
-      'button { font-family: inherit; }',
+      'button { font-family: inherit; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; } @keyframes sheetUp {from{transform:translateY(100%)}to{transform:translateY(0)}} @keyframes sheetFade{from{opacity:0}to{opacity:1}}',
       '::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }',
     ].join('\n');
     document.head.appendChild(style);
@@ -2504,8 +2485,7 @@ export default function App() {
       dispatch({ type: 'SET_WATCH_SYNC', payload: rand(-MAX_DRIFT_MS, MAX_DRIFT_MS) });
     }, 8000);
     return function() { clearInterval(t); };
-  }, []);
-
+  }, []);  useEffect(function(){var p=function(e){__POP=true;dispatch({type:'SET_PAGE',payload:(e.state&&e.state.page)||'home'});};window.addEventListener('popstate',p);return function(){window.removeEventListener('popstate',p);};},[]);
   var page = state.page;
 
   // V46 new page routing
@@ -2676,10 +2656,7 @@ function PKBattleArenaV2({ user, dispatch }) {
               style={{ width: '100%', background: C.slate, border: '1px solid #333', borderRadius: 3, padding: '8px 10px', color: C.white, fontSize: 13, marginBottom: 8, boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
               <label style={{ fontSize: 12, color: C.muted }}>Wager:</label>
-              <select value={wager} onChange={function(e) { setWager(Number(e.target.value)); }}
-                style={{ flex: 1, background: C.slate, border: '1px solid #333', borderRadius: 3, padding: '8px', color: C.white, fontSize: 13 }}>
-                {[5,10,25,50,100,250].map(function(w) { return <option key={w} value={w}>{w} 💎 (${(w * GEM_VALUE).toFixed(2)})</option>; })}
-              </select>
+              <SheetSelect value={wager} onChange={function(v) { setWager(Number(v)); }} title="WAGER" options={[5,10,25,50,100,250].map(function(w) { return { value: w, label: w + ' 💎 ($' + (w * GEM_VALUE).toFixed(2) + ')' }; })} />
             </div>
             <button onClick={function() { if (challenger.trim()) { setBattleState('live'); setScores({ creator: 0, challenger: 0 }); } }}
               style={{ background: C.gold, color: '#000', border: 'none', padding: '10px 20px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, cursor: 'pointer', borderRadius: 2, width: '100%' }}>
@@ -3253,10 +3230,7 @@ function TranscriptionV2() {
         <textarea value={transcript} onChange={function(e) { setTranscript(e.target.value); }} placeholder="Paste transcript here..."
           style={{ width: '100%', background: C.slate2, border: '1px solid #333', borderRadius: 3, padding: '8px 10px', color: C.white, fontSize: 13, minHeight: 100, marginBottom: 8, boxSizing: 'border-box', resize: 'vertical' }} />
         <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-          <select value={language} onChange={function(e) { setLanguage(e.target.value); }}
-            style={{ flex: 1, background: C.slate2, border: '1px solid #333', borderRadius: 3, padding: 8, color: C.white, fontSize: 13 }}>
-            {languages.map(function(l) { return <option key={l[0]} value={l[0]}>{l[1]}</option>; })}
-          </select>
+          <SheetSelect value={language} onChange={function(v) { setLanguage(v); }} title="LANGUAGE" options={languages.map(function(l) { return { value: l[0], label: l[1] }; })} />
           <button onClick={translate} disabled={loading || !transcript.trim()}
             style={{ background: C.gold, color: '#000', border: 'none', padding: '8px 16px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, cursor: 'pointer', borderRadius: 2 }}>
             {loading ? 'TRANSLATING...' : 'TRANSLATE'}
@@ -3846,7 +3820,7 @@ function AppV46Router({ state, dispatch }) {
   var page = state.page;
   var user = state.user;
   return (
-    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100vh', background: C.charcoal, color: C.white, fontFamily: 'DM Sans,sans-serif', position: 'relative' }}>
+    <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100vh', background: C.charcoal, color: C.white, fontFamily: 'DM Sans,sans-serif', position: 'relative', paddingTop: 'env(safe-area-inset-top,0px)' }}>
       {page === 'battles' && <BattlesTab user={user} dispatch={dispatch} />}
       {page === 'aihub' && <AIHubTab />}
       {page === 'wallet' && <WalletTabV2 />}
