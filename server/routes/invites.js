@@ -11,6 +11,10 @@ const requireAuth   = require('../middleware/auth');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Per-user per-token redemption guard: one successful redemption per user per token per 10 minutes
+var _redeemLog = new Map(); // key: `${userId}:${token}` → timestamp
+var REDEEM_COOLDOWN_MS = 10 * 60 * 1000;
+
 const inviteRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 10,
@@ -27,7 +31,7 @@ router.post('/', requireAuth, inviteRateLimit, async (req, res) => {
   if (!toUserId || !UUID_RE.test(toUserId)) return res.status(400).json({ error: 'invalid toUserId' });
   if (roomId && !UUID_RE.test(roomId)) return res.status(400).json({ error: 'invalid roomId' });
   try {
-    const safeExpiryHours = Math.min(parseInt(expiryHours, 10) || 24, 168);
+    const safeExpiryHours = Math.min(Math.max(parseInt(expiryHours, 10) || 24, 1), 168);
     const safeMessage = message ? String(message).slice(0, 500) : null;
     const invite = await inviteService.sendInvitation({
       fromUserId: req.user.id,
@@ -93,8 +97,14 @@ router.post('/streams/:streamId/links', requireAuth, async (req, res) => {
 router.post('/links/:token/redeem', requireAuth, async (req, res) => {
   const token = String(req.params.token || '');
   if (!/^[0-9a-f]{32}$/i.test(token)) return res.status(400).json({ error: 'invalid invite token' });
+  var _rlKey = req.user.id + ':' + token;
+  var _rlNow = Date.now();
+  if (_rlNow - (_redeemLog.get(_rlKey) || 0) < REDEEM_COOLDOWN_MS) {
+    return res.status(429).json({ error: 'You have already redeemed this invite link recently' });
+  }
   try {
     const link = await inviteService.redeemInviteLink(token);
+    _redeemLog.set(_rlKey, _rlNow);
     res.json(link);
   } catch (err) {
     res.status(400).json({ error: err.message });

@@ -165,13 +165,10 @@ function registerBattleHandlers(io, socket) {
     }
   });
 
-  socket.on('disconnect', () => {
-    if (socket.data.userId) {
-      voteThrottle.delete(socket.data.userId);
-      challengeThrottle.delete(socket.data.userId);
-      startThrottle.delete(socket.data.userId);
-    }
-  });
+  // Throttle entries are intentionally NOT cleared on disconnect — clearing them
+  // would allow bypass via rapid reconnect. Entries expire naturally once the
+  // throttle window passes (2-10 s), so memory impact is negligible.
+
 }
 
 function startCountdown(io, battle) {

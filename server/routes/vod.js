@@ -8,13 +8,16 @@ var router      = express.Router();
 var requireAuth = require('../middleware/auth');
 
 var ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+var ALLOWED_VIDEO_EXTS  = ['.mp4', '.webm', '.mov'];
 var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 var multer = require('multer');
 var upload = multer({
   storage: multer.diskStorage({ destination: os.tmpdir() }),
   limits: { fileSize: 200 * 1024 * 1024 },
   fileFilter: function(req, file, cb) {
-    if (!ALLOWED_VIDEO_TYPES.includes(file.mimetype)) {
+    // Check both MIME type and extension — MIME comes from client headers and can be spoofed
+    var ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_VIDEO_TYPES.includes(file.mimetype) || !ALLOWED_VIDEO_EXTS.includes(ext)) {
       return cb(new Error('unsupported file type'));
     }
     cb(null, true);
