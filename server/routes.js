@@ -559,7 +559,15 @@ router.get('/users/me/earnings', requireAuth, function(req, res) {
 router.post('/push/subscribe', requireAuth, function(req, res) {
   try {
     var userId = req.user.id;
-    var subscription = req.body.subscription || {};
+    var raw = req.body.subscription || {};
+    var endpoint = String(raw.endpoint || '');
+    // Endpoint must be a valid https:// URL — any other scheme (http, data, javascript)
+    // would cause the server to make outbound requests to an attacker-controlled host (SSRF)
+    // when push notifications are dispatched.
+    if (!endpoint || !/^https:\/\//.test(endpoint) || endpoint.length > 2048) {
+      return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
+    }
+    var subscription = { endpoint: endpoint, keys: raw.keys || {} };
     _pushSubscriptions[userId] = subscription;
     if (notifications) {
       try {
