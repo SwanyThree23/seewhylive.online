@@ -60,4 +60,7 @@ frontend/dist/
 *.save
 *.local-backup
 ecosystem.config.cjs
-ecosystem.config.cjs
+
+# Grep/search output files — previously caused accidental secret commits
+*.envgrep
+.envgrep
