@@ -2259,8 +2259,8 @@ io.on('connection', function(socket) {
     var poll      = polls.get(roomId);
     if (!poll || !poll.active) return;
     if (optionIdx < 0 || optionIdx >= poll.options.length) return;
-    poll.options.forEach(function(o) { o.votes.delete(socket.id); });
-    poll.options[optionIdx].votes.add(socket.id);
+    poll.options.forEach(function(o) { o.votes.delete(_pvKey); });
+    poll.options[optionIdx].votes.add(_pvKey);
     io.to(roomId).emit('poll-update', serializePoll(poll));
   });
 
@@ -3100,7 +3100,8 @@ io.on('connection', function(socket) {
     if (!trivia || !trivia.active) return;
     var idx = parseInt(data.answerIdx, 10);
     if (isNaN(idx) || idx < 0 || idx >= trivia.options.length) return;
-    trivia.answers.set(socket.id, { idx: idx, username: socket.data.username || 'Anonymous', ts: Date.now() });
+    var _taKey = socket.data.userId || socket.id;
+    trivia.answers.set(_taKey, { idx: idx, username: socket.data.username || 'Anonymous', ts: Date.now() });
     socket.emit('trivia-answer-ack', { answerIdx: idx });
   });
 
