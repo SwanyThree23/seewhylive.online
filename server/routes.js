@@ -630,7 +630,13 @@ router.post('/users/me/notifications', requireAuth, function(req, res) {
 
 router.get('/metrics', requireAuth, function(req, res) {
   try {
-    var roomId = req.query.roomId || 'default';
+    var roomId = req.query.roomId || req.user.id;
+    if (roomId !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+    if (!ROUTES_UUID_RE.test(roomId)) {
+      return res.status(400).json({ error: 'invalid roomId' });
+    }
     if (analytics) {
       var result = analytics.getCreatorAnalytics(roomId, 'month');
       return res.json({
