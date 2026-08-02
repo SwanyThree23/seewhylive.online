@@ -15,6 +15,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 var _redeemLog = new Map(); // key: `${userId}:${token}` → timestamp
 var REDEEM_COOLDOWN_MS = 10 * 60 * 1000;
 
+// Prune expired entries once per minute so the Map doesn't grow unboundedly
+setInterval(function() {
+  var cutoff = Date.now() - REDEEM_COOLDOWN_MS;
+  _redeemLog.forEach(function(ts, key) {
+    if (ts < cutoff) _redeemLog.delete(key);
+  });
+}, 60000).unref();
+
 const inviteRateLimit = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 10,
@@ -46,10 +54,15 @@ router.post('/', requireAuth, inviteRateLimit, async (req, res) => {
   }
 });
 
+var VALID_INVITE_STATUSES = ['accepted', 'declined'];
+
 router.post('/:id/respond', requireAuth, async (req, res) => {
   if (!UUID_RE.test(req.params.id)) return res.status(400).json({ error: 'invalid invite id' });
+  const status = req.body.status;
+  if (!VALID_INVITE_STATUSES.includes(status)) {
+    return res.status(400).json({ error: 'status must be accepted or declined' });
+  }
   try {
-    const { status } = req.body; // 'accepted' | 'declined'
     const invite = await inviteService.respondToInvitation(req.params.id, status, req.user.id);
     if (!invite) return res.status(404).json({ error: 'invite not found, expired, or already responded' });
     res.json(invite);
