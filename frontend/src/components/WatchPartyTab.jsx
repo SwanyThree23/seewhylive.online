@@ -155,6 +155,7 @@ export default function WatchPartyTab(props) {
   var ytDivRef         = useRef(null);
   var partyViewerRef   = useRef(null);
   var sourceTypeRef    = useRef(sourceType);
+  var syncHeartbeatRef = useRef(null);
 
   var isHost     = role === 'host' || role === 'cohost';
   var liveGuests = (guests || []).filter(function(g) { return g.live !== false; });
@@ -313,6 +314,35 @@ export default function WatchPartyTab(props) {
   }, [playing]);
 
   // ─────────────────────────────────────────────
+  // Host periodic sync heartbeat (15s interval)
+  // ─────────────────────────────────────────────
+  useEffect(function() {
+    if (syncHeartbeatRef.current) {
+      clearInterval(syncHeartbeatRef.current);
+      syncHeartbeatRef.current = null;
+    }
+    if (!isHost || !socket || !roomId || !watchPartyActive) return;
+    syncHeartbeatRef.current = setInterval(function() {
+      if (!socket || !roomId) return;
+      socket.emit('watch-party-sync', {
+        roomId:   roomId,
+        videoId:  videoId || null,
+        url:      directUrl || '',
+        type:     sourceTypeRef.current,
+        position: posRef.current,
+        playing:  playing,
+        ts:       Date.now(),
+      });
+    }, 15000);
+    return function() {
+      if (syncHeartbeatRef.current) {
+        clearInterval(syncHeartbeatRef.current);
+        syncHeartbeatRef.current = null;
+      }
+    };
+  }, [isHost, socket, roomId, watchPartyActive, videoId, directUrl, playing]);
+
+  // ─────────────────────────────────────────────
   // Auto-scroll chat to bottom
   // ─────────────────────────────────────────────
   useEffect(function() {
@@ -412,9 +442,12 @@ export default function WatchPartyTab(props) {
         setWatchPartyActive(true);
       }
       if (typeof data.position === 'number') {
-        setPosition(Math.floor(data.position));
-        posRef.current = data.position;
-        _playerSeekTo(data.position);
+        var correctedPos = (data.playing && data.ts)
+          ? data.position + (Date.now() - data.ts) / 1000
+          : data.position;
+        setPosition(Math.floor(correctedPos));
+        posRef.current = correctedPos;
+        _playerSeekTo(correctedPos);
       }
       if (data.playing) {
         setPlaying(true);

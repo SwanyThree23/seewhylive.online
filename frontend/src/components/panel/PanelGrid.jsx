@@ -1,6 +1,15 @@
 // frontend/src/components/panel/PanelGrid.jsx
 import { useEffect, useState, useRef } from 'react';
 import panelService from '../../services/panelService';
+
+var _panelGridStyleInjected = false;
+function injectPanelGridStyles() {
+  if (_panelGridStyleInjected || typeof document === 'undefined') return;
+  _panelGridStyleInjected = true;
+  var el = document.createElement('style');
+  el.textContent = '@keyframes panelTileEnter{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}';
+  document.head.appendChild(el);
+}
 import PanelTile from './PanelTile';
 import PrivateRoomGate from './PrivateRoomGate';
 import PanelJoinModal from './PanelJoinModal';
@@ -27,7 +36,11 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [localStream, setLocalStream] = useState(null);
   const [raisedHands, setRaisedHands] = useState({});
+  const [screenSharingIds, setScreenSharingIds] = useState({});
   const localStreamRef = useRef(null);
+  const prevSlotKeysRef = useRef(new Set());
+
+  useEffect(function() { injectPanelGridStyles(); }, []);
 
   // Acquire local mic stream for speaking-level visualization on local tile
   useEffect(function() {
@@ -78,6 +91,7 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       unsubs.push(panelService.onSlotReleased(socket, function(payload) {
         var rid = payload.roomId, releasedUserId = payload.userId;
         if (rid !== roomId) return;
+        prevSlotKeysRef.current.delete(releasedUserId);
         setSlots(function(prev) { return prev.filter(function(s) { return s.user_id !== releasedUserId; }); });
       }));
 
@@ -128,6 +142,27 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       }
       socket.on('panel:hand_update', onHandUpdate);
       unsubs.push(function() { socket.off('panel:hand_update', onHandUpdate); });
+
+      function onScreenShareActive(payload) {
+        if (payload.roomId !== roomId) return;
+        setScreenSharingIds(function(prev) {
+          var next = Object.assign({}, prev);
+          next[payload.userId] = true;
+          return next;
+        });
+      }
+      function onScreenShareEnded(payload) {
+        if (payload.roomId !== roomId) return;
+        setScreenSharingIds(function(prev) {
+          var next = Object.assign({}, prev);
+          delete next[payload.userId];
+          return next;
+        });
+      }
+      socket.on('screen-share-active', onScreenShareActive);
+      socket.on('screen-share-ended', onScreenShareEnded);
+      unsubs.push(function() { socket.off('screen-share-active', onScreenShareActive); });
+      unsubs.push(function() { socket.off('screen-share-ended', onScreenShareEnded); });
     })();
 
     return function() { unsubs.forEach(function(u) { u(); }); };
@@ -191,6 +226,8 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       onMuteToggle: (!isLocal && isHost)
         ? function(isMuted) { panelService.mutePanelist(socket, roomId, slot.user_id, isMuted); }
         : null,
+      role: guest ? (guest.role || null) : null,
+      isScreenSharing: !!(screenSharingIds[slot.user_id]),
     };
   }
 
@@ -290,7 +327,17 @@ export default function PanelGrid({ socket, roomId, userId, isHost, rtcManager, 
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', 1fr)', gap: 6, padding: 8 }}>
           {slots.map(function(slot) {
-            return <PanelTile key={slot.slot_index} {...tileProps(slot)} />;
+            var key = slot.user_id || ('slot-' + slot.slot_index);
+            var isNew = !prevSlotKeysRef.current.has(key);
+            prevSlotKeysRef.current.add(key);
+            return (
+              <div
+                key={slot.slot_index}
+                style={{ animation: isNew ? 'panelTileEnter 0.3s ease' : 'none' }}
+              >
+                <PanelTile {...tileProps(slot)} />
+              </div>
+            );
           })}
         </div>
       )}
