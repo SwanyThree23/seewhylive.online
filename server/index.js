@@ -2094,7 +2094,10 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var room = getRoom(roomId);
     if (!room.watchParty) room.watchParty = {};
-    if (data.videoId !== undefined) room.watchParty.videoId = data.videoId ? String(data.videoId).slice(0, 200) : null;
+    if (data.videoId !== undefined) {
+      var _swVid = data.videoId ? String(data.videoId).slice(0, 200) : null;
+      room.watchParty.videoId = (_swVid && /^[A-Za-z0-9_-]{11}$/.test(_swVid)) ? _swVid : null;
+    }
     if (data.url !== undefined) {
       if (!/^https:\/\//i.test(String(data.url))) return;
       room.watchParty.url = String(data.url).slice(0, 500);
@@ -3037,7 +3040,8 @@ io.on('connection', function(socket) {
     if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
     var sRoomId = socket.data.roomId;
     if (!sRoomId) return;
-    io.to(sRoomId).emit('watch-stage-pin', { ytId: String(data.ytId || '').slice(0, 20) });
+    var _wspYtId = String(data.ytId || '');
+    io.to(sRoomId).emit('watch-stage-pin', { ytId: /^[A-Za-z0-9_-]{11}$/.test(_wspYtId) ? _wspYtId : '' });
   });
 
   // ── Love micro-tip handler ─────────────────────────────────────────────
