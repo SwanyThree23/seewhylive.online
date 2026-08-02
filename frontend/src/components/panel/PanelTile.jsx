@@ -13,6 +13,7 @@ export default function PanelTile({
   rtcManager, producerId, audioProducerId, isLocal,
   isRaisedHand, onRaiseHand,
   onKick, onMuteToggle,
+  role, isScreenSharing,
 }) {
   const { slot_index, user_id, display_name, avatar_url, is_expanded, is_muted } = slot;
   const videoRef = useRef(null);
@@ -347,10 +348,29 @@ export default function PanelTile({
         </div>
       )}
 
+      {/* Screen sharing badge */}
+      {isScreenSharing && (
+        <div style={{
+          position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(0,0,0,0.8)', border: '1px solid ' + GOLD,
+          borderRadius: 999, padding: '2px 8px', fontSize: 9, color: GOLD,
+          fontFamily: '"DM Sans", sans-serif', whiteSpace: 'nowrap', zIndex: 6,
+        }}>
+          SCREEN
+        </div>
+      )}
+
       {/* Name label */}
-      <div style={{ position: 'absolute', bottom: 4, left: 4, color: CREAM, fontSize: 11, fontFamily: '"DM Sans", sans-serif', textShadow: '0 1px 2px #000' }}>
-        {display_name}
-        {isLocal && <span style={{ marginLeft: 4, color: GOLD, fontSize: 10 }}>You</span>}
+      <div style={{ position: 'absolute', bottom: 4, left: 4, color: CREAM, fontSize: 11, fontFamily: '"DM Sans", sans-serif', textShadow: '0 1px 2px #000', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span>{display_name}</span>
+        {isLocal && <span style={{ color: GOLD, fontSize: 10 }}>You</span>}
+        {role && role !== 'viewer' && (
+          <span style={{
+            fontSize: 9, textTransform: 'uppercase', fontFamily: '"DM Sans", sans-serif',
+            color: role === 'host' ? GOLD : '#818cf8',
+            background: 'rgba(0,0,0,0.5)', borderRadius: 3, padding: '1px 3px',
+          }}>{role}</span>
+        )}
       </div>
 
       {/* Speaking indicator */}

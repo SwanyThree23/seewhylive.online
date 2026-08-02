@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 var OCT = 'polygon(29% 0%,71% 0%,100% 29%,100% 71%,71% 100%,29% 100%,0% 71%,0% 29%)';
 
-function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal }) {
+function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onTap, socket, roomId, userId, rtcManager, mediaConfig, isMuted, isCamOff, onMuteToggle, onCamToggle, onCameraTrack, giftTotal, onHostMute, onHostKick, isScreenSharing }) {
   var videoRef    = useRef(null);
   var analyserRef = useRef(null);
   var animRef     = useRef(null);
@@ -348,6 +348,45 @@ function OctCell({ guest, sz, fill, handRaised, isHost, fadesMode, branding, onT
             MOD
           </div>
         )}
+
+        {/* Screen-sharing badge */}
+        {isScreenSharing && (
+          <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', background: 'rgba(14,12,9,.85)', border: '1px solid rgba(201,168,76,.6)', borderRadius: 999, padding: '2px 8px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: '#C9A84C', zIndex: 6, display: 'flex', alignItems: 'center', gap: 3 }}>
+            🖥 SCREEN
+          </div>
+        )}
+
+        {/* Name + role overlay — visible in fill mode when video is live */}
+        {fill && online && (
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(14,12,9,.82))', padding: '14px 8px 5px', zIndex: 5, pointerEvents: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontWeight: 700, fontSize: 11, color: speaking && !isMuted ? color : '#F0E8D4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+                {guestName}{isOwnCell ? ' ·YOU' : ''}
+              </span>
+              {guest && guest.role && guest.role !== 'viewer' && (
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 6.5, color: guest.role === 'host' ? '#C9A84C' : guest.role === 'cohost' ? '#818cf8' : '#6ee7b7', background: 'rgba(0,0,0,.5)', borderRadius: 4, padding: '1px 4px', flexShrink: 0, textTransform: 'uppercase', letterSpacing: .5 }}>
+                  {guest.role}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Host controls for remote guests — mute + kick */}
+        {fill && !isOwnCell && isHost && (onHostMute || onHostKick) && (
+          <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 3, zIndex: 10 }}>
+            {onHostMute && (
+              <button onClick={function(e) { e.stopPropagation(); onHostMute(guestId); }}
+                style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,.65)', border: '1px solid rgba(201,168,76,.4)', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                title="Mute guest">🔇</button>
+            )}
+            {onHostKick && (
+              <button onClick={function(e) { e.stopPropagation(); onHostKick(guestId); }}
+                style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,.65)', border: '1px solid rgba(255,26,60,.4)', cursor: 'pointer', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                title="Remove guest">✕</button>
+            )}
+          </div>
+        )}
         <div style={{ position: 'absolute', bottom: 0, left: '50%', pointerEvents: 'none', width: 0, height: 0 }}>
           {flyReactions.map(function(r) {
             return (
@@ -418,6 +457,7 @@ function areOctCellPropsEqual(prev, next) {
     pg.audioProducerId === ng.audioProducerId &&
     pg.speaking        === ng.speaking        &&
     pg.role             === ng.role            &&
+    pg.username         === ng.username        &&
     pg.teamColor        === ng.teamColor       &&
     prev.rtcManager     === next.rtcManager    &&
     prev.isMuted        === next.isMuted       &&
@@ -426,7 +466,10 @@ function areOctCellPropsEqual(prev, next) {
     prev.handRaised     === next.handRaised    &&
     prev.isHost         === next.isHost        &&
     prev.fadesMode      === next.fadesMode     &&
-    prev.branding       === next.branding
+    prev.branding       === next.branding      &&
+    prev.isScreenSharing === next.isScreenSharing &&
+    prev.onHostMute     === next.onHostMute    &&
+    prev.onHostKick     === next.onHostKick
   );
 }
 

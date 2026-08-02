@@ -353,6 +353,7 @@ export default function LiveRoomPage({
   var [judgeScoreLabel, setJudgeScoreLabel] = useState('');
   var [showPaySheet,   setShowPaySheet]   = useState(false);
   var [showShareSheet, setShowShareSheet] = useState(false);
+  var [hiddenMsgIds,   setHiddenMsgIds]   = useState({});
   var [audioOnly,      setAudioOnly]      = useState(false);
   var [privateMode,    setPrivateMode]    = useState(false);
   var [privatePwd,     setPrivatePwd]     = useState('');
@@ -1693,11 +1694,20 @@ export default function LiveRoomPage({
               <div style={{ textAlign: 'center', padding: '28px 0', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED }}>No messages yet</div>
             )}
             {chat && chat.map(function(m, i) {
+              var msgKey = m.id || i;
+              if (hiddenMsgIds[msgKey]) return null;
               if (m.type === 'super') {
                 var scColor = m.tierColor || '#C9A84C';
                 var scDollars = '$' + (Math.floor(m.amountCents || 0) / 100).toFixed(2);
                 return (
-                  <div key={m.id || i} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease' }}>
+                  <div key={msgKey} style={{ marginBottom: 12, background: scColor + '18', border: '1.5px solid ' + scColor + '66', borderRadius: 12, padding: '10px 12px', animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
+                    {(role === 'host' || role === 'cohost') && (
+                      <button
+                        onClick={function() { setHiddenMsgIds(function(h) { var n = Object.assign({}, h); n[msgKey] = true; return n; }); }}
+                        style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(255,26,60,.15)', border: '1px solid rgba(255,26,60,.3)', borderRadius: 4, padding: '1px 5px', color: RED, fontSize: 10, cursor: 'pointer', lineHeight: 1 }}
+                        title="Hide message"
+                      >✕</button>
+                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                       <span style={{ fontSize: 14 }}>💬</span>
                       <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: scColor, letterSpacing: 1 }}>{scDollars} SUPER CHAT</span>
@@ -1708,14 +1718,21 @@ export default function LiveRoomPage({
                 );
               }
               return (
-                <div key={m.id || i} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
+                <div key={msgKey} style={{ marginBottom: 12, animation: 'fadeSlideIn .2s ease', position: 'relative' }}>
+                  {(role === 'host' || role === 'cohost') && (
+                    <button
+                      onClick={function() { setHiddenMsgIds(function(h) { var n = Object.assign({}, h); n[msgKey] = true; return n; }); }}
+                      style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(255,26,60,.12)', border: '1px solid rgba(255,26,60,.25)', borderRadius: 4, padding: '1px 5px', color: RED, fontSize: 10, cursor: 'pointer', lineHeight: 1 }}
+                      title="Hide message"
+                    >✕</button>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2, paddingRight: role === 'host' || role === 'cohost' ? 22 : 0 }}>
                     <span style={{ fontWeight: 700, fontSize: 13, color: gold }}>{m.username || 'Guest'}</span>
                     {m.ts && <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7.5, color: MUTED }}>
                       {new Date(m.ts * 1000).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>}
                   </div>
-                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45 }}>{m.message}</p>
+                  <p style={{ fontSize: 13, color: TEXT, margin: 0, lineHeight: 1.45, paddingRight: role === 'host' || role === 'cohost' ? 22 : 0 }}>{m.message}</p>
                   {m.translated && m.translated !== m.message && (
                     <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, margin: '2px 0 0', fontStyle: 'italic' }}>{m.translated}</p>
                   )}

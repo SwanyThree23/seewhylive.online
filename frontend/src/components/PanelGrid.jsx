@@ -1,33 +1,20 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import OctCell from './OctCell.jsx';
 
 var MAX_SEATS = 20;
 
-/**
- * PanelGrid — scalable 20-seat octagonal panel layout.
- *
- * Layout: CSS grid, 5 columns × 4 rows = 20 cells.
- * Cells are square, sized so the grid fills the container without overflow scroll.
- * Responsive: column count drops to 4 on narrow viewports (≤600 px) via a
- * calc()-based minmax so the grid always fills 100% width.
- * Inline styles only — matches existing codebase convention.
- *
- * Props:
- *   guests      {Array}   — up to 20 guest objects with guestId, username, producerId, speaking
- *   isHost      {boolean}
- *   fadesMode   {boolean}
- *   branding    {object}
- *   socket      {object}
- *   roomId      {string}
- *   userId      {string}
- *   rtcManager  {object}
- *   mediaConfig {object}
- *   isMuted     {boolean} — applies to own cell only
- *   isCamOff    {boolean} — applies to own cell only
- *   onMuteToggle  {function}
- *   onCamToggle   {function}
- *   onTap         {function|null}
- */
+var _styleInjected = false;
+function injectGridStyles() {
+  if (_styleInjected || typeof document === 'undefined') return;
+  _styleInjected = true;
+  var el = document.createElement('style');
+  el.textContent = [
+    '@keyframes panelCellEnter{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:scale(1)}}',
+    '@keyframes panelCellExit{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.75)}}',
+  ].join('');
+  document.head.appendChild(el);
+}
+
 export default function PanelGrid({
   guests,
   isHost,
@@ -45,16 +32,23 @@ export default function PanelGrid({
   onTap,
   onCameraTrack,
   giftTotals,
+  screenSharingIds,
+  onHostMute,
+  onHostKick,
 }) {
   if (!giftTotals) giftTotals = {};
+  if (!screenSharingIds) screenSharingIds = {};
   var seats = (guests || []).slice(0, MAX_SEATS);
+
+  var prevSeatsRef = useRef([]);
+  useEffect(function() { prevSeatsRef.current = seats.map(function(g) { return g ? (g.guestId || g.userId) : null; }); });
+
+  useEffect(function() { injectGridStyles(); }, []);
 
   return (
     <div
       style={{
         display: 'grid',
-        // 5 columns; each column is at least 1px wide so the grid never overflows.
-        // repeat(5, minmax(0, 1fr)) distributes space evenly without scroll.
         gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
         gridTemplateRows: 'repeat(4, minmax(0, 1fr))',
         gap: 6,
@@ -69,6 +63,8 @@ export default function PanelGrid({
         var g   = seats[idx] || null;
         var gid = g ? (g.guestId || g.userId || ('seat-' + idx)) : ('empty-' + idx);
         var isOwn = g && gid === userId;
+        var prevId = prevSeatsRef.current[idx];
+        var isNewGuest = g && gid !== prevId;
 
         return (
           <div
@@ -82,13 +78,14 @@ export default function PanelGrid({
                 ? '1px solid rgba(201,168,76,0.12)'
                 : '1px dashed rgba(255,255,255,0.06)',
               minHeight: 0,
+              animation: g && isNewGuest ? 'panelCellEnter .3s ease' : 'none',
             }}
           >
             {g ? (
               <OctCell
                 guest={g}
                 fill={true}
-                isHost={isHost}
+                isHost={isOwn ? true : (g.role === 'host')}
                 fadesMode={fadesMode}
                 branding={branding}
                 onTap={onTap}
@@ -103,9 +100,11 @@ export default function PanelGrid({
                 onCamToggle={isOwn ? onCamToggle : null}
                 onCameraTrack={isOwn ? onCameraTrack : null}
                 giftTotal={giftTotals[gid] || 0}
+                isScreenSharing={!!(screenSharingIds[gid])}
+                onHostMute={isHost && !isOwn ? onHostMute : null}
+                onHostKick={isHost && !isOwn ? onHostKick : null}
               />
             ) : (
-              /* Empty seat placeholder */
               <div
                 style={{
                   width: '100%',
