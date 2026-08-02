@@ -555,6 +555,16 @@ export default function LiveRoomPage({
   var [qaAnswerTarget,    setQaAnswerTarget]     = useState(null);      // qaId being answered
   var [qaAnswerDraft,     setQaAnswerDraft]      = useState('');
   var [engagementScores,  setEngagementScores]   = useState({});        // userId → score
+  // ── Batch 23: Live Captions, Points Redemption, Hotkeys, Next Stream ─────
+  var [captionsEnabled,   setCaptionsEnabled]    = useState(false);     // Web Speech API live captions
+  var [captionText,       setCaptionText]        = useState('');        // current caption line
+  var [captionsRef]                              = useState(function() { return { rec: null }; });
+  var [showRedeemPanel,   setShowRedeemPanel]    = useState(false);     // points redemption panel
+  var [chatColor,         setChatColor]          = useState(null);      // viewer's custom chat color
+  var [nextStreamTs,      setNextStreamTs]       = useState(null);      // { datetime, label } host schedule
+  var [showNextStream,    setShowNextStream]      = useState(false);
+  var [nextStreamInput,   setNextStreamInput]    = useState({ datetime: '', label: 'Next stream' });
+  var [hotkeysEnabled,    setHotkeysEnabled]     = useState(false);     // host hotkey shortcuts active
   var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
   var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
   var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
@@ -1002,6 +1012,25 @@ export default function LiveRoomPage({
       setEngagementScores(scores);
     });
 
+    // ── Batch 23 events ─────────────────────────────────────────────────────
+    socket.on('redeem-ack', function(data) {
+      if (!data) return;
+      if (data.perk === 'chatcolor') {
+        var colors = ['#FF6B35','#FFD700','#00CED1','#FF69B4','#7B68EE','#32CD32'];
+        setChatColor(colors[Math.floor(Math.random() * colors.length)]);
+        if (addToast) addToast('🎨 Chat color unlocked!', 'success');
+      } else if (data.perk === 'badge') {
+        if (addToast) addToast('⭐ Badge unlocked!', 'success');
+      } else if (data.perk === 'name_highlight') {
+        if (addToast) addToast('✨ Name highlight active!', 'success');
+      }
+      setPointBalance(function(p) { return Math.max(0, p - (data.cost || 0)); });
+    });
+    socket.on('next-stream', function(data) {
+      if (!data) return;
+      setNextStreamTs(data);
+    });
+
     socket.on('sound-alert', function(data) {
       if (!data) return;
       // Play a synthesized beep/tone using Web Audio API
@@ -1289,6 +1318,8 @@ export default function LiveRoomPage({
       socket.off('room-theme');
       socket.off('shop-carousel');
       socket.off('top-fans');
+      socket.off('redeem-ack');
+      socket.off('next-stream');
     };
   }, [socket]);
 
@@ -1301,6 +1332,51 @@ export default function LiveRoomPage({
 
   // ── Update medConf when mediaConfig prop changes ──
   useEffect(function() { setMedConf(mediaConfig || null); }, [mediaConfig]);
+
+  // ── Batch 23: Host keyboard shortcuts ─────────────────────────────────────
+  useEffect(function() {
+    if (!hotkeysEnabled || (role !== 'host' && role !== 'cohost')) return;
+    function onKey(e) {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      switch (e.key) {
+        case 'm': case 'M': e.preventDefault(); toggleMute(); break;
+        case 'v': case 'V': e.preventDefault(); toggleCam(); break;
+        case 'c': case 'C': e.preventDefault(); setChatOpen(function(s) { return !s; }); break;
+        case 'h': case 'H': e.preventDefault(); if (socket) socket.emit('celebrate', { roomId: roomId }); break;
+        case 'r': e.preventDefault(); setShowRateStream(function(s) { return !s; }); break;
+        case 'Escape': e.preventDefault(); setSpotlightGuestId(null); setCellMenuId(null); setShowFilterPanel(false); break;
+        default: break;
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return function() { window.removeEventListener('keydown', onKey); };
+  }, [hotkeysEnabled, role, socket, roomId, toggleMute, toggleCam]);
+
+  // ── Batch 23: Live captions via Web Speech API ────────────────────────────
+  useEffect(function() {
+    if (!captionsEnabled) {
+      if (captionsRef.rec) { try { captionsRef.rec.stop(); } catch(e) {} captionsRef.rec = null; }
+      setCaptionText('');
+      return;
+    }
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { if (addToast) addToast('Live captions not supported in this browser', 'error'); setCaptionsEnabled(false); return; }
+    var rec = new SR();
+    rec.continuous   = true;
+    rec.interimResults = true;
+    rec.lang         = 'en-US';
+    rec.onresult = function(e) {
+      var transcript = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        transcript += e.results[i][0].transcript;
+      }
+      setCaptionText(transcript.slice(-200));
+    };
+    rec.onerror = function() { setCaptionsEnabled(false); };
+    rec.start();
+    captionsRef.rec = rec;
+    return function() { try { rec.stop(); } catch(e) {} captionsRef.rec = null; };
+  }, [captionsEnabled]);
 
   // ── Local mic level analyzer (for GlobalMicButtonV49) ──
   useEffect(function() {
@@ -1337,7 +1413,7 @@ export default function LiveRoomPage({
     var msg = chatInput.trim();
     if (!msg || !socket) return;
     var msgId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId, isSuperFan: isSuperFan });
+    socket.emit('chat-message', { roomId: roomId, userId: userId, username: username, message: msg, id: msgId, isSuperFan: isSuperFan, color: chatColor || undefined });
     setMyEngagement(function(e) { return { chat: e.chat + 1, react: e.react, gift: e.gift }; });
     var mentions = msg.match(/@(\S+)/g);
     if (mentions) {
@@ -2540,6 +2616,8 @@ export default function LiveRoomPage({
               { emoji: '🔔', label: 'Sound', active: soundAlertPanel, onTap: function() { setSoundAlertPanel(function(s) { return !s; }); } },
               { emoji: '🎭', label: 'Theme', active: roomTheme !== 'default', onTap: function() { setShowThemePicker(function(s) { return !s; }); } },
               { emoji: '🛒', label: 'Carousel', active: shopCarousel.length > 0, onTap: function() { setShowCarouselEdit(function(s) { return !s; }); } },
+              { emoji: '⌨️', label: 'Hotkeys', active: hotkeysEnabled, onTap: function() { setHotkeysEnabled(function(s) { return !s; }); if (!hotkeysEnabled && addToast) addToast('⌨️ Host hotkeys enabled (M=mute, V=cam, C=chat, H=hype, Esc=clear)', 'info'); } },
+              { emoji: '📅', label: 'Schedule', active: !!nextStreamTs, onTap: function() { setShowNextStream(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2870,6 +2948,14 @@ export default function LiveRoomPage({
                   fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: MUTED, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
                 }}>
                   ⭐ Rate
+                </button>
+              )}
+              {pointBalance > 0 && (
+                <button onClick={function() { setShowRedeemPanel(true); }} style={{
+                  background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '3px 9px',
+                  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: GOLD, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                }}>
+                  🎁 {pointBalance} pts
                 </button>
               )}
               {[{l:'💛 $1',c:100},{l:'🧡 $5',c:500},{l:'❤️ $10',c:1000},{l:'💜 $25',c:2500}].map(function(p) {
@@ -3277,9 +3363,12 @@ export default function LiveRoomPage({
           <IconBtn
             icon="CC"
             label="Captions"
-            active={showCaptions}
+            active={showCaptions || captionsEnabled}
             activeColor={TEAL}
-            onPress={function() { setShowCaptions(function(v) { return !v; }); }}
+            onPress={function() {
+              setShowCaptions(function(v) { return !v; });
+              if (role === 'host' || role === 'cohost') setCaptionsEnabled(function(v) { return !v; });
+            }}
           />
         </div>
       </div>
@@ -5198,15 +5287,22 @@ export default function LiveRoomPage({
       )}
 
       {/* ════════════════ LIVE CAPTIONS OVERLAY ════════════════ */}
-      {showCaptions && latestCaption && (
+      {showCaptions && (latestCaption || (captionsEnabled && captionText)) && (
         <div style={{
           position: 'absolute', bottom: 74, left: 10, right: 10, zIndex: 60,
-          background: 'rgba(0,0,0,.72)', borderRadius: 8, padding: '6px 12px',
+          background: 'rgba(0,0,0,.82)', borderRadius: 8, padding: '6px 12px',
           pointerEvents: 'none', textAlign: 'center',
         }}>
-          <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#fff', lineHeight: 1.4, letterSpacing: .3 }}>
-            {latestCaption}
-          </span>
+          {captionsEnabled && captionText && (
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, lineHeight: 1.4, letterSpacing: .3, marginBottom: latestCaption ? 4 : 0 }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: TEAL, marginRight: 6 }}>LIVE</span>{captionText}
+            </div>
+          )}
+          {latestCaption && (
+            <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: '#ddd', lineHeight: 1.4, letterSpacing: .3 }}>
+              {latestCaption}
+            </span>
+          )}
         </div>
       )}
 
@@ -5368,6 +5464,99 @@ export default function LiveRoomPage({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ════════════════ POINTS REDEMPTION PANEL ════════════════ */}
+      {showRedeemPanel && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 74, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowRedeemPanel(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 320, boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>🎁 REDEEM POINTS</div>
+              <button onClick={function() { setShowRedeemPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: GOLD, letterSpacing: 1, marginBottom: 14, textAlign: 'center' }}>{pointBalance} pts</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[
+                { perk: 'chatcolor',      label: 'Random Chat Color',   emoji: '🎨', cost: 50  },
+                { perk: 'badge',          label: 'Supporter Badge',     emoji: '⭐', cost: 100 },
+                { perk: 'name_highlight', label: 'Name Highlight',      emoji: '✨', cost: 150 },
+                { perk: 'shoutout',       label: 'Shoutout from Host',  emoji: '📣', cost: 200 },
+              ].map(function(r) {
+                var canAfford = pointBalance >= r.cost;
+                return (
+                  <button key={r.perk} onClick={function() {
+                    if (!canAfford) { if (addToast) addToast('Not enough points (need ' + r.cost + ')', 'error'); return; }
+                    if (socket) socket.emit('redeem-points', { roomId: roomId, perk: r.perk });
+                    setShowRedeemPanel(false);
+                  }} style={{ display: 'flex', alignItems: 'center', gap: 12, background: canAfford ? CARD2 : 'rgba(255,255,255,.03)', border: '1px solid ' + (canAfford ? BORDER : 'rgba(255,255,255,.05)'), borderRadius: 10, padding: '11px 14px', cursor: canAfford ? 'pointer' : 'not-allowed', transition: 'background .15s', opacity: canAfford ? 1 : .5 }}>
+                    <span style={{ fontSize: 20 }}>{r.emoji}</span>
+                    <div style={{ flex: 1, textAlign: 'left' }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: TEXT }}>{r.label}</div>
+                    </div>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: canAfford ? GOLD : MUTED }}>{r.cost} pts</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ NEXT STREAM SCHEDULE ════════════════ */}
+      {showNextStream && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 74, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowNextStream(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 320, boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>📅 NEXT STREAM</div>
+              <button onClick={function() { setShowNextStream(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>DATE & TIME</div>
+              <input type="datetime-local" value={nextStreamInput.datetime} onChange={function(e) { setNextStreamInput(function(d) { return Object.assign({}, d, { datetime: e.target.value }); }); }}
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none', marginBottom: 8 }} />
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 4, letterSpacing: .5 }}>LABEL (optional)</div>
+              <input value={nextStreamInput.label} onChange={function(e) { setNextStreamInput(function(d) { return Object.assign({}, d, { label: e.target.value.slice(0, 60) }); }); }}
+                placeholder="Next stream"
+                style={{ width: '100%', boxSizing: 'border-box', background: BG, border: '1px solid ' + BORDER, borderRadius: 8, padding: '9px 12px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, outline: 'none' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={function() {
+                var dt = nextStreamInput.datetime;
+                if (!dt) { if (addToast) addToast('Select a date and time', 'error'); return; }
+                var ts = new Date(dt).getTime();
+                if (isNaN(ts)) { if (addToast) addToast('Invalid date', 'error'); return; }
+                var label = nextStreamInput.label.trim() || 'Next Stream';
+                if (socket) socket.emit('next-stream', { roomId: roomId, ts: ts, label: label });
+                setNextStreamTs({ ts: ts, label: label });
+                setShowNextStream(false);
+                if (addToast) addToast('📅 Next stream scheduled!', 'success');
+              }} style={{ flex: 2, background: GOLD, border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                SET SCHEDULE
+              </button>
+              {nextStreamTs && (
+                <button onClick={function() {
+                  setNextStreamTs(null);
+                  setShowNextStream(false);
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 12, padding: '12px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                  CLEAR
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ NEXT STREAM BANNER (viewer-facing) ════════════════ */}
+      {nextStreamTs && (
+        <div style={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', zIndex: 53, background: 'rgba(14,12,9,.88)', border: '1px solid ' + GOLD + '44', borderRadius: 20, padding: '6px 16px', display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'none', boxShadow: '0 4px 16px rgba(0,0,0,.5)' }}>
+          <span style={{ fontSize: 12 }}>📅</span>
+          <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, letterSpacing: .5 }}>{nextStreamTs.label}:</span>
+          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: GOLD, letterSpacing: 1 }}>{new Date(nextStreamTs.ts).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       )}
 

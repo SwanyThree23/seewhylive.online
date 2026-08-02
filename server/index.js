@@ -3382,6 +3382,37 @@ io.on('connection', function(socket) {
     io.to(roomId).emit('shop-carousel', { items: items, ts: Math.floor(Date.now() / 1000) });
   });
 
+  // ── Batch 23: Points redemption, Next-stream schedule ────────────────────
+
+  // redeem-points — viewer spends points for a perk (chat color, badge, shoutout)
+  socket.on('redeem-points', function(data) {
+    var roomId  = data.roomId || socket.data.roomId;
+    if (!roomId || !data.perk) return;
+    var userId  = socket.data.userId;
+    if (!userId) return;
+    var PERK_COSTS = { chatcolor: 50, badge: 100, shoutout: 200, name_highlight: 150 };
+    var perk = String(data.perk);
+    var cost = PERK_COSTS[perk];
+    if (!cost) return;
+    // Unicast back to requesting viewer
+    io.to(socket.id).emit('redeem-ack', { perk: perk, cost: cost, userId: userId, ts: Math.floor(Date.now() / 1000) });
+    // Notify room for shoutout perk
+    if (perk === 'shoutout') {
+      io.to(roomId).emit('shoutout', { username: socket.data.username || userId, reason: 'redeemed a shoutout', ts: Math.floor(Date.now() / 1000) });
+    }
+  });
+
+  // next-stream — host sets a next-stream schedule visible to viewers
+  socket.on('next-stream', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var ts    = Number(data.ts) || 0;
+    var label = String(data.label || 'Next Stream').slice(0, 80);
+    if (!ts) return;
+    io.to(roomId).emit('next-stream', { ts: ts, label: label, by: socket.data.username || 'host' });
+  });
+
   // sound-alert — host triggers a named alert sound for the room
   socket.on('sound-alert', function(data) {
     var roomId = data.roomId || socket.data.roomId;
