@@ -21,6 +21,7 @@ class SwanyBot extends EventEmitter {
 
     this.chatRateMap = new Map();
     this.mutedSockets = new Map();
+    this.commandCooldown = new Map(); // userId/socketId → last command timestamp
     this.lastViewerCount = 0;
     this.logPath = '/var/log/seewhy/swanybot.log';
 
@@ -179,6 +180,16 @@ class SwanyBot extends EventEmitter {
     this.viewerHistory.delete(roomId);
   }
 
+  cleanupRoom(roomId) {
+    this.resetRoomGifts(roomId);
+    // Prune commandCooldown entries — these are keyed by userId/socketId, not roomId,
+    // so we can only age them out rather than delete by room.
+    var cutoff = Date.now() - 30000;
+    this.commandCooldown.forEach(function(ts, key) {
+      if (ts < cutoff) this.commandCooldown.delete(key);
+    }, this);
+  }
+
   onChatMessage(roomId, socketId, message, context) {
     var now = Date.now();
 
@@ -224,6 +235,12 @@ class SwanyBot extends EventEmitter {
     var parts = message.slice(1).trim().split(/\s+/);
     var cmd   = parts[0].toLowerCase();
     var room  = context.room || null;
+
+    // Per-user command cooldown (5 s) — prevents flooding LLM/API calls via !hype etc.
+    var _cmdKey = (context && context.userId) || socketId;
+    var _cmdNow = Date.now();
+    if (_cmdNow - (this.commandCooldown.get(_cmdKey) || 0) < 5000) return;
+    this.commandCooldown.set(_cmdKey, _cmdNow);
 
     function botSay(text) {
       self.io.to(roomId).emit('chat-message', {

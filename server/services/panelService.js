@@ -17,27 +17,27 @@ async function assignSlot({ roomId, userId }) {
   );
   if (existing.rows.length) return { slot: existing.rows[0], isNew: false };
 
-  const taken = await db.query(
-    'SELECT slot_index FROM room_panel_slots WHERE stream_id = $1 ORDER BY slot_index',
-    [roomId]
+  // Atomically find the lowest free slot and claim it in one round-trip.
+  // This eliminates the TOCTOU between reading taken slots and inserting —
+  // the NOT EXISTS subquery and the INSERT run at the same snapshot.
+  const result = await db.query(
+    `INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
+     SELECT $1, s.i, $3
+     FROM generate_series(0, $2::int - 1) AS s(i)
+     WHERE NOT EXISTS (
+       SELECT 1 FROM room_panel_slots
+       WHERE stream_id = $1 AND slot_index = s.i
+     )
+     ORDER BY s.i
+     LIMIT 1
+     RETURNING *`,
+    [roomId, maxGuests, userId]
   );
-  const takenIndexes = new Set(taken.rows.map((r) => r.slot_index));
-
-  let nextIndex = null;
-  for (let i = 0; i < maxGuests; i++) {
-    if (!takenIndexes.has(i)) { nextIndex = i; break; }
-  }
-  if (nextIndex === null) {
+  if (!result.rows.length) {
     const err = new Error('Panel is full');
     err.status = 409;
     throw err;
   }
-
-  const result = await db.query(
-    `INSERT INTO room_panel_slots (stream_id, slot_index, user_id)
-     VALUES ($1, $2, $3) RETURNING *`,
-    [roomId, nextIndex, userId]
-  );
   return { slot: result.rows[0], isNew: true };
 }
 
