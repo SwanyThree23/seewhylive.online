@@ -1308,6 +1308,13 @@ io.on('connection', function(socket) {
       swanybot.onViewerJoin(roomId, username, socket.id);
       swanybot.onWelcomeVisitor(socket.id);
 
+      // Award join points
+      io.to(socket.id).emit('points-earned', { amount: 5, reason: 'joined stream', ts: Math.floor(Date.now() / 1000) });
+      // Send any active countdown to late-joining viewers
+      if (room.countdown && room.countdown.endsAt > Math.floor(Date.now() / 1000)) {
+        io.to(socket.id).emit('stream-countdown', room.countdown);
+      }
+
       // Create router so viewer can subscribe; emit join-room-ack as connection signal
       mediasoup.getOrCreateRouter(roomId)
         .then(function() {
@@ -1855,6 +1862,7 @@ io.on('connection', function(socket) {
           lang:       result.detectedLang,
           ts:         ts
         });
+        io.to(socket.id).emit('points-earned', { amount: 2, reason: 'chat', ts: ts });
       })
       .catch(function(err) {
         logger.error('[chat-message] translation failed: ' + err.message);
@@ -2076,6 +2084,10 @@ io.on('connection', function(socket) {
     if (chain.count >= 3) {
       io.to(roomId).emit('gift-chain', { count: chain.count, emoji: emoji, ts: now10 });
     }
+
+    // Award points to gift sender
+    var giftPoints = Math.max(10, Math.floor(valueCents / 10));
+    io.to(socket.id).emit('points-earned', { amount: giftPoints, reason: 'gift sent', ts: now10 });
 
     // Update creator goal progress on every gift
     var giftRoom2 = rooms.get(roomId);
@@ -2810,6 +2822,8 @@ io.on('connection', function(socket) {
       rw.count = 0;
       io.to(roomId).emit('crowd-wild', { roomId: roomId, ts: now });
     }
+    // Award 1 point per reaction (throttled by the react throttle above)
+    io.to(socket.id).emit('points-earned', { amount: 1, reason: 'reaction', ts: Math.floor(now / 1000) });
   });
 
   // ── hot-moment — viewer tags a timestamp as a highlight ────────────────
@@ -3144,6 +3158,61 @@ io.on('connection', function(socket) {
     };
     room.creatorGoal = goal;
     io.to(roomId).emit('creator-goal', goal);
+  });
+
+  // ── viewer-points — server awards points to a viewer's session balance ──
+  socket.on('earn-points', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    var amount = Math.max(1, Math.min(1000, Math.floor(data.amount || 1)));
+    var reason = String(data.reason || 'action').slice(0, 30);
+    io.to(socket.id).emit('points-earned', { amount: amount, reason: reason, ts: Math.floor(Date.now() / 1000) });
+  });
+
+  // ── shoutout — host gives a public shoutout to a viewer ─────────────────
+  socket.on('shoutout', function(data) {
+    var roomId   = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var username = String(data.username || '').trim().slice(0, 32);
+    var reason   = String(data.reason   || '').trim().slice(0, 80);
+    if (!username) return;
+    io.to(roomId).emit('shoutout', {
+      username: username,
+      reason:   reason || '❤️',
+      by:       socket.data.username || 'host',
+      ts:       Math.floor(Date.now() / 1000),
+    });
+    io.to(roomId).emit('chat-message', {
+      id:       uuidv4(),
+      username: 'SYSTEM',
+      message:  '📣 Shoutout to @' + username + (reason ? ': ' + reason : '!'),
+      ts:       Math.floor(Date.now() / 1000),
+      role:     'system',
+    });
+  });
+
+  // ── stream-countdown — host sets a pre-stream countdown timer ───────────
+  socket.on('stream-countdown', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var minutes  = Math.max(1, Math.min(60, Math.floor(data.minutes || 5)));
+    var label    = String(data.label || 'Stream starts in').slice(0, 40);
+    var endsAt   = Math.floor(Date.now() / 1000) + (minutes * 60);
+    var room     = rooms.get(roomId);
+    if (room) room.countdown = { endsAt: endsAt, label: label };
+    io.to(roomId).emit('stream-countdown', { endsAt: endsAt, label: label });
+  });
+
+  // ── countdown-cancel — host cancels an active countdown ─────────────────
+  socket.on('countdown-cancel', function(data) {
+    var roomId = data.roomId || socket.data.roomId;
+    if (!roomId) return;
+    if (socket.data.role !== 'host' && socket.data.role !== 'cohost') return;
+    var room = rooms.get(roomId);
+    if (room) room.countdown = null;
+    io.to(roomId).emit('stream-countdown', null);
   });
 
   // ── set-guest-role — host promotes/demotes a guest to/from co-host ──────

@@ -59,6 +59,10 @@ var ANIM = [
   '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
   '@keyframes challengeIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}',
   '@keyframes statsFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes pointFlash{0%{opacity:0;transform:translateY(8px) scale(.8)}40%{opacity:1;transform:translateY(-4px) scale(1.1)}100%{opacity:0;transform:translateY(-18px) scale(.9)}}',
+  '@keyframes shoutoutIn{0%{opacity:0;transform:scale(.85) translateY(14px)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1) translateY(0)}}',
+  '@keyframes shoutoutOut{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}',
+  '@keyframes countdownTick{0%{transform:scale(1.06)}100%{transform:scale(1)}}',
 ].join('\n');
 
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
@@ -469,6 +473,16 @@ export default function LiveRoomPage({
   var [goalInput,          setGoalInput]          = useState({ title: 'Stream Goal', targetCents: 1000 });
   var [showLiveStats,      setShowLiveStats]      = useState(false);    // host live stats panel
   var [liveStats,          setLiveStats]          = useState(null);     // { viewers, revenueCents, topGifter, topEmoji }
+  // ── Batch 18: Channel Points, Top-Fans Wall, Shoutout Queue, Schedule ───
+  var [pointBalance,       setPointBalance]       = useState(0);        // viewer's SeeWhy Points balance
+  var [pointFlash,         setPointFlash]         = useState(null);     // { amount, reason } transient flash
+  var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
+  var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
+  var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
+  var [streamCountdown,    setStreamCountdown]    = useState(null);     // { endsAt, label } pre-show countdown
+  var [countdownSecs,      setCountdownSecs]      = useState(0);        // live ticking seconds
+  var [showScheduleSet,    setShowScheduleSet]    = useState(false);    // host schedule modal
+  var [scheduleInput,      setScheduleInput]      = useState({ label: 'Stream starts in', minutes: 15 });
   var [showTagEdit,        setShowTagEdit]        = useState(false);
   var [tagInput,           setTagInput]           = useState('');
   var [showLinkPin,        setShowLinkPin]        = useState(false);
@@ -775,6 +789,23 @@ export default function LiveRoomPage({
       setLiveStats(data);
     });
 
+    // ── Batch 18 listeners ────────────────────────────────────────────────
+    socket.on('points-earned', function(data) {
+      if (!data || !data.amount) return;
+      setPointBalance(function(b) { return b + data.amount; });
+      setPointFlash(data);
+      setTimeout(function() { setPointFlash(null); }, 1800);
+    });
+
+    socket.on('shoutout', function(data) {
+      if (!data || !data.username) return;
+      setShoutoutQueue(function(q) { return q.concat([data]); });
+    });
+
+    socket.on('stream-countdown', function(data) {
+      setStreamCountdown(data || null);
+    });
+
     socket.on('room-tags', function(data) {
       if (!data || !Array.isArray(data.tags)) return;
       setRoomTags(data.tags);
@@ -1008,6 +1039,9 @@ export default function LiveRoomPage({
       socket.off('creator-goal');
       socket.off('creator-goal-reached');
       socket.off('live-stats');
+      socket.off('points-earned');
+      socket.off('shoutout');
+      socket.off('stream-countdown');
     };
   }, [socket]);
 
@@ -1204,6 +1238,32 @@ export default function LiveRoomPage({
       setLatestCaption(last.message);
     }
   }, [chat]);
+
+  // Shoutout dequeue — show one at a time, auto-advance every 4 seconds
+  useEffect(function() {
+    if (shoutoutQueue.length === 0) { setActiveShoutout(null); return; }
+    if (activeShoutout) return;
+    var next = shoutoutQueue[0];
+    setActiveShoutout(next);
+    setShoutoutQueue(function(q) { return q.slice(1); });
+    var t = setTimeout(function() { setActiveShoutout(null); }, 4000);
+    return function() { clearTimeout(t); };
+  }, [shoutoutQueue, activeShoutout]);
+
+  // Countdown ticker
+  useEffect(function() {
+    if (!streamCountdown) { setCountdownSecs(0); return; }
+    var interval = setInterval(function() {
+      var remaining = Math.max(0, streamCountdown.endsAt - Math.floor(Date.now() / 1000));
+      setCountdownSecs(remaining);
+      if (remaining === 0) {
+        setStreamCountdown(null);
+        clearInterval(interval);
+      }
+    }, 1000);
+    setCountdownSecs(Math.max(0, streamCountdown.endsAt - Math.floor(Date.now() / 1000)));
+    return function() { clearInterval(interval); };
+  }, [streamCountdown]);
 
   function fmtElapsed(s) {
     if (!s || s < 0) return '0:00';
@@ -2129,6 +2189,17 @@ export default function LiveRoomPage({
               { emoji: '🏆', label: 'Challenge', active: !!(activeChallenge && activeChallenge.active), onTap: function() { setShowChallengeSet(true); } },
               { emoji: '🎯', label: 'Goal', active: !!(creatorGoal && creatorGoal.active), onTap: function() { setShowGoalSet(true); } },
               { emoji: '📊', label: 'Stats', active: showLiveStats, onTap: function() { if (socket) socket.emit('live-stats-request', { roomId: roomId }); setShowLiveStats(function(s) { return !s; }); } },
+              { emoji: '📣', label: 'Shoutout', active: false, onTap: function() {
+                var name = window.prompt('Shoutout to (username):');
+                if (!name || !name.trim()) return;
+                var reason = window.prompt('Reason (optional, e.g. "top gifter"):') || '';
+                if (socket) socket.emit('shoutout', { roomId: roomId, username: name.trim(), reason: reason.trim() });
+              }},
+              { emoji: '⏱️', label: 'Countdown', active: !!streamCountdown, onTap: function() {
+                if (streamCountdown) { if (socket) socket.emit('countdown-cancel', { roomId: roomId }); }
+                else { setShowScheduleSet(true); }
+              }},
+              { emoji: '👑', label: 'Top Fans', active: showTopFans, onTap: function() { setShowTopFans(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -2445,6 +2516,14 @@ export default function LiveRoomPage({
               }}>
                 ❤️ Follow
               </button>
+              {tipLeader.length > 0 && (
+                <button onClick={function() { setShowTopFans(function(s) { return !s; }); }} style={{
+                  background: showTopFans ? 'rgba(201,168,76,.18)' : CARD2, border: '1px solid rgba(201,168,76,' + (showTopFans ? '.5' : '.2)'), borderRadius: 999, padding: '3px 9px',
+                  fontFamily: "'Barlow Condensed',sans-serif", fontSize: 10, color: showTopFans ? GOLD : MUTED, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap',
+                }}>
+                  👑 Top Fans
+                </button>
+              )}
               {[{l:'💛 $1',c:100},{l:'🧡 $5',c:500},{l:'❤️ $10',c:1000},{l:'💜 $25',c:2500}].map(function(p) {
                 return (
                   <button key={p.l} onClick={function() {
@@ -4104,6 +4183,97 @@ export default function LiveRoomPage({
           <div style={{ background: 'rgba(14,12,9,.88)', border: '1px solid rgba(201,168,76,.35)', borderRadius: 999, padding: '6px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 16 }}>🛍️</span>
             <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT }}><strong style={{ color: GOLD }}>{shopPurchaseBurst.username}</strong> just bought!</span>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SCHEDULE COUNTDOWN MODAL (host) ════════════════ */}
+      {showScheduleSet && (role === 'host' || role === 'cohost') && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.78)', display: 'flex', alignItems: 'flex-end', zIndex: 81, animation: 'fadeSlideIn .2s ease' }} onClick={function(e) { if (e.target === e.currentTarget) setShowScheduleSet(false); }}>
+          <div style={{ width: '100%', background: SURF, borderRadius: '20px 20px 0 0', padding: '24px 20px 36px', border: '1px solid ' + BORDER }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, color: TEXT }}>⏱️ Pre-Stream Countdown</div>
+              <button onClick={function() { setShowScheduleSet(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <input value={scheduleInput.label} onChange={function(e) { var v = e.target.value.slice(0, 40); setScheduleInput(function(s) { return Object.assign({}, s, { label: v }); }); }} placeholder="Label (e.g. 'Stream starts in')" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 8 }} />
+            <input type="number" min="1" max="60" value={scheduleInput.minutes} onChange={function(e) { var v = Math.min(60, Math.max(1, parseInt(e.target.value) || 1)); setScheduleInput(function(s) { return Object.assign({}, s, { minutes: v }); }); }} placeholder="Minutes" style={{ width: '100%', background: CARD2, border: '1.5px solid rgba(201,168,76,.25)', borderRadius: 10, padding: '9px 13px', color: TEXT, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, outline: 'none', boxSizing: 'border-box', marginBottom: 12 }} />
+            <button onClick={function() {
+              if (socket) socket.emit('stream-countdown', { roomId: roomId, label: scheduleInput.label, minutes: scheduleInput.minutes });
+              setShowScheduleSet(false);
+              if (addToast) addToast('⏱️ Countdown started: ' + scheduleInput.minutes + ' min', 'success');
+            }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: 13, fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, color: BG, cursor: 'pointer', letterSpacing: 2 }}>START COUNTDOWN</button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ STREAM COUNTDOWN OVERLAY ════════════════ */}
+      {streamCountdown && countdownSecs > 0 && !isLive && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 70, pointerEvents: 'none', background: 'rgba(14,12,9,.65)', backdropFilter: 'blur(4px)' }}>
+          <div style={{ textAlign: 'center', padding: '0 20px' }}>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: MUTED, letterSpacing: 3, marginBottom: 12 }}>{(streamCountdown && streamCountdown.label) || 'STREAM STARTS IN'}</div>
+            <div key={countdownSecs} style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 72, color: GOLD, letterSpacing: 6, lineHeight: 1, animation: 'countdownTick .1s ease' }}>
+              {Math.floor(countdownSecs / 60)}:{String(countdownSecs % 60).padStart(2, '0')}
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 14, color: TEXT, marginTop: 12, opacity: .7 }}>Get ready — stream incoming 🔥</div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ SHOUTOUT CARD ════════════════ */}
+      {activeShoutout && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 72, zIndex: 88, pointerEvents: 'none', animation: 'shoutoutIn .35s ease', whiteSpace: 'nowrap' }}>
+          <div style={{ background: 'linear-gradient(135deg,rgba(212,133,74,.18),rgba(14,12,9,.92))', border: '2px solid ' + TEAL, borderRadius: 20, padding: '14px 28px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 8px 36px rgba(212,133,74,.35)' }}>
+            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,' + TEAL + ',' + GOLD + ')', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>📣</div>
+            <div>
+              <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: TEAL, letterSpacing: 2, marginBottom: 2 }}>SHOUTOUT</div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, color: TEXT, letterSpacing: 2 }}>@{activeShoutout.username}</div>
+              {activeShoutout.reason && <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>{activeShoutout.reason}</div>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ POINTS FLASH ════════════════ */}
+      {pointFlash && (
+        <div key={pointFlash.ts} style={{ position: 'absolute', right: 14, top: 130, zIndex: 88, pointerEvents: 'none', animation: 'pointFlash 1.8s ease forwards' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid rgba(201,168,76,.5)', borderRadius: 999, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD }}>+{pointFlash.amount}</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, letterSpacing: 1 }}>PTS</span>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ POINTS BALANCE BADGE ════════════════ */}
+      {pointBalance > 0 && role !== 'host' && (
+        <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 54, pointerEvents: 'none' }}>
+          <div style={{ background: 'rgba(14,12,9,.82)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 999, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 10 }}>⭐</span>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: GOLD, letterSpacing: 1 }}>{pointBalance.toLocaleString()} PTS</span>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ TOP FANS PANEL (visible to all) ════════════════ */}
+      {showTopFans && tipLeader.length > 0 && (
+        <div style={{ position: 'absolute', left: 8, bottom: 180, zIndex: 64, minWidth: 160, maxWidth: 190, animation: 'statsFadeIn .2s ease' }}>
+          <div style={{ background: 'rgba(14,12,9,.92)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 16, padding: '12px 14px', backdropFilter: 'blur(10px)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: GOLD, letterSpacing: 2 }}>👑 TOP FANS</span>
+              <button onClick={function() { setShowTopFans(false); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 13, lineHeight: 1 }}>✕</button>
+            </div>
+            {tipLeader.slice(0, 5).map(function(e, i) {
+              var medals = ['🥇', '🥈', '🥉'];
+              var topColors = [GOLD, '#C0C0C0', '#CD7F32'];
+              return (
+                <div key={e.username} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>{medals[i] || (i + 1) + '.'}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: topColors[i] || TEXT, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.username}</div>
+                    <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED }}>${((e.totalCents || 0) / 100).toFixed(2)}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
