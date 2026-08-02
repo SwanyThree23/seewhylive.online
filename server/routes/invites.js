@@ -115,11 +115,15 @@ router.post('/links/:token/redeem', requireAuth, async (req, res) => {
   if (_rlNow - (_redeemLog.get(_rlKey) || 0) < REDEEM_COOLDOWN_MS) {
     return res.status(429).json({ error: 'You have already redeemed this invite link recently' });
   }
+  // Reserve before the async call — setting AFTER the await leaves a window where
+  // concurrent requests both read 0 and both proceed to the service call.
+  _redeemLog.set(_rlKey, _rlNow);
   try {
     const link = await inviteService.redeemInviteLink(token);
-    _redeemLog.set(_rlKey, _rlNow);
     res.json(link);
   } catch (err) {
+    // Release the reservation on a token error so a legitimate retry is possible
+    _redeemLog.delete(_rlKey);
     res.status(400).json({ error: err.message });
   }
 });

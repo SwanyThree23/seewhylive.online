@@ -20,7 +20,7 @@ function validateId(req, res, next) {
 // Host sets a room to private and picks a gating mode.
 router.post('/:id/privacy', requireAuth, validateId, async (req, res) => {
   try {
-    const { isPrivate } = req.body;
+    const isPrivate = req.body.isPrivate === true || req.body.isPrivate === 'true';
     const ALLOWED_GATING_MODES = ['invite_code', 'approval'];
     const rawGatingMode = req.body.gatingMode;
     const gatingMode = ALLOWED_GATING_MODES.includes(rawGatingMode) ? rawGatingMode : null;
