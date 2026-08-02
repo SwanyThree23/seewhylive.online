@@ -78,7 +78,7 @@ async function startBattle(battleId) {
 }
 
 async function castVote({ battleId, voterId, side, giftValueCents }) {
-  if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 500000) throw new Error('invalid giftValueCents');
+  if (!Number.isFinite(giftValueCents) || giftValueCents < 1 || giftValueCents > 50000) throw new Error('invalid giftValueCents');
   const active = await db.query(
     `SELECT id, challenger_id, defender_id FROM pk_battles WHERE id = $1 AND status = 'active'`, [battleId]
   );
