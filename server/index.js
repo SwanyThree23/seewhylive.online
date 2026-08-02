@@ -3088,10 +3088,13 @@ io.on('connection', function(socket) {
     var durationMs = Math.min(Math.max(data.durationMs || 20000, 5000), 60000);
     if (!question || options.length < 2) return;
     if (correctIdx >= options.length) correctIdx = 0;
+    // Clear any in-flight timer so the previous trivia's timeout cannot end this one
+    var _prevTrivia = triviaRooms.get(tRoomId);
+    if (_prevTrivia && _prevTrivia.timer) clearTimeout(_prevTrivia.timer);
     var trivia = { question: question, options: options, answers: new Map(), correctIdx: correctIdx, active: true, startTs: Date.now(), durationMs: durationMs };
     triviaRooms.set(tRoomId, trivia);
     io.to(tRoomId).emit('trivia-question', { roomId: tRoomId, question: question, options: options.map(function(o) { return { text: o.text }; }), durationMs: durationMs });
-    trivia.timer = setTimeout(function() { endTrivia(tRoomId); }, durationMs);
+    trivia.timer = setTimeout(function() { if (triviaRooms.get(tRoomId) === trivia) endTrivia(tRoomId); }, durationMs);
   });
 
   socket.on('trivia-answer', function(data) {
