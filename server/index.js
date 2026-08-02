@@ -2289,6 +2289,7 @@ io.on('connection', function(socket) {
     var user = socket.data.username || 'Guest';
     if (!qaQueues.has(roomId)) qaQueues.set(roomId, new Map());
     var queue = qaQueues.get(roomId);
+    if (queue.size >= 200) return;
     queue.set(id, { id: id, username: user, text: text, upvotes: 0, ts: Date.now() });
     io.to(roomId).emit('qa-question', { id: id, username: user, text: text, upvotes: 0 });
   });
