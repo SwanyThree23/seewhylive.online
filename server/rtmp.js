@@ -111,7 +111,14 @@ function startFanout(roomId, hostGuestId, destinations) {
   var logStream = openLogStream(roomId);
 
   var ts = new Date().toISOString();
-  logStream.write('[' + ts + '] Starting FFmpeg: ffmpeg ' + args.join(' ') + '\n');
+  var _redactedArgs = args.map(function(a, i) {
+    // Redact stream key (last path segment of every RTMP destination URL)
+    if (i > 0 && args[i - 1] === 'flv' && /^rtmps?:\/\//i.test(a)) {
+      return a.replace(/\/[^/]*$/, '/<redacted>');
+    }
+    return a;
+  });
+  logStream.write('[' + ts + '] Starting FFmpeg: ffmpeg ' + _redactedArgs.join(' ') + '\n');
 
   var proc = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
 
@@ -159,6 +166,7 @@ function healthCheck(roomId) {
 
   if (entry.restartCount >= MAX_RESTARTS) {
     entry.logStream.write('[' + new Date().toISOString() + '] Max restarts reached, giving up.\n');
+    entry.logStream.end();
     clearInterval(entry.healthTimer);
     fanouts.delete(roomId);
     emitter.emit('fanout-failed', { roomId: roomId });
