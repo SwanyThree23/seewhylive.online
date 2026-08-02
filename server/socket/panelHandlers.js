@@ -211,13 +211,9 @@ function registerPanelHandlers(io, socket) {
     }
   });
 
-  socket.on('disconnect', function() {
-    var _tKey = socket.data.userId || socket.id;
-    panelJoinThrottle.delete(_tKey);
-    panelRequestThrottle.delete(_tKey);
-    panelReactThrottle.delete(_tKey);
-    panelHandThrottle.delete(_tKey);
-  });
+  // Throttle entries are intentionally NOT cleared on disconnect — clearing
+  // them would allow bypass via rapid reconnect (same userId, new socket.id).
+  // Entries expire naturally once the throttle window passes (1-3 s).
 }
 
 module.exports = { registerPanelHandlers };
