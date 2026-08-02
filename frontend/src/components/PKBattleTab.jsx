@@ -517,10 +517,30 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
               <span style={{ color: '#8A7A62' }}>·</span>
               <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: '#C9A84C' }}>{defender}: {defenderScore}</span>
             </div>
-            <button onClick={function() { setBattleState('idle'); setWinner(null); setChallengerScore(0); setDefenderScore(0); setChallenger(''); setDefender(''); setBattleLog([]); }}
-              style={{ marginTop: 14, padding: '9px 24px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
-              NEW BATTLE
-            </button>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14 }}>
+              <button onClick={function() {
+                // REMATCH — same fighters, same duration, reset scores only
+                setChallengerScore(0); setDefenderScore(0);
+                setCountdown(battleDuration);
+                setWinner(null); setMyVote(null); setVoteHistory([]);
+                setBattleLog([{ time: fmtTime(), text: '🔁 REMATCH: ' + challenger + ' vs ' + defender }]);
+                setBattleState('active');
+                if (socket && roomId) socket.emit('pk-start', { roomId: roomId, challenger: challenger, defender: defender, duration: battleDuration });
+                clearAllIntervals();
+                countdownRef.current = setInterval(function() {
+                  setCountdown(function(prev) {
+                    if (prev <= 1) { clearInterval(countdownRef.current); return 0; }
+                    return prev - 1;
+                  });
+                }, 1000);
+              }} style={{ padding: '9px 22px', background: 'linear-gradient(135deg,#800020,rgba(128,0,32,.6))', border: '2px solid #C9A84C', borderRadius: 8, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+                🔁 REMATCH
+              </button>
+              <button onClick={function() { setBattleState('idle'); setWinner(null); setChallengerScore(0); setDefenderScore(0); setChallenger(''); setDefender(''); setBattleLog([]); }}
+                style={{ padding: '9px 22px', background: 'rgba(26,21,16,.8)', border: '1px solid rgba(201,168,76,.3)', borderRadius: 8, color: '#8A7A62', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 2, cursor: 'pointer' }}>
+                NEW BATTLE
+              </button>
+            </div>
           </div>
         </div>
       </UpgradeGate>
@@ -595,23 +615,34 @@ export default function PKBattleTab({ socket, roomId, role, isLive, addToast, vi
         </div>
 
         {isHost && (
-          <button
-            onClick={resetBattle}
-            style={{
-              width: '100%',
-              padding: '13px',
-              background: 'linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1))',
-              border: '1px solid rgba(201,168,76,.5)',
-              borderRadius: 10,
-              color: '#C9A84C',
-              fontFamily: "'Bebas Neue',sans-serif",
-              fontSize: 16,
-              letterSpacing: 2,
-              cursor: 'pointer',
-            }}
-          >
-            ⚡ START NEW BATTLE
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={function() {
+                setChallengerScore(0); setDefenderScore(0);
+                setCountdown(battleDuration);
+                setWinner(null); setMyVote(null); setVoteHistory([]);
+                setBattleLog([{ time: fmtTime(), text: '🔁 REMATCH: ' + challenger + ' vs ' + defender }]);
+                setBattleState('active');
+                if (socket && roomId) socket.emit('pk-start', { roomId: roomId, challenger: challenger, defender: defender, duration: battleDuration });
+                clearAllIntervals();
+                countdownRef.current = setInterval(function() {
+                  setCountdown(function(prev) {
+                    if (prev <= 1) { clearInterval(countdownRef.current); return 0; }
+                    return prev - 1;
+                  });
+                }, 1000);
+              }}
+              style={{ flex: 1, padding: '13px', background: 'linear-gradient(135deg,#800020,rgba(128,0,32,.5))', border: '2px solid #C9A84C', borderRadius: 10, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 2, cursor: 'pointer' }}
+            >
+              🔁 REMATCH
+            </button>
+            <button
+              onClick={resetBattle}
+              style={{ flex: 1, padding: '13px', background: 'linear-gradient(135deg,rgba(201,168,76,.25),rgba(201,168,76,.1))', border: '1px solid rgba(201,168,76,.5)', borderRadius: 10, color: '#C9A84C', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 2, cursor: 'pointer' }}
+            >
+              ⚡ NEW BATTLE
+            </button>
+          </div>
         )}
       </div>
       </UpgradeGate>

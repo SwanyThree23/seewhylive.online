@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import OctCell from './OctCell.jsx';
 import rtcManager from '../webrtc.js';
 import MediaConfigPanel from './MediaConfigPanel.jsx';
-import { saveClip } from '../clipStore.js';
+import { saveClip, listClips, deleteClip } from '../clipStore.js';
+import ClipGalleryPage from './ClipGalleryPage.jsx';
 import { creatorCents, platformCents, getPlatformHandles } from '../platformConfig.js';
 import HostHUD from './HostHUD.jsx';
 import ChyronOverlay from './ChyronOverlay.jsx';
@@ -59,6 +60,8 @@ var ANIM = [
   '@keyframes goalFill{from{width:0}to{width:var(--goal-pct)}}',
   '@keyframes challengeIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}',
   '@keyframes statsFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes spotlightIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}',
+  '@keyframes thumbBarIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}',
   '@keyframes starPop{0%{transform:scale(0.5)}60%{transform:scale(1.25)}100%{transform:scale(1)}}',
   '@keyframes voteBarGrow{from{width:0}to{width:var(--vote-pct)}}',
   '@keyframes pointFlash{0%{opacity:0;transform:translateY(8px) scale(.8)}40%{opacity:1;transform:translateY(-4px) scale(1.1)}100%{opacity:0;transform:translateY(-18px) scale(.9)}}',
@@ -66,6 +69,27 @@ var ANIM = [
   '@keyframes shoutoutOut{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}',
   '@keyframes countdownTick{0%{transform:scale(1.06)}100%{transform:scale(1)}}',
 ].join('\n');
+
+// ─── AI visual filter CSS presets ────────────────────────────────────────────
+var AI_FILTERS = {
+  vivid:   'saturate(1.8) contrast(1.1)',
+  warm:    'sepia(.35) saturate(1.3)',
+  cool:    'hue-rotate(195deg) saturate(.85)',
+  bw:      'grayscale(1)',
+  vintage: 'sepia(.55) brightness(.92) contrast(1.05)',
+  neon:    'saturate(2.2) hue-rotate(30deg) brightness(1.1)',
+  soft:    'brightness(1.05) contrast(.9)',
+};
+var AI_FILTER_META = [
+  { key: 'none',    label: 'None',    emoji: '○'  },
+  { key: 'vivid',   label: 'Vivid',   emoji: '🎨' },
+  { key: 'warm',    label: 'Warm',    emoji: '🌅' },
+  { key: 'cool',    label: 'Cool',    emoji: '❄️' },
+  { key: 'bw',      label: 'B&W',     emoji: '⬛' },
+  { key: 'vintage', label: 'Vintage', emoji: '📷' },
+  { key: 'neon',    label: 'Neon',    emoji: '💡' },
+  { key: 'soft',    label: 'Soft',    emoji: '☁️' },
+];
 
 // ─── Direct Pay platforms ───────────────────────────────────────────────────
 var DP_PLATFORMS = [
@@ -488,6 +512,16 @@ export default function LiveRoomPage({
   var [showVoteCreate,     setShowVoteCreate]     = useState(false);    // host vote creation modal
   var [voteInput,          setVoteInput]          = useState({ question: '', optA: 'YES', optB: 'NO', durationSec: 30 });
   var [pinnedClip,         setPinnedClip]         = useState(null);     // { label, url, ts }
+  // ── Batch 20: Guest Spotlight mode, AI filters, polls, PK leaderboard ───
+  var [spotlightGuestId,   setSpotlightGuestId]   = useState(null);     // guestId enlarged to 70%
+  var [aiFilter,           setAiFilter]           = useState('none');   // visual filter applied to own stream
+  var [showFilterPanel,    setShowFilterPanel]     = useState(false);   // host/guest filter picker
+  var [pkLeaderboard,      setPkLeaderboard]       = useState(function() {
+    try { return JSON.parse(localStorage.getItem('sw_pk_leaderboard') || '[]'); } catch(e) { return []; }
+  });
+  var [showPkLeaderboard,  setShowPkLeaderboard]  = useState(false);
+  var [pkCurrentBattle,    setPkCurrentBattle]    = useState(null);     // { challenger, defender } for leaderboard tracking
+  var [showClipGallery,   setShowClipGallery]    = useState(false);    // clip gallery overlay
   var [showTopFans,        setShowTopFans]        = useState(false);    // public top-fans leaderboard panel
   var [shoutoutQueue,      setShoutoutQueue]      = useState([]);       // [{ username, reason, ts }]
   var [activeShoutout,     setActiveShoutout]     = useState(null);     // currently displayed shoutout
@@ -853,11 +887,38 @@ export default function LiveRoomPage({
       setPinnedClip(data);
       if (addToast) addToast('🎬 Clip pinned: ' + (data.label || 'Highlight'), 'info');
       setTimeout(function() { setPinnedClip(null); }, 12000);
+      // Auto-save clip metadata to gallery (no blob — URL or label only)
+      var clipId = 'clip_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      saveClip(clipId, new Blob([''], { type: 'text/plain' }), { label: data.label || 'Highlight', url: data.url || '', ts: Date.now(), roomId: roomId, emoji: '🎬' }).catch(function() {});
     });
 
     socket.on('layout-sync', function(data) {
       if (!data || !data.layout) return;
       setStageLayout(data.layout);
+    });
+
+    // ── PK leaderboard tracking ───────────────────────────────────────────────
+    socket.on('pk-start', function(data) {
+      if (!data) return;
+      setPkCurrentBattle({ challenger: data.challenger || '', defender: data.defender || '' });
+    });
+    socket.on('pk-end', function(data) {
+      if (!data || !data.winner) return;
+      var winnerName = data.winner;
+      setPkLeaderboard(function(prev) {
+        var updated = prev.slice();
+        var idx     = updated.findIndex(function(e) { return e.username === winnerName; });
+        var score   = Math.max(data.challengerScore || 0, data.defenderScore || 0);
+        if (idx >= 0) {
+          updated[idx] = Object.assign({}, updated[idx], { wins: updated[idx].wins + 1, totalScore: updated[idx].totalScore + score, lastBattle: Date.now() });
+        } else {
+          updated.push({ username: winnerName, wins: 1, totalScore: score, lastBattle: Date.now() });
+        }
+        updated.sort(function(a, b) { return b.wins !== a.wins ? b.wins - a.wins : b.totalScore - a.totalScore; });
+        try { localStorage.setItem('sw_pk_leaderboard', JSON.stringify(updated.slice(0, 50))); } catch(e) {}
+        return updated.slice(0, 50);
+      });
+      setPkCurrentBattle(null);
     });
 
     socket.on('room-tags', function(data) {
@@ -1103,6 +1164,8 @@ export default function LiveRoomPage({
       socket.off('audience-vote-end');
       socket.off('clip-pinned');
       socket.off('layout-sync');
+      socket.off('pk-start');
+      socket.off('pk-end');
     };
   }, [socket]);
 
@@ -1931,8 +1994,75 @@ export default function LiveRoomPage({
             </div>
           )}
 
+          {/* ── SPOTLIGHT MODE ── active guest at 70%, rest in side thumbnail bar */}
+          {stageLayout === 'grid' && panelMode !== 'list' && !!spotlightGuestId && onStage.some(function(g) { return (g.guestId || g.userId) === spotlightGuestId; }) && (function() {
+            var sg   = onStage.find(function(x) { return (x.guestId || x.userId) === spotlightGuestId; });
+            var sgid = sg.guestId || sg.userId;
+            var sgOwn = sgid === userId;
+            var sgSp  = !!speakingIds[sgid];
+            return (
+              <div style={{ display: 'flex', gap: 6, marginBottom: 8, animation: 'spotlightIn .3s ease' }}>
+                {/* Main 70% */}
+                <div style={{ flex: '0 0 70%', position: 'relative', background: CARD, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + (sgSp ? TEAL + 'BB' : GOLD + '66'), boxShadow: sgSp ? ('0 0 22px ' + TEAL + '33') : '0 0 14px ' + GOLD + '22', transition: 'border-color .2s' }}>
+                  <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                    <div style={{ position: 'absolute', inset: 0, filter: sgOwn && aiFilter !== 'none' && AI_FILTERS[aiFilter] ? AI_FILTERS[aiFilter] : undefined }}>
+                      {audioOnly ? (
+                        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + GOLD, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 24, color: GOLD }}>{(sg.username || sgid).charAt(0).toUpperCase()}</span>
+                          </div>
+                          {sgSp && <WaveBars color={TEAL} />}
+                        </div>
+                      ) : (
+                        <OctCell guest={sg} fill={true} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={sgOwn ? medConf : null} isMuted={sgOwn ? isMuted : false} isCamOff={sgOwn ? isCamOff : false} onMuteToggle={sgOwn ? toggleMute : null} onCamToggle={sgOwn ? toggleCam : null} onCameraTrack={sgOwn ? function(t) { cameraTrackRef.current = t; } : null} handRaised={!!raisedHands[sgid]} giftTotal={guestGiftTotals[sgid] || 0} />
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ padding: '6px 10px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: TEXT }}>{sg.username || sgid}</span>
+                      {sgSp && <SpeakBars color={TEAL} small />}
+                      <span style={{ background: 'rgba(201,168,76,.15)', border: '1px solid ' + GOLD + '44', borderRadius: 999, padding: '1px 7px', fontFamily: "'DM Mono',monospace", fontSize: 7, color: GOLD }}>✦ SPOTLIGHT</span>
+                    </div>
+                    <button onClick={function() { setSpotlightGuestId(null); }} style={{ background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 14, lineHeight: 1, padding: 4 }}>✕</button>
+                  </div>
+                </div>
+                {/* Thumbnail sidebar — 30% */}
+                {onStage.filter(function(g) { return (g.guestId || g.userId) !== spotlightGuestId; }).length > 0 && (
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflowY: 'auto', maxHeight: 380, animation: 'thumbBarIn .3s ease' }}>
+                    {onStage.filter(function(g) { return (g.guestId || g.userId) !== spotlightGuestId; }).map(function(tg) {
+                      var tgid  = tg.guestId || tg.userId;
+                      var tgOwn = tgid === userId;
+                      var tgSp  = !!speakingIds[tgid];
+                      return (
+                        <div key={tgid} onClick={function() { setSpotlightGuestId(tgid); }}
+                          style={{ position: 'relative', background: CARD2, borderRadius: 8, overflow: 'hidden', border: '1.5px solid ' + (tgSp ? TEAL + '66' : BORDER), cursor: 'pointer', flexShrink: 0, transition: 'border-color .2s' }}>
+                          <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
+                            <div style={{ position: 'absolute', inset: 0 }}>
+                              {audioOnly ? (
+                                <div style={{ width: '100%', height: '100%', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, color: GOLD }}>{(tg.username || tgid).charAt(0).toUpperCase()}</span>
+                                </div>
+                              ) : (
+                                <OctCell guest={tg} fill={true} isHost={role === 'host'} fadesMode={false} branding={branding} onTap={null} socket={socket} roomId={roomId} userId={userId} rtcManager={rtcReady ? rtcManager : null} mediaConfig={tgOwn ? medConf : null} isMuted={tgOwn ? isMuted : false} isCamOff={tgOwn ? isCamOff : false} onMuteToggle={null} onCamToggle={null} handRaised={!!raisedHands[tgid]} giftTotal={guestGiftTotals[tgid] || 0} />
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ padding: '2px 6px 4px', display: 'flex', alignItems: 'center', gap: 3 }}>
+                            {tgSp && <SpeakBars color={TEAL} small />}
+                            <span style={{ fontSize: 9, color: tgSp ? TEXT : MUTED, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tg.username || tgid}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* ── GRID MODE ── CSS Grid, 16:9 cells, speaking animation, host actions */}
-          {stageLayout === 'grid' && panelMode !== 'list' && (
+          {stageLayout === 'grid' && panelMode !== 'list' && !spotlightGuestId && (
             <div
               style={{ display: 'grid', gridTemplateColumns: 'repeat(' + cols + ',1fr)', gap: 4 }}
               onClick={function() { if (cellMenuId) setCellMenuId(null); }}>
@@ -1957,7 +2087,7 @@ export default function LiveRoomPage({
                     }}>
                     {/* 16:9 video wrapper */}
                     <div style={{ position: 'relative', paddingBottom: '56.25%' }}>
-                      <div style={{ position: 'absolute', inset: 0 }}>
+                      <div style={{ position: 'absolute', inset: 0, filter: isOwn && aiFilter !== 'none' && AI_FILTERS[aiFilter] ? AI_FILTERS[aiFilter] : undefined }}>
                         {audioOnly ? (
                           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,' + CARD2 + ',' + BG + ')', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                             <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg,' + BURG + '55,' + CARD + ')', border: '2px solid ' + (isSp ? TEAL : DIM), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2007,8 +2137,13 @@ export default function LiveRoomPage({
                       )}
                     </div>
 
-                    {/* Top-right buttons: expand + host ⋮ menu */}
+                    {/* Top-right buttons: spotlight + expand + host ⋮ menu */}
                     <div style={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 3, zIndex: 10 }}>
+                      <button onClick={function(e) { e.stopPropagation(); setSpotlightGuestId(function(s) { return s === gid ? null : gid; }); }}
+                        title={spotlightGuestId === gid ? 'Exit spotlight' : 'Spotlight (70%)'}
+                        style={{ width: 20, height: 20, background: spotlightGuestId === gid ? 'rgba(201,168,76,.7)' : 'rgba(0,0,0,.6)', border: '1px solid ' + (spotlightGuestId === gid ? GOLD : 'rgba(255,255,255,.18)'), borderRadius: 4, color: spotlightGuestId === gid ? BG : TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        ✦
+                      </button>
                       <button onClick={function(e) { e.stopPropagation(); setExpandedCell(gid); }}
                         style={{ width: 20, height: 20, background: 'rgba(0,0,0,.6)', border: '1px solid rgba(255,255,255,.18)', borderRadius: 4, color: TEXT, fontSize: 9, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         ⤢
@@ -2270,6 +2405,9 @@ export default function LiveRoomPage({
               { emoji: '⭐', label: 'Ratings', active: !!ratingAvg, onTap: function() {
                 if (ratingAvg) { if (addToast) addToast('⭐ Avg: ' + ratingAvg.avg + '/5 from ' + ratingAvg.count + ' viewers', 'info'); }
               }},
+              { emoji: '🎨', label: 'AI Filter', active: aiFilter !== 'none', onTap: function() { setShowFilterPanel(function(s) { return !s; }); } },
+              { emoji: '🏆', label: 'PK Board', active: showPkLeaderboard, onTap: function() { setShowPkLeaderboard(function(s) { return !s; }); } },
+              { emoji: '📂', label: 'Gallery', active: showClipGallery, onTap: function() { setShowClipGallery(function(s) { return !s; }); } },
             ] : []),
           ].map(function(tool) {
             return (
@@ -4966,6 +5104,108 @@ export default function LiveRoomPage({
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ CLIP GALLERY OVERLAY ════════════════ */}
+      {showClipGallery && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 78, background: BG }}>
+          <ClipGalleryPage
+            onBack={function() { setShowClipGallery(false); }}
+            addToast={addToast}
+          />
+        </div>
+      )}
+
+      {/* ════════════════ AI FILTER PANEL ════════════════ */}
+      {showFilterPanel && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 75, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowFilterPanel(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 330, boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: TEXT, letterSpacing: 1.5 }}>🎨 AI VISUAL FILTERS</div>
+              <button onClick={function() { setShowFilterPanel(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14, letterSpacing: .3 }}>APPLY REAL-TIME VISUAL FILTER TO YOUR BROADCAST</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
+              {AI_FILTER_META.map(function(f) {
+                var isActive = aiFilter === f.key;
+                return (
+                  <button key={f.key} onClick={function() { setAiFilter(f.key); }}
+                    style={{ background: isActive ? 'rgba(201,168,76,.18)' : CARD2, border: '1.5px solid ' + (isActive ? GOLD : BORDER), borderRadius: 10, padding: '10px 6px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, transition: 'background .15s, border-color .15s' }}>
+                    <span style={{ fontSize: 18 }}>{f.emoji}</span>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: isActive ? GOLD : MUTED, letterSpacing: .5 }}>{f.label}</span>
+                    {isActive && <div style={{ width: 4, height: 4, borderRadius: '50%', background: GOLD }} />}
+                  </button>
+                );
+              })}
+            </div>
+            {aiFilter !== 'none' && (
+              <div style={{ background: CARD2, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <span style={{ fontSize: 14 }}>👁</span>
+                <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, color: MUTED }}>Filter active: <b style={{ color: TEXT }}>{(AI_FILTER_META.find(function(f) { return f.key === aiFilter; }) || {}).label}</b></span>
+                <button onClick={function() { setAiFilter('none'); }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: MUTED, cursor: 'pointer', fontSize: 12 }}>✕ Clear</button>
+              </div>
+            )}
+            <button onClick={function() { setShowFilterPanel(false); }} style={{ width: '100%', background: GOLD, border: 'none', borderRadius: 12, padding: '12px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+              APPLY FILTER
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ════════════════ PK BATTLE LEADERBOARD ════════════════ */}
+      {showPkLeaderboard && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.65)', zIndex: 75, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={function() { setShowPkLeaderboard(false); }}>
+          <div style={{ background: CARD, border: '1.5px solid ' + BORDER, borderRadius: 18, padding: '22px 24px', width: 340, maxHeight: 500, overflowY: 'auto', boxShadow: '0 12px 48px rgba(0,0,0,.75)', animation: 'statsFadeIn .2s ease' }}
+            onClick={function(e) { e.stopPropagation(); }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, color: GOLD, letterSpacing: 1.5 }}>⚔️ PK BATTLE LEADERBOARD</div>
+              <button onClick={function() { setShowPkLeaderboard(false); }} style={{ background: 'none', border: 'none', color: MUTED, fontSize: 18, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginBottom: 14, letterSpacing: .3 }}>RANKED BY TOTAL WINS · ALL-TIME SCORES</div>
+            {pkLeaderboard.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '28px 0', color: MUTED, fontFamily: "'Barlow Condensed',sans-serif", fontSize: 15 }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>⚔️</div>
+                No PK battle results yet.<br />Win a battle to appear here!
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {pkLeaderboard.slice(0, 20).map(function(entry, idx) {
+                  var medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '#' + (idx + 1);
+                  return (
+                    <div key={entry.username + idx} style={{ display: 'flex', alignItems: 'center', gap: 10, background: idx < 3 ? 'rgba(201,168,76,.06)' : CARD2, border: '1px solid ' + (idx < 3 ? GOLD + '33' : BORDER), borderRadius: 10, padding: '9px 12px' }}>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: idx === 0 ? GOLD : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : MUTED, minWidth: 28, textAlign: 'center' }}>{medal}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: TEXT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.username}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 8, color: MUTED, marginTop: 1 }}>Score: {entry.totalScore.toLocaleString()}</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: GOLD, lineHeight: 1 }}>{entry.wins}</div>
+                        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 7, color: MUTED }}>WIN{entry.wins !== 1 ? 'S' : ''}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {pkLeaderboard.length > 0 && (
+              <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
+                <button onClick={function() {
+                  if (!window.confirm('Clear PK leaderboard?')) return;
+                  setPkLeaderboard([]);
+                  try { localStorage.removeItem('sw_pk_leaderboard'); } catch(e) {}
+                }} style={{ flex: 1, background: CARD2, border: '1px solid ' + BORDER, borderRadius: 10, padding: '10px', fontFamily: "'DM Mono',monospace", fontSize: 9, color: MUTED, cursor: 'pointer', letterSpacing: .5 }}>
+                  CLEAR ALL
+                </button>
+                <button onClick={function() { setShowPkLeaderboard(false); }} style={{ flex: 2, background: GOLD, border: 'none', borderRadius: 10, padding: '10px', fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, color: BG, cursor: 'pointer', letterSpacing: 2 }}>
+                  CLOSE
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
