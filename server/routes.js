@@ -547,6 +547,9 @@ router.put('/users/me', requireAuth, function(req, res) {
     var displayName = String(req.body.displayName || '').slice(0, 80);
     var bio         = String(req.body.bio         || '').slice(0, 500);
     var avatarEmoji = String(req.body.avatarEmoji || '').slice(0, 8);
+    if (!_userProfiles[req.user.id] && Object.keys(_userProfiles).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
     _userProfiles[req.user.id] = {
       displayName: displayName,
       bio: bio,
@@ -580,6 +583,9 @@ router.post('/push/subscribe', requireAuth, function(req, res) {
       return res.status(400).json({ success: false, error: 'invalid push subscription endpoint' });
     }
     var subscription = { endpoint: endpoint, keys: raw.keys || {} };
+    if (!_pushSubscriptions[userId] && Object.keys(_pushSubscriptions).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
     _pushSubscriptions[userId] = subscription;
     if (notifications) {
       try {
@@ -595,6 +601,9 @@ router.post('/push/subscribe', requireAuth, function(req, res) {
 router.post('/users/me/notifications', requireAuth, function(req, res) {
   try {
     var prefKey = req.user.id;
+    if (!_notificationPrefs[prefKey] && Object.keys(_notificationPrefs).length >= 50000) {
+      return res.status(503).json({ success: false, error: 'Server at capacity' });
+    }
     _notificationPrefs[prefKey] = {
       notifyNewStream: req.body.notifyNewStream || false,
       notifyTip: req.body.notifyTip || false,
@@ -665,8 +674,8 @@ setInterval(function() {
 
 router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, res) {
   try {
-    var streamId = req.body.streamId || '';
-    if (!streamId || !/^[0-9a-f-]{36}$/i.test(streamId)) {
+    var streamId = String(req.body.streamId || '');
+    if (!streamId || !ROUTES_UUID_RE.test(streamId)) {
       return res.status(400).json({ success: false, error: 'valid streamId is required' });
     }
     var priceCents = Math.floor(req.body.priceCents || 499);
@@ -695,8 +704,14 @@ router.post('/ppv/create', requireAuth, ppvCreateRateLimit, async function(req, 
 
 router.post('/ppv/verify', requireAuth, function(req, res) {
   try {
-    var token = req.body.token || '';
-    var streamId = req.body.streamId || '';
+    var token = String(req.body.token || '');
+    if (!token || !/^[0-9a-f]{32}$/i.test(token)) {
+      return res.status(400).json({ valid: false, error: 'invalid token format' });
+    }
+    var streamId = String(req.body.streamId || '');
+    if (!streamId || !ROUTES_UUID_RE.test(streamId)) {
+      return res.status(400).json({ valid: false, error: 'invalid streamId' });
+    }
     var entry = _ppvTokens[token];
     if (!entry) {
       return res.json({ valid: false, error: 'Invalid or expired PPV token' });
@@ -805,8 +820,8 @@ router.post('/stream-sync', requireAuth, async function(req, res) {
 
 router.post('/stream-end', requireAuth, async function(req, res) {
   try {
-    var stream_id = req.body.stream_id;
-    if (!stream_id || !/^[0-9a-f-]{36}$/i.test(stream_id)) {
+    var stream_id = String(req.body.stream_id || '');
+    if (!stream_id || !ROUTES_UUID_RE.test(stream_id)) {
       return res.status(400).json({ ok: false, error: 'Invalid stream_id' });
     }
     var ownerResp = await fetch(SUPA_URL + '/rest/v1/streams?id=eq.' + encodeURIComponent(stream_id) + '&select=host_user_id&limit=1', {
