@@ -420,6 +420,7 @@ var chatMsgThrottle     = new Map();  // socketId → lastChatTs ms (500ms throt
 var pollVoteThrottle    = new Map();  // socketId → lastPollVoteTs ms (500ms throttle)
 var vsVoteThrottle      = new Map();  // socketId → lastVsVoteTs ms (500ms throttle)
 var qaUpvoteThrottle    = new Map();  // socketId → lastQaUpvoteTs ms (500ms throttle)
+var judgeScoreThrottle  = new Map();  // userId → lastJudgeScoreTs ms (500ms throttle)
 var pkVotes             = new Map();  // roomId → { voters: Map<userId, side>, challenger: 0, defender: 0 }
 var roomAnalytics       = new Map();  // roomId → { viewerHistory:[], msgCounts:{}, sessionEarnings:0, peak:0 }
 var activePolls         = new Map();  // roomId → { id, question, options, votes:{}, totalVotes, endsAt, timer }
@@ -2407,6 +2408,7 @@ io.on('connection', function(socket) {
     var uname = String(data.username || 'Judge').slice(0, 40);
     if (!judgeRosters.has(roomId)) judgeRosters.set(roomId, new Map());
     var roster = judgeRosters.get(roomId);
+    if (roster.size >= 50) return;
     roster.set(uid, { userId: uid, username: uname, scores: [] });
     io.to(roomId).emit('judges-update', serializeJudges(roomId));
   });
@@ -2424,9 +2426,9 @@ io.on('connection', function(socket) {
     var roomId = socket.data.roomId;
     if (!roomId) return;
     var _jsNow = Date.now();
-    if (_jsNow - (socket.data._lastJudgeScore || 0) < 500) return;
-    socket.data._lastJudgeScore = _jsNow;
     var uid = socket.data.userId || socket.id;
+    if (_jsNow - (judgeScoreThrottle.get(uid) || 0) < 500) return;
+    judgeScoreThrottle.set(uid, _jsNow);
     var roster = judgeRosters.get(roomId);
     if (!roster || !roster.has(uid)) return;
     var score = Math.min(10, Math.max(0, Math.floor(data.score || 0)));
@@ -3478,6 +3480,7 @@ io.on('connection', function(socket) {
     pollVoteThrottle.delete(_tKey);   pollVoteThrottle.delete(socket.id);
     vsVoteThrottle.delete(_tKey);     vsVoteThrottle.delete(socket.id);
     qaUpvoteThrottle.delete(_tKey);   qaUpvoteThrottle.delete(socket.id);
+    judgeScoreThrottle.delete(_tKey);
     if (socket.data.ownedProducerIds) {
       socket.data.ownedProducerIds.forEach(function(pid) { producerOwners.delete(pid); });
     }
